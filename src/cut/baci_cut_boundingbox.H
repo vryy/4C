@@ -104,7 +104,7 @@ namespace CORE::GEO
       virtual bool Within(double norm, const double* x) const;
 
       /*! \brief Check these points are within this boundingbox */
-      bool Within(double norm, const Epetra_SerialDenseMatrix& xyz) const;
+      bool Within(double norm, const CORE::LINALG::SerialDenseMatrix& xyz) const;
 
       /*! \brief Check the element is within this boundingbox */
       bool Within(double norm, Element& element) const;

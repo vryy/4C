@@ -23,7 +23,7 @@
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_list.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 using namespace DRT::UTILS;
 
@@ -32,9 +32,10 @@ using namespace DRT::UTILS;
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::RedAcinus::ActionType act = RedAcinus::none;
 
@@ -197,7 +198,7 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -210,7 +211,7 @@ int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   return 0;
 }

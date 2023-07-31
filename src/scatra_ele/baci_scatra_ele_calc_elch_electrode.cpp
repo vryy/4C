@@ -60,9 +60,10 @@ DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::ScaTraEleCalcElchEl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
-    const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
-    const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot, double& rhsint)
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
+    const double fac, const double timefacfac, const double rhsfac, const double taufac,
+    const double timetaufac, const double rhstaufac, CORE::LINALG::Matrix<nen_, 1>& tauderpot,
+    double& rhsint)
 {
   //----------------------------------------------------------------------
   // 1) element matrix: instationary terms arising from transport equation
@@ -126,7 +127,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhs(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsOutsideScalarLoop(
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const double fac,
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const double fac,
     const double timefacfac, const double rhsfac)
 {
   //--------------------------------------------------------------------
@@ -153,8 +154,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatAndRhsO
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double diffcoeff,
-    const double fac, const double rhsfac, const double J,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double diffcoeff, const double fac, const double rhsfac, const double J,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint,
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
@@ -176,7 +177,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcDiffODMesh
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoeffLin(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double scalar)
 {
   // linearization of diffusion coefficient in ionic diffusion term (transport equation):
@@ -201,7 +202,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatDiffCoe
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquDiviOhm(
-    Epetra_SerialDenseMatrix& emat, const double timefacfac, const double invf,
+    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -239,8 +240,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcMatPotEquD
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
-    probdim>::CalcRhsConservativePartOfConvectiveTerm(Epetra_SerialDenseVector& erhs, const int k,
-    const double rhsfac, const double vdiv)
+    probdim>::CalcRhsConservativePartOfConvectiveTerm(CORE::LINALG::SerialDenseVector& erhs,
+    const int k, const double rhsfac, const double vdiv)
 {
   double vrhs = rhsfac * my::scatravarmanager_->Phinp(k) * vdiv;
   for (unsigned vi = 0; vi < nen_; ++vi) erhs[vi * my::numdofpernode_ + k] -= vrhs * my::funct_(vi);
@@ -250,7 +251,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalcRhsPotEquDiviOhm(
-    Epetra_SerialDenseVector& erhs, const double rhsfac, const double invf,
+    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double invf,
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot, const double scalar)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)

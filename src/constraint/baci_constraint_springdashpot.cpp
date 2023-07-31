@@ -160,16 +160,16 @@ void UTILS::SpringDashpot::EvaluateRobin(Teuchos::RCP<CORE::LINALG::SparseMatrix
         const int eledim = (int)lm.size();
 
         // define element matrices and vectors
-        Epetra_SerialDenseMatrix elematrix1;
-        Epetra_SerialDenseMatrix elematrix2;
-        Epetra_SerialDenseVector elevector1;
-        Epetra_SerialDenseVector elevector2;
-        Epetra_SerialDenseVector elevector3;
+        CORE::LINALG::SerialDenseMatrix elematrix1;
+        CORE::LINALG::SerialDenseMatrix elematrix2;
+        CORE::LINALG::SerialDenseVector elevector1;
+        CORE::LINALG::SerialDenseVector elevector2;
+        CORE::LINALG::SerialDenseVector elevector3;
 
-        elevector1.Size(eledim);
-        elevector2.Size(eledim);
-        elevector3.Size(eledim);
-        elematrix1.Shape(eledim, eledim);
+        elevector1.size(eledim);
+        elevector2.size(eledim);
+        elevector3.size(eledim);
+        elematrix1.shape(eledim, eledim);
 
         int err = curr.second->Evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
@@ -779,11 +779,11 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     element->LocationVector(*(actdisc_), lm, lmowner, lmstride);
-    Epetra_SerialDenseMatrix dummat(0, 0);
-    Epetra_SerialDenseVector dumvec(0);
-    Epetra_SerialDenseVector elevector;
+    CORE::LINALG::SerialDenseMatrix dummat(0, 0);
+    CORE::LINALG::SerialDenseVector dumvec(0);
+    CORE::LINALG::SerialDenseVector elevector;
     const int eledim = (int)lm.size();
-    elevector.Size(eledim);
+    elevector.size(eledim);
 
     eparams.set("action", "calc_struct_area");
     eparams.set("area", 0.0);

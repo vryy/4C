@@ -94,9 +94,9 @@ namespace DRT
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
       virtual void CalcMatConvODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodefluid,      //!< number of dofs per node of fluid element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
@@ -105,9 +105,9 @@ namespace DRT
       //! calculation of convective element matrix: add conservative contributions (off diagonal
       //! term fluid)
       virtual void CalcMatConvAddConsODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodefluid,      //!< number of dofs per node of fluid element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const double phinp        //!< scalar at time_(n+1)

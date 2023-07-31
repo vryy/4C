@@ -19,7 +19,6 @@
 #include "baci_lib_utils.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_mat_elasthyper.H"
-#include <Epetra_SerialDenseSolver.h>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
@@ -93,9 +92,10 @@ DRT::ELEMENTS::Ale3_Impl<distype>* DRT::ELEMENTS::Ale3_Impl<distype>::Instance(
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Ale3::ActionType act = Ale3::none;
 
@@ -244,7 +244,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Ale3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -253,7 +253,7 @@ int DRT::ELEMENTS::Ale3::EvaluateNeumann(Teuchos::ParameterList& params,
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
-    Ale3* ele, Epetra_SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
+    Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp)
 {
   if (distype == DRT::Element::nurbs8 or distype == DRT::Element::nurbs27)
   {
@@ -914,11 +914,12 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ale3_tors_spring_nurbs27(
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
-    Epetra_SerialDenseMatrix& sys_mat_epetra, Epetra_SerialDenseVector& residual_epetra,
-    const std::vector<double>& displacements, const bool spatialconfiguration)
+    CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
+    CORE::LINALG::SerialDenseVector& residual_epetra, const std::vector<double>& displacements,
+    const bool spatialconfiguration)
 {
-  CORE::LINALG::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.A(), true);
-  CORE::LINALG::Matrix<3 * iel, 1> residual(residual_epetra.A(), true);
+  CORE::LINALG::Matrix<3 * iel, 3 * iel> sys_mat(sys_mat_epetra.values(), true);
+  CORE::LINALG::Matrix<3 * iel, 1> residual(residual_epetra.values(), true);
   int node_i, node_j;  // end nodes of spring
   double length;       // length of edge
   double dx, dy, dz;   // deltas in each direction
@@ -1337,7 +1338,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
   }
 
   // compute residual
-  residual.Scale(0.0);
+  residual.putScalar(0.0);
   for (int i = 0; i < 3 * iel; ++i)
     for (int j = 0; j < 3 * iel; ++j) residual(i, 0) += sys_mat(i, j) * displacements[j];
 
@@ -1348,13 +1349,13 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(Ale3* ele,
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Discretization& dis,
-    std::vector<int>& lm, Epetra_SerialDenseMatrix& sys_mat_epetra,
-    Epetra_SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
+    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& sys_mat_epetra,
+    CORE::LINALG::SerialDenseVector& residual_epetra, std::vector<double>& my_dispnp,
     Teuchos::ParameterList& params, const bool spatialconfiguration)
 {
   const int numdof = NODDOF_ALE3 * iel;
   // A view to sys_mat_epetra
-  CORE::LINALG::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof, numdof> sys_mat(sys_mat_epetra.values(), true);
   // update element geometry
   CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xrefe;  // material coord. of element
   CORE::LINALG::Matrix<iel, NUMDIM_ALE3> xcurr;  // current  coord. of element
@@ -1377,7 +1378,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
   }
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots;
+  std::vector<CORE::LINALG::SerialDenseVector> myknots;
   CORE::LINALG::Matrix<iel, 1> weights(iel);
 
   if (distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
@@ -1429,7 +1430,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
     else
     {
       // nurbs version
-      Epetra_SerialDenseVector gp(3);
+      CORE::LINALG::SerialDenseVector gp(3);
       gp(0) = e1;
       gp(1) = e2;
       gp(2) = e3;
@@ -1570,7 +1571,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_nonlinear(Ale3* ele, DRT::Disc
 /*----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discretization& dis,
-    Epetra_SerialDenseMatrix& sys_mat_epetra, Epetra_SerialDenseVector& residual,
+    CORE::LINALG::SerialDenseMatrix& sys_mat_epetra, CORE::LINALG::SerialDenseVector& residual,
     std::vector<double>& my_dispnp, Teuchos::RCP<MAT::Material> material,
     const bool spatialconfiguration)
 {
@@ -1580,7 +1581,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
   const int nd = 3 * iel;
   // A view to sys_mat_epetra
-  CORE::LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.A(), true);
+  CORE::LINALG::Matrix<nd, nd> sys_mat(sys_mat_epetra.values(), true);
 
   //  get material using class StVenantKirchhoff
   //  if (material->MaterialType()!=INPAR::MAT::m_stvenant)
@@ -1612,7 +1613,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   CORE::LINALG::Matrix<iel, 1> weights(iel);
 
   if (distype == DRT::Element::nurbs8 or distype == DRT::Element::nurbs27)
@@ -1669,7 +1670,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
     else
     {
       // nurbs version
-      Epetra_SerialDenseVector gp(3);
+      CORE::LINALG::SerialDenseVector gp(3);
       gp(0) = e1;
       gp(1) = e2;
       gp(2) = e3;
@@ -1714,7 +1715,7 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(Ale3* ele, DRT::Discre
       for (int j = 0; j < iel; j++) sys_mat(i * 3 + d, j * 3 + d) += tempmat(i, j);
 
   // compute residual vector
-  residual.Scale(0.0);
+  residual.putScalar(0.0);
   for (int i = 0; i < nd; ++i)
     for (int j = 0; j < nd; ++j) residual[i] += sys_mat(i, j) * my_dispnp[j];
 

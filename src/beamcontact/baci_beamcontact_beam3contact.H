@@ -361,9 +361,9 @@ namespace CONTACT
     /*!
     \brief Get normal vector
     */
-    const Epetra_SerialDenseVector GetNormal()
+    const CORE::LINALG::SerialDenseVector GetNormal()
     {
-      Epetra_SerialDenseVector normal(3);
+      CORE::LINALG::SerialDenseVector normal(3);
 
       for (int i = 0; i < 3; i++) normal(i) = 0.0;
 
@@ -513,7 +513,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos);
+    void UpdateElePos(
+        CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos);
 
     /*
     \brief Update interpolated nodal tangents for tangent smoothing

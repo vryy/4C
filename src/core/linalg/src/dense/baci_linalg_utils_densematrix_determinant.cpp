@@ -13,19 +13,19 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CORE::LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
+double CORE::LINALG::DeterminantLU(const CORE::LINALG::SerialDenseMatrix& A)
 {
 #ifdef DEBUG
-  if (A.M() != A.N()) dserror("Matrix is not square");
+  if (A.numRows() != A.numCols()) dserror("Matrix is not square");
 #endif
-  Epetra_SerialDenseMatrix tmp(A);
-  const int n = tmp.N();
-  const int m = tmp.M();
+  CORE::LINALG::SerialDenseMatrix tmp(A);
+  const int n = tmp.numCols();
+  const int m = tmp.numRows();
   std::vector<int> ipiv(n);
   int info;
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.GETRF(m, n, tmp.A(), tmp.LDA(), ipiv.data(), &info);
+  lapack.GETRF(m, n, tmp.values(), tmp.stride(), ipiv.data(), &info);
 
   if (info < 0)
     dserror("Lapack's dgetrf returned %d", info);

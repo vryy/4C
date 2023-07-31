@@ -54,13 +54,15 @@ namespace DRT
       //! evaluate service routine
       virtual int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! interpolates an HDG solution to the element nodes for output
       virtual int NodeBasedValues(DRT::Element* ele, DRT::Discretization& discretization,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       //! initialize the shape functions and solver to the given element (degree is runtime
       //! parameter)
@@ -69,16 +71,16 @@ namespace DRT
       //! Evaluate the element (Generic virtual interface function. Called via base pointer.)
       int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3) override;
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! evaluate action for off-diagonal system matrix block
       virtual int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3)
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3)
       {
         dserror("Not implemented!");
         return -1;
@@ -90,20 +92,20 @@ namespace DRT
       //! projection of Dirichlet function field
       int ProjectDirichField(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseVector& elevec1);
+          CORE::LINALG::SerialDenseVector& elevec1);
 
       //! update interior variables
       int UpdateInteriorVariables(DRT::ELEMENTS::ScaTraHDG* ele, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector& elevec);
+          CORE::LINALG::SerialDenseVector& elevec);
 
       //! set initial field
       int SetInitialField(const DRT::Element* ele, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2);
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2);
 
       //! project field
       int ProjectField(const DRT::Element* ele, DRT::Discretization& discretization,
-          Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, DRT::Element::LocationArray& la);
+          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, DRT::Element::LocationArray& la);
 
       //! project material field
       virtual int ProjectMaterialField(const DRT::Element* ele) { return 0; };
@@ -114,7 +116,7 @@ namespace DRT
 
       //! calc error
       int CalcError(const DRT::Element* ele, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector& elevec);
+          CORE::LINALG::SerialDenseVector& elevec);
 
      protected:
       /// (private) protected constructor, since we are a Singleton.
@@ -134,10 +136,10 @@ namespace DRT
       virtual void Materials(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
-          Epetra_SerialDenseMatrix& difftensor,              //!< diffusion tensor
-          Epetra_SerialDenseVector& ivecn,                   //!< reaction term at time n
-          Epetra_SerialDenseVector& ivecnp,                  //!< reaction term at time n+1
-          Epetra_SerialDenseMatrix& ivecnpderiv              //!< reaction term derivative
+          CORE::LINALG::SerialDenseMatrix& difftensor,       //!< diffusion tensor
+          CORE::LINALG::SerialDenseVector& ivecn,            //!< reaction term at time n
+          CORE::LINALG::SerialDenseVector& ivecnp,           //!< reaction term at time n+1
+          CORE::LINALG::SerialDenseMatrix& ivecnpderiv       //!< reaction term derivative
       )
       {
         return;
@@ -147,7 +149,8 @@ namespace DRT
       virtual void PrepareMaterials(DRT::Element* ele,       //!< the element we are dealing with
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
-          Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> difftensor  //!< diffusion tensor
+          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>>
+              difftensor  //!< diffusion tensor
       );
 
       //! stores the material internal state in a vector for output and restart
@@ -169,9 +172,9 @@ namespace DRT
       Teuchos::RCP<CORE::DRT::UTILS::ShapeValuesFace<distype>> shapesface_;
 
       //! extracted values from concentrations and gradients
-      Epetra_SerialDenseVector interiorPhin_;
+      CORE::LINALG::SerialDenseVector interiorPhin_;
       //! extracted values from concentrations
-      Epetra_SerialDenseVector interiorPhinp_;
+      CORE::LINALG::SerialDenseVector interiorPhinp_;
 
       //! get time step
       double Dt() { return localSolver_->scatraparatimint_->Dt(); }
@@ -217,14 +220,14 @@ namespace DRT
             const std::string& disname, int numscal);
 
         //! compute the residual
-        void ComputeResidual(Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec,
-            Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& interiorPhin,
-            Epetra_SerialDenseVector& tracen, Epetra_SerialDenseVector& tracenp,
-            const DRT::ELEMENTS::ScaTraHDG* hdgele);
+        void ComputeResidual(Teuchos::ParameterList& params,
+            CORE::LINALG::SerialDenseVector& elevec, CORE::LINALG::SerialDenseMatrix& elemat1,
+            CORE::LINALG::SerialDenseVector& interiorPhin, CORE::LINALG::SerialDenseVector& tracen,
+            CORE::LINALG::SerialDenseVector& tracenp, const DRT::ELEMENTS::ScaTraHDG* hdgele);
 
         //! compute Neumann boundary conditions
         void ComputeNeumannBC(DRT::Element* ele, Teuchos::ParameterList& params, int face,
-            Epetra_SerialDenseVector& elevec, int indexstart);
+            CORE::LINALG::SerialDenseVector& elevec, int indexstart);
 
         //! compute interior matrices
         void ComputeInteriorMatrices(DRT::ELEMENTS::ScaTraHDG* hdgele);
@@ -247,21 +250,24 @@ namespace DRT
 
         //! Compute divergence of current source (ELEMAG)
         void ComputeSource(
-            const DRT::Element* ele, Epetra_SerialDenseVector& elevec1, const double time);
+            const DRT::Element* ele, CORE::LINALG::SerialDenseVector& elevec1, const double time);
 
         //! add diffusive term to element matrix
-        void AddDiffMat(Epetra_SerialDenseMatrix& elemat, const DRT::ELEMENTS::ScaTraHDG* hdgele);
+        void AddDiffMat(
+            CORE::LINALG::SerialDenseMatrix& elemat, const DRT::ELEMENTS::ScaTraHDG* hdgele);
 
         //! add reaction term to element matrix
-        void AddReacMat(Epetra_SerialDenseMatrix& elemat, const DRT::ELEMENTS::ScaTraHDG* hdgele);
+        void AddReacMat(
+            CORE::LINALG::SerialDenseMatrix& elemat, const DRT::ELEMENTS::ScaTraHDG* hdgele);
 
         //! set material parameter
-        void SetMaterialParameter(DRT::ELEMENTS::ScaTraHDG* hdgele, Epetra_SerialDenseVector& ivecn,
-            Epetra_SerialDenseVector& ivecnp, Epetra_SerialDenseMatrix& ivecnpderiv);
+        void SetMaterialParameter(DRT::ELEMENTS::ScaTraHDG* hdgele,
+            CORE::LINALG::SerialDenseVector& ivecn, CORE::LINALG::SerialDenseVector& ivecnp,
+            CORE::LINALG::SerialDenseMatrix& ivecnpderiv);
 
         //! prepare material parameter in first timestep
         void PrepareMaterialParameter(
-            DRT::ELEMENTS::ScaTraHDG* hdgele, Epetra_SerialDenseMatrix& difftensor);
+            DRT::ELEMENTS::ScaTraHDG* hdgele, CORE::LINALG::SerialDenseMatrix& difftensor);
 
 
         // convention: we sort the entries in the matrices the following way:
@@ -276,39 +282,40 @@ namespace DRT
 
         // Element matrices if one wants to compute them on the fly instead of storing them on the
         // element
-        //      Epetra_SerialDenseMatrix  Amat;     /// concentrations - concentrations
-        //      Epetra_SerialDenseMatrix  Bmat;     /// concentrations - concentrations gradients
-        //      Epetra_SerialDenseMatrix  Cmat;     /// concentration - trace
-        //      Epetra_SerialDenseMatrix  Dmat;     /// concentrations gradients - concentrations
-        //      gradients Epetra_SerialDenseMatrix  Emat;     /// trace - concentrations gradients
-        //      Epetra_SerialDenseMatrix  Gmat;     /// concentrations gradients
-        //      Epetra_SerialDenseMatrix  Hmat;     /// trace -trace
-        //      Epetra_SerialDenseMatrix  Mmat;     /// mass matrix (concentrations -
-        //      concentrations) Epetra_SerialDenseMatrix  EmatT;    /// trace - concentrations
-        //      gradients (E^T) Epetra_SerialDenseMatrix  BmatMT;   /// concentrations gradients-
-        //      concentrations (-B^T) Epetra_SerialDenseMatrix  Kmat;   /// condensed matrix
+        //      CORE::LINALG::SerialDenseMatrix  Amat;     /// concentrations - concentrations
+        //      CORE::LINALG::SerialDenseMatrix  Bmat;     /// concentrations - concentrations
+        //      gradients CORE::LINALG::SerialDenseMatrix  Cmat;     /// concentration - trace
+        //      CORE::LINALG::SerialDenseMatrix  Dmat;     /// concentrations gradients -
+        //      concentrations gradients CORE::LINALG::SerialDenseMatrix  Emat;     /// trace -
+        //      concentrations gradients CORE::LINALG::SerialDenseMatrix  Gmat;     ///
+        //      concentrations gradients CORE::LINALG::SerialDenseMatrix  Hmat;     /// trace -trace
+        //      CORE::LINALG::SerialDenseMatrix  Mmat;     /// mass matrix (concentrations -
+        //      concentrations) CORE::LINALG::SerialDenseMatrix  EmatT;    /// trace -
+        //      concentrations gradients (E^T) CORE::LINALG::SerialDenseMatrix  BmatMT;   ///
+        //      concentrations gradients- concentrations (-B^T) CORE::LINALG::SerialDenseMatrix
+        //      Kmat;   /// condensed matrix
 
         // @name variables for the reaction term
         //!@{
         //! reaction term at time n
-        //      Epetra_SerialDenseVector  Ivecn_;
+        //      CORE::LINALG::SerialDenseVector  Ivecn_;
 
         //! reaction term at time n+1
-        // Epetra_SerialDenseVector  Ivecnp_;
+        // CORE::LINALG::SerialDenseVector  Ivecnp_;
 
         //! derivative of reaction term at time n+1
-        //      Epetra_SerialDenseMatrix  Imatnpderiv_;
+        //      CORE::LINALG::SerialDenseMatrix  Imatnpderiv_;
         //!@}
 
-        ////      Epetra_SerialDenseMatrix  invAmat;     /// inverse of Amat
-        //      Epetra_SerialDenseMatrix  invAMmat;     /// inverse of [A + (1/(dt*theta))*M]
+        ////      CORE::LINALG::SerialDenseMatrix  invAmat;     /// inverse of Amat
+        //      CORE::LINALG::SerialDenseMatrix  invAMmat;     /// inverse of [A + (1/(dt*theta))*M]
         //
         //      // auxiliary stuff
-        //      Epetra_SerialDenseMatrix  massPart;
-        //      Epetra_SerialDenseMatrix  massPartW;
-        //      Epetra_SerialDenseMatrix  BTAMmat;
-        //      Epetra_SerialDenseMatrix  invCondmat;
-        //      Epetra_SerialDenseMatrix  Xmat;
+        //      CORE::LINALG::SerialDenseMatrix  massPart;
+        //      CORE::LINALG::SerialDenseMatrix  massPartW;
+        //      CORE::LINALG::SerialDenseMatrix  BTAMmat;
+        //      CORE::LINALG::SerialDenseMatrix  invCondmat;
+        //      CORE::LINALG::SerialDenseMatrix  Xmat;
 
         //! pointer to general scalar transport parameter class
         DRT::ELEMENTS::ScaTraEleParameterStd* scatrapara_;
@@ -324,9 +331,9 @@ namespace DRT
 
         // diffusion tensor stored on the element, if necessary this can be changed
         //      //! diffusion tensor
-        //      Epetra_SerialDenseMatrix diff_;
+        //      CORE::LINALG::SerialDenseMatrix diff_;
         //      //! inverse diffusion tensor
-        //      Epetra_SerialDenseMatrix invdiff_;
+        //      CORE::LINALG::SerialDenseMatrix invdiff_;
 
         //! scalar raeaction coefficient
         //      std::vector<double> reacoeff_;
@@ -344,13 +351,13 @@ namespace DRT
       /*========================================================================*/
 
       //! extracted values from concentrations
-      Epetra_SerialDenseVector tracen_;
+      CORE::LINALG::SerialDenseVector tracen_;
 
       //! extracted local values (concentration gradients) at n+alpha_f
-      Epetra_SerialDenseVector interiorGradPhin_;
+      CORE::LINALG::SerialDenseVector interiorGradPhin_;
 
       //! extracted values from trace solution vector at n-m
-      Epetra_SerialDenseVector tracenm_;
+      CORE::LINALG::SerialDenseVector tracenm_;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

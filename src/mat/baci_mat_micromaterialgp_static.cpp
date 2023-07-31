@@ -39,11 +39,11 @@ MAT::MicroMaterialGP::MicroMaterialGP(
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
   dis_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
   disn_ = CORE::LINALG::CreateVector(*microdis->DofRowMap(), true);
-  lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-  oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-  oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-  oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-  oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+  oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+  oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+  oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+  oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
 
   // data must be consistent between micro and macro input file
   const Teuchos::ParameterList& sdyn_macro = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -251,11 +251,11 @@ void MAT::MicroMaterialGP::EasInit()
       p.set("oldKaainv", oldKaainv_);
       p.set("oldKda", oldKda_);
 
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
       std::vector<int> lm;
 
       actele->Evaluate(p, *discret, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);

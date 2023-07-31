@@ -1285,7 +1285,7 @@ Teuchos::RCP<Epetra_Vector> PostResult::read_result(const std::string name)
  * block and returns it as an std::vector<char>. the corresponding
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
-Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>
+Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
 PostResult::read_result_serialdensematrix(const std::string name)
 {
   Teuchos::RCP<Epetra_Comm> comm = field_->problem()->comm();
@@ -1304,14 +1304,15 @@ PostResult::read_result_serialdensematrix(const std::string name)
   Teuchos::RCP<std::vector<char>> data =
       file_.ReadResultDataVecChar(id_path, value_path, columns, *comm, elemap);
 
-  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> mapdata =
-      Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+  Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata =
+      Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
   std::vector<char>::size_type position = 0;
   //   std::cout << "elemap:\n" << *elemap << std::endl;
   //   std::cout << "myelenum: " << elemap->NumMyElements() << std::endl;
   for (int i = 0; i < elemap->NumMyElements(); ++i)
   {
-    Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
     DRT::ParObject::ExtractfromPack(position, *data, *gpstress);
     (*mapdata)[elemap->GID(i)] = gpstress;
   }

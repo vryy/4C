@@ -51,15 +51,18 @@ namespace DRT
        */
       virtual int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseMatrix* elemat1) = 0;
+          DRT::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseMatrix* elemat1) = 0;
 
       /// Evaluate routine for boundary elements inteface
       virtual int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra) = 0;
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) = 0;
 
       /// Internal implementation class for ElemagBoundary elements
       static ElemagBoundaryImplInterface* Impl(const DRT::Element* ele);
@@ -91,15 +94,18 @@ namespace DRT
       //! Evaluate a Neumann boundary condition
       virtual int EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseMatrix* elemat1);
+          DRT::Condition& condition, std::vector<int>& lm,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseMatrix* elemat1);
 
       /// Evaluate routine for boundary elements
       virtual int Evaluate(DRT::ELEMENTS::ElemagBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
      private:
       //! node coordinates for boundary element

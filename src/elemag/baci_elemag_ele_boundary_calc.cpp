@@ -110,8 +110,8 @@ DRT::ELEMENTS::ElemagBoundaryImpl<distype>::ElemagBoundaryImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::ElemagBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    std::vector<int>& lm, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseMatrix* elemat1_epetra)
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   return 0;
 }
@@ -121,9 +121,11 @@ int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::EvaluateNeumann(DRT::ELEMENTS::E
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ElemagBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   /* the term representing absorbing first order boundary conditions for the
    * here given problem looks like < lambda, mu > over Gamma_ext, hence it belongs

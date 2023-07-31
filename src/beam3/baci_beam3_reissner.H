@@ -294,14 +294,14 @@ namespace DRT
         const unsigned int nnodetriad = this->NumNode();
 
         // safety check
-        if ((unsigned int)stiffmat.M() != 3 * vpernode * nnodecl + 3 * nnodetriad or
-            (unsigned int) stiffmat.N() != 3 * vpernode * nnodecl + 3 * nnodetriad)
+        if ((unsigned int)stiffmat.numRows() != 3 * vpernode * nnodecl + 3 * nnodetriad or
+            (unsigned int) stiffmat.numCols() != 3 * vpernode * nnodecl + 3 * nnodetriad)
           dserror("size mismatch! expected %dx%d matrix and got %dx%d",
               3 * vpernode * nnodecl + 3 * nnodetriad, 3 * vpernode * nnodecl + 3 * nnodetriad,
-              stiffmat.M(), stiffmat.N());
+              stiffmat.numRows(), stiffmat.numCols());
 
         // nothing to do here since this term vanishes for Beam3r
-        stiffmat.Zero();
+        stiffmat.putScalar(0.0);
       }
 
       /** \brief get generalized interpolation matrix which yields the increments of the position
@@ -513,9 +513,9 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -531,7 +531,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       /*!
       \brief Evaluate PTC addition to stiffness for free Brownian motion
@@ -547,15 +548,15 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       template <unsigned int nnode>
-      void EvaluatePTC(Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1);
+      void EvaluatePTC(Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1);
 
       //! calculation of nonlinear stiffness and mass matrix
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void CalcInternalAndInertiaForcesAndStiff(
           CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
           std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector* force, Epetra_SerialDenseVector* inertia_force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+          CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseVector* inertia_force);
 
       //@}
 
@@ -697,9 +698,9 @@ namespace DRT
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void CalcInternalAndInertiaForcesAndStiff(Teuchos::ParameterList& params,
-          std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force,
-          Epetra_SerialDenseVector* inertia_force);
+          std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector* force,
+          CORE::LINALG::SerialDenseVector* inertia_force);
 
       /** \brief compute internal (i.e. elastic) force and stiffness matrix
        *
@@ -709,7 +710,7 @@ namespace DRT
       void CalcInternalForceAndStiff(
           const CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, T>& disp_totlag_centerline,
           const std::vector<CORE::LINALG::Matrix<4, 1, T>>& Qnode,
-          Epetra_SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,
           CORE::LINALG::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1, T>& internal_force);
 
       /** \brief calculate inertia force and mass matrix
@@ -720,7 +721,8 @@ namespace DRT
       void CalcInertiaForceAndMassMatrix(
           const CORE::LINALG::Matrix<3 * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
           const std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
-          Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* inertia_force);
+          CORE::LINALG::SerialDenseMatrix* massmatrix,
+          CORE::LINALG::SerialDenseVector* inertia_force);
 
       /** \brief get Jacobi factor ds/dxi(xi) at xi \in [-1;1]
        *
@@ -859,7 +861,7 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      void CalcStiffmatAnalyticForceContributions(Epetra_SerialDenseMatrix& stiffmatrix,
+      void CalcStiffmatAnalyticForceContributions(CORE::LINALG::SerialDenseMatrix& stiffmatrix,
           const CORE::LINALG::Matrix<3, 1, double>& stressn,
           const CORE::LINALG::Matrix<3, 3, double>& cn,
           const CORE::LINALG::Matrix<3, 3, double>& r_s_hat,
@@ -875,7 +877,8 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      inline void CalcStiffmatAnalyticForceContributions(Epetra_SerialDenseMatrix& stiffmatrix,
+      inline void CalcStiffmatAnalyticForceContributions(
+          CORE::LINALG::SerialDenseMatrix& stiffmatrix,
           const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressn,
           const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& cn,
           const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& r_s_hat,
@@ -895,7 +898,7 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      void CalcStiffmatAnalyticMomentContributions(Epetra_SerialDenseMatrix& stiffmatrix,
+      void CalcStiffmatAnalyticMomentContributions(CORE::LINALG::SerialDenseMatrix& stiffmatrix,
           const CORE::LINALG::Matrix<3, 1, double>& stressm,
           const CORE::LINALG::Matrix<3, 3, double>& cm,
           const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad, double>&
@@ -912,7 +915,8 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      inline void CalcStiffmatAnalyticMomentContributions(Epetra_SerialDenseMatrix& stiffmatrix,
+      inline void CalcStiffmatAnalyticMomentContributions(
+          CORE::LINALG::SerialDenseMatrix& stiffmatrix,
           const CORE::LINALG::Matrix<3, 1, Sacado::Fad::DFad<double>>& stressm,
           const CORE::LINALG::Matrix<3, 3, Sacado::Fad::DFad<double>>& cm,
           const LARGEROTATIONS::TriadInterpolationLocalRotationVectors<nnodetriad,
@@ -933,7 +937,7 @@ namespace DRT
        *  \author grill
        *  \date 12/16 */
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
-      void CalcStiffmatAutomaticDifferentiation(Epetra_SerialDenseMatrix& stiffmatrix,
+      void CalcStiffmatAutomaticDifferentiation(CORE::LINALG::SerialDenseMatrix& stiffmatrix,
           const std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
           CORE::LINALG::Matrix<3 * vpernode * nnodecl + 3 * nnodetriad, 1,
               Sacado::Fad::DFad<double>>
@@ -942,8 +946,8 @@ namespace DRT
       //! calculation of thermal (i.e. stochastic) and damping forces according to Brownian dynamics
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode>
       void CalcBrownianForcesAndStiff(Teuchos::ParameterList& params, std::vector<double>& vel,
-          std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-          Epetra_SerialDenseVector* force);
+          std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       //! update (total) displacement vector and set nodal triads (as quaternions)
       template <unsigned int nnodetriad, unsigned int nnodecl, unsigned int vpernode, typename T>
@@ -998,7 +1002,7 @@ namespace DRT
 
       //! lump mass matrix
       template <unsigned int nnode>
-      void lumpmass(Epetra_SerialDenseMatrix* emass);
+      void lumpmass(CORE::LINALG::SerialDenseMatrix* emass);
 
      public:
       //! determine Gauss rule from required type of integration and parameter list
@@ -1014,8 +1018,8 @@ namespace DRT
           unsigned int ndim>
       void EvaluateRotationalDamping(Teuchos::ParameterList& params,  //!< parameter list
           const std::vector<CORE::LINALG::Matrix<4, 1, double>>& Qnode,
-          Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-          Epetra_SerialDenseVector* force);       //!< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+          CORE::LINALG::SerialDenseVector* force);       //!< element internal force vector
 
       //! computes translational damping forces and stiffness
       template <unsigned int nnodecl, unsigned int vpernode,
@@ -1024,24 +1028,24 @@ namespace DRT
       void EvaluateTranslationalDamping(Teuchos::ParameterList& params,  //!< parameter list
           const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& vel_centerline,
           const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
-          Epetra_SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
-          Epetra_SerialDenseVector* force) const;  //!< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
+          CORE::LINALG::SerialDenseVector* force) const;  //!< element internal force vector
 
       //! computes stochastic translational forces and resulting stiffness
       template <unsigned int nnodecl, unsigned int vpernode, unsigned int ndim,
           unsigned int randompergauss>
       void EvaluateStochasticForces(Teuchos::ParameterList& params,  //!< parameter list
           const CORE::LINALG::Matrix<ndim * vpernode * nnodecl, 1, double>& disp_totlag_centerline,
-          Epetra_SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
-          Epetra_SerialDenseVector* force) const;  //!< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,   //!< element stiffness matrix
+          CORE::LINALG::SerialDenseVector* force) const;  //!< element internal force vector
 
       //@}
       //! computes modified Jacobian for PTC
-      void CalcStiffContributionsPTC(Epetra_SerialDenseMatrix& elemat1);
+      void CalcStiffContributionsPTC(CORE::LINALG::SerialDenseMatrix& elemat1);
 
      private:
       //! storing temporary stiffness matrix for element based scaling operator in PTC method
-      Epetra_SerialDenseMatrix stiff_ptc_;
+      CORE::LINALG::SerialDenseMatrix stiff_ptc_;
 
       //! bool storing whether automatic differentiation shall be used for this element evaluation
       bool useFAD_;

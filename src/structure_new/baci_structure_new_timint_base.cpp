@@ -1026,8 +1026,9 @@ void STR::TIMINT::Base::OutputErrorNorms()
     case INPAR::STR::byfunct:
     {
       // initialize variables
-      Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-      norms->Scale(0.0);
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> norms =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
+      norms->putScalar(0.0);
 
       // call discretization to evaluate error norms
       Teuchos::ParameterList p;

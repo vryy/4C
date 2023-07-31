@@ -405,10 +405,10 @@ void DRT::ELEMENTS::So_sh18::soh18_lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, N
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned int c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned int c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned int r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned int r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;

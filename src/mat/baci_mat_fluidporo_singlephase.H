@@ -332,7 +332,7 @@ namespace MAT
     INPAR::MAT::MaterialType PoroPhaseLawType() const;
 
     /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-    void FillDoFMatrix(Epetra_SerialDenseMatrix& dofmat, int numphase) const;
+    void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const;
 
     /// evaluate saturation of the phase
     double EvaluateSaturation(

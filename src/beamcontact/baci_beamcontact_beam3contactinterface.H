@@ -132,7 +132,7 @@ namespace CONTACT
 
     virtual const std::vector<CORE::LINALG::Matrix<3, 1>> GetX2() = 0;
 
-    virtual const Epetra_SerialDenseVector GetNormal() = 0;
+    virtual const CORE::LINALG::SerialDenseVector GetNormal() = 0;
 
     virtual CORE::LINALG::Matrix<3, 1, TYPE>* GetNormalOld() = 0;
 
@@ -203,8 +203,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates of both elements at the beginning of a new time step!
     */
-    virtual void UpdateElePos(
-        Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos) = 0;
+    virtual void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
+        CORE::LINALG::SerialDenseMatrix& newele2pos) = 0;
 
     /*
     \brief Update interpolated nodal tangents for tangent smoothing

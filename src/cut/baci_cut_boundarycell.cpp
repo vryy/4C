@@ -20,18 +20,18 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::BoundaryCell::BoundaryCell(
-    const Epetra_SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
+    const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
     : facet_(facet), points_(Teuchos::rcp(new Cycle(points)))
 {
-  xyz_.Shape(3, xyz.N());
+  xyz_.shape(3, xyz.numCols());
 
   /* This is necessary, because it is possible, that the given
-   * Epetra_SerialDenseMatrix has a total row number smaller than 3 (equal the
+   * LINALG::SerialDenseMatrix has a total row number smaller than 3 (equal the
    * actual problem dimension).                              hiermeier 11/16 */
-  for (unsigned c = 0; c < static_cast<unsigned>(xyz.N()); ++c)
+  for (unsigned c = 0; c < static_cast<unsigned>(xyz.numCols()); ++c)
   {
-    std::copy(&xyz(0, c), &xyz(0, c) + xyz.M(), &xyz_(0, c));
-    std::fill(&xyz_(0, c) + xyz.M(), &xyz_(0, c) + 3, 0.0);
+    std::copy(&xyz(0, c), &xyz(0, c) + xyz.numRows(), &xyz_(0, c));
+    std::fill(&xyz_(0, c) + xyz.numRows(), &xyz_(0, c) + 3, 0.0);
   }
 
   // Assign reference position of boundary cell
@@ -53,7 +53,7 @@ void CORE::GEO::CUT::BoundaryCell::TransformLocalCoords(Element* elem1,
     const CORE::LINALG::Matrix<2, 1>& eta, CORE::LINALG::Matrix<3, 1>& x_gp_lin,
     CORE::LINALG::Matrix<3, 1>& normal, double& drs, bool shadow)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::BoundaryCell::TransformLocalCoords" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::BoundaryCell::TransformLocalCoords" );
 
 
   const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<celldistype>::numNodePerElement;
@@ -305,7 +305,7 @@ void CORE::GEO::CUT::ArbitraryBoundaryCell::DumpGmshNormal(std::ofstream& file)
 void CORE::GEO::CUT::Point1BoundaryCell::Normal(
     const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
-  normal.Scale(0.0);
+  normal.putScalar(0.0);
 }
 
 /*----------------------------------------------------------------------------*
@@ -331,7 +331,7 @@ void CORE::GEO::CUT::Tri3BoundaryCell::Normal(
     const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
   // get derivatives at pos
-  CORE::LINALG::Matrix<3, 3> side_xyze(xyz_.A(), true);
+  CORE::LINALG::Matrix<3, 3> side_xyze(xyz_.values(), true);
 
   CORE::LINALG::Matrix<2, 3> deriv;
   CORE::LINALG::Matrix<2, 3> A;
@@ -354,8 +354,8 @@ void CORE::GEO::CUT::Quad4BoundaryCell::Normal(
     const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const
 {
   // get derivatives at pos
-  CORE::LINALG::Matrix<3, 4> side_xyze(xyz_.A(), true);
-  // Position2d<::DRT::Element::quad4> position( side_xyze, xsi );
+  CORE::LINALG::Matrix<3, 4> side_xyze(xyz_.values(), true);
+  // Position2d<DRT::Element::quad4> position( side_xyze, xsi );
   // position.Normal( xsi, normal );
 
   CORE::LINALG::Matrix<2, 4> deriv;
@@ -440,7 +440,7 @@ void CORE::GEO::CUT::ArbitraryBoundaryCell::ElementCenter(CORE::LINALG::Matrix<3
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Point1BoundaryCell::ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint)
 {
-  std::copy(xyz_.A(), xyz_.A() + 3, midpoint.A());
+  std::copy(xyz_.values(), xyz_.values() + 3, midpoint.A());
 }
 
 /*----------------------------------------------------------------------------*

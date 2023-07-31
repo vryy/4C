@@ -235,7 +235,7 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::RegisterVtkOutputDataNames(
 }
 
 bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
-    const std::string& name, Epetra_SerialDenseMatrix& data) const
+    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (prestressStrategy_ != nullptr &&
       name == "mixture_constituent_" + std::to_string(Id()) + "_elasthyper_prestretch")

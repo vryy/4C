@@ -283,11 +283,11 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
       params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
       // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
 
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
       // if (geom.empty()) dserror("evaluation of condition with empty geometry");
@@ -306,11 +306,11 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
         const int eledim = (int)lm.size();
-        elematrix1.Shape(eledim, eledim);
-        elematrix2.Shape(eledim, eledim);
-        elevector1.Size(eledim);
-        elevector2.Size(eledim);
-        elevector3.Size(1);
+        elematrix1.shape(eledim, eledim);
+        elematrix2.shape(eledim, eledim);
+        elevector1.size(eledim);
+        elevector2.size(eledim);
+        elevector3.size(1);
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(
@@ -322,7 +322,7 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
         if (assemblemat1)
         {
           // scale with time integrator dependent value
-          elematrix1.Scale(scStiff * lagraval);
+          elematrix1.scale(scStiff * lagraval);
           systemmatrix1->Assemble(eid, lmstride, elematrix1, lm, lmowner);
         }
         if (assemblemat2)
@@ -331,12 +331,12 @@ void UTILS::Constraint::EvaluateConstraint(Teuchos::ParameterList& params,
           // scale with time integrator dependent value
           std::vector<int> colvec(1);
           colvec[0] = gindex;
-          elevector2.Scale(scConMat);
+          elevector2.scale(scConMat);
           systemmatrix2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
         }
         if (assemblevec1)
         {
-          elevector1.Scale(lagraval);
+          elevector1.scale(lagraval);
           CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
         }
         if (assemblevec3)
@@ -381,11 +381,11 @@ void UTILS::Constraint::InitializeConstraint(
       params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
       // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
 
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
@@ -402,7 +402,7 @@ void UTILS::Constraint::InitializeConstraint(
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
-        elevector3.Size(1);
+        elevector3.size(1);
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(

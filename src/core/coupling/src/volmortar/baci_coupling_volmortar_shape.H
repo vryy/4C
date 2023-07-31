@@ -53,11 +53,11 @@ namespace CORE::VOLMORTAR
         const ::DRT::Element& ele);    ///< element which is considered
 
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
-    double nurbs_Jacobian(W& deriv,                    ///< to be filled with shape function deriv
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+    double nurbs_Jacobian(W& deriv,  ///< to be filled with shape function deriv
+        const U* xi,                 ///< xi coordinates
+        T& weights,                  ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     );
 
     template <class V>
@@ -71,7 +71,7 @@ namespace CORE::VOLMORTAR
         W& deriv,                                     ///< to be filled with shape function values
         const U* xi,                                  ///< xi0 coordinate
         T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     );
 
     template <class V>
@@ -86,7 +86,7 @@ namespace CORE::VOLMORTAR
         W& deriv,                                     ///< to be filled with shape function values
         const U* xi,                                  ///< xi0 coordinate
         T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     );
 
     template <class V>
@@ -102,7 +102,7 @@ namespace CORE::VOLMORTAR
         W& deriv,                                     ///< to be filled with shape function values
         const U* xi,                                  ///< xi0 coordinate
         T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     );
 
     template <class V>
@@ -123,12 +123,12 @@ namespace CORE::VOLMORTAR
 
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
     void volmortar_nurbs_dualshape_function_1D(
-        V& funct,                                      ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+        V& funct,     ///< to be filled with shape function values
+        W& deriv,     ///< to be filled with shape function derivs
+        const U* xi,  ///< xi coordinates
+        T& weights,   ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     );
 
     template <::DRT::Element::DiscretizationType distype, class V, class T>
@@ -140,12 +140,12 @@ namespace CORE::VOLMORTAR
 
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
     void volmortar_nurbs_dualshape_function_2D(
-        V& funct,                                      ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+        V& funct,     ///< to be filled with shape function values
+        W& deriv,     ///< to be filled with shape function derivs
+        const U* xi,  ///< xi coordinates
+        T& weights,   ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     );
 
     template <::DRT::Element::DiscretizationType distype, class V, class T>
@@ -157,12 +157,12 @@ namespace CORE::VOLMORTAR
 
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
     void volmortar_nurbs_dualshape_function_3D(
-        V& funct,                                      ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+        V& funct,     ///< to be filled with shape function values
+        W& deriv,     ///< to be filled with shape function derivs
+        const U* xi,  ///< xi coordinates
+        T& weights,   ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     );
 
     // general evaluation routine for std shape functions
@@ -179,20 +179,20 @@ namespace CORE::VOLMORTAR
         INPAR::VOLMORTAR::DualQuad dualquad = INPAR::VOLMORTAR::dualquad_no_mod);
 
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
-    void nurbs_shape_function(V& funct,               ///< to be filled with shape function values
-        W& deriv,                                     ///< to be filled with shape function derivs
-        const U* xi,                                  ///< xi coordinates
-        T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+    void nurbs_shape_function(V& funct,  ///< to be filled with shape function values
+        W& deriv,                        ///< to be filled with shape function derivs
+        const U* xi,                     ///< xi coordinates
+        T& weights,                      ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     );
 
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
-    void nurbs_dualshape_function(V& funct,            ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+    void nurbs_dualshape_function(V& funct,  ///< to be filled with shape function values
+        W& deriv,                            ///< to be filled with shape function derivs
+        const U* xi,                         ///< xi coordinates
+        T& weights,                          ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     );
     //=====================================================================================
     //=====================================================================================
@@ -511,11 +511,11 @@ namespace CORE::VOLMORTAR
      |  Evaluate Jacobian determinant for NURBS                  farah 09/14|
      *----------------------------------------------------------------------*/
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
-    double nurbs_Jacobian(W& deriv,                    ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+    double nurbs_Jacobian(W& deriv,  ///< to be filled with shape function derivs
+        const U* xi,                 ///< xi coordinates
+        T& weights,                  ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     )
     {
       //! nn_: number of master element nodes
@@ -659,7 +659,7 @@ namespace CORE::VOLMORTAR
         W& deriv,                                     ///< to be filled with shape function derivs
         const U* xi,                                  ///< xi coordinates
         T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     )
     {
       switch (distype)
@@ -758,7 +758,7 @@ namespace CORE::VOLMORTAR
         W& deriv,                                     ///< to be filled with shape function derivs
         const U* xi,                                  ///< xi coordinates
         T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     )
     {
       switch (distype)
@@ -945,7 +945,7 @@ namespace CORE::VOLMORTAR
         W& deriv,                                     ///< to be filled with shape function derivs
         const U* xi,                                  ///< xi coordinates
         T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     )
     {
       switch (distype)
@@ -1187,12 +1187,12 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
     void volmortar_nurbs_dualshape_function_1D(
-        V& funct,                                      ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+        V& funct,     ///< to be filled with shape function values
+        W& deriv,     ///< to be filled with shape function derivs
+        const U* xi,  ///< xi coordinates
+        T& weights,   ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     )
     {
       switch (distype)
@@ -1361,12 +1361,12 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
     void volmortar_nurbs_dualshape_function_2D(
-        V& funct,                                      ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+        V& funct,     ///< to be filled with shape function values
+        W& deriv,     ///< to be filled with shape function derivs
+        const U* xi,  ///< xi coordinates
+        T& weights,   ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     )
     {
       switch (distype)
@@ -1540,12 +1540,12 @@ namespace CORE::VOLMORTAR
      *----------------------------------------------------------------------*/
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
     void volmortar_nurbs_dualshape_function_3D(
-        V& funct,                                      ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+        V& funct,     ///< to be filled with shape function values
+        W& deriv,     ///< to be filled with shape function derivs
+        const U* xi,  ///< xi coordinates
+        T& weights,   ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     )
     {
       switch (distype)
@@ -1919,11 +1919,11 @@ namespace CORE::VOLMORTAR
      |  evaluate NURBS shapes                                    farah 09/14|
      *----------------------------------------------------------------------*/
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
-    void nurbs_shape_function(V& funct,               ///< to be filled with shape function values
-        W& deriv,                                     ///< to be filled with shape function derivs
-        const U* xi,                                  ///< xi coordinates
-        T& weights,                                   ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots  ///< knot vectors
+    void nurbs_shape_function(V& funct,  ///< to be filled with shape function values
+        W& deriv,                        ///< to be filled with shape function derivs
+        const U* xi,                     ///< xi coordinates
+        T& weights,                      ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots  ///< knot vectors
     )
     {
       switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)
@@ -1985,12 +1985,12 @@ namespace CORE::VOLMORTAR
      |  evaluate dual NURBS shapes                               farah 09/14|
      *----------------------------------------------------------------------*/
     template <::DRT::Element::DiscretizationType distype, class V, class W, class U, class T>
-    void nurbs_dualshape_function(V& funct,            ///< to be filled with shape function values
-        W& deriv,                                      ///< to be filled with shape function derivs
-        const U* xi,                                   ///< xi coordinates
-        T& weights,                                    ///< control point weights
-        std::vector<Epetra_SerialDenseVector>& knots,  ///< knot vectors
-        const ::DRT::Element& ele                      ///< element which is considered
+    void nurbs_dualshape_function(V& funct,  ///< to be filled with shape function values
+        W& deriv,                            ///< to be filled with shape function derivs
+        const U* xi,                         ///< xi coordinates
+        T& weights,                          ///< control point weights
+        std::vector<CORE::LINALG::SerialDenseVector>& knots,  ///< knot vectors
+        const ::DRT::Element& ele                             ///< element which is considered
     )
     {
       switch (::CORE::DRT::UTILS::DisTypeToDim<distype>::dim)

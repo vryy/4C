@@ -420,8 +420,8 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::AssembleFpot(Epe
   }
 
   // create copy (Epetra_Vector) of fpot1/2 for CORE::LINALG::Assemble() fcn
-  Epetra_SerialDenseVector fpot1_copy(dim1);
-  Epetra_SerialDenseVector fpot2_copy(dim2);
+  CORE::LINALG::SerialDenseVector fpot1_copy(dim1);
+  CORE::LINALG::SerialDenseVector fpot2_copy(dim2);
   for (int i = 0; i < dim1; i++)
     fpot1_copy[i] = -CORE::FADUTILS::CastToDouble(
         fpot1_(i));  // ATTENTION: negative sign because forces are treated
@@ -513,8 +513,8 @@ void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::AssembleStiffpot
     }
   }
 
-  Epetra_SerialDenseMatrix stiffpot1_copy(dim1, dim1 + dim2);
-  Epetra_SerialDenseMatrix stiffpot2_copy(dim2, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffpot1_copy(dim1, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffpot2_copy(dim2, dim1 + dim2);
 
 #ifndef AUTOMATICDIFF
   for (int j = 0; j < dim1 + dim2; j++)
@@ -672,7 +672,7 @@ std::vector<int> CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::GetG
  *----------------------------------------------------------------------*/
 template <const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::UpdateElePos(
-    Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos)
+    CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos)
 {
   for (int i = 0; i < 3 * numnodalvalues; i++)
   {

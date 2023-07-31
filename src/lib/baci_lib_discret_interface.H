@@ -22,7 +22,6 @@
 class Epetra_Map;
 class Epetra_Comm;
 class Epetra_Vector;
-class Epetra_SerialDenseVector;
 namespace Teuchos
 {
   class ParameterList;
@@ -31,6 +30,7 @@ namespace CORE::LINALG
 {
   class SparseOperator;
   class MapExtractor;
+  class SerialDenseVector;
 }  // namespace CORE::LINALG
 namespace IO
 {
@@ -616,7 +616,7 @@ namespace DRT
      *  \param params   (in): parameters
      *  \param scalars (out): scalars */
     virtual void EvaluateScalars(
-        Teuchos::ParameterList& params, Teuchos::RCP<Epetra_SerialDenseVector> scalars) = 0;
+        Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars) = 0;
 
     /** \brief Compute the nullspace of the discretization
      *

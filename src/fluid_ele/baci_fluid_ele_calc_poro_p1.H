@@ -80,9 +80,11 @@ namespace DRT
       */
       virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
@@ -104,9 +106,11 @@ namespace DRT
       */
       virtual int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
      protected:
@@ -385,10 +389,10 @@ namespace DRT
           ) override;
 
       int ComputeVolume(Teuchos::ParameterList& params,
-          DRT::ELEMENTS::Fluid* ele,            //!< current fluid element
-          DRT::Discretization& discretization,  //!< fluid discretization
-          std::vector<int>& lm,                 //!< location vector for DOF management
-          Epetra_SerialDenseVector& elevec1     //!< reference to element vector to be filled
+          DRT::ELEMENTS::Fluid* ele,                //!< current fluid element
+          DRT::Discretization& discretization,      //!< fluid discretization
+          std::vector<int>& lm,                     //!< location vector for DOF management
+          CORE::LINALG::SerialDenseVector& elevec1  //!< reference to element vector to be filled
           ) override;
     };
   }  // namespace ELEMENTS

@@ -436,7 +436,7 @@ Teuchos::RCP<Epetra_CrsMatrix> MORTAR::Redistribute(const CORE::LINALG::SparseMa
 /*----------------------------------------------------------------------*
  |  Sort points to obtain final clip polygon                  popp 11/08|
  *----------------------------------------------------------------------*/
-int MORTAR::SortConvexHullPoints(bool out, Epetra_SerialDenseMatrix& transformed,
+int MORTAR::SortConvexHullPoints(bool out, CORE::LINALG::SerialDenseMatrix& transformed,
     std::vector<Vertex>& collconvexhull, std::vector<Vertex>& respoly, double& tol)
 {
   //**********************************************************************
@@ -850,8 +850,8 @@ void MORTAR::UTILS::PrepareNURBSElement(DRT::Discretization& discret,
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discret));
 
   Teuchos::RCP<DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
-  std::vector<Epetra_SerialDenseVector> parentknots(dim);
-  std::vector<Epetra_SerialDenseVector> mortarknots(dim - 1);
+  std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
+  std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
   double normalfac = 0.0;
   Teuchos::RCP<DRT::FaceElement> faceele = Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);

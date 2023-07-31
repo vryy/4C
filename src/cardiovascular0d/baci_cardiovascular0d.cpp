@@ -321,8 +321,8 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
 
-      Epetra_SerialDenseVector elevector;
-      elevector.Size(eledim);
+      CORE::LINALG::SerialDenseVector elevector;
+      elevector.size(eledim);
 
       DRT::Element* element = curr->second.get();
       int numnode = element->NumNode();
@@ -332,7 +332,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       CORE::LINALG::SerialDenseMatrix deriv(2, numnode);
       CORE::LINALG::SerialDenseMatrix xc;
 
-      xc.LightShape(numnode, 3);
+      xc.shape(numnode, 3);
 
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement new'");
       Teuchos::RCP<const Epetra_Vector> curdispl = actdisc_->GetState("displacement");
@@ -380,7 +380,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
       for (int gp = 0; gp < intpoints.nquad; gp++)
       {
         // set gausspoints from integration rule
-        Epetra_SerialDenseVector e(2);
+        CORE::LINALG::SerialDenseVector e(2);
         e(0) = intpoints.qxg[gp][0];
         e(1) = intpoints.qxg[gp][1];
 
@@ -398,7 +398,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         // note that the length of this normal is the area dA
         // compute dXYZ / drs
         CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-        dxyzdrs.Multiply('N', 'N', 1.0, deriv, xc, 0.0);
+        dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, xc, 0.0);
 
         normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
         normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -471,7 +471,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
           break;
       }
 
-      elevector.Scale(sc_strtimint);
+      elevector.scale(sc_strtimint);
       sysmat->Assemble(eid, lmstride, elevector, lm, lmowner, colvec);
     }
   }

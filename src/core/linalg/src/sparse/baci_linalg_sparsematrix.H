@@ -167,40 +167,41 @@ namespace CORE::LINALG
     //@{
 
     /// set all matrix entries to zero
-    void Zero();
+    void Zero() override;
 
     /// throw away the matrix and its graph and start anew
-    void Reset();
+    void Reset() override;
 
     /// destroy the underlying Epetra objects
     virtual bool Destroy(bool throw_exception = true);
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    virtual void Assemble(int eid, const std::vector<int>& lmstride,
-        const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lm,
-        const std::vector<int>& lmowner)
+    void Assemble(int eid, const std::vector<int>& lmstride,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lm,
+        const std::vector<int>& lmowner) override
     {
       Assemble(eid, lmstride, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    virtual void Assemble(int eid, const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lm,
-        const std::vector<int>& lmowner)
+    virtual void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix& Aele,
+        const std::vector<int>& lm, const std::vector<int>& lmowner)
     {
       Assemble(eid, Aele, lm, lmowner, lm);
     }
 
     /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid, const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+    void Assemble(int eid, const std::vector<int>& lmstride,
+        const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol) override;
+
+    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
+    void Assemble(int eid, const CORE::LINALG::SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
         const std::vector<int>& lmcol);
 
-    /// assemble method for Epetra_CrsMatrices, if ONLY local values are assembled
-    void Assemble(int eid, const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
-        const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
-
     /// single value assemble used by BlockSparseMatrix
-    void Assemble(double val, int rgid, int cgid);
+    void Assemble(double val, int rgid, int cgid) override;
 
 
     /*
@@ -227,7 +228,7 @@ namespace CORE::LINALG
       values are set. This is needed if the method is called in a loop over
       column elements (which is the standard in baci) to avoid multiple same entries.
      */
-    void FEAssemble(const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmrowowner, const std::vector<int>& lmcol);
 
     /*!
@@ -238,7 +239,7 @@ namespace CORE::LINALG
       values to their owning procs, such that FillComplete can be safely
       called on this matrix.
      */
-    void FEAssemble(const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+    void FEAssemble(const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
         const std::vector<int>& lmcol);
 
     /*!
@@ -272,9 +273,9 @@ namespace CORE::LINALG
     void Complete(const Epetra_Map& domainmap, const Epetra_Map& rangemap,
         bool enforce_complete = false) override;
 
-    void UnComplete();
+    void UnComplete() override;
 
-    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true);
+    void ApplyDirichlet(const Epetra_Vector& dbctoggle, bool diagonalblock = true) override;
 
     /// Apply dirichlet boundary condition to a matrix.
     ///
@@ -285,7 +286,7 @@ namespace CORE::LINALG
     ///  matrix was symmetric. However, the blanking of columns is computationally
     ///  quite expensive, because the matrix is stored in a sparse and distributed
     ///  manner.
-    void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock = true);
+    void ApplyDirichlet(const Epetra_Map& dbctoggle, bool diagonalblock = true) override;
 
     /// Apply dirichlet boundary condition to a matrix using a #trafo matrix
     ///
@@ -332,7 +333,7 @@ namespace CORE::LINALG
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 
@@ -346,7 +347,7 @@ namespace CORE::LINALG
     Teuchos::RCP<SparseMatrix> Transpose();
 
     /// derived
-    virtual int ReplaceRowMap(const Epetra_BlockMap& newmap);
+    int ReplaceRowMap(const Epetra_BlockMap& newmap) override;
 
     using SparseMatrixBase::Add;
 

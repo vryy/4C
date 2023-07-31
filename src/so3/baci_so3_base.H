@@ -163,15 +163,17 @@ namespace DRT
       virtual void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
-          const double* concentration, double* d_cauchyndir_dc)
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc)
       {
         dserror("not implemented for chosen solid element");
       }
@@ -236,15 +238,17 @@ namespace DRT
       virtual void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<2, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<2, 1>& n,
           const CORE::LINALG::Matrix<2, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
           CORE::LINALG::Matrix<2, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<2, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<2, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
-          const double* concentration, double* d_cauchyndir_dc)
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc)
       {
         dserror("not implemented for chosen solid element");
       }

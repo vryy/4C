@@ -188,7 +188,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
   static std::vector<double> disp;
   static std::vector<double> ivel;
   DRT::Element* fluidele = NULL;
-  Epetra_SerialDenseMatrix ele_xyze;
+  CORE::LINALG::SerialDenseMatrix ele_xyze;
   double pres_m;
   static CORE::LINALG::Matrix<3, 1> vel_m;
   static CORE::LINALG::Matrix<3, 1> vel_s;
@@ -299,10 +299,10 @@ bool XFEM::XFluid_Contact_Comm::Get_Contact_State(int sid,      // Solid Surface
 void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
     const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
     const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
-    Epetra_SerialDenseMatrix& ele_xyze, std::vector<double>& velpres, std::vector<double>& disp,
-    std::vector<double>& ivel, double& pres_m, CORE::LINALG::Matrix<3, 1>& vel_m,
-    CORE::LINALG::Matrix<3, 1>& vel_s, CORE::LINALG::Matrix<3, 3>& vderxy_m,
-    CORE::LINALG::Matrix<3, 1>& velpf_s)
+    CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
+    std::vector<double>& disp, std::vector<double>& ivel, double& pres_m,
+    CORE::LINALG::Matrix<3, 1>& vel_m, CORE::LINALG::Matrix<3, 1>& vel_s,
+    CORE::LINALG::Matrix<3, 3>& vderxy_m, CORE::LINALG::Matrix<3, 1>& velpf_s)
 {
   fluidele = fluiddis_->gElement(fluidele_id);
   DRT::ELEMENTS::Fluid* ffluidele = dynamic_cast<DRT::ELEMENTS::Fluid*>(fluidele);
@@ -343,7 +343,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
 
   // 2 // get element xyze
   /// element coordinates in EpetraMatrix
-  ele_xyze.Shape(3, fluidele->NumNode());
+  ele_xyze.shape(3, fluidele->NumNode());
   for (int i = 0; i < fluidele->NumNode(); ++i)
   {
     for (int j = 0; j < 3; j++)
@@ -360,7 +360,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
     CORE::LINALG::Matrix<3, 1> fluidele_xsi(true);
     if (fluidele->Shape() == DRT::Element::hex8)
     {
-      CORE::LINALG::Matrix<3, 8> xyze(ele_xyze.A(), true);
+      CORE::LINALG::Matrix<3, 8> xyze(ele_xyze.values(), true);
       // find element local position of gauss point
       Teuchos::RCP<CORE::GEO::CUT::Position> pos =
           CORE::GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::hex8>(xyze, x);
@@ -445,7 +445,7 @@ void XFEM::XFluid_Contact_Comm::Get_States(const int fluidele_id, const std::vec
 }
 
 void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
-    CORE::GEO::CUT::VolumeCell* volumecell, Epetra_SerialDenseMatrix& ele_xyze,
+    CORE::GEO::CUT::VolumeCell* volumecell, CORE::LINALG::SerialDenseMatrix& ele_xyze,
     const CORE::LINALG::Matrix<3, 1>& elenormal, double& penalty_fac,
     const CORE::LINALG::Matrix<3, 1>& vel_m)
 {
@@ -677,11 +677,11 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
     const int numnodes =
         CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
 
-    Epetra_SerialDenseMatrix xyze_m;
+    CORE::LINALG::SerialDenseMatrix xyze_m;
     CORE::LINALG::Matrix<numnodes, 1> funct(false);
 
     sidehandle->Coordinates(xyze_m);
-    CORE::LINALG::Matrix<3, numnodes> xyze(xyze_m.A(), true);
+    CORE::LINALG::Matrix<3, numnodes> xyze(xyze_m.values(), true);
     CORE::DRT::UTILS::shape_function_2D(funct, xsi(0), xsi(1), DRT::Element::quad4);
     x.Multiply(xyze, funct);
   }
@@ -985,11 +985,11 @@ CORE::GEO::CUT::Side* XFEM::XFluid_Contact_Comm::FindnextPhysicalSide(CORE::LINA
     dserror("Couldn't get Sidehandle for side %f", newSide->Id());
   }
 
-  Epetra_SerialDenseMatrix xyzs;
+  CORE::LINALG::SerialDenseMatrix xyzs;
   sidehandle->Coordinates(xyzs);
   if (sidehandle->Shape() == DRT::Element::quad4)
   {
-    CORE::LINALG::Matrix<3, 4> xyze(xyzs.A(), true);
+    CORE::LINALG::Matrix<3, 4> xyze(xyzs.values(), true);
     Teuchos::RCP<CORE::GEO::CUT::Position> pos =
         CORE::GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::quad4>(xyze, newx);
     pos->Compute(1e-15, true);
@@ -1108,8 +1108,8 @@ std::vector<CORE::GEO::CUT::Side*> XFEM::XFluid_Contact_Comm::GetNewNeighboringS
         }
         if (common_nodes == -1) continue;  // we assigned already a side with the same id
 
-        Epetra_SerialDenseMatrix xyze1;
-        Epetra_SerialDenseMatrix xyze2;
+        CORE::LINALG::SerialDenseMatrix xyze1;
+        CORE::LINALG::SerialDenseMatrix xyze2;
         CORE::GEO::CUT::SideHandle* sh1 = cutwizard_->GetCutSide(side->Id());
         CORE::GEO::CUT::SideHandle* sh2 = cutwizard_->GetCutSide(s->Id());
 
@@ -1203,14 +1203,14 @@ void XFEM::XFluid_Contact_Comm::RegisterSideProc(int sid)
 
 
 void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
-    int sid, Epetra_SerialDenseMatrix& coords, std::vector<double>& weights, int& npg)
+    int sid, CORE::LINALG::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg)
 {
   CORE::GEO::CUT::SideHandle* sh = cutwizard_->GetCutSide(GetSurfSid(sid));
   if (!sh) dserror("Couldn't get SideHandle!");
   if (sh->Shape() != DRT::Element::quad4) dserror("Not a quad4!");
   const int numnodes_sh =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
-  Epetra_SerialDenseMatrix xquad;
+  CORE::LINALG::SerialDenseMatrix xquad;
   sh->Coordinates(xquad);
   CORE::LINALG::Matrix<2, numnodes_sh> deriv(false);
   CORE::LINALG::Matrix<2, 2> metrictensor(false);
@@ -1221,7 +1221,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
   sh->CollectSides(subsides);
   std::vector<Teuchos::RCP<CORE::GEO::CUT::Tri3BoundaryCell>> bcs;
 
-  Epetra_SerialDenseMatrix tcoords(3, 3);
+  CORE::LINALG::SerialDenseMatrix tcoords(3, 3);
   for (CORE::GEO::CUT::plain_side_set::iterator sit = subsides.begin(); sit != subsides.end();
        ++sit)
   {
@@ -1235,7 +1235,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
       {
         for (std::size_t triangle = 0; triangle < facet->Triangulation().size(); ++triangle)
         {
-          double* coord = tcoords.A();
+          double* coord = tcoords.values();
           for (std::vector<CORE::GEO::CUT::Point*>::const_iterator tp =
                    facet->Triangulation()[triangle].begin();
                tp != facet->Triangulation()[triangle].end(); ++tp)
@@ -1254,7 +1254,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
           {
             std::vector<CORE::GEO::CUT::Point*> points = facet->Triangulation()[triangle];
             std::reverse(points.begin(), points.end());
-            double* coord = tcoords.A();
+            double* coord = tcoords.values();
             for (std::vector<CORE::GEO::CUT::Point*>::const_iterator tp =
                      facet->Triangulation()[triangle].end() - 1;
                  tp != facet->Triangulation()[triangle].begin() - 1; --tp)
@@ -1271,7 +1271,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
       }
       else if (facet->Points().size() == 3)
       {
-        facet->Coordinates(tcoords.A());
+        facet->Coordinates(tcoords.values());
         Teuchos::RCP<CORE::GEO::CUT::Tri3BoundaryCell> tmp_bc =
             Teuchos::rcp(new CORE::GEO::CUT::Tri3BoundaryCell(tcoords, facet, facet->Points()));
         tmp_bc->Normal(CORE::LINALG::Matrix<2, 1>(true), normal_bc);
@@ -1281,7 +1281,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         {
           std::vector<CORE::GEO::CUT::Point*> points = facet->Points();
           std::reverse(points.begin(), points.end());
-          double* coord = tcoords.A();
+          double* coord = tcoords.values();
           for (std::vector<CORE::GEO::CUT::Point*>::const_iterator tp = facet->Points().end() - 1;
                tp != facet->Points().begin() - 1; --tp)
           {
@@ -1315,7 +1315,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
       }
       else if (side->NumNodes() == 3)
       {
-        side->Coordinates(tcoords.A());
+        side->Coordinates(tcoords.values());
         std::vector<CORE::GEO::CUT::Point*> points;
         for (unsigned p = 0; p < side->NumNodes(); ++p) points.push_back(side->Nodes()[p]->point());
         Teuchos::RCP<CORE::GEO::CUT::Tri3BoundaryCell> tmp_bc =
@@ -1327,7 +1327,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         {
           std::vector<CORE::GEO::CUT::Point*> tmp_points = points;
           std::reverse(tmp_points.begin(), tmp_points.end());
-          double* coord = tcoords.A();
+          double* coord = tcoords.values();
           for (std::vector<CORE::GEO::CUT::Node*>::const_iterator tp = side->Nodes().end() - 1;
                tp != side->Nodes().begin() - 1; --tp)
           {
@@ -1357,7 +1357,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
     CORE::DRT::UTILS::GaussIntegration gi = bcs[bc]->gaussRule(cutwizard_->Get_BC_Cubaturedegree());
     if (gi.NumPoints())
     {
-      coords.Reshape(weights.size() + gi.NumPoints(), 2);
+      coords.reshape(weights.size() + gi.NumPoints(), 2);
       int idx = weights.size();
       for (CORE::DRT::UTILS::GaussIntegration::iterator iquad = gi.begin(); iquad != gi.end();
            ++iquad)
@@ -1366,7 +1366,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bcs[bc].getRawPtr(), eta);
 
         // find element local position of gauss point
-        const CORE::LINALG::Matrix<3, numnodes_sh> xquad_m(xquad.A(), true);
+        const CORE::LINALG::Matrix<3, numnodes_sh> xquad_m(xquad.values(), true);
         Teuchos::RCP<CORE::GEO::CUT::Position> pos =
             CORE::GEO::CUT::PositionFactory::BuildPosition<3, DRT::Element::quad4>(
                 xquad_m, x_gp_lin);
@@ -1474,13 +1474,13 @@ void XFEM::XFluid_Contact_Comm::Create_New_Gmsh_files()
     std::ofstream file(str.str().c_str());
     for (std::size_t section = 0; section < sections.size(); ++section)
     {
-      GEO::CUT::OUTPUT::GmshNewSection(file, sections[section], false);
+      CORE::GEO::CUT::OUTPUT::GmshNewSection(file, sections[section], false);
       for (std::size_t entry = 0; entry < (plot_data_[section]).size(); ++entry)
       {
-        GEO::CUT::OUTPUT::GmshCoordDump(
+        CORE::GEO::CUT::OUTPUT::GmshCoordDump(
             file, (plot_data_[section])[entry].first, (plot_data_[section])[entry].second);
       }
-      GEO::CUT::OUTPUT::GmshEndSection(file, false);
+      CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
     }
     file.close();
   }

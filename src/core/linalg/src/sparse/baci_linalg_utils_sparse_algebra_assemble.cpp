@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*
  |  assemble a matrix                                         popp 01/08|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
+void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDenseMatrix& Aele,
     const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
     const std::vector<int>& lmcol)
 {
@@ -21,7 +21,7 @@ void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix&
   const int lcoldim = (int)lmcol.size();
   // allow Aele to provide entries past the end of lmrow and lmcol that are
   // not used here, therefore check only for ">" rather than "!="
-  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.M() || lcoldim > Aele.N())
+  if (lrowdim != (int)lmrowowner.size() || lrowdim > Aele.numRows() || lcoldim > Aele.numCols())
     dserror("Mismatch in dimensions");
 
   const int myrank = A.Comm().MyPID();
@@ -62,19 +62,18 @@ void CORE::LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix&
       }  // for (int lcol=0; lcol<lcoldim; ++lcol)
     }    // for (int lrow=0; lrow<lrowdim; ++lrow)
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector                                        mwgee 12/06|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
+void CORE::LINALG::Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVector& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   const int ldim = (int)lm.size();
   // allow Vele to provide entries past the end of lm that are not used here,
   // therefore check only for ">" rather than "!="
-  if (ldim != (int)lmowner.size() || ldim > Vele.Length()) dserror("Mismatch in dimensions");
+  if (ldim != (int)lmowner.size() || ldim > Vele.length()) dserror("Mismatch in dimensions");
 
   const int myrank = V.Comm().MyPID();
 
@@ -86,8 +85,6 @@ void CORE::LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Ve
     int rlid = V.Map().LID(rgid);
     V[rlid] += Vele[lrow];
   }  // for (int lrow=0; lrow<ldim; ++lrow)
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*
@@ -116,9 +113,8 @@ void CORE::LINALG::AssembleMyVector(
 void CORE::LINALG::Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele,
     const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
-  const Epetra_SerialDenseVector VeleNew(::View, &(Vele(0)), 3);
+  const CORE::LINALG::SerialDenseVector VeleNew(Teuchos::View, &(Vele(0)), 3);
   CORE::LINALG::Assemble(V, VeleNew, lm, lmowner);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -129,7 +125,6 @@ void CORE::LINALG::Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele,
 {
   const std::vector<int> lmownerNew(3, lmowner);
   CORE::LINALG::Assemble(V, Vele, lm, lmownerNew);
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -137,22 +132,20 @@ void CORE::LINALG::Assemble(Epetra_Vector& V, CORE::LINALG::Matrix<3, 1>& Vele,
  *----------------------------------------------------------------------*/
 void CORE::LINALG::Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner)
 {
-  const Epetra_SerialDenseVector VeleNew(::View, &Vele, 1);
+  const CORE::LINALG::SerialDenseVector VeleNew(Teuchos::View, &Vele, 1);
   const std::vector<int> lmNew(1, lm);
   const std::vector<int> lmownerNew(1, lmowner);
   CORE::LINALG::Assemble(V, VeleNew, lmNew, lmownerNew);
-  return;
 }
 
 /*----------------------------------------------------------------------*
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
 void CORE::LINALG::Assemble(Epetra_MultiVector& V, const int n,
-    const Epetra_SerialDenseVector& Vele, const std::vector<int>& lm,
+    const CORE::LINALG::SerialDenseVector& Vele, const std::vector<int>& lm,
     const std::vector<int>& lmowner)
 {
   CORE::LINALG::Assemble(*(V(n)), Vele, lm, lmowner);
-  return;
 }
 
 /*----------------------------------------------------------------------*

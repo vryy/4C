@@ -77,7 +77,7 @@ namespace CORE::DRT::UTILS
                  0         3           0         1
           */
 
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[1];
             pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -104,7 +104,7 @@ namespace CORE::DRT::UTILS
                   +-------+             +-------+
                  0         1           0         1
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = -1.0;
@@ -131,7 +131,7 @@ namespace CORE::DRT::UTILS
                   +-------+             +-------+
                  1         2           0         1
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
             pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -158,7 +158,7 @@ namespace CORE::DRT::UTILS
                   +-------+             +-------+
                  2         3           0         1
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = 1.0;
@@ -185,7 +185,7 @@ namespace CORE::DRT::UTILS
                   +-------+             +-------+
                  0         4           0         1
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
             pqxg(iquad, 1) = intpoints.Point(iquad)[1];
@@ -212,7 +212,7 @@ namespace CORE::DRT::UTILS
                   +-------+             +-------+
                  4         5           0         1
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = intpoints.Point(iquad)[1];
@@ -246,7 +246,7 @@ namespace CORE::DRT::UTILS
                   +---+---+             +---+---+
                  0   1   2             0   1   2
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = intpoints.Point(iquad)[1];
@@ -272,7 +272,7 @@ namespace CORE::DRT::UTILS
                   +---+---+             +---+---+
                 18  19  20             0   1   2
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = intpoints.Point(iquad)[1];
@@ -299,7 +299,7 @@ namespace CORE::DRT::UTILS
                  0   1   2             0   1   2
           */
 
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = -1.0;
@@ -325,7 +325,7 @@ namespace CORE::DRT::UTILS
                   +---+---+             +---+---+
                  6   7   8             0   1   2
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = 1.0;
@@ -351,7 +351,7 @@ namespace CORE::DRT::UTILS
                   +---+---+             +---+---+
                  2   5   8             0   1   2
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
             pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -377,7 +377,7 @@ namespace CORE::DRT::UTILS
                   +---+---+             +---+---+
                  0   3   6             0   1   2
           */
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
             pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -400,7 +400,7 @@ namespace CORE::DRT::UTILS
         case 0:
         {
           // s=0
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[0];
             pqxg(iquad, 1) = 0.0;
@@ -414,7 +414,7 @@ namespace CORE::DRT::UTILS
         case 1:
         {
           // r+s+t=1
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0 - intpoints.Point(iquad)[0] - intpoints.Point(iquad)[1];
             pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -432,7 +432,7 @@ namespace CORE::DRT::UTILS
         case 2:
         {
           // r=0
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.0;
             pqxg(iquad, 1) = intpoints.Point(iquad)[1];
@@ -446,7 +446,7 @@ namespace CORE::DRT::UTILS
         case 3:
         {
           // t=0
-          for (int iquad = 0; iquad < pqxg.M(); ++iquad)
+          for (int iquad = 0; iquad < pqxg.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints.Point(iquad)[1];
             pqxg(iquad, 1) = intpoints.Point(iquad)[0];
@@ -514,7 +514,7 @@ namespace CORE::DRT::UTILS
     ----------------------------------------------------------------------------------*/
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
-      Epetra_SerialDenseMatrix& derivtrafo,
+      CORE::LINALG::SerialDenseMatrix& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<NSD - 1>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
@@ -522,7 +522,7 @@ namespace CORE::DRT::UTILS
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      Epetra_SerialDenseMatrix& derivtrafo,
+      CORE::LINALG::SerialDenseMatrix& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<2>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
@@ -530,7 +530,7 @@ namespace CORE::DRT::UTILS
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      Epetra_SerialDenseMatrix& derivtrafo,
+      CORE::LINALG::SerialDenseMatrix& derivtrafo,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<1>& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
@@ -564,21 +564,21 @@ namespace CORE::DRT::UTILS
 
   template <const int NSD>
   void BoundaryGPToParentGP(CORE::LINALG::SerialDenseMatrix& pqxg,
-      Epetra_SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
+      CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 3D
   template <>
   void BoundaryGPToParentGP<3>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      Epetra_SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
+      CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
   //! specialization for 2D
   template <>
   void BoundaryGPToParentGP<2>(CORE::LINALG::SerialDenseMatrix& pqxg,
-      Epetra_SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
+      CORE::LINALG::SerialDenseMatrix& derivtrafo, const GaussPoints& intpoints,
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid);
 
@@ -619,8 +619,8 @@ namespace CORE::DRT::UTILS
       const double* faceele_xi, const ::DRT::FaceElement* faceele);
 
   //! compute covariant metric tensor for surface element
-  void ComputeMetricTensorForSurface(const Epetra_SerialDenseMatrix& xyze,
-      const Epetra_SerialDenseMatrix& deriv, Epetra_SerialDenseMatrix& metrictensor,
+  void ComputeMetricTensorForSurface(const CORE::LINALG::SerialDenseMatrix& xyze,
+      const CORE::LINALG::SerialDenseMatrix& deriv, CORE::LINALG::SerialDenseMatrix& metrictensor,
       double* sqrtdetg);
 
   //! compute covariant metric tensor for surface/line element and optionally, the normalized
@@ -789,12 +789,13 @@ namespace CORE::DRT::UTILS
          in weak dirichlet boundary conditions).
          2D-version
     -----------------------------------------------------------------*/
-  inline void BoundaryGPToParentGP2(Epetra_SerialDenseMatrix& pqxg,
-      const Epetra_SerialDenseMatrix& intpoints, const ::DRT::Element::DiscretizationType pdistype,
+  inline void BoundaryGPToParentGP2(CORE::LINALG::SerialDenseMatrix& pqxg,
+      const CORE::LINALG::SerialDenseMatrix& intpoints,
+      const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int beleid)
   {
     // resize output array
-    pqxg.Shape(intpoints.M(), 2);
+    pqxg.shape(intpoints.numRows(), 2);
 
     if ((distype == ::DRT::Element::line2 && pdistype == ::DRT::Element::quad4) or
         (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::quad8) or
@@ -833,7 +834,7 @@ namespace CORE::DRT::UTILS
           0   1   2             0   1   2
 
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = -1.0;
@@ -873,7 +874,7 @@ namespace CORE::DRT::UTILS
             +                     +
            2                     0
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -911,7 +912,7 @@ namespace CORE::DRT::UTILS
 
           */
 
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -intpoints(iquad, 0);
             pqxg(iquad, 1) = 1.0;
@@ -951,7 +952,7 @@ namespace CORE::DRT::UTILS
             +                            +
            0                            0
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
             pqxg(iquad, 1) = -intpoints(iquad, 0);
@@ -969,7 +970,7 @@ namespace CORE::DRT::UTILS
       {
         case 0:
         {
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.5 + 0.5 * intpoints(iquad, 0);
             pqxg(iquad, 1) = 0.0;
@@ -978,7 +979,7 @@ namespace CORE::DRT::UTILS
         }
         case 1:
         {
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.5 - 0.5 * intpoints(iquad, 0);
             pqxg(iquad, 1) = 0.5 + 0.5 * intpoints(iquad, 0);  // r+s=1.0 -> s= 1.0-r
@@ -987,7 +988,7 @@ namespace CORE::DRT::UTILS
         }
         case 2:
         {
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.0;
             pqxg(iquad, 1) = 0.5 - 0.5 * intpoints(iquad, 0);
@@ -1014,7 +1015,7 @@ namespace CORE::DRT::UTILS
           0   1   2             0   1   2
 
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = -1.0;
@@ -1036,7 +1037,7 @@ namespace CORE::DRT::UTILS
              +                     +
             2                     0
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1056,7 +1057,7 @@ namespace CORE::DRT::UTILS
 
           */
 
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = 1.0;
@@ -1078,7 +1079,7 @@ namespace CORE::DRT::UTILS
             +                            +
            0                            0
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1103,12 +1104,13 @@ namespace CORE::DRT::UTILS
          in weak dirichlet boundary conditions).
          3D-version
     -----------------------------------------------------------------*/
-  inline void BoundaryGPToParentGP3(Epetra_SerialDenseMatrix& pqxg,
-      const Epetra_SerialDenseMatrix& intpoints, const ::DRT::Element::DiscretizationType pdistype,
+  inline void BoundaryGPToParentGP3(CORE::LINALG::SerialDenseMatrix& pqxg,
+      const CORE::LINALG::SerialDenseMatrix& intpoints,
+      const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int beleid)
   {
     // resize output array
-    pqxg.Shape(intpoints.M(), 3);
+    pqxg.shape(intpoints.numRows(), 3);
 
     if ((distype == ::DRT::Element::quad4 && pdistype == ::DRT::Element::hex8) or
         (distype == ::DRT::Element::quad8 && pdistype == ::DRT::Element::hex20) or
@@ -1133,7 +1135,7 @@ namespace CORE::DRT::UTILS
                0         3           0         1
           */
 
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 1);
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1156,7 +1158,7 @@ namespace CORE::DRT::UTILS
                 +-------+             +-------+
                0         1           0         1
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = -1.0;
@@ -1180,7 +1182,7 @@ namespace CORE::DRT::UTILS
                 +-------+             +-------+
                1         2           0         1
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1204,7 +1206,7 @@ namespace CORE::DRT::UTILS
                 +-------+             +-------+
                2         3           0         1
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -intpoints(iquad, 0);
             pqxg(iquad, 1) = 1.0;
@@ -1228,7 +1230,7 @@ namespace CORE::DRT::UTILS
                 +-------+             +-------+
                0         4           0         1
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
             pqxg(iquad, 1) = intpoints(iquad, 1);
@@ -1252,7 +1254,7 @@ namespace CORE::DRT::UTILS
                 +-------+             +-------+
                4         5           0         1
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = intpoints(iquad, 1);
@@ -1271,7 +1273,7 @@ namespace CORE::DRT::UTILS
       {
         case 0:
         {
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = 0.0;
@@ -1281,7 +1283,7 @@ namespace CORE::DRT::UTILS
         }
         case 1:
         {
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0 - intpoints(iquad, 0) - intpoints(iquad, 1);
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1291,7 +1293,7 @@ namespace CORE::DRT::UTILS
         }
         case 2:
         {
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.0;
             pqxg(iquad, 1) = intpoints(iquad, 1);
@@ -1301,7 +1303,7 @@ namespace CORE::DRT::UTILS
         }
         case 3:
         {
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 1);
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1335,7 +1337,7 @@ namespace CORE::DRT::UTILS
                      0         1           0         1
            */
 
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -0.5 * intpoints(iquad, 0) + 0.5;
             pqxg(iquad, 1) = 0.5 * intpoints(iquad, 0) + 0.5;
@@ -1358,7 +1360,7 @@ namespace CORE::DRT::UTILS
                       +-------+             +-------+
                      1         2           0         1
            */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.0;
             pqxg(iquad, 1) = -0.5 * intpoints(iquad, 0) + 0.5;
@@ -1382,7 +1384,7 @@ namespace CORE::DRT::UTILS
                       +-------+             +-------+
                      2         0           0         1
            */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 0.5 * intpoints(iquad, 0) + 0.5;
             pqxg(iquad, 1) = 0.0;
@@ -1404,7 +1406,7 @@ namespace CORE::DRT::UTILS
         case 3:
         {
           // t=-1.0
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 1);
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1415,7 +1417,7 @@ namespace CORE::DRT::UTILS
         case 4:
         {
           // t=1.0
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = intpoints(iquad, 1);
@@ -1448,7 +1450,7 @@ namespace CORE::DRT::UTILS
                 +---+---+             +---+---+
                0   1   2             0   1   2
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = intpoints(iquad, 1);
@@ -1471,7 +1473,7 @@ namespace CORE::DRT::UTILS
                 +---+---+             +---+---+
               18  19  20             0   1   2
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = intpoints(iquad, 1);
@@ -1495,7 +1497,7 @@ namespace CORE::DRT::UTILS
                0   1   2             0   1   2
           */
 
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = -1.0;
@@ -1518,7 +1520,7 @@ namespace CORE::DRT::UTILS
                 +---+---+             +---+---+
                6   7   8             0   1   2
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = intpoints(iquad, 0);
             pqxg(iquad, 1) = 1.0;
@@ -1541,7 +1543,7 @@ namespace CORE::DRT::UTILS
                 +---+---+             +---+---+
                2   5   8             0   1   2
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = 1.0;
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1564,7 +1566,7 @@ namespace CORE::DRT::UTILS
                 +---+---+             +---+---+
                0   3   6             0   1   2
           */
-          for (int iquad = 0; iquad < intpoints.M(); ++iquad)
+          for (int iquad = 0; iquad < intpoints.numRows(); ++iquad)
           {
             pqxg(iquad, 0) = -1.0;
             pqxg(iquad, 1) = intpoints(iquad, 0);
@@ -1611,8 +1613,8 @@ namespace CORE::DRT::UTILS
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
       const ::CORE::DRT::UTILS::IntPointsAndWeights<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim>&
           intpoints,
-      const int gpid, const std::vector<Epetra_SerialDenseVector>* myknots,
-      const Epetra_SerialDenseVector* weights, const bool isnurbs)
+      const int gpid, const std::vector<CORE::LINALG::SerialDenseVector>* myknots,
+      const CORE::LINALG::SerialDenseVector* weights, const bool isnurbs)
   {
     // Obtain number of spatial dimensions of boundary element
     const int bdrynsd = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1663,8 +1665,9 @@ namespace CORE::DRT::UTILS
       double& drs, CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim, 1>& xsi,
       CORE::LINALG::Matrix<::CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1,
           ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>& xyze,
-      ::DRT::Element* ele, ::DRT::Discretization& discretization, Epetra_SerialDenseVector& elevec1,
-      const std::vector<double>& edispnp, const bool isnurbs, const bool isale)
+      ::DRT::Element* ele, ::DRT::Discretization& discretization,
+      CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp,
+      const bool isnurbs, const bool isale)
   {
     /*----------------------------------------------------------------------*
      |                          Initialization                              |

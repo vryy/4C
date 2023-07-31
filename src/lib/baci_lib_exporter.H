@@ -210,7 +210,7 @@ namespace DRT
                                 On output, the map has a distribution of
                                 TargetMap().
     */
-    void Export(std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& data);
+    void Export(std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& data);
 
     /**@}*/
     /*!

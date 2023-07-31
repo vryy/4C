@@ -199,7 +199,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForce()
       for (unsigned int i = 0; i < 2; ++i)
       {
         elegids[i] = elepairptr->GetEleGid(i);
-        bspotforce[i].Zero();
+        bspotforce[i].putScalar(0.0);
       }
 
       // evaluate beam linkage object to get forces of binding spots
@@ -259,7 +259,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateStiff()
       {
         elegids[i] = elepairptr->GetEleGid(i);
 
-        for (unsigned int j = 0; j < 2; ++j) bspotstiff[i][j].Zero();
+        for (unsigned int j = 0; j < 2; ++j) bspotstiff[i][j].putScalar(0.0);
       }
 
       // evaluate beam linkage object to get linearizations of forces on binding spots
@@ -321,9 +321,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForceStiff()
       for (unsigned int i = 0; i < 2; ++i)
       {
         elegids[i] = elepairptr->GetEleGid(i);
-        bspotforce[i].Zero();
+        bspotforce[i].putScalar(0.0);
 
-        for (int j = 0; j < 2; ++j) bspotstiff[i][j].Zero();
+        for (int j = 0; j < 2; ++j) bspotstiff[i][j].putScalar(0.0);
       }
 
       // evaluate beam linkage object to get forces on binding spots
@@ -1091,7 +1091,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::
   // we do not need to calculate the forces again.
   CORE::LINALG::SerialDenseVector bspotforce_one(6);
   linkelepairptr->GetBindingSpotForce(1, bspotforce_one);
-  double f = bspotforce_one.Norm2();
+  double f = CORE::LINALG::Norm2(bspotforce_one);
 
 
   // check if linker is stretched -> sgn+ or compressed -> sgn- by checking orientation of force

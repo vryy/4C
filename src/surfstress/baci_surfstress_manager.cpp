@@ -207,13 +207,13 @@ void UTILS::SurfStressManager::Update()
 *--------------------------------------------------------------------*/
 
 void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum, const double& A,
-    const Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
-    const Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2, Epetra_SerialDenseVector& fint,
-    Epetra_SerialDenseMatrix& K_surf, const int ID, const double time, const double dt,
-    const int surface_flag, const double const_gamma, const double k1xC, const double k2,
-    const double m1, const double m2, const double gamma_0, const double gamma_min,
-    const double gamma_min_eq, const double con_quot_max, const double con_quot_eq,
-    const bool newstep)
+    const Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff,
+    const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2,
+    CORE::LINALG::SerialDenseVector& fint, CORE::LINALG::SerialDenseMatrix& K_surf, const int ID,
+    const double time, const double dt, const int surface_flag, const double const_gamma,
+    const double k1xC, const double k2, const double m1, const double m2, const double gamma_0,
+    const double gamma_min, const double gamma_min_eq, const double con_quot_max,
+    const double con_quot_eq, const bool newstep)
 {
   double gamma, dgamma;
   int LID = A_last_->Map().LID(ID);
@@ -269,7 +269,7 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum, co
     curvefac =
         DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfTime>(curvenum).Evaluate(time);
 
-  double ndof = Adiff->Length();
+  double ndof = Adiff->length();
 
   for (int i = 0; i < ndof; ++i)
   {

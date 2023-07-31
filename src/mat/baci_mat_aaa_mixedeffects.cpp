@@ -345,14 +345,15 @@ void MAT::AAA_mixedeffects::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
      with nu = 0.45  we have K =  20 alpha
 
  */
-void MAT::AAA_mixedeffects::Evaluate(const Epetra_SerialDenseVector* glstrain_e,
-    Epetra_SerialDenseMatrix* cmat_e, Epetra_SerialDenseVector* stress_e, double elelocalrad)
+void MAT::AAA_mixedeffects::Evaluate(const CORE::LINALG::SerialDenseVector* glstrain_e,
+    CORE::LINALG::SerialDenseMatrix* cmat_e, CORE::LINALG::SerialDenseVector* stress_e,
+    double elelocalrad)
 {
   // this is temporary as long as the material does not have a
   // Matrix-type interface
-  const CORE::LINALG::Matrix<6, 1> glstrain(glstrain_e->A(), true);
-  CORE::LINALG::Matrix<6, 6> cmat(cmat_e->A(), true);
-  CORE::LINALG::Matrix<6, 1> stress(stress_e->A(), true);
+  const CORE::LINALG::Matrix<6, 1> glstrain(glstrain_e->values(), true);
+  CORE::LINALG::Matrix<6, 6> cmat(cmat_e->values(), true);
+  CORE::LINALG::Matrix<6, 1> stress(stress_e->values(), true);
 
   // material parameters for isochoric part
   const double alpha = 1E6 * (0.09631 + 0.03329 * (elelocalrad * 2 / params_->refdia_ - 2.55));

@@ -564,11 +564,11 @@ bool CORE::GEO::MESHFREE::BoundingBox::Within(CORE::LINALG::Matrix<3, 2> const& 
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::MESHFREE::BoundingBox::Within(const Epetra_SerialDenseMatrix& xyz) const
+bool CORE::GEO::MESHFREE::BoundingBox::Within(const CORE::LINALG::SerialDenseMatrix& xyz) const
 {
   dserror("Check before use.");
   BoundingBox bb;
-  int numnode = xyz.N();
+  int numnode = xyz.numCols();
   for (int i = 0; i < numnode; ++i)
   {
     bb.AddPoint(&xyz(0, i));

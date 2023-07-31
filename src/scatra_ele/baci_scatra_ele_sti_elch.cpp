@@ -19,11 +19,11 @@ transport within electrochemical substances
  *-------------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatAndRhsSource(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-    const double& timefacfac,        //!< domain integration factor times time integration factor
-    const double& rhsfac  //!< domain integration factor times time integration factor for
-                          //!< right-hand side vector
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+    const double& timefacfac,  //!< domain integration factor times time integration factor
+    const double& rhsfac       //!< domain integration factor times time integration factor for
+                               //!< right-hand side vector
 )
 {
   // matrix and vector contributions arising from Joule's heat
@@ -45,8 +45,8 @@ void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatAndRhsSource(
  *-------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleSTIElch<distype>::CalcMatSourceOD(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    const double& timefacfac         //!< domain integration factor times time integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    const double& timefacfac  //!< domain integration factor times time integration factor
 )
 {
   // matrix contributions arising from Joule's heat

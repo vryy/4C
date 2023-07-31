@@ -1032,7 +1032,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
           // for each side that is involved in the cut for this element,
           // the coupling matrices C_fs_, C_sf_ and the rhs_s has to be built
-          std::map<int, std::vector<Epetra_SerialDenseMatrix>> side_coupling;
+          std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>> side_coupling;
 
           if (bcells.size() > 0)
           {
@@ -1145,7 +1145,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
                 const size_t ndof_i = patchlm.size();  // number of dofs of this coupling sides
                 const size_t ndof = la[0].lm_.size();  // number of dofs for background element
 
-                std::vector<Epetra_SerialDenseMatrix>& couplingmatrices =
+                std::vector<CORE::LINALG::SerialDenseMatrix>& couplingmatrices =
                     side_coupling[coup_sid];  // the function inserts a new element with that key
                                               // and returns a reference to its mapped value
                 if (couplingmatrices.size() != 0) dserror("zero sized vector expected");
@@ -1154,15 +1154,15 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
                 // no coupling for pressure in stress based method, but the coupling matrices
                 // include entries for pressure coupling
-                couplingmatrices[0].Shape(ndof_i, ndof);  // C_sf = C_uiu
-                couplingmatrices[1].Shape(ndof, ndof_i);  // C_fs = C_uui
-                couplingmatrices[2].Shape(ndof_i, 1);     // rhC_s = rhs_ui
+                couplingmatrices[0].shape(ndof_i, ndof);  // C_sf = C_uiu
+                couplingmatrices[1].shape(ndof, ndof_i);  // C_fs = C_uui
+                couplingmatrices[2].shape(ndof_i, 1);     // rhC_s = rhs_ui
               }                                           // IsCoupling
             }                                             // loop bcs
 
             const size_t nui =
                 patchelementslm.size();  // sum over number of dofs of all coupling sides
-            Epetra_SerialDenseMatrix C_ss(
+            CORE::LINALG::SerialDenseMatrix C_ss(
                 nui, nui);  // coupling matrix for monolithic fluid-structure interaction,
                             // struct-struct couplings between different sides
 
@@ -1188,11 +1188,11 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
             Teuchos::RCP<XFluidState::CouplingState>& coup_state = state_->coup_state_[coupl_idx];
 
-            for (std::map<int, std::vector<Epetra_SerialDenseMatrix>>::const_iterator sc =
+            for (std::map<int, std::vector<CORE::LINALG::SerialDenseMatrix>>::const_iterator sc =
                      side_coupling.begin();
                  sc != side_coupling.end(); ++sc)
             {
-              std::vector<Epetra_SerialDenseMatrix> couplingmatrices = sc->second;
+              std::vector<CORE::LINALG::SerialDenseMatrix> couplingmatrices = sc->second;
               int coup_sid = sc->first;
 
               std::vector<int>& patchlm = patchcouplm[coup_sid];
@@ -1215,8 +1215,8 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
               }
 
               // assemble rhC_s_col = rhC_ui_col
-              Epetra_SerialDenseVector rhC_s_eptvec(
-                  ::View, couplingmatrices[2].A(), patchlm.size());
+              CORE::LINALG::SerialDenseVector rhC_s_eptvec(
+                  Teuchos::View, couplingmatrices[2].values(), patchlm.size());
               CORE::LINALG::Assemble(
                   *(coup_state->rhC_s_col_), rhC_s_eptvec, patchlm, mypatchlmowner);
             }
@@ -1431,10 +1431,10 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
         if (!has_xfem_integration_rule)
         {
           // call the element evaluate method
-          Epetra_SerialDenseMatrix elemat1;
-          Epetra_SerialDenseMatrix elemat2;
-          Epetra_SerialDenseVector elevec2;
-          Epetra_SerialDenseVector elevec3;
+          CORE::LINALG::SerialDenseMatrix elemat1;
+          CORE::LINALG::SerialDenseMatrix elemat2;
+          CORE::LINALG::SerialDenseVector elevec2;
+          CORE::LINALG::SerialDenseVector elevec3;
           Teuchos::ParameterList params;
           params.set<int>("action", FLD::integrate_shape);
           Teuchos::RCP<MAT::Material> mat = ele->Material();
@@ -1499,10 +1499,10 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
       strategy.ClearElementStorage(la[0].Size(), la[0].Size());
 
       // call the element evaluate method
-      Epetra_SerialDenseMatrix elemat1;
-      Epetra_SerialDenseMatrix elemat2;
-      Epetra_SerialDenseVector elevec2;
-      Epetra_SerialDenseVector elevec3;
+      CORE::LINALG::SerialDenseMatrix elemat1;
+      CORE::LINALG::SerialDenseMatrix elemat2;
+      CORE::LINALG::SerialDenseVector elevec2;
+      CORE::LINALG::SerialDenseVector elevec3;
       Teuchos::ParameterList params;
       params.set<int>("action", FLD::integrate_shape);
       Teuchos::RCP<MAT::Material> mat = ele->Material();
@@ -1729,12 +1729,12 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::EvaluateErrorComparedToAnalytical
     const int num_dom_norms = 10;
     const int num_interf_norms = 8;
     const int num_stab_norms = 3;
-    Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms =
-        Teuchos::rcp(new Epetra_SerialDenseVector(num_dom_norms));
-    Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms =
-        Teuchos::rcp(new Epetra_SerialDenseVector(num_interf_norms));
-    Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms =
-        Teuchos::rcp(new Epetra_SerialDenseVector(num_stab_norms));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_dom_norms));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_interf_norms));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_stab_norms));
 
     ComputeErrorNorms(glob_dom_norms, glob_interf_norms, glob_stab_norms);
 
@@ -1936,18 +1936,18 @@ Teuchos::RCP<std::vector<double>> FLD::XFluid::EvaluateErrorComparedToAnalytical
   return Teuchos::null;
 }
 
-void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms,
-    Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms,
-    Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms)
+void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms)
 {
   // number of norms that have to be calculated
-  const int num_dom_norms = glob_dom_norms->Length();
-  const int num_interf_norms = glob_interf_norms->Length();
-  const int num_stab_norms = glob_stab_norms->Length();
+  const int num_dom_norms = glob_dom_norms->length();
+  const int num_interf_norms = glob_interf_norms->length();
+  const int num_stab_norms = glob_stab_norms->length();
 
-  Epetra_SerialDenseVector cpu_dom_norms(num_dom_norms);
-  Epetra_SerialDenseVector cpu_interf_norms(num_interf_norms);
-  Epetra_SerialDenseVector cpu_stab_norms(num_stab_norms);
+  CORE::LINALG::SerialDenseVector cpu_dom_norms(num_dom_norms);
+  CORE::LINALG::SerialDenseVector cpu_interf_norms(num_interf_norms);
+  CORE::LINALG::SerialDenseVector cpu_stab_norms(num_stab_norms);
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -1961,8 +1961,8 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<Epetra_SerialDenseVector> glob_
   for (int i = 0; i < numrowele; ++i)
   {
     // local element-wise squared error norms
-    Epetra_SerialDenseVector ele_dom_norms(num_dom_norms);
-    Epetra_SerialDenseVector ele_interf_norms(num_interf_norms);
+    CORE::LINALG::SerialDenseVector ele_dom_norms(num_dom_norms);
+    CORE::LINALG::SerialDenseVector ele_interf_norms(num_interf_norms);
 
 
     // pointer to current element
@@ -2028,10 +2028,10 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<Epetra_SerialDenseVector> glob_
             // get element location vector, dirichlet flags and ownerships
             actele->LocationVector(*discret_, la, false);
 
-            Epetra_SerialDenseMatrix elemat1;
-            Epetra_SerialDenseMatrix elemat2;
-            Epetra_SerialDenseVector elevec2;
-            Epetra_SerialDenseVector elevec3;
+            CORE::LINALG::SerialDenseMatrix elemat1;
+            CORE::LINALG::SerialDenseMatrix elemat2;
+            CORE::LINALG::SerialDenseVector elevec2;
+            CORE::LINALG::SerialDenseVector elevec3;
             params_->set<int>("action", FLD::calc_fluid_error);
             impl->EvaluateService(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
                 ele_dom_norms, elevec2, elevec3);
@@ -2070,10 +2070,10 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<Epetra_SerialDenseVector> glob_
       // get element location vector, dirichlet flags and ownerships
       actele->LocationVector(*discret_, la, false);
 
-      Epetra_SerialDenseMatrix elemat1;
-      Epetra_SerialDenseMatrix elemat2;
-      Epetra_SerialDenseVector elevec2;
-      Epetra_SerialDenseVector elevec3;
+      CORE::LINALG::SerialDenseMatrix elemat1;
+      CORE::LINALG::SerialDenseMatrix elemat2;
+      CORE::LINALG::SerialDenseVector elevec2;
+      CORE::LINALG::SerialDenseVector elevec3;
       params_->set<int>("action", FLD::calc_fluid_error);
       impl->EvaluateService(ele, *params_, mat, *discret_, la[0].lm_, elemat1, elemat2,
           ele_dom_norms, elevec2, elevec3);
@@ -2090,10 +2090,10 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<Epetra_SerialDenseVector> glob_
   //--------------------------------------------------------
   // reduce and sum over all procs
   for (int i = 0; i < num_dom_norms; ++i) (*glob_dom_norms)(i) = 0.0;
-  discret_->Comm().SumAll(cpu_dom_norms.Values(), glob_dom_norms->Values(), num_dom_norms);
+  discret_->Comm().SumAll(cpu_dom_norms.values(), glob_dom_norms->values(), num_dom_norms);
 
   for (int i = 0; i < num_interf_norms; ++i) (*glob_interf_norms)(i) = 0.0;
-  discret_->Comm().SumAll(cpu_interf_norms.Values(), glob_interf_norms->Values(), num_interf_norms);
+  discret_->Comm().SumAll(cpu_interf_norms.values(), glob_interf_norms->values(), num_interf_norms);
 
 
   //--------------------------------------------------------
@@ -4711,8 +4711,9 @@ void FLD::XFluid::SetInitialFlowField(
         const double tmp_vortex =
             -0.5 * (C * C / R_squared) * (exp(-r_squared_left) + exp(-r_squared_right));
 
-        if (pos == CORE::GEO::CUT::Point::inside)  // plus/burnt domain -> burnt material (
-                                                   // GEO::CUT::Position is inside ) / slave side
+        if (pos ==
+            CORE::GEO::CUT::Point::inside)  // plus/burnt domain -> burnt material (
+                                            // CORE::GEO::CUT::Position is inside ) / slave side
         {
           dens = dens_b;
           pres = 0.0;  // matching the zero pressure condition at outflow

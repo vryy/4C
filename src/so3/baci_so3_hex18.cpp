@@ -317,18 +317,20 @@ void DRT::ELEMENTS::So_hex18::InitGp()
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF_SOH18> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH18, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex18::ActionType act = So_hex18::none;
@@ -541,7 +543,7 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = condition.Get<std::vector<int>>("onoff");
@@ -844,10 +846,10 @@ void DRT::ELEMENTS::So_hex18::Lumpmass(CORE::LINALG::Matrix<NUMDOF_SOH18, NUMDOF
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned int c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned int c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned int r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned int r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;

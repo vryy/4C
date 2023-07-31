@@ -12,8 +12,6 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
-#include <Epetra_IntSerialDenseVector.h>
-
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc_utils.H"
 #include "baci_scatra_ele_interface.H"
@@ -97,36 +95,46 @@ namespace DRT
        */
       int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra) override;
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate action for off-diagonal system matrix block
       virtual int EvaluateActionOD(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate service routine
       int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra) override;
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra) override;
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       /*========================================================================*/
       //! @name static member variables
@@ -166,21 +174,21 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la, int& nlayer);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      virtual void Sysmat(DRT::Element* ele,   //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,      //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,      //!< element rhs to calculate
-          Epetra_SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
+      virtual void Sysmat(DRT::Element* ele,          //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
+          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
       );
 
       //! calculate matrix. Here the whole thing is hidden.
       virtual void SysmatODMesh(DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,           //!< element matrix to calculate
+          CORE::LINALG::SerialDenseMatrix& emat,    //!< element matrix to calculate
           const int numdofpernode_mesh              //!< number of DOF of mesh displacement field
       );
 
       //! calculate matrix . Here the whole thing is hidden.
       virtual void SysmatODFluid(DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,            //!< element matrix to calculate
+          CORE::LINALG::SerialDenseMatrix& emat,     //!< element matrix to calculate
           const int numdofpernode_fluid              //!< number of DOF of fluid field
       );
 
@@ -224,10 +232,10 @@ namespace DRT
       virtual void UpdateNodeCoordinates() { xyze_ += edispnp_; };
 
       //! finite difference check for debugging purposes
-      virtual void FDCheck(DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,      //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,      //!< element rhs to calculate
-          Epetra_SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
+      virtual void FDCheck(DRT::Element* ele,         //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,      //!< element rhs to calculate
+          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid-diff.-scaling vector
       );
 
       /*========================================================================*/
@@ -236,21 +244,21 @@ namespace DRT
 
       //! calculate mass matrix and rhs for determining initial time derivative
       virtual void CalcInitialTimeDerivative(DRT::Element* ele,  //!< current element
-          Epetra_SerialDenseMatrix& emat,                        //!< element matrix
-          Epetra_SerialDenseVector& erhs,                        //!< element residual
+          CORE::LINALG::SerialDenseMatrix& emat,                 //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,                 //!< element residual
           Teuchos::ParameterList& params,                        //!< parameter list
           DRT::Discretization& discretization,                   //!< discretization
           DRT::Element::LocationArray& la                        //!< location array
       );
 
       //! Correct RHS calculated from CalcRHSLinMass() for the linearized mass term
-      virtual void CorrectRHSFromCalcRHSLinMass(Epetra_SerialDenseVector& erhs, const int k,
+      virtual void CorrectRHSFromCalcRHSLinMass(CORE::LINALG::SerialDenseVector& erhs, const int k,
           const double fac, const double densnp, const double phinp);
 
       //!  integrate shape functions over domain
       void IntegrateShapeFunctions(const DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseVector& elevec1,                 //!< rhs vector
-          const Epetra_IntSerialDenseVector& dofids          //!< index of current scalar
+          CORE::LINALG::SerialDenseVector& elevec1,          //!< rhs vector
+          const CORE::LINALG::IntSerialDenseVector& dofids   //!< index of current scalar
       );
 
       //!  calculate weighted mass flux (no reactive flux so far)
@@ -262,7 +270,8 @@ namespace DRT
 
       //! calculate domain integral, i.e., surface area or volume of domain element
       void CalcDomainIntegral(const DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
+          CORE::LINALG::SerialDenseVector&
+              scalar  //!< result vector for scalar integral to be computed
       );
 
       //! calculate scalar(s) and domain integral
@@ -270,51 +279,52 @@ namespace DRT
       //! \param scalars   scalar to be computed
       //! \param inverting   inversion of evaluated scalar?
       //! \param calc_grad_phi  calculation of gradient of phi of transported scalar?
-      virtual void CalculateScalars(const DRT::Element* ele, Epetra_SerialDenseVector& scalars,
-          bool inverting, bool calc_grad_phi);
+      virtual void CalculateScalars(const DRT::Element* ele,
+          CORE::LINALG::SerialDenseVector& scalars, bool inverting, bool calc_grad_phi);
 
       //! calculate scalar time derivative(s) and domain integral
       void CalculateScalarTimeDerivatives(
           const DRT::Discretization& discretization,  //!< discretization
           const std::vector<int>& lm,                 //!< location vector
-          Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+          CORE::LINALG::SerialDenseVector&
+              scalars  //!< result vector for scalar integrals to be computed
       );
 
       void CalculateMomentumAndVolume(const DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseVector&
               momandvol,  //!< element (volume) momentum vector and minus domain volume
           const double interface_thickness  //!< interface thickness of smoothing function.
       );
 
       //! calculate/reconstruct gradient(s) at nodes using L2-projection.
       virtual void CalcGradientAtNodes(
-          const DRT::Element* ele,            //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          Epetra_SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
-          Epetra_SerialDenseVector& elevec2,  //!< element RHS vector (y-direction)
-          Epetra_SerialDenseVector& elevec3   //!< element RHS vector (z-direction)
+          const DRT::Element* ele,                   //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
+          CORE::LINALG::SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
+          CORE::LINALG::SerialDenseVector& elevec2,  //!< element RHS vector (y-direction)
+          CORE::LINALG::SerialDenseVector& elevec3   //!< element RHS vector (z-direction)
       );
 
       //! calculate/reconstruct gradient(s) at nodes using L2-projection.
       virtual void CalcGradientAtNodes(
-          const DRT::Element* ele,            //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          Epetra_SerialDenseMatrix& elemat2,  //!< element RHS vector (x-direction)
+          const DRT::Element* ele,                   //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
+          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< element RHS vector (x-direction)
           const INPAR::SCATRA::L2ProjectionSystemType& systemtype  //!< system type
       );
 
       //! calculate/reconstruct gradient at element center
       virtual void CalcGradientEleCenter(
-          const DRT::Element* ele,            //!< the element we are dealing with
-          Epetra_SerialDenseVector& elevec1,  //!< gradient at element center
-          Epetra_SerialDenseVector& elevec2   //!< gauss point at element center
+          const DRT::Element* ele,                   //!< the element we are dealing with
+          CORE::LINALG::SerialDenseVector& elevec1,  //!< gradient at element center
+          CORE::LINALG::SerialDenseVector& elevec2   //!< gauss point at element center
       );
 
       //! calculate/reconstruct gradient(s) at nodes using L2-projection.
       virtual void CalcCurvatureAtNodes(
-          const DRT::Element* ele,            //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
-          Epetra_SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
+          const DRT::Element* ele,                   //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& elemat1,  //!< element matrix, to be filled
+          CORE::LINALG::SerialDenseVector& elevec1,  //!< element RHS vector (x-direction)
           const std::vector<CORE::LINALG::Matrix<nen_, nsd_>>&
               egradphinp  //!< the gradient of phi in the x-direction
       );
@@ -325,15 +335,15 @@ namespace DRT
 
       //! calculate error of numerical solution with respect to analytical solution
       virtual void CalErrorComparedToAnalytSolution(
-          const DRT::Element* ele,          //!< the element we are dealing with
-          Teuchos::ParameterList& params,   //!< parameter list
-          Epetra_SerialDenseVector& errors  //!< vector containing L2-error norm
+          const DRT::Element* ele,                 //!< the element we are dealing with
+          Teuchos::ParameterList& params,          //!< parameter list
+          CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
       );
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
       virtual void CalcHeteroReacMatAndRHS(DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,                      //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs                       //!< element rhs to calculate
+          CORE::LINALG::SerialDenseMatrix& emat,               //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs                //!< element rhs to calculate
       );
 
 
@@ -532,7 +542,7 @@ namespace DRT
 
       //!  calculate fine-scale art. subgrid diffusivity
       void CalcFineScaleSubgrDiff(double& sgdiff,        //!< subgrid-scale diffusion
-          Epetra_SerialDenseVector& subgrdiff,           //!< subgrid-scale diffusion vector
+          CORE::LINALG::SerialDenseVector& subgrdiff,    //!< subgrid-scale diffusion vector
           DRT::Element* ele,                             //!< the element we are dealing with
           const double vol,                              //!< element volume
           const int k,                                   //!< index of current scalar
@@ -595,8 +605,8 @@ namespace DRT
 
       //! calculate normalized subgrid-diffusivity matrix
       virtual void CalcSubgrDiffMatrix(
-          const DRT::Element* ele,        //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat  //!< element matrix to calculate
+          const DRT::Element* ele,               //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix to calculate
       );
 
       //! calculate dissipation introduced by stabilization and turbulence models
@@ -718,8 +728,9 @@ namespace DRT
       );
 
       //! calculation of convective element matrix in convective form
-      virtual void CalcMatConv(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      virtual void CalcMatConv(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nen_, 1>& sgconv  //!< subgrid-scale convective operator
@@ -727,23 +738,24 @@ namespace DRT
 
       //! calculation of convective element matrix: add conservative contributions
       virtual void CalcMatConvAddCons(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double vdiv,        //!< velocity divergence
           const double densnp       //!< density at time_(n+1)
       );
 
       //! calculation of diffusive element matrix
-      virtual void CalcMatDiff(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      virtual void CalcMatDiff(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
       );
 
       //! calculation of stabilization element matrix
       void CalcMatTransConvDiffStab(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
           const double densnp,                          //!< density  at time_(n+1)
@@ -752,10 +764,11 @@ namespace DRT
       );
 
       //! calculation of mass element matrix (standard shape functions)
-      virtual void CalcMatMass(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int& k,                                         //!< index of current scalar
-          const double& fac,                                    //!< domain-integration factor
-          const double& densam                                  //!< density at time_(n+am)
+      virtual void CalcMatMass(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int& k,                           //!< index of current scalar
+          const double& fac,                      //!< domain-integration factor
+          const double& densam                    //!< density at time_(n+am)
       );
 
       /*!
@@ -768,23 +781,24 @@ namespace DRT
        * @param sfunct  solution function values
        * @param tfunct  test function values
        */
-      void CalcMatMass(Epetra_SerialDenseMatrix& emat, const int& k, const double& fac,
+      void CalcMatMass(CORE::LINALG::SerialDenseMatrix& emat, const int& k, const double& fac,
           const double& densam, const CORE::LINALG::Matrix<nen_, 1>& sfunct,
           const CORE::LINALG::Matrix<nen_, 1>& tfunct) const;
 
       //! calculation of stabilization mass element matrix
-      void CalcMatMassStab(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                      //!< index of current scalar
-          const double taufac,                              //!< domain-integration factor times tau
-          const double densam,                              //!< density at time_(n+am)
-          const double densnp,                              //!< density at time_(n+1)
-          const CORE::LINALG::Matrix<nen_, 1>& sgconv,      //!< subgrid-scale convective operator
-          const CORE::LINALG::Matrix<nen_, 1>& diff         //!< laplace term
+      void CalcMatMassStab(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                             //!< index of current scalar
+          const double taufac,                          //!< domain-integration factor times tau
+          const double densam,                          //!< density at time_(n+am)
+          const double densnp,                          //!< density at time_(n+1)
+          const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
+          const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
       //! calculation of reactive element matrix
-      virtual void CalcMatReact(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                           //!< index of current scalar
+      virtual void CalcMatReact(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
@@ -794,14 +808,14 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
       );
 
-      virtual void CalcMatChemo(Epetra_SerialDenseMatrix& emat, const int k,
+      virtual void CalcMatChemo(CORE::LINALG::SerialDenseMatrix& emat, const int k,
           const double timefacfac, const double timetaufac, const double densnp,
           const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
           const CORE::LINALG::Matrix<nen_, 1>& diff){};
 
       //! calculation of linearized mass rhs vector
-      void CalcRHSLinMass(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                     //!< index of current scalar
+      void CalcRHSLinMass(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                            //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double fac,     //!< domain-integration factor
           const double densam,  //!< density at time_(n+am)
@@ -835,28 +849,30 @@ namespace DRT
       );
 
       //! standard Galerkin transient, old part of rhs and source term
-      void CalcRHSHistAndSource(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                           //!< index of current scalar
-          const double fac,                                      //!< domain-integration factor
-          const double rhsint                                    //!< rhs at Gauss point
+      void CalcRHSHistAndSource(
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                            //!< index of current scalar
+          const double fac,                       //!< domain-integration factor
+          const double rhsint                     //!< rhs at Gauss point
       );
 
       //! standard Galerkin convective term on right hand side
-      void CalcRHSConv(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                  //!< index of current scalar
+      void CalcRHSConv(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                         //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
       );
 
       //! standard Galerkin diffusive term on right hand side
-      virtual void CalcRHSDiff(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                          //!< index of current scalar
+      virtual void CalcRHSDiff(
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                            //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
       );
 
       //! transient, convective and diffusive stabilization terms on right hand side
       void CalcRHSTransConvDiffStab(
-          Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                     //!< index of current scalar
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                            //!< index of current scalar
           const double rhstaufac,  //!< time-integration factor for rhs times domain-integration
                                    //!< factor times tau
           const double densnp,     //!< density at time_(n+1)
@@ -866,8 +882,8 @@ namespace DRT
       );
 
       //! reactive terms (standard Galerkin and stabilization) on rhs
-      void CalcRHSReact(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                   //!< index of current scalar
+      void CalcRHSReact(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                          //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rhstaufac,  //!< time-integration factor for rhs times domain-integration
                                    //!< factor times tau
@@ -876,20 +892,21 @@ namespace DRT
           const double scatrares   //!< residual of convection-diffusion-reaction eq
       );
 
-      virtual void CalcRHSChemo(Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,
-          const double rhstaufac, const double scatrares, const double densnp){};
+      virtual void CalcRHSChemo(CORE::LINALG::SerialDenseVector& erhs, const int k,
+          const double rhsfac, const double rhstaufac, const double scatrares,
+          const double densnp){};
 
       //! fine-scale subgrid-diffusivity term on right hand side
-      void CalcRHSFSSGD(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                   //!< index of current scalar
+      void CalcRHSFSSGD(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                          //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double sgdiff,  //!< subgrid-scale diffusivity
           const CORE::LINALG::Matrix<nsd_, 1> fsgradphi  //!< gardient of fine-scale velocity
       );
 
       //! multifractal subgrid-scale modeling on right hand side only rasthofer 11/13  |
-      void CalcRHSMFS(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                 //!< index of current scalar
+      void CalcRHSMFS(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                        //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double densnp,  //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nsd_, 1>
@@ -902,10 +919,10 @@ namespace DRT
       //! macro-scale matrix and vector contributions arising from macro-micro coupling in
       //! multi-scale simulations
       virtual void CalcMatAndRhsMultiScale(const DRT::Element* const ele,  //!< element
-          Epetra_SerialDenseMatrix& emat,                                  //!< element matrix
-          Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-          const int k,                     //!< species index
-          const int iquad,                 //!< Gauss point index
+          CORE::LINALG::SerialDenseMatrix& emat,                           //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+          const int k,                            //!< species index
+          const int iquad,                        //!< Gauss point index
           const double timefacfac,  //!< domain integration factor times time integration factor
           const double rhsfac       //!< domain integration factor times time integration factor for
                                     //!< right-hand side vector
@@ -913,16 +930,16 @@ namespace DRT
 
       //! Electromagnetic diffusion current density source RHS term
       void CalcRHSEMD(const DRT::Element* const ele,  //!< element
-          Epetra_SerialDenseVector& erhs,             //!< element right-hand side vector
+          CORE::LINALG::SerialDenseVector& erhs,      //!< element right-hand side vector
           const double rhsfac  //!< domain integration factor times time integration factor for
                                //!< right-hand side vector
       );
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
       virtual void CalcMatConvODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodefluid,      //!< number of dofs per node of fluid element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
@@ -931,9 +948,9 @@ namespace DRT
       //! calculation of convective element matrix: add conservative contributions (off diagonal
       //! term fluid)
       virtual void CalcMatConvAddConsODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodefluid,      //!< number of dofs per node of fluid element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const double phinp        //!< scalar at time_(n+1)
@@ -941,9 +958,9 @@ namespace DRT
 
       //! calculation of linearized mass (off diagonal/shapederivative term mesh)
       virtual void CalcLinMassODMesh(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodemesh,       //!< number of dofs per node of ale element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double fac,     //!< domain-integration factor
           const double densam,  //!< density at time_(n+am)
@@ -958,21 +975,22 @@ namespace DRT
       //! standard Galerkin transient, old part of rhs and source term (off diagonal/shapederivative
       //! term mesh)
       virtual void CalcHistAndSourceODMesh(
-          Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodemesh,       //!< number of dofs per node of ale element
-          const double fac,                //!< domain-integration factor
-          const double rhsint,             //!< rhs at Gauss point
-          const double J,                  //!< determinant of Jacobian det(dx/ds)
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
+          const double fac,                       //!< domain-integration factor
+          const double rhsint,                    //!< rhs at Gauss point
+          const double J,                         //!< determinant of Jacobian det(dx/ds)
           const CORE::LINALG::Matrix<1, nsd_ * nen_>&
               dJ_dmesh,  //!< derivative of det(dx/ds) w.r.t. mesh displacement
           const double densnp);
 
       //! standard Galerkin convective term (off diagonal)
-      virtual void CalcConvODMesh(Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                                             //!< index of current scalar
-          const int ndofpernodemesh,  //!< number of dofs per node of ale element
-          const double fac,           //!< domain-integration factor
+      virtual void CalcConvODMesh(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
+          const double fac,                       //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double densnp,  //!< density at time_(n+1)
           const double J,       //!< determinant of Jacobian det(dx/ds)
@@ -981,8 +999,9 @@ namespace DRT
       );
 
       //! standard Galerkin convective term (only shapederivative term mesh)
-      void ApplyShapeDerivsConv(Epetra_SerialDenseMatrix& emat, const int k, const double rhsfac,
-          const double densnp, const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
+      void ApplyShapeDerivsConv(CORE::LINALG::SerialDenseMatrix& emat, const int k,
+          const double rhsfac, const double densnp, const double J,
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
           const CORE::LINALG::Matrix<nsd_, 1>& convelint);
 
       /*!
@@ -996,15 +1015,16 @@ namespace DRT
        * @param J           Jacobian determinant of mapping between spatial and parameter
        *                    coordinates
        */
-      void CalcConvConsODMesh(Epetra_SerialDenseMatrix& emat, const int k, const double fac,
+      void CalcConvConsODMesh(CORE::LINALG::SerialDenseMatrix& emat, const int k, const double fac,
           const double timefacfac, const double densnp, const double J) const;
 
       //! standard Galerkin diffusive term (off diagonal/shapederivative term mesh)
-      virtual void CalcDiffODMesh(Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                                             //!< index of current scalar
-          const int ndofpernodemesh,  //!< number of dofs per node of ale element
-          const double diffcoeff,     //!< diffusion coefficient
-          const double fac,           //!< domain-integration factor
+      virtual void CalcDiffODMesh(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
+          const double diffcoeff,                 //!< diffusion coefficient
+          const double fac,                       //!< domain-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double J,       //!< determinant of Jacobian det(dx/ds)
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi,    //!< scalar gradient at Gauss point
@@ -1015,9 +1035,9 @@ namespace DRT
 
       //! reactive terms (standard Galerkin) (off diagonal/shapederivative term mesh)
       virtual void CalcReactODMesh(
-          Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodemesh,       //!< number of dofs per node of ale element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rea_phi,  //!< reactive term
           const double J,        //!< determinant of Jacobian det(dx/ds)
@@ -1027,9 +1047,9 @@ namespace DRT
 
       //! calculation of linearized mass (off diagonal terms fluid)
       virtual void CalcLinMassODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodemesh,       //!< number of dofs per node of ale element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double fac,     //!< domain-integration factor
           const double densam,  //!< density at time_(n+am)
@@ -1040,28 +1060,28 @@ namespace DRT
 
       //! standard Galerkin transient, old part of rhs and source term (off diagonal terms fluid)
       virtual void CalcHistAndSourceODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodemesh,       //!< number of dofs per node of ale element
-          const double fac,                //!< domain-integration factor
-          const double rhsint,             //!< rhs at Gauss point
-          const double densnp              //!< density
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
+          const double fac,                       //!< domain-integration factor
+          const double rhsint,                    //!< rhs at Gauss point
+          const double densnp                     //!< density
       );
 
       //! standard Galerkin reactive term (off diagonal terms fluid)
       virtual void CalcReactODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodemesh,       //!< number of dofs per node of ale element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double rea_phi  //!< reactive term
       );
 
       //! standard Galerkin diffusive term (off diagonal terms fluid)
       virtual void CalcDiffODFluid(
-          Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-          const int k,                     //!< index of current scalar
-          const int ndofpernodemesh,       //!< number of dofs per node of ale element
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+          const int k,                            //!< index of current scalar
+          const int ndofpernodemesh,              //!< number of dofs per node of ale element
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
       );
@@ -1176,7 +1196,7 @@ namespace DRT
       //! weights for nurbs elements
       CORE::LINALG::Matrix<nen_, 1> weights_;
       //! knot vector for nurbs elements
-      std::vector<Epetra_SerialDenseVector> myknots_;
+      std::vector<CORE::LINALG::SerialDenseVector> myknots_;
 
       /*========================================================================*/
       //! @name can be very useful

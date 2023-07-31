@@ -23,7 +23,7 @@
  * ----------------------------------------------------------------------*/
 int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface ptr in the parent element
   ParentElement()->SetParamsInterfacePtr(params);
@@ -121,7 +121,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
             {
               // calculate reference position of GP
               CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim);
-              gp_coord.Multiply('T', 'N', 1.0, shapefcts, x, 0.0);
+              gp_coord.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, shapefcts, x, 0.0);
 
               // write coordinates in another datatype
               double gp_coord2[numdim];
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::StructuralLine::LineIntegration(double& dL,
 {
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(1, 3);
-  dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
+  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
   dL = 0.0;
   for (int i = 0; i < 3; ++i) dL += dxyzdrs(0, i) * dxyzdrs(0, i);
   dL = sqrt(dL);

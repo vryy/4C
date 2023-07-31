@@ -8,7 +8,7 @@ multi-scale framework
 
 */
 /*--------------------------------------------------------------------------*/
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
 #include "baci_scatra_ele_parameter_std.H"
 
@@ -25,7 +25,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     probdim>::CalculateElectrodeSOCAndCRate(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseVector& scalars)
+    CORE::LINALG::SerialDenseVector& scalars)
 {
   // safety check
   if (my::numscal_ != 1)
@@ -65,7 +65,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   }  // loop over integration points
 
   // safety check
-  if (scalars.Length() != 3 and scalars.Length() != 6)
+  if (scalars.length() != 3 and scalars.length() != 6)
     dserror("Result vector for electrode state of charge computation has invalid length!");
 
   // write results for concentration and domain integrals into result vector
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   scalars(2) = intdomain;
 
   // set ale quantities to zero
-  if (scalars.Length() == 6) scalars(3) = scalars(4) = scalars(5) = 0.0;
+  if (scalars.length() == 6) scalars(3) = scalars(4) = scalars(5) = 0.0;
 }
 
 /*----------------------------------------------------------------------*
@@ -83,7 +83,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseVector& conc)
+    CORE::LINALG::SerialDenseVector& conc)
 {
   // safety check
   if (my::numscal_ != 1)
@@ -104,10 +104,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
     dserror("number of element nodes must equal number of Gauss points for reasonable projection");
 
   // matrix of shape functions evaluated at Gauss points
-  Epetra_SerialDenseMatrix N(nen_, nen_);
+  CORE::LINALG::SerialDenseMatrix N(nen_, nen_);
 
   // Gauss point concentration of electrode
-  Epetra_SerialDenseMatrix conc_gp(nen_, 1);
+  CORE::LINALG::SerialDenseMatrix conc_gp(nen_, 1);
 
   // loop over integration points
   for (int iquad = 0; iquad < intpoints.IP().nquad; ++iquad)
@@ -124,17 +124,19 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   }
 
   // conc_gp = N * conc --> conc = N^-1 * conc_gp
-  Epetra_SerialDenseSolver invert;
-  invert.SetMatrix(N);
-  invert.Invert();
-  conc.Multiply('N', 'N', 1.0, N, conc_gp, 0.0);
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> invert;
+  invert.setMatrix(Teuchos::rcpFromRef(N));
+  invert.invert();
+  conc.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, N, conc_gp, 0.0);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalculateScalars(
-    const DRT::Element* ele, Epetra_SerialDenseVector& scalars, const bool inverting,
+    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars, const bool inverting,
     const bool calc_grad_phi)
 {
   my::CalculateScalars(ele, scalars, inverting, calc_grad_phi);
@@ -162,7 +164,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Calcu
     intconcentration += newmanmultiscale->EvaluateMeanConcentration(iquad) * fac;
   }
 
-  scalars(scalars.Length() - 1) = intconcentration;
+  scalars(scalars.length() - 1) = intconcentration;
 }
 
 /*----------------------------------------------------------------------*
@@ -171,9 +173,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::EvaluateAction(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // extract multi-scale material
   auto elchmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(ele->Material());

@@ -49,9 +49,11 @@ namespace DRT
       //! evaluate the element
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
      protected:
       /*========================================================================*/
@@ -85,10 +87,10 @@ namespace DRT
       );
 
       //! calculate matrix and rhs for ep
-      virtual void Sysmat(DRT::Element* ele,   ///< the element whose matrix is calculated
-          Epetra_SerialDenseMatrix& emat,      ///< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,      ///< element rhs to calculate
-          Epetra_SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
+      virtual void Sysmat(DRT::Element* ele,          ///< the element whose matrix is calculated
+          CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
+          CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
       );
     };
 

@@ -289,10 +289,10 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(const Epetra_CrsMatrix& A,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
+void CORE::LINALG::SymmetriseMatrix(CORE::LINALG::SerialDenseMatrix& A)
 {
-  const int n = A.N();
-  if (n != A.M()) dserror("Cannot symmetrize non-square matrix");
+  const int n = A.numCols();
+  if (n != A.numRows()) dserror("Cannot symmetrize non-square matrix");
   // do not make deep copy of A, matrix addition and full scaling just to sym it
   for (int i = 0; i < n; ++i)
     for (int j = i + 1; j < n; ++j)
@@ -300,5 +300,4 @@ void CORE::LINALG::SymmetriseMatrix(Epetra_SerialDenseMatrix& A)
       const double aver = 0.5 * (A(i, j) + A(j, i));
       A(i, j) = A(j, i) = aver;
     }
-  return;
 }

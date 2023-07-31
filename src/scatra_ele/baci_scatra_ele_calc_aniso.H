@@ -127,14 +127,16 @@ namespace DRT
       };
 
       //! calculation of diffusive element matrix
-      virtual void CalcMatDiff(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      virtual void CalcMatDiff(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
       );
 
       //! standard Galerkin diffusive term on right hand side
-      virtual void CalcRHSDiff(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                          //!< index of current scalar
+      virtual void CalcRHSDiff(
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                            //!< index of current scalar
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
       );
     };

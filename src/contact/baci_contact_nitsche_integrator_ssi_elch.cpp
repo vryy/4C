@@ -50,8 +50,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateGP_3D(MORTAR::MortarElement& 
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
     CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -564,8 +564,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
   const std::vector<CORE::GEN::pairedvector<int, double>>& d_xi_dd = *ele_data_bundle.d_xi_dd;
 
   // resize and clear derivative vectors
-  d_conc_dc.resize(shape_func.Length());
-  d_pot_dpot.resize(shape_func.Length());
+  d_conc_dc.resize(shape_func.length());
+  d_pot_dpot.resize(shape_func.length());
   d_conc_dc.clear();
   d_pot_dpot.clear();
   std::size_t deriv_size = 0;
@@ -576,8 +576,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
   d_pot_dd.clear();
 
   // calculate the nodal concentrations, potentials and derivatives w.r.t electrochemistry dofs
-  CORE::LINALG::SerialDenseVector ele_conc(shape_func.Length());
-  CORE::LINALG::SerialDenseVector ele_pot(shape_func.Length());
+  CORE::LINALG::SerialDenseVector ele_conc(shape_func.length());
+  CORE::LINALG::SerialDenseVector ele_pot(shape_func.length());
   for (int i = 0; i < ele.NumNode(); ++i)
   {
     const int iparent = CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
@@ -593,8 +593,8 @@ void CONTACT::CoIntegratorNitscheSsiElch::SetupGpElchProperties(
   }
 
   // calculate the Gauss point concentration and potential
-  gp_conc = shape_func.Dot(ele_conc);
-  gp_pot = shape_func.Dot(ele_pot);
+  gp_conc = shape_func.dot(ele_conc);
+  gp_pot = shape_func.dot(ele_pot);
 
   // calculate the nodal concentrations, potentials and derivatives w.r.t displacement dofs
   for (int i = 0; i < dim - 1; ++i)
@@ -625,7 +625,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::SoEleCauchy(MORTAR::MortarElement& mor
     CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
     CORE::GEN::pairedvector<int, double>& d_cauchy_nt_de)
 {
-  Epetra_SerialDenseMatrix d_sigma_nt_de;
+  CORE::LINALG::SerialDenseMatrix d_sigma_nt_de;
 
   SoEleCauchyStruct<dim>(mortar_ele, gp_coord, d_gp_coord_dd, gp_wgt, gp_normal, d_gp_normal_dd,
       test_dir, d_test_dir_dd, nitsche_wgt, cauchy_nt_wgt, d_cauchy_nt_dd, &d_sigma_nt_de);

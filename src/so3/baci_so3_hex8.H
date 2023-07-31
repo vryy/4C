@@ -340,9 +340,10 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -359,8 +360,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
 
       // const vector<double> GetFibervec(){return fiberdirection_;};
@@ -394,15 +395,17 @@ namespace DRT
       void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
-          const double* concentration, double* d_cauchyndir_dc) override;
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc) override;
       //@}
 
      protected:
@@ -505,8 +508,8 @@ namespace DRT
           const Teuchos::RCP<MAT::Material>& mat);    // material
 
       // compute defgrd in all gp for given disp
-      virtual void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
-          DRT::ELEMENTS::PreStress& prestress);
+      virtual void DefGradient(const std::vector<double>& disp,
+          CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress);
 
 
       // internal calculation methods
@@ -613,8 +616,9 @@ namespace DRT
       void soh8_reiniteas(DRT::ELEMENTS::So_hex8::EASType EASType);
 
       //! EAS technology, setup necessary data
-      void soh8_eassetup(std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
-          double& detJ0,                                                // det of Jacobian at origin
+      void soh8_eassetup(
+          std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
+          double& detJ0,                                        // det of Jacobian at origin
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  // maps M(origin) local to global
           const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe)
@@ -714,8 +718,9 @@ namespace DRT
           const CORE::LINALG::Matrix<6, NUMDOF_SOH8>& cb,
           const CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>& N_XYZ,
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>& T0invT,
-          const std::vector<Epetra_SerialDenseMatrix>* M_GP, const Epetra_SerialDenseMatrix* alpha,
-          CORE::LINALG::SerialDenseMatrix& M, int gp, Teuchos::ParameterList& params);
+          const std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP,
+          const CORE::LINALG::SerialDenseMatrix* alpha, CORE::LINALG::SerialDenseMatrix& M, int gp,
+          Teuchos::ParameterList& params);
 
      private:
       /** recover elementwise stored stuff
@@ -725,7 +730,7 @@ namespace DRT
       void soh8_recover(const std::vector<int>& lm, const std::vector<double>& residual);
 
       void soh8_computeEASInc(
-          const std::vector<double>& residual, Epetra_SerialDenseMatrix* const eas_inc);
+          const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* const eas_inc);
 
       /** \brief create a backup of the eas state consisting of enhanced strains and
        *  the enhanced strain increment

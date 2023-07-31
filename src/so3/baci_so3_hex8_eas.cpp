@@ -5,6 +5,7 @@
 
 *----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_hex8.H"
 #include "baci_so3_sh8p8.H"
 #include "baci_lib_discret.H"
@@ -13,7 +14,6 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 
 
 /*----------------------------------------------------------------------*
@@ -21,25 +21,25 @@
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easinit()
 {
-  // all parameters are stored in Epetra_SerialDenseMatrix as only
+  // all parameters are stored in CORE::LINALG::SerialDenseMatrix as only
   // those can be added to DRT::Container
 
   // EAS enhanced strain parameters at currently investigated load/time step
-  Epetra_SerialDenseMatrix alpha(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
-  Epetra_SerialDenseMatrix alphao(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix alphao(neas_, 1);
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
-  Epetra_SerialDenseMatrix feas(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix feas(neas_, 1);
   // EAS matrix K_{alpha alpha}, also called Dtilde
-  Epetra_SerialDenseMatrix invKaa(neas_, neas_);
+  CORE::LINALG::SerialDenseMatrix invKaa(neas_, neas_);
   // EAS matrix K_{alpha alpha} of last converged load/time step
-  Epetra_SerialDenseMatrix invKaao(neas_, neas_);
+  CORE::LINALG::SerialDenseMatrix invKaao(neas_, neas_);
   // EAS matrix K_{d alpha}
-  Epetra_SerialDenseMatrix Kda(neas_, NUMDOF_SOH8);
+  CORE::LINALG::SerialDenseMatrix Kda(neas_, NUMDOF_SOH8);
   // EAS matrix K_{d alpha} of last converged load/time step
-  Epetra_SerialDenseMatrix Kdao(neas_, NUMDOF_SOH8);
+  CORE::LINALG::SerialDenseMatrix Kdao(neas_, NUMDOF_SOH8);
   // EAS increment over last Newton step
-  Epetra_SerialDenseMatrix eas_inc(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
 
   // save EAS data into element container
   data_.Add("alpha", alpha);
@@ -79,32 +79,34 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   }
   eastype_ = EASType;
   if (eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone) return;
-  Epetra_SerialDenseMatrix* alpha = nullptr;                      // EAS alphas
-  Epetra_SerialDenseMatrix* alphao = nullptr;                     // EAS alphas
-  Epetra_SerialDenseMatrix* feas = nullptr;                       // EAS history
-  Epetra_SerialDenseMatrix* Kaainv = nullptr;                     // EAS history
-  Epetra_SerialDenseMatrix* Kaainvo = nullptr;                    // EAS history
-  Epetra_SerialDenseMatrix* Kda = nullptr;                        // EAS history
-  Epetra_SerialDenseMatrix* Kdao = nullptr;                       // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = nullptr;                    // EAS history
-  alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // get alpha of previous iteration
-  alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // get alpha of previous iteration
-  feas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-  Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-  Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");
-  Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-  Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");
-  eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;    // EAS alphas
+  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;   // EAS alphas
+  CORE::LINALG::SerialDenseMatrix* feas = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kaainv = nullptr;   // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kaainvo = nullptr;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kda = nullptr;      // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kdao = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;  // EAS history
+  alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
+      "alpha");  // get alpha of previous iteration
+  alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
+      "alphao");  // get alpha of previous iteration
+  feas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+  Kaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  Kaainvo = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaao");
+  Kda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+  Kdao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kdao");
+  eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
   if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) dserror("Missing EAS history-data");
 
-  alpha->Reshape(neas_, 1);
-  alphao->Reshape(neas_, 1);
-  feas->Reshape(neas_, 1);
-  Kaainv->Reshape(neas_, neas_);
-  Kaainvo->Reshape(neas_, neas_);
-  Kda->Reshape(neas_, NUMDOF_SOH8);
-  Kdao->Reshape(neas_, NUMDOF_SOH8);
-  eas_inc->Reshape(neas_, 1);
+  alpha->reshape(neas_, 1);
+  alphao->reshape(neas_, 1);
+  feas->reshape(neas_, 1);
+  Kaainv->reshape(neas_, neas_);
+  Kaainvo->reshape(neas_, neas_);
+  Kda->reshape(neas_, NUMDOF_SOH8);
+  Kdao->reshape(neas_, NUMDOF_SOH8);
+  eas_inc->reshape(neas_, 1);
 
   return;
 }
@@ -113,8 +115,8 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_eassetup(
-    std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
-    double& detJ0,                                 // det of Jacobian at origin
+    std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
+    double& detJ0,                                        // det of Jacobian at origin
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
         T0invT,  // maps M(origin) local to global
     const CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8>& xrefe) const  // material element coords
@@ -193,8 +195,8 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   // fill up M at each gp
   if (eastype_ == soh8_easmild)
   {
-    // static Epetra_SerialDenseMatrix M_mild(MAT::NUM_STRESS_3D*NUMGPT_SOH8,neas_);
-    static std::vector<Epetra_SerialDenseMatrix> M_mild(NUMGPT_SOH8);
+    // static CORE::LINALG::SerialDenseMatrix M_mild(MAT::NUM_STRESS_3D*NUMGPT_SOH8,neas_);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_mild(NUMGPT_SOH8);
     static bool M_mild_eval = false;
     /* easmild is the EAS interpolation of 9 modes, based on
     **            r 0 0   0 0 0 0 0 0
@@ -214,7 +216,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_mild[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_mild[i].shape(MAT::NUM_STRESS_3D, neas_);
         M_mild[i](0, 0) = r[i];
         M_mild[i](1, 1) = s[i];
         M_mild[i](2, 2) = t[i];
@@ -234,7 +236,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   }
   else if (eastype_ == soh8_easfull)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_full(NUMGPT_SOH8);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_full(NUMGPT_SOH8);
     static bool M_full_eval = false;
     /* easfull is the EAS interpolation of 21 modes, based on
     **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
@@ -254,7 +256,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_full[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_full[i].shape(MAT::NUM_STRESS_3D, neas_);
         M_full[i](0, 0) = r[i];
         M_full[i](0, 15) = r[i] * s[i];
         M_full[i](0, 16) = r[i] * t[i];
@@ -285,7 +287,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   }
   else if (eastype_ == soh8_eassosh8)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
     static bool M_sosh8_eval = false;
     /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
     ** consisting of 7 modes, based on
@@ -306,7 +308,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_sosh8[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_sosh8[i].shape(MAT::NUM_STRESS_3D, neas_);
         M_sosh8[i](0, 0) = r[i];
         M_sosh8[i](1, 1) = s[i];
         M_sosh8[i](2, 2) = t[i];
@@ -323,7 +325,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   }
   else if (eastype_ == soh8_easa)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
     static bool M_sosh8_eval = false;
     /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
     ** consisting of 7 modes, based on
@@ -342,7 +344,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // fill up M at each gp
       for (unsigned i = 0; i < NUMGPT_SOH8; ++i)
       {
-        M_sosh8[i].Shape(MAT::NUM_STRESS_3D, neas_);
+        M_sosh8[i].shape(MAT::NUM_STRESS_3D, neas_);
         int e = 0;
         M_sosh8[i](2, e++) = t[i] * t[i] * t[i];
 
@@ -378,12 +380,12 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easupdate()
 {
-  const auto* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");       // Alpha_{n+1}
-  auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
-  const auto* Kaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");     // Kaa^{-1}_{n+1}
-  auto* Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
-  const auto* Kda = data_.Get<Epetra_SerialDenseMatrix>("Kda");           // Kda_{n+1}
-  auto* Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
+  const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");       // Alpha_{n+1}
+  auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");    // Alpha_n
+  const auto* Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");     // Kaa^{-1}_{n+1}
+  auto* Kaainvo = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+  const auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");           // Kda_{n+1}
+  auto* Kdao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kdao");        // Kda_{n}
   switch (eastype_)
   {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:
@@ -414,12 +416,12 @@ void DRT::ELEMENTS::So_hex8::soh8_easupdate()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easrestore()
 {
-  auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");     // Alpha_{n+1}
-  const auto* alphao = data_.Get<Epetra_SerialDenseMatrix>("alphao");    // Alpha_n
-  auto* Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");   // Kaa^{-1}_{n+1}
-  const auto* Kaainvo = data_.Get<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
-  auto* Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");         // Kda_{n+1}
-  const auto* Kdao = data_.Get<Epetra_SerialDenseMatrix>("Kdao");        // Kda_{n}
+  auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");     // Alpha_{n+1}
+  const auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");    // Alpha_n
+  auto* Kaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");   // Kaa^{-1}_{n+1}
+  const auto* Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+  auto* Kda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");         // Kda_{n+1}
+  const auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");        // Kda_{n}
   switch (eastype_)
   {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:

@@ -29,8 +29,8 @@ void CONTACT::CoIntegratorNitsche::IntegrateGP_3D(MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
     CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -47,8 +47,8 @@ void CONTACT::CoIntegratorNitsche::IntegrateGP_2D(MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
     CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -477,7 +477,7 @@ void CONTACT::CoIntegratorNitsche::SoEleCauchy(MORTAR::MortarElement& moEle,
   CONTACT::UTILS::MapGPtoParent<dim>(moEle, boundary_gpcoord, gp_wgt, pxsi, derivtravo_slave);
 
   double sigma_nt = 0.0;
-  Epetra_SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi;
+  CORE::LINALG::SerialDenseMatrix dsntdd, d2sntdd2, d2sntDdDn, d2sntDdDt, d2sntDdDpxi;
   CORE::LINALG::Matrix<dim, 1> dsntdn, dsntdt, dsntdpxi;
   dynamic_cast<DRT::ELEMENTS::So_base*>(moEle.ParentElement())
       ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(), normal, direction,
@@ -573,9 +573,10 @@ void CONTACT::CoIntegratorNitsche::IntegrateTest(const double fac, MORTAR::Morta
 
 template <int dim>
 void CONTACT::CoIntegratorNitsche::BuildAdjointTest(MORTAR::MortarElement& moEle, const double fac,
-    const Epetra_SerialDenseMatrix& dsntdd, const Epetra_SerialDenseMatrix& d2sntdd2,
-    const Epetra_SerialDenseMatrix& d2sntDdDn, const Epetra_SerialDenseMatrix& d2sntDdDt,
-    const Epetra_SerialDenseMatrix& d2sntDdDpxi,
+    const CORE::LINALG::SerialDenseMatrix& dsntdd, const CORE::LINALG::SerialDenseMatrix& d2sntdd2,
+    const CORE::LINALG::SerialDenseMatrix& d2sntDdDn,
+    const CORE::LINALG::SerialDenseMatrix& d2sntDdDt,
+    const CORE::LINALG::SerialDenseMatrix& d2sntDdDpxi,
     const std::vector<CORE::GEN::pairedvector<int, double>>& boundary_gpcoord_lin,
     CORE::LINALG::Matrix<dim, dim> derivtravo_slave,
     const std::vector<CORE::GEN::pairedvector<int, double>>& normal_deriv,
@@ -610,10 +611,11 @@ void CONTACT::CoIntegratorNitsche::BuildAdjointTest(MORTAR::MortarElement& moEle
     }
   }
 
-  Epetra_SerialDenseMatrix tmp(moEle.ParentElement()->NumNode() * dim, dim, false);
-  Epetra_SerialDenseMatrix deriv_trafo(::View, derivtravo_slave.A(), derivtravo_slave.Rows(),
-      derivtravo_slave.Rows(), derivtravo_slave.Columns());
-  if (tmp.Multiply('N', 'N', 1., d2sntDdDpxi, deriv_trafo, 0.)) dserror("multiply failed");
+  CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode() * dim, dim, false);
+  CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
+      derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
+  if (tmp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., d2sntDdDpxi, deriv_trafo, 0.))
+    dserror("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
   {
     for (const auto& p : boundary_gpcoord_lin[d])
@@ -635,29 +637,29 @@ void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest(const double fac, const 
 {
   if (abs(fac) < 1.e-16) return;
 
-  CORE::LINALG::SerialDenseVector(
-      View, moEle.GetNitscheContainer().Rhs(), moEle.MoData().ParentDof().size())
-      .Update(fac * jac * wgt * test, adjoint_test, 1.0);
+  CORE::LINALG::SerialDenseVector Tmp(
+      Teuchos::View, moEle.GetNitscheContainer().Rhs(), moEle.MoData().ParentDof().size());
+  CORE::LINALG::Update(fac * jac * wgt * test, adjoint_test, 1.0, Tmp);
 
   for (const auto& p : deriv_adjoint_test)
   {
-    CORE::LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size())
-        .Update(fac * jac * wgt * test, p.second, 1.0);
+    CORE::LINALG::SerialDenseVector Tmp(
+        Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
+    CORE::LINALG::Update(fac * jac * wgt * test, p.second, 1.0, Tmp);
   }
 
   for (const auto& p : jacintcellmap)
   {
-    CORE::LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size())
-        .Update(fac * p.second * wgt * test, adjoint_test, 1.0);
+    CORE::LINALG::SerialDenseVector Tmp(
+        Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
+    CORE::LINALG::Update(fac * p.second * wgt * test, adjoint_test, 1.0, Tmp);
   }
 
   for (const auto& p : deriv_test)
   {
-    CORE::LINALG::SerialDenseVector(
-        View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size())
-        .Update(fac * jac * wgt * p.second, adjoint_test, 1.0);
+    CORE::LINALG::SerialDenseVector Tmp(
+        Teuchos::View, moEle.GetNitscheContainer().K(p.first), moEle.MoData().ParentDof().size());
+    CORE::LINALG::Update(fac * jac * wgt * p.second, adjoint_test, 1.0, Tmp);
   }
 }
 
@@ -927,18 +929,20 @@ template void CONTACT::CoIntegratorNitsche::IntegrateAdjointTest<3>(const double
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>&);
 
 template void CONTACT::CoIntegratorNitsche::BuildAdjointTest<2>(MORTAR::MortarElement&,
-    const double, const Epetra_SerialDenseMatrix&, const Epetra_SerialDenseMatrix&,
-    const Epetra_SerialDenseMatrix&, const Epetra_SerialDenseMatrix&,
-    const Epetra_SerialDenseMatrix&, const std::vector<CORE::GEN::pairedvector<int, double>>&,
-    CORE::LINALG::Matrix<2, 2>, const std::vector<CORE::GEN::pairedvector<int, double>>&,
+    const double, const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
+    const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
+    const CORE::LINALG::SerialDenseMatrix&,
+    const std::vector<CORE::GEN::pairedvector<int, double>>&, CORE::LINALG::Matrix<2, 2>,
+    const std::vector<CORE::GEN::pairedvector<int, double>>&,
     const std::vector<CORE::GEN::pairedvector<int, double>>&, CORE::LINALG::SerialDenseVector&,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>&);
 
 template void CONTACT::CoIntegratorNitsche::BuildAdjointTest<3>(MORTAR::MortarElement&,
-    const double, const Epetra_SerialDenseMatrix&, const Epetra_SerialDenseMatrix&,
-    const Epetra_SerialDenseMatrix&, const Epetra_SerialDenseMatrix&,
-    const Epetra_SerialDenseMatrix&, const std::vector<CORE::GEN::pairedvector<int, double>>&,
-    CORE::LINALG::Matrix<3, 3>, const std::vector<CORE::GEN::pairedvector<int, double>>&,
+    const double, const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
+    const CORE::LINALG::SerialDenseMatrix&, const CORE::LINALG::SerialDenseMatrix&,
+    const CORE::LINALG::SerialDenseMatrix&,
+    const std::vector<CORE::GEN::pairedvector<int, double>>&, CORE::LINALG::Matrix<3, 3>,
+    const std::vector<CORE::GEN::pairedvector<int, double>>&,
     const std::vector<CORE::GEN::pairedvector<int, double>>&, CORE::LINALG::SerialDenseVector&,
     CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseVector>&);
 

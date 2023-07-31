@@ -13,46 +13,35 @@
 #include <cmath>
 
 // solve the rectangular system with linear least squares
-Epetra_SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
+CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()
 {
-  Epetra_SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
-  Epetra_SerialDenseVector rhs(matri_[0].size());
+  CORE::LINALG::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
+  CORE::LINALG::SerialDenseVector rhs(matri_[0].size());
   sqr = get_square_matrix(rhs);
-  unknown_.Size(matri_[0].size());
+  unknown_.size(matri_[0].size());
 
-  Epetra_SerialDenseSolver solve_for_GPweights;
-  solve_for_GPweights.SetMatrix(sqr);
-  solve_for_GPweights.SetVectors(unknown_, rhs);
-  solve_for_GPweights.FactorWithEquilibration(true);
-  int err2 = solve_for_GPweights.Factor();
-  int err = solve_for_GPweights.Solve();
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_GPweights;
+  solve_for_GPweights.setMatrix(Teuchos::rcpFromRef(sqr));
+  solve_for_GPweights.setVectors(Teuchos::rcpFromRef(unknown_), Teuchos::rcpFromRef(rhs));
+  solve_for_GPweights.factorWithEquilibration(true);
+  int err2 = solve_for_GPweights.factor();
+  int err = solve_for_GPweights.solve();
   if ((err != 0) && (err2 != 0))
     dserror(
         "Computation of Gauss weights failed, Ill"
         "conditioned matrix in least square");
-
-
-  /*  Epetra_SerialDenseMatrix matt(sqr.size(),sqr.size());
-    Epetra_SerialDenseVector unn(sqr.size());
-    Epetra_SerialDenseVector rrr(sqr.size());
-    for(unsigned i=0;i<sqr.size();i++)
-    {
-      for(unsigned j=0;j<sqr.size();j++)
-        matt(j,i) = sqr[i][j];
-      unn(i) = 0.0;
-      rrr(i) = rhs[i];
-    }
-    unknown_ = ConjugateGradient(sqr, rhs);*/
 
   return unknown_;
 }
 
 // premultiplying the matrix with its transpose to get the square matrix
 // the source terms also get multiplied
-Epetra_SerialDenseMatrix CORE::GEO::CUT::LeastSquares::get_square_matrix(
-    Epetra_SerialDenseVector &rhs)
+CORE::LINALG::SerialDenseMatrix CORE::GEO::CUT::LeastSquares::get_square_matrix(
+    CORE::LINALG::SerialDenseVector &rhs)
 {
-  Epetra_SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
+  CORE::LINALG::SerialDenseMatrix sqr(matri_[0].size(), matri_[0].size());
 
   for (unsigned i = 0; i < matri_[0].size(); i++)
   {

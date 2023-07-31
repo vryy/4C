@@ -768,9 +768,9 @@ NOX::Abstract::Group::ReturnType NOX::NLN::Group::computeSerialJacobianEigenvalu
 
   nlnSharedLinearSystem->computeSerialEigenvaluesOfJacobian(ev_.realpart_, ev_.imaginarypart_);
 
-  const int length = ev_.realpart_.Length();
-  ev_.real_max_ = *std::max_element(ev_.realpart_.A(), ev_.realpart_.A() + length);
-  ev_.real_min_ = *std::min_element(ev_.realpart_.A(), ev_.realpart_.A() + length);
+  const int length = ev_.realpart_.length();
+  ev_.real_max_ = *std::max_element(ev_.realpart_.values(), ev_.realpart_.values() + length);
+  ev_.real_min_ = *std::min_element(ev_.realpart_.values(), ev_.realpart_.values() + length);
 
   if (printOutput)
   {
@@ -829,10 +829,10 @@ NOX::NLN::Group::Eigenvalues& NOX::NLN::Group::Eigenvalues::operator=(const Eige
     return *this;
   }
 
-  this->realpart_.Resize(src.realpart_.Length());
+  this->realpart_.resize(src.realpart_.length());
   this->realpart_ = src.realpart_;
 
-  this->imaginarypart_.Resize(src.imaginarypart_.Length());
+  this->imaginarypart_.resize(src.imaginarypart_.length());
   this->imaginarypart_ = src.imaginarypart_;
 
   this->real_max_ = src.real_max_;

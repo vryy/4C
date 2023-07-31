@@ -13,7 +13,7 @@
 
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 #include <Epetra_Map.h>
 
 #include <Teuchos_ParameterList.hpp>
@@ -288,7 +288,7 @@ namespace POROFLUIDMULTIPHASE
     int NumDomainIntFunctions() const { return num_domainint_funct_; }
 
     //! return the values of the domain integrals
-    Teuchos::RCP<const Epetra_SerialDenseVector> DomainIntValues() const
+    Teuchos::RCP<const CORE::LINALG::SerialDenseVector> DomainIntValues() const
     {
       return domain_integrals_;
     }
@@ -497,7 +497,7 @@ namespace POROFLUIDMULTIPHASE
     int num_domainint_funct_;
 
     //! values of domain integrals
-    Teuchos::RCP<Epetra_SerialDenseVector> domain_integrals_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> domain_integrals_;
 
     //! flag for error calculation
     const INPAR::POROFLUIDMULTIPHASE::CalcError calcerr_;

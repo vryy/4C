@@ -410,8 +410,8 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // To compute the spectral decomposition, the Cauchy-Green tensor
   // must be converted to Epetra format
-  Epetra_SerialDenseMatrix cauchy_green_eigenvectors(3, 3);
-  Epetra_SerialDenseVector cauchy_green_eigenvalues(3);
+  CORE::LINALG::SerialDenseMatrix cauchy_green_eigenvectors(3, 3);
+  CORE::LINALG::SerialDenseVector cauchy_green_eigenvalues(3);
 
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++) cauchy_green_eigenvectors(i, j) = cauchy_green_tensor(i, j);
@@ -932,7 +932,7 @@ void MAT::SuperElasticSMA::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
       for (int j = 0; j < 3; j++) D_ep_principal(i, j) += matdata.bulk;
 
     CORE::LINALG::Matrix<3, 1> dev_KH(true);
-    Epetra_SerialDenseVector lambda_trial_square(3);
+    CORE::LINALG::SerialDenseVector lambda_trial_square(3);
     std::vector<CORE::LINALG::Matrix<3, 1>> material_principal_directions;
     material_principal_directions.resize(3);
 

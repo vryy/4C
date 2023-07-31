@@ -734,10 +734,10 @@ void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::GetRhsInt(
  11/13 |
  *------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(Epetra_SerialDenseMatrix& emat,
-    const int k, const double timefacfac, const CORE::LINALG::Matrix<nsd_, 1>& convelint,
-    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const double vdiv, const double densnp,
-    const double visc)
+void DRT::ELEMENTS::ScaTraEleCalcLoma<distype>::CalcMatConvAddCons(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
+    const CORE::LINALG::Matrix<nsd_, 1>& convelint, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
+    const double vdiv, const double densnp, const double visc)
 {
   // convective term using current scalar value
   const double cons_conv_phi = convelint.Dot(gradphi);

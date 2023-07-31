@@ -432,7 +432,7 @@ void SCATRA::ScaTraTimIntImpl::Setup()
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
   // initialize vector for statistics (assume a maximum of 10 conditions)
-  sumnormfluxintegral_ = Teuchos::rcp(new Epetra_SerialDenseVector(10));
+  sumnormfluxintegral_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(10));
 
   if (calcflux_domain_ != INPAR::SCATRA::flux_none or
       calcflux_boundary_ != INPAR::SCATRA::flux_none)
@@ -673,8 +673,8 @@ void SCATRA::ScaTraTimIntImpl::SetupNatConv()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integrals of concentrations and domain
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-      Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumScal() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
 
   // calculate mean concentrations
@@ -2205,10 +2205,11 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     std::vector<int> modeids = projector_->Modes();
 
     // initialize dofid vector to -1
-    Epetra_IntSerialDenseVector dofids(NumDofPerNode());
+    Teuchos::RCP<CORE::LINALG::IntSerialDenseVector> dofids =
+        Teuchos::rcp(new CORE::LINALG::IntSerialDenseVector(NumDofPerNode()));
     for (int rr = 0; rr < NumDofPerNode(); ++rr)
     {
-      dofids[rr] = -1;
+      (*dofids)[rr] = -1;
     }
 
     Teuchos::ParameterList mode_params;
@@ -2221,7 +2222,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
     for (int imode = 0; imode < nummodes; ++imode)
     {
       // activate dof of current mode and add dofids to parameter list
-      dofids[modeids[imode]] = 1;
+      (*dofids)[modeids[imode]] = 1;
       mode_params.set("dofids", dofids);
 
       /*
@@ -2245,7 +2246,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
           Teuchos::null, "KrylovSpaceProjection");
 
       // deactivate dof of current mode
-      dofids[modeids[imode]] = -1;
+      (*dofids)[modeids[imode]] = -1;
 
       // set the current kernel basis vector - not very nice
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)

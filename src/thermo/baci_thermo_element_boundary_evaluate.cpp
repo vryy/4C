@@ -19,9 +19,9 @@ Evaluate boundary conditions for thermo problems
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Thermo
@@ -39,7 +39,7 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // all physics-related stuff is included in the implementation class that can
   // be used in principle inside any element (at the moment: only Thermo

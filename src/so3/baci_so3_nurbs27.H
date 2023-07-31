@@ -14,8 +14,8 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
@@ -258,11 +258,13 @@ namespace DRT
                 params,  ///< ParameterList for communication between control routine and elements
             DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
             std::vector<int>& lm,                 ///< location matrix for de-assembly
-            Epetra_SerialDenseMatrix& elemat1,    ///< (stiffness-)matrix to be filled by element.
-            Epetra_SerialDenseMatrix& elemat2,    ///< (mass-)matrix to be filled by element.
-            Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
-            Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
-            Epetra_SerialDenseVector& elevec3   ///< vector to be filled by element
+            CORE::LINALG::SerialDenseMatrix&
+                elemat1,  ///< (stiffness-)matrix to be filled by element.
+            CORE::LINALG::SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
+            CORE::LINALG::SerialDenseVector&
+                elevec1,  ///< (internal force-)vector to be filled by element
+            CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element
+            CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element
             ) override;
 
 
@@ -281,8 +283,9 @@ namespace DRT
         \return 0 if successful, negative otherwise
         */
         int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-            DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-            Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+            DRT::Condition& condition, std::vector<int>& lm,
+            CORE::LINALG::SerialDenseVector& elevec1,
+            CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
         //@}
 
@@ -364,11 +367,11 @@ namespace DRT
 
         //! Evaluate Nurbs27 Shapefcts to keep them static
         const std::vector<CORE::LINALG::Matrix<27, 1>> sonurbs27_shapefcts(
-            const std::vector<Epetra_SerialDenseVector>& myknots,
+            const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
             const CORE::LINALG::Matrix<27, 1>& weights);
         //! Evaluate Nurbs27 Derivs to keep them static
         const std::vector<CORE::LINALG::Matrix<3, 27>> sonurbs27_derivs(
-            const std::vector<Epetra_SerialDenseVector>& myknots,
+            const std::vector<CORE::LINALG::SerialDenseVector>& myknots,
             const CORE::LINALG::Matrix<27, 1>& weights);
         //! Evaluate Nurbs27 Weights to keep them static
         const std::vector<double> sonurbs27_gpweights();

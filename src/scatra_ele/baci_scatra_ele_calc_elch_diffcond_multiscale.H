@@ -47,10 +47,10 @@ namespace DRT
       //! macro-scale matrix and vector contributions arising from macro-micro coupling in
       //! multi-scale simulations
       void CalcMatAndRhsMultiScale(const DRT::Element* const ele,  //!< element
-          Epetra_SerialDenseMatrix& emat,                          //!< element matrix
-          Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-          const int k,                     //!< species index
-          const int iquad,                 //!< Gauss point index
+          CORE::LINALG::SerialDenseMatrix& emat,                   //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+          const int k,                            //!< species index
+          const int iquad,                        //!< Gauss point index
           const double timefacfac,  //!< domain integration factor times time integration factor
           const double rhsfac       //!< domain integration factor times time integration factor for
                                     //!< right-hand side vector
@@ -61,14 +61,15 @@ namespace DRT
           const DRT::Element* const& ele,             //!< the element we are dealing with
           const DRT::Discretization& discretization,  //!< discretization
           DRT::Element::LocationArray& la,            //!< location array
-          Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+          CORE::LINALG::SerialDenseVector&
+              scalars  //!< result vector for scalar integrals to be computed
           ) final;
 
       void CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseVector& conc) override;
+          CORE::LINALG::SerialDenseVector& conc) override;
 
-      void CalculateScalars(const DRT::Element* ele, Epetra_SerialDenseVector& scalars,
+      void CalculateScalars(const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
           bool inverting, bool calc_grad_phi) override;
 
       //! get diffusion manager
@@ -81,15 +82,17 @@ namespace DRT
       //! evaluate action
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! compute element matrix and element right-hand side vector
-      void Sysmat(DRT::Element* ele,           //!< element
-          Epetra_SerialDenseMatrix& emat,      //!< element matrix
-          Epetra_SerialDenseVector& erhs,      //!< element right-hand side vector
-          Epetra_SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector
+      void Sysmat(DRT::Element* ele,                  //!< element
+          CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,      //!< element right-hand side vector
+          CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector
       );
     };  // class implementation
 

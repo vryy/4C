@@ -84,10 +84,11 @@ namespace DRT
        */
       virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false);
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
 
       /*!
         \brief calculate element matrix and rhs for porous flow (2)
@@ -107,9 +108,11 @@ namespace DRT
        */
       virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
       /*!
@@ -131,9 +134,11 @@ namespace DRT
        */
       virtual int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints);
 
 
@@ -143,9 +148,9 @@ namespace DRT
        */
       virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
      protected:
       /*!
@@ -928,8 +933,8 @@ namespace DRT
       virtual int ComputeVolume(Teuchos::ParameterList& params,  //!< paramters
           DRT::ELEMENTS::Fluid* ele,                             //!< current fluid element
           DRT::Discretization& discretization,                   //!< fluid discretization
-          std::vector<int>& lm,              //!< location vector for DOF management
-          Epetra_SerialDenseVector& elevec1  //!< reference to element vector to be filled
+          std::vector<int>& lm,                     //!< location vector for DOF management
+          CORE::LINALG::SerialDenseVector& elevec1  //!< reference to element vector to be filled
       );
 
       //! Compute deformation gradient
@@ -955,11 +960,11 @@ namespace DRT
        */
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& elevec);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec);
 
       int ComputeError(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
+          std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
           const CORE::DRT::UTILS::GaussIntegration& intpoints2);
 
       //! interpolate the anisotropic permeability coefficients at GP from nodal values

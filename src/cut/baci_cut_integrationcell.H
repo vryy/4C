@@ -26,7 +26,7 @@ namespace CORE::GEO
     class IntegrationCell
     {
      public:
-      IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+      IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : position_(position), xyz_(xyz), points_(points), cell_(cell)
       {
@@ -56,7 +56,7 @@ namespace CORE::GEO
 
       Point::PointPosition Position() const { return position_; }
 
-      const Epetra_SerialDenseMatrix& Coordinates() const { return xyz_; }
+      const CORE::LINALG::SerialDenseMatrix& Coordinates() const { return xyz_; }
 
       bool Contains(CORE::LINALG::Matrix<3, 1>& x);
 
@@ -72,7 +72,7 @@ namespace CORE::GEO
 
      protected:
       Point::PointPosition position_;
-      Epetra_SerialDenseMatrix xyz_;
+      CORE::LINALG::SerialDenseMatrix xyz_;
       std::vector<Point*> points_;
       VolumeCell* cell_;
     };  // class IntegrationCell
@@ -82,8 +82,9 @@ namespace CORE::GEO
     class Line2IntegrationCell : public IntegrationCell
     {
      public:
-      Line2IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
-          const std::vector<Point*>& points, VolumeCell* cell)
+      Line2IntegrationCell(Point::PointPosition position,
+          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
       virtual unsigned Dim() const
@@ -102,7 +103,7 @@ namespace CORE::GEO
     class Tri3IntegrationCell : public IntegrationCell
     {
      public:
-      Tri3IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+      Tri3IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
@@ -122,8 +123,9 @@ namespace CORE::GEO
     class Quad4IntegrationCell : public IntegrationCell
     {
      public:
-      Quad4IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
-          const std::vector<Point*>& points, VolumeCell* cell)
+      Quad4IntegrationCell(Point::PointPosition position,
+          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
       virtual unsigned Dim() const
@@ -142,7 +144,7 @@ namespace CORE::GEO
     class Hex8IntegrationCell : public IntegrationCell
     {
      public:
-      Hex8IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+      Hex8IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
@@ -164,7 +166,7 @@ namespace CORE::GEO
     class Tet4IntegrationCell : public IntegrationCell
     {
      public:
-      Tet4IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
+      Tet4IntegrationCell(Point::PointPosition position, const CORE::LINALG::SerialDenseMatrix& xyz,
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
@@ -184,8 +186,9 @@ namespace CORE::GEO
     class Wedge6IntegrationCell : public IntegrationCell
     {
      public:
-      Wedge6IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
-          const std::vector<Point*>& points, VolumeCell* cell)
+      Wedge6IntegrationCell(Point::PointPosition position,
+          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
       }
@@ -205,8 +208,9 @@ namespace CORE::GEO
     class Pyramid5IntegrationCell : public IntegrationCell
     {
      public:
-      Pyramid5IntegrationCell(Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz,
-          const std::vector<Point*>& points, VolumeCell* cell)
+      Pyramid5IntegrationCell(Point::PointPosition position,
+          const CORE::LINALG::SerialDenseMatrix& xyz, const std::vector<Point*>& points,
+          VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell)
       {
       }

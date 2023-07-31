@@ -6,13 +6,13 @@
 
 *----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_matelast_remodelfiber.H"
 #include "baci_mat_par_material.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_voigt_notation.H"
 #include "baci_mat_service.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
-#include <Epetra_SerialDenseSolver.h>
 
 
 MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Material>& matdata)

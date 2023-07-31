@@ -35,7 +35,7 @@ namespace ALE
 
       /// assemble into the given block
       void Assemble(int eid, int myrank, const std::vector<int>& lmstride,
-          const Epetra_SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
+          const CORE::LINALG::SerialDenseMatrix& Aele, const std::vector<int>& lmrow,
           const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
       {
         if (condelements_->find(eid) != condelements_->end())

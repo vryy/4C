@@ -31,7 +31,6 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_serialdensematrix.H"
 
-
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(
     const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)
@@ -125,14 +124,14 @@ bool NOX::FSI::MinimalPolynomial::compute(
 
       // sum over all entries of c
       double sc = 0.0;
-      for (int l = 0; l < c.Length(); l++) sc += c(l);
+      for (int l = 0; l < c.length(); l++) sc += c(l);
 
       if (fabs(sc) < 1e-16)
       {
         throwError("compute", "sum(c) equals zero");
       }
 
-      gamma.Update(1 / sc, c, 0.0);
+      CORE::LINALG::Update(1 / sc, c, 0.0, gamma);
       res = r(k, k) * fabs(gamma(k));
 
       if (utils_->isPrintType(NOX::Utils::InnerIteration))
@@ -165,9 +164,9 @@ bool NOX::FSI::MinimalPolynomial::compute(
 
       // sum over all entries of gamma
       double sc = 0.0;
-      for (int l = 0; l < gamma.Length(); l++) sc += gamma(l);
+      for (int l = 0; l < gamma.length(); l++) sc += gamma(l);
 
-      gamma.Scale(1 / sc);
+      gamma.scale(1 / sc);
       res = 1. / sqrt(fabs(sc));
 
       if (utils_->isPrintType(NOX::Utils::InnerIteration))

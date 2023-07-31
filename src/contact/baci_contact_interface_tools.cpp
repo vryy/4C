@@ -6557,8 +6557,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
     double* n = cnode->MoData().n();
 
     // evaluate traction
-    Epetra_SerialDenseMatrix jumpvec(dim, 1);
-    Epetra_SerialDenseMatrix tanplane(dim, dim);
+    CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
+    CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
     std::vector<double> trailtraction(dim);
     std::vector<double> tractionold(dim);
     double magnitude = 0;
@@ -6595,20 +6595,20 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       dserror("Error: Unknown dimension.");
 
     // Evaluate frictional trail traction
-    Epetra_SerialDenseMatrix temptrac(dim, 1);
-    temptrac.Multiply('N', 'N', kappa * pptan, tanplane, jumpvec, 0.0);
+    CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
+    temptrac.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
     for (int j = 0; j < dim; ++j) lmuzawan += cnode->MoData().lmuzawa()[j] * cnode->MoData().n()[j];
 
     // Lagrange multiplier from Uzawa algorithm
-    Epetra_SerialDenseMatrix lmuzawa(dim, 1);
+    CORE::LINALG::SerialDenseMatrix lmuzawa(dim, 1);
     for (int k = 0; k < dim; ++k) lmuzawa(k, 0) = cnode->MoData().lmuzawa()[k];
 
     // Lagrange multiplier in tangential direction
-    Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
-    lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
+    CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
+    lmuzawatan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, lmuzawa, 0.0);
 
     if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
              InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
@@ -6712,8 +6712,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       double* n = kcnode->MoData().n();
 
       // evaluate traction
-      Epetra_SerialDenseMatrix jumpvec(dim, 1);
-      Epetra_SerialDenseMatrix tanplane(dim, dim);
+      CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
+      CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
       std::vector<double> trailtraction(dim);
       std::vector<double> tractionold(dim);
       double magnitude = 0;
@@ -6751,8 +6751,9 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
 
       // Evaluate frictional trail traction
-      Epetra_SerialDenseMatrix temptrac(dim, 1);
-      temptrac.Multiply('N', 'N', kappa * pptan, tanplane, jumpvec, 0.0);
+      CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
+      temptrac.multiply(
+          Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
 
       // Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
@@ -6760,12 +6761,12 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
         lmuzawan += kcnode->MoData().lmuzawa()[j] * kcnode->MoData().n()[j];
 
       // Lagrange multiplier from Uzawa algorithm
-      Epetra_SerialDenseMatrix lmuzawa(dim, 1);
+      CORE::LINALG::SerialDenseMatrix lmuzawa(dim, 1);
       for (int j = 0; j < dim; ++j) lmuzawa(j, 0) = kcnode->MoData().lmuzawa()[j];
 
       // Lagrange multiplier in tangential direction
-      Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
-      lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
+      CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
+      lmuzawatan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, lmuzawa, 0.0);
 
       if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
                InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
@@ -6931,8 +6932,8 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
       double* n = kcnode->MoData().n();
 
       // evaluate traction
-      Epetra_SerialDenseMatrix jumpvec(dim, 1);
-      Epetra_SerialDenseMatrix tanplane(dim, dim);
+      CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
+      CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);
       std::vector<double> trailtraction(dim);
       std::vector<double> tractionold(dim);
       double magnitude = 0;
@@ -6969,8 +6970,9 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
         dserror("Error in AssembleTangentForces: Unknown dimension.");
 
       // Evaluate frictional trail traction
-      Epetra_SerialDenseMatrix temptrac(dim, 1);
-      temptrac.Multiply('N', 'N', kappa * pptan, tanplane, jumpvec, 0.0);
+      CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
+      temptrac.multiply(
+          Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
 
       // Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
@@ -6978,12 +6980,12 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
         lmuzawan += kcnode->MoData().lmuzawa()[j] * kcnode->MoData().n()[j];
 
       // Lagrange multiplier from Uzawa algorithm
-      Epetra_SerialDenseMatrix lmuzawa(dim, 1);
+      CORE::LINALG::SerialDenseMatrix lmuzawa(dim, 1);
       for (int j = 0; j < dim; ++j) lmuzawa(j, 0) = kcnode->MoData().lmuzawa()[j];
 
       // Lagrange multiplier in tangential direction
-      Epetra_SerialDenseMatrix lmuzawatan(dim, 1);
-      lmuzawatan.Multiply('N', 'N', 1, tanplane, lmuzawa, 0.0);
+      CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
+      lmuzawatan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, lmuzawa, 0.0);
 
       if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
                InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||

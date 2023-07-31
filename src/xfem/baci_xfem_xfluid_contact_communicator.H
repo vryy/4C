@@ -183,7 +183,7 @@ namespace XFEM
 
     /// Get the CUT integration points for this contact element (id)
     void GetCutSideIntegrationPoints(
-        int sid, Epetra_SerialDenseMatrix& coords, std::vector<double>& weights, int& npg);
+        int sid, CORE::LINALG::SerialDenseMatrix& coords, std::vector<double>& weights, int& npg);
 
     /// Finalize Map of interface element owners
     void FillComplete_SeleMap();
@@ -240,14 +240,14 @@ namespace XFEM
     void Get_States(const int fluidele_id, const std::vector<int>& fluid_nds,
         const DRT::ELEMENTS::StructuralSurface* sele, const CORE::LINALG::Matrix<2, 1>& selexsi,
         const CORE::LINALG::Matrix<3, 1>& x, DRT::Element*& fluidele,
-        Epetra_SerialDenseMatrix& ele_xyze, std::vector<double>& velpres, std::vector<double>& disp,
-        std::vector<double>& ivel, double& pres_m, CORE::LINALG::Matrix<3, 1>& vel_m,
-        CORE::LINALG::Matrix<3, 1>& vel_s, CORE::LINALG::Matrix<3, 3>& vderxy_m,
-        CORE::LINALG::Matrix<3, 1>& velpf_s);
+        CORE::LINALG::SerialDenseMatrix& ele_xyze, std::vector<double>& velpres,
+        std::vector<double>& disp, std::vector<double>& ivel, double& pres_m,
+        CORE::LINALG::Matrix<3, 1>& vel_m, CORE::LINALG::Matrix<3, 1>& vel_s,
+        CORE::LINALG::Matrix<3, 3>& vderxy_m, CORE::LINALG::Matrix<3, 1>& velpf_s);
 
     /// Get the Nitsche penalty parameter
     void Get_Penalty_Param(DRT::Element* fluidele, CORE::GEO::CUT::VolumeCell* volumecell,
-        Epetra_SerialDenseMatrix& ele_xyze, const CORE::LINALG::Matrix<3, 1>& elenormal,
+        CORE::LINALG::SerialDenseMatrix& ele_xyze, const CORE::LINALG::Matrix<3, 1>& elenormal,
         double& penalty_fac, const CORE::LINALG::Matrix<3, 1>& vel_m);
 
     /// Get the Nitsche penalty parameter

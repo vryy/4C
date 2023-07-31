@@ -189,7 +189,7 @@ static std::string PosToString(double x, double y, double z)
 std::string CORE::GEO::DomainIntCell::toString() const
 {
   std::ostringstream s;
-  int numpoints = nodalpos_xi_domain_.N();
+  int numpoints = nodalpos_xi_domain_.numCols();
   s << "DomainIntCell:" << std::endl;
   s << " position in xi coordinates: " << std::endl;
   for (int inode = 0; inode < numpoints; ++inode)
@@ -488,7 +488,7 @@ CORE::GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::opera
  *----------------------------------------------------------------------------*/
 template <> /* function specialization */
 void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
-    const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center)
+    const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center)
 {
   const ::DRT::Element::DiscretizationType cellType = ::DRT::Element::line2;
   const unsigned dim = CORE::DRT::UTILS::DisTypeToDim<cellType>::dim;
@@ -501,18 +501,18 @@ void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
  *----------------------------------------------------------------------*/
 template <> /* function specialization */
 void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
-    const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center)
+    const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center)
 {
-  phys_center.SetCopy(xyze.A());
+  phys_center.SetCopy(xyze.values());
 }
 
 template class CORE::GEO::ConcreteBoundaryIntCell<2, ::DRT::Element::point1>;
 template class CORE::GEO::ConcreteBoundaryIntCell<2, ::DRT::Element::line2>;
 
 template void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
-    const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
+    const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
 template void CORE::GEO::ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
-    const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
+    const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
 
 template CORE::GEO::BoundaryIntCell*
 CORE::GEO::CreateConcreteBoundaryIntCell<::DRT::Element::point1>(const int& surface_ele_gid,

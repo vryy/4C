@@ -142,9 +142,9 @@ namespace CORE::VOLMORTAR
     bool CheckMapping3D(::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi);
 
     //@}
-    int ngp_;                          // number of Gauss points
-    Epetra_SerialDenseMatrix coords_;  // Gauss point coordinates
-    std::vector<double> weights_;      // Gauss point weights
+    int ngp_;                                 // number of Gauss points
+    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    std::vector<double> weights_;             // Gauss point weights
 
     // input parameter
     INPAR::VOLMORTAR::DualQuad dualquad_;  // type of quadratic weighting interpolation
@@ -192,9 +192,9 @@ namespace CORE::VOLMORTAR
     bool CheckMapping3D(::DRT::Element& sele, ::DRT::Element& mele, double* sxi, double* mxi);
 
     //@}
-    int ngp_;                          // number of Gauss points
-    Epetra_SerialDenseMatrix coords_;  // Gauss point coordinates
-    std::vector<double> weights_;      // Gauss point weights
+    int ngp_;                                 // number of Gauss points
+    CORE::LINALG::SerialDenseMatrix coords_;  // Gauss point coordinates
+    std::vector<double> weights_;             // Gauss point weights
 
     // input parameter
     INPAR::VOLMORTAR::DualQuad dualquad_;  // type of quadratic weighting interpolation

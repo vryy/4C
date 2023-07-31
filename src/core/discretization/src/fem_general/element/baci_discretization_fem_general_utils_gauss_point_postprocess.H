@@ -11,7 +11,7 @@
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_H
 
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_lib_element.H"
 
@@ -33,8 +33,8 @@ namespace CORE::DRT::ELEMENTS
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param nodal_data (out) : Assembled data
    */
-  void ExtrapolateGaussPointQuantityToNodes(
-      ::DRT::Element& ele, const Epetra_SerialDenseMatrix& data, Epetra_MultiVector& nodal_data);
+  void ExtrapolateGaussPointQuantityToNodes(::DRT::Element& ele,
+      const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& nodal_data);
 
   /*!
    * @brief Averaging of all Gauss point quantities in @data within the element @ele and assembly to
@@ -44,8 +44,8 @@ namespace CORE::DRT::ELEMENTS
    * @param data (in) : Gauss point data in a Matrix (numgp x numdim of vector)
    * @param element_data (out) : Assembled data
    */
-  void EvaluateGaussPointQuantityAtElementCenter(
-      ::DRT::Element& ele, const Epetra_SerialDenseMatrix& data, Epetra_MultiVector& element_data);
+  void EvaluateGaussPointQuantityAtElementCenter(::DRT::Element& ele,
+      const CORE::LINALG::SerialDenseMatrix& data, Epetra_MultiVector& element_data);
 
 
   /*!
@@ -71,15 +71,15 @@ namespace CORE::DRT::ELEMENTS
     int lid = elemap.LID(ele.Id());
     if (lid != -1)
     {
-      for (decltype(gp_data.N()) i = 0; i < gp_data.N(); ++i)
+      for (decltype(gp_data.numCols()) i = 0; i < gp_data.numCols(); ++i)
       {
         double& s = (*(global_data(i)))[lid];  // resolve pointer for faster access
         s = 0.;
-        for (decltype(gp_data.M()) j = 0; j < gp_data.M(); ++j)
+        for (decltype(gp_data.numRows()) j = 0; j < gp_data.numRows(); ++j)
         {
           s += gp_data(j, i);
         }
-        s *= 1.0 / gp_data.M();
+        s *= 1.0 / gp_data.numRows();
       }
     }
   }

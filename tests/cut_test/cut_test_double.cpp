@@ -21,7 +21,7 @@ void test_hex8_quad4_double_cut()
   // GEO::CUT::Element * hex8 =
   create_hex8(mesh);
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   CORE::GEO::CUT::Mesh& cut_mesh1 = intersection.CutMesh(0);
 

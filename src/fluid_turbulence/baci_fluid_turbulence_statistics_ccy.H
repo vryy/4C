@@ -38,7 +38,7 @@ output.
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 
 
@@ -241,9 +241,9 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> pointsumcc_;
 
     //! sum over c (over one plane in each component)
-    Teuchos::RCP<Epetra_SerialDenseMatrix> pointsumphi_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> pointsumphi_;
     //! sum over c^2 (over one plane in each component)
-    Teuchos::RCP<Epetra_SerialDenseMatrix> pointsumphiphi_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> pointsumphiphi_;
   };
 
 }  // namespace FLD

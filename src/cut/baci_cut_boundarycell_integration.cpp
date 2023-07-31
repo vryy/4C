@@ -19,12 +19,12 @@
   Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
   facet is projected into appropriate coordinate plane to obtain quadrature
 *---------------------------------------------------------------------------------------------*/
-Epetra_SerialDenseVector
+CORE::LINALG::SerialDenseVector
 CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
 {
   std::vector<std::vector<double>> corners1;
   bcell_->CornerPointsLocal(elem1_, corners1);
-  Epetra_SerialDenseVector rhs_bcell_temp(num_func_);
+  CORE::LINALG::SerialDenseVector rhs_bcell_temp(num_func_);
   FacetIntegration faee1(bcell_, elem1_, position_, true, false);
   for (int fnc = 1; fnc <= num_func_; fnc++)
   {
@@ -36,7 +36,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
     dserror("Negative area found in base function integration. Is ordering of vertices a
     problem?");*/
 
-  Epetra_SerialDenseVector Bcellweights;
+  CORE::LINALG::SerialDenseVector Bcellweights;
 
   int ptsEachLine = 14;  // 14 points gave min error for the test cases
 
@@ -79,15 +79,15 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
       }
     }
 
-    Epetra_SerialDenseVector rhs_bcell(num_func_ - deleteRowNos.size());
+    CORE::LINALG::SerialDenseVector rhs_bcell(num_func_ - deleteRowNos.size());
     if (deleteRowNos.size() == 0)
     {
-      for (int m = 0; m < rhs_bcell_temp.Length(); m++) rhs_bcell(m) = rhs_bcell_temp(m);
+      for (int m = 0; m < rhs_bcell_temp.length(); m++) rhs_bcell(m) = rhs_bcell_temp(m);
     }
     else
     {
       int rowno = 0, rhsno = 0;
-      for (int m = 0; m < rhs_bcell_temp.Length(); m++)
+      for (int m = 0; m < rhs_bcell_temp.length(); m++)
       {
         int deleteNo = deleteRowNos[rowno];
         if (m == deleteNo)
@@ -104,10 +104,10 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
     }
 
     LeastSquares least(moment_matbc, rhs_bcell);
-    Bcellweights.Size(moment_matbc[0].size());
+    Bcellweights.size(moment_matbc[0].size());
     Bcellweights = least.linear_least_square();
 
-    Epetra_SerialDenseVector err(num_func_);
+    CORE::LINALG::SerialDenseVector err(num_func_);
     for (int i = 0; i < num_func_; i++)
     {
       err(i) = 0.0;
@@ -122,7 +122,7 @@ CORE::GEO::CUT::BoundarycellIntegration::GenerateBoundaryCellIntegrationRule()
         err(i) = err(i) - rhs_bcell_temp(i);
     }
 
-    double maxerr = err.InfNorm();
+    double maxerr = err.normInf();
 
     if (maxerr < 1e-10 || ptsEachLine > 25)
       break;

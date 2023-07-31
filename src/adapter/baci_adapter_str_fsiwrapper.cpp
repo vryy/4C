@@ -183,7 +183,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::ExtractInterfaceDispnp
 // Apply interface forces
 void ADAPTER::FSIStructureWrapper::ApplyInterfaceForces(Teuchos::RCP<Epetra_Vector> iforce)
 {
-  FSIModelEvaluator()->GetInterfaceForceNpPtr()->Scale(0.0);
+  FSIModelEvaluator()->GetInterfaceForceNpPtr()->PutScalar(0.0);
   interface_->AddFSICondVector(iforce, FSIModelEvaluator()->GetInterfaceForceNpPtr());
   return;
 }

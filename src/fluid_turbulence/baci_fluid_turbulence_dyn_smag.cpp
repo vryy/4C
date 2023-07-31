@@ -429,11 +429,11 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   }
 
   // dummy matrices and vectors for element call
-  Epetra_SerialDenseMatrix dummym1;
-  Epetra_SerialDenseMatrix dummym2;
-  Epetra_SerialDenseVector dummyv1;
-  Epetra_SerialDenseVector dummyv2;
-  Epetra_SerialDenseVector dummyv3;
+  CORE::LINALG::SerialDenseMatrix dummym1;
+  CORE::LINALG::SerialDenseMatrix dummym2;
+  CORE::LINALG::SerialDenseVector dummyv1;
+  CORE::LINALG::SerialDenseVector dummyv2;
+  CORE::LINALG::SerialDenseVector dummyv3;
 
   // loop all elements on this proc (excluding ghosted ones)
   for (int nele = 0; nele < discret_->NumMyRowElements(); ++nele)
@@ -810,11 +810,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(Teuchos::ParameterList& extraparams, 
   calc_turb_prandtl_params.set("col_filtered_dens_temp", col_filtered_dens_temp_);
 
   // dummy matrices and vectors for element call
-  Epetra_SerialDenseMatrix dummym1;
-  Epetra_SerialDenseMatrix dummym2;
-  Epetra_SerialDenseVector dummyv1;
-  Epetra_SerialDenseVector dummyv2;
-  Epetra_SerialDenseVector dummyv3;
+  CORE::LINALG::SerialDenseMatrix dummym1;
+  CORE::LINALG::SerialDenseMatrix dummym2;
+  CORE::LINALG::SerialDenseVector dummyv1;
+  CORE::LINALG::SerialDenseVector dummyv2;
+  CORE::LINALG::SerialDenseVector dummyv3;
 
   // loop all elements on this proc (excluding ghosted ones)
   for (int nele = 0; nele < scatradiscret_->NumMyRowElements(); ++nele)

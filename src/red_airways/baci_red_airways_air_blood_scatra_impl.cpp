@@ -67,9 +67,11 @@ DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::RedAirBloodScatraImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Evaluate(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
   return 0;
 }
@@ -103,10 +105,10 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* e
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Sysmat(RedAirBloodScatra* ele,
-    Epetra_SerialDenseVector& epnp, Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm,
-    Epetra_SerialDenseMatrix& sysmat, Epetra_SerialDenseVector& rhs,
-    Teuchos::RCP<const MAT::Material> material, Teuchos::ParameterList& params, double time,
-    double dt)
+    CORE::LINALG::SerialDenseVector& epnp, CORE::LINALG::SerialDenseVector& epn,
+    CORE::LINALG::SerialDenseVector& epnm, CORE::LINALG::SerialDenseMatrix& sysmat,
+    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<const MAT::Material> material,
+    Teuchos::ParameterList& params, double time, double dt)
 {
 }
 
@@ -117,7 +119,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Sysmat(RedAirBloodScatra* el
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::EvaluateTerminalBC(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
+    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
 {
 }
 
@@ -129,8 +131,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::EvaluateTerminalBC(RedAirBlo
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::CalcFlowRates(RedAirBloodScatra* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& elevec1,  // a_volumenp,
-    Epetra_SerialDenseVector& elevec2,  // a_volume_strain_np,
+    CORE::LINALG::SerialDenseVector& elevec1,  // a_volumenp,
+    CORE::LINALG::SerialDenseVector& elevec2,  // a_volume_strain_np,
     std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 
 {
@@ -195,8 +197,8 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::GetCoupledValues(RedAirBlood
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAirBloodScatra* ele,
-    Epetra_SerialDenseVector& dscatra, Epetra_SerialDenseVector& dvo2,
-    Epetra_SerialDenseVector& scatra_acinus, Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseVector& dscatra, CORE::LINALG::SerialDenseVector& dvo2,
+    CORE::LINALG::SerialDenseVector& scatra_acinus, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 
 {

@@ -112,14 +112,14 @@ INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofDiffPressure::PoroPhaseLawTy
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseDofDiffPressure::FillDoFMatrix(
-    Epetra_SerialDenseMatrix& dofmat, int numphase) const
+    CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // safety check
-  if ((int)diffpresCoeffs_->size() != dofmat.N())
+  if ((int)diffpresCoeffs_->size() != dofmat.numCols())
     dserror(
         "Number of phases given by the poro singlephase material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
-        phaselaw_->Id(), diffpresCoeffs_->size(), dofmat.N());
+        phaselaw_->Id(), diffpresCoeffs_->size(), dofmat.numCols());
 
   // fill pressure coefficients into matrix
   for (size_t i = 0; i < diffpresCoeffs_->size(); i++)
@@ -217,7 +217,7 @@ INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofPressure::PoroPhaseLawType()
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseDofPressure::FillDoFMatrix(
-    Epetra_SerialDenseMatrix& dofmat, int numphase) const
+    CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // just mark the corresponding entry in the matrix
   dofmat(numphase, numphase) = 1.0;
@@ -314,17 +314,17 @@ INPAR::MAT::MaterialType MAT::PAR::FluidPoroPhaseDofSaturation::PoroPhaseLawType
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
 void MAT::PAR::FluidPoroPhaseDofSaturation::FillDoFMatrix(
-    Epetra_SerialDenseMatrix& dofmat, int numphase) const
+    CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   // get pressure coefficients of phase law
   const std::vector<int>* presIDs = phaselaw_->PresIds();
 
   // safety check
-  if ((int)presIDs->size() != dofmat.N())
+  if ((int)presIDs->size() != dofmat.numCols())
     dserror(
         "Number of phases given by the poro phase law material %i "
         "does not match number of DOFs (%i phases and %i DOFs)!",
-        phaselaw_->Id(), presIDs->size(), dofmat.N());
+        phaselaw_->Id(), presIDs->size(), dofmat.numCols());
 
   // fill pressure coefficients of phase law into matrix
   for (size_t i = 0; i < presIDs->size(); i++)

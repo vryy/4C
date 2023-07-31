@@ -1236,7 +1236,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       int gid = dis1_->NodeRowMap()->GID(n);
       ::DRT::Node* node = dis1_->gNode(gid);
 
-      Epetra_SerialDenseVector pos(3);
+      CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
       pos(1) = node->X()[1];
       pos(2) = node->X()[2];
@@ -1260,7 +1260,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       int gid = dis2_->NodeRowMap()->GID(n);
       ::DRT::Node* node = dis2_->gNode(gid);
 
-      Epetra_SerialDenseVector pos(3);
+      CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
       pos(1) = node->X()[1];
       pos(2) = node->X()[2];
@@ -1453,7 +1453,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       int gid = dis1_->NodeRowMap()->GID(n);
       ::DRT::Node* node = dis1_->gNode(gid);
 
-      Epetra_SerialDenseVector pos(3);
+      CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
       pos(1) = node->X()[1];
       pos(2) = node->X()[2];
@@ -1476,7 +1476,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::MeshInit()
       int gid = dis2_->NodeRowMap()->GID(n);
       ::DRT::Node* node = dis2_->gNode(gid);
 
-      Epetra_SerialDenseVector pos(3);
+      CORE::LINALG::SerialDenseVector pos(3);
       pos(0) = node->X()[0];
       pos(1) = node->X()[1];
       pos(2) = node->X()[2];
@@ -4483,7 +4483,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
 
     // temporary storage for transformed points
     int np = (int)collconvexhull.size();
-    Epetra_SerialDenseMatrix transformed(2, np);
+    CORE::LINALG::SerialDenseMatrix transformed(2, np);
 
     // transform each convex hull point
     for (int i = 0; i < np; ++i)
@@ -4554,7 +4554,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::CenterTriangulation(
    else if (clipsize==4)
    {
    // IntCell 1 vertices = clip polygon vertices 0,1,2
-   Epetra_SerialDenseMatrix coords(3,3);
+   CORE::LINALG::SerialDenseMatrix coords(3,3);
    for (int k=0;k<3;++k)
    {
    coords(k,0) = Clip()[0].Coord()[k];
@@ -4752,7 +4752,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::DelaunayTriangulation(
       int idx2 = triangles[t][2];
 
       // coordinates of current triangle
-      Epetra_SerialDenseMatrix coords(3, 3);
+      CORE::LINALG::SerialDenseMatrix coords(3, 3);
       for (int k = 0; k < 3; ++k)
       {
         coords(k, 0) = clip[idx0].Coord()[k];

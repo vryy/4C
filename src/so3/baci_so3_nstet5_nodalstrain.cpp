@@ -10,15 +10,15 @@
 
 #include <Teuchos_TimeMonitor.hpp>
 
+#include <Teuchos_SerialDenseSolver.hpp>
+#include <Epetra_FECrsMatrix.h>
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
 #include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include <Epetra_SerialDenseSolver.h>
-#include <Epetra_FECrsMatrix.h>
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_mat_service.H"
 #include "baci_mat_micromaterial.H"
@@ -170,8 +170,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
         action == "calc_struct_nlnstiff" || action == "calc_struct_internalforce")
     {
       // do nodal integration of stiffness and internal force
-      stiff.LightShape(ndofperpatch, ndofperpatch);
-      force.LightSize(ndofperpatch);
+      stiff.shape(ndofperpatch, ndofperpatch);
+      force.size(ndofperpatch);
       CORE::LINALG::SerialDenseMatrix* stiffptr = &stiff;
       if (action == "calc_struct_internalforce") stiffptr = nullptr;
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::NodalIntegration");
@@ -384,8 +384,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis, Teuchos::P
 /*----------------------------------------------------------------------*
  |  do nodal integration (public)                              gee 03/12|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff,
-    Epetra_SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
+void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix* stiff,
+    CORE::LINALG::SerialDenseVector* force, std::map<int, DRT::Node*>& adjnode,
     std::vector<DRT::ELEMENTS::NStet5*>& adjele, std::map<int, std::vector<int>>& adjsubele,
     std::vector<int>& lm, std::vector<std::vector<std::vector<int>>>& lmlm,
     const Epetra_Vector& disp, DRT::Discretization& dis, std::vector<double>* nodalstress,
@@ -477,8 +477,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   //-----------------------------------------------------------------------
   // build B operator
 
-  Epetra_SerialDenseMatrix bopbar(6, ndofinpatch);
-  Epetra_SerialDenseMatrix nxyzbar(9, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix bopbar(6, ndofinpatch);
+  CORE::LINALG::SerialDenseMatrix nxyzbar(9, ndofinpatch);
 
   // loop elements in patch
   for (int ele = 0; ele < neleinpatch; ++ele)
@@ -652,17 +652,17 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(Epetra_SerialDenseMatrix* stiff
   //----------------------------------------------------- internal forces
   if (force)
   {
-    Epetra_SerialDenseVector stress_epetra(::View, stress.A(), stress.Rows());
-    force->Multiply('T', 'N', Vnode, bopbar, stress_epetra, 0.0);
+    CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
+    force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, Vnode, bopbar, stress_epetra, 0.0);
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
   {
-    Epetra_SerialDenseMatrix cmat_epetra(
-        ::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
+    CORE::LINALG::SerialDenseMatrix cmat_epetra(
+        Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
-    cb.Multiply('N', 'N', 1.0, cmat_epetra, bopbar, 0.0);
-    stiff->Multiply('T', 'N', Vnode, bopbar, cb, 0.0);
+    cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
+    stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, Vnode, bopbar, cb, 0.0);
   }
 
   //----------------------------------------------------- geom. stiffness

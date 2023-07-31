@@ -244,37 +244,6 @@ namespace DRT
 
       //! @name Evaluation
 
-      /*!
-      \brief Evaluate element
-
-      \param params (in/out): ParameterList for communication between control routine
-                              and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-                              the controling method does not epxect the element to fill
-                              this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-                              the controlling method does not epxect the element
-                              to fill this vector
-      \return 0 if successful, negative otherwise
-      */
-      //  int Evaluate(Teuchos::ParameterList&   params,
-      //               DRT::Discretization&      discretization,
-      //               std::vector<int>&         lm,
-      //               Epetra_SerialDenseMatrix& elemat1,
-      //               Epetra_SerialDenseMatrix& elemat2,
-      //               Epetra_SerialDenseVector& elevec1,
-      //               Epetra_SerialDenseVector& elevec2,
-      //               Epetra_SerialDenseVector& elevec3);
-
       //@}
 
       //! @name Evaluate methods

@@ -9,7 +9,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_hex8.H"
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_element_service.H"
 #include "baci_so3_hex8fbar.H"
 #include "baci_so3_surface.H"
@@ -174,7 +174,7 @@ DRT::ELEMENTS::So_hex8::So_hex8(const DRT::ELEMENTS::So_hex8& old)
   for (int i = 0; i < (int)invJ_.size(); ++i)
   {
     // can this size be anything but NUMDIM_SOH8 x NUMDIM_SOH8?
-    // invJ_[i].Shape(old.invJ_[i].M(),old.invJ_[i].N());
+    // invJ_[i].Shape(old.invJ_[i].numRows(),old.invJ_[i].numCols());
     invJ_[i] = old.invJ_[i];
   }
 

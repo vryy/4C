@@ -36,9 +36,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
@@ -77,8 +79,8 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::integrate_shape_functions:
     {
       // calculate integral of shape functions
-      const Epetra_IntSerialDenseVector& dofids = params.get<Epetra_IntSerialDenseVector>("dofids");
-      IntegrateShapeFunctions(ele, elevec1_epetra, dofids);
+      const auto dofids = params.get<Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>>("dofids");
+      IntegrateShapeFunctions(ele, elevec1_epetra, *dofids);
 
       break;
     }
@@ -549,7 +551,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
     case SCATRA::Action::calc_error:
     {
       // check if length suffices
-      if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
 
       // need current solution
       Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -814,9 +816,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // setup
   if (SetupCalc(ele, discretization) == -1) return 0;
@@ -862,15 +866,16 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateService(DRT::Element
  | Element reconstruct grad phi, one deg of freedom (for now) winter 04/14 |
  *-------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientEleCenter(
-    const DRT::Element* ele, Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientEleCenter(const DRT::Element* ele,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   if (distype != DRT::Element::hex8 && distype != DRT::Element::tet4 &&
       distype != DRT::Element::quad4 && distype != DRT::Element::tri3)
     dserror("this is currently only implemented for linear elements");
   // get node coordinates
 
-  //  GEO::fillInitialPositionArray<distype,nsd_, CORE::LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  //  CORE::GEO::fillInitialPositionArray<distype,nsd_, CORE::LINALG::Matrix<nsd_,nen_>
+  //  >(ele,xyze_);
   //  // Do ALE specific updates if necessary
   //  if (ele->IsAle())
   //  {
@@ -917,8 +922,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientEleCenter(
  *-------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const DRT::Element* ele,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -966,7 +971,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
  *-------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const DRT::Element* ele,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
     const INPAR::SCATRA::L2ProjectionSystemType& systemtype)
 {
   // integration points and weights
@@ -1081,7 +1086,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientAtNodes(const D
  *-------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcCurvatureAtNodes(const DRT::Element* ele,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseVector& elevec1,
     const std::vector<CORE::LINALG::Matrix<nen_, nsd_>>& egradphinp)
 {
   // integration points and weights
@@ -1275,12 +1280,12 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBoxFilter(DRT::Element*
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
-    DRT::Element* ele,                    //!< current element
-    Epetra_SerialDenseMatrix& emat,       //!< element matrix
-    Epetra_SerialDenseVector& erhs,       //!< element residual
-    Teuchos::ParameterList& params,       //!< parameter list
-    DRT::Discretization& discretization,  //!< discretization
-    DRT::Element::LocationArray& la       //!< location array
+    DRT::Element* ele,                      //!< current element
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element residual
+    Teuchos::ParameterList& params,         //!< parameter list
+    DRT::Discretization& discretization,    //!< discretization
+    DRT::Element::LocationArray& la         //!< location array
 )
 {
   // extract relevant quantities from discretization and parameter list
@@ -1418,7 +1423,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
   // scale element matrix appropriately to be consistent with scaling of global residual vector
   // computed by AssembleMatAndRHS() routine (see CalcInitialTimeDerivative() routine on time
   // integrator level)
-  emat.Scale(scatraparatimint_->TimeFacRhs());
+  emat.scale(scatraparatimint_->TimeFacRhs());
 }  // ScaTraEleCalc::CalcInitialTimeDerivative()
 
 
@@ -1427,7 +1432,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcInitialTimeDerivative(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CorrectRHSFromCalcRHSLinMass(
-    Epetra_SerialDenseVector& erhs, const int k, const double fac, const double densnp,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
     const double phinp)
 {
   // fac->-fac to change sign of rhs
@@ -1443,15 +1448,16 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CorrectRHSFromCalcRHSLinMas
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::IntegrateShapeFunctions(
-    const DRT::Element* ele, Epetra_SerialDenseVector& elevec1,
-    const Epetra_IntSerialDenseVector& dofids)
+    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& elevec1,
+    const CORE::LINALG::IntSerialDenseVector& dofids)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
       SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // safety check
-  if (dofids.M() < numdofpernode_) dserror("Dofids vector is too short. Received not enough flags");
+  if (dofids.numRows() < numdofpernode_)
+    dserror("Dofids vector is too short. Received not enough flags");
 
   // loop over integration points
   // this order is not efficient since the integration of the shape functions is always the same for
@@ -1587,8 +1593,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateFlux(
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDomainIntegral(
-    const DRT::Element* ele,          //!< the element we are dealing with
-    Epetra_SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
+    const DRT::Element* ele,                 //!< the element we are dealing with
+    CORE::LINALG::SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
 )
 {
   // initialize variable for domain integral
@@ -1618,7 +1624,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDomainIntegral(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalars(const DRT::Element* ele,
-    Epetra_SerialDenseVector& scalars, const bool inverting, const bool calc_grad_phi)
+    CORE::LINALG::SerialDenseVector& scalars, const bool inverting, const bool calc_grad_phi)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -1671,7 +1677,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalarTimeDerivatives(
     const DRT::Discretization& discretization,  //!< discretization
     const std::vector<int>& lm,                 //!< location vector
-    Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+    CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
   // extract scalar time derivatives from global state vector
@@ -1709,7 +1715,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateScalarTimeDerivati
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateMomentumAndVolume(
-    const DRT::Element* ele, Epetra_SerialDenseVector& momandvol, const double interface_thickness)
+    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& momandvol,
+    const double interface_thickness)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(
@@ -1773,7 +1780,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalculateMomentumAndVolume(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiffMatrix(
-    const DRT::Element* ele, Epetra_SerialDenseMatrix& emat)
+    const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat)
 {
   /*----------------------------------------------------------------------*/
   // integration loop for one element
@@ -1808,8 +1815,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcSubgrDiffMatrix(
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    Epetra_SerialDenseVector& subgrdiff)
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+    CORE::LINALG::SerialDenseVector& subgrdiff)
 {
   // screen output
   std::cout << "FINITE DIFFERENCE CHECK FOR ELEMENT " << ele->Id();
@@ -1828,9 +1835,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
   }
 
   // initialize element matrix and vectors for perturbed state
-  Epetra_SerialDenseMatrix emat_dummy(emat);
-  Epetra_SerialDenseVector erhs_perturbed(erhs);
-  Epetra_SerialDenseVector subgrdiff_dummy(subgrdiff);
+  CORE::LINALG::SerialDenseMatrix emat_dummy(emat);
+  CORE::LINALG::SerialDenseVector erhs_perturbed(erhs);
+  CORE::LINALG::SerialDenseVector subgrdiff_dummy(subgrdiff);
 
   // initialize counter for failed finite difference checks
   unsigned counter(0);
@@ -1848,9 +1855,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
       unsigned col = inode * numdofpernode_ + idof;
 
       // clear element matrix and vectors for perturbed state
-      emat_dummy.Scale(0.0);
-      erhs_perturbed.Scale(0.0);
-      subgrdiff_dummy.Scale(0.0);
+      emat_dummy.putScalar(0.0);
+      erhs_perturbed.putScalar(0.0);
+      subgrdiff_dummy.putScalar(0.0);
 
       // fill state vectors with original state variables
       for (int k = 0; k < numscal_; ++k)
@@ -1981,7 +1988,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::FDCheck(DRT::Element* ele,
   *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
+    const DRT::Element* ele, Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseVector& errors)
 {
   if (Teuchos::getIntegralValue<SCATRA::Action>(params, "action") != SCATRA::Action::calc_error)
     dserror("How did you get here?");
@@ -2164,9 +2172,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalErrorComparedToAnalytSol
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHeteroReacMatAndRHS(
-    DRT::Element* ele,               ///< the element whose matrix is calculated
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs   ///< element rhs to calculate
+    DRT::Element* ele,                      ///< the element whose matrix is calculated
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------

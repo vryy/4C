@@ -349,21 +349,24 @@ namespace CORE::GEO
      *   since a vector can be corrected by using the view constructor of a new
      *   CORE::LINALG::(T)Matrix.
      *
-     *  \param wrong_shape   (in) : matrix with the wrong shape (Epetra_SerialDenseMatrix
+     *  \param wrong_shape   (in) : matrix with the wrong shape (CORE::LINALG::SerialDenseMatrix
      *                              or CORE::LINALG::(T)Matrix)
      *  \param correct_shape (out): matrix with the desired number of rows and columns.
-     *                              (Epetra_SerialDenseMatrix or CORE::LINALG::(T)Matrix)
+     *                              (CORE::LINALG::SerialDenseMatrix or CORE::LINALG::(T)Matrix)
      *
      *  \author hiermeier \date 11/16 */
     template <class T1, class T2>
     void FixMatrixShape(const T1& wrong_shape, T2& correct_shape)
     {
-      if (static_cast<unsigned>(wrong_shape.M()) < static_cast<unsigned>(correct_shape.M()) or
-          static_cast<unsigned>(wrong_shape.N()) < static_cast<unsigned>(correct_shape.N()))
+      if (static_cast<unsigned>(wrong_shape.numRows()) <
+              static_cast<unsigned>(correct_shape.numRows()) or
+          static_cast<unsigned>(wrong_shape.numCols()) <
+              static_cast<unsigned>(correct_shape.numCols()))
         dserror("Shape fixing is not possible!");
 
-      for (unsigned c = 0; c < static_cast<unsigned>(correct_shape.N()); ++c)
-        std::copy(&wrong_shape(0, c), &wrong_shape(0, c) + correct_shape.M(), &correct_shape(0, c));
+      for (unsigned c = 0; c < static_cast<unsigned>(correct_shape.numCols()); ++c)
+        std::copy(
+            &wrong_shape(0, c), &wrong_shape(0, c) + correct_shape.numRows(), &correct_shape(0, c));
     }
 
     /*--------------------------------------------------------------------------*/
@@ -392,8 +395,8 @@ namespace CORE::GEO
       CORE::LINALG::Matrix<probdim, probdim> xjm;
 
       CORE::LINALG::Matrix<probdim, numNodesElement> xyze_linalg;
-      if (xyze.M() == probdim and xyze.N() == numNodesElement)
-        xyze_linalg.SetView(xyze.A());
+      if (xyze.numRows() == probdim and xyze.numCols() == numNodesElement)
+        xyze_linalg.SetView(xyze.values());
       else
         FixMatrixShape(xyze, xyze_linalg);
 

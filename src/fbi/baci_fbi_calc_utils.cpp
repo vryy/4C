@@ -81,15 +81,15 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
     for (unsigned int iele = 0; iele < 2; ++iele)
     {
       // resize and clear variable
-      ((*eleforce)[iele]).Size(numdof_ele[iele]);
+      ((*eleforce)[iele]).size(numdof_ele[iele]);
 
       // safety check: dimensions
-      if ((unsigned int)eleforce_centerlineDOFs[iele].RowDim() !=
+      if ((unsigned int)eleforce_centerlineDOFs[iele].numRows() !=
           ele_centerlinedofindices[iele].size())
         dserror(
             "size mismatch! need to assemble %d values of centerline-Dof based "
             "force vector into element vector but only got %d element-local Dof indices",
-            eleforce_centerlineDOFs[iele].RowDim(), ele_centerlinedofindices[iele].size());
+            eleforce_centerlineDOFs[iele].numRows(), ele_centerlinedofindices[iele].size());
 
       // Todo maybe use a more general 'SerialDenseAssemble' method here
       for (unsigned int idof = 0; idof < ele_centerlinedofindices[iele].size(); ++idof)
@@ -105,22 +105,22 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
       for (unsigned int jele = 0; jele < 2; ++jele)
       {
         // resize and clear variable
-        ((*elestiff)[iele][jele]).Shape(numdof_ele[iele], numdof_ele[jele]);
+        ((*elestiff)[iele][jele]).shape(numdof_ele[iele], numdof_ele[jele]);
 
         // safety check: dimensions
-        if ((unsigned int)elestiff_centerlineDOFs[iele][jele].RowDim() !=
+        if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numRows() !=
             ele_centerlinedofindices[iele].size())
           dserror(
               "size mismatch! need to assemble %d row values of centerline-Dof based "
               "stiffness matrix into element matrix but only got %d element-local Dof indices",
-              elestiff_centerlineDOFs[iele][jele].RowDim(), ele_centerlinedofindices[iele].size());
+              elestiff_centerlineDOFs[iele][jele].numRows(), ele_centerlinedofindices[iele].size());
 
-        if ((unsigned int)elestiff_centerlineDOFs[iele][jele].ColDim() !=
+        if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numCols() !=
             ele_centerlinedofindices[jele].size())
           dserror(
               "size mismatch! need to assemble %d column values of centerline-Dof based "
               "stiffness matrix into element matrix but only got %d element-local Dof indices",
-              elestiff_centerlineDOFs[iele][jele].ColDim(), ele_centerlinedofindices[jele].size());
+              elestiff_centerlineDOFs[iele][jele].numCols(), ele_centerlinedofindices[jele].size());
 
         for (unsigned int idof = 0; idof < ele_centerlinedofindices[iele].size(); ++idof)
           for (unsigned int jdof = 0; jdof < ele_centerlinedofindices[jele].size(); ++jdof)

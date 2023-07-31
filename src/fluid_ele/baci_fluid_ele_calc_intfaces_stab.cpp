@@ -346,10 +346,10 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
   numgp_ = intpoints_->NumPoints();
 
   // local coordinates of the face's gausspoints w.r.t parent and neighbor element
-  p_xi_points_.Shape(numgp_, nsd_);
-  n_xi_points_.Shape(numgp_, nsd_);
-  face_xi_points_master_.Shape(numgp_, facensd_);
-  face_xi_points_slave_.Shape(numgp_, facensd_);
+  p_xi_points_.shape(numgp_, nsd_);
+  n_xi_points_.shape(numgp_, nsd_);
+  face_xi_points_master_.shape(numgp_, facensd_);
+  face_xi_points_slave_.shape(numgp_, facensd_);
 
   if (nsd_ == 3)
   {
@@ -492,8 +492,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     std::vector<int>& lm_faceToPatch,        ///< local map between face dofs and patchlm
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
-    std::vector<Epetra_SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-    std::vector<Epetra_SerialDenseVector>& elevec_blocks   ///< element vector blocks
+    std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+    std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
 )
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: evaluate");
@@ -908,10 +908,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   // transform the face's Gaussian points to both parent elements
 
   // local coordinates of the face's gausspoints w.r.t parent and neighbor element
-  p_xi_points_.Scale(0.0);
-  n_xi_points_.Scale(0.0);
-  face_xi_points_master_.Scale(0.0);
-  face_xi_points_slave_.Scale(0.0);
+  p_xi_points_.putScalar(0.0);
+  n_xi_points_.putScalar(0.0);
+  face_xi_points_master_.putScalar(0.0);
+  face_xi_points_slave_.putScalar(0.0);
 
   //------------------------
   // local coordinates of the face nodes w.r.t slave side
@@ -1250,9 +1250,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
     DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ReassembleMATBlock(
-    const int row_block,                  ///< row block
-    const int col_block,                  ///< column block
-    Epetra_SerialDenseMatrix& mat_block,  ///< matrix block
+    const int row_block,                         ///< row block
+    const int col_block,                         ///< column block
+    CORE::LINALG::SerialDenseMatrix& mat_block,  ///< matrix block
     CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * piel>&
         elematrix_mm,  ///< element matrix master-master block
     CORE::LINALG::Matrix<numdofpernode_ * piel, numdofpernode_ * niel>&
@@ -1326,7 +1326,7 @@ template <DRT::Element::DiscretizationType distype, DRT::Element::Discretization
     DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::ReassembleRHSBlock(
     const int row_block,                                          ///< row block
-    Epetra_SerialDenseVector& rhs_block,                          ///< rhs block
+    CORE::LINALG::SerialDenseVector& rhs_block,                   ///< rhs block
     CORE::LINALG::Matrix<numdofpernode_ * piel, 1>& elevector_m,  ///< element vector master block
     CORE::LINALG::Matrix<numdofpernode_ * niel, 1>& elevector_s,  ///< element vector slave block
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch

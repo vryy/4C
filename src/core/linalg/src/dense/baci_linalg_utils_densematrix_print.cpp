@@ -14,7 +14,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(
-    std::string filename, const Epetra_SerialDenseMatrix& A, const bool newfile)
+    std::string filename, const CORE::LINALG::SerialDenseMatrix& A, const bool newfile)
 {
   std::ofstream os;
 
@@ -24,8 +24,8 @@ void CORE::LINALG::PrintSerialDenseMatrixInMatlabFormat(
   else
     os.open(filename.c_str(), std::fstream::ate | std::fstream::app);
 
-  const int NumMyRows = A.RowDim();
-  const int NumMyColumns = A.ColDim();
+  const int NumMyRows = A.numRows();
+  const int NumMyColumns = A.numCols();
 
   for (int i = 0; i < NumMyRows; i++)
   {

@@ -9,9 +9,9 @@
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include <iostream>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_TimeMonitor.hpp>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_thermo_timint.H"
 #include "baci_thermo_resulttest.H"
@@ -599,7 +599,8 @@ void THR::TimInt::OutputEnergy()
     // SetState(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->SetState(0, "temperature", (*temp_)(0));
     // get energies
-    Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
     discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
     intergy = (*energies)(0);
@@ -987,7 +988,8 @@ Teuchos::RCP<std::vector<double>> THR::TimInt::EvaluateErrorComparedToAnalytical
       // 1: delta temperature for H1-error norm
       // 2: analytical temperature for L2 norm
       // 3: analytical temperature for H1 norm
-      Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
 
       // vector for output
       Teuchos::RCP<Epetra_MultiVector> normvec =

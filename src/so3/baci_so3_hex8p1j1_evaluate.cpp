@@ -25,9 +25,11 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -35,11 +37,11 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(Teuchos::ParameterList& params,
   // get parameter interface
   SetParamsInterfacePtr(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
@@ -402,8 +404,8 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(const std::vector<int>& lm,  // 
 
     // Modified Green-Lagrange strains matrix mod_E = 0.5 * (modCauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector mod_glstrain_epetra(MAT::NUM_STRESS_3D);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> mod_glstrain(mod_glstrain_epetra.A(), true);
+    CORE::LINALG::SerialDenseVector mod_glstrain_epetra(MAT::NUM_STRESS_3D);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> mod_glstrain(mod_glstrain_epetra.values(), true);
     mod_glstrain(0) = 0.5 * (mod_cauchygreen(0, 0) - 1.0);
     mod_glstrain(1) = 0.5 * (mod_cauchygreen(1, 1) - 1.0);
     mod_glstrain(2) = 0.5 * (mod_cauchygreen(2, 2) - 1.0);

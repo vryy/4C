@@ -6,11 +6,11 @@
 
 *----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
 #include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
-#include <Epetra_SerialDenseSolver.h>
 
 #include "baci_mat_micromaterial.H"
 #include "baci_mat_stvenantkirchhoff.H"
@@ -133,13 +133,15 @@ void DRT::ELEMENTS::NStet5::InitElement()
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
-  CORE::LINALG::Matrix<15, 15> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<15, 15> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<15, 1> elevec1(elevec1_epetra.A(), true);
+  CORE::LINALG::Matrix<15, 15> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<15, 15> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<15, 1> elevec1(elevec1_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::NStet5::ActionType act = NStet5::none;
@@ -760,10 +762,10 @@ void DRT::ELEMENTS::NStet5::nstet5lumpmass(CORE::LINALG::Matrix<15, 15>* emass)
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -781,9 +783,10 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
     CORE::LINALG::Matrix<6, 6>& cmat, double& density, CORE::LINALG::Matrix<6, 1>& glstrain,
     CORE::LINALG::Matrix<3, 3>& defgrd, int gp)
 {
-  Epetra_SerialDenseVector stress_e(::View, stress.A(), stress.Rows());
-  Epetra_SerialDenseMatrix cmat_e(::View, cmat.A(), cmat.Rows(), cmat.Rows(), cmat.Columns());
-  const Epetra_SerialDenseVector glstrain_e(::View, glstrain.A(), glstrain.Rows());
+  CORE::LINALG::SerialDenseVector stress_e(Teuchos::View, stress.A(), stress.numRows());
+  CORE::LINALG::SerialDenseMatrix cmat_e(
+      Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
+  const CORE::LINALG::SerialDenseVector glstrain_e(Teuchos::View, glstrain.A(), glstrain.numRows());
 
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
@@ -829,7 +832,7 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(CORE::LINALG::Matrix<6, 1>& stress,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NStet5::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("DRT::ELEMENTS::NStet5::EvaluateNeumann not implemented");
   return -1;

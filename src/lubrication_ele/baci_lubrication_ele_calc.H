@@ -94,30 +94,38 @@ namespace DRT
        */
       virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       // Evaluate the off-diagonal coupling block of monotlitic EHL matrix
       virtual int EvaluateEHLMon(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const LUBRICATION::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate service routine
       int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       /*========================================================================*/
       //! @name static member variables
@@ -143,16 +151,16 @@ namespace DRT
           DRT::Discretization& discretization, DRT::Element::LocationArray& la);
 
       //! calculate matrix and rhs. Here the whole thing is hidden.
-      virtual void Sysmat(DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseMatrix& emat,     //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs      //!< element rhs to calculate
+      virtual void Sysmat(DRT::Element* ele,      //!< the element we are dealing with
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
       );
 
       //! calculate element off-diagonal-matrix for height-linearization in monolithic EHL
       virtual void MatrixforEHLMon(DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseMatrix&
+          CORE::LINALG::SerialDenseMatrix&
               ematheight,  //!< element matrix associated with the linearization of the film height
-          Epetra_SerialDenseMatrix&
+          CORE::LINALG::SerialDenseMatrix&
               ematvel  //!< element matrix associated with the linearization of the velocities
       );
 
@@ -204,14 +212,14 @@ namespace DRT
 
       //! calculate error of numerical solution with respect to analytical solution
       void CalErrorComparedToAnalytSolution(
-          const DRT::Element* ele,          //!< the element we are dealing with
-          Teuchos::ParameterList& params,   //!< parameter list
-          Epetra_SerialDenseVector& errors  //!< vector containing L2-error norm
+          const DRT::Element* ele,                 //!< the element we are dealing with
+          Teuchos::ParameterList& params,          //!< parameter list
+          CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
       );
 
       //! calculate pressure(s) and domain integral
       virtual void CalculatePressures(const DRT::Element* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseVector& pressures,                  //!< pressure to be computed
+          CORE::LINALG::SerialDenseVector& pressures,           //!< pressure to be computed
           const bool inverting                                  //!< bool indicating inversion
       );
 
@@ -268,37 +276,37 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_, 1>& gradpre, const int vi,
           const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
       //! calculation of Poiseuille contribution to element matrix
-      virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
+      virtual void CalcMatPsl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height);
 
       //! calculation of Poiseuille contribution to element matrix in modified Rey. Equ.
-      virtual void CalcMatPsl(Epetra_SerialDenseMatrix& emat, const double timefacfac,
+      virtual void CalcMatPsl(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height,
           const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Poiseuille-Viscosity contribution to element matrix in modified Rey. Equ.
-      virtual void CalcMatPslVis(Epetra_SerialDenseMatrix& emat, const double timefacfac,
+      virtual void CalcMatPslVis(CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
           const double viscosity, const double height, const double dviscosity_dp);
 
       //! calculation of Poiseuille contribution to RHS matrix
-      virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,
+      virtual void CalcRhsPsl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const double viscosity, const double height);
 
       //! calculation of Poiseuille contribution to RHS matrix in modified Rey. Equ.
-      virtual void CalcRhsPsl(Epetra_SerialDenseVector& erhs, const double rhsfac,
+      virtual void CalcRhsPsl(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const double viscosity, const double height,
           const CORE::LINALG::Matrix<nsd_, 1> pflowfac);
 
       //! calculation of Wedge contribution to RHS matrix
-      virtual void CalcRhsWdg(Epetra_SerialDenseVector& erhs, const double rhsfac,
+      virtual void CalcRhsWdg(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const double height, const CORE::LINALG::Matrix<nsd_, 1> velocity);
 
       //! calculation of Squeeze contribution to RHS matrix
       virtual void CalcRhsSqz(
-          Epetra_SerialDenseVector& erhs, const double rhsfac, const double heightdot);
+          CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double heightdot);
 
       //! calculation of Shear contribution to RHS matrix
-      virtual void CalcRhsShear(Epetra_SerialDenseVector& erhs, const double rhsfac,
+      virtual void CalcRhsShear(CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
           const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac);
 
       /*========================================================================*/

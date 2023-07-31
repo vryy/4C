@@ -17,8 +17,8 @@
 #include <stdio.h>
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_lib_node.H"
 #include "baci_lib_element.H"
@@ -51,8 +51,8 @@ namespace DRT
     void ExtractMyValues(
         const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm);
 
-    void ExtractMyValues(
-        const Epetra_Vector& global, Epetra_SerialDenseVector& local, const std::vector<int>& lm);
+    void ExtractMyValues(const Epetra_Vector& global, CORE::LINALG::SerialDenseVector& local,
+        const std::vector<int>& lm);
 
     void ExtractMyValues(
         const Epetra_MultiVector& global, std::vector<double>& local, const std::vector<int>& lm);
@@ -93,16 +93,17 @@ namespace DRT
     void ExtractMyValues(const Epetra_Vector& global, matrix& local, const std::vector<int>& lm)
     {
       // safety check
-      if ((unsigned)(local.M() * local.N()) != lm.size()) dserror("Received matrix of wrong size!");
+      if ((unsigned)(local.numRows() * local.numCols()) != lm.size())
+        dserror("Received matrix of wrong size!");
 
-      // loop over all columns of local matrix
-      for (unsigned icol = 0; icol < local.N(); ++icol)
+      // loop over all columns of cal matrix
+      for (unsigned icol = 0; icol < local.numCols(); ++icol)
       {
         // loop over all rows of local matrix
-        for (unsigned irow = 0; irow < local.M(); ++irow)
+        for (unsigned irow = 0; irow < local.numRows(); ++irow)
         {
           // extract local ID of current dof
-          const unsigned index = icol * local.M() + irow;
+          const unsigned index = icol * local.numRows() + irow;
           const int lid = global.Map().LID(lm[index]);
 
           // safety check
@@ -134,7 +135,7 @@ namespace DRT
      *  \date 08/08
      */
     void ExtractMyNodeBasedValues(const DRT::Element* ele,  ///< pointer to current element
-        Epetra_SerialDenseVector& local,                    ///< local vector on element-level
+        CORE::LINALG::SerialDenseVector& local,             ///< local vector on element-level
         const Teuchos::RCP<Epetra_MultiVector>& global,     ///< global vector
         const int nsd                                       ///< number of space dimensions
     );
@@ -144,7 +145,7 @@ namespace DRT
      *  \date 12/16
      */
     void ExtractMyNodeBasedValues(const DRT::Node* node,  ///< pointer to current element
-        Epetra_SerialDenseVector& local,                  ///< local vector on node-level
+        CORE::LINALG::SerialDenseVector& local,           ///< local vector on node-level
         const Teuchos::RCP<Epetra_MultiVector>& global,   ///< global vector
         const int nsd                                     ///< number of space dimensions
     );
@@ -166,8 +167,8 @@ namespace DRT
       if (nsd > global->NumVectors())
         dserror("Requested %d of %d available columns", nsd, global->NumVectors());
       const int iel = ele->NumNode();  // number of nodes
-      if (((int)localmatrix.N()) != iel) dserror("local matrix has wrong number of columns");
-      if (((int)localmatrix.M()) != nsd) dserror("local matrix has wrong number of rows");
+      if (((int)localmatrix.numCols()) != iel) dserror("local matrix has wrong number of columns");
+      if (((int)localmatrix.numRows()) != nsd) dserror("local matrix has wrong number of rows");
 
       for (int i = 0; i < nsd; i++)
       {

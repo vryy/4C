@@ -241,7 +241,7 @@ std::vector<double> DRT::ELEMENTS::RedAcinus::ElementCenterRefeCoords()
   //  // update element geometry
   DRT::Node** nodes = Nodes();
 
-  Epetra_SerialDenseMatrix mat(NumNode(), 3, false);
+  CORE::LINALG::SerialDenseMatrix mat(NumNode(), 3, false);
   for (int i = 0; i < NumNode(); ++i)
   {
     const double* x = nodes[i]->X();

@@ -201,7 +201,7 @@ void MIXTURE::MixtureConstituent_RemodelFiberExpl::RegisterVtkOutputDataNames(
 }
 
 bool MIXTURE::MixtureConstituent_RemodelFiberExpl::EvaluateVtkOutputData(
-    const std::string& name, Epetra_SerialDenseMatrix& data) const
+    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
 {
   if (name == "mixture_constituent_" + std::to_string(Id()) + "_sig_h")
   {

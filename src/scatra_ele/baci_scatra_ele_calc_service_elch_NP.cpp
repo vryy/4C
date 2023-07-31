@@ -62,8 +62,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CheckElchElementParameter(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::EvaluateElchBoundaryKineticsPoint(
     const DRT::Element* ele,                                   ///< current element
-    Epetra_SerialDenseMatrix& emat,                            ///< element matrix
-    Epetra_SerialDenseVector& erhs,                            ///< element right-hand side vector
+    CORE::LINALG::SerialDenseMatrix& emat,                     ///< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,                     ///< element right-hand side vector
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,  ///< state variables at element nodes
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
         ehist,                          ///< history variables at element nodes
@@ -248,7 +248,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalculateFlux(
   *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
+    const DRT::Element* ele, Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseVector& errors)
 {
   // at the moment, there is only one analytical test problem available!
 

@@ -91,7 +91,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
     DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // access elements knot span
-    std::vector<Epetra_SerialDenseVector> knots(dim);
+    std::vector<CORE::LINALG::SerialDenseVector> knots(dim);
     bool zero_size = (*knotvec).GetEleKnots(knots, actele->Id());
 
     // get gid, location in the patch
@@ -132,7 +132,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
     zero_size = (*knotvec).GetEleKnots(knots, actele->Id());
 
     // aquire weights from nodes
-    Epetra_SerialDenseVector weights(numnp);
+    CORE::LINALG::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)
     {
@@ -142,14 +142,14 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
     }
 
     // get shapefunctions, compute all visualisation point positions
-    Epetra_SerialDenseVector nurbs_shape_funct(numnp);
+    CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
 
     switch (actele->Shape())
     {
       case DRT::Element::nurbs4:
       {
         // element local point position
-        Epetra_SerialDenseVector uv(2);
+        CORE::LINALG::SerialDenseVector uv(2);
 
         // standard
 
@@ -245,7 +245,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
       case DRT::Element::nurbs9:
       {
         // element local point position
-        Epetra_SerialDenseVector uv(2);
+        CORE::LINALG::SerialDenseVector uv(2);
 
         {
           // standard
@@ -506,7 +506,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
       case DRT::Element::nurbs27:
       {
         // element local point position
-        Epetra_SerialDenseVector uv(3);
+        CORE::LINALG::SerialDenseVector uv(3);
 
         int idu;
         int idv;
@@ -1926,7 +1926,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
     int np = -1;
 
     // access elements knot span
-    std::vector<Epetra_SerialDenseVector> knots(dim);
+    std::vector<CORE::LINALG::SerialDenseVector> knots(dim);
     bool zero_size = (*knotvec).GetEleKnots(knots, actele->Id());
 
     knotvec->ConvertEleGidToKnotIds(gid, np, ele_cart_id);
@@ -1954,7 +1954,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
     const int numnp = actele->NumNode();
 
     // aquire weights from nodes
-    Epetra_SerialDenseVector weights(numnp);
+    CORE::LINALG::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)
     {
@@ -1973,7 +1973,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
     int npatch = np;
 
     // access elements knot span
-    std::vector<Epetra_SerialDenseVector> eleknots(dim);
+    std::vector<CORE::LINALG::SerialDenseVector> eleknots(dim);
     knotvec->GetEleKnots(eleknots, actele->Id());
 
     // access solution data
@@ -2156,17 +2156,18 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
     const int dim, const int npatch, const std::vector<int>& vpoff,
     const std::vector<int>& ele_cart_id, const DRT::Element* actele,
     DRT::NURBS::NurbsDiscretization* nurbsdis,
-    const std::vector<Epetra_SerialDenseVector>& eleknots, const Epetra_SerialDenseVector& weights,
-    const int numdf, const std::vector<double>& my_data) const
+    const std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+    const CORE::LINALG::SerialDenseVector& weights, const int numdf,
+    const std::vector<double>& my_data) const
 {
   // number of all control points of the element
   const int numnp = actele->NumNode();
 
   // get shapefunctions, compute all visualisation point positions
-  Epetra_SerialDenseVector nurbs_shape_funct(numnp);
+  CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
 
   // element local visualisation point position
-  Epetra_SerialDenseVector uv(dim);
+  CORE::LINALG::SerialDenseVector uv(dim);
 
   // get nele_x_mele_x_lele array
   std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
@@ -2497,7 +2498,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
     case DRT::Element::nurbs27:
     {
       // element local point position
-      Epetra_SerialDenseVector uv(3);
+      CORE::LINALG::SerialDenseVector uv(3);
 
       int idu;
       int idv;
@@ -3453,7 +3454,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
     int np = -1;
 
     // access elements knot span
-    std::vector<Epetra_SerialDenseVector> knots(dim);
+    std::vector<CORE::LINALG::SerialDenseVector> knots(dim);
     bool zero_size = (*knotvec).GetEleKnots(knots, actele->Id());
 
     knotvec->ConvertEleGidToKnotIds(gid, np, ele_cart_id);
@@ -3481,7 +3482,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
     const int numnp = actele->NumNode();
 
     // aquire weights from nodes
-    Epetra_SerialDenseVector weights(numnp);
+    CORE::LINALG::SerialDenseVector weights(numnp);
 
     for (int inode = 0; inode < numnp; ++inode)
     {
@@ -3492,7 +3493,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
     int npatch = np;
 
     // access elements knot span
-    std::vector<Epetra_SerialDenseVector> eleknots(dim);
+    std::vector<CORE::LINALG::SerialDenseVector> eleknots(dim);
     knotvec->GetEleKnots(eleknots, actele->Id());
 
     // access solution data

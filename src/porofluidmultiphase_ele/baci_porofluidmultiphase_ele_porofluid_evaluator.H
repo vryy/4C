@@ -19,8 +19,11 @@
 
 #include <vector>
 
-class Epetra_SerialDenseMatrix;
-class Epetra_SerialDenseVector;
+namespace CORE::LINALG
+{
+  class SerialDenseMatrix;
+  class SerialDenseVector;
+}  // namespace CORE::LINALG
 
 namespace DRT
 {
@@ -181,8 +184,8 @@ namespace DRT
 
         //! evaluate matrixes (stiffness)
         virtual void EvaluateMatrix(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
@@ -195,8 +198,8 @@ namespace DRT
 
         //! evaluate vectors (RHS vector)
         virtual void EvaluateVector(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -210,8 +213,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         virtual void EvaluateMatrixODStruct(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -227,8 +230,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with scatra
         virtual void EvaluateMatrixODScatra(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
@@ -263,8 +266,8 @@ namespace DRT
 
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
@@ -284,8 +287,8 @@ namespace DRT
 
         //! evaluate vectors (RHS vector)
         void EvaluateVector(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -306,8 +309,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStruct(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -332,8 +335,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatra(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
@@ -391,8 +394,8 @@ namespace DRT
 
         //! evaluate matrixes (stiffness)
         void EvaluateMatrix(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
@@ -416,8 +419,8 @@ namespace DRT
 
         //! evaluate vectors (RHS vector)
         void EvaluateVector(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -442,8 +445,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStruct(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -470,8 +473,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatra(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int numdofpernode,  //!< total number of DOFs/phases
@@ -497,8 +500,8 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the stiffness matrix (defined by
         // derived class)
         virtual void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -515,8 +518,8 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the RHS vector (defined by
         // derived class)
         virtual void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -534,8 +537,8 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined
         // by derived class)
         virtual void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -554,8 +557,8 @@ namespace DRT
         // actual evaluation and assembly of the respective term in the off-diagonal matrix (defined
         // by derived class)
         virtual void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -569,7 +572,8 @@ namespace DRT
             ) = 0;
 
         // OD-mesh linearization of diffusive term
-        void CalcDiffODMesh(Epetra_SerialDenseMatrix& mymat,  //!< element matrix to be filled
+        void CalcDiffODMesh(
+            CORE::LINALG::SerialDenseMatrix& mymat,  //!< element matrix to be filled
             const CORE::LINALG::Matrix<nsd, nen>& deriv,
             const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             const CORE::LINALG::Matrix<nsd, 1>& diffflux,
@@ -578,27 +582,29 @@ namespace DRT
             const int phasetoadd);
 
         // OD-mesh linearization of fac (Jacobian)
-        void CalcLinFacODMesh(Epetra_SerialDenseMatrix& mymat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,          //! array for shape functions
+        void CalcLinFacODMesh(
+            CORE::LINALG::SerialDenseMatrix& mymat,     //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>& derxy, const double vrhs, const int numdofpernode,
             const int phasetoadd);
 
         // OD-mesh linearization of divergence term
-        void CalcDivVelODMesh(Epetra_SerialDenseMatrix& mymat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,          //! array for shape functions
+        void CalcDivVelODMesh(
+            CORE::LINALG::SerialDenseMatrix& mymat,     //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,  //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>& deriv,
             const CORE::LINALG::Matrix<nsd, nen>& derxy, const CORE::LINALG::Matrix<nsd, nsd>& xjm,
             const CORE::LINALG::Matrix<nsd, nsd>& gridvelderiv, const double timefacfac,
             const double fac, const double det, const int numdofpernode, const int phasetoadd);
 
         // linearization of a term scaled with saturation after fluid dofs
-        void SaturationLinearizationFluid(Epetra_SerialDenseMatrix& mymat,
+        void SaturationLinearizationFluid(CORE::LINALG::SerialDenseMatrix& mymat,
             const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
             const int numfluidphases, const int curphase, const int phasetoadd,
             const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
 
         // linearization of a term scaled with porosity after fluid dofs
-        void PorosityLinearizationFluid(Epetra_SerialDenseMatrix& mymat,
+        void PorosityLinearizationFluid(CORE::LINALG::SerialDenseMatrix& mymat,
             const CORE::LINALG::Matrix<nen, 1>& funct, const double prefac, const int numdofpernode,
             const int phasetoadd, const POROFLUIDMANAGER::PhaseManagerInterface& phasemanager);
 
@@ -636,8 +642,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -653,8 +659,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -671,8 +677,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -690,8 +696,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -729,8 +735,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -746,8 +752,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -764,8 +770,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -783,8 +789,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -822,8 +828,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -839,8 +845,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -857,8 +863,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -876,8 +882,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -915,8 +921,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -932,8 +938,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -950,8 +956,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -969,8 +975,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1009,8 +1015,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1026,8 +1032,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1044,8 +1050,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1063,8 +1069,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1102,8 +1108,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1119,8 +1125,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1137,8 +1143,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1156,8 +1162,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1195,8 +1201,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1212,8 +1218,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1230,8 +1236,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1249,8 +1255,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1300,8 +1306,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1317,8 +1323,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1335,8 +1341,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1354,8 +1360,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1407,8 +1413,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1424,8 +1430,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1442,8 +1448,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1461,8 +1467,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1500,8 +1506,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1517,8 +1523,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1535,8 +1541,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1554,8 +1560,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1605,8 +1611,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1622,8 +1628,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1640,8 +1646,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1659,8 +1665,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1698,8 +1704,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1715,8 +1721,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1733,8 +1739,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1752,8 +1758,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1794,8 +1800,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1811,8 +1817,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1829,8 +1835,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1848,8 +1854,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1887,8 +1893,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1904,8 +1910,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -1922,8 +1928,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -1941,8 +1947,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -1983,8 +1989,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2000,8 +2006,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2018,8 +2024,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2037,8 +2043,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2086,8 +2092,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2103,8 +2109,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2121,8 +2127,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2140,8 +2146,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2180,8 +2186,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2197,8 +2203,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2215,8 +2221,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2234,8 +2240,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2276,8 +2282,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2293,8 +2299,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2311,8 +2317,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2330,8 +2336,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2382,8 +2388,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2399,8 +2405,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2417,8 +2423,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2436,8 +2442,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2478,8 +2484,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2495,8 +2501,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2513,8 +2519,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2532,8 +2538,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2574,8 +2580,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2591,8 +2597,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2609,8 +2615,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2628,8 +2634,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2668,8 +2674,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2685,8 +2691,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2703,8 +2709,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2722,8 +2728,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2762,8 +2768,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2779,8 +2785,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2797,8 +2803,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2816,8 +2822,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2855,8 +2861,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2872,8 +2878,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2890,8 +2896,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -2909,8 +2915,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2948,8 +2954,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -2965,8 +2971,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -2983,8 +2989,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3002,8 +3008,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -3041,8 +3047,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -3058,8 +3064,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -3076,8 +3082,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3095,8 +3101,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -3134,8 +3140,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -3151,8 +3157,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -3169,8 +3175,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3188,8 +3194,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -3228,8 +3234,8 @@ namespace DRT
        protected:
         //! evaluate element matrix
         void EvaluateMatrixAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase
@@ -3245,8 +3251,8 @@ namespace DRT
 
         //! evaluate element RHS vector
         void EvaluateVectorAndAssemble(
-            std::vector<Epetra_SerialDenseVector*>& elevec,  //!< element vector to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseVector*>& elevec,  //!< element vector to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,  //! array for shape function derivatives w.r.t x,y,z
             const CORE::LINALG::Matrix<nsd, nen>& xyze,  //!< current element coordinates
@@ -3263,8 +3269,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODStructAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 deriv,  //! array for shape function derivatives w.r.t r,s,t
             const CORE::LINALG::Matrix<nsd, nen>&
@@ -3282,8 +3288,8 @@ namespace DRT
 
         //! evaluate off-diagonal coupling matrix with structure
         void EvaluateMatrixODScatraAndAssemble(
-            std::vector<Epetra_SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
-            const CORE::LINALG::Matrix<nen, 1>& funct,       //! array for shape functions
+            std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,  //!< element matrix to be filled
+            const CORE::LINALG::Matrix<nen, 1>& funct,              //! array for shape functions
             const CORE::LINALG::Matrix<nsd, nen>&
                 derxy,          //! array for shape function derivatives w.r.t x,y,z
             int curphase,       //!< index of current phase

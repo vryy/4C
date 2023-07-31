@@ -55,52 +55,54 @@ namespace DRT
       //                        Teuchos::ParameterList&       params,
       //                        DRT::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
-      //                        Epetra_SerialDenseMatrix&     elemat1_epetra,
-      //                        Epetra_SerialDenseMatrix&     elemat2_epetra,
-      //                        Epetra_SerialDenseVector&     elevec1_epetra,
-      //                        Epetra_SerialDenseVector&     elevec2_epetra,
-      //                        Epetra_SerialDenseVector&     elevec3_epetra);
+      //                        CORE::LINALG::SerialDenseMatrix&     elemat1_epetra,
+      //                        CORE::LINALG::SerialDenseMatrix&     elemat2_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec1_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec2_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec3_epetra);
 
      protected:
       //! evaluate action
       virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //   int EvaluateODMesh(  DRT::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
       //                        DRT::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
-      //                        Epetra_SerialDenseMatrix&     elemat1_epetra,
-      //                        Epetra_SerialDenseMatrix&     elemat2_epetra,
-      //                        Epetra_SerialDenseVector&     elevec1_epetra,
-      //                        Epetra_SerialDenseVector&     elevec2_epetra,
-      //                        Epetra_SerialDenseVector&     elevec3_epetra);
+      //                        CORE::LINALG::SerialDenseMatrix&     elemat1_epetra,
+      //                        CORE::LINALG::SerialDenseMatrix&     elemat2_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec1_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec2_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec3_epetra);
       //
       //   int EvaluateODFluid(  DRT::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
       //                        DRT::Discretization &         discretization,
       //                        const std::vector<int> &      lm,
-      //                        Epetra_SerialDenseMatrix&     elemat1_epetra,
-      //                        Epetra_SerialDenseMatrix&     elemat2_epetra,
-      //                        Epetra_SerialDenseVector&     elevec1_epetra,
-      //                        Epetra_SerialDenseVector&     elevec2_epetra,
-      //                        Epetra_SerialDenseVector&     elevec3_epetra);
+      //                        CORE::LINALG::SerialDenseMatrix&     elemat1_epetra,
+      //                        CORE::LINALG::SerialDenseMatrix&     elemat2_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec1_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec2_epetra,
+      //                        CORE::LINALG::SerialDenseVector&     elevec3_epetra);
       //
       //   //! calculate matrix and rhs. Here the whole thing is hidden.
       //   virtual void SysmatODMesh(
       //     DRT::Element*                         ele,       //!< the element we are dealing with
-      //     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-      //     const int                     numdofpernode
+      //     CORE::LINALG::SerialDenseMatrix&             emat,      //!< element matrix to
+      //     calculate const int                     numdofpernode
       //   );
       //
       //   //! calculate matrix and rhs. Here the whole thing is hidden.
       //   virtual void SysmatODFluid(
       //     DRT::Element*                         ele,       //!< the element we are dealing with
-      //     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
-      //     const int                     numdofpernode
+      //     CORE::LINALG::SerialDenseMatrix&             emat,      //!< element matrix to
+      //     calculate const int                     numdofpernode
       //   );
 
       //! read element coordinates
@@ -157,7 +159,7 @@ namespace DRT
       );
 
       //! calculate scalar(s) and domain integral
-      void CalculateScalars(const DRT::Element* ele, Epetra_SerialDenseVector& scalars,
+      void CalculateScalars(const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
           bool inverting, bool calc_grad_phi) override;
 
 

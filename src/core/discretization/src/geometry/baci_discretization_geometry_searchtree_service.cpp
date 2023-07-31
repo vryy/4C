@@ -356,8 +356,8 @@ void CORE::GEO::moveNodeOutOfStructure(const std::vector<std::vector<int>>& tria
   std::cout << "length =" << length << std::endl;
   std::cout << "scalarproduct =" << scalarproduct << std::endl;
 
-  // minDistanceVec.Norm2() < GEO::TOL7  &&
-  // !(scalarproduct > (-1)*GEO::TOL13)
+  // minDistanceVec.Norm2() < CORE::GEO::TOL7  &&
+  // !(scalarproduct > (-1)*CORE::GEO::TOL13)
   if (scalarproduct < 0.0)
   {
     std::cout << "MOVE NODE = " << querypointId << std::endl;

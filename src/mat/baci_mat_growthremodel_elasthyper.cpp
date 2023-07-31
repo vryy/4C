@@ -13,15 +13,15 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 */
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_mat_growthremodel_elasthyper.H"
 #include <cmath>
+#include <Teuchos_SerialDenseSolver.hpp>
+#include "baci_mat_growthremodel_elasthyper.H"
 #include "baci_matelast_summand.H"
 #include "baci_matelast_remodelfiber.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_matelast_isoneohooke.H"
 #include "baci_matelast_volsussmanbathe.H"
 #include "baci_mat_elasthyper_service.H"
@@ -942,26 +942,28 @@ void MAT::GrowthRemodel_ElastHyper::SolveForRhoLambr(CORE::LINALG::SerialDenseMa
   static std::vector<std::vector<double>> dEdlambr(
       nr_rf_tot_, std::vector<double>(nr_rf_tot_, 0.0));
   static std::vector<double> E(nr_rf_tot_, 0.0);
-  static Epetra_SerialDenseSolver solver;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+  static Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
   // residual vector of assembled system of equation
-  static Epetra_SerialDenseMatrix R(2 * nr_rf_tot_, 1);
+  static CORE::LINALG::SerialDenseMatrix R(2 * nr_rf_tot_, 1);
   for (unsigned i = 0; i < 2 * nr_rf_tot_; ++i) R(i, 0) = 1.0;
   // solution vector of assembled system of equation
-  static Epetra_SerialDenseMatrix dsol(2 * nr_rf_tot_, 1);
+  static CORE::LINALG::SerialDenseMatrix dsol(2 * nr_rf_tot_, 1);
 
   int nr_grf_proc = 0;
   int iter = 0;
   int l = 0;
-  while (R.NormOne() > 1.0e-10)
+  while (R.normOne() > 1.0e-10)
   {
     if (iter != 0)
     {
       // Solve linearized system of equations
-      solver.SetMatrix(K_T);
-      solver.SetVectors(dsol, R);
-      solver.SolveToRefinedSolution(true);
-      solver.ApplyRefinement();
-      solver.Solve();
+      solver.setMatrix(Teuchos::rcpFromRef(K_T));
+      solver.setVectors(Teuchos::rcpFromRef(dsol), Teuchos::rcpFromRef(R));
+      solver.solveToRefinedSolution(true);
+      solver.factorWithEquilibration(true);
+      solver.solve();
 
       l = 0;
       for (auto& p : potsumrf_)
@@ -1048,13 +1050,15 @@ void MAT::GrowthRemodel_ElastHyper::SolveFordrhodCdlambrdC(
   }
 
   // Solve
-  static Epetra_SerialDenseSolver solver;
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+  static Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
   static CORE::LINALG::SerialDenseMatrix dsolcmat(2 * nr_rf_tot_, 6);
-  solver.SetMatrix(K_T);
-  solver.SetVectors(dsolcmat, Rcmat);
-  solver.SolveToRefinedSolution(true);
-  solver.ApplyRefinement();
-  solver.Solve();
+  solver.setMatrix(Teuchos::rcpFromRef(K_T));
+  solver.setVectors(Teuchos::rcpFromRef(dsolcmat), Teuchos::rcpFromRef(Rcmat));
+  solver.solveToRefinedSolution(true);
+  solver.factorWithEquilibration(true);
+  solver.solve();
 
   sum_drhodC.Clear();
   for (unsigned i = 0; i < nr_rf_tot_; ++i)

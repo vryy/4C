@@ -7,7 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_so3_element_service.H"
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_hex8.H"
 #include "baci_so3_tet10.H"
 
@@ -15,15 +15,15 @@
 
 void DRT::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-    const Epetra_SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele)
+    const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele)
 {
-  for (int gp = 0; gp < gp_data.M(); ++gp)
+  for (int gp = 0; gp < gp_data.numRows(); ++gp)
   {
     const Epetra_BlockMap& elemap = global_data[gp]->Map();
     int lid = elemap.LID(ele->Id());
     if (lid != -1)
     {
-      for (int i = 0; i < gp_data.N(); ++i)
+      for (int i = 0; i < gp_data.numCols(); ++i)
       {
         (*((*global_data[gp])(i)))[lid] += gp_data(gp, i);
       }
@@ -71,6 +71,7 @@ std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
   return projected_quantities;
 }
 
+// explicit template instantiations
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex8>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
 template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex27>(

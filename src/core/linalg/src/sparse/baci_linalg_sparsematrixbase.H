@@ -28,7 +28,7 @@ namespace CORE::LINALG
 
       \note This method is here for performance reasons.
      */
-    virtual Teuchos::RCP<Epetra_Operator> EpetraOperator() { return sysmat_; }
+    Teuchos::RCP<Epetra_Operator> EpetraOperator() override { return sysmat_; }
 
     /// return the internal Epetra_CrsMatrix or Epetra_FECrsMatrix
     /// (down-cast from Epetra_CrsMatrix !) (you should not need this!)
@@ -42,7 +42,7 @@ namespace CORE::LINALG
     //@{
 
     /// If set true, transpose of this operator will be applied.
-    virtual int SetUseTranspose(bool UseTranspose);
+    int SetUseTranspose(bool UseTranspose) override;
 
     //@}
 
@@ -50,7 +50,7 @@ namespace CORE::LINALG
     //@{
 
     /// If Complete() has been called, this query returns true, otherwise it returns false.
-    bool Filled() const { return sysmat_->Filled(); }
+    bool Filled() const override { return sysmat_->Filled(); }
 
     /** \brief Return TRUE if all Dirichlet boundary conditions have been applied
      *  to this matrix */
@@ -65,8 +65,8 @@ namespace CORE::LINALG
      *  rows.
      *
      *  \author hiermeier \date 01/2018 */
-    virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const CORE::LINALG::SparseMatrix* trafo = NULL) const;
+    bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
+        const CORE::LINALG::SparseMatrix* trafo = NULL) const override;
 
     //@}
 
@@ -74,13 +74,13 @@ namespace CORE::LINALG
     //@{
 
     /// Returns the result of a Epetra_Operator applied to a Epetra_MultiVector X in Y.
-    virtual int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// Returns the infinity norm of the global matrix.
-    double NormInf() const;
+    double NormInf() const override;
 
     /// Returns the one norm of the global matrix.
     double NormOne() const;
@@ -110,19 +110,19 @@ namespace CORE::LINALG
     const Epetra_Map& RangeMap() const { return sysmat_->RangeMap(); }
 
     /// Returns the current UseTranspose setting.
-    virtual bool UseTranspose() const;
+    bool UseTranspose() const override;
 
     /// Returns true if the this object can provide an approximate Inf-norm, false otherwise.
-    virtual bool HasNormInf() const;
+    bool HasNormInf() const override;
 
     /// Returns a pointer to the Epetra_Comm communicator associated with this operator.
-    virtual const Epetra_Comm& Comm() const;
+    const Epetra_Comm& Comm() const override;
 
     /// Returns the Epetra_Map object associated with the domain of this operator.
-    virtual const Epetra_Map& OperatorDomainMap() const;
+    const Epetra_Map& OperatorDomainMap() const override;
 
     /// Returns the Epetra_Map object associated with the range of this operator.
-    virtual const Epetra_Map& OperatorRangeMap() const;
+    const Epetra_Map& OperatorRangeMap() const override;
 
     //@}
 
@@ -150,7 +150,7 @@ namespace CORE::LINALG
     int PutScalar(double ScalarConstant);
 
     /// Multiply all values in the matrix by a constant value (in place: A <- ScalarConstant * A).
-    virtual int Scale(double ScalarConstant);
+    int Scale(double ScalarConstant) override;
 
     /// Replaces diagonal values of the matrix with those in the user-provided vector.
     int ReplaceDiagonalValues(const Epetra_Vector& Diagonal);
@@ -176,16 +176,16 @@ namespace CORE::LINALG
     //@}
 
     /// Add one operator to another
-    virtual void Add(const CORE::LINALG::SparseOperator& A, const bool transposeA,
-        const double scalarA, const double scalarB);
+    void Add(const CORE::LINALG::SparseOperator& A, const bool transposeA, const double scalarA,
+        const double scalarB) override;
 
     /// Add one SparseMatrixBase to another
-    virtual void AddOther(CORE::LINALG::SparseMatrixBase& B, const bool transposeA,
-        const double scalarA, const double scalarB) const;
+    void AddOther(CORE::LINALG::SparseMatrixBase& B, const bool transposeA, const double scalarA,
+        const double scalarB) const override;
 
     /// Add one BlockSparseMatrix to another
-    virtual void AddOther(CORE::LINALG::BlockSparseMatrixBase& B, const bool transposeA,
-        const double scalarA, const double scalarB) const;
+    void AddOther(CORE::LINALG::BlockSparseMatrixBase& B, const bool transposeA,
+        const double scalarA, const double scalarB) const override;
 
    protected:
     /// internal epetra matrix (Epetra_CrsMatrix or Epetra_FECrsMatrix)

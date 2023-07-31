@@ -534,8 +534,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::
   FEmat_->FEAssemble(elemat[1][0], lmrow2, lmrow1);
   FEmat_->FEAssemble(elemat[1][1], lmrow2, lmrow2);
 
-  FErhs_->SumIntoGlobalValues(elevec[0].Length(), lmrow1.data(), elevec[0].Values());
-  FErhs_->SumIntoGlobalValues(elevec[1].Length(), lmrow2.data(), elevec[1].Values());
+  FErhs_->SumIntoGlobalValues(elevec[0].length(), lmrow1.data(), elevec[0].values());
+  FErhs_->SumIntoGlobalValues(elevec[1].length(), lmrow2.data(), elevec[1].values());
 }
 
 /*----------------------------------------------------------------------*
@@ -559,7 +559,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::FEAssemble
 
   D_->FEAssemble(D_ele, lmrow1, lmrow1);
   M_->FEAssemble(M_ele, lmrow1, lmrow2);
-  kappaInv_->SumIntoGlobalValues(Kappa_ele.Length(), lmrow1.data(), Kappa_ele.Values());
+  kappaInv_->SumIntoGlobalValues(Kappa_ele.length(), lmrow1.data(), Kappa_ele.values());
 }
 
 /*----------------------------------------------------------------------*

@@ -837,9 +837,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::GetRhsInt(
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatReact(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double timetaufac,
-    const double taufac, const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
-    const CORE::LINALG::Matrix<nen_, 1>& diff)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
+    const double timetaufac, const double taufac, const double densnp,
+    const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   // only difference is the inverse scaling with density
   advreac::CalcMatReact(
@@ -942,9 +942,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::FillCouplingVectorAndAd
  |  calculation of convective element matrix in convective form    vuong 08/16 |
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(Epetra_SerialDenseMatrix& emat,
-    const int k, const double timefacfac, const double densnp,
-    const CORE::LINALG::Matrix<nen_, 1>& sgconv)
+void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
+    const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv)
 {
   // case of zero saturation/volfrac
   // no convective term for species in solid
@@ -963,7 +963,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConv(Epetra_Seri
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
-    Epetra_SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
+    CORE::LINALG::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
 {
   if (VarManager()->EvaluateScalar(k))
   {
@@ -994,7 +994,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatMass(
  *------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvAddCons(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
   // the only difference to the base class version is, that there is no scaling with the density
@@ -1021,7 +1021,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::RecomputeConvPhiForRhs(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsfac, const double densnp, const double J,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint)
 {
@@ -1118,9 +1118,10 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcConvODMesh(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
-    const double fac, const double densam, const double densnp, const double phinp,
-    const double hist, const double J, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double rhsfac, const double fac, const double densam, const double densnp,
+    const double phinp, const double hist, const double J,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
   if (VarManager()->EvaluateScalar(k))
@@ -1141,7 +1142,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODMesh(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double J, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh,
     const double densnp)
 {
@@ -1203,8 +1204,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODMesh
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double diffcoeff,
-    const double fac, const double rhsfac, const double J,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double diffcoeff, const double fac, const double rhsfac, const double J,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint,
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
@@ -1247,8 +1248,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODMesh(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
-    const double rea_phi, const double J, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double rhsfac, const double rea_phi, const double J,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   // case of zero saturation/volfrac
   if (VarManager()->EvaluateScalar(k))
@@ -1267,11 +1269,11 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODMesh(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const int ndofpernodefluid,      //!< number of dofs per node of fluid element
-    const double rhsfac,             //!< domain-integration factor times time-integration factor
-    const double densnp,             //!< density at time_(n+1)
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const int k,                            //!< index of current scalar
+    const int ndofpernodefluid,             //!< number of dofs per node of fluid element
+    const double rhsfac,  //!< domain-integration factor times time-integration factor
+    const double densnp,  //!< density at time_(n+1)
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
 )
 {
@@ -1369,12 +1371,12 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvODFluid(
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvAddConsODFluid(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const int ndofpernodefluid,      //!< number of dofs per node of fluid element
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double densnp,             //!< density at time_(n+1)
-    const double phinp               //!< scalar at time_(n+1)
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const int k,                            //!< index of current scalar
+    const int ndofpernodefluid,             //!< number of dofs per node of fluid element
+    const double timefacfac,  //!< domain-integration factor times time-integration factor
+    const double densnp,      //!< density at time_(n+1)
+    const double phinp        //!< scalar at time_(n+1)
 )
 {
   dserror("CalcMatConvAddConsODFluid not yet available for scatre ele calc multiporo");
@@ -1385,8 +1387,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcMatConvAddConsODFlu
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const int k,                            //!< index of current scalar
     const int
         ndofpernodemesh,  //!< number of dofs per node of fluid element // only a dummy variable
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
@@ -1429,8 +1431,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassODFluid(
  *-----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassMatrixTypeODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const std::vector<double>* prefaclinmassodfluid,
-    const int totalnummultiphasedofpernode, double prefac)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k,
+    const std::vector<double>* prefaclinmassodfluid, const int totalnummultiphasedofpernode,
+    double prefac)
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
   {
@@ -1458,7 +1461,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcLinMassMatrixTypeOD
  *------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double densnp)
 {
   // case of zero saturation/volfrac
@@ -1548,8 +1551,8 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcHistAndSourceODFlui
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
-    const double rea_phi)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double rhsfac, const double rea_phi)
 {
   if (my::reamanager_->Active() && VarManager()->EvaluateScalar(k))
   {
@@ -1573,9 +1576,9 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcReactODFluid(
  *----------------------------------------------------------------   */
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
-    Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-    const int k,                     //!< index of current scalar
-    const int ndofpernodemesh,       //!< number of dofs per node of ale element
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+    const int k,                            //!< index of current scalar
+    const int ndofpernodemesh,              //!< number of dofs per node of ale element
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
 )
@@ -1621,7 +1624,7 @@ void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::CalcDiffODFluid(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcMultiPoroReac<distype>::ApplyShapeDerivsPressureGrad(
-    Epetra_SerialDenseMatrix& emat, const int k, const double vrhs,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double vrhs,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1> refgradpres)
 {
   if (nsd_ == 3)

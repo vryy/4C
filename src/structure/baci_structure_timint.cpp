@@ -11,8 +11,9 @@
 /* headers */
 #include <iostream>
 #include "baci_io_pstream.H"
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_structure_timint.H"
 #include "baci_structure_timint_genalpha.H"
@@ -1697,7 +1698,7 @@ void STR::TimInt::UpdateStepContactVUM()
       // rhs f
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
       {
-        x->Scale(0.0);
+        x->PutScalar(0.0);
         (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
         x->ReplaceMyValues(NumEntries, Values, Indices);
         (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
@@ -1714,7 +1715,7 @@ void STR::TimInt::UpdateStepContactVUM()
       // jacobian DF
       for (int i = 0; i < activenodemap->NumMyElements(); ++i)
       {
-        x->Scale(0.0);
+        x->PutScalar(0.0);
         (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
         x->ReplaceMyValues(NumEntries, Values, Indices);
         for (int k = 0; k < activenodemap->NumMyElements(); ++k)
@@ -1753,7 +1754,7 @@ void STR::TimInt::UpdateStepContactVUM()
         // rhs f
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
         {
-          x->Scale(0.0);
+          x->PutScalar(0.0);
           (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
           x->ReplaceMyValues(NumEntries, Values, Indices);
           (*f)[i] = (*b)[i] * (*p)[i] + (*w)[i];
@@ -1768,10 +1769,10 @@ void STR::TimInt::UpdateStepContactVUM()
         res /= initres;
 
         // jacobian DF
-        DF->Scale(0.0);
+        DF->PutScalar(0.0);
         for (int i = 0; i < activenodemap->NumMyElements(); ++i)
         {
-          x->Scale(0.0);
+          x->PutScalar(0.0);
           (A->EpetraMatrix())->ExtractMyRowView(i, NumEntries, Values, Indices);
           x->ReplaceMyValues(NumEntries, Values, Indices);
           for (int k = 0; k < activenodemap->NumMyElements(); ++k)
@@ -2569,8 +2570,8 @@ void STR::TimInt::DetermineEnergy()
       discret_->ClearState();
       discret_->SetState("displacement", disn_);
       // get energies
-      Teuchos::RCP<Epetra_SerialDenseVector> energies =
-          Teuchos::rcp(new Epetra_SerialDenseVector(1));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
       discret_->EvaluateScalars(p, energies);
       discret_->ClearState();
       intergy_ = (*energies)(0);
@@ -2875,8 +2876,9 @@ void STR::TimInt::OutputContact()
     p.set("action", "calc_struct_energy");
     discret_->ClearState();
     discret_->SetState("displacement", (*dis_)(0));
-    Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
-    energies->Scale(0.0);
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> energies =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
+    energies->putScalar(0.0);
     discret_->EvaluateScalars(p, energies);
     discret_->ClearState();
     inten = (*energies)(0);
@@ -2974,8 +2976,9 @@ void STR::TimInt::OutputErrorNorms()
   if (entype == INPAR::CONTACT::errornorms_none) return;
 
   // initialize variables
-  Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(3));
-  norms->Scale(0.0);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> norms =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3));
+  norms->putScalar(0.0);
 
   // vector for output
   Teuchos::RCP<Epetra_MultiVector> normvec =
@@ -3037,8 +3040,9 @@ void STR::TimInt::OutputVolumeMass()
   if (!massvol) return;
 
   // initialize variables
-  Teuchos::RCP<Epetra_SerialDenseVector> norms = Teuchos::rcp(new Epetra_SerialDenseVector(6));
-  norms->Scale(0.0);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> norms =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(6));
+  norms->putScalar(0.0);
 
   // call discretization to evaluate error norms
   Teuchos::ParameterList p;

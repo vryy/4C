@@ -109,7 +109,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CheckElchElemen
  *---------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcInitialTimeDerivative(
-    DRT::Element* ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
+    DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     DRT::Element::LocationArray& la)
 {
@@ -121,14 +121,14 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcInitialTime
   // porosities, we do not fill the diffusion manager again at the element center The solution
   // variable is the initial time derivative. Therefore, we have to correct emat by the initial
   // porosity Attention: this procedure is only valid for a constant porosity in the beginning
-  emat.Scale(DiffManager()->GetPhasePoro(0));
+  emat.scale(DiffManager()->GetPhasePoro(0));
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CorrectRHSFromCalcRHSLinMass(
-    Epetra_SerialDenseVector& erhs, const int k, const double fac, const double densnp,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double densnp,
     const double phinp)
 {
   // fac->-fac to change sign of rhs
@@ -144,9 +144,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -210,8 +212,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateAction(D
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainKinetics(
     DRT::Element* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra)
+    std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   // from scatra_ele_boundary_calc_elch_diffcond.cpp
   Teuchos::RCP<MAT::Material> material = ele->Material();
@@ -338,7 +340,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
     // with dt*(gamma/alpha_M) = timefac/alpha_F
     // matrix contributions are already scaled correctly with
     // timefac=dt*(gamma*alpha_F/alpha_M)
-    elevec1_epetra.Scale(rhsfac);
+    elevec1_epetra.scale(rhsfac);
   }
 
   else
@@ -368,8 +370,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBoundaryKineticsPoint(
-    const DRT::Element* ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+    const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
     Teuchos::RCP<DRT::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0, const double frt, const double scalar)
@@ -420,8 +422,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchBou
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDomainKinetics(
-    const DRT::Element* ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+    const DRT::Element* ele, CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
     Teuchos::RCP<DRT::Condition> cond, const int nume, const std::vector<int> stoich,
     const int kinetics, const double pot0)
@@ -514,8 +516,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElchDom
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::EvaluateElectrodeStatus(
-    const DRT::Element* ele, Epetra_SerialDenseVector& scalars, Teuchos::ParameterList& params,
-    Teuchos::RCP<DRT::Condition> cond, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& scalars,
+    Teuchos::ParameterList& params, Teuchos::RCP<DRT::Condition> cond,
+    const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
     const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephidtnp, const int kinetics,
     const std::vector<int> stoich, const int nume, const double pot0, const double timefac)
 {
@@ -676,7 +679,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalculateCurren
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
+    const DRT::Element* ele, Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseVector& errors)
 {
   switch (DRT::INPUT::get<INPAR::SCATRA::CalcError>(params, "calcerrorflag"))
   {
@@ -823,7 +827,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype,
     probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseVector& conc)
+    CORE::LINALG::SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:
   // Micro state must exist for electrolyte -> set value to 0.0

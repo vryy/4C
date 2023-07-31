@@ -279,40 +279,41 @@ namespace CORE::GEO
       {
         CORE::LINALG::SerialDenseMatrix xyze_corrected(ProbDim(), NumNodes());
 
-        Coordinates(xyze_corrected.A());
+        Coordinates(xyze_corrected.values());
 
         // copy the result back into the given matrix
         for (unsigned c = 0; c < NumNodes(); ++c)
         {
-          CORE::LINALG::SerialDenseMatrix xyz(View, &xyze_corrected(0, c), ProbDim(), ProbDim(), 1);
-          std::copy(xyz.A(), xyz.A() + ProbDim(), &xyze(0, c));
+          CORE::LINALG::SerialDenseMatrix xyz(
+              Teuchos::View, &xyze_corrected(0, c), ProbDim(), ProbDim(), 1);
+          std::copy(xyz.values(), xyz.values() + ProbDim(), &xyze(0, c));
           // fill the rows out of range with zeros
-          std::fill(&xyze(0, c) + ProbDim(), &xyze(0, c) + xyze.M(), 0.0);
+          std::fill(&xyze(0, c) + ProbDim(), &xyze(0, c) + xyze.numRows(), 0.0);
         }
 
         // fill columns out of range with zeros
-        for (unsigned c = NumNodes(); c < static_cast<unsigned>(xyze.N()); ++c)
-          std::fill(&xyze(0, c), &xyze(0, c) + xyze.M(), 0.0);
+        for (unsigned c = NumNodes(); c < static_cast<unsigned>(xyze.numCols()); ++c)
+          std::fill(&xyze(0, c), &xyze(0, c) + xyze.numRows(), 0.0);
       }
 
      public:
       template <class T>
       void Coordinates(T& xyze) const
       {
-        if (static_cast<unsigned>(xyze.M()) < ProbDim())
+        if (static_cast<unsigned>(xyze.numRows()) < ProbDim())
           dserror("The row dimension of xyze is wrong! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(xyze.N()) < NumNodes())
+        if (static_cast<unsigned>(xyze.numCols()) < NumNodes())
           dserror("The col dimension of xyze is wrong! (numNodesSide = %d)", NumNodes());
 
         // if the matrix
-        if (static_cast<unsigned>(xyze.M()) > ProbDim() or
-            static_cast<unsigned>(xyze.N()) > NumNodes())
+        if (static_cast<unsigned>(xyze.numRows()) > ProbDim() or
+            static_cast<unsigned>(xyze.numCols()) > NumNodes())
         {
           FixShapeAndGetCoordinates(xyze);
         }
         else
         {
-          Coordinates(xyze.A());
+          Coordinates(xyze.values());
         }
       }
 

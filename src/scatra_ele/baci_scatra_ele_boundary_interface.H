@@ -12,8 +12,8 @@
 
 #include <vector>
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_lib_element.H"
 
@@ -40,13 +40,13 @@ namespace DRT
 
       virtual int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3) = 0;
+          CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) = 0;
 
       virtual int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) = 0;
     };
   }  // namespace ELEMENTS

@@ -46,9 +46,10 @@ namespace DRT
       //! @name general framework
       /*========================================================================*/
 
-      void CalcMatAndRhs(Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-          const int k, const double fac, const double timefacfac, const double rhsfac,
-          const double taufac, const double timetaufac, const double rhstaufac,
+      void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,
+          CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac,
+          const double timefacfac, const double rhsfac, const double taufac,
+          const double timetaufac, const double rhstaufac,
           CORE::LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint) override;
 
       //! CalcMat: Coulomb's equation (no source)
@@ -60,7 +61,7 @@ namespace DRT
       //! \param gradpot  spatial gradient of electric potential
       //! \param epsilon  dielectric permittivity of bulk electrolyte
 
-      void CalcMatPotCoulomb(Epetra_SerialDenseMatrix& emat, double timefacfac, double invf,
+      void CalcMatPotCoulomb(CORE::LINALG::SerialDenseMatrix& emat, double timefacfac, double invf,
           double scalefac, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, double epsilon);
 
       //! CalcRhs: Coulomb's equation (no source)
@@ -72,7 +73,7 @@ namespace DRT
       //! micro-macro-coupling
       //! \param gradpot  gradient of electric potential
       //! \param epsilon dielectric permittitivity of bulk electrolyte
-      void CalcRhsPotCoulomb(Epetra_SerialDenseVector& erhs, double fac, double invf,
+      void CalcRhsPotCoulomb(CORE::LINALG::SerialDenseVector& erhs, double fac, double invf,
           double cond_invperm, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, double epsilon);
 
       //! CalcRhs: Source contribution to electric potential (free charge)
@@ -84,7 +85,7 @@ namespace DRT
       //! \param cond_invperm  conductivity / permitivity to scale pot. equations for consistent
       //! micro-macro-coupling
       //! \param z_k_F  transference number times Faraday constant
-      void CalcMatPotSrc(Epetra_SerialDenseMatrix& emat, int k, double fac, double invf,
+      void CalcMatPotSrc(CORE::LINALG::SerialDenseMatrix& emat, int k, double fac, double invf,
           double cond_invperm, double z_k_F);
 
       //! CalcRhs: Source contribution to electric potential (free charge)
@@ -96,7 +97,7 @@ namespace DRT
       //! \param cond_invperm  conductivity / permitivity to scale pot. equations for consistent
       //! micro-macro-coupling
       //! \param q_f  free charge density
-      void CalcRhsPotSrc(Epetra_SerialDenseVector& erhs, int k, double fac, double invf,
+      void CalcRhsPotSrc(CORE::LINALG::SerialDenseVector& erhs, int k, double fac, double invf,
           double cond_invperm, double q_f);
 
       //! CalcRhs: Calculate diffusion contribution to current
@@ -105,7 +106,7 @@ namespace DRT
       //! \param rhsfac  time-integration factor for rhs times domain-integration factor
       //! \param invfval  transference number time Faraday const. inverted
       //! \param gradphi  ector of scalar gradients at t_(n+1)
-      void CalcRhsDiffCur(Epetra_SerialDenseVector& erhs, double rhsfac,
+      void CalcRhsDiffCur(CORE::LINALG::SerialDenseVector& erhs, double rhsfac,
           const std::vector<double>& invfval,
           const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi);
 
@@ -115,12 +116,12 @@ namespace DRT
       //! \param timefacfac  domain-integration factor times time-integration factor
       //! \param invfval  transference number time Faraday const. inverted
       //! \param gradphi  vector of scalar gradients at t_(n+1)
-      void CalcMatDiffCur(Epetra_SerialDenseMatrix& emat, double timefacfac,
+      void CalcMatDiffCur(CORE::LINALG::SerialDenseMatrix& emat, double timefacfac,
           const std::vector<double>& invfval,
           const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi);
 
-      void CalcMatAndRhsOutsideScalarLoop(Epetra_SerialDenseMatrix& emat,
-          Epetra_SerialDenseVector& erhs, const double fac, const double timefacfac,
+      void CalcMatAndRhsOutsideScalarLoop(CORE::LINALG::SerialDenseMatrix& emat,
+          CORE::LINALG::SerialDenseVector& erhs, const double fac, const double timefacfac,
           const double rhsfac) override;
 
       /*========================================================================*/

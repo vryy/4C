@@ -308,13 +308,13 @@ void CORE::GEO::CUT::FacetGraph::CollectVolumeLines(plain_facet_set &collected_f
 
 #ifdef DEBUGCUTLIBRARY
 
-bool GEO::CUT::FacetGraph::InCollectedFacets(const plain_facet_set &collected_facets)
+bool CORE::GEO::CUT::FacetGraph::InCollectedFacets(const plain_facet_set &collected_facets)
 {
   return std::find(all_collected_facets_.begin(), all_collected_facets_.end(), collected_facets) !=
          all_collected_facets_.end();
 }
 
-void GEO::CUT::FacetGraph::PrintAllCollected()
+void CORE::GEO::CUT::FacetGraph::PrintAllCollected()
 {
   int count = 0;
   for (std::vector<plain_facet_set>::iterator i = all_collected_facets_.begin();

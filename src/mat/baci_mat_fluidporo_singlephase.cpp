@@ -204,7 +204,8 @@ INPAR::MAT::MaterialType MAT::FluidPoroSinglePhase::PoroPhaseLawType() const
 /*----------------------------------------------------------------------*
  *  fill the dof matrix with the phase dofs                 vuong 08/16 |
  *----------------------------------------------------------------------*/
-void MAT::FluidPoroSinglePhase::FillDoFMatrix(Epetra_SerialDenseMatrix& dofmat, int numphase) const
+void MAT::FluidPoroSinglePhase::FillDoFMatrix(
+    CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const
 {
   params_->phasedof_->FillDoFMatrix(dofmat, numphase);
   return;

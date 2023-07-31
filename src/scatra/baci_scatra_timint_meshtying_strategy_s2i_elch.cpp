@@ -591,8 +591,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateCondition(
     const DRT::Discretization& idiscret, MORTAR::IntCell& cell, MORTAR::MortarElement& slaveelement,
     MORTAR::MortarElement& masterelement, DRT::Element::LocationArray& la_slave,
     DRT::Element::LocationArray& la_master, const Teuchos::ParameterList& params,
-    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
-    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
+    CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
+    CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
+    CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m)
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
@@ -657,8 +658,9 @@ void SCATRA::MortarCellCalcElch<distypeS, distypeM>::EvaluateConditionNTS(DRT::C
     MORTAR::MortarElement& slaveelement, MORTAR::MortarElement& masterelement,
     const std::vector<CORE::LINALG::Matrix<nen_slave_, 1>>& ephinp_slave,
     const std::vector<CORE::LINALG::Matrix<nen_master_, 1>>& ephinp_master,
-    Epetra_SerialDenseMatrix& k_ss, Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
-    Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s, Epetra_SerialDenseVector& r_m)
+    CORE::LINALG::SerialDenseMatrix& k_ss, CORE::LINALG::SerialDenseMatrix& k_sm,
+    CORE::LINALG::SerialDenseMatrix& k_ms, CORE::LINALG::SerialDenseMatrix& k_mm,
+    CORE::LINALG::SerialDenseVector& r_s, CORE::LINALG::SerialDenseVector& r_m)
 {
   // safety checks
   if (my::numdofpernode_slave_ != 2 or my::numdofpernode_master_ != 2)
@@ -769,19 +771,19 @@ SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::MortarCellCalcElchSTITh
  *--------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::Evaluate(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
-    Epetra_SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
-    Epetra_SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
-    Epetra_SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
-    Epetra_SerialDenseVector& cellvector1,   //!< cell vector 1
-    Epetra_SerialDenseVector& cellvector2    //!< cell vector 2
+    const DRT::Discretization& idiscret,           //!< interface discretization
+    MORTAR::IntCell& cell,                         //!< mortar integration cell
+    MORTAR::MortarElement& slaveelement,           //!< slave-side mortar element
+    MORTAR::MortarElement& masterelement,          //!< master-side mortar element
+    DRT::Element::LocationArray& la_slave,         //!< slave-side location array
+    DRT::Element::LocationArray& la_master,        //!< master-side location array
+    const Teuchos::ParameterList& params,          //!< parameter list
+    CORE::LINALG::SerialDenseMatrix& cellmatrix1,  //!< cell matrix 1
+    CORE::LINALG::SerialDenseMatrix& cellmatrix2,  //!< cell matrix 2
+    CORE::LINALG::SerialDenseMatrix& cellmatrix3,  //!< cell matrix 3
+    CORE::LINALG::SerialDenseMatrix& cellmatrix4,  //!< cell matrix 4
+    CORE::LINALG::SerialDenseVector& cellvector1,  //!< cell vector 1
+    CORE::LINALG::SerialDenseVector& cellvector2   //!< cell vector 2
 )
 {
   // extract and evaluate action
@@ -820,9 +822,9 @@ void SCATRA::MortarCellCalcElchSTIThermo<distypeS, distypeM>::EvaluateConditionO
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix&
+    CORE::LINALG::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
+    CORE::LINALG::SerialDenseMatrix&
         k_ms  //!< linearizations of master-side residuals w.r.t. slave-side dofs
 )
 {
@@ -980,19 +982,19 @@ SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::MortarCellCalcSTIElch(
  *--------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distypeS, DRT::Element::DiscretizationType distypeM>
 void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::Evaluate(
-    const DRT::Discretization& idiscret,     //!< interface discretization
-    MORTAR::IntCell& cell,                   //!< mortar integration cell
-    MORTAR::MortarElement& slaveelement,     //!< slave-side mortar element
-    MORTAR::MortarElement& masterelement,    //!< master-side mortar element
-    DRT::Element::LocationArray& la_slave,   //!< slave-side location array
-    DRT::Element::LocationArray& la_master,  //!< master-side location array
-    const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix& cellmatrix1,   //!< cell matrix 1
-    Epetra_SerialDenseMatrix& cellmatrix2,   //!< cell matrix 2
-    Epetra_SerialDenseMatrix& cellmatrix3,   //!< cell matrix 3
-    Epetra_SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
-    Epetra_SerialDenseVector& cellvector1,   //!< cell vector 1
-    Epetra_SerialDenseVector& cellvector2    //!< cell vector 2
+    const DRT::Discretization& idiscret,           //!< interface discretization
+    MORTAR::IntCell& cell,                         //!< mortar integration cell
+    MORTAR::MortarElement& slaveelement,           //!< slave-side mortar element
+    MORTAR::MortarElement& masterelement,          //!< master-side mortar element
+    DRT::Element::LocationArray& la_slave,         //!< slave-side location array
+    DRT::Element::LocationArray& la_master,        //!< master-side location array
+    const Teuchos::ParameterList& params,          //!< parameter list
+    CORE::LINALG::SerialDenseMatrix& cellmatrix1,  //!< cell matrix 1
+    CORE::LINALG::SerialDenseMatrix& cellmatrix2,  //!< cell matrix 2
+    CORE::LINALG::SerialDenseMatrix& cellmatrix3,  //!< cell matrix 3
+    CORE::LINALG::SerialDenseMatrix& cellmatrix4,  //!< cell matrix 4
+    CORE::LINALG::SerialDenseVector& cellvector1,  //!< cell vector 1
+    CORE::LINALG::SerialDenseVector& cellvector2   //!< cell vector 2
 )
 {
   // extract and evaluate action
@@ -1040,9 +1042,9 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix&
+    CORE::LINALG::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseVector& r_s  //!< slave-side residual vector
+    CORE::LINALG::SerialDenseVector& r_s  //!< slave-side residual vector
 )
 {
   // safety check
@@ -1074,7 +1076,7 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateCondition(
       CORE::DRT::UTILS::GaussRule2D::tri_7point);
 
   // dummy matrix for derivative of slave fluxes w.r.t. master side temperatures
-  Epetra_SerialDenseMatrix dummy_ksm;
+  CORE::LINALG::SerialDenseMatrix dummy_ksm;
   // always in contact
   const double pseudo_contact_fac = 1.0;
 
@@ -1116,9 +1118,9 @@ void SCATRA::MortarCellCalcSTIElch<distypeS, distypeM>::EvaluateConditionOD(
     DRT::Element::LocationArray& la_slave,   //!< slave-side location array
     DRT::Element::LocationArray& la_master,  //!< master-side location array
     const Teuchos::ParameterList& params,    //!< parameter list
-    Epetra_SerialDenseMatrix&
+    CORE::LINALG::SerialDenseMatrix&
         k_ss,  //!< linearizations of slave-side residuals w.r.t. slave-side dofs
-    Epetra_SerialDenseMatrix&
+    CORE::LINALG::SerialDenseMatrix&
         k_sm  //!< linearizations of slave-side residuals w.r.t. master-side dofs
 )
 {

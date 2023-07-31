@@ -14,12 +14,12 @@
 /*----------------------------------------------------------------------*
  |  invert a dense symmetric matrix         )                mwgee 12/06|
  *----------------------------------------------------------------------*/
-void CORE::LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
+void CORE::LINALG::SymmetricInverse(CORE::LINALG::SerialDenseMatrix& A, const int dim)
 {
-  if (A.M() != A.N()) dserror("Matrix is not square");
-  if (A.M() != dim) dserror("Dimension supplied does not match matrix");
+  if (A.numRows() != A.numCols()) dserror("Matrix is not square");
+  if (A.numRows() != dim) dserror("Dimension supplied does not match matrix");
 
-  double* a = A.A();
+  double* a = A.values();
   char uplo[5];
   strcpy(uplo, "L ");
   std::vector<int> ipiv(dim);
@@ -47,7 +47,7 @@ CORE::LINALG::SerialDenseMatrix CORE::LINALG::InvertAndMultiplyByCholesky(
     CORE::LINALG::SerialDenseMatrix& me, CORE::LINALG::SerialDenseMatrix& de,
     CORE::LINALG::SerialDenseMatrix& ae)
 {
-  const int n = me.N();
+  const int n = me.numCols();
 
   CORE::LINALG::SerialDenseMatrix y(n, n);
   CORE::LINALG::SerialDenseMatrix y_identity(n, n, true);

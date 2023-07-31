@@ -15,8 +15,8 @@
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 
 // forward declarations
@@ -132,13 +132,13 @@ namespace UTILS
       \param newstep (in): flag for new time step
     */
     void StiffnessAndInternalForces(const int curvenum, const double& A,
-        const Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
-        const Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2, Epetra_SerialDenseVector& fint,
-        Epetra_SerialDenseMatrix& stiff, const int ID, const double time, const double dt,
-        const int surface_flag, const double const_gamma, const double k1xC, const double k2,
-        const double m1, const double m2, const double gamma_0, const double gamma_min,
-        const double gamma_min_eq, const double con_quot_max, const double con_quot_eq,
-        const bool newstep);
+        const Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff,
+        const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2,
+        CORE::LINALG::SerialDenseVector& fint, CORE::LINALG::SerialDenseMatrix& stiff, const int ID,
+        const double time, const double dt, const int surface_flag, const double const_gamma,
+        const double k1xC, const double k2, const double m1, const double m2, const double gamma_0,
+        const double gamma_min, const double gamma_min_eq, const double con_quot_max,
+        const double con_quot_eq, const bool newstep);
 
     /*!
       \brief Surfactant model equations

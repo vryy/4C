@@ -170,14 +170,15 @@ void MAT::Maxwell_0d_acinus_DoubleExponential::Setup(DRT::INPUT::LineDefinition*
  | Evaluate DoubleExponential material and build system matrix and rhs. |
  |                                                          roth 10/2014|
  *----------------------------------------------------------------------*/
-void MAT::Maxwell_0d_acinus_DoubleExponential::Evaluate(Epetra_SerialDenseVector& epnp,
-    Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-    Epetra_SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
-    const double NumOfAcini, const double Vo, double time, double dt)
+void MAT::Maxwell_0d_acinus_DoubleExponential::Evaluate(CORE::LINALG::SerialDenseVector& epnp,
+    CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
+    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
+    const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
+    double time, double dt)
 {
   // Set sysmat and rhs to zero
-  sysmat.Scale(0.0);
-  rhs.Scale(0.0);
+  sysmat.putScalar(0.0);
+  rhs.putScalar(0.0);
 
   // Get acinar volume in next and current timestep
   double acin_vnp = params.acin_vnp;

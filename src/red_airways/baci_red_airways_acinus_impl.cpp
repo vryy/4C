@@ -85,10 +85,11 @@ DRT::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
         \param dt               (i) timestep
         */
 template <DRT::Element::DiscretizationType distype>
-void Sysmat(DRT::ELEMENTS::RedAcinus* ele, Epetra_SerialDenseVector& epnp,
-    Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm, Epetra_SerialDenseMatrix& sysmat,
-    Epetra_SerialDenseVector& rhs, Teuchos::RCP<const MAT::Material> material,
-    DRT::REDAIRWAYS::ElemParams& params, double time, double dt)
+void Sysmat(DRT::ELEMENTS::RedAcinus* ele, CORE::LINALG::SerialDenseVector& epnp,
+    CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
+    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
+    Teuchos::RCP<const MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params, double time,
+    double dt)
 {
   // Decide which acinus material should be used
   if ((material->MaterialType() == INPAR::MAT::m_0d_maxwell_acinus_neohookean) ||
@@ -122,11 +123,13 @@ void Sysmat(DRT::ELEMENTS::RedAcinus* ele, Epetra_SerialDenseVector& epnp,
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
-  const int elemVecdim = elevec1_epetra.Length();
+  const int elemVecdim = elevec1_epetra.length();
   std::vector<int>::iterator it_vcr;
 
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -168,9 +171,9 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(RedAcinus* ele, Teuchos::Parame
   DRT::UTILS::ExtractMyValues(*ial, myial, lm);
 
   // Create objects for element arrays
-  Epetra_SerialDenseVector epnp(elemVecdim);
-  Epetra_SerialDenseVector epn(elemVecdim);
-  Epetra_SerialDenseVector epnm(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
+  CORE::LINALG::SerialDenseVector epn(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // Split area and volumetric flow rate, insert into element arrays
@@ -342,7 +345,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(RedAcinus* ele, Teuchos::Parame
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
+    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -364,7 +367,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
   DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
 
   // Create objects for element arrays
-  Epetra_SerialDenseVector epnp(numnode);
+  CORE::LINALG::SerialDenseVector epnp(numnode);
 
   // Get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -785,9 +788,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   DRT::UTILS::ExtractMyValues(*pnm, mypnm, lm);
 
   // Create objects for element arrays
-  Epetra_SerialDenseVector epnp(elemVecdim);
-  Epetra_SerialDenseVector epn(elemVecdim);
-  Epetra_SerialDenseVector epnm(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
+  CORE::LINALG::SerialDenseVector epn(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // Split area and volumetric flow rate, insert into element arrays
@@ -818,8 +821,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(RedAcinus* ele,
   elem_params.acin_vnp = e_acin_vnp;
   elem_params.acin_vn = e_acin_vn;
 
-  Epetra_SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
-  Epetra_SerialDenseVector rhs(elemVecdim);
+  CORE::LINALG::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
+  CORE::LINALG::SerialDenseVector rhs(elemVecdim);
 
   // Call routine for calculating element matrix and right hand side
   Sysmat<distype>(ele, epnp, epn, epnm, sysmat, rhs, material, elem_params, time, dt);
@@ -897,7 +900,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
   DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
 
   // create objects for element arrays
-  Epetra_SerialDenseVector epnp(numnode);
+  CORE::LINALG::SerialDenseVector epnp(numnode);
 
   // get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -1010,7 +1013,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1044,8 +1047,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetJunctionVolumeMix(RedAcinus* ele,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, Epetra_SerialDenseVector& scatranp,
-    Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
+    CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
@@ -1228,7 +1231,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatraBifurcations(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& scatranp, Epetra_SerialDenseVector& volumeMix_np,
+    CORE::LINALG::SerialDenseVector& scatranp, CORE::LINALG::SerialDenseVector& volumeMix_np,
     std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1470,8 +1473,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::EvalNodalEssentialValues(RedAcinus* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& nodal_surface, Epetra_SerialDenseVector& nodal_volume,
-    Epetra_SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,
+    CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
   // Get all general state vectors: flow, pressure,

@@ -509,9 +509,10 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ScaTraHDG::CreateFaceElement(
 |  evaluate the element (public)                         hoermann 09/15|
 *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ScaTraHDG::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -750,9 +751,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGBoundary::Surfac
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   return 0;
 }
@@ -763,7 +765,7 @@ int DRT::ELEMENTS::ScaTraHDGBoundary::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ScaTraHDGBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 
 {
   // add Neumann boundary condition to parameter list
@@ -1152,9 +1154,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ScaTraHDGIntFace::Surface
  |  evaluate the element (public)                        hoermann 09/15 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // REMARK: this line ensures that the static DRT::ELEMENTS::ScaTraHDGIntFaceImplInterface::Impl is
   // created
@@ -1172,7 +1175,7 @@ int DRT::ELEMENTS::ScaTraHDGIntFace::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ScaTraHDGIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("not available");
 

@@ -302,7 +302,7 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
     // trafo matrix for locsys node
     else
     {
-      Epetra_SerialDenseMatrix nodetrafo(numdof, numdof);
+      CORE::LINALG::SerialDenseMatrix nodetrafo(numdof, numdof);
       for (int k = 0; k < numdof; ++k) nodetrafo(k, k) = 1.0;
 
       CORE::LINALG::Matrix<3, 1> currrotvector = nodalrotvectors_[nodeGID];

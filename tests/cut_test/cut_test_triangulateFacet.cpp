@@ -91,7 +91,7 @@ void checkTemporary2(
 CORE::GEO::CUT::Side* Create_quad4(
     CORE::GEO::CUT::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
 {
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = x - dx;
   xyze(1, 0) = -0.5;

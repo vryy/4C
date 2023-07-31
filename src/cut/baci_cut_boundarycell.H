@@ -38,8 +38,8 @@ namespace CORE::GEO
     {
      public:
       /// constructor
-      BoundaryCell(
-          const Epetra_SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points);
+      BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+          const std::vector<Point*>& points);
 
       /// destructor
       virtual ~BoundaryCell() {}
@@ -95,7 +95,7 @@ namespace CORE::GEO
       /*!
       \brief Get the coodinates of the corner points of boundarycell
        */
-      const Epetra_SerialDenseMatrix& Coordinates() const { return xyz_; }
+      const CORE::LINALG::SerialDenseMatrix& Coordinates() const { return xyz_; }
 
       /*!
       \brief Move the corner points of the boundary cell by a specific offset
@@ -213,7 +213,7 @@ namespace CORE::GEO
       /// Reset the point with local index lid
       void ResetPos(int lid, CORE::LINALG::Matrix<3, 1> newpos)
       {
-        if (lid > xyz_.N()) dserror("Index out of range! %d > %d", lid, xyz_.N());
+        if (lid > xyz_.numCols()) dserror("Index out of range! %d > %d", lid, xyz_.numCols());
 
         xyz_(0, lid) = newpos(0, 0);
         xyz_(1, lid) = newpos(1, 0);
@@ -274,10 +274,10 @@ namespace CORE::GEO
       }
 
       /// Current position of the boundary cell
-      Epetra_SerialDenseMatrix xyz_;
+      CORE::LINALG::SerialDenseMatrix xyz_;
 
       /// Reference position of the boundary cell
-      Epetra_SerialDenseMatrix xyz_ref_;
+      CORE::LINALG::SerialDenseMatrix xyz_ref_;
       Facet* facet_;
       Teuchos::RCP<Cycle> points_;
     };
@@ -287,8 +287,8 @@ namespace CORE::GEO
     class Point1BoundaryCell : public BoundaryCell
     {
      public:
-      Point1BoundaryCell(
-          const Epetra_SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
+      Point1BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+          const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
         /* intentionally left blank */
@@ -325,8 +325,8 @@ namespace CORE::GEO
     class Line2BoundaryCell : public BoundaryCell
     {
      public:
-      Line2BoundaryCell(
-          const Epetra_SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
+      Line2BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+          const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
         /* intentionally left blank */
@@ -363,8 +363,8 @@ namespace CORE::GEO
     class Tri3BoundaryCell : public BoundaryCell
     {
      public:
-      Tri3BoundaryCell(
-          const Epetra_SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
+      Tri3BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+          const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
       }
@@ -404,8 +404,8 @@ namespace CORE::GEO
     class Quad4BoundaryCell : public BoundaryCell
     {
      public:
-      Quad4BoundaryCell(
-          const Epetra_SerialDenseMatrix& xyz, Facet* facet, const std::vector<Point*>& points)
+      Quad4BoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
+          const std::vector<Point*>& points)
           : BoundaryCell(xyz, facet, points)
       {
       }
@@ -443,7 +443,7 @@ namespace CORE::GEO
     class ArbitraryBoundaryCell : public BoundaryCell
     {
      public:
-      ArbitraryBoundaryCell(const Epetra_SerialDenseMatrix& xyz, Facet* facet,
+      ArbitraryBoundaryCell(const CORE::LINALG::SerialDenseMatrix& xyz, Facet* facet,
           const std::vector<Point*>& points, const CORE::DRT::UTILS::GaussIntegration& gaussRule,
           const CORE::LINALG::Matrix<3, 1>& normal)
           : BoundaryCell(xyz, facet, points), gaussRule_(gaussRule), normal_(normal)

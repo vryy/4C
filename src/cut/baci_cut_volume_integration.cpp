@@ -25,9 +25,9 @@ equations
          compute the rhs of the moment fitting equations
          Integration of base functions take place inside this
 *---------------------------------------------------------------------------*/
-Epetra_SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_moment()
+CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_moment()
 {
-  Epetra_SerialDenseVector rhs_mom(num_func_);
+  CORE::LINALG::SerialDenseVector rhs_mom(num_func_);
 
   const plain_facet_set &facete = volcell_->Facets();
 
@@ -56,7 +56,7 @@ Epetra_SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_moment()
 
     if (fnc == 1)
     {
-      if (rhs_mom.InfNorm() > 1e-5 && rhs_mom(0) < 0.0)
+      if (rhs_mom.normInf() > 1e-5 && rhs_mom(0) < 0.0)
         dserror("negaive volume in base function integration. is ordering of vertices right?");
     }
   }
@@ -751,15 +751,15 @@ void CORE::GEO::CUT::VolumeIntegration::moment_fitting_matrix(
     Compute Gauss point weights by solving the moment fitting equations and returns the coordinates
 of Gauss points and their corresponding weights
 *--------------------------------------------------------------------------------------------------------------------*/
-Epetra_SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weights()
+CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weights()
 {
-  Epetra_SerialDenseVector rhs_moment(num_func_);
+  CORE::LINALG::SerialDenseVector rhs_moment(num_func_);
   rhs_moment = compute_rhs_moment();
 
   bool wei;
   // we should ask for more than 1 point in each direction
   int numeach = 7;
-  Epetra_SerialDenseVector weights;
+  CORE::LINALG::SerialDenseVector weights;
   while (1)
   {
     gaus_pts_.clear();
@@ -801,7 +801,7 @@ Epetra_SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weights()
       }*/
 
       LeastSquares least(moment_matrix, rhs_moment);
-      weights.Size(moment_matrix[0].size());
+      weights.size(moment_matrix[0].size());
       weights = least.linear_least_square();
     }
     else  // the considered volumecell has negligible volume and can be eliminated
@@ -812,12 +812,12 @@ Epetra_SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weights()
       zer[1] = 0.0;
       zer[2] = 0.0;
       gaus_pts_.push_back(zer);
-      weights.Size(1);
+      weights.size(1);
       weights(0) = 0.0;
       break;
     }
 
-    Epetra_SerialDenseVector err(num_func_);
+    CORE::LINALG::SerialDenseVector err(num_func_);
     for (int i = 0; i < num_func_; i++)
     {
       err(i) = 0.0;
@@ -831,7 +831,7 @@ Epetra_SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_weights()
         err(i) = err(i) - rhs_moment(i);
     }
 
-    const double maxError = err.InfNorm();
+    const double maxError = err.normInf();
 #ifdef DEBUGCUTLIBRARY
     std::cout << "max error = " << maxError << "\n";
 #endif
@@ -862,12 +862,12 @@ void CORE::GEO::CUT::VolumeIntegration::GaussPointGmsh()
 
 // compute integration of x+y,y+z and x+z values from the integration of x, y and z values
 void CORE::GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(
-    std::vector<std::vector<double>> &mat, Epetra_SerialDenseVector &rhs)
+    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
   // no of additional elements is n(n+1)/2 where n=(no_of_monomials-1). Here no_of
   // monomials=3=>(x,y,z)
-  rhs.Resize(i + 3);
+  rhs.resize(i + 3);
   mat.resize(i + 3, std::vector<double>(kk));
   unsigned int ibegin = 1, iend = 3;  // the row numbers that contain the first order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -883,10 +883,10 @@ void CORE::GEO::CUT::VolumeIntegration::FirstOrderAdditionalTerms(
 
 // integration of linear combination of second order terms like x^2+xy+y^2+yz
 void CORE::GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(
-    std::vector<std::vector<double>> &mat, Epetra_SerialDenseVector &rhs)
+    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 15);
+  rhs.resize(i + 15);
   mat.resize(i + 15, std::vector<double>(kk));
   unsigned int ibegin = 4, iend = 9;  // the row numbers that contain the second order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -902,10 +902,10 @@ void CORE::GEO::CUT::VolumeIntegration::SecondOrderAdditionalTerms(
 
 // integration of linear combination of third order terms x^3+xyz
 void CORE::GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(
-    std::vector<std::vector<double>> &mat, Epetra_SerialDenseVector &rhs)
+    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 45);
+  rhs.resize(i + 45);
   mat.resize(i + 45, std::vector<double>(kk));
   unsigned int ibegin = 10, iend = 19;  // the row numbers that contain the third order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -920,10 +920,10 @@ void CORE::GEO::CUT::VolumeIntegration::ThirdOrderAdditionalTerms(
 }
 
 void CORE::GEO::CUT::VolumeIntegration::FourthOrderAdditionalTerms(
-    std::vector<std::vector<double>> &mat, Epetra_SerialDenseVector &rhs)
+    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 105);
+  rhs.resize(i + 105);
   mat.resize(i + 105, std::vector<double>(kk));
   unsigned int ibegin = 20, iend = 34;  // the row numbers that contain the fourth order terms in
                                         // rhs
@@ -939,10 +939,10 @@ void CORE::GEO::CUT::VolumeIntegration::FourthOrderAdditionalTerms(
 }
 
 void CORE::GEO::CUT::VolumeIntegration::FifthOrderAdditionalTerms(
-    std::vector<std::vector<double>> &mat, Epetra_SerialDenseVector &rhs)
+    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 210);
+  rhs.resize(i + 210);
   mat.resize(i + 210, std::vector<double>(kk));
   unsigned int ibegin = 35, iend = 55;  // the row numbers that contain the fifth order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -957,10 +957,10 @@ void CORE::GEO::CUT::VolumeIntegration::FifthOrderAdditionalTerms(
 }
 
 void CORE::GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(
-    std::vector<std::vector<double>> &mat, Epetra_SerialDenseVector &rhs)
+    std::vector<std::vector<double>> &mat, CORE::LINALG::SerialDenseVector &rhs)
 {
   unsigned int i = mat.size(), kk = mat[0].size();
-  rhs.Resize(i + 561);
+  rhs.resize(i + 561);
   mat.resize(i + 561, std::vector<double>(kk));
   unsigned int ibegin = 56, iend = 83;  // the row numbers that contain the fifth order terms in rhs
   for (unsigned j = ibegin; j <= iend; j++)
@@ -977,7 +977,8 @@ void CORE::GEO::CUT::VolumeIntegration::SixthOrderAdditionalTerms(
 /*  Computes the error introduced by the generated integration rule for integrating some specific
    functions Used only in post-processing    */
 void CORE::GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(
-    Epetra_SerialDenseVector rhs_moment, Epetra_SerialDenseVector weights, int numeach)
+    CORE::LINALG::SerialDenseVector rhs_moment, CORE::LINALG::SerialDenseVector weights,
+    int numeach)
 {
   static std::vector<int> gausSize;
   gausSize.push_back(gaus_pts_.size());

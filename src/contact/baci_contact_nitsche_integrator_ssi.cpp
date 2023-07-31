@@ -34,8 +34,8 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateGP_3D(MORTAR::MortarElement& sele
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
     CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -52,8 +52,8 @@ void CONTACT::CoIntegratorNitscheSsi::IntegrateGP_2D(MORTAR::MortarElement& sele
     CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& mval,
     CORE::LINALG::SerialDenseMatrix& sderiv, CORE::LINALG::SerialDenseMatrix& mderiv,
     CORE::LINALG::SerialDenseMatrix& lmderiv,
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-    CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+    double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
     std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
     CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
     std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -161,7 +161,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchy(MORTAR::MortarElement& mortar_
     CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
     CORE::GEN::pairedvector<int, double>& d_cauchy_nt_ds)
 {
-  Epetra_SerialDenseMatrix d_sigma_nt_ds;
+  CORE::LINALG::SerialDenseMatrix d_sigma_nt_ds;
 
   SoEleCauchyStruct<dim>(mortar_ele, gp_coord, d_gp_coord_dd, gp_wgt, gp_normal, d_gp_normal_dd,
       test_dir, d_test_dir_dd, nitsche_wgt, cauchy_nt_wgt, d_cauchy_nt_dd, &d_sigma_nt_ds);
@@ -184,7 +184,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::MortarElement& m
     const CORE::LINALG::Matrix<dim, 1>& test_dir,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
     double& cauchy_nt_wgt, CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
-    Epetra_SerialDenseMatrix* d_sigma_nt_ds)
+    CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds)
 {
   static CORE::LINALG::Matrix<dim, 1> parent_xi(true);
   static CORE::LINALG::Matrix<dim, dim> local_to_parent_trafo(true);
@@ -193,7 +193,7 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::MortarElement& m
 
   // cauchy stress tensor contracted with normal and test direction
   double sigma_nt(0.0);
-  Epetra_SerialDenseMatrix d_sigma_nt_dd;
+  CORE::LINALG::SerialDenseMatrix d_sigma_nt_dd;
   static CORE::LINALG::Matrix<dim, 1> d_sigma_nt_dn(true), d_sigma_nt_dt(true),
       d_sigma_nt_dxi(true);
 
@@ -305,17 +305,17 @@ void CONTACT::CoIntegratorNitscheSsi::SetupGpConcentrations(MORTAR::MortarElemen
     CORE::GEN::pairedvector<int, double>& d_conc_dc,
     CORE::GEN::pairedvector<int, double>& d_conc_dd)
 {
-  CORE::LINALG::SerialDenseVector ele_conc(shape_func.Length());
+  CORE::LINALG::SerialDenseVector ele_conc(shape_func.length());
   for (int i = 0; i < ele.NumNode(); ++i)
     ele_conc(i) =
         ele.MoData().ParentScalar().at(CORE::DRT::UTILS::getParentNodeNumberFromFaceNodeNumber(
             ele.ParentElement()->Shape(), ele.FaceParentNumber(), i));
 
   // calculate gp concentration
-  gp_conc = shape_func.Dot(ele_conc);
+  gp_conc = shape_func.dot(ele_conc);
 
   // calculate derivative of concentration w.r.t. concentration
-  d_conc_dc.resize(shape_func.Length());
+  d_conc_dc.resize(shape_func.length());
   d_conc_dc.clear();
   for (int i = 0; i < ele.NumNode(); ++i)
     d_conc_dc[ele.MoData().ParentScalarDof().at(
@@ -479,4 +479,4 @@ template void CONTACT::CoIntegratorNitscheSsi::SoEleCauchyStruct<3>(
     const CORE::LINALG::Matrix<3, 1>& test_dir,
     const std::vector<CORE::GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
     double& cauchy_nt_wgt, CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
-    Epetra_SerialDenseMatrix* d_sigma_nt_ds);
+    CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds);

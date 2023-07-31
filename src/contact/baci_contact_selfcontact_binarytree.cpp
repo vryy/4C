@@ -20,8 +20,9 @@
  *----------------------------------------------------------------------*/
 CONTACT::SelfBinaryTreeNode::SelfBinaryTreeNode(SelfBinaryTreeNodeType type,
     DRT::Discretization& discret, Teuchos::RCP<SelfBinaryTreeNode> parent, std::vector<int> elelist,
-    const Epetra_SerialDenseMatrix& dopnormals, const Epetra_SerialDenseMatrix& samplevectors,
-    const int& kdop, const int& dim, const int& nvectors, const int layer, const bool nonsmoothsurf,
+    const CORE::LINALG::SerialDenseMatrix& dopnormals,
+    const CORE::LINALG::SerialDenseMatrix& samplevectors, const int& kdop, const int& dim,
+    const int& nvectors, const int layer, const bool nonsmoothsurf,
     std::vector<std::vector<Teuchos::RCP<SelfBinaryTreeNode>>>& treenodes)
     : MORTAR::BaseBinaryTreeNode::BaseBinaryTreeNode(
           discret, elelist, dopnormals, kdop, dim, true, layer),
@@ -314,9 +315,9 @@ void CONTACT::SelfDualEdge::CalculateCosts()
   node2_->UpdateSlabsBottomUp(enlarge);
 
   // build parent slab for dual edge
-  Epetra_SerialDenseMatrix parentslabs;
+  CORE::LINALG::SerialDenseMatrix parentslabs;
   const int n = node1_->Kdop();
-  parentslabs.Reshape(n / 2, 2);
+  parentslabs.reshape(n / 2, 2);
 
   for (int k = 0; k < n / 2; ++k)
   {
@@ -393,7 +394,7 @@ void CONTACT::SelfDualEdge::CalculateCosts()
 
     // compute maximal k-DOP area for dual edge
     double lmaxdop2 = 0.0;
-    Epetra_SerialDenseMatrix dopnormals = node1_->Dopnormals();
+    CORE::LINALG::SerialDenseMatrix dopnormals = node1_->Dopnormals();
     for (int j = 0; j < n / 2; ++j)
     {
       double scalar = dopnormals(j, 0) * dopnormals(slab, 0) +
@@ -483,7 +484,7 @@ void CONTACT::SelfBinaryTree::InitInternalVariables()
       nvectors_ = 16;
 
       // setup sample vectors
-      samplevectors_.Reshape(16, 3);
+      samplevectors_.reshape(16, 3);
       samplevectors_(0, 0) = 1.0;
       samplevectors_(0, 1) = 0.0;
       samplevectors_(0, 2) = 0.0;
@@ -528,7 +529,7 @@ void CONTACT::SelfBinaryTree::InitInternalVariables()
       nvectors_ = 50;
 
       // setup sample vectors
-      samplevectors_.Reshape(50, 3);
+      samplevectors_.reshape(50, 3);
       samplevectors_(0, 0) = 0;
       samplevectors_(0, 1) = 0.0;
       samplevectors_(0, 2) = 1.0;

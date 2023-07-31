@@ -180,8 +180,8 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
       DRT::Condition& cond = *(fool->second);
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
       std::map<int, Teuchos::RCP<DRT::Element>>::iterator curr;
-      Epetra_SerialDenseVector elevector;
-      Epetra_SerialDenseMatrix elematrix;
+      CORE::LINALG::SerialDenseVector elevector;
+      CORE::LINALG::SerialDenseMatrix elematrix;
       for (curr = geom.begin(); curr != geom.end(); ++curr)
       {
         // get element location vector, dirichlet flags and ownerships
@@ -189,7 +189,7 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
         std::vector<int> lmowner;
         std::vector<int> lmstride;
         curr->second->LocationVector(*discret, lm, lmowner, lmstride);
-        elevector.Size((int)lm.size());
+        elevector.size((int)lm.size());
         if (!assemblemat)
         {
           curr->second->EvaluateNeumann(params, *discret, cond, lm, elevector);
@@ -198,10 +198,10 @@ void XFEM::EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& 
         else
         {
           const int size = (int)lm.size();
-          if (elematrix.M() != size)
-            elematrix.Shape(size, size);
+          if (elematrix.numRows() != size)
+            elematrix.shape(size, size);
           else
-            memset(elematrix.A(), 0, size * size * sizeof(double));
+            elematrix.putScalar(0.0);
           curr->second->EvaluateNeumann(params, *discret, cond, lm, elevector, &elematrix);
           CORE::LINALG::Assemble(systemvector, elevector, lm, lmowner);
           systemmatrix->Assemble(curr->second->Id(), lmstride, elematrix, lm, lmowner);

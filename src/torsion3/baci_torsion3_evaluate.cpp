@@ -24,9 +24,10 @@
  |  evaluate the element (public) cyron 08/08|
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   SetParamsInterfacePtr(params);
 
@@ -152,12 +153,12 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
         int nnode  = NumNode();
 
         //variable to store numerically approximated stiffness matrix
-        Epetra_SerialDenseMatrix stiff_approx;
+        CORE::LINALG::SerialDenseMatrix stiff_approx;
         stiff_approx.Shape(numdof*nnode,numdof*nnode);
 
 
         //relative error of numerically approximated stiffness matrix
-        Epetra_SerialDenseMatrix stiff_relerr;
+        CORE::LINALG::SerialDenseMatrix stiff_relerr;
         stiff_relerr.Shape(numdof*nnode,numdof*nnode);
 
         //characteristic length for numerical approximation of stiffness
@@ -172,7 +173,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
           for(int k=0; k<nnode; k++)//for all nodes
           {
 
-            Epetra_SerialDenseVector force_aux;
+            CORE::LINALG::SerialDenseVector force_aux;
             force_aux.Size(numdof*nnode);
 
             //create new displacement and velocity vectors in order to store artificially modified
@@ -254,7 +255,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
 
 int DRT::ELEMENTS::Torsion3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   /*torsion spring assumed to be infinitesimally small and thus no Neumann boundary conditions
    * can be assigned to this element*/
@@ -265,8 +266,8 @@ int DRT::ELEMENTS::Torsion3::EvaluateNeumann(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                             cyron 12/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Torsion3::t3_energy(
-    Teuchos::ParameterList& params, std::vector<double>& disp, Epetra_SerialDenseVector* intenergy)
+void DRT::ELEMENTS::Torsion3::t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
+    CORE::LINALG::SerialDenseVector* intenergy)
 {
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for
   // third node)
@@ -330,8 +331,8 @@ void DRT::ELEMENTS::Torsion3::t3_energy(
  | evaluate nonlinear stiffness matrix and internal forces                    cyron 03/10|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-    Epetra_SerialDenseVector* force)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force)
 {
   // current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for
   // third node)

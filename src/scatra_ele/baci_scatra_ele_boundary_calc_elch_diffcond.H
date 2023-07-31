@@ -47,18 +47,20 @@ namespace DRT
 
       int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, SCATRA::BoundaryAction action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra) override;
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) override;
 
-      void EvaluateElchBoundaryKinetics(const DRT::Element* ele, Epetra_SerialDenseMatrix& emat,
-          Epetra_SerialDenseVector& erhs, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+      void EvaluateElchBoundaryKinetics(const DRT::Element* ele,
+          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ehist, double timefac,
           Teuchos::RCP<const MAT::Material> material, Teuchos::RCP<DRT::Condition> cond,
           const int nume, const std::vector<int> stoich, const int kinetics, const double pot0,
@@ -66,12 +68,13 @@ namespace DRT
 
       void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
-          Epetra_SerialDenseVector& eslaveresidual) override;
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,
+          CORE::LINALG::SerialDenseVector& eslaveresidual) override;
 
       void EvaluateS2ICouplingOD(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix) override;
+          CORE::LINALG::SerialDenseMatrix& eslavematrix) override;
 
       double GetValence(
           const Teuchos::RCP<const MAT::Material>& material, const int k) const override;

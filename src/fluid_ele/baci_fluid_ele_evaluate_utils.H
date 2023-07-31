@@ -3055,7 +3055,8 @@ namespace FLD
   */
   template <DRT::Element::DiscretizationType DISTYPE>
   void ElementNodeNormal(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
-      DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
+      DRT::Discretization& discretization, std::vector<int>& lm,
+      CORE::LINALG::SerialDenseVector& elevec1)
   {
     // this evaluates the node normals using the volume integral in Wall
     // (7.13). That formula considers all surfaces of the element, not only the

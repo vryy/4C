@@ -3,6 +3,8 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
+#include <Teuchos_SerialDenseSolver.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "baci_so3_tet4.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
@@ -13,14 +15,11 @@
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_mat_constraintmixture.H"
 #include "baci_contact_analytical.H"
 #include "baci_lib_globalproblem.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "baci_so3_prestress.H"
 
@@ -40,11 +39,11 @@ template <class T>
 void writeArray(const T& mat, std::string name = "unnamed")
 {
   std::stringstream header;
-  header << 'M' << name << ':' << mat.M() << 'x' << mat.N() << ':';
-  unsigned int s = header.str().size() + mat.M() * mat.N() * sizeof(double);
+  header << 'M' << name << ':' << mat.numRows() << 'x' << mat.numCols() << ':';
+  unsigned int s = header.str().size() + mat.numRows() * mat.numCols() * sizeof(double);
   std::cerr.write(reinterpret_cast<const char*>(&s), sizeof(unsigned int));
   std::cerr << header.str();
-  for (int i = 0; i < mat.M() * mat.N(); ++i)
+  for (int i = 0; i < mat.numRows() * mat.numCols(); ++i)
   {
     std::cerr.write(reinterpret_cast<const char*>(&(mat.A()[i])), sizeof(double));
   }
@@ -65,20 +64,22 @@ using VoigtMapping = UTILS::VOIGT::IndexMappings;
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
   SetParamsInterfacePtr(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_tet4::ActionType act = So_tet4::none;
@@ -487,7 +488,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -498,7 +499,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     {
       Teuchos::RCP<MAT::Material> mat = Material();
       // check length of elevec1
-      if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
       MAT::Material* rawmat = mat.get();
       auto* stvk = dynamic_cast<MAT::StVenantKirchhoff*>(rawmat);
       if (!stvk) dserror("dynamic cast to stvenant failed");
@@ -631,7 +632,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
       //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
-      if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 3) dserror("The given result vector is too short.");
 
       // check material law
       Teuchos::RCP<MAT::Material> mat = Material();
@@ -841,13 +842,15 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstressmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstressmap", Teuchos::null);
         if (gpstressmap == Teuchos::null)
           dserror("no gp stress map available for writing gpstresses");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstrainmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstrainmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstrainmap", Teuchos::null);
         if (gpstrainmap == Teuchos::null)
           dserror("no gp strain map available for writing gpstrains");
@@ -879,9 +882,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         // add stresses to global map
         // get EleID Id()
         int gid = Id();
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
-        gpstress->Shape(NUMGPT_SOTET4, MAT::NUM_STRESS_3D);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+        gpstress->shape(NUMGPT_SOTET4, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_SOTET4; i++)
@@ -893,9 +896,9 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
         }
 
         // strains
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstrain =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
-        gpstrain->Shape(NUMGPT_SOTET4, MAT::NUM_STRESS_3D);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstrain =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+        gpstrain->shape(NUMGPT_SOTET4, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_SOTET4; i++)
@@ -943,7 +946,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet4::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = condition.Get<std::vector<int>>("onoff");
@@ -1789,10 +1792,10 @@ void DRT::ELEMENTS::So_tet4::so_tet4_lumpmass(
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -1962,7 +1965,7 @@ const std::vector<double> DRT::ELEMENTS::So_tet4::so_tet4_4gp_weights()
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::DefGradient(const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
+    CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   // update element geometry
   CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xdisp;
@@ -2255,12 +2258,15 @@ void DRT::ELEMENTS::So_tet4::so_tet4_remodel(std::vector<int>& lm,  // location 
 void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
     const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-    Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-    Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-    Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
-    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi,
-    const std::vector<double>* temp, Epetra_SerialDenseMatrix* d_cauchyndir_dT,
-    Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
+    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+    CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
     double* d_cauchyndir_dc)
 {
   if (temp || d_cauchyndir_dT || d2_cauchyndir_dd_dT)
@@ -2329,32 +2335,32 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   if (d_cauchyndir_dd)
   {
-    d_cauchyndir_dd->Reshape(NUMDOF_SOTET4, 1);
-    CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> d_cauchyndir_dd_mat(d_cauchyndir_dd->A(), true);
+    d_cauchyndir_dd->reshape(NUMDOF_SOTET4, 1);
+    CORE::LINALG::Matrix<NUMDOF_SOTET4, 1> d_cauchyndir_dd_mat(d_cauchyndir_dd->values(), true);
     d_cauchyndir_dd_mat.MultiplyTN(1.0, d_F_dd, d_cauchyndir_dF, 0.0);
   }
 
   if (d2_cauchyndir_dd_dn)
   {
-    d2_cauchyndir_dd_dn->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
+    d2_cauchyndir_dd_dn->reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dn_mat(
-        d2_cauchyndir_dd_dn->A(), true);
+        d2_cauchyndir_dd_dn->values(), true);
     d2_cauchyndir_dd_dn_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_dn, 0.0);
   }
 
   if (d2_cauchyndir_dd_ddir)
   {
-    d2_cauchyndir_dd_ddir->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
+    d2_cauchyndir_dd_ddir->reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_ddir_mat(
-        d2_cauchyndir_dd_ddir->A(), true);
+        d2_cauchyndir_dd_ddir->values(), true);
     d2_cauchyndir_dd_ddir_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dF_ddir, 0.0);
   }
 
   if (d2_cauchyndir_dd2)
   {
-    d2_cauchyndir_dd2->Reshape(NUMDOF_SOTET4, NUMDOF_SOTET4);
+    d2_cauchyndir_dd2->reshape(NUMDOF_SOTET4, NUMDOF_SOTET4);
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDOF_SOTET4> d2_cauchyndir_dd2_mat(
-        d2_cauchyndir_dd2->A(), true);
+        d2_cauchyndir_dd2->values(), true);
     static CORE::LINALG::Matrix<9, NUMDOF_SOTET4> d2_cauchyndir_dd2_d_F_dd(true);
     d2_cauchyndir_dd2_d_F_dd.Multiply(1.0, d2_cauchyndir_dF2, d_F_dd, 0.0);
     d2_cauchyndir_dd2_mat.MultiplyTN(1.0, d_F_dd, d2_cauchyndir_dd2_d_F_dd, 0.0);
@@ -2401,9 +2407,9 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   if (d2_cauchyndir_dd_dxi)
   {
-    d2_cauchyndir_dd_dxi->Reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
+    d2_cauchyndir_dd_dxi->reshape(NUMDOF_SOTET4, NUMDIM_SOTET4);
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dxi_mat(
-        d2_cauchyndir_dd_dxi->A(), true);
+        d2_cauchyndir_dd_dxi->values(), true);
 
     static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
         NUMDIM_SOTET4>

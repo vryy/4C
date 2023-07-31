@@ -104,7 +104,7 @@ namespace DRT
       //! \param[out] stiffmat    element stiffness matrix
       virtual void CalcInternalForceStiffTotLag(
           const std::map<std::string, std::vector<double>>& ele_state,
-          Epetra_SerialDenseVector& forcevec, Epetra_SerialDenseMatrix& stiffmat);
+          CORE::LINALG::SerialDenseVector& forcevec, CORE::LINALG::SerialDenseMatrix& stiffmat);
 
       //! calcluate stresses at Gauss point
       //! \param[in] params      parameter list
@@ -115,13 +115,14 @@ namespace DRT
       DRT::ElementType& ElementType() const override { return Truss3Type::Instance(); }
 
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3) override;
+          LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       //! get internal (elastic) energy of element
       double GetInternalEnergy() const { return eint_; };
@@ -237,7 +238,7 @@ namespace DRT
       //! \param params
       //! \param intenergy
       virtual void Energy(const std::map<std::string, std::vector<double>>& ele_state,
-          Teuchos::ParameterList& params, Epetra_SerialDenseVector& intenergy);
+          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& intenergy);
 
       //! cross section area
       double crosssec_;
@@ -260,7 +261,7 @@ namespace DRT
       };
 
       //! lump mass matrix
-      void LumpMass(Epetra_SerialDenseMatrix* emass);
+      void LumpMass(CORE::LINALG::SerialDenseMatrix* emass);
 
       //! calculation of nonlinear stiffness and mass matrix switching between total lagrange
       //! and enginerring strains
@@ -270,8 +271,8 @@ namespace DRT
       //! \param[out] massmatrix   elemental mass matrix
       //! \param[out] force        elemental force vector
       void NlnStiffMass(const std::map<std::string, std::vector<double>>& ele_state,
-          Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector* force);
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+          CORE::LINALG::SerialDenseVector* force);
 
       //! \brief calculate force, nonlinear stiffness and mass matrix using a engineering strain
       //! measure.
@@ -284,8 +285,8 @@ namespace DRT
       //! \param[out] massmatrix          elemental mass matrix
       //! \param[out] DummyForce          elemental force vector
       void NlnStiffMassEngStr(const std::map<std::string, std::vector<double>>& ele_state,
-          Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector& DummyForce);
+          CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix,
+          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector& DummyForce);
 
       //! calculation of nonlinear stiffness and mass matrix
       //!
@@ -294,8 +295,8 @@ namespace DRT
       //! \param[out] massmatrix         elemental mass matrix
       //! \param[out] DummyForce         elemental force vector
       void NlnStiffMassTotLag(const std::map<std::string, std::vector<double>>& ele_state,
-          Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseMatrix* massmatrix,
-          Epetra_SerialDenseVector& DummyForce);
+          CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix,
+          CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector& DummyForce);
 
       //! container containing all kind of Truss3 thisandthat
       DRT::Container data_;

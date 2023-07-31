@@ -157,9 +157,9 @@ namespace CONTACT
      \return 0 if successful, negative otherwise
      */
     virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-        Epetra_SerialDenseVector& elevec3);
+        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
     /*!
      \brief Evaluate a Neumann boundary condition dummy
@@ -181,8 +181,8 @@ namespace CONTACT
      \return 0 if successful, negative otherwise
      */
     virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-        Epetra_SerialDenseMatrix* elemat1 = NULL)
+        DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseMatrix* elemat1 = NULL)
     {
       return 0;
     }
@@ -190,7 +190,7 @@ namespace CONTACT
     /*!
      \brief Build element normal derivative at node passed in
      */
-    virtual void DerivNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens,
+    virtual void DerivNormalAtNode(int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivn);
 
     virtual void OldUnitNormalAtXi(const double* xi, CORE::LINALG::Matrix<3, 1>& n_old,
@@ -208,7 +208,8 @@ namespace CONTACT
     template <unsigned elenumnode>
     inline void DJacDXi(double* djacdxi, double* xi, CORE::LINALG::Matrix<elenumnode, 3>& secderiv)
     {
-      CORE::LINALG::SerialDenseMatrix sdm_secderiv(View, secderiv.A(), elenumnode, elenumnode, 3);
+      CORE::LINALG::SerialDenseMatrix sdm_secderiv(
+          Teuchos::View, secderiv.A(), elenumnode, elenumnode, 3);
       DJacDXi(djacdxi, xi, sdm_secderiv);
     }
 
@@ -225,7 +226,7 @@ namespace CONTACT
     /*!
      \brief Access to D-Matrix deriv to add Gauss point contribution
      */
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& GetDderiv()
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetDderiv()
     {
       if (dMatrixDeriv_ == Teuchos::null) dserror("trying to get Dderiv, but not initialized");
       return *dMatrixDeriv_;
@@ -234,7 +235,7 @@ namespace CONTACT
     /*!
      \brief Access to M-Matrix deriv to add Gauss point contribution
      */
-    CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& GetMderiv()
+    CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& GetMderiv()
     {
       if (mMatrixDeriv_ == Teuchos::null) dserror("trying to get Mderiv, but not initialized");
       return *mMatrixDeriv_;
@@ -257,13 +258,13 @@ namespace CONTACT
      Caution: This function cannot be called stand-alone! It is
      integrated into the whole nodal normal calculation process.
      */
-    virtual void DerivNormalAtXi(double* xi, int& i, Epetra_SerialDenseMatrix& elens,
+    virtual void DerivNormalAtXi(double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivn);
 
    private:
-    Teuchos::RCP<CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>>
+    Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
         dMatrixDeriv_;  //< temporary matrix for D linearization during integration
-    Teuchos::RCP<CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>>
+    Teuchos::RCP<CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>>
         mMatrixDeriv_;  //< temporary matrix for M linearization during integration
   };
   // class CoElement

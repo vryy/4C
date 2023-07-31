@@ -46,7 +46,7 @@ void CORE::GEO::CUT::Parallel::CommunicateNodePositions()
   discret_->Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodePositions");
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodePositions");
 
   //  if(myrank_==0) std::cout << "\n\t ... CommunicateNodePositions" << std::flush;
   //
@@ -461,7 +461,7 @@ void CORE::GEO::CUT::Parallel::CommunicateNodeDofSetNumbers(bool include_inner)
   discret_->Comm().Barrier();
 
   TEUCHOS_FUNC_TIME_MONITOR(
-      "GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodeDofSetNumbers");
+      "CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets --- CommunicateNodeDofSetNumbers");
 
   //  if(myrank_==0) std::cout << "\n\t ... CommunicateNodeDofSetNumbers" << std::flush;
   //
@@ -1072,7 +1072,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
         CORE::GEO::CUT::OUTPUT::GmshCoordDump(file, coord, 0);
       }
     }
-    //  GEO::CUT::OUTPUT::GmshEndSection(file, true);
+    //  CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
     for (plain_volumecell_set::iterator c = my_vcs.begin(); c != my_vcs.end(); c++)
     {
       VolumeCell* cell = *c;

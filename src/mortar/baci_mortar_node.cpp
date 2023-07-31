@@ -499,7 +499,7 @@ void MORTAR::MortarNode::BuildAveragedNormal()
   // elens(4,i): length of element normal
   // elens(5,i): length/area of element itself
   //**********************************************************************
-  Epetra_SerialDenseMatrix elens(6, nseg);
+  CORE::LINALG::SerialDenseMatrix elens(6, nseg);
 
   // loop over all adjacent elements
   for (int i = 0; i < nseg; ++i)

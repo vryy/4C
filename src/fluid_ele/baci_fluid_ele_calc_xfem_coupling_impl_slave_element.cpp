@@ -385,7 +385,7 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       void SlaveElementRepresentation<distype, slave_distype, slave_numdof>::ComputeInterfaceForce(
-          Epetra_SerialDenseVector& iforce,         ///< interface force vector
+          CORE::LINALG::SerialDenseVector& iforce,  ///< interface force vector
           CORE::LINALG::Matrix<nsd_, 1>& traction,  ///< traction vector at gaussian point
           const double& fac                         ///< integration factor
       )

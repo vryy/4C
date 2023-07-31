@@ -125,12 +125,12 @@ bool BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
   // Fill in the entries for the local matrices and vectors.
   {
     // Resize and initialize the return variables.
-    if (forcevec1 != nullptr) forcevec1->Size(beam::n_dof_);
-    if (forcevec2 != nullptr) forcevec2->Size(solid::n_dof_);
-    if (stiffmat11 != nullptr) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
-    if (stiffmat12 != nullptr) stiffmat12->Shape(beam::n_dof_, solid::n_dof_);
-    if (stiffmat21 != nullptr) stiffmat21->Shape(solid::n_dof_, beam::n_dof_);
-    if (stiffmat22 != nullptr) stiffmat22->Shape(solid::n_dof_, solid::n_dof_);
+    if (forcevec1 != nullptr) forcevec1->size(beam::n_dof_);
+    if (forcevec2 != nullptr) forcevec2->size(solid::n_dof_);
+    if (stiffmat11 != nullptr) stiffmat11->shape(beam::n_dof_, beam::n_dof_);
+    if (stiffmat12 != nullptr) stiffmat12->shape(beam::n_dof_, solid::n_dof_);
+    if (stiffmat21 != nullptr) stiffmat21->shape(solid::n_dof_, beam::n_dof_);
+    if (stiffmat22 != nullptr) stiffmat22->shape(solid::n_dof_, solid::n_dof_);
 
     if (forcevec1 != nullptr && forcevec2 != nullptr)
     {
@@ -253,7 +253,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam, solid>::Eva
 
   // If given, assemble force terms into the global force vector.
   if (force_vector != Teuchos::null)
-    force_vector->SumIntoGlobalValues(gid_pair.M(), gid_pair.A(), local_force.A());
+    force_vector->SumIntoGlobalValues(gid_pair.numRows(), gid_pair.A(), local_force.A());
 
   // If given, assemble force terms into the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)
@@ -299,7 +299,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairGaussPoint<beam,
   CORE::LINALG::Matrix<3, solid::n_dof_, scalar_type_rot_1st> d_psi_solid_d_q_solid;
   CORE::LINALG::Matrix<3, 1, scalar_type_rot_1st> Tinv_solid_times_potential_variation;
   CORE::LINALG::Matrix<solid::n_dof_, 1, scalar_type_rot_1st> fc_solid_gp;
-  Epetra_SerialDenseVector L_i(3);
+  CORE::LINALG::SerialDenseVector L_i(3);
   CORE::LINALG::Matrix<n_dof_rot_, 3, double> d_fc_beam_d_psi_beam;
   CORE::LINALG::Matrix<solid::n_dof_, 3, double> d_fc_solid_d_psi_beam;
   std::vector<CORE::LINALG::Matrix<3, 3, double>> I_beam_tilde;

@@ -3,6 +3,7 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "baci_lib_element.H"
@@ -17,7 +18,6 @@
 #include "baci_contact_analytical.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_so3_material.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_so3_utils.H"
@@ -33,19 +33,21 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   EnsureMaterialPostSetup(params);
 
   SetParamsInterfacePtr(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET10, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET10, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOTET10, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET10, NUMDOF_SOTET10> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET10, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET10, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOTET10, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_tet10::ActionType act = So_tet10::none;
@@ -462,8 +464,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+        CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
         glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
         glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -486,7 +488,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -506,7 +508,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       //   namespace, however they could (should?) be moved to a more general location
 
       // check length of elevec1
-      if (elevec1_epetra.Length() < 3) dserror("The given result vector is too short.");
+      if (elevec1_epetra.length() < 3) dserror("The given result vector is too short.");
 
       // check material law
       Teuchos::RCP<MAT::Material> mat = Material();
@@ -697,13 +699,15 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         if (disp == Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata == Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata == Teuchos::null) dserror("Cannot get 'strain' data");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstressmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstressmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstressmap", Teuchos::null);
         if (gpstressmap == Teuchos::null)
           dserror("no gp stress map available for writing gpstresses");
-        const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpstrainmap =
-            params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+        const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>
+            gpstrainmap = params.get<
+                Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
                 "gpstrainmap", Teuchos::null);
         if (gpstrainmap == Teuchos::null)
           dserror("no gp strain map available for writing gpstrains");
@@ -735,9 +739,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         // add stresses to global map
         // get EleID Id()
         int gid = Id();
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
-        gpstress->Shape(NUMGPT_SOTET10, MAT::NUM_STRESS_3D);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+        gpstress->shape(NUMGPT_SOTET10, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_SOTET10; i++)
@@ -749,9 +753,9 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         }
 
         // strains
-        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstrain =
-            Teuchos::rcp(new Epetra_SerialDenseMatrix);
-        gpstrain->Shape(NUMGPT_SOTET10, MAT::NUM_STRESS_3D);
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstrain =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+        gpstrain->shape(NUMGPT_SOTET10, MAT::NUM_STRESS_3D);
 
         // move stresses to serial dense matrix
         for (int i = 0; i < NUMGPT_SOTET10; i++)
@@ -894,7 +898,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
   const auto* onoff = condition.Get<std::vector<int>>("onoff");
@@ -1131,8 +1135,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+    CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
     glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1459,8 +1463,8 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(std::vector<int>& lm,  // lo
 
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+        CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
         glstrain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
         glstrain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
         glstrain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
@@ -1535,10 +1539,10 @@ void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(
   if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
-    for (unsigned c = 0; c < (*emass).N(); ++c)  // parse columns
+    for (unsigned c = 0; c < (*emass).numCols(); ++c)  // parse columns
     {
       double d = 0.0;
-      for (unsigned r = 0; r < (*emass).M(); ++r)  // parse rows
+      for (unsigned r = 0; r < (*emass).numRows(); ++r)  // parse rows
       {
         d += (*emass)(r, c);  // accumulate row entries
         (*emass)(r, c) = 0.0;
@@ -1705,7 +1709,7 @@ int DRT::ELEMENTS::So_tet10Type::Initialize(DRT::Discretization& dis)
  |  compute def gradient at every gaussian point (protected)            |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::DefGradient(const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
+    CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10>> derivs =
       so_tet10_4gp_derivs();

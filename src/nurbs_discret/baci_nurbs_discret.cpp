@@ -283,9 +283,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
     bool assemblevec = rhs != Teuchos::null;
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elemass;
-    // Epetra_SerialDenseVector elerhs;
-    std::vector<Epetra_SerialDenseVector> elerhs(deg + 1);
+    CORE::LINALG::SerialDenseMatrix elemass;
+    std::vector<CORE::LINALG::SerialDenseVector> elerhs(deg + 1);
 
     std::vector<int> lm;
     std::vector<int> lmowner;
@@ -308,8 +307,8 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
       const int nen = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
 
       // access elements knot span
-      std::vector<Epetra_SerialDenseVector> eleknots(dim);
-      Epetra_SerialDenseVector weights(nen);
+      std::vector<CORE::LINALG::SerialDenseVector> eleknots(dim);
+      CORE::LINALG::SerialDenseVector weights(nen);
 
       bool zero_size = false;
       if (isboundary)
@@ -317,7 +316,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
         Teuchos::RCP<DRT::FaceElement> faceele =
             Teuchos::rcp_dynamic_cast<DRT::FaceElement>(actele, true);
         double normalfac = 0.0;
-        std::vector<Epetra_SerialDenseVector> pknots(probdim);
+        std::vector<CORE::LINALG::SerialDenseVector> pknots(probdim);
         zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(actele.get(),
             faceele->FaceMasterNumber(), faceele->ParentElement()->Id(), discret, pknots, eleknots,
             weights, normalfac);
@@ -360,19 +359,19 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
 
       if (assemblemat)
       {
-        if (elemass.M() != eledim or elemass.N() != eledim)
-          elemass.Shape(eledim, eledim);
+        if (elemass.numRows() != eledim or elemass.numCols() != eledim)
+          elemass.shape(eledim, eledim);
         else
-          memset(elemass.A(), 0, eledim * eledim * sizeof(double));
+          elemass.putScalar(0.0);
       }
       if (assemblevec)
       {
         for (unsigned i = 0; i < deg + 1; ++i)
         {
-          if (elerhs[i].Length() != eledim)
-            elerhs[i].Size(eledim);
+          if (elerhs[i].length() != eledim)
+            elerhs[i].size(eledim);
           else
-            memset(elerhs[i].Values(), 0, eledim * sizeof(double));
+            elerhs[i].putScalar(0.0);
         }
       }
 
@@ -505,10 +504,10 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> actele,
-    const std::vector<Epetra_SerialDenseVector>* knots, const std::vector<int>& lm,
+    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, Epetra_SerialDenseMatrix& elemass,
-    std::vector<Epetra_SerialDenseVector>& elerhs) const
+    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+    std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
@@ -537,7 +536,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   }
 
   // aquire weights from nodes
-  Epetra_SerialDenseVector weights(nen);
+  CORE::LINALG::SerialDenseVector weights(nen);
 
   for (int inode = 0; inode < nen; ++inode)
   {
@@ -553,10 +552,10 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
   // first derivative of shape functions
   CORE::LINALG::Matrix<dim, nen> deriv;
   // coordinates of integration point in physical space
-  Epetra_SerialDenseVector position(
+  CORE::LINALG::SerialDenseVector position(
       3);  // always three-dimensional coordinates for function evaluation!
   // auxiliary date container for dirichlet evaluation
-  std::vector<Epetra_SerialDenseVector> value(deg + 1, dofblock);
+  std::vector<CORE::LINALG::SerialDenseVector> value(deg + 1, dofblock);
   // unit normal on boundary element
   CORE::LINALG::Matrix<dim + 1, 1> unitnormal;
 
@@ -605,7 +604,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(position.Values(), time, deg, rr);
+                               .EvaluateTimeDerivative(position.values(), time, deg, rr);
       }
 
       // apply factors to Dirichlet value
@@ -646,10 +645,10 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> actele,
-    const std::vector<Epetra_SerialDenseVector>* knots, const std::vector<int>& lm,
+    const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
     const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-    const double time, Epetra_SerialDenseMatrix& elemass,
-    std::vector<Epetra_SerialDenseVector>& elerhs) const
+    const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+    std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const
 {
   if (deg + 1 != elerhs.size())
     dserror("given degree of time derivative does not match number or rhs vectors!");
@@ -677,7 +676,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   }
 
   // aquire weights from nodes
-  Epetra_SerialDenseVector weights(nen);
+  CORE::LINALG::SerialDenseVector weights(nen);
 
   for (int inode = 0; inode < nen; ++inode)
   {
@@ -695,10 +694,10 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
   // first derivative of shape functions
   CORE::LINALG::Matrix<dim, nen> deriv;
   // coordinates of integration point in physical space
-  Epetra_SerialDenseVector position(
+  CORE::LINALG::SerialDenseVector position(
       3);  // always three-dimensional coordinates for function evaluation!
   // auxiliary date container for dirichlet evaluation
-  std::vector<Epetra_SerialDenseVector> value(deg + 1, dofblock);
+  std::vector<CORE::LINALG::SerialDenseVector> value(deg + 1, dofblock);
 
   // gaussian points
   const CORE::DRT::UTILS::IntPointsAndWeights<dim> intpoints(
@@ -755,11 +754,11 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
         // important: position has to have always three components!!
         functimederivfac = DRT::Problem::Instance()
                                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                               .EvaluateTimeDerivative(position.Values(), time, deg, rr);
+                               .EvaluateTimeDerivative(position.values(), time, deg, rr);
 
         functfac = DRT::Problem::Instance()
                        ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>((*funct)[rr] - 1)
-                       .Evaluate(position.Values(), time, rr);
+                       .Evaluate(position.values(), time, rr);
       }
 
       // apply factors to Dirichlet value

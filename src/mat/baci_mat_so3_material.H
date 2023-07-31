@@ -273,7 +273,7 @@ namespace MAT
      * \return true if data is set by the material, otherwise false
      */
     virtual bool EvaluateVtkOutputData(
-        const std::string& name, Epetra_SerialDenseMatrix& data) const
+        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
     {
       return false;
     }

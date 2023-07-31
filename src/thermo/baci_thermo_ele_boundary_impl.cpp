@@ -119,9 +119,11 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(int numdofpernode
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBoundary* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // what actions are available
   // ( action=="calc_thermo_fextconvection" )
@@ -192,8 +194,8 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         ele, xyze_);
 
     // set views, here we assemble on the boundary dofs only!
-    CORE::LINALG::Matrix<nen_, nen_> etang(elemat1_epetra.A(), true);  // view only!
-    CORE::LINALG::Matrix<nen_, 1> efext(elevec1_epetra.A(), true);     // view only!
+    CORE::LINALG::Matrix<nen_, nen_> etang(elemat1_epetra.values(), true);  // view only!
+    CORE::LINALG::Matrix<nen_, 1> efext(elevec1_epetra.values(), true);     // view only!
 
     // get current condition
     Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -316,7 +318,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
     {
       // set views, here we assemble on the boundary dofs only!
       CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
-          elemat2_epetra.A(), true);  // view only!
+          elemat2_epetra.values(), true);  // view only!
 
       // and now get the current displacements/velocities
       if (discretization.HasState(1, "displacement"))
@@ -408,7 +410,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 
         // set views, here we assemble on the boundary dofs only!
         CORE::LINALG::Matrix<nen_, (nsd_ + 1) * nen_> etangcoupl(
-            elemat1_epetra.A(), true);  // view only!
+            elemat1_epetra.values(), true);  // view only!
 
         // get current condition
         Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition>>("condition");
@@ -578,7 +580,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, DRT::Condition& condition,
-    std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // prepare nurbs
   PrepareNurbsEval(ele, discretization);
@@ -1035,7 +1037,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(const DRT::Element* ele,
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec1, const bool addarea)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec1, const bool addarea)
 {
   // access boundary area variable with its actual value
   double boundaryint = params.get<double>("boundaryint");
@@ -1162,7 +1164,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
   if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
-  std::vector<Epetra_SerialDenseVector> parentknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> parentknots(3);
   myknots_.resize(2);
 
   DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);

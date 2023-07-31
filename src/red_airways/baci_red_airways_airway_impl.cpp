@@ -157,9 +157,9 @@ namespace
   \param compute_awacinter(i) computing airway-acinus interdependency
   */
   template <DRT::Element::DiscretizationType distype>
-  void Sysmat(DRT::ELEMENTS::RedAirway* ele, Epetra_SerialDenseVector& epnp,
-      Epetra_SerialDenseVector& epn, Epetra_SerialDenseVector& epnm,
-      Epetra_SerialDenseMatrix& sysmat, Epetra_SerialDenseVector& rhs,
+  void Sysmat(DRT::ELEMENTS::RedAirway* ele, CORE::LINALG::SerialDenseVector& epnp,
+      CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
+      CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
       Teuchos::RCP<const MAT::Material> material, DRT::REDAIRWAYS::ElemParams& params, double time,
       double dt, bool compute_awacinter)
   {
@@ -183,8 +183,8 @@ namespace
       exit(1);
     }
 
-    rhs.Scale(0.0);
-    sysmat.Scale(0.0);
+    rhs.putScalar(0.0);
+    sysmat.putScalar(0.0);
 
     // Calculate the length of airway element
     const double L = GetElementLength<distype>(ele);
@@ -591,11 +591,13 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
-  const int elemVecdim = elevec1_epetra.Length();
+  const int elemVecdim = elevec1_epetra.length();
 
   std::vector<int>::iterator it_vcr;
 
@@ -639,9 +641,9 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
   DRT::UTILS::ExtractMyValues(*pnm, mypnm, lm);
 
   // create objects for element arrays
-  Epetra_SerialDenseVector epnp(elemVecdim);
-  Epetra_SerialDenseVector epn(elemVecdim);
-  Epetra_SerialDenseVector epnm(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
+  CORE::LINALG::SerialDenseVector epn(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // split area and volumetric flow rate, insert into element arrays
@@ -711,8 +713,9 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(RedAirway* ele, Teuchos::Parame
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& radii_in,
-    Epetra_SerialDenseVector& radii_out, Teuchos::RCP<const MAT::Material> material)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& radii_in, CORE::LINALG::SerialDenseVector& radii_out,
+    Teuchos::RCP<const MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -891,7 +894,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(RedAirway* ele, Teuchos::Parame
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateCollapse(
-    RedAirway* ele, Epetra_SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
+    RedAirway* ele, CORE::LINALG::SerialDenseVector& epn, Teuchos::ParameterList& params, double dt)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
@@ -975,7 +978,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::ComputePext(RedAirway* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
+    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -1000,7 +1003,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
   DRT::UTILS::ExtractMyValues(*pn, mypn, lm);
 
   // create objects for element arrays
-  Epetra_SerialDenseVector epn(numnode);
+  CORE::LINALG::SerialDenseVector epn(numnode);
 
   // get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -1009,7 +1012,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
     epn(i) = mypn[i];
   }
 
-  Epetra_SerialDenseVector eqn(2);
+  CORE::LINALG::SerialDenseVector eqn(2);
   eqn(0) = (*evaluation_data.qin_n)[ele->LID()];
   eqn(1) = (*evaluation_data.qout_n)[ele->LID()];
   // ---------------------------------------------------------------------------------
@@ -1427,9 +1430,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   DRT::UTILS::ExtractMyValues(*pnm, mypnm, lm);
 
   // create objects for element arrays
-  Epetra_SerialDenseVector epnp(elemVecdim);
-  Epetra_SerialDenseVector epn(elemVecdim);
-  Epetra_SerialDenseVector epnm(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnp(elemVecdim);
+  CORE::LINALG::SerialDenseVector epn(elemVecdim);
+  CORE::LINALG::SerialDenseVector epnm(elemVecdim);
   for (int i = 0; i < elemVecdim; ++i)
   {
     // split area and volumetric flow rate, insert into element arrays
@@ -1476,8 +1479,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(RedAirway* ele,
   elem_params.p_extn = (*evaluation_data.p_extn)[ele->LID()];
   elem_params.p_extnp = (*evaluation_data.p_extnp)[ele->LID()];
 
-  Epetra_SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
-  Epetra_SerialDenseVector rhs(elemVecdim);
+  CORE::LINALG::SerialDenseMatrix sysmat(elemVecdim, elemVecdim, true);
+  CORE::LINALG::SerialDenseVector rhs(elemVecdim);
 
 
   // ---------------------------------------------------------------------
@@ -1587,7 +1590,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
   DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
 
   // create objects for element arrays
-  Epetra_SerialDenseVector epnp(numnode);
+  CORE::LINALG::SerialDenseVector epnp(numnode);
 
   // get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -1698,7 +1701,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -1750,8 +1753,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetJunctionVolumeMix(RedAirway* ele,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, Epetra_SerialDenseVector& scatranp,
-    Epetra_SerialDenseVector& volumeMix_np, std::vector<int>& lm,
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& scatranp,
+    CORE::LINALG::SerialDenseVector& volumeMix_np, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
@@ -2015,7 +2018,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& scatranp, Epetra_SerialDenseVector& volumeMix_np,
+    CORE::LINALG::SerialDenseVector& scatranp, CORE::LINALG::SerialDenseVector& volumeMix_np,
     std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
@@ -2416,8 +2419,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& nodal_surface, Epetra_SerialDenseVector& nodal_volume,
-    Epetra_SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& nodal_surface, CORE::LINALG::SerialDenseVector& nodal_volume,
+    CORE::LINALG::SerialDenseVector& nodal_avg_scatra, std::vector<int>& lm,
     Teuchos::RCP<MAT::Material> material)
 {
   // ---------------------------------------------------------------------

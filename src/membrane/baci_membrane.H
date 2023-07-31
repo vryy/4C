@@ -351,9 +351,11 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
 
       /*!
@@ -373,7 +375,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
 
       //@}
@@ -768,7 +771,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       //@}
 

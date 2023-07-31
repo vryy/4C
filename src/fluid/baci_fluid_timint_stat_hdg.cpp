@@ -175,8 +175,8 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
   initParams.set<int>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);
@@ -189,9 +189,9 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
     DRT::Element* ele = discret_->lColElement(el);
 
     ele->LocationVector(*discret_, la, false);
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
 
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
@@ -211,10 +211,10 @@ void FLD::TimIntStationaryHDG::SetInitialFlowField(
     if (ele->Owner() == discret_->Comm().MyPID())
     {
       std::vector<int> localDofs = discret_->Dof(1, ele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
+      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
+      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
     }
   }
   double globerror = 0;

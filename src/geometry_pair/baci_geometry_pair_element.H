@@ -303,8 +303,8 @@ namespace GEOMETRYPAIR
       // Get the knots and weights for this element.
       using type_weights = CORE::LINALG::Matrix<base::n_nodes_, 1, double>;
       type_weights weights(true);
-      std::vector<Epetra_SerialDenseVector> mypknots(3);
-      std::vector<Epetra_SerialDenseVector> myknots(2);
+      std::vector<CORE::LINALG::SerialDenseVector> mypknots(3);
+      std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
       const bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
           face_element->FaceMasterNumber(), face_element->ParentElementId(),
           *(DRT::Problem::Instance()->GetDis("structure")), mypknots, myknots, weights, normalfac);
@@ -340,7 +340,7 @@ namespace GEOMETRYPAIR
 
       // Get the knots and weights for this element.
       CORE::LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
-      std::vector<Epetra_SerialDenseVector> myknots(true);
+      std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
           *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
       if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");
@@ -379,8 +379,8 @@ namespace GEOMETRYPAIR
       // Get the knots and weights for this element.
       using type_weights = CORE::LINALG::Matrix<base::n_nodes_, 1, double>;
       type_weights weights(true);
-      std::vector<Epetra_SerialDenseVector> mypknots(3);
-      std::vector<Epetra_SerialDenseVector> myknots(2);
+      std::vector<CORE::LINALG::SerialDenseVector> mypknots(3);
+      std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
       const bool zero_size = DRT::NURBS::GetKnotVectorAndWeightsForNurbsBoundary(face_element,
           face_element->FaceMasterNumber(), face_element->ParentElementId(),
           *(DRT::Problem::Instance()->GetDis("structure")), mypknots, myknots, weights, normalfac);
@@ -418,7 +418,7 @@ namespace GEOMETRYPAIR
 
       // Get the knots and weights for this element.
       CORE::LINALG::Matrix<base::n_nodes_, 1, double> weights(true);
-      std::vector<Epetra_SerialDenseVector> myknots(true);
+      std::vector<CORE::LINALG::SerialDenseVector> myknots(true);
       const bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(
           *(DRT::Problem::Instance()->GetDis("structure")), element, myknots, weights);
       if (zero_size) dserror("GetMyNurbsKnotsAndWeights has to return a non zero size.");

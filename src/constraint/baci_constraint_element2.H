@@ -180,14 +180,14 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      int Evaluate(Teuchos::ParameterList& params,  ///< ParameterList for communication
-          DRT::Discretization& discretization,      ///< discretization
-          std::vector<int>& lm,                     ///< location vector
-          Epetra_SerialDenseMatrix& elemat1,        ///< first matrix to be filled by element
-          Epetra_SerialDenseMatrix& elemat2,        ///< second matrix to be filled by element
-          Epetra_SerialDenseVector& elevec1,        ///< third matrix to be filled by element
-          Epetra_SerialDenseVector& elevec2,        ///< first vector to be filled by element
-          Epetra_SerialDenseVector& elevec3         ///< second vector to be filled by element
+      int Evaluate(Teuchos::ParameterList& params,   ///< ParameterList for communication
+          DRT::Discretization& discretization,       ///< discretization
+          std::vector<int>& lm,                      ///< location vector
+          CORE::LINALG::SerialDenseMatrix& elemat1,  ///< first matrix to be filled by element
+          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< second matrix to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< third matrix to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  ///< first vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   ///< second vector to be filled by element
       );
 
 
@@ -199,12 +199,12 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(
-          Teuchos::ParameterList& params,       ///< ParameterList for communication
-          DRT::Discretization& discretization,  ///< discretization
-          DRT::Condition& condition,            ///< Neumann condition to evaluate
-          std::vector<int>& lm,                 ///< location vector
-          Epetra_SerialDenseVector& elevec1,    ///< vector to be filled by element
-          Epetra_SerialDenseMatrix* elemat1 = NULL);
+          Teuchos::ParameterList& params,            ///< ParameterList for communication
+          DRT::Discretization& discretization,       ///< discretization
+          DRT::Condition& condition,                 ///< Neumann condition to evaluate
+          std::vector<int>& lm,                      ///< location vector
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
 
      private:
@@ -280,14 +280,14 @@ namespace DRT
       /// Compute first derivatives of normal distance with respect to the nodal displacements
       void ComputeFirstDerivDist(
           const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
-          Epetra_SerialDenseVector& elevector,         ///< vector to store results into
+          CORE::LINALG::SerialDenseVector& elevector,  ///< vector to store results into
           const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
 
       /// Compute second derivatives of normal distance with respect to the nodal displacements
       void ComputeSecondDerivDist(
           const CORE::LINALG::Matrix<3, 2>& xc,        ///< nodal coords in spatial frame
-          Epetra_SerialDenseMatrix& elevector,         ///< matrix to store results into
+          CORE::LINALG::SerialDenseMatrix& elevector,  ///< matrix to store results into
           const CORE::LINALG::Matrix<2, 1>& elenormal  ///< element normal
       );
 
@@ -297,14 +297,14 @@ namespace DRT
 
       /// Compute first derivatives of angle at second node with respect to the nodal displacements
       void ComputeFirstDerivAngle(
-          const CORE::LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
-          Epetra_SerialDenseVector& elevector    ///< vector to store results into
+          const CORE::LINALG::Matrix<3, 2>& xc,       ///< nodal coords in spatial frame
+          CORE::LINALG::SerialDenseVector& elevector  ///< vector to store results into
       );
 
       /// Compute second derivatives of angle at second node with respect to the nodal displacements
       void ComputeSecondDerivAngle(
-          const CORE::LINALG::Matrix<3, 2>& xc,  ///< nodal coords in spatial frame
-          Epetra_SerialDenseMatrix& elematrix    ///< matrix to store results into
+          const CORE::LINALG::Matrix<3, 2>& xc,       ///< nodal coords in spatial frame
+          CORE::LINALG::SerialDenseMatrix& elematrix  ///< matrix to store results into
       );
 
     };  // class ConstraintElement2

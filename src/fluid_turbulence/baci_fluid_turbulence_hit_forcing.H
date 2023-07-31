@@ -13,8 +13,8 @@
 #define BACI_FLUID_TURBULENCE_HIT_FORCING_H
 
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_RCP.hpp>
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_inpar_fluid.H"
 
@@ -141,7 +141,7 @@ namespace FLD
     bool activate_;
 
     //! linear compensation factor
-    Teuchos::RCP<Epetra_SerialDenseVector> force_fac_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> force_fac_;
 
     //! fixed power input
     double Pin_;
@@ -150,7 +150,7 @@ namespace FLD
     double E_kf_;
 
     //! fixed power input factor
-    Teuchos::RCP<Epetra_SerialDenseVector> fixed_power_fac_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> fixed_power_fac_;
 
     //! interpolation function
     static double Interpolate(

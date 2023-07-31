@@ -6,6 +6,7 @@
 
 */
 /*----------------------------------------------------------------------*/
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_sh8.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
@@ -15,7 +16,6 @@
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_io_gmsh.H"
 #include "baci_mat_visconeohooke.H"
 #include "baci_mat_viscoanisotropic.H"
@@ -34,9 +34,11 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -44,11 +46,11 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
   // get parameter interface
   SetParamsInterfacePtr(params);
 
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   ELEMENTS::ActionType act = ELEMENTS::none;
@@ -357,24 +359,27 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       // update internal EAS parameters
       if (eastype_ == soh8_eassosh8)
       {
-        const auto* alpha = data_.Get<Epetra_SerialDenseMatrix>("alpha");     // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");     // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
 
         // store the EAS matrices
-        const auto* Kaainv = data_.Get<Epetra_SerialDenseMatrix>("invKaa");     // Kaa^{-1}_{n+1}
-        auto* Kaainvo = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        const auto* Kaainv =
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");  // Kaa^{-1}_{n+1}
+        auto* Kaainvo =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(
             *Kaainvo, *Kaainv);
 
-        const auto* Kda = data_.Get<Epetra_SerialDenseMatrix>("Kda");     // Kda_{n+1}
-        auto* Kdao = data_.GetMutable<Epetra_SerialDenseMatrix>("Kdao");  // Kda_{n}
+        const auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");     // Kda_{n+1}
+        auto* Kdao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kdao");  // Kda_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
 
         // reset EAS internal force
-        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-        oldfeas->Scale(0.0);
+        CORE::LINALG::SerialDenseMatrix* oldfeas =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+        oldfeas->putScalar(0.0);
       }
       // Update of history for materials
       SolidMaterial()->Update();
@@ -386,24 +391,27 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       // restore internal EAS parameters
       if (eastype_ == soh8_eassosh8)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");   // Alpha_{n+1}
-        const auto* alphao = data_.Get<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");   // Alpha_{n+1}
+        const auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
 
         // restore the EAS matrices
-        auto* Kaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");   // Kaa^{-1}_{n+1}
-        const auto* Kaainvo = data_.Get<Epetra_SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+        auto* Kaainv =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");  // Kaa^{-1}_{n+1}
+        const auto* Kaainvo =
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(
             *Kaainv, *Kaainvo);
 
-        auto* Kda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");   // Kda_{n+1}
-        const auto* Kdao = data_.Get<Epetra_SerialDenseMatrix>("Kdao");  // Kda_{n}
+        auto* Kda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");   // Kda_{n+1}
+        const auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");  // Kda_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
 
         // reset EAS internal force
-        Epetra_SerialDenseMatrix* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-        oldfeas->Scale(0.0);
+        CORE::LINALG::SerialDenseMatrix* oldfeas =
+            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+        oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
       SolidMaterial()->ResetStep();
@@ -508,7 +516,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = sosh8_calc_energy(mydisp, params);
       }
@@ -585,8 +593,8 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
   // ------------------- EAS-SETUP --------------------------------------------
   /* EAS Technology: declare, intialize, set up, and alpha history */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soh8_eassosh8>
       M;         // EAS matrix M at current GP, fixed for sosh8
   double detJ0;  // detJ(origin)
@@ -606,7 +614,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
       ** This corresponds to the (innermost) element update loop
       ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
       */
-      alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get old alpha
+      alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
 
       /* evaluation of EAS variables (which are constant for the following):
       ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -702,10 +710,10 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-          soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).A());
+          soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_eassosh8, 1>(
-          1.0, glstrain.A(), 1.0, M.A(), (*alpha).A());
+          1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
     const double I3 = sosh8_third_invariant(glstrain);
@@ -784,18 +792,18 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
   // -------- EAS-SETUP -------------------------------------------------------
   /* EAS Technology: declare, intialize, set up, and alpha history */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soh8_eassosh8>
-      M;                                          // EAS matrix M at current GP, fixed for sosh8
-  Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;                   // EAS matrix Kda
-  double detJ0;                                   // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = nullptr;    // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
-  Epetra_SerialDenseMatrix* oldKda = nullptr;     // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
+      M;                                 // EAS matrix M at current GP, fixed for sosh8
+  CORE::LINALG::SerialDenseVector feas;  // EAS portion of internal forces
+  CORE::LINALG::SerialDenseMatrix Kaa;   // EAS matrix Kaa
+  CORE::LINALG::SerialDenseMatrix Kda;   // EAS matrix Kda
+  double detJ0;                          // detJ(origin)
+  CORE::LINALG::SerialDenseMatrix* oldfeas = nullptr;    // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -813,13 +821,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
       ** This corresponds to the (innermost) element update loop
       ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
       */
-      alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get old alpha
+      alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
       // evaluate current (updated) EAS alphas (from history variables)
       // get stored EAS history
-      oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-      oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-      oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-      eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+      oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+      oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+      oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+      eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
       if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
         dserror("Missing EAS history-data");
 
@@ -839,10 +847,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
         {
           double alpha_ls = params.get<double>("alpha_ls");
           // undo step
-          eas_inc->Scale(-1.);
+          eas_inc->scale(-1.);
           alpha->operator+=(*eas_inc);
           // scale increment
-          eas_inc->Scale(-1. * alpha_ls);
+          eas_inc->scale(-1. * alpha_ls);
           // add reduced increment
           alpha->operator+=(*eas_inc);
         }
@@ -855,20 +863,20 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, soh8_eassosh8, soh8_eassosh8, 1>(
               0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);
           CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(
-              1., alpha->A(), 1., eas_inc->A());
+              1., alpha->values(), 1., eas_inc->values());
         }
       }
       // ============================== DEPRECATED ==============================
       /* end of EAS Update ******************/
 
       // EAS portion of internal forces, also called enhacement vector s or Rtilde
-      feas.Size(neas_);
+      feas.size(neas_);
 
       // EAS matrix K_{alpha alpha}, also called Dtilde
-      Kaa.Shape(neas_, neas_);
+      Kaa.shape(neas_, neas_);
 
       // EAS matrix K_{d alpha}
-      Kda.Shape(neas_, NUMDOF_SOH8);
+      Kda.shape(neas_, NUMDOF_SOH8);
 
       /* evaluation of EAS variables (which are constant for the following):
       ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -968,10 +976,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-          soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).A());
+          soh8_eassosh8>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soh8_eassosh8, 1>(
-          1.0, glstrain.A(), 1.0, M.A(), (*alpha).A());
+          1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
     const double I3 = sosh8_third_invariant(glstrain);
@@ -1148,13 +1156,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soh8_eassosh8> cM;  // temporary c . M
         cM.Multiply(cmat, M);
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D,
-            soh8_eassosh8>(1.0, Kaa.A(), detJ_w, M.A(), cM.A());
+            soh8_eassosh8>(1.0, Kaa.values(), detJ_w, M.A(), cM.A());
         // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D,
-            NUMDOF_SOH8>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+            NUMDOF_SOH8>(1.0, Kda.values(), detJ_w, M.A(), cb.A());
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soh8_eassosh8, MAT::NUM_STRESS_3D, 1>(
-            1.0, feas.A(), detJ_w, M.A(), stress.A());
+            1.0, feas.values(), detJ_w, M.A(), stress.A());
       }  // ------------------------------------------------------------------ EAS
     }    // if (stiffmatrix != nullptr)
 
@@ -1184,7 +1192,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
   if (eastype_ != soh8_easnone && split_res)
     // only add for row-map elements
     if (params.get<int>("MyPID") == Owner())
-      params.get<double>("cond_rhs_norm") += pow(feas.Norm2(), 2.);
+      params.get<double>("cond_rhs_norm") += pow(CORE::LINALG::Norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
@@ -1193,9 +1201,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
     if (eastype_ == soh8_eassosh8)
     {
       // we need the inverse of Kaa
-      Epetra_SerialDenseSolver solve_for_inverseKaa;
-      solve_for_inverseKaa.SetMatrix(Kaa);
-      solve_for_inverseKaa.Invert();
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
+      solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
+      solve_for_inverseKaa.invert();
 
       CORE::LINALG::SerialDenseMatrix KdaTKaa(
           NUMDOF_SOH8, soh8_eassosh8);  // temporary Kda^T.Kaa^{-1}
@@ -1203,10 +1213,10 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
           KdaTKaa, Kda, Kaa);
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_eassosh8, NUMDOF_SOH8>(
-          1.0, stiffmatrix->A(), -1.0, KdaTKaa.A(), Kda.A());
+          1.0, stiffmatrix->A(), -1.0, KdaTKaa.values(), Kda.values());
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_SOH8, soh8_eassosh8, 1>(
-          1.0, force->A(), -1.0, KdaTKaa.A(), feas.A());
+          1.0, force->A(), -1.0, KdaTKaa.values(), feas.values());
 
       // store current EAS data in history
       for (int i = 0; i < soh8_eassosh8; ++i)
@@ -1725,7 +1735,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(
   CORE::LINALG::SerialDenseMatrix v(NUMDIM_SOH8, NUMDIM_SOH8);
   SVD(defgrd, u, s, v);  // Singular Value Decomposition
   CORE::LINALG::SerialDenseMatrix rot(NUMDIM_SOH8, NUMDIM_SOH8);
-  rot.Multiply('N', 'N', 1.0, u, v, 0.0);
+  rot.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, v, 0.0);
   // temp.Multiply('N','N',1.0,v,s,0.0);
   // CORE::LINALG::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
   // stretch_disp.Multiply('N','T',1.0,temp,v,0.0);
@@ -1747,12 +1757,12 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(
   CORE::LINALG::SerialDenseMatrix U_mod(NUMDIM_SOH8, NUMDIM_SOH8);
   for (int i = 0; i < NUMDIM_SOH8; ++i) s(i, i) = sqrt(s(i, i));
   CORE::LINALG::SerialDenseMatrix temp2(NUMDIM_SOH8, NUMDIM_SOH8);
-  temp2.Multiply('N', 'N', 1.0, u, s, 0.0);
-  U_mod.Multiply('N', 'N', 1.0, temp2, v, 0.0);
+  temp2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, s, 0.0);
+  U_mod.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, temp2, v, 0.0);
 
   // F^mod = RU^mod
   CORE::LINALG::SerialDenseMatrix defgrd_consistent(NUMDIM_SOH8, NUMDIM_SOH8);
-  defgrd_consistent.Multiply('N', 'N', 1.0, rot, U_mod, 0.0);
+  defgrd_consistent.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, rot, U_mod, 0.0);
   defgrd.SetView(defgrd_consistent.A());
 
   /*

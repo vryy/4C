@@ -70,7 +70,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 01/17 */
       void GmshCellDump(std::ofstream& file, ::DRT::Element::DiscretizationType shape,
-          const Epetra_SerialDenseMatrix& xyze, const Point::PointPosition* position = NULL,
+          const CORE::LINALG::SerialDenseMatrix& xyze, const Point::PointPosition* position = NULL,
           const int* value = NULL);
 
       /*!
@@ -271,7 +271,7 @@ namespace CORE::GEO
       void GmshCutPairDump(std::ofstream& file, const std::pair<Side*, Edge*>& pair, int id,
           const std::string& suffix);
 
-      // void GmshObjectDump2(std::ofstream & file, GEO::CUT::Facet* f)
+      // void GmshObjectDump2(std::ofstream & file, CORE::GEO::CUT::Facet* f)
       //{
       //  return;
       //};//GmshFacetDump(file,f);}

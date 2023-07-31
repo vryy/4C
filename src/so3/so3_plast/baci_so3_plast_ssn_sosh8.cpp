@@ -18,11 +18,11 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 /*----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_plast_ssn_sosh8.H"
 #include "baci_so3_plast_ssn.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_mat_plasticelasthyper.H"
-#include <Epetra_SerialDenseSolver.h>
 
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_linalg_serialdensematrix.H"
@@ -985,7 +985,7 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   }
 
   // EAS matrix block
-  Epetra_SerialDenseMatrix Kda(numdofperelement_, neas_);
+  CORE::LINALG::SerialDenseMatrix Kda(numdofperelement_, neas_);
 
   // ANS modified rows of bop in local(parameter) coords
   CORE::LINALG::Matrix<num_ans * num_sp, numdofperelement_> B_ans_loc;
@@ -1122,38 +1122,38 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
           case soh8p_eassosh8:
             CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-                cM.A(), Cmat().A(), M_eas().A());
+                cM.values(), Cmat().A(), M_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
                 1.0, *KaaInv_, detJ_w, M_eas(), cM);
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_,
-                numdofperelement_>(1.0, Kad_->A(), detJ_w, M_eas().A(), cb.A());
+                numdofperelement_>(1.0, Kad_->values(), detJ_w, M_eas().values(), cb.A());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-                1.0, Kda.A(), detJ_w, cb.A(), M_eas().A());
+                1.0, Kda.values(), detJ_w, cb.A(), M_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numstr_, 1>(
-                1.0, feas_->A(), detJ_w, M_eas().A(), PK2().A());
+                1.0, feas_->values(), detJ_w, M_eas().values(), PK2().A());
             break;
           case soh8p_easmild:
             CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-                cM.A(), Cmat().A(), M_eas().A());
+                cM.values(), Cmat().A(), M_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
                 1.0, *KaaInv_, detJ_w, M_eas(), cM);
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_,
-                numdofperelement_>(1.0, Kad_->A(), detJ_w, M_eas().A(), cb.A());
+                numdofperelement_>(1.0, Kad_->values(), detJ_w, M_eas().values(), cb.A());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-                1.0, Kda.A(), detJ_w, cb.A(), M_eas().A());
+                1.0, Kda.values(), detJ_w, cb.A(), M_eas().values());
             CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double,
                 PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numstr_, 1>(
-                1.0, feas_->A(), detJ_w, M_eas().A(), PK2().A());
+                1.0, feas_->values(), detJ_w, M_eas().values(), PK2().A());
             break;
           case soh8p_easnone:
             break;
@@ -1194,40 +1194,42 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   // Static condensation EAS --> stiff ********************************
   if (stiffmatrix != nullptr && !is_tangDis && eastype_ != soh8p_easnone)
   {
-    Epetra_SerialDenseSolver solve_for_inverseKaa;
-    solve_for_inverseKaa.SetMatrix(*KaaInv_);
-    solve_for_inverseKaa.Invert();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
+    solve_for_inverseKaa.setMatrix(KaaInv_);
+    solve_for_inverseKaa.invert();
 
-    Epetra_SerialDenseMatrix kdakaai(numdofperelement_, neas_);
+    CORE::LINALG::SerialDenseMatrix kdakaai(numdofperelement_, neas_);
     switch (eastype_)
     {
       case soh8p_eassosh8:
         CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-            0., kdakaai.A(), 1., Kda.A(), KaaInv_->A());
+            0., kdakaai.values(), 1., Kda.values(), KaaInv_->values());
         if (stiffmatrix != nullptr)
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, numdofperelement_>(
-              1., stiffmatrix->A(), -1., kdakaai.A(), Kad_->A());
+              1., stiffmatrix->A(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, 1>(
-              1., force->A(), -1., kdakaai.A(), feas_->A());
+              1., force->A(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easmild:
         CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas,
             PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-            0., kdakaai.A(), 1., Kda.A(), KaaInv_->A());
+            0., kdakaai.values(), 1., Kda.values(), KaaInv_->values());
         if (stiffmatrix != nullptr)
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, numdofperelement_>(
-              1., stiffmatrix->A(), -1., kdakaai.A(), Kad_->A());
+              1., stiffmatrix->A(), -1., kdakaai.values(), Kad_->values());
         if (force != nullptr)
           CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_,
               PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
-              1., force->A(), -1., kdakaai.A(), feas_->A());
+              1., force->A(), -1., kdakaai.values(), feas_->values());
         break;
       case soh8p_easnone:
         break;

@@ -1303,7 +1303,7 @@ namespace CONTACT
      \param ltxi (in):   Length of the nodal tangent txi
 
      */
-    void DerivAveragedNormal(Epetra_SerialDenseMatrix& elens, double length, double ltxi);
+    void DerivAveragedNormal(CORE::LINALG::SerialDenseMatrix& elens, double length, double ltxi);
 
    protected:
     //! true if contact node is in contact (active set strategy)

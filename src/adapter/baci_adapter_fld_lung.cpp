@@ -159,11 +159,11 @@ void ADAPTER::FluidLung::InitializeVolCon(
     params.set("dt", dt);
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
+    CORE::LINALG::SerialDenseMatrix elematrix1;
+    CORE::LINALG::SerialDenseMatrix elematrix2;
+    CORE::LINALG::SerialDenseVector elevector1;
+    CORE::LINALG::SerialDenseVector elevector2;
+    CORE::LINALG::SerialDenseVector elevector3;
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
@@ -179,7 +179,7 @@ void ADAPTER::FluidLung::InitializeVolCon(
       curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
 
       // Reshape element matrices and vectors and init to zero
-      elevector3.Size(1);
+      elevector3.size(1);
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
@@ -245,11 +245,11 @@ void ADAPTER::FluidLung::EvaluateVolCon(
     params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;  // (d^2 Q)/(du dd)
-    Epetra_SerialDenseMatrix elematrix2;  // (d^2 Q)/(dd)^2
-    Epetra_SerialDenseVector elevector1;  // dQ/du
-    Epetra_SerialDenseVector elevector2;  // dQ/dd
-    Epetra_SerialDenseVector elevector3;  // Q
+    CORE::LINALG::SerialDenseMatrix elematrix1;  // (d^2 Q)/(du dd)
+    CORE::LINALG::SerialDenseMatrix elematrix2;  // (d^2 Q)/(dd)^2
+    CORE::LINALG::SerialDenseVector elevector1;  // dQ/du
+    CORE::LINALG::SerialDenseVector elevector2;  // dQ/dd
+    CORE::LINALG::SerialDenseVector elevector3;  // Q
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
@@ -271,11 +271,11 @@ void ADAPTER::FluidLung::EvaluateVolCon(
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
-      elematrix1.Shape(eledim, eledim);
-      elematrix2.Shape(eledim, eledim);
-      elevector1.Size(eledim);
-      elevector2.Size(eledim);
-      elevector3.Size(1);
+      elematrix1.shape(eledim, eledim);
+      elematrix2.shape(eledim, eledim);
+      elevector1.size(eledim);
+      elevector2.size(eledim);
+      elevector3.size(1);
 
       //---------------------------------------------------------------------
       // call the element specific evaluate method
@@ -287,21 +287,21 @@ void ADAPTER::FluidLung::EvaluateVolCon(
       // assembly
       int eid = curr->second->Id();
 
-      elematrix1.Scale(-lagraval * invresscale);
+      elematrix1.scale(-lagraval * invresscale);
       FluidShapeDerivMatrix->Assemble(eid, lmstride, elematrix1, lm, lmowner);
 
       // assemble to rectangular matrix. The column corresponds to the constraint ID.
       std::vector<int> colvec(1);
       colvec[0] = gindex;
 
-      elevector1.Scale(-1.0);
+      elevector1.scale(-1.0);
       FluidConstrMatrix->Assemble(eid, elevector1, lm, lmowner, colvec);
 
-      elevector2.Scale(-dttheta);
+      elevector2.scale(-dttheta);
       AleConstrMatrix->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
 
       // negative sign (for shift to rhs) is already implicitly taken into account!
-      elevector1.Scale(-lagraval * invresscale);
+      elevector1.scale(-lagraval * invresscale);
       CORE::LINALG::Assemble(*FluidRHS, elevector1, lm, lmowner);
 
       std::vector<int> constrlm;

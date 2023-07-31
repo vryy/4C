@@ -93,15 +93,15 @@ namespace CONTACT
         const CORE::LINALG::Matrix<dim, 1>& test_dir,
         const std::vector<CORE::GEN::pairedvector<int, double>>& d_test_dir_dd, double nitsche_wgt,
         double& cauchy_nt_wgt, CORE::GEN::pairedvector<int, double>& d_cauchy_nt_dd,
-        Epetra_SerialDenseMatrix* d_sigma_nt_ds);
+        CORE::LINALG::SerialDenseMatrix* d_sigma_nt_ds);
 
    private:
     void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
@@ -111,8 +111,8 @@ namespace CONTACT
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
-        CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& dualmap, double& wgt, double& jac,
-        CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
+        CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap, double& wgt,
+        double& jac, CORE::GEN::pairedvector<int, double>& derivjac, double* normal,
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,

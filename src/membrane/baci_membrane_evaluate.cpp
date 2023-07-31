@@ -34,16 +34,18 @@
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine size of each element matrix
-  CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<numdof_, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<numdof_, numdof_> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, numdof_> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<numdof_, 1> elevec3(elevec3_epetra.values(), true);
 
   // set params interface pointer
   SetParamsInterfacePtr(params);
@@ -384,7 +386,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -396,15 +398,15 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
      *===============================================================================*/
     case ELEMENTS::struct_postprocess_thickness:
     {
-      const Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> gpthickmap =
-          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>>>(
+      const Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> gpthickmap =
+          params.get<Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>>>(
               "gpthickmap", Teuchos::null);
       if (gpthickmap == Teuchos::null) dserror("no gp thickness map available for postprocessing");
 
       std::string optquantitytype = params.get<std::string>("optquantitytype", "ndxyz");
 
       int gid = Id();
-      CORE::LINALG::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->A(), true);
+      CORE::LINALG::Matrix<numgpt_post_, 1> gpthick(((*gpthickmap)[gid])->values(), true);
 
       Teuchos::RCP<Epetra_MultiVector> postthick =
           params.get<Teuchos::RCP<Epetra_MultiVector>>("postthick", Teuchos::null);
@@ -470,7 +472,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseMatrix* elemat1_epetra)
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseMatrix* elemat1_epetra)
 {
   // set params interface pointer
   SetParamsInterfacePtr(params);

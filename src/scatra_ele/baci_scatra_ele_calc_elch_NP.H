@@ -45,10 +45,10 @@ namespace DRT
       /*========================================================================*/
 
       //! calculate contributions to matrix and rhs (inside loop over all scalars)
-      void CalcMatAndRhs(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,                 //!< element rhs to calculate+
-          const int k,                                    //!< index of current scalar
-          const double fac,                               //!< domain-integration factor
+      void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,                 //!< element rhs to calculate+
+          const int k,                                           //!< index of current scalar
+          const double fac,                                      //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double taufac,  //!< tau times domain-integration factor
@@ -63,9 +63,9 @@ namespace DRT
 
       //! calculate contributions to matrix and rhs (outside loop over all scalars)
       void CalcMatAndRhsOutsideScalarLoop(
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
-          const double fac,                //!< domain-integration factor
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
+          const double fac,                       //!< domain-integration factor
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
       );
@@ -73,8 +73,8 @@ namespace DRT
       //! Correction for additional flux terms / currents across Dirichlet boundaries
       void CorrectionForFluxAcrossDC(DRT::Discretization& discretization,  //!< discretization
           const std::vector<int>& lm,                                      //!< location vector
-          Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          Epetra_SerialDenseVector& erhs   //!< element rhs to calculate
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          CORE::LINALG::SerialDenseVector& erhs   //!< element rhs to calculate
       );
 
       /*========================================================================*/
@@ -146,8 +146,8 @@ namespace DRT
       );
 
       //! CalcMat: SUPG Stabilization of convective term due to fluid flow and migration
-      void CalcMatConvStab(Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-          const int k,                                      //!< index of current scalar
+      void CalcMatConvStab(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+          const int k,                                             //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double taufac,      //!< stabilization parameter tau times domain-integration factor
           const double
@@ -165,8 +165,8 @@ namespace DRT
       );
 
       //! CalcMat: Migration term
-      void CalcMatMigr(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                  //!< index of current scalar
+      void CalcMatMigr(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                         //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double frt,         //!< F/RT
           const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
@@ -174,8 +174,9 @@ namespace DRT
       );
 
       //! CalcMat: Electroneutrality condition in PDE form
-      void CalcMatPotEquENCPDE(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                          //!< index of current scalar
+      void CalcMatPotEquENCPDE(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double frt,         //!< F/RT
           const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
@@ -184,8 +185,9 @@ namespace DRT
 
       //! CalcMat: Electroneutrality condition in PDE form with Nernst-Planck equation for species m
       //! eliminated
-      void CalcMatPotEquENCPDEElim(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                              //!< index of current scalar
+      void CalcMatPotEquENCPDEElim(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double frt,         //!< F/RT
           const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
@@ -193,29 +195,32 @@ namespace DRT
       );
 
       //! CalcMat: Poisson equation for electric potential
-      void CalcMatPotEquPoisson(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                           //!< index of current scalar
-          const double fac,                                      //!< domain-integration factor
-          const double epsilon,                                  //!< dielectric constant
-          const double faraday                                   //!< Faraday constant
+      void CalcMatPotEquPoisson(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
+          const double fac,                       //!< domain-integration factor
+          const double epsilon,                   //!< dielectric constant
+          const double faraday                    //!< Faraday constant
       );
 
       //! CalcMat: Laplace equation for electric potential
-      void CalcMatPotEquLaplace(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const double fac                                       //!< domain-integration factor
+      void CalcMatPotEquLaplace(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const double fac                        //!< domain-integration factor
       );
 
       //! CalcRhs: Additional contributions from conservative formulation of Nernst-Planck equations
-      void CalcRhsConvAddCons(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                         //!< index of current scalar
+      void CalcRhsConvAddCons(
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                            //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const double conint,  //!< concentration at GP
           const double vdiv     //!< velocity divergence
       );
 
       //! CalcRhs: SUPG Stabilization of convective term due to fluid flow and migration
-      void CalcRhsConvStab(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                      //!< index of current scalar
+      void CalcRhsConvStab(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                             //!< index of current scalar
           const double rhstaufac,  //!< time-integration factor for rhs times tau times
                                    //!< domain-integration factor
           const CORE::LINALG::Matrix<nen_, 1>&
@@ -226,46 +231,50 @@ namespace DRT
       );
 
       //! CalcRhs: Migration term
-      void CalcRhsMigr(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                  //!< index of current scalar
+      void CalcRhsMigr(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+          const int k,                                         //!< index of current scalar
           const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
           const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
           const double conint                            //!< concentration at GP
       );
 
       //! CalcRhs: Electroneutrality condition in PDE form
-      void CalcRhsPotEquENCPDE(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                          //!< index of current scalar
-          const double fac,                                     //!< domain-integration factor
-          const CORE::LINALG::Matrix<nen_, 1>& migconv,         //!< migration operator
-          const double conint,                                  //!< concentration at GP
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi          //!< gradient of concentration at GP
+      void CalcRhsPotEquENCPDE(
+          CORE::LINALG::SerialDenseVector& erhs,         //!< element vector to be filled
+          const int k,                                   //!< index of current scalar
+          const double fac,                              //!< domain-integration factor
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+          const double conint,                           //!< concentration at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi   //!< gradient of concentration at GP
       );
 
       //! CalcRhs: Electroneutrality condition in PDE form with Nernst-Planck equation for species m
       //! eliminated
-      void CalcRhsPotEquENCPDEElim(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                              //!< index of current scalar
-          const double fac,                                         //!< domain-integration factor
-          const CORE::LINALG::Matrix<nen_, 1>& migconv,             //!< migration operator
-          const double conint,                                      //!< concentration at GP
-          const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< gradient of concentration at GP
+      void CalcRhsPotEquENCPDEElim(
+          CORE::LINALG::SerialDenseVector& erhs,         //!< element vector to be filled
+          const int k,                                   //!< index of current scalar
+          const double fac,                              //!< domain-integration factor
+          const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
+          const double conint,                           //!< concentration at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradphi   //!< gradient of concentration at GP
       );
 
       //! CalcRhs: Poisson equation for electric potential
-      void CalcRhsPotEquPoisson(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const int k,                                           //!< index of current scalar
-          const double fac,                                      //!< domain-integration factor
-          const double epsilon,                                  //!< dielectric constant
-          const double faraday,                                  //!< Faraday constant
-          const double conint,                                   //!< concentration at GP
-          const CORE::LINALG::Matrix<nsd_, 1>& gradpot           //!< gradient of potential at GP
+      void CalcRhsPotEquPoisson(
+          CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
+          const int k,                                  //!< index of current scalar
+          const double fac,                             //!< domain-integration factor
+          const double epsilon,                         //!< dielectric constant
+          const double faraday,                         //!< Faraday constant
+          const double conint,                          //!< concentration at GP
+          const CORE::LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
       );
 
       //! CalcRhs: Laplace equation for electric potential
-      void CalcRhsPotEquLaplace(Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-          const double fac,                                      //!< domain-integration factor
-          const CORE::LINALG::Matrix<nsd_, 1>& gradpot           //!< gradient of potential at GP
+      void CalcRhsPotEquLaplace(
+          CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
+          const double fac,                             //!< domain-integration factor
+          const CORE::LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
       );
 
       /*========================================================================*/
@@ -279,8 +288,8 @@ namespace DRT
 
       //! evaluate an electrode boundary kinetics point condition
       void EvaluateElchBoundaryKineticsPoint(const DRT::Element* ele,  ///< current element
-          Epetra_SerialDenseMatrix& emat,                              ///< element matrix
-          Epetra_SerialDenseVector& erhs,  ///< element right-hand side vector
+          CORE::LINALG::SerialDenseMatrix& emat,                       ///< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  ///< element right-hand side vector
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
               ephinp,  ///< state variables at element nodes
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>&
@@ -313,9 +322,9 @@ namespace DRT
 
       //! calculate error of numerical solution with respect to analytical solution
       void CalErrorComparedToAnalytSolution(
-          const DRT::Element* ele,          //!< the element we are dealing with
-          Teuchos::ParameterList& params,   //!< parameter list
-          Epetra_SerialDenseVector& errors  //!< vector containing L2-error norm
+          const DRT::Element* ele,                 //!< the element we are dealing with
+          Teuchos::ParameterList& params,          //!< parameter list
+          CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2-error norm
       );
 
       //! set internal variables for Nernst-Planck formulation

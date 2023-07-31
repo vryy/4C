@@ -75,8 +75,8 @@ namespace DRT
               lm_masterNodeToPatch,  //!< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  //!< local map between slave nodes and nodes in patch
-          std::vector<Epetra_SerialDenseMatrix>& elemat_blocks,  //!< element matrix blocks
-          std::vector<Epetra_SerialDenseVector>& elevec_blocks   //!< element vector blocks
+          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  //!< element matrix blocks
+          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   //!< element vector blocks
           ) = 0;
 
 
@@ -144,8 +144,8 @@ namespace DRT
               lm_masterNodeToPatch,  //!< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  //!< local map between slave nodes and nodes in patch
-          std::vector<Epetra_SerialDenseMatrix>& elemat_blocks,  //!< element matrix blocks
-          std::vector<Epetra_SerialDenseVector>& elevec_blocks   //!< element vector blocks
+          std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  //!< element matrix blocks
+          std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   //!< element vector blocks
       );
 
       //! decide which terms have to be assembled and decide the assembly pattern, return if no

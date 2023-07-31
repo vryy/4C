@@ -144,10 +144,10 @@ namespace CORE::GEO
       /** \brief Float_type for geometric distance computation */
       INPAR::CUT::CUT_Floattype geomdistance_floattype_;
 
-      /** \brief Float_type used in GEO::CUT::POSITION for ComputeDistance*/
+      /** \brief Float_type used in CORE::GEO::CUT::POSITION for ComputeDistance*/
       INPAR::CUT::CUT_Floattype general_position_dist_floattype_;
 
-      /** \brief Float_type used in GEO::CUT::POSITION for ComputePosition*/
+      /** \brief Float_type used in CORE::GEO::CUT::POSITION for ComputePosition*/
       INPAR::CUT::CUT_Floattype general_position_pos_floattype_;
 
       /** \brief Specifies which Referenceplanes are used in DirectDivergence*/

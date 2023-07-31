@@ -169,7 +169,7 @@ void DRT::NURBS::Knotvector::ConvertEleGidToKnotIds(
  | get element knot vectors to a given element id   (public) gammi 05/08|
  *----------------------------------------------------------------------*/
 bool DRT::NURBS::Knotvector::GetEleKnots(
-    std::vector<Epetra_SerialDenseVector>& eleknots, int gid) const
+    std::vector<CORE::LINALG::SerialDenseVector>& eleknots, int gid) const
 {
   //------------------------------------------------
   // determine the segments knot values
@@ -214,7 +214,7 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
   // use them to aquire the required knots
   for (int rr = 0; rr < dim_; ++rr)
   {
-    (eleknots[rr]).Size(2 * (degree_[npatch])[rr] + 2);
+    (eleknots[rr]).size(2 * (degree_[npatch])[rr] + 2);
 
     for (int mm = 0; mm < 2 * (degree_[npatch])[rr] + 2; ++mm)
     {
@@ -247,8 +247,8 @@ bool DRT::NURBS::Knotvector::GetEleKnots(
  |                                                  (public) gammi 05/09|
  *----------------------------------------------------------------------*/
 bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
-    std::vector<Epetra_SerialDenseVector>& eleknots,
-    std::vector<Epetra_SerialDenseVector>& surfknots, double& normalfac, int pgid,
+    std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+    std::vector<CORE::LINALG::SerialDenseVector>& surfknots, double& normalfac, int pgid,
     const int surfaceid) const
 {
   // get parent element local knotspan to extract the surface's knotspan
@@ -282,8 +282,8 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                 +---+---+             +---+---+
                0   1   2             0   1   2
           */
-          surfknots[0].Size(eleknots[0].Length());
-          surfknots[1].Size(eleknots[1].Length());
+          surfknots[0].size(eleknots[0].length());
+          surfknots[1].size(eleknots[1].length());
           surfknots[0] = eleknots[0];
           surfknots[1] = eleknots[1];
 
@@ -305,8 +305,8 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                 +---+---+             +---+---+
               18  19  20             0   1   2
           */
-          surfknots[0].Size(eleknots[0].Length());
-          surfknots[1].Size(eleknots[1].Length());
+          surfknots[0].size(eleknots[0].length());
+          surfknots[1].size(eleknots[1].length());
           surfknots[0] = eleknots[0];
           surfknots[1] = eleknots[1];
 
@@ -328,8 +328,8 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                 +---+---+             +---+---+
                0   1   2             0   1   2
           */
-          surfknots[0].Size(eleknots[0].Length());
-          surfknots[1].Size(eleknots[2].Length());
+          surfknots[0].size(eleknots[0].length());
+          surfknots[1].size(eleknots[2].length());
           surfknots[0] = eleknots[0];
           surfknots[1] = eleknots[2];
 
@@ -351,8 +351,8 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                 +---+---+             +---+---+
                6   7   8             0   1   2
           */
-          surfknots[0].Size(eleknots[0].Length());
-          surfknots[1].Size(eleknots[2].Length());
+          surfknots[0].size(eleknots[0].length());
+          surfknots[1].size(eleknots[2].length());
           surfknots[0] = eleknots[0];
           surfknots[1] = eleknots[2];
 
@@ -374,8 +374,8 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                 +---+---+             +---+---+
                2   5   8             0   1   2
           */
-          surfknots[0].Size(eleknots[1].Length());
-          surfknots[1].Size(eleknots[2].Length());
+          surfknots[0].size(eleknots[1].length());
+          surfknots[1].size(eleknots[2].length());
           surfknots[0] = eleknots[1];
           surfknots[1] = eleknots[2];
 
@@ -397,8 +397,8 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                 +---+---+             +---+---+
                0   3   6             0   1   2
           */
-          surfknots[0].Size(eleknots[1].Length());
-          surfknots[1].Size(eleknots[2].Length());
+          surfknots[0].size(eleknots[1].length());
+          surfknots[1].size(eleknots[2].length());
           surfknots[0] = eleknots[1];
           surfknots[1] = eleknots[2];
 
@@ -433,7 +433,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                0   1   2             0   1   2
 
           */
-          surfknots[0].Size(eleknots[0].Length());
+          surfknots[0].size(eleknots[0].length());
           surfknots[0] = eleknots[0];
 
           normalfac = 1.0;
@@ -454,7 +454,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                     +                         +
                     2                         0
           */
-          surfknots[0].Size(eleknots[1].Length());
+          surfknots[0].size(eleknots[1].length());
           surfknots[0] = eleknots[1];
 
           normalfac = 1.0;
@@ -472,7 +472,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                6   7   8                    0   1   2
 
           */
-          surfknots[0].Size(eleknots[0].Length());
+          surfknots[0].size(eleknots[0].length());
           surfknots[0] = eleknots[0];
 
           normalfac = -1.0;
@@ -494,7 +494,7 @@ bool DRT::NURBS::Knotvector::GetBoundaryEleAndParentKnots(
                     0                         0
           */
 
-          surfknots[0].Size(eleknots[1].Length());
+          surfknots[0].size(eleknots[1].length());
           surfknots[0] = eleknots[1];
 
           normalfac = -1.0;

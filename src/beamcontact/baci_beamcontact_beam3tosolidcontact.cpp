@@ -1393,16 +1393,16 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::
   const int* node_ids2 = element2_->NodeIds();
 
   // Temporary vectors for contact forces, DOF-GIDs and owning procs
-  Epetra_SerialDenseVector fcontact1(dim1);
-  Epetra_SerialDenseVector fcontact2(dim2);
+  CORE::LINALG::SerialDenseVector fcontact1(dim1);
+  CORE::LINALG::SerialDenseVector fcontact2(dim2);
   std::vector<int> lm1(dim1);
   std::vector<int> lm2(dim2);
   std::vector<int> lmowner1(dim1);
   std::vector<int> lmowner2(dim2);
 
   // Temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
-  Epetra_SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
-  Epetra_SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
   std::vector<int> lmrow2(dim2);
   std::vector<int> lmrowowner1(dim1);
@@ -2704,7 +2704,7 @@ bool CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::GetNew
  *----------------------------------------------------------------------*/
 template <const int numnodessol, const int numnodes, const int numnodalvalues>
 void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::UpdateElePos(
-    Epetra_SerialDenseMatrix& newele1pos, Epetra_SerialDenseMatrix& newele2pos)
+    CORE::LINALG::SerialDenseMatrix& newele1pos, CORE::LINALG::SerialDenseMatrix& newele2pos)
 {
   // Beam element positions
   for (int i = 0; i < 3 * numnodalvalues; i++)

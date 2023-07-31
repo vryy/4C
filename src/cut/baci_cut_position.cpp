@@ -57,12 +57,12 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
         probdim, num_nodes_ele, xyze.M(), xyze.N());
 
   const double* xyze_ptr = xyze.A();
-  Epetra_SerialDenseMatrix xyze_eptra;
+  CORE::LINALG::SerialDenseMatrix xyze_eptra;
   if (rdim > probdim)
   {
-    xyze_eptra.Shape(probdim, num_nodes_ele);
+    xyze_eptra.shape(probdim, num_nodes_ele);
     FixMatrixShape(xyze, xyze_eptra);
-    xyze_ptr = xyze_eptra.A();
+    xyze_ptr = xyze_eptra.values();
   }
 
   if (rdim_2 < probdim)
@@ -79,35 +79,36 @@ Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
  *----------------------------------------------------------------------------*/
 template <unsigned rdim>
 Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create(
-    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<rdim, 1>& xyz,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<rdim, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype)
 {
   const PositionFactory factory;
   const unsigned probdim = factory.ProbDim();
   const unsigned num_nodes_ele = CORE::DRT::UTILS::getNumberOfElementNodes(distype);
 
-  if (static_cast<unsigned>(xyze.M()) < probdim or static_cast<unsigned>(xyze.N()) != num_nodes_ele)
+  if (static_cast<unsigned>(xyze.numRows()) < probdim or
+      static_cast<unsigned>(xyze.numCols()) != num_nodes_ele)
     dserror(
         "Dimension mismatch of xyze! \n"
         "expected input: %d x %d (rows x cols)\n"
         "received input : %d x %d (rows x cols)",
-        probdim, num_nodes_ele, xyze.M(), xyze.N());
+        probdim, num_nodes_ele, xyze.numRows(), xyze.numCols());
 
-  const double* xyze_ptr = xyze.A();
-  Epetra_SerialDenseMatrix xyze_eptra;
-  if (static_cast<unsigned>(xyze.M()) > probdim)
+  const double* xyze_ptr = xyze.values();
+  CORE::LINALG::SerialDenseMatrix xyze_eptra;
+  if (static_cast<unsigned>(xyze.numRows()) > probdim)
   {
-    xyze_eptra.Shape(probdim, num_nodes_ele);
+    xyze_eptra.shape(probdim, num_nodes_ele);
     FixMatrixShape(xyze, xyze_eptra);
-    xyze_ptr = xyze_eptra.A();
+    xyze_ptr = xyze_eptra.values();
   }
 
-  if (xyz.M() < probdim)
+  if (xyz.numRows() < probdim)
     dserror(
         "Dimension mismatch of xyz! \n"
         "expected input: %d x 1 (rows x cols)\n"
         "received input : %d x 1 (rows x cols)",
-        probdim, xyz.M());
+        probdim, xyz.numRows());
 
   return factory.CreatePosition(xyze_ptr, xyz.A(), distype, floattype);
 }
@@ -492,10 +493,10 @@ template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<3>(
-    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<3, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 template Teuchos::RCP<CORE::GEO::CUT::Position> CORE::GEO::CUT::Position::Create<2>(
-    const Epetra_SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const CORE::LINALG::Matrix<2, 1>& xyz,
     const ::DRT::Element::DiscretizationType& distype, INPAR::CUT::CUT_Floattype floattype);
 
 
@@ -517,11 +518,11 @@ template class CORE::GEO::CUT::ComputeEmbeddedPosition<2, ::DRT::Element::line2>
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::line2>;
 
 // non-embedded element types for the embedded case (only necessary due to compiler problems)
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex16>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex18>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex27>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::tet10>;
-// template class GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::wedge15>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex16>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex18>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::hex27>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::tet10>;
+// template class CORE::GEO::CUT::ComputeEmbeddedPosition<3,::DRT::Element::wedge15>;
 
 template class CORE::GEO::CUT::ComputeEmbeddedPosition<3, ::DRT::Element::tri3,
     CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::tri3>::numNodePerElement,
@@ -647,10 +648,10 @@ template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::wedge6>;
 template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::wedge15>;
 
 // unused / impossible cases (only necessary due to compiler problems)
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::hex8>;
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::tet4>;
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::pyramid5>;
-// template class GEO::CUT::PositionGeneric<2,::DRT::Element::wedge6>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::hex8>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::tet4>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::pyramid5>;
+// template class CORE::GEO::CUT::PositionGeneric<2,::DRT::Element::wedge6>;
 
 // embedded cases
 template class CORE::GEO::CUT::PositionGeneric<3, ::DRT::Element::tri3,

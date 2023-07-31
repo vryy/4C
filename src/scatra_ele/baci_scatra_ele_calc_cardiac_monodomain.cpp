@@ -156,10 +156,10 @@ void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::MatMyocard
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcCardiacMonodomain<distype, probdim>::Sysmat(
-    DRT::Element* ele,                   ///< the element whose matrix is calculated
-    Epetra_SerialDenseMatrix& emat,      ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,      ///< element rhs to calculate
-    Epetra_SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
+    DRT::Element* ele,                          ///< the element whose matrix is calculated
+    CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
+    CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
 )
 {
   // density at t_(n) (one per transported scalar)

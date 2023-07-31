@@ -86,8 +86,8 @@ void SCATRA::TimIntCardiacMonodomainHDG::ElementMaterialTimeUpdate()
   discret_->SetState(0, "phin", phin_);
 
 
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector dummyVec;
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  CORE::LINALG::SerialDenseVector dummyVec;
   DRT::Element::LocationArray la(discret_->NumDofSets());
 
 
@@ -230,8 +230,8 @@ void SCATRA::TimIntCardiacMonodomainHDG::ProjectMaterial()
   DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
       "action", SCATRA::Action::project_material_field, eleparams);
 
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector dummyVec;
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  CORE::LINALG::SerialDenseVector dummyVec;
   DRT::Element::LocationArray dummy(1);
 
   for (int iele = 0; iele < discret_->NumMyColElements(); ++iele)

@@ -14,7 +14,7 @@
 // Constructor
 //--------------------------------------------------
 CORE::DRT::NURBS::UTILS::BsplinePolynomial::BsplinePolynomial(
-    const int degree, const Epetra_SerialDenseVector local_knotvector)
+    const int degree, const CORE::LINALG::SerialDenseVector local_knotvector)
     : myknotvector_(local_knotvector),
       bspline_(degree + 1),
       degree_(degree),

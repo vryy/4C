@@ -40,21 +40,24 @@ namespace DRT
       /// Evaluate the element
       virtual int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
 
       virtual void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<const MAT::Material> material) = 0;
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<const MAT::Material> material) = 0;
 
       virtual void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
+          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat) = 0;
 
       virtual void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& a_volumen,
-          Epetra_SerialDenseVector& a_volumenp, std::vector<int>& lm,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen,
+          CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> mat) = 0;
 
       virtual void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
@@ -95,9 +98,11 @@ namespace DRT
        */
       virtual int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
 
       /*!
         \brief calculate element matrix and rhs
@@ -113,13 +118,13 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      void Sysmat(std::vector<double>& ial, Epetra_SerialDenseMatrix& sysmat,
-          Epetra_SerialDenseVector& rhs);
+      void Sysmat(std::vector<double>& ial, CORE::LINALG::SerialDenseMatrix& sysmat,
+          CORE::LINALG::SerialDenseVector& rhs);
 
 
       virtual void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat);
 
       /*!
         \brief get the initial values of the degrees of freedom at the node
@@ -137,14 +142,15 @@ namespace DRT
         */
       virtual void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<const MAT::Material> material);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<const MAT::Material> material);
 
       /*!
        \Essential functions to compute the results of essential matrices
       */
       virtual void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, Epetra_SerialDenseVector& a_volumen_strain_np,
-          Epetra_SerialDenseVector& a_volumenp, std::vector<int>& lm,
+          DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen_strain_np,
+          CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
           Teuchos::RCP<MAT::Material> mat);
 
       /*!

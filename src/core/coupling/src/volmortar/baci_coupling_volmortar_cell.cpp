@@ -16,7 +16,7 @@
 /*---------------------------------------------------------------------*
  | constructor                                             farah 01/14 |
  *---------------------------------------------------------------------*/
-CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coords,
+CORE::VOLMORTAR::Cell::Cell(int id, int nvertices, const CORE::LINALG::SerialDenseMatrix& coords,
     const ::DRT::Element::DiscretizationType& shape)
     : id_(id), coords_(coords), shape_(shape)
 {

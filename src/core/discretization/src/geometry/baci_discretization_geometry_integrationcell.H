@@ -275,7 +275,7 @@ namespace CORE::GEO
    *  Derived from the 3-D boundary integration cell. Use this class, if you consider a
    *  embedded case or a dimensional reduced problem.
    *
-   *  \remark Please note, that this variant is based on the GEO::CUT::Kernel
+   *  \remark Please note, that this variant is based on the CORE::GEO::CUT::Kernel
    *  implementations and may lead to different results in direct comparison to the base
    *  class (due to round-off, tolerances and slightly different implementations).
    *
@@ -320,15 +320,15 @@ namespace CORE::GEO
   /*----------------------------------------------------------------------------*/
   template <unsigned probDim, ::DRT::Element::DiscretizationType cellType>
   void ComputePhysicalCenterPosition(
-      const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<probDim, 1>& phys_center);
+      const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<probDim, 1>& phys_center);
 
   template <>
   void ComputePhysicalCenterPosition<2, ::DRT::Element::point1>(
-      const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
+      const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
 
   template <>
   void ComputePhysicalCenterPosition<2, ::DRT::Element::line2>(
-      const Epetra_SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
+      const CORE::LINALG::SerialDenseMatrix& xyze, CORE::LINALG::Matrix<2, 1>& phys_center);
 
   /*----------------------------------------------------------------------------*/
   /** \brief create a concrete boundary integration cell

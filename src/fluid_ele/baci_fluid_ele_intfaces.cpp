@@ -611,9 +611,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::FluidIntFace::Surfaces()
  |  evaluate the element (public)                          schott 03/12 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // REMARK: this line ensures that the static DRT::ELEMENTS::FluidIntFaceImplInterface::Impl is
   // created
@@ -631,7 +632,7 @@ int DRT::ELEMENTS::FluidIntFace::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("not available");
 

@@ -17,7 +17,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  | constructor of paramter class                            vuong 08/16 |
@@ -47,11 +47,11 @@ Teuchos::RCP<MAT::Material> MAT::PAR::FluidPoroMultiPhase::CreateMaterial()
 void MAT::PAR::FluidPoroMultiPhase::Initialize()
 {
   //  matrix holding the conversion from pressures and dofs
-  dof2pres_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases_, numfluidphases_));
+  dof2pres_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(numfluidphases_, numfluidphases_));
 
   //  matrix holding the conversion from pressures and dofs
   // reset
-  dof2pres_->Scale(0.0);
+  dof2pres_->putScalar(0.0);
 
   // get number of volume fractions
   numvolfrac_ = (int)(((int)matids_->size() - numfluidphases_) / 2);
@@ -157,9 +157,11 @@ void MAT::PAR::FluidPoroMultiPhase::Initialize()
   // invert dof2pres_ to get conversion from dofs to pressures for the fluid phases
   if (numfluidphases_ > 0)
   {
-    Epetra_SerialDenseSolver inverse;
-    inverse.SetMatrix(*dof2pres_);
-    int err = inverse.Invert();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
+    inverse.setMatrix(dof2pres_);
+    int err = inverse.invert();
     if (err != 0)
       dserror(
           "Inversion of matrix for DOF transform failed with errorcode %d. Is your system of DOFs "
@@ -356,7 +358,7 @@ void MAT::FluidPoroMultiPhase::TransformGenPresToTruePres(
     const std::vector<double>& phinp, std::vector<double>& phi_transformed) const
 {
   // get trafo matrix
-  const Epetra_SerialDenseMatrix& dof2pres = *paramsporo_->dof2pres_;
+  const CORE::LINALG::SerialDenseMatrix& dof2pres = *paramsporo_->dof2pres_;
   // simple matrix vector product
   phi_transformed.resize(phinp.size());
   for (int i = 0; i < NumFluidPhases(); i++)
@@ -368,7 +370,7 @@ void MAT::FluidPoroMultiPhase::TransformGenPresToTruePres(
  * Evaluate derivative of degree of freedom with respect to pressure          vuong 08/16 |
  *----------------------------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
-    Epetra_SerialDenseMatrix& derivs, const std::vector<double>& state) const
+    CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& state) const
 {
   for (int iphase = 0; iphase < NumFluidPhases(); iphase++)
   {
@@ -390,7 +392,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfDofWrtPressure(
  *  Evaluate derivative of saturation w.r.t. pressure           vuong 08/16 |
  *---------------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
-    Epetra_SerialDenseMatrix& derivs, const std::vector<double>& pressure) const
+    CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
   const int constraintsaturationphase = paramsporo_->constraintphaseID_;
@@ -423,7 +425,7 @@ void MAT::FluidPoroMultiPhase::EvaluateDerivOfSaturationWrtPressure(
  *  Evaluate 2nd derivative of saturation w.r.t. pressure  kremheller 05/17 |
  *---------------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::EvaluateSecondDerivOfSaturationWrtPressure(
-    std::vector<Epetra_SerialDenseMatrix>& derivs, const std::vector<double>& pressure) const
+    std::vector<CORE::LINALG::SerialDenseMatrix>& derivs, const std::vector<double>& pressure) const
 {
   // get the number of the phase, which saturation is calculated by the saturation constraint
   const int constraintsaturationphase = paramsporo_->constraintphaseID_;

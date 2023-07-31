@@ -2342,7 +2342,8 @@ void XFEM::MeshCouplingFSI::UpdateConfigurationMap_GP_Contact(
  *--------------------------------------------------------------------------*/
 void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_ele,
     CORE::LINALG::Matrix<3, 1>& rst_slave, std::vector<double>& eledisp,
-    const CORE::LINALG::Matrix<3, 1>& normal, std::vector<Epetra_SerialDenseMatrix>& solid_stress)
+    const CORE::LINALG::Matrix<3, 1>& normal,
+    std::vector<CORE::LINALG::SerialDenseMatrix>& solid_stress)
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) return;
 
@@ -2355,15 +2356,15 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
           "failed!");
 
     solid_stress.resize(5);  // traction,dtdd,d2dddx,d2dddy,d2dddz
-    solid_stress[0].Reshape(NUMDIM_SOH8, 1);
-    CORE::LINALG::Matrix<NUMDIM_SOH8, 1> traction(solid_stress[0].A(), true);
+    solid_stress[0].reshape(NUMDIM_SOH8, 1);
+    CORE::LINALG::Matrix<NUMDIM_SOH8, 1> traction(solid_stress[0].values(), true);
 
-    solid_stress[1].Reshape(NUMDOF_SOH8, NUMDIM_SOH8);
-    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].A(), true);
+    solid_stress[1].reshape(NUMDOF_SOH8, NUMDIM_SOH8);
+    CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDIM_SOH8> dtraction_dd_l(solid_stress[1].values(), true);
 
     traction.Clear();
 
-    static Epetra_SerialDenseMatrix dtraction_dd_i;
+    static CORE::LINALG::SerialDenseMatrix dtraction_dd_i;
     for (int i = 0; i < NUMDIM_SOH8; ++i)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, 1> ei(true);
@@ -2371,15 +2372,15 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
       solid_ele->GetCauchyNDirAndDerivativesAtXi(rst_slave, eledisp, normal, ei, traction(i, 0),
           &dtraction_dd_i, &solid_stress[2 + i], nullptr, nullptr, nullptr, nullptr, nullptr,
           nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
-      CORE::LINALG::Matrix<NUMDOF_SOH8, 1> dtraction_dd_i_l(dtraction_dd_i.A(), true);
+      CORE::LINALG::Matrix<NUMDOF_SOH8, 1> dtraction_dd_i_l(dtraction_dd_i.values(), true);
       for (int col = 0; col < NUMDOF_SOH8; ++col) dtraction_dd_l(col, i) = dtraction_dd_i_l(col, 0);
     }
     if (timefac_ > 0)
     {
       // Change from linearization w.r.t. displacements to linearization w.r.t. velocities
       // (All other linearizations on the Nitsche Interface are evaluated like this)
-      solid_stress[1].Scale(timefac_);
-      for (int idx = 2; idx < 5; ++idx) solid_stress[idx].Scale(-timefac_ * timefac_);
+      solid_stress[1].scale(timefac_);
+      for (int idx = 2; idx < 5; ++idx) solid_stress[idx].scale(-timefac_ * timefac_);
     }
     else
       dserror("XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: timefac = %f, not set!",
@@ -2617,8 +2618,8 @@ void XFEM::MeshCouplingFluidFluid::EstimateNitscheTraceMaxEigenvalue(DRT::Elemen
   DRT::Element::LocationArray la(1);
   params.set<Teuchos::RCP<std::map<int, double>>>(
       "trace_estimate_max_eigenvalue_map", ele_to_max_eigenvalue_);
-  Epetra_SerialDenseMatrix dummyelemat;
-  Epetra_SerialDenseVector dummyelevec;
+  CORE::LINALG::SerialDenseMatrix dummyelemat;
+  CORE::LINALG::SerialDenseVector dummyelevec;
   DRT::FaceElement* faceele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!faceele) dserror("Cast to faceele failed!");  // todo change to dsassert
 

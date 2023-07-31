@@ -155,21 +155,25 @@ namespace DRT
       //! Evaluate the element (using location array)
       int Evaluate(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-          Epetra_SerialDenseVector& elevec3_epetra) override;
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! evaluate action
       virtual int EvaluateAction(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, SCATRA::BoundaryAction action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseVector& elevec1,
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
           const double scalar) override;
 
       /*!
@@ -217,10 +221,10 @@ namespace DRT
               test_master,
           int numscal,
           const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatra_parameter_boundary,
-          double timefacfac, double timefacrhsfac, Epetra_SerialDenseMatrix& k_ss,
-          Epetra_SerialDenseMatrix& k_sm, Epetra_SerialDenseMatrix& k_ms,
-          Epetra_SerialDenseMatrix& k_mm, Epetra_SerialDenseVector& r_s,
-          Epetra_SerialDenseVector& r_m);
+          double timefacfac, double timefacrhsfac, CORE::LINALG::SerialDenseMatrix& k_ss,
+          CORE::LINALG::SerialDenseMatrix& k_sm, CORE::LINALG::SerialDenseMatrix& k_ms,
+          CORE::LINALG::SerialDenseMatrix& k_mm, CORE::LINALG::SerialDenseVector& r_s,
+          CORE::LINALG::SerialDenseVector& r_m);
 
       /*!
        * @brief This method returns the determinant of the deformation gradient of the parent
@@ -317,9 +321,9 @@ namespace DRT
           Teuchos::ParameterList& params,                            ///< parameter list
           DRT::Discretization& discretization,                       ///< discretization
           DRT::Element::LocationArray& la,                           ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
-          Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,  ///< element matrix for master side
+          CORE::LINALG::SerialDenseVector& eslaveresidual  ///< element residual for slave side
       );
 
       //! evaluate size of element projected to node, i.e. int N dv
@@ -327,7 +331,7 @@ namespace DRT
           Teuchos::ParameterList& params,                          ///< parameter list
           DRT::Discretization& discretization,                     ///< discretization
           DRT::Element::LocationArray& la,                         ///< location array
-          Epetra_SerialDenseVector& nodalsize  ///< elemental size projected to nodes
+          CORE::LINALG::SerialDenseVector& nodalsize  ///< elemental size projected to nodes
       );
 
       /*!
@@ -343,9 +347,10 @@ namespace DRT
        * @param[out] emasterresidual element residual due to capacitive flux at master side
        */
       virtual void EvaluateS2ICouplingCapacitance(const DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& eslavematrix,
-          Epetra_SerialDenseMatrix& emastermatrix, Epetra_SerialDenseVector& eslaveresidual,
-          Epetra_SerialDenseVector& emasterresidual)
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,
+          CORE::LINALG::SerialDenseVector& eslaveresidual,
+          CORE::LINALG::SerialDenseVector& emasterresidual)
       {
         dserror("not yet implemented!");
       };
@@ -356,12 +361,13 @@ namespace DRT
           Teuchos::ParameterList& params,                              ///< parameter list
           DRT::Discretization& discretization,                         ///< discretization
           DRT::Element::LocationArray& la,                             ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
+          CORE::LINALG::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
       virtual void EvaluateS2ICouplingCapacitanceOD(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix)
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix)
       {
         dserror("not yet implemented");
       };
@@ -399,12 +405,13 @@ namespace DRT
 
       //! calculate boundary integral, i.e., surface area of boundary element
       void CalcBoundaryIntegral(const DRT::FaceElement* ele,  //!< the element we are dealing with
-          Epetra_SerialDenseVector& scalar  //!< result vector for scalar integral to be computed
+          CORE::LINALG::SerialDenseVector&
+              scalar  //!< result vector for scalar integral to be computed
       );
 
       //! calculate boundary mass matrix
       void CalcMatMass(const DRT::FaceElement* const element,  //!< boundary element
-          Epetra_SerialDenseMatrix& massmatrix                 //!< element mass matrix
+          CORE::LINALG::SerialDenseMatrix& massmatrix          //!< element mass matrix
       );
 
       //! evaluate Kedem-Katchalsky interface condition
@@ -412,15 +419,15 @@ namespace DRT
           Teuchos::ParameterList& params,                        ///< parameter list
           DRT::Discretization& discretization,                   ///< discretization
           DRT::Element::LocationArray& la,                       ///< location array
-          Epetra_SerialDenseMatrix& elemat1,                     ///< element matrix for slave side
-          Epetra_SerialDenseVector& elevec1  ///< element residual for slave side
+          CORE::LINALG::SerialDenseMatrix& elemat1,              ///< element matrix for slave side
+          CORE::LINALG::SerialDenseVector& elevec1  ///< element residual for slave side
       );
 
       //! integral of shape functions over boundary surface
       void IntegrateShapeFunctions(const DRT::FaceElement* ele,  ///< the actual boundary element
           Teuchos::ParameterList& params,                        ///< the parameter list
-          Epetra_SerialDenseVector& elevec1,  ///< result vector (to be assembled)
-          const bool addarea                  ///< flag for area calculation
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< result vector (to be assembled)
+          const bool addarea                         ///< flag for area calculation
       );
 
       //! evaluate scatra-scatra interface coupling condition
@@ -428,8 +435,8 @@ namespace DRT
           Teuchos::ParameterList& params,                            ///< parameter list
           DRT::Discretization& discretization,                       ///< discretization
           DRT::Element::LocationArray& la,                           ///< location array
-          Epetra_SerialDenseMatrix& elemat1,  ///< element matrix for slave side
-          Epetra_SerialDenseVector& elevec1   ///< element residual for slave side
+          CORE::LINALG::SerialDenseMatrix& elemat1,  ///< element matrix for slave side
+          CORE::LINALG::SerialDenseVector& elevec1   ///< element residual for slave side
       );
 
       //! computes the factor for the wall shear stress dependent interface flux
@@ -455,7 +462,7 @@ namespace DRT
       //! compute integral of convective mass/heat flux over boundary surface
       virtual std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, Epetra_SerialDenseVector& erhs);
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, CORE::LINALG::SerialDenseVector& erhs);
 
       //! Compute the normal vector for a 2D boundary element in a 3D space
       //!
@@ -481,7 +488,7 @@ namespace DRT
       //! calculate potential Neumann inflow terms
       virtual void NeumannInflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs);
+          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs);
 
       //! get density at integration point
       virtual double GetDensity(Teuchos::RCP<const MAT::Material> material,
@@ -490,8 +497,9 @@ namespace DRT
       //! calculate boundary condition due to convective heat transfer
       void ConvectiveHeatTransfer(const DRT::FaceElement* ele,
           Teuchos::RCP<const MAT::Material> material,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, Epetra_SerialDenseMatrix& emat,
-          Epetra_SerialDenseVector& erhs, const double heatranscoeff, const double surtemp);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
+          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+          const double heatranscoeff, const double surtemp);
 
       /*!
       \brief Evaluate weak Dirichlet boundary conditions
@@ -507,7 +515,8 @@ namespace DRT
           DRT::Element::DiscretizationType pdistype>
       void WeakDirichlet(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, Teuchos::RCP<const MAT::Material> material,
-          Epetra_SerialDenseMatrix& elemat_epetra, Epetra_SerialDenseVector& elevec_epetra);
+          CORE::LINALG::SerialDenseMatrix& elemat_epetra,
+          CORE::LINALG::SerialDenseVector& elevec_epetra);
 
 
       //! calculate boundary conditions for impl. Characteristic Galerkin time integration, just for
@@ -518,21 +527,21 @@ namespace DRT
           Teuchos::ParameterList& params,                               //!< parameter list
           DRT::Discretization& discretization,                          //!< discretization
           Teuchos::RCP<const MAT::Material> material,                   //!< material
-          Epetra_SerialDenseMatrix& elemat_epetra,                      //!< ele sysmat
-          Epetra_SerialDenseVector& elevec_epetra                       //!< ele rhs
+          CORE::LINALG::SerialDenseMatrix& elemat_epetra,               //!< ele sysmat
+          CORE::LINALG::SerialDenseVector& elevec_epetra                //!< ele rhs
       );
 
       //! evaluate Robin boundary condition
       virtual void CalcRobinBoundary(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization,
           DRT::Element::LocationArray& la,  ///< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          const double scalar);
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra, const double scalar);
 
       //! evaluate integral of all positive fluxes on s2i condition
       virtual void CalcS2ICouplingFlux(const DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseVector& scalars)
+          CORE::LINALG::SerialDenseVector& scalars)
       {
         dserror("Evaluation of coupling flux not implemented in base class.");
       }
@@ -554,9 +563,9 @@ namespace DRT
       //! weights for nurbs elements
       CORE::LINALG::Matrix<nen_, 1> weights_;
       //! knot vector for nurbs elements
-      std::vector<Epetra_SerialDenseVector> myknots_;
+      std::vector<CORE::LINALG::SerialDenseVector> myknots_;
       //! knot vector of corresponding parent element
-      std::vector<Epetra_SerialDenseVector> mypknots_;
+      std::vector<CORE::LINALG::SerialDenseVector> mypknots_;
       //! for nurbs elements the normal vector is multiplied with normalfac_!
       double normalfac_;
       //! nodal state variables associated with time t_{n+1} or t_{n+alpha_f}

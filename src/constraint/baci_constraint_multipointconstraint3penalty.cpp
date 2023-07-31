@@ -167,7 +167,7 @@ void UTILS::MPConstraint3Penalty::Evaluate(Teuchos::ParameterList& params,
       dserror("Constraint/monitor is not an multi point constraint!");
   }
 
-  acterror_->Scale(0.0);
+  acterror_->PutScalar(0.0);
   std::map<int, Teuchos::RCP<DRT::Discretization>>::iterator discriter;
   for (discriter = constraintdis_.begin(); discriter != constraintdis_.end(); discriter++)
 
@@ -345,11 +345,11 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretiz
   if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   const double time = params.get("total time", -1.0);
   const int numcolele = disc->NumMyColElements();
@@ -391,9 +391,9 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretiz
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
-      elematrix1.Shape(eledim, eledim);
-      elevector1.Size(eledim);
-      elevector3.Size(1);
+      elematrix1.shape(eledim, eledim);
+      elevector1.size(eledim);
+      elevector3.size(1);
       params.set("ConditionID", eid);
 
       // call the element evaluate method
@@ -415,13 +415,13 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint(Teuchos::RCP<DRT::Discretiz
 
 
       double diff = (curvefac * (*initerror_)[eid] - (*acterror_)[eid]);
-      elematrix1.Scale(diff);
+      elematrix1.scale(diff);
       for (int i = 0; i < eledim; i++)
         for (int j = 0; j < eledim; j++) elematrix1(i, j) += elevector1(i) * elevector1(j);
-      elematrix1.Scale(2 * scStiff * penalties_[condID]);
+      elematrix1.scale(2 * scStiff * penalties_[condID]);
 
       systemmatrix1->Assemble(eid, lmstride, elematrix1, lm, lmowner);
-      elevector1.Scale(2. * penalties_[condID] * diff);
+      elevector1.scale(2. * penalties_[condID] * diff);
       CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
     }
   }
@@ -437,11 +437,11 @@ void UTILS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discretization
   if (!(disc->HaveDofs())) dserror("AssignDegreesOfFreedom() was not called");
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // loop over column elements
   const double time = params.get("total time", -1.0);
@@ -460,7 +460,7 @@ void UTILS::MPConstraint3Penalty::EvaluateError(Teuchos::RCP<DRT::Discretization
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     actele->LocationVector(*disc, lm, lmowner, lmstride);
-    elevector3.Size(1);
+    elevector3.size(1);
     params.set("ConditionID", eid);
 
     if (absconstraint_.find(condID)->second && init)

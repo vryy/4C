@@ -123,18 +123,18 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
           this->face_element_->GetDrtFaceElement());
 
       // Calculate the variation of the gap function multiplied with the surface normal vector.
-      for (unsigned int i_shape = 0; i_shape < N_beam.N(); i_shape++)
+      for (unsigned int i_shape = 0; i_shape < N_beam.numCols(); i_shape++)
       {
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         {
           gap_variation_times_normal(i_shape * 3 + i_dim) = N_beam(i_shape) * surface_normal(i_dim);
         }
       }
-      for (unsigned int i_shape = 0; i_shape < N_surface.N(); i_shape++)
+      for (unsigned int i_shape = 0; i_shape < N_surface.numCols(); i_shape++)
       {
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
         {
-          gap_variation_times_normal(N_beam.N() * 3 + i_shape * 3 + i_dim) =
+          gap_variation_times_normal(N_beam.numCols() * 3 + i_shape * 3 + i_dim) =
               -1.0 * N_surface(i_shape) * surface_normal(i_dim);
         }
       }
@@ -153,14 +153,14 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
   if (force_vector != Teuchos::null)
   {
     std::vector<double> force_pair_double(pair_gid.size(), 0.0);
-    for (unsigned int j_dof = 0; j_dof < pair_force_vector.M(); j_dof++)
+    for (unsigned int j_dof = 0; j_dof < pair_force_vector.numRows(); j_dof++)
       force_pair_double[j_dof] = CORE::FADUTILS::CastToDouble(pair_force_vector(j_dof));
     force_vector->SumIntoGlobalValues(pair_gid.size(), pair_gid.data(), force_pair_double.data());
   }
 
   // If given, assemble force terms into the global stiffness matrix.
   if (stiffness_matrix != Teuchos::null)
-    for (unsigned int i_dof = 0; i_dof < pair_force_vector.M(); i_dof++)
+    for (unsigned int i_dof = 0; i_dof < pair_force_vector.numRows(); i_dof++)
       for (unsigned int j_dof = 0; j_dof < pair_gid.size(); j_dof++)
         stiffness_matrix->FEAssemble(
             CORE::FADUTILS::CastToDouble(pair_force_vector(i_dof).dx(j_dof)), pair_gid[i_dof],

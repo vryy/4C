@@ -136,10 +136,10 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasSetup()
   if ((err != 0) || (err2 != 0)) dserror("Inversion of T0inv (Jacobian0) failed");
 
   // reset EAS matrices
-  KaaInv_->Shape(neas_, neas_);
-  Kad_->Shape(neas_, numdofperelement_);
-  if (KaT_ != Teuchos::null) KaT_->Shape(neas_, nen_);
-  feas_->Size(neas_);
+  KaaInv_->shape(neas_, neas_);
+  Kad_->shape(neas_, numdofperelement_);
+  if (KaT_ != Teuchos::null) KaT_->shape(neas_, nen_);
+  feas_->size(neas_);
 
   return;
 }
@@ -207,13 +207,13 @@ void DRT::ELEMENTS::So3_Plast<distype>::CalcConsistentDefgrd()
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
 {
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   // build EAS interpolation matrix M, evaluated at the 8 GPs of so_hex8
 
   // fill up M at each gp
   if (eastype_ == soh8p_easmild)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_mild(numgpt_);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_mild(numgpt_);
     static bool M_mild_eval;
     /* easmild is the EAS interpolation of 9 modes, based on
      **            r 0 0   0 0 0 0 0 0
@@ -230,7 +230,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
       // fill up M at each gp
       for (int i = 0; i < numgpt_; ++i)
       {
-        M_mild[i].Shape(numstr_, neas_);
+        M_mild[i].shape(numstr_, neas_);
         M_mild[i](0, 0) = xsi_.at(i)(0);
         M_mild[i](1, 1) = xsi_.at(i)(1);
         M_mild[i](2, 2) = xsi_.at(i)(2);
@@ -250,7 +250,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
   }
   else if (eastype_ == soh8p_easfull)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_full(numgpt_);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_full(numgpt_);
     static bool M_full_eval;
     /* easfull is the EAS interpolation of 21 modes, based on
     **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
       // fill up M at each gp
       for (int i = 0; i < numgpt_; ++i)
       {
-        M_full[i].Shape(numstr_, neas_);
+        M_full[i].shape(numstr_, neas_);
         M_full[i](0, 0) = xsi_.at(i)(0);
         M_full[i](0, 15) = xsi_.at(i)(0) * xsi_.at(i)(1);
         M_full[i](0, 16) = xsi_.at(i)(0) * xsi_.at(i)(2);
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
   }
   else if (eastype_ == soh8p_eassosh8)
   {
-    static std::vector<Epetra_SerialDenseMatrix> M_sosh8(numgpt_);
+    static std::vector<CORE::LINALG::SerialDenseMatrix> M_sosh8(numgpt_);
     static bool M_sosh8_eval;
     /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
      ** consisting of 7 modes, based on
@@ -314,7 +314,7 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
       // fill up M at each gp
       for (int i = 0; i < numgpt_; ++i)
       {
-        M_sosh8[i].Shape(numstr_, neas_);
+        M_sosh8[i].shape(numstr_, neas_);
         M_sosh8[i](0, 0) = xsi_.at(i)(0);
         M_sosh8[i](1, 1) = xsi_.at(i)(1);
         M_sosh8[i](2, 2) = xsi_.at(i)(2);
@@ -334,24 +334,24 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasShape(const int gp)
     dserror("this EAS type not yet implemented");
 
   // transform EAS shape functions from parameter space to actual space
-  SetM_eas().LightShape(numstr_, neas_);
-  SetM_eas().Zero();
+  SetM_eas().shape(numstr_, neas_);
+  SetM_eas().putScalar(0.0);
   switch (eastype_)
   {
     case soh8p_easfull:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas>(
-          SetM_eas().A(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).A());
+          SetM_eas().values(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_easmild:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas>(
-          SetM_eas().A(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).A());
+          SetM_eas().values(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_eassosh8:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas>(
-          SetM_eas().A(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).A());
+          SetM_eas().values(), DetJac_0() / DetJ(), T0invT().A(), (M_GP->at(gp)).values());
       break;
     case soh8p_easnone:
       break;
@@ -378,17 +378,17 @@ void DRT::ELEMENTS::So3_Plast<distype>::EasEnhanceStrains()
     case soh8p_easfull:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easfull>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, M_eas().A(), alpha_eas_->A());
+          1.0, total_glstrain.A(), 1.0, M_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easmild:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_easmild>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, M_eas().A(), alpha_eas_->A());
+          1.0, total_glstrain.A(), 1.0, M_eas().values(), alpha_eas_->values());
       break;
     case soh8p_eassosh8:
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, numstr_,
           PlastEasTypeToNumEas<DRT::ELEMENTS::soh8p_eassosh8>::neas, 1>(
-          1.0, total_glstrain.A(), 1.0, M_eas().A(), alpha_eas_->A());
+          1.0, total_glstrain.A(), 1.0, M_eas().values(), alpha_eas_->values());
       break;
     case soh8p_easnone:
       break;

@@ -43,7 +43,7 @@ CORE::GEO::CUT::SelfCut::SelfCut(MeshHandle& cut_mesh_handle, int myrank)
 
 void CORE::GEO::CUT::SelfCut::PerformSelfCut()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT");
   if (CollisionDetection())
   {
     MeshIntersection();
@@ -58,7 +58,8 @@ void CORE::GEO::CUT::SelfCut::PerformSelfCut()
  *-------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::SelfCut::CollisionDetection()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- CollisionDetection");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "CORE::GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- CollisionDetection");
 
   FindCuttingSides();
   FindSelfCutPoints();
@@ -72,7 +73,7 @@ bool CORE::GEO::CUT::SelfCut::CollisionDetection()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::SelfCut::MeshIntersection()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- MeshIntersection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- MeshIntersection");
 
   CreateSelfCutNodes();
   CreateSelfCutEdges();
@@ -88,7 +89,7 @@ void CORE::GEO::CUT::SelfCut::MeshIntersection()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::SelfCut::ElementSelection()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- ElementSelection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- ElementSelection");
 
   DetermineSelfCutPosition();
   PropagateSelfCutPosition();
@@ -102,7 +103,7 @@ void CORE::GEO::CUT::SelfCut::ElementSelection()
  *-------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::SelfCut::MeshCorrection()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- MeshCorrection");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 2/6 --- Cut_Mesh --- SELFCUT --- MeshCorrection");
 
   ConstructConnectivity();
   FindIslands();

@@ -12,7 +12,7 @@
 
 #include "baci_lib_node.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 
 namespace CORE::GEO
@@ -117,7 +117,7 @@ namespace CORE::GEO
       std::copy(x, x + dim, &xyze(0, inode));
       // fill the remaining entries of the column with zeros, if the given matrix has
       // the wrong row dimension (this is primarily for safety reasons)
-      std::fill(&xyze(0, inode) + dim, &xyze(0, inode) + xyze.M(), 0.0);
+      std::fill(&xyze(0, inode) + dim, &xyze(0, inode) + xyze.numRows(), 0.0);
     }
     return;
   }
@@ -133,7 +133,7 @@ namespace CORE::GEO
    * \author schott
    * \date 01/15
    */
-  void InitialPositionArray(Epetra_SerialDenseMatrix& xyze, const ::DRT::Element* const ele);
+  void InitialPositionArray(CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele);
 
   /*!
    * a common task is to get an array of the positions of all nodes of this element

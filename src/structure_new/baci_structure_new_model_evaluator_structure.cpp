@@ -113,12 +113,12 @@ void STR::MODELEVALUATOR::Structure::Reset(const Epetra_Vector& x)
 
   /* --- reset external forces
    * Please note, that PutScalar is safer (but maybe slower) than
-   * Scale(0.0), because of possible NaN and inf values! */
+   * putScalar(0.0), because of possible NaN and inf values! */
   FextNp().PutScalar(0.0);
 
   /* --- reset internal forces
    * Please note, that PutScalar is safer (but maybe slower) than
-   * Scale(0.0), because of possible NaN and inf values! */
+   * putScalar(0.0), because of possible NaN and inf values! */
   FintNp().PutScalar(0.0);
 
   // reset stiffness matrix
@@ -869,14 +869,14 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     auto EvaluateGaussPointData = [&](const std::vector<char>& raw_data)
     {
       // Get the values at the Gauss-points.
-      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> mapdata{};
+      std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> mapdata{};
       std::vector<char>::size_type position = 0;
       for (int i = 0; i < DiscretPtr()->ElementRowMap()->NumMyElements(); ++i)
       {
         if (DoPostprocessingOnElement(*Discret().lRowElement(i)))
         {
-          Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress =
-              Teuchos::rcp(new Epetra_SerialDenseMatrix);
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> gpstress =
+              Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
           DRT::ParObject::ExtractfromPack(position, raw_data, *gpstress);
           mapdata[DiscretPtr()->ElementRowMap()->GID(i)] = gpstress;
         }
@@ -885,7 +885,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     };
 
     auto PostprocessGaussPointDataToNodes =
-        [&](const std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& map_data,
+        [&](const std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
       DiscretPtr()->Evaluate(
@@ -898,7 +898,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     };
 
     auto PostprocessGaussPointDataToElementCenter =
-        [&](const std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>& map_data,
+        [&](const std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>& map_data,
             Epetra_MultiVector& assembled_data)
     {
       DiscretPtr()->Evaluate(
@@ -915,7 +915,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     // Postprocess the result vectors.
     if (not(GInOutput().GetStressOutputType() == INPAR::STR::stress_none))
     {
-      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> gp_stress_data =
+      std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_stress_data =
           EvaluateGaussPointData(*EvalData().GetStressData());
 
       DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
@@ -936,7 +936,7 @@ void STR::MODELEVALUATOR::Structure::OutputRuntimeVtkStructurePostprocessStressS
     }
     if (not(GInOutput().GetStrainOutputType() == INPAR::STR::strain_none))
     {
-      std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> gp_strain_data =
+      std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> gp_strain_data =
           EvaluateGaussPointData(*EvalData().GetStrainData());
 
       DRT::Exporter ex(*(Discret().ElementRowMap()), *(discret->ElementColMap()), Discret().Comm());
@@ -1357,7 +1357,7 @@ void STR::MODELEVALUATOR::Structure::UpdateStepState(const double& timefac_n)
   fstructold_ptr->Update(-timefac_n, FextNp(), 1.0);
 
   // set the displacement increment back to zero
-  dis_incr_ptr_->Scale(0.0);
+  dis_incr_ptr_->PutScalar(0.0);
 }
 
 
@@ -1653,7 +1653,7 @@ bool STR::MODELEVALUATOR::Structure::DetermineElementVolumes(
 
     const int rele_lid = relemap->LID(rele->Id());
     (*ele_vols)[rele_lid] = ele_vol(2);
-    ele_vol.Zero();
+    ele_vol.putScalar(0.0);
   }
 
   Discret().ClearState();

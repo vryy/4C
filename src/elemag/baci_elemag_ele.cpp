@@ -496,9 +496,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagBoundary::Surfaces(
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::ElemagBoundaryImplInterface::Impl(this)->Evaluate(
       this, params, discretization, lm, elemat1, elemat2, elevec1, elevec2, elevec3);
@@ -511,7 +512,7 @@ int DRT::ELEMENTS::ElemagBoundary::Evaluate(Teuchos::ParameterList& params,
  *-----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ElemagBoundary::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("dummy function called");
   return 0;
@@ -880,9 +881,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::ElemagIntFace::Surfaces()
  |  evaluate the element (public)                      berardocco 02/18 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // REMARK: this line ensures that the static DRT::ELEMENTS::ElemagIntFaceImplInterface::Impl is
   // created
@@ -900,7 +902,7 @@ int DRT::ELEMENTS::ElemagIntFace::Evaluate(Teuchos::ParameterList& params,
  *------------------------------------------------------------------------*/
 int DRT::ELEMENTS::ElemagIntFace::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("not available");
 

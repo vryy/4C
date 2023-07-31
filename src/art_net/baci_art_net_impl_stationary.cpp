@@ -532,8 +532,8 @@ void ART::ArtNetImplStationary::OutputRadius()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetImplStationary::OutputFlow()
 {
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector dummyVec;
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  CORE::LINALG::SerialDenseVector dummyVec;
 
   // set vector values needed by elements
   discret_->ClearState();
@@ -551,7 +551,7 @@ void ART::ArtNetImplStationary::OutputFlow()
 
     DRT::Element::LocationArray la(discret_->NumDofSets());
     actele->LocationVector(*discret_, la, false);
-    Epetra_SerialDenseVector flowVec(1);
+    CORE::LINALG::SerialDenseVector flowVec(1);
 
     actele->Evaluate(p, *discret_, la, dummyMat, dummyMat, flowVec, dummyVec, dummyVec);
 

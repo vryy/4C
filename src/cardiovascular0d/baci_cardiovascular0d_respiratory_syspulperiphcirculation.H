@@ -181,7 +181,7 @@ namespace UTILS
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #EvaluateCardiovascular0D routine is called
     virtual void EvaluateRespiratory(Teuchos::ParameterList& params, std::vector<double>& df_np,
-        std::vector<double>& f_np, Epetra_SerialDenseMatrix& wkstiff,
+        std::vector<double>& f_np, CORE::LINALG::SerialDenseMatrix& wkstiff,
         Teuchos::RCP<Epetra_Vector> dofvec, Teuchos::RCP<Epetra_Vector> volvec, bool evalstiff);
 
    private:

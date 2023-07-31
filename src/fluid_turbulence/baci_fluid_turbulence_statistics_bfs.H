@@ -221,38 +221,38 @@ namespace FLD
     CORE::LINALG::Matrix<10, 1> x1supplocations_;
 
     //! matrices containing values
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x1sumu_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x1sump_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumu_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sump_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x1sumrho_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x1sumT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumrho_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumT_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x1sumtauw_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x1sumtauw_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumu_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumv_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumw_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sump_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumu_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumv_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumw_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sump_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumrho_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumrho_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumT_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumsqu_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumsqv_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumsqw_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumsqp_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqu_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqv_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqw_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqp_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumsqrho_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumsqT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqrho_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumsqT_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumuv_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumuw_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumvw_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuv_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuw_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumvw_;
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumrhou_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumuT_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumrhov_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> x2sumvT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumrhou_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumuT_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumrhov_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> x2sumvT_;
 
     void convertStringToGeoType(const std::string& geotype);
   };

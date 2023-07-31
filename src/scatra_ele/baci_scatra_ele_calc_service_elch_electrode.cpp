@@ -24,9 +24,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -138,7 +140,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     const DRT::Element* const& ele,             //!< the element we are dealing with
     const DRT::Discretization& discretization,  //!< discretization
     DRT::Element::LocationArray& la,            //!< location array
-    Epetra_SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
+    CORE::LINALG::SerialDenseVector& scalars  //!< result vector for scalar integrals to be computed
 )
 {
   // safety check
@@ -188,7 +190,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
   }  // loop over integration points
 
   // safety check
-  if (not my::scatrapara_->IsAle() and scalars.Length() != 3)
+  if (not my::scatrapara_->IsAle() and scalars.length() != 3)
     dserror(
         "Result vector for electrode state of charge and C rate computation has invalid length!");
 
@@ -241,7 +243,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateElect
     }  // loop over integration points
 
     // safety check
-    if (scalars.Length() != 6)
+    if (scalars.length() != 6)
       dserror(
           "Result vector for electrode state of charge and C rate computation has invalid length!");
 
@@ -295,9 +297,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalculateFlux(
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype, probdim>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele,          //!< element
-    Teuchos::ParameterList& params,   //!< parameter list
-    Epetra_SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
+    const DRT::Element* ele,                 //!< element
+    Teuchos::ParameterList& params,          //!< parameter list
+    CORE::LINALG::SerialDenseVector& errors  //!< vector containing L2 and H1 error norms
 )
 {
   // call base class routine
@@ -322,7 +324,7 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchElectrode<distype,
     probdim>::CalculateMeanElectrodeConcentration(const DRT::Element* const& ele,
     const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseVector& conc)
+    CORE::LINALG::SerialDenseVector& conc)
 {
   // for complete 1D simulation of battery:
   // Micro state must exist for electrolyte -> set value to 00

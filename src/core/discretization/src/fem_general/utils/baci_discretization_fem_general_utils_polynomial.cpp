@@ -136,7 +136,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -176,7 +176,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv1(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -231,7 +232,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceTensor<nsd_, POLY>::Evaluate_deriv2(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -296,7 +298,7 @@ namespace CORE::DRT
     void PolynomialSpaceTensor<nsd_, POLY>::FillUnitNodePoints(
         CORE::LINALG::SerialDenseMatrix &matrix) const
     {
-      matrix.LightShape(nsd_, Size());
+      matrix.shape(nsd_, Size());
 
       const unsigned int size = polySpace1d_.size();
       switch (nsd_)
@@ -339,7 +341,7 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -381,7 +383,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv1(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -440,7 +443,8 @@ namespace CORE::DRT
      */
     template <int nsd_, class POLY>
     void PolynomialSpaceComplete<nsd_, POLY>::Evaluate_deriv2(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       const unsigned int size = polySpace1d_.size();
       dsassert(size < 20, "Not implemented");
@@ -508,7 +512,7 @@ namespace CORE::DRT
     void PolynomialSpaceComplete<nsd_, POLY>::FillUnitNodePoints(
         CORE::LINALG::SerialDenseMatrix &matrix) const
     {
-      matrix.LightShape(nsd_, Size());
+      matrix.shape(nsd_, Size());
 
       const unsigned int size = polySpace1d_.size();
       unsigned int c = 0;
@@ -547,25 +551,26 @@ namespace CORE::DRT
 
     template <int nsd_>
     void LagrangeBasisTet<nsd_>::Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseVector &values) const
+        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const
     {
       legendre_.Evaluate(point, values);
-      vandermondeFactor_.SetVectors(values, values);
-      vandermondeFactor_.Solve();
+      vandermondeFactor_.setVectors(Teuchos::rcpFromRef(values), Teuchos::rcpFromRef(values));
+      vandermondeFactor_.solve();
     }
 
 
 
     template <int nsd_>
-    void LagrangeBasisTet<nsd_>::Evaluate_deriv1(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+    void LagrangeBasisTet<nsd_>::Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       legendre_.Evaluate_deriv1(point, derivatives);
       for (unsigned int d = 0; d < nsd_; ++d)
       {
         for (unsigned int i = 0; i < Size(); ++i) evaluateVec_(i, 0) = derivatives(d, i);
-        vandermondeFactor_.SetVectors(evaluateVec_, evaluateVec_);
-        vandermondeFactor_.Solve();
+        vandermondeFactor_.setVectors(
+            Teuchos::rcpFromRef(evaluateVec_), Teuchos::rcpFromRef(evaluateVec_));
+        vandermondeFactor_.solve();
         for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluateVec_(i, 0);
       }
     }
@@ -573,15 +578,16 @@ namespace CORE::DRT
 
 
     template <int nsd_>
-    void LagrangeBasisTet<nsd_>::Evaluate_deriv2(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, Epetra_SerialDenseMatrix &derivatives) const
+    void LagrangeBasisTet<nsd_>::Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const
     {
       legendre_.Evaluate_deriv2(point, derivatives);
       for (unsigned int d = 0; d < (nsd_ * (nsd_ + 1)) / 2; ++d)
       {
         for (unsigned int i = 0; i < Size(); ++i) evaluateVec_(i, 0) = derivatives(d, i);
-        vandermondeFactor_.SetVectors(evaluateVec_, evaluateVec_);
-        vandermondeFactor_.Solve();
+        vandermondeFactor_.setVectors(
+            Teuchos::rcpFromRef(evaluateVec_), Teuchos::rcpFromRef(evaluateVec_));
+        vandermondeFactor_.solve();
         for (unsigned int i = 0; i < Size(); ++i) derivatives(d, i) = evaluateVec_(i, 0);
       }
     }
@@ -591,7 +597,7 @@ namespace CORE::DRT
     template <>
     void LagrangeBasisTet<2>::FillFeketePoints(const unsigned int degree)
     {
-      feketePoints_.Shape(2, Size(degree));
+      feketePoints_.shape(2, Size(degree));
 
       if (degree == 0)
       {
@@ -623,7 +629,7 @@ namespace CORE::DRT
     template <>
     void LagrangeBasisTet<3>::FillFeketePoints(const unsigned int degree)
     {
-      feketePoints_.Shape(3, Size(degree));
+      feketePoints_.shape(3, Size(degree));
       unsigned int c = 0;
       if (degree == 0)
       {
@@ -669,11 +675,11 @@ namespace CORE::DRT
     template <int nsd_>
     void DRT::UTILS::LagrangeBasisTet<nsd_>::ComputeVandermondeMatrices(const unsigned int degree)
     {
-      vandermonde_.Shape(Size(), Size());
+      vandermonde_.shape(Size(), Size());
 
-      Epetra_SerialDenseVector values(Size());
-      Epetra_SerialDenseMatrix deriv1(nsd_, Size());
-      Epetra_SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
+      CORE::LINALG::SerialDenseVector values(Size());
+      CORE::LINALG::SerialDenseMatrix deriv1(nsd_, Size());
+      CORE::LINALG::SerialDenseMatrix deriv2(nsd_ * (nsd_ + 1) / 2, Size());
       CORE::LINALG::Matrix<nsd_, 1> point;
       for (unsigned int i = 0; i < Size(); ++i)
       {
@@ -683,9 +689,9 @@ namespace CORE::DRT
         for (unsigned int j = 0; j < Size(); ++j) vandermonde_(j, i) = values(j);
       }
 
-      vandermondeFactor_.SetMatrix(vandermonde_);
-      vandermondeFactor_.Factor();
-      evaluateVec_.Shape(Size(), 1);
+      vandermondeFactor_.setMatrix(Teuchos::rcpFromRef(vandermonde_));
+      vandermondeFactor_.factor();
+      evaluateVec_.shape(Size(), 1);
 
 
       // Sanity check: Polynomials should be nodal in the Fekete points
@@ -711,9 +717,9 @@ namespace CORE::DRT
     void DRT::UTILS::LagrangeBasisTet<nsd_>::FillUnitNodePoints(
         CORE::LINALG::SerialDenseMatrix &matrix) const
     {
-      matrix.LightShape(feketePoints_.M(), feketePoints_.N());
-      for (int i = 0; i < feketePoints_.N(); ++i)
-        for (int j = 0; j < feketePoints_.M(); ++j) matrix(j, i) = feketePoints_(j, i);
+      matrix.shape(feketePoints_.numRows(), feketePoints_.numCols());
+      for (int i = 0; i < feketePoints_.numCols(); ++i)
+        for (int j = 0; j < feketePoints_.numRows(); ++j) matrix(j, i) = feketePoints_(j, i);
     }
 
     template <int nsd_>

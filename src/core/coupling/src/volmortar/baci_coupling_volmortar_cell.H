@@ -35,7 +35,7 @@ namespace CORE::VOLMORTAR
     \brief constructor
 
     */
-    Cell(int id, int nvertices, const Epetra_SerialDenseMatrix& coords,
+    Cell(int id, int nvertices, const CORE::LINALG::SerialDenseMatrix& coords,
         const ::DRT::Element::DiscretizationType& shape);
 
     /*!
@@ -83,7 +83,7 @@ namespace CORE::VOLMORTAR
     //@}
    protected:
     int id_;                                    // local ID of this cell
-    Epetra_SerialDenseMatrix coords_;           // coords of cell vertices (dim,vertices)
+    CORE::LINALG::SerialDenseMatrix coords_;    // coords of cell vertices (dim,vertices)
     ::DRT::Element::DiscretizationType shape_;  // shape of this element (always tet4)
     double vol_;                                // integration cell volume
   };

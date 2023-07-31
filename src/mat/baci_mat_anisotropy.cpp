@@ -161,7 +161,7 @@ void MAT::Anisotropy::SetGaussPointFibers(
   // Check whether every second vector have the same lenghts
   unsigned num_fibs = 1;
   unsigned i = 0;
-  for (const auto gpfibers : fibers)
+  for (const auto& gpfibers : fibers)
   {
     if (i == 0)
     {

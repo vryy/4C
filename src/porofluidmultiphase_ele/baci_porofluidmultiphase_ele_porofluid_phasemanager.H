@@ -20,8 +20,11 @@
 
 
 // forward declarations
-class Epetra_SerialDenseMatrix;
-class Epetra_SerialDenseVector;
+namespace LINALG
+{
+  class SerialDenseMatrix;
+  class SerialDenseVector;
+}  // namespace LINALG
 
 namespace MAT
 {
@@ -1288,17 +1291,17 @@ namespace DRT
        private:
         //! derivative of true pressure w.r.t. degrees of freedom
         // first index: pressure, second index: dof
-        Teuchos::RCP<Epetra_SerialDenseMatrix> pressurederiv_;
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> pressurederiv_;
         //! derivative of saturations w.r.t. degrees of freedom
         // first index: saturation, second index: dof
-        Teuchos::RCP<Epetra_SerialDenseMatrix> saturationderiv_;
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> saturationderiv_;
         //! second derivative of saturations w.r.t. degrees of freedom
-        Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> saturationderivderiv_;
+        Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> saturationderivderiv_;
 
         //! derivative of solid pressure w.r.t. degrees of freedom
-        Teuchos::RCP<Epetra_SerialDenseVector> solidpressurederiv_;
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> solidpressurederiv_;
         //! second derivative of solid pressure w.r.t. degrees of freedom;
-        Teuchos::RCP<Epetra_SerialDenseMatrix> solidpressurederivderiv_;
+        Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> solidpressurederivderiv_;
       };
 
       /*----------------------------------------------------------------------*
@@ -1368,7 +1371,7 @@ namespace DRT
         double dporosity_dp_;
 
         //! derivative of porosity w.r.t. degrees of freedom
-        Teuchos::RCP<Epetra_SerialDenseVector> porosityderiv_;
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> porosityderiv_;
       };
 
       /*----------------------------------------------------------------------*

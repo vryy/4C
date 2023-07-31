@@ -36,10 +36,10 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const ::DRT::Ele
  * \brief create an often used array with 3D nodal positions
  */
 void CORE::GEO::InitialPositionArray(
-    Epetra_SerialDenseMatrix& xyze, const ::DRT::Element* const ele)
+    CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele)
 {
   const int numnode = ele->NumNode();
-  xyze.Shape(3, numnode);
+  xyze.shape(3, numnode);
   const ::DRT::Node* const* nodes = ele->Nodes();
   if (nodes == NULL)
   {

@@ -95,9 +95,11 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Instance(const std::string&
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -128,9 +130,11 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Evaluate(DRT::Element* 
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateEHLMon(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -326,9 +330,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
-    DRT::Element* ele,               ///< the element whose matrix is calculated
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs   ///< element rhs to calculate
+    DRT::Element* ele,                      ///< the element whose matrix is calculated
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------
@@ -441,7 +445,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::Sysmat(
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::MatrixforEHLMon(
     DRT::Element* ele,  ///< the element whose matrix is calculated
-    Epetra_SerialDenseMatrix& ematheight, Epetra_SerialDenseMatrix& ematvel)
+    CORE::LINALG::SerialDenseMatrix& ematheight, CORE::LINALG::SerialDenseMatrix& ematvel)
 {
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
@@ -823,8 +827,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::GetLaplacianWeakFormRH
  |  calculation of Poiseuille element matrix
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_SerialDenseMatrix& emat,
-    const double timefacfac, const double viscosity, const double height)
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(
+    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
+    const double height)
 {
   // Poiseuille term
   const double fac_psl = timefacfac * (1 / (12 * viscosity)) * height * height * height;
@@ -845,7 +850,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_Seri
  *-----------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPslVis(
-    Epetra_SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
+    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
     const double height, const double dviscosity_dp)
 {
   // Poiseuille term (pressure dependent viscosity)
@@ -872,9 +877,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPslVis(
  |  calculation of Poiseuille element matrix           Faraji  02/19  |
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_SerialDenseMatrix& emat,
-    const double timefacfac, const double viscosity, const double height,
-    const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(
+    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac, const double viscosity,
+    const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
     dserror("There is no pressure flow factor in classical reynolds Equ.");
@@ -897,8 +902,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcMatPsl(Epetra_Seri
  |  calculation of Poiseuille rhs matrix
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(Epetra_SerialDenseVector& erhs,
-    const double rhsfac, const double viscosity, const double height)
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(
+    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
+    const double height)
 {
   // Poiseuille rhs term
   const double fac_rhs_psl = rhsfac * (1 / (12 * viscosity)) * height * height * height;
@@ -918,9 +924,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(Epetra_Seri
  |  calculation of Poiseuille rhs matrix              Faraji   02/19  |
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(Epetra_SerialDenseVector& erhs,
-    const double rhsfac, const double viscosity, const double height,
-    const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(
+    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double viscosity,
+    const double height, const CORE::LINALG::Matrix<nsd_, 1> pflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
     dserror("There is no pressure flow factor in classical reynolds Equ.");
@@ -942,8 +948,9 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsPsl(Epetra_Seri
  |  calculation of Wedge rhs matrix
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsWdg(Epetra_SerialDenseVector& erhs,
-    const double rhsfac, const double height, const CORE::LINALG::Matrix<nsd_, 1> velocity)
+void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsWdg(
+    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double height,
+    const CORE::LINALG::Matrix<nsd_, 1> velocity)
 {
   // Wedge rhs term
   const double fac_rhs_wdg = rhsfac * height;
@@ -966,7 +973,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsWdg(Epetra_Seri
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsSqz(
-    Epetra_SerialDenseVector& erhs, const double rhsfac, const double heightdot)
+    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const double heightdot)
 {
   if (!lubricationpara_->AddSqz()) dserror("You chosed NOT to add the squeeze term! WATCHOUT");
   // Squeeze rhs term
@@ -984,7 +991,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsSqz(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRhsShear(
-    Epetra_SerialDenseVector& erhs, const double rhsfac,
+    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac,
     const CORE::LINALG::Matrix<nsd_, 1> velocity, const double sflowfac)
 {
   if (!(lubricationpara_->ModifiedReynolds()))
@@ -1207,9 +1214,11 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalcRelVelAtIntPoint(
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateService(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // setup
   if (SetupCalc(ele, discretization) == -1) return 0;
@@ -1231,9 +1240,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const LUBRICATION::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
@@ -1243,7 +1254,7 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
     case LUBRICATION::calc_error:
     {
       // check if length suffices
-      if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
 
       // need current solution
       Teuchos::RCP<const Epetra_Vector> prenp = discretization.GetState("prenp");
@@ -1287,7 +1298,8 @@ int DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::EvaluateAction(DRT::Ele
   *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnalytSolution(
-    const DRT::Element* ele, Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
+    const DRT::Element* ele, Teuchos::ParameterList& params,
+    CORE::LINALG::SerialDenseVector& errors)
 {
   if (DRT::INPUT::get<LUBRICATION::Action>(params, "action") != LUBRICATION::calc_error)
     dserror("How did you get here?");
@@ -1404,7 +1416,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalErrorComparedToAnal
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalculatePressures(
-    const DRT::Element* ele, Epetra_SerialDenseVector& pressures, const bool inverting)
+    const DRT::Element* ele, CORE::LINALG::SerialDenseVector& pressures, const bool inverting)
 {
   // integration points and weights
   const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints(

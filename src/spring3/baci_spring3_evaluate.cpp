@@ -26,9 +26,10 @@ typedef Sacado::Fad::DFad<double> FAD;
  |  evaluate the element (public) mukherjee 04/15|
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Spring3::ActionType act = Spring3::calc_none;
   // get the action required
@@ -164,12 +165,12 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
           int nnode  = NumNode();
 
           //variable to store numerically approximated stiffness matrix
-          Epetra_SerialDenseMatrix stiff_approx;
+          CORE::LINALG::SerialDenseMatrix stiff_approx;
           stiff_approx.Shape(numdof*nnode,numdof*nnode);
 
 
           //relative error of numerically approximated stiffness matrix
-          Epetra_SerialDenseMatrix stiff_relerr;
+          CORE::LINALG::SerialDenseMatrix stiff_relerr;
           stiff_relerr.Shape(numdof*nnode,numdof*nnode);
 
           //characteristic length for numerical approximation of stiffness
@@ -184,7 +185,7 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
             for(int k=0; k<nnode; k++)//for all nodes
             {
 
-              Epetra_SerialDenseVector force_aux;
+              CORE::LINALG::SerialDenseVector force_aux;
               force_aux.Size(numdof*nnode);
 
               //create new displacement and velocity vectors in order to store artificially modified
@@ -265,7 +266,7 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
 
 int DRT::ELEMENTS::Spring3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("This method needs to be modified for bio-polymer networks!");
   return (0);
@@ -278,7 +279,7 @@ int DRT::ELEMENTS::Spring3::EvaluateNeumann(Teuchos::ParameterList& params,
 template <int nnode, int ndim, int dof>  // number of nodes, number of dimensions of embedding
                                          // space, number of degrees of freedom per node
 void DRT::ELEMENTS::Spring3::EvaluatePTC(
-    Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1)
 {
   dserror("PTC is not implemented for Spring3 elements!");
 
@@ -288,8 +289,8 @@ void DRT::ELEMENTS::Spring3::EvaluatePTC(
 /*--------------------------------------------------------------------------------------*
  | calculation of elastic energy                                         mukherjee 04/15|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Spring3::t3_energy(
-    Teuchos::ParameterList& params, std::vector<double>& disp, Epetra_SerialDenseVector* intenergy)
+void DRT::ELEMENTS::Spring3::t3_energy(Teuchos::ParameterList& params, std::vector<double>& disp,
+    CORE::LINALG::SerialDenseVector* intenergy)
 {
   dserror("This method is yet to be configured for bio-polymer networks!");
 
@@ -300,8 +301,9 @@ void DRT::ELEMENTS::Spring3::t3_energy(
  | Nonlinear stiffness                                                   mukherjee 04/15|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
-    std::vector<double>& vel, std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force)
+    std::vector<double>& vel, std::vector<double>& disp,
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseMatrix* massmatrix,
+    CORE::LINALG::SerialDenseVector* force)
 {
   /*
    * It is observed that for a mixed problems, such is the case for biopolymer network simulations
@@ -313,13 +315,13 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
    * element containing two nodes.
    */
   // 6x6 Stiffness Matrix of the Truss
-  Epetra_SerialDenseMatrix DummyStiffMatrix;
-  DummyStiffMatrix.Shape(6, 6);
-  DummyStiffMatrix.Scale(0);
+  CORE::LINALG::SerialDenseMatrix DummyStiffMatrix;
+  DummyStiffMatrix.shape(6, 6);
+  DummyStiffMatrix.putScalar(0.0);
   // 6x6 force vector of the Truss
-  Epetra_SerialDenseVector DummyForce;
-  DummyForce.Size(6);
-  DummyForce.Scale(0);
+  CORE::LINALG::SerialDenseVector DummyForce;
+  DummyForce.size(6);
+  DummyForce.putScalar(0.0);
   // 1x6 velocity vector
   CORE::LINALG::Matrix<1, 6> DummyVel;
   DummyVel.Clear();
@@ -360,7 +362,7 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
   t3_nlnstiffmass_spring(DummyDisp, DummyStiffMatrix, DummyForce);
 
   if (params.get<std::string>("internalforces", "no") == "yes")
-    f_ = Teuchos::rcp(new Epetra_SerialDenseVector(DummyForce));
+    f_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(DummyForce));
 
 
   /*the following function call applies statistical forces and damping matrix according to the
@@ -372,13 +374,13 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
 
 
   // Map element level into global 12 by 12 element
-  if (force->Length() > 12)
+  if (force->length() > 12)
     dserror("Vector is larger than 12. Please use different mapping strategy!");
-  else if (force->Length() == 6)
+  else if (force->length() == 6)
   {
     for (int i = 0; i < 6; i++) (*force)(i) += DummyForce(i);
   }
-  else if (force->Length() == 12)
+  else if (force->length() == 12)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -388,14 +390,14 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
   }
 
   // Map element level into global 12 by 12 element
-  if (stiffmatrix->RowDim() > 12)
+  if (stiffmatrix->numRows() > 12)
     dserror("Matrix is larger than 12. Please use different mapping strategy!");
-  else if (stiffmatrix->RowDim() == 6)
+  else if (stiffmatrix->numRows() == 6)
   {
     for (int i = 0; i < 6; i++)
       for (int j = 0; j < 6; j++) (*stiffmatrix)(i, j) += DummyStiffMatrix(i, j);
   }
-  else if (stiffmatrix->RowDim() == 12)
+  else if (stiffmatrix->numRows() == 12)
   {
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
@@ -446,7 +448,7 @@ void DRT::ELEMENTS::Spring3::t3_nlnstiffmass(Teuchos::ParameterList& params,
  spring                                                             |
  *-----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::t3_nlnstiffmass_spring(const CORE::LINALG::Matrix<1, 6>& DummyDisp,
-    Epetra_SerialDenseMatrix& DummyStiffMatrix, Epetra_SerialDenseVector& DummyForce)
+    CORE::LINALG::SerialDenseMatrix& DummyStiffMatrix, CORE::LINALG::SerialDenseVector& DummyForce)
 {
   //  Teuchos::ParameterList statmechparams =
   //  DRT::Problem::Instance()->StatisticalMechanicsParams();
@@ -650,8 +652,8 @@ void DRT::ELEMENTS::Spring3::CalcDeltaTheta(
  | Calculate torsional stiffness matrices                                mukherjee 09/14|
  *--------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
-    std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseVector* force)
+    std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+    CORE::LINALG::SerialDenseVector* force)
 {
   // Calculate current directional vector of the truss element (v_1 in derivation)
   // v_1 direction 1---->2 i.e. v1=d2-d1;
@@ -822,14 +824,14 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   /*%%%%%% Calculate torsional stiffness matrices and forces between tangents at node 1 & node 2
    * %%%%%%%*/
   // 6x6 Stiffness Matrix between tangents at node 1 & node 2
-  Epetra_SerialDenseMatrix TorStiffmatrixNode3;
-  TorStiffmatrixNode3.Shape(6, 6);
-  TorStiffmatrixNode3.Scale(0);
+  CORE::LINALG::SerialDenseMatrix TorStiffmatrixNode3;
+  TorStiffmatrixNode3.shape(6, 6);
+  TorStiffmatrixNode3.putScalar(0.0);
   // 6x6 force vector between tangents at node 1 & node 2. Contributions to vector {t1, t2} in
   // respective order
-  Epetra_SerialDenseVector TorForceNode3;
-  TorForceNode3.Size(6);
-  TorForceNode3.Scale(0);
+  CORE::LINALG::SerialDenseVector TorForceNode3;
+  TorForceNode3.size(6);
+  TorForceNode3.putScalar(0.0);
 
   // Calculate torsional stiffness matrices and forces between tangents at node 1 & node 2
   if (thetacurr(2) >= ThetaBoundary1 && thetacurr(2) <= ThetaBoundary2)
@@ -850,9 +852,9 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
   else
     dserror("Angle out of range!");
   // Map element level into global 12 by 12 element
-  if (force->Length() != 12)
+  if (force->length() != 12)
     dserror("This element does not need torsional element!");
-  else if (force->Length() == 12)
+  else if (force->length() == 12)
   {
     for (int i = 0; i < 3; i++)
     {
@@ -861,9 +863,9 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
     }
   }
   // Map element level into global 12 by 12 element
-  if (stiffmatrix->RowDim() != 12)
+  if (stiffmatrix->numRows() != 12)
     dserror("This element does not require torsional element!");
-  else if (stiffmatrix->RowDim() == 12)
+  else if (stiffmatrix->numRows() == 12)
   {
     for (int i = 0; i < 3; i++)
       for (int j = 0; j < 3; j++)
@@ -882,8 +884,8 @@ void DRT::ELEMENTS::Spring3::torsion_stiffmass(Teuchos::ParameterList& params,
  *-------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& params,
     double theta, double deltatheta, CORE::LINALG::Matrix<1, 3>& tcurr1,
-    CORE::LINALG::Matrix<1, 3>& tcurr2, Epetra_SerialDenseMatrix& TorStiffmatrix,
-    Epetra_SerialDenseVector& TorForce)
+    CORE::LINALG::Matrix<1, 3>& tcurr2, CORE::LINALG::SerialDenseMatrix& TorStiffmatrix,
+    CORE::LINALG::SerialDenseVector& TorForce)
 {
   // Norms of the tangential vectors and directional displacement vector
   double norm_t2 = tcurr2.Norm2();
@@ -977,7 +979,7 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentCos(Teuchos::ParameterList& 
  *--------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<1, 3>& tangentcurr1, CORE::LINALG::Matrix<1, 3>& tangentcurr2,
-    Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce)
+    CORE::LINALG::SerialDenseMatrix& TorStiffmatrix, CORE::LINALG::SerialDenseVector& TorForce)
 {
   // see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
   // total no of dofs
@@ -1093,7 +1095,7 @@ void DRT::ELEMENTS::Spring3::MyTorsionalStiffTangentDot(Teuchos::ParameterList& 
  *--------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Spring3::FADMyTorsionalStiffTangentCos(Teuchos::ParameterList& params,
     double theta_0, CORE::LINALG::Matrix<1, 3>& tcurrNode1, CORE::LINALG::Matrix<1, 3>& tcurrNode2,
-    Epetra_SerialDenseMatrix& TorStiffmatrix, Epetra_SerialDenseVector& TorForce)
+    CORE::LINALG::SerialDenseMatrix& TorStiffmatrix, CORE::LINALG::SerialDenseVector& TorForce)
 {
   // see also so_nstet_nodalstrain.cpp, so_nstet.H, autodiff.cpp and autodiff.H
   // FAD calculated stiff matrix for validation purposes

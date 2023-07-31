@@ -1843,7 +1843,7 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
   // do not use cln here
   CORE::GEO::CUT::KERNEL::ComputeIntersection<probdim, ::DRT::Element::line2, sidetype, false> ci(
       xsi, checklimits);
-  // GEO::CUT::KERNEL::DebugComputeIntersection<probdim,::DRT::Element::line2, sidetype,false>
+  // CORE::GEO::CUT::KERNEL::DebugComputeIntersection<probdim,::DRT::Element::line2, sidetype,false>
   //      ci( xsi, checklimits );
 
   // successful line-side intersection

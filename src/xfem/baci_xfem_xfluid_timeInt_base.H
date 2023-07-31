@@ -824,9 +824,9 @@ namespace XFEM
 
     //! project point from in normal direction onto corresponding side
     template <DRT::Element::DiscretizationType side_distype, const int numdof>
-    bool ProjectOnSide(Epetra_SerialDenseMatrix& side_xyze,  ///< side's node coordinates
-        const std::vector<int>& lm,                          ///< local map
-        const std::string state,                             ///< state n or np
+    bool ProjectOnSide(CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
+        const std::vector<int>& lm,                                 ///< local map
+        const std::string state,                                    ///< state n or np
         CORE::LINALG::Matrix<3, 1>&
             x_gp_lin,  ///< global coordinates of point that has to be projected
         CORE::LINALG::Matrix<3, 1>& x_side,   ///< projected point on side
@@ -836,9 +836,9 @@ namespace XFEM
 
     //! project point in normal direction onto corresponding line
     template <DRT::Element::DiscretizationType line_distype, const int numdof>
-    bool ProjectOnLine(Epetra_SerialDenseMatrix& line_xyze,  ///< line's node coordinates
-        const std::vector<int>& lm,                          ///< local map
-        const std::string state,                             ///< state n or np
+    bool ProjectOnLine(CORE::LINALG::SerialDenseMatrix& line_xyze,  ///< line's node coordinates
+        const std::vector<int>& lm,                                 ///< local map
+        const std::string state,                                    ///< state n or np
         CORE::LINALG::Matrix<3, 1>&
             x_point_np,  ///< global coordinates of point that has to be projected
         CORE::LINALG::Matrix<3, 1>& x_line,  ///< projected point on line
@@ -847,9 +847,9 @@ namespace XFEM
     );
 
     //! compute distance (project) between two points
-    void ProjectOnPoint(Epetra_SerialDenseMatrix& point_xyze,  ///< point's node coordinates
-        const std::vector<int>& lm,                            ///< local map
-        const std::string state,                               ///< state n or np
+    void ProjectOnPoint(CORE::LINALG::SerialDenseMatrix& point_xyze,  ///< point's node coordinates
+        const std::vector<int>& lm,                                   ///< local map
+        const std::string state,                                      ///< state n or np
         CORE::LINALG::Matrix<3, 1>&
             x_point_np,  ///< global coordinates of point that has to be projected
         CORE::LINALG::Matrix<3, 1>& x_point,  ///< global coordinates of point on surface
@@ -863,7 +863,7 @@ namespace XFEM
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a side
     void ComputeStartPoint_Side(DRT::Element* side,  ///< pointer to side element
-        Epetra_SerialDenseMatrix& side_xyze,         ///< side's node coordinates
+        CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
         const std::vector<int>& lm,                  ///< local map
         CORE::LINALG::Matrix<2, 1>& xi_side,   ///< local coordinates of projected point w.r.t side
         double& dist,                          ///< distance from point to its projection
@@ -874,9 +874,9 @@ namespace XFEM
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a line
     void ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer to side element
-        Epetra_SerialDenseMatrix& side1_xyze,         ///< side's node coordinates
+        CORE::LINALG::SerialDenseMatrix& side1_xyze,  ///< side's node coordinates
         DRT::Element* side2,                          ///< pointer to side element
-        Epetra_SerialDenseMatrix& side2_xyze,         ///< side's node coordinates
+        CORE::LINALG::SerialDenseMatrix& side2_xyze,  ///< side's node coordinates
         const std::vector<int>& lm1,                  ///< local map
         const std::vector<int>& lm2,                  ///< local map
         double& dist,                                 ///< distance from point to its projection
@@ -887,27 +887,27 @@ namespace XFEM
     //! compute reasonable start point for finding the Lagrangean origin, when projected point lies
     //! on a point
     void ComputeStartPoint_AVG(
-        const std::vector<DRT::Element*>& sides,            ///< pointer to side element
-        std::vector<Epetra_SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates
-        const std::vector<std::vector<int>>& sides_lm,      ///< local map
+        const std::vector<DRT::Element*>& sides,                   ///< pointer to side element
+        std::vector<CORE::LINALG::SerialDenseMatrix>& sides_xyze,  ///< side's node coordinates
+        const std::vector<std::vector<int>>& sides_lm,             ///< local map
         double& dist,                            ///< distance from point to its projection
         CORE::LINALG::Matrix<3, 1>& proj_x_n,    ///< projected point at t^n
         CORE::LINALG::Matrix<3, 1>& start_point  ///< final start point
     );
 
     //! compute the normal vector on side at time t^n
-    void callgetNormalSide_tn(DRT::Element* side,  ///< pointer to side element
-        CORE::LINALG::Matrix<3, 1>& normal,        ///< normal vector w.r.t side
-        Epetra_SerialDenseMatrix& side_xyze,       ///< side's node coordinates
-        const std::vector<int>& lm,                ///< local map
-        CORE::LINALG::Matrix<3, 1>& proj_x_n,      ///< projected point on side
+    void callgetNormalSide_tn(DRT::Element* side,    ///< pointer to side element
+        CORE::LINALG::Matrix<3, 1>& normal,          ///< normal vector w.r.t side
+        CORE::LINALG::SerialDenseMatrix& side_xyze,  ///< side's node coordinates
+        const std::vector<int>& lm,                  ///< local map
+        CORE::LINALG::Matrix<3, 1>& proj_x_n,        ///< projected point on side
         CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
     );
 
     //! compute the normal vector on side at time t^n
     template <DRT::Element::DiscretizationType side_distype, const int numdof>
     void getNormalSide_tn(CORE::LINALG::Matrix<3, 1>& normal,  ///< normal vector w.r.t side
-        Epetra_SerialDenseMatrix& side_xyze,                   ///< side's node coordinates
+        CORE::LINALG::SerialDenseMatrix& side_xyze,            ///< side's node coordinates
         const std::vector<int>& lm,                            ///< local map
         CORE::LINALG::Matrix<3, 1>& proj_x_n,                  ///< projected point on side
         CORE::LINALG::Matrix<2, 1>& xi_side  ///< local coordinates of projected point w.r.t side
@@ -920,18 +920,18 @@ namespace XFEM
     );
 
     template <DRT::Element::DiscretizationType line_distype, const int numdof>
-    void get_projxn_Line(Epetra_SerialDenseMatrix& line_xyze,  ///< line's node coordinates
-        const std::vector<int>& lm,                            ///< local map
-        CORE::LINALG::Matrix<3, 1>& proj_x_n,                  ///< projected point on line
+    void get_projxn_Line(CORE::LINALG::SerialDenseMatrix& line_xyze,  ///< line's node coordinates
+        const std::vector<int>& lm,                                   ///< local map
+        CORE::LINALG::Matrix<3, 1>& proj_x_n,                         ///< projected point on line
         double& xi_line  ///< local coordinates of projected point w.r.t line
     );
 
     //! add side's or line's interface displacements and set current node coordinates
     template <DRT::Element::DiscretizationType distype, const int numdof>
-    void addeidisp(Epetra_SerialDenseMatrix& xyze,  ///< node coordinates of side or line
-        const DRT::Discretization& cutdis,          ///< cut discretization
-        const std::string state,                    ///< state
-        const std::vector<int>& lm                  ///< local map
+    void addeidisp(CORE::LINALG::SerialDenseMatrix& xyze,  ///< node coordinates of side or line
+        const DRT::Discretization& cutdis,                 ///< cut discretization
+        const std::string state,                           ///< state
+        const std::vector<int>& lm                         ///< local map
     );
 
     //! set the final startvalues with respect to a node for finding the Lagrangean origin

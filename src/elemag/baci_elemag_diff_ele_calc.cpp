@@ -23,22 +23,10 @@
 
 #include "baci_mat_electromagnetic.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_LAPACK.hpp>
 
-namespace
-{
-  void zeroMatrix(Epetra_SerialDenseMatrix& mat)
-  {
-    std::memset(mat.A(), 0, sizeof(double) * mat.M() * mat.N());
-  }
-
-  void reshapeMatrixIfNecessary(Epetra_SerialDenseMatrix& matrix, const int nrows, const int ncols)
-  {
-    if (nrows != matrix.M() || ncols != matrix.N()) matrix.Shape(nrows, ncols);
-  }
-}  // namespace
 
 /*----------------------------------------------------------------------*
  * Constructor
@@ -54,10 +42,12 @@ DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ElemagDiffEleCalc()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    const CORE::DRT::UTILS::GaussIntegration&, bool offdiag)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, const CORE::DRT::UTILS::GaussIntegration&,
+    bool offdiag)
 {
   return this->Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, offdiag);
@@ -69,9 +59,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix&,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector&,
-    bool offdiag)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
+    CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector&, bool offdiag)
 {
   // check if this is an hdg element and init completepoly
   DRT::ELEMENTS::ElemagDiff* hdgele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
@@ -203,7 +193,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
         params.set<double>("mod_mu", std::pow(mu, 0.0));
 
       ReadGlobalVectors(hdgele, discretization, lm);
-      zeroMatrix(elevec1);
+      elevec1.putScalar(0.0);
       localSolver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
 
       // if (!resonly)
@@ -239,7 +229,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
 
       ReadGlobalVectors(hdgele, discretization, lm);
 
-      zeroMatrix(elevec1);
+      elevec1.putScalar(0.0);
       localSolver_->ComputeMatrices(discretization, mat, *hdgele, dt, dyna_, tau);
       /* Could be useful for optimization purposes
       if(!allelesequal)
@@ -253,9 +243,9 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
     }
     case ELEMAG::get_gauss_points:
     {
-      int rows = shapes_->xyzreal.M();
-      int cols = shapes_->xyzreal.N();
-      elemat1.Shape(rows, cols);
+      int rows = shapes_->xyzreal.numRows();
+      int cols = shapes_->xyzreal.numCols();
+      elemat1.shape(rows, cols);
 
       for (int r = 0; r < rows; ++r)
         for (int c = 0; c < cols; ++c) elemat1(r, c) = shapes_->xyzreal(r, c);
@@ -341,9 +331,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ReadGlobalVectors(
   DRT::ELEMENTS::ElemagDiff* elemagele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
 
   // read vectors from element storage
-  reshapeMatrixIfNecessary(interiorElectricnm_, elemagele->eleinteriorElectricnm1_.M(), 1);
-  reshapeMatrixIfNecessary(interiorElectricnp_, elemagele->eleinteriorElectric_.M(), 1);
-  reshapeMatrixIfNecessary(interiorMagneticnp_, elemagele->eleinteriorMagnetic_.M(), 1);
+  interiorElectricnm_.size(elemagele->eleinteriorElectricnm1_.numRows());
+  interiorElectricnp_.size(elemagele->eleinteriorElectric_.numRows());
+  interiorMagneticnp_.size(elemagele->eleinteriorMagnetic_.numRows());
 
   interiorElectricnm_ = elemagele->eleinteriorElectricnm1_;
   interiorElectricnp_ = elemagele->eleinteriorElectric_;
@@ -352,7 +342,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ReadGlobalVectors(
   // read vectors from time integrator
   if (discretization.HasState("trace"))  // in case of "update interior variables"
   {
-    reshapeMatrixIfNecessary(elemagele->elenodeTrace2d_, lm.size(), 1);
+    elemagele->elenodeTrace2d_.size(lm.size());
     Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState("trace");
     DRT::UTILS::ExtractMyValues(*matrix_state, elemagele->elenodeTrace2d_, lm);
   }
@@ -460,17 +450,17 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInit(
   // each element has to store the interior vectors by itseld, p-adaptivity or not
   // so, shape it, as you need it
   DRT::ELEMENTS::ElemagDiff* diff_ele = static_cast<DRT::ELEMENTS::ElemagDiff*>(ele);
-  diff_ele->eleinteriorElectricnm3_.Shape(shapes_->ndofs_ * nsd_, 1);
-  diff_ele->eleinteriorElectricnm2_.Shape(shapes_->ndofs_ * nsd_, 1);
-  diff_ele->eleinteriorElectricnm1_.Shape(shapes_->ndofs_ * nsd_, 1);
-  diff_ele->eleinteriorElectric_.Shape(shapes_->ndofs_ * nsd_, 1);
-  diff_ele->eleinteriorMagnetic_.Shape(shapes_->ndofs_ * nsd_, 1);
+  diff_ele->eleinteriorElectricnm3_.size(shapes_->ndofs_ * nsd_);
+  diff_ele->eleinteriorElectricnm2_.size(shapes_->ndofs_ * nsd_);
+  diff_ele->eleinteriorElectricnm1_.size(shapes_->ndofs_ * nsd_);
+  diff_ele->eleinteriorElectric_.size(shapes_->ndofs_ * nsd_);
+  diff_ele->eleinteriorMagnetic_.size(shapes_->ndofs_ * nsd_);
 
-  // ele->elenodeTrace_.Shape(ele->NumFace() * shapesface_->nfdofs_ * nsd_, 1);
-  ele->elenodeTrace2d_.Shape(ele->NumFace() * shapesface_->nfdofs_ * (nsd_ - 1), 1);
+  // ele->elenodeTrace_.Size(ele->NumFace() * shapesface_->nfdofs_ * nsd_);
+  ele->elenodeTrace2d_.size(ele->NumFace() * shapesface_->nfdofs_ * (nsd_ - 1));
 
   // Postproc
-  ele->eleinteriorElectricPost_.Shape(postproc_shapes_->ndofs_ * nsd_, 1);
+  ele->eleinteriorElectricPost_.size(postproc_shapes_->ndofs_ * nsd_);
 
   return;
 }
@@ -481,7 +471,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::ElementInit(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   shapes_.Evaluate(*ele);
 
@@ -493,7 +483,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
   // functions(so we have one coefficient for each) and a number of column
   // equal to the overall number of component that we want to solve for.
   // The number is nsd_ because we have one field.
-  Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, nsd_);
+  CORE::LINALG::SerialDenseMatrix localMat(shapes_.ndofs_, nsd_);
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
     // Storing the values of the coordinates for the current quadrature point
@@ -508,7 +498,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
     // of the specified function as electric field, last three components as
     // magnetic field. If there is only one component all the components will
     // be initialized to the same value.
-    Epetra_SerialDenseVector intVal(nsd_);
+    CORE::LINALG::SerialDenseVector intVal(nsd_);
     dsassert(start_func != NULL, "funct not set for initial value");
     EvaluateAll(*start_func, time, xyz, intVal);
     // now fill the components in the one-sided mass matrix and the right hand side
@@ -519,17 +509,19 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
       massPartW(i, q) = shapes_.shfunct(i, q) * fac;
 
       // RHS for the electric and magnetic field
-      for (int j = 0; j < intVal.M(); ++j)
+      for (int j = 0; j < intVal.numRows(); ++j)
         localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
     }
   }
   // The integration is made by computing the matrix product
-  massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+  massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
   {
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(massMat);
-    inverseMass.SetVectors(localMat, localMat);
-    inverseMass.Solve();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
+    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.solve();
   }
 
   // Here we move the values from the temporary variable to the variable
@@ -547,7 +539,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
   if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
     for (int s = 1; s < 4; s++)
     {
-      localMat.Scale(0.0);
+      localMat.putScalar(0.0);
       const double dt = params.get<double>("dt");
       for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
       {
@@ -555,26 +547,28 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
         CORE::LINALG::Matrix<nsd_, 1> xyz;
         for (unsigned int d = 0; d < nsd_; ++d) xyz(d) = shapes_.xyzreal(d, q);
 
-        Epetra_SerialDenseVector intVal(nsd_);
+        CORE::LINALG::SerialDenseVector intVal(nsd_);
 
         EvaluateAll(*start_func, time - s * dt, xyz, intVal);
         for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
         {
           massPart(i, q) = shapes_.shfunct(i, q);
           massPartW(i, q) = shapes_.shfunct(i, q) * fac;
-          for (int j = 0; j < intVal.M(); ++j)
+          for (int j = 0; j < intVal.numRows(); ++j)
             localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
         }
       }
 
 
       // The integration is made by computing the matrix product
-      massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+      massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
       {
-        Epetra_SerialDenseSolver inverseMass;
-        inverseMass.SetMatrix(massMat);
-        inverseMass.SetVectors(localMat, localMat);
-        inverseMass.Solve();
+        using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+        using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+        Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+        inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
+        inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+        inverseMass.solve();
       }
 
       for (unsigned int r = 0; r < shapes_.ndofs_; ++r)
@@ -601,12 +595,12 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectField(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricFieldFromScatra(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-    const Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec)
+    const Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec)
 {
   shapes_.Evaluate(*ele);
 
-  Teuchos::RCP<Epetra_SerialDenseVector> nodevals_phi =
-      params.get<Teuchos::RCP<Epetra_SerialDenseVector>>("nodevals_phi");
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> nodevals_phi =
+      params.get<Teuchos::RCP<CORE::LINALG::SerialDenseVector>>("nodevals_phi");
 
   if (params.isParameter("ishdg"))
   {
@@ -629,15 +623,15 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField
     return 0;
   }
 
-  if ((*nodevals_phi).Length() != nen_) dserror("node number not matching");
+  if ((*nodevals_phi).length() != nen_) dserror("node number not matching");
 
-  Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, nsd_);
+  CORE::LINALG::SerialDenseMatrix localMat(shapes_.ndofs_, nsd_);
   for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
   {
     // Storing the values of the coordinates for the current quadrature point
     // and of the jacobian computed in that point
     const double fac = shapes_.jfac(q);
-    Epetra_SerialDenseVector intVal(nsd_);
+    CORE::LINALG::SerialDenseVector intVal(nsd_);
     for (unsigned int d = 0; d < nsd_; ++d)
       for (unsigned int n = 0; n < nen_; ++n)
         intVal(d) += shapes_.derxy(n * nsd_ + d, q) * (*nodevals_phi)[n];
@@ -650,17 +644,19 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField
       massPartW(i, q) = shapes_.shfunct(i, q) * fac;
 
       // RHS for the electric and magnetic field
-      for (int j = 0; j < intVal.M(); ++j)
+      for (int j = 0; j < intVal.numRows(); ++j)
         localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
     }
   }
   // The integration is made by computing the matrix product
-  massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+  massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
   {
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(massMat);
-    inverseMass.SetVectors(localMat, localMat);
-    inverseMass.Solve();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
+    inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+    inverseMass.solve();
   }
 
   for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
@@ -676,11 +672,11 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectElectricField
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   double error_ele = 0.0, error_ele_post = 0.0, error_mag = 0.0;
   double exact_ele = 0.0, exact_mag = 0.0;
-  Epetra_SerialDenseVector error_ele_grad(2), error_mag_grad(2), error_ele_post_grad(2);
+  CORE::LINALG::SerialDenseVector error_ele_grad(2), error_mag_grad(2), error_ele_post_grad(2);
   shapes_.Evaluate(*ele);
   postproc_shapes_.Evaluate(*ele);
 
@@ -696,21 +692,21 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
   const double time = params.get<double>("time");
   // for the calculation of the error, we use a higher integration rule
   CORE::LINALG::Matrix<nsd_, 1> xsi;
-  Epetra_SerialDenseVector electric(nsd_);
-  Epetra_SerialDenseVector electric_post(nsd_);
-  Epetra_SerialDenseMatrix electric_grad(nsd_, nsd_);
-  Epetra_SerialDenseMatrix electric_post_grad(nsd_, nsd_);
-  Epetra_SerialDenseVector magnetic(nsd_);
-  Epetra_SerialDenseMatrix magnetic_grad(nsd_, nsd_);
-  Epetra_SerialDenseVector analytical(2 * nsd_);
-  Epetra_SerialDenseMatrix analytical_grad(2 * nsd_, nsd_);
+  CORE::LINALG::SerialDenseVector electric(nsd_);
+  CORE::LINALG::SerialDenseVector electric_post(nsd_);
+  CORE::LINALG::SerialDenseMatrix electric_grad(nsd_, nsd_);
+  CORE::LINALG::SerialDenseMatrix electric_post_grad(nsd_, nsd_);
+  CORE::LINALG::SerialDenseVector magnetic(nsd_);
+  CORE::LINALG::SerialDenseMatrix magnetic_grad(nsd_, nsd_);
+  CORE::LINALG::SerialDenseVector analytical(2 * nsd_);
+  CORE::LINALG::SerialDenseMatrix analytical_grad(2 * nsd_, nsd_);
 
   for (unsigned int q = 0; q < highshapes.nqpoints_; ++q)
   {
     // Zero all temp vectors
-    electric.Scale(0.0), magnetic.Scale(0.0);
-    electric_grad.Scale(0.0), magnetic_grad.Scale(0.0);
-    analytical.Scale(0.0), analytical_grad.Scale(0.0);
+    electric.putScalar(0.0), magnetic.putScalar(0.0);
+    electric_grad.putScalar(0.0), magnetic_grad.putScalar(0.0);
+    analytical.putScalar(0.0), analytical_grad.putScalar(0.0);
 
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -767,8 +763,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeError(
     for (unsigned int q = 0; q < highshapes_post.nqpoints_; ++q)
     {
       // Zero all temp vectors
-      electric_post.Scale(0.0), electric_post_grad.Scale(0.0);
-      analytical.Scale(0.0), analytical_grad.Scale(0.0);
+      electric_post.putScalar(0.0), electric_post_grad.putScalar(0.0);
+      analytical.putScalar(0.0), analytical_grad.putScalar(0.0);
 
       for (unsigned int i = 0; i < highshapes_post.ndofs_; ++i)
         for (unsigned int d = 0; d < nsd_; ++d)
@@ -850,9 +846,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
   k2_shapes.Evaluate(ele);
 
   // Build matrix
-  Epetra_SerialDenseMatrix postproc_mat(
+  CORE::LINALG::SerialDenseMatrix postproc_mat(
       postproc_shapes_.ndofs_ * nsd_ + k2_shapes.ndofs_ * nsd_, postproc_shapes_.ndofs_ * nsd_);
-  Epetra_SerialDenseVector postproc_rhs(postproc_shapes_.ndofs_ * nsd_ + k2_shapes.ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector postproc_rhs(
+      postproc_shapes_.ndofs_ * nsd_ + k2_shapes.ndofs_ * nsd_);
   for (unsigned int q = 0; q < postproc_shapes_.nqpoints_; ++q)
     for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
       for (unsigned int j = 0; j < postproc_shapes_.ndofs_; ++j)
@@ -879,7 +876,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
     CORE::LINALG::Matrix<nsd_, 1> xsi;
     const double* gpcoord = k2_shapes.quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
-    Epetra_SerialDenseVector values(postproc_shapes_.ndofs_);
+    CORE::LINALG::SerialDenseVector values(postproc_shapes_.ndofs_);
     postproc_shapes_.polySpace_->Evaluate(xsi, values);
     for (unsigned int i = 0; i < k2_shapes.ndofs_; ++i)
       for (unsigned int j = 0; j < postproc_shapes_.ndofs_; ++j)
@@ -895,7 +892,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
     CORE::LINALG::Matrix<nsd_, 1> xsi;
     const double* gpcoord = postproc_shapes_.quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
-    Epetra_SerialDenseVector values(shapes_.ndofs_);
+    CORE::LINALG::SerialDenseVector values(shapes_.ndofs_);
     shapes_.polySpace_->Evaluate(xsi, values);
     for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
       for (unsigned int j = 0; j < shapes_.ndofs_; ++j)
@@ -917,7 +914,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
     CORE::LINALG::Matrix<nsd_, 1> xsi;
     const double* gpcoord = k2_shapes.quadrature_->Point(q);
     for (unsigned int idim = 0; idim < nsd_; idim++) xsi(idim) = gpcoord[idim];
-    Epetra_SerialDenseVector values(shapes_.ndofs_);
+    CORE::LINALG::SerialDenseVector values(shapes_.ndofs_);
     shapes_.polySpace_->Evaluate(xsi, values);
     for (unsigned int i = 0; i < k2_shapes.ndofs_; ++i)
       for (unsigned int j = 0; j < shapes_.ndofs_; ++j)
@@ -928,15 +925,16 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
   }
 
   {
-    Epetra_SerialDenseVector test(postproc_rhs.Length() * 2);
+    CORE::LINALG::SerialDenseVector test(postproc_rhs.length() * 2);
     Teuchos::LAPACK<int, double> solve;
     int err;
-    solve.GELS('N', postproc_mat.M(), postproc_mat.N(), 1, postproc_mat.A(), postproc_mat.LDA(),
-        postproc_rhs.A(), postproc_rhs.Length(), test.A(), test.Length(), &err);
+    solve.GELS('N', postproc_mat.numRows(), postproc_mat.numCols(), 1, postproc_mat.values(),
+        postproc_mat.stride(), postproc_rhs.values(), postproc_rhs.length(), test.values(),
+        test.length(), &err);
     if (err != 0)
       dserror("Least-square approximation for the Postprocessing failed with error %d", err);
 
-    for (int i = 0; i < ele.eleinteriorElectricPost_.Length(); ++i)
+    for (int i = 0; i < ele.eleinteriorElectricPost_.length(); ++i)
       ele.eleinteriorElectricPost_(i) = postproc_rhs(i);
   }
 
@@ -949,13 +947,13 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::PostProcessing(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   shapes_.Evaluate(*ele);
   postproc_shapes_.Evaluate(*ele);
 
   // reshape elevec2 as matrix
-  dsassert(elevec2.M() == 0 || unsigned(elevec2.M()) == nsd_ * shapes_.ndofs_,
+  dsassert(elevec2.numRows() == 0 || unsigned(elevec2.numRows()) == nsd_ * shapes_.ndofs_,
       "Wrong size in project vector 2");
 
   // get function
@@ -972,7 +970,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
     // functions(so we have one coefficient for each) and a number of column
     // equal to the overall number of component that we want to solve for.
     // The number is nsd_*2 because we have two fields..
-    Epetra_SerialDenseMatrix localMat(shapes_.ndofs_, nsd_ * 2);
+    CORE::LINALG::SerialDenseMatrix localMat(shapes_.ndofs_, nsd_ * 2);
     for (unsigned int q = 0; q < shapes_.nqpoints_; ++q)
     {
       // Storing the values of the coordinates for the current quadrature point
@@ -987,7 +985,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
       // of the specified function as electric field, last three components as
       // magnetic field. If there is only one component all the components will
       // be initialized to the same value.
-      Epetra_SerialDenseVector intVal(2 * nsd_);
+      CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
       dsassert(start_func != NULL, "funct not set for initial value");
       EvaluateAll(*start_func, time, xyz, intVal);
       // now fill the components in the one-sided mass matrix and the right hand side
@@ -998,17 +996,19 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
         massPartW(i, q) = shapes_.shfunct(i, q) * fac;
 
         // RHS for the electric and magnetic field
-        for (int j = 0; j < intVal.M(); ++j)
+        for (int j = 0; j < intVal.numRows(); ++j)
           localMat(i, j) += shapes_.shfunct(i, q) * intVal(j) * fac;
       }
     }
     // The integration is made by computing the matrix product
-    massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+    massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
     {
-      Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(massMat);
-      inverseMass.SetVectors(localMat, localMat);
-      inverseMass.Solve();
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+      inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
+      inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+      inverseMass.solve();
     }
 
     // Here we move the values from the temporary variable to the variable
@@ -1028,7 +1028,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
   // postproc variables
   if (do_postprocess)
   {
-    Epetra_SerialDenseMatrix localMat(postproc_shapes_.ndofs_, nsd_ * 2);
+    CORE::LINALG::SerialDenseMatrix localMat(postproc_shapes_.ndofs_, nsd_ * 2);
     for (unsigned int q = 0; q < postproc_shapes_.nqpoints_; ++q)
     {
       const double fac = postproc_shapes_.jfac(q);
@@ -1037,7 +1037,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
         xyz(d) =
             postproc_shapes_.xyzreal(d, q);  // coordinates of quadrature point in real coordinates
 
-      Epetra_SerialDenseVector intVal(nsd_);
+      CORE::LINALG::SerialDenseVector intVal(nsd_);
       EvaluateAll(*start_func, time, xyz, intVal);
 
       for (unsigned int i = 0; i < postproc_shapes_.ndofs_; ++i)
@@ -1047,17 +1047,19 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
         massPartW(i, q) = postproc_shapes_.shfunct(i, q) * fac;
 
         // RHS for the electric and magnetic field
-        for (int j = 0; j < intVal.M(); ++j)
+        for (int j = 0; j < intVal.numRows(); ++j)
           localMat(i, j) += postproc_shapes_.shfunct(i, q) * intVal(j) * fac;
       }
     }
     // The integration is made by computing the matrix product
-    massMat.Multiply('N', 'T', 1., massPart, massPartW, 0.);
+    massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
     {
-      Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(massMat);
-      inverseMass.SetVectors(localMat, localMat);
-      inverseMass.Solve();
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+      inverseMass.setMatrix(Teuchos::rcpFromRef(massMat));
+      inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+      inverseMass.solve();
     }
 
     // Here we move the values from the temporary variable to the variable
@@ -1082,16 +1084,16 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTest(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTestTrace(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // Here we have the projection of the field on the trace
   // mass is the mass matrix for the system to be solved
   // the dimension of the mass matrix is given by the number of shape functions
-  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   // TRaceVEC is the vector of the trace values
   // instead of being a vector it is a matrix so that we use the same matrix
   // to solve the projection problem on every component of the field
-  Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
 
   const int* start_func = params.getPtr<int>("startfuncno");
   const double time = params.get<double>("time");
@@ -1106,15 +1108,15 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTestTrac
     // It is necessary to create a matrix and a trVec for each face because the
     // dimensions of each face can differ from the previous one and the jacobian
     // contains the dimension of the face in it.
-    zeroMatrix(mass);
-    zeroMatrix(trVec);
+    mass.putScalar(0.0);
+    trVec.putScalar(0.0);
 
     // Cycling through the quadrature points
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
       // For each quadrature point we have a vector containing the field
       // components and a vector containing the spatial coordinates of that point
-      Epetra_SerialDenseVector trace(nsd_);
+      CORE::LINALG::SerialDenseVector trace(nsd_);
       CORE::LINALG::Matrix<nsd_, 1> xyz;
 
       // Temporary variable to store the jacobian of the face (contains the weigth)
@@ -1139,13 +1141,15 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTestTrac
       }
     }
 
-    Epetra_SerialDenseSolver inverseMass;
-    inverseMass.SetMatrix(mass);
-    inverseMass.SetVectors(trVec, trVec);
-    inverseMass.Solve();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+    inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
+    inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+    inverseMass.solve();
 
-    Epetra_SerialDenseVector tempVec(shapesface_->nfdofs_ * (nsd_));
-    Epetra_SerialDenseVector faceVec(shapesface_->nfdofs_ * (nsd_ - 1));
+    CORE::LINALG::SerialDenseVector tempVec(shapesface_->nfdofs_ * (nsd_));
+    CORE::LINALG::SerialDenseVector faceVec(shapesface_->nfdofs_ * (nsd_ - 1));
     // Filling the vector of trace values
     for (unsigned int d = 0; d < nsd_; ++d)
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
@@ -1156,7 +1160,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTestTrac
         tempVec(d * shapesface_->nfdofs_ + i) = trVec(i, d);
       }
 
-    Epetra_SerialDenseMatrix transformatrix(
+    CORE::LINALG::SerialDenseMatrix transformatrix(
         (nsd_ - 1) * shapesface_->nfdofs_, nsd_ * shapesface_->nfdofs_);
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -1164,7 +1168,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTestTrac
           transformatrix(shapesface_->nfdofs_ * q + i, shapesface_->nfdofs_ * d + i) =
               shapesface_->tangent(d, q);
 
-    faceVec.Multiply('N', 'N', 1.0, transformatrix, tempVec, 0.0);
+    faceVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempVec, 0.0);
 
     // Filling the vector of trace values
     for (unsigned int d = 0; d < nsd_ - 1; ++d)
@@ -1189,7 +1193,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectFieldTestTrac
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
     DRT::ELEMENTS::ElemagDiff* ele, Teuchos::ParameterList& params,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // Updating face data
   const int face = params.get<unsigned int>("faceconsider");
@@ -1202,18 +1206,18 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
   // Here we have the projection of the field on the trace
   // mass is the mass matrix for the system to be solved
   // the dimension of the mass matrix is given by the number of shape functions
-  Epetra_SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseMatrix mass(shapesface_->nfdofs_, shapesface_->nfdofs_);
   // TRaceVEC is the vector of the trace values
   // instead of being a vector it is a matrix so that we use the same matrix
   // to solve the projection problem on every component of the field
-  Epetra_SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
+  CORE::LINALG::SerialDenseMatrix trVec(shapesface_->nfdofs_, nsd_);
 
   // Cycling through the quadrature points
   for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
   {
     // For each quadrature point we have a vector containing the field
     // components and a vector containing the spatial coordinates of that point
-    Epetra_SerialDenseVector trace(nsd_);
+    CORE::LINALG::SerialDenseVector trace(nsd_);
     CORE::LINALG::Matrix<nsd_, 1> xyz;
 
     // Temporary variable to store the jacobian of the face (contains the weigth)
@@ -1238,18 +1242,20 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
     }
   }
 
-  Epetra_SerialDenseSolver inverseMass;
-  inverseMass.SetMatrix(mass);
-  inverseMass.SetVectors(trVec, trVec);
-  inverseMass.Solve();
+  using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+  using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+  Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+  inverseMass.setMatrix(Teuchos::rcpFromRef(mass));
+  inverseMass.setVectors(Teuchos::rcpFromRef(trVec), Teuchos::rcpFromRef(trVec));
+  inverseMass.solve();
 
-  Epetra_SerialDenseVector tempVec(shapesface_->nfdofs_ * (nsd_));
+  CORE::LINALG::SerialDenseVector tempVec(shapesface_->nfdofs_ * (nsd_));
   // Filling the vector of trace values
   for (unsigned int d = 0; d < nsd_; ++d)
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
       tempVec(d * shapesface_->nfdofs_ + i) = trVec(i, d);
 
-  Epetra_SerialDenseMatrix transformatrix(
+  CORE::LINALG::SerialDenseMatrix transformatrix(
       (nsd_ - 1) * shapesface_->nfdofs_, nsd_ * shapesface_->nfdofs_);
   for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -1257,7 +1263,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
         transformatrix(shapesface_->nfdofs_ * q + i, shapesface_->nfdofs_ * d + i) =
             shapesface_->tangent(d, q);
 
-  elevec1.Multiply('N', 'N', 1.0, transformatrix, tempVec, 0.0);
+  elevec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempVec, 0.0);
 
   return 0;
 }
@@ -1267,14 +1273,16 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ProjectDirichField(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const int start_func,
-    const double t, const CORE::LINALG::Matrix<nsd_, 1>& xyz, Epetra_SerialDenseVector& v) const
+    const double t, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
+    CORE::LINALG::SerialDenseVector& v) const
 {
   int numComp = DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
   // If the number is not recognised throw an error
-  if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
+  if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
+          numComp == 1))
     dserror(
         "Supply ONE component for your function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
@@ -1284,7 +1292,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
   // If the vector is half the number of the component only use the firt half
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
-  for (int d = 0; d < v.M(); ++d)
+  for (int d = 0; d < v.numRows(); ++d)
     v[d] = DRT::Problem::Instance()
                ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                .Evaluate(xyz.A(), t, d % numComp);
@@ -1298,14 +1306,15 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::EvaluateAll(const i
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGradient(
     const int start_func, const double t, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
-    Epetra_SerialDenseMatrix& v) const
+    CORE::LINALG::SerialDenseMatrix& v) const
 {
   int numComp = DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
   // If the number is not recognised throw an error
-  if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
+  if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
+          numComp == 1))
     dserror(
         "Supply ONE component for your function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
@@ -1314,7 +1323,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
   // If the vector is half the number of the component only use the firt half
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
-  for (int d = 0; d < v.M(); ++d)
+  for (int d = 0; d < v.numRows(); ++d)
   {
     std::vector<double> deriv = DRT::Problem::Instance()
                                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
@@ -1331,14 +1340,15 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionGrad
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTimeDerivative(
     const int start_func, const double t, const double dt, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
-    Epetra_SerialDenseVector& v) const
+    CORE::LINALG::SerialDenseVector& v) const
 {
   int numComp = DRT::Problem::Instance()
                     ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                     .NumberComponents();
 
   // If the number is not recognised throw an error
-  if (not(numComp == v.M() || numComp == 2 * v.M() || numComp == v.M() / 2 || numComp == 1))
+  if (not(numComp == v.numRows() || numComp == 2 * v.numRows() || numComp == v.numRows() / 2 ||
+          numComp == 1))
     dserror(
         "Supply ONE component for your start function or NUMDIM, not anything else! With NUMDIM "
         "components the field will be initialized componentwise, if only one component is "
@@ -1348,7 +1358,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
   // If the vector is half the number of the component only use the firt half
   // If the number of component is half of the vector, repeat the first half twice
   // If there is only one component always use it
-  for (int d = 0; d < v.M(); ++d)
+  for (int d = 0; d < v.numRows(); ++d)
     v[d] = (DRT::Problem::Instance()
                    ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(start_func - 1)
                    .Evaluate(xyz.A(), t + (0.5 * dt), d % numComp) -
@@ -1366,25 +1376,25 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFunctionTime
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
     DRT::ELEMENTS::ElemagDiff* ele, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::InterpolateSolutionToNodes");
   InitializeShapes(ele);
 
   // Check if the vector has the correct size
-  dsassert(elevec1.M() == (int)nen_ * (4 * nsd_), "Vector does not have correct size");
+  dsassert(elevec1.numRows() == (int)nen_ * (4 * nsd_), "Vector does not have correct size");
 
   // Getting the connectivity matrix
   // Contains the (local) coordinates of the nodes belonging to the element
-  Epetra_SerialDenseMatrix locations =
+  CORE::LINALG::SerialDenseMatrix locations =
       CORE::DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // This vector will contain the values of the shape functions computed in a
   // certain coordinate. In fact the lenght of the vector is given by the number
   // of shape functions, that is the same of the number of degrees of freedom of
   // an element.
-  Epetra_SerialDenseVector values(shapes_->ndofs_);
-  Epetra_SerialDenseVector post_values(postproc_shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector values(shapes_->ndofs_);
+  CORE::LINALG::SerialDenseVector post_values(postproc_shapes_->ndofs_);
 
   // EVALUATE SHAPE POLYNOMIALS IN NODE
   // In hdg we can have several more points inside the element than in the
@@ -1444,7 +1454,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
   std::vector<int> nin = CORE::DRT::UTILS::getNumberOfFaceElementInternalNodes(distype);
 
   // Cycling the faces of the element
-  Epetra_SerialDenseVector fvalues(shapesface_->nfdofs_);
+  CORE::LINALG::SerialDenseVector fvalues(shapesface_->nfdofs_);
   for (unsigned int f = 0; f < nfaces_; ++f)
   {
     // Checking how many nodes the face has
@@ -1452,8 +1462,8 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
 
     shapesface_->EvaluateFace(*ele, f);
 
-    Epetra_SerialDenseVector facetrace((nsd_ - 1) * shapesface_->nfdofs_);
-    Epetra_SerialDenseVector temptrace(nsd_ * shapesface_->nfdofs_);
+    CORE::LINALG::SerialDenseVector facetrace((nsd_ - 1) * shapesface_->nfdofs_);
+    CORE::LINALG::SerialDenseVector temptrace(nsd_ * shapesface_->nfdofs_);
 
     // The dimension of the coordinate matrix is now nsd_ times the number of nodes in the face.
     CORE::LINALG::Matrix<nsd_ - 1, nfn> xsishuffle(true);
@@ -1476,7 +1486,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
     }
 
     // Transformation for the face reference system
-    Epetra_SerialDenseMatrix transformatrix(
+    CORE::LINALG::SerialDenseMatrix transformatrix(
         (nsd_ - 1) * shapesface_->nfdofs_, nsd_ * shapesface_->nfdofs_);
     for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
       for (unsigned int d = 0; d < nsd_; ++d)
@@ -1491,7 +1501,7 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::InterpolateSolutionToNodes(
             ele->elenodeTrace2d_[f * (nsd_ - 1) * shapesface_->nfdofs_ + shapesface_->nfdofs_ * d +
                                  i];
 
-    temptrace.Multiply('T', 'N', 1.0, transformatrix, facetrace, 0);
+    temptrace.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, facetrace, 0);
 
     // EVALUATE SHAPE POLYNOMIALS IN NODE
     // Now that we have an ordered coordinates vector we can easily compute the
@@ -1567,18 +1577,18 @@ DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
   // therefore ndofs equations in FEM terms) and one variable.
   // The number of entries is then given by ndofs time sthe dimension of the
   // space where the unknown lies. For vectorial field nsd_ gives the dimension.
-  reshapeMatrixIfNecessary(Amat, nsd_ * ndofs_, nsd_ * ndofs_);
-  reshapeMatrixIfNecessary(invAmat, nsd_ * ndofs_, nsd_ * ndofs_);
-  reshapeMatrixIfNecessary(Bmat, nsd_ * ndofs_, nsd_ * ndofs_);
-  reshapeMatrixIfNecessary(Dmat, nsd_ * ndofs_, nsd_ * ndofs_);
-  reshapeMatrixIfNecessary(Emat, nsd_ * ndofs_, nsd_ * ndofs_);
-  reshapeMatrixIfNecessary(Gmat, nsd_ * ndofs_, nsd_ * ndofs_);
+  Amat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
+  invAmat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
+  Bmat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
+  Dmat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
+  Emat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
+  Gmat.shape(nsd_ * ndofs_, nsd_ * ndofs_);
   // These matrices have a "strange" shape because to merge them there will be
   // applied a matrix multiplication between the first one and the transposed
   // second one. The shape of the resulting matrix will therefore be ndofs x ndofs.
-  reshapeMatrixIfNecessary(massMat, ndofs_, ndofs_);
-  reshapeMatrixIfNecessary(massPart, ndofs_, shapeValues.nqpoints_);
-  reshapeMatrixIfNecessary(massPartW, ndofs_, shapeValues.nqpoints_);
+  massMat.shape(ndofs_, ndofs_);
+  massPart.shape(ndofs_, shapeValues.nqpoints_);
+  massPartW.shape(ndofs_, shapeValues.nqpoints_);
 
   // Matrix compriending the hybrid variable or the continuity condition
   // It is necessary to compute the overall number of degrees
@@ -1606,12 +1616,12 @@ DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
   // Cmat and Hmat are the matrix that belongs to the equation for u
   // and electric field but multiply the hybrid variable, therefore their dimensions are:
   // o) nsd_*ndofs_ x onfdofs
-  reshapeMatrixIfNecessary(Cmat, nsd_ * ndofs_, onfdofs);
-  reshapeMatrixIfNecessary(Hmat, nsd_ * ndofs_, onfdofs);
+  Cmat.shape(nsd_ * ndofs_, onfdofs);
+  Hmat.shape(nsd_ * ndofs_, onfdofs);
   // Finally Lmat is the matrix that belongs to the continuity condition and
   // multiplies the hybrid variable and therefore its dimensions are:
   // o) ondofs x ondofs
-  reshapeMatrixIfNecessary(Lmat, onfdofs, onfdofs);
+  Lmat.shape(onfdofs, onfdofs);
 }
 
 /*----------------------------------------------------------------------*
@@ -1620,7 +1630,7 @@ DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::LocalSolver(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComputeResidual(
     Teuchos::ParameterList& params, DRT::ELEMENTS::ElemagDiff& ele,
-    const Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec, double dt,
+    const Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec, double dt,
     bool errormaps, bool updateonly)
 {
   TEUCHOS_FUNC_TIME_MONITOR(
@@ -1630,118 +1640,154 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::UpdateInteriorVariablesAndComput
   // update interior variables first
   // *****************************************************
 
-  Epetra_SerialDenseVector tempVec1(shapes_->ndofs_ * nsd_);
-  Epetra_SerialDenseVector tempVec2(shapes_->ndofs_ * nsd_);
-  Epetra_SerialDenseVector tempVec3(shapes_->ndofs_ * nsd_);
-  Epetra_SerialDenseVector xVec(shapes_->ndofs_ * nsd_);
-  Epetra_SerialDenseVector yVec(shapes_->ndofs_ * nsd_);
-  Epetra_SerialDenseMatrix tempMat(shapes_->ndofs_ * nsd_, shapes_->ndofs_ * nsd_);
-  Epetra_SerialDenseMatrix tempMat2(shapes_->ndofs_ * nsd_, shapes_->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec1(shapes_->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec2(shapes_->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec3(shapes_->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector xVec(shapes_->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector yVec(shapes_->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseMatrix tempMat(shapes_->ndofs_ * nsd_, shapes_->ndofs_ * nsd_);
+  CORE::LINALG::SerialDenseMatrix tempMat2(shapes_->ndofs_ * nsd_, shapes_->ndofs_ * nsd_);
 
   // The source has to be checked for bdf
   localSolver_->ComputeSource(params, tempVec2, xVec);
 
-  tempMat.Multiply('T', 'N', 1.0, localSolver_->Bmat, localSolver_->invAmat, 0.0);  // FA^{-1}
+  tempMat.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Bmat,
+      localSolver_->invAmat, 0.0);  // FA^{-1}
 
   tempMat2 += localSolver_->Emat;
   tempMat2 += localSolver_->Gmat;
   // Only if the D matrix is not zero <-> epsilon != 0
   tempMat2 += localSolver_->Dmat;
-  tempMat2.Multiply('N', 'N', -1.0, tempMat, localSolver_->Bmat, 1.0);  //(E + G) - FA^{-1}B
+  tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat, localSolver_->Bmat,
+      1.0);  //(E + G) - FA^{-1}B
   {
-    Epetra_SerialDenseSolver invert;
-    invert.SetMatrix(tempMat2);
-    invert.Invert();  //  [(E + G) - FA^{-1}B]^{-1}
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> invert;
+    invert.setMatrix(Teuchos::rcpFromRef(tempMat2));
+    invert.invert();  //  [(E + G) - FA^{-1}B]^{-1}
   }
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
-    tempVec2.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_,
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm1_,
         -1.0);  // (1/3)EE^{n}
-    tempVec2.Multiply('N', 'N', 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_,
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, localSolver_->Emat,
+        ele.eleinteriorElectric_,
         1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n}
     // Only if the D matrix is not zero <-> epsilon != 0
-    tempVec2.Multiply('N', 'N', 1.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectricnm2_, 1.0);
-    tempVec2.Multiply('N', 'N', -2.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_, 1.0);
-    tempVec2.Multiply('N', 'N', 5.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectric_, 1.0);
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0 / 2.0, localSolver_->Dmat,
+        ele.eleinteriorElectricnm2_, 1.0);
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -2.0, localSolver_->Dmat,
+        ele.eleinteriorElectricnm1_, 1.0);
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 5.0 / 2.0, localSolver_->Dmat,
+        ele.eleinteriorElectric_, 1.0);
   }
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    tempVec2.Multiply('N', 'N', -3.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm3_,
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm3_,
         -1.0);  // (1/3)E E^{n} + I_s
-    tempVec2.Multiply('N', 'N', 16.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm2_,
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm2_,
         1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    tempVec2.Multiply('N', 'N', -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_, 1.0);
-    tempVec2.Multiply('N', 'N', 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_, 1.0);
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm1_, 1.0);
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectric_, 1.0);
   }
   else
   {
-    tempVec2.Multiply('N', 'N', 1.0, localSolver_->Emat, ele.eleinteriorElectric_,
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Emat,
+        ele.eleinteriorElectric_,
         -1.0);  // EE - I_s Implicit euler
     // Only if the D matrix is not zero <-> epsilon != 0
-    tempVec2.Multiply('N', 'N', -1.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_, 1.0);
-    tempVec2.Multiply('N', 'N', 2.0, localSolver_->Dmat, ele.eleinteriorElectric_, 1.0);
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Dmat,
+        ele.eleinteriorElectricnm1_, 1.0);
+    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 2.0, localSolver_->Dmat,
+        ele.eleinteriorElectric_, 1.0);
   }
   ele.eleinteriorElectricnm3_ = ele.eleinteriorElectricnm2_;
   ele.eleinteriorElectricnm2_ = ele.eleinteriorElectricnm1_;
   ele.eleinteriorElectricnm1_ = ele.eleinteriorElectric_;
 
   // C\lambda^{n+2}
-  tempVec1.Multiply('N', 'N', 1.0, localSolver_->Cmat, ele.elenodeTrace2d_, 0.0);
-  tempVec2.Multiply('N', 'N', -1.0, localSolver_->Hmat, ele.elenodeTrace2d_,
-      1.0);                                                  // ^E - I_s - H\lambda^{n+2}
-  tempVec2.Multiply('N', 'N', 1.0, tempMat, tempVec1, 1.0);  //  ^E + FA^{-1}C\lambda^{n+2}
+  tempVec1.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Cmat, ele.elenodeTrace2d_, 0.0);
+  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Hmat,
+      ele.elenodeTrace2d_,
+      1.0);  // ^E - I_s - H\lambda^{n+2}
+  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat, tempVec1,
+      1.0);  //  ^E + FA^{-1}C\lambda^{n+2}
 
   //  E^{n+2} = [(E + G) - FA^{-1}B]^{-1} (^E + (FA^{-1}C - H)\lambda^{n+2})
-  ele.eleinteriorElectric_.Multiply('N', 'N', 1.0, tempMat2, tempVec2, 0.0);
+  ele.eleinteriorElectric_.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, tempVec2, 0.0);
 
   // C\lambda^{n+2} + BE^{n}
-  tempVec1.Multiply('N', 'N', 1.0, localSolver_->Bmat, ele.eleinteriorElectric_, 1.0);
+  tempVec1.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Bmat, ele.eleinteriorElectric_, 1.0);
 
   //  = -A^{-1}(C\lambda^{n+2} + BE^{n})
-  ele.eleinteriorMagnetic_.Multiply('N', 'N', -1.0, localSolver_->invAmat, tempVec1, 0.0);
+  ele.eleinteriorMagnetic_.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->invAmat, tempVec1, 0.0);
 
   // Updateresidual
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
     //  = -1/3EE^{n+2} - I_s
-    xVec.Multiply('N', 'N', -1.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectricnm1_, -1.0);
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm1_, -1.0);
     ////  = ^E - I_s = 4/3EE^{n} - 1/3EE^{n+2} - I_s
-    xVec.Multiply('N', 'N', 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_, 1.0);
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, localSolver_->Emat,
+        ele.eleinteriorElectric_, 1.0);
     // Only if the D matrix is not zero <-> epsilon != 0
-    xVec.Multiply('N', 'N', 1.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectricnm2_, 1.0);
-    xVec.Multiply('N', 'N', -2.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_, 1.0);
-    xVec.Multiply('N', 'N', 5.0 / 2.0, localSolver_->Dmat, ele.eleinteriorElectric_, 1.0);
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0 / 2.0, localSolver_->Dmat,
+        ele.eleinteriorElectricnm2_, 1.0);
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -2.0, localSolver_->Dmat,
+        ele.eleinteriorElectricnm1_, 1.0);
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 5.0 / 2.0, localSolver_->Dmat,
+        ele.eleinteriorElectric_, 1.0);
   }
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    xVec.Multiply('N', 'N', -3.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm3_,
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm3_,
         -1.0);  // (1/3)E E^{n} + I_s
-    xVec.Multiply('N', 'N', 16.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm2_,
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm2_,
         1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    xVec.Multiply('N', 'N', -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_, 1.0);
-    xVec.Multiply('N', 'N', 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_, 1.0);
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm1_, 1.0);
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectric_, 1.0);
   }
   else
   {
-    xVec.Multiply(
-        'N', 'N', 1.0, localSolver_->Emat, ele.eleinteriorElectric_, -1.0);  // Implicit euler
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Emat,
+        ele.eleinteriorElectric_, -1.0);  // Implicit euler
     // Only if the D matrix is not zero <-> epsilon != 0
-    xVec.Multiply('N', 'N', -1.0, localSolver_->Dmat, ele.eleinteriorElectricnm1_,
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Dmat,
+        ele.eleinteriorElectricnm1_,
         1.0);  // Implicit euler
-    xVec.Multiply('N', 'N', 2.0, localSolver_->Dmat, ele.eleinteriorElectric_,
+    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 2.0, localSolver_->Dmat,
+        ele.eleinteriorElectric_,
         1.0);  // Implicit euler}
   }
   //  y = [(E + G) - FA^{-1}B]^{-1}^(E - I_s)
-  yVec.Multiply('N', 'N', 1.0, tempMat2, xVec, 0.0);
+  yVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, xVec, 0.0);
 
-  elevec.Multiply('T', 'N', -1.0, localSolver_->Hmat, yVec, 0.0);  //  = -Jy
+  elevec.multiply(
+      Teuchos::TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Hmat, yVec, 0.0);  //  = -Jy
 
-  xVec.Multiply('N', 'N', 1.0, localSolver_->Bmat, yVec, 0.0);     //  = By
-  yVec.Multiply('N', 'N', 1.0, localSolver_->invAmat, xVec, 0.0);  //  = A^{-1} By
+  xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Bmat, yVec, 0.0);  //  = By
+  yVec.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->invAmat, xVec, 0.0);  //  = A^{-1} By
 
-  elevec.Multiply('T', 'N', 1.0, localSolver_->Cmat, yVec, 1.0);  //  = Ix - Jy
+  elevec.multiply(
+      Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Cmat, yVec, 1.0);  //  = Ix - Jy
 
   return;
 }  // UpdateInteriorVariablesAndComputeResidual
@@ -1753,7 +1799,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
     DRT::Discretization& discretization, DRT::ELEMENTS::ElemagDiff* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat, int face,
-    Epetra_SerialDenseMatrix& elemat, int indexstart, Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseMatrix& elemat, int indexstart,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   dserror("ComputeAbsorbingBC() not yet implemented.");
   /*
@@ -1766,17 +1813,17 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   const std::vector<int>* funct = (*cond)->Get<std::vector<int>>("funct");
   const double time = params.get<double>("time");
 
-  Epetra_SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);
-  Epetra_SerialDenseVector tempVec2(shapesface_->nfdofs_ * (nsd_ - 1));
+  CORE::LINALG::SerialDenseVector tempVec1(shapesface_->nfdofs_ * nsd_);
+  CORE::LINALG::SerialDenseVector tempVec2(shapesface_->nfdofs_ * (nsd_ - 1));
   // the RHS matrix has to have the row dimension equal to the number of shape
   // functions(so we have one coefficient for each) and a number of column
   // equal to the overall number of component that we want to solve for.
   // The number is nsd_*2 because we have two fields..
-  Epetra_SerialDenseMatrix localMat(shapesface_->nfdofs_, nsd_ * 2);
+  CORE::LINALG::SerialDenseMatrix localMat(shapesface_->nfdofs_, nsd_ * 2);
   {
-    Epetra_SerialDenseMatrix tempMassMat(shapesface_->nfdofs_, shapesface_->nfdofs_);
-    Epetra_SerialDenseMatrix tempMat(shapesface_->nfdofs_, shapesface_->nqpoints_);
-    Epetra_SerialDenseMatrix tempMatW(shapesface_->nfdofs_, shapesface_->nqpoints_);
+    CORE::LINALG::SerialDenseMatrix tempMassMat(shapesface_->nfdofs_, shapesface_->nfdofs_);
+    CORE::LINALG::SerialDenseMatrix tempMat(shapesface_->nfdofs_, shapesface_->nqpoints_);
+    CORE::LINALG::SerialDenseMatrix tempMatW(shapesface_->nfdofs_, shapesface_->nqpoints_);
     for (unsigned int q = 0; q < shapesface_->nqpoints_; ++q)
     {
       // Storing the values of the coordinates for the current quadrature point
@@ -1792,7 +1839,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
       // of the specified function as electric field, last three components as
       // magnetic field. If there is only one component all the components will
       // be initialized to the same value.
-      Epetra_SerialDenseVector intVal(2 * nsd_);
+      CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
       dsassert(funct != NULL, "funct not set for initial value");
       EvaluateAll((*funct)[0], time, xyz, intVal);
       // now fill the components in the one-sided mass matrix and the right hand side
@@ -1803,17 +1850,19 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
         tempMatW(i, q) = shapesface_->shfunct(i, q) * fac;
 
         // RHS for the electric and magnetic field
-        for (int j = 0; j < intVal.M(); ++j)
+        for (int j = 0; j < intVal.numRows(); ++j)
           localMat(i, j) += shapesface_->shfunct(i, q) * intVal(j) * fac;
       }
     }
     // The integration is made by computing the matrix product
-    tempMassMat.Multiply('N', 'T', 1., tempMat, tempMatW, 0.);
+    tempMassMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., tempMat, tempMatW, 0.);
     {
-      Epetra_SerialDenseSolver inverseMass;
-      inverseMass.SetMatrix(tempMassMat);
-      inverseMass.SetVectors(localMat, localMat);
-      inverseMass.Solve();
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
+      inverseMass.setMatrix(Teuchos::rcpFromRef(tempMassMat));
+      inverseMass.setVectors(Teuchos::rcpFromRef(localMat), Teuchos::rcpFromRef(localMat));
+      inverseMass.solve();
     }
   }
 
@@ -1822,9 +1871,9 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
       tempVec1(d * shapesface_->nfdofs_ + r) = localMat(r, d);  // Electric field
 
   // Creating the matrix
-  Epetra_SerialDenseMatrix transformatrix(
+  CORE::LINALG::SerialDenseMatrix transformatrix(
       (nsd_ - 1) * shapesface_->nfdofs_, nsd_ * shapesface_->nfdofs_);
-  Epetra_SerialDenseMatrix inv_transformatrix(
+  CORE::LINALG::SerialDenseMatrix inv_transformatrix(
       nsd_ * shapesface_->nfdofs_, (nsd_ - 1) * shapesface_->nfdofs_);
   for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
     for (unsigned int j = 0; j < shapesface_->nfdofs_; ++j)
@@ -1846,8 +1895,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   // loop over number of internal shape functions
   // Here we need to create only the first part of tghe D and H matrix to be multiplied by the
   // transformation matrices and then put in the real D and H matrices
-  Epetra_SerialDenseMatrix tempI(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
-  Epetra_SerialDenseMatrix tempJ(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
+  CORE::LINALG::SerialDenseMatrix tempI(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
+  CORE::LINALG::SerialDenseMatrix tempJ(shapesface_->nfdofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
   for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
   {
     // If the shape function is zero on the face we can just skip it. Remember
@@ -1873,24 +1922,24 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
   }      // for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
 
   // Fill face values into the matrices
-  Epetra_SerialDenseMatrix magneticMat(
+  CORE::LINALG::SerialDenseMatrix magneticMat(
       shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
-  Epetra_SerialDenseMatrix electricMat(
+  CORE::LINALG::SerialDenseMatrix electricMat(
       shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
-  magneticMat.Multiply('N', 'N', 1.0, transformatrix, tempI, 0.0);
-  electricMat.Multiply('N', 'N', 1.0, transformatrix, tempJ, 0.0);
+  magneticMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempI, 0.0);
+  electricMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempJ, 0.0);
 
-  tempVec2.Multiply('N', 'N', impedance, electricMat, tempVec1, 0.0);
+  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, impedance, electricMat, tempVec1, 0.0);
 
   for (unsigned int r = 0; r < shapesface_->nfdofs_; ++r)
     for (unsigned int d = 0; d < nsd_; ++d)
       tempVec1(d * shapesface_->nfdofs_ + r) = localMat(r, d + nsd_);  // magnetic
 
-  tempVec2.Multiply('N', 'N', 1.0, magneticMat, tempVec1, 1.0);
+  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, magneticMat, tempVec1, 1.0);
 
   unsigned int newindex = shapesface_->nfdofs_ * (nsd_ - 1) * face;
 
-  for (int i = 0; i < tempVec2.M(); ++i) elevec1(newindex + i) = tempVec2(i);
+  for (int i = 0; i < tempVec2.numRows(); ++i) elevec1(newindex + i) = tempVec2(i);
 
   bool resonly = params.get<bool>("resonly");
   if (!resonly)
@@ -1915,8 +1964,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeSource(
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& interiorSourcen,
-    Epetra_SerialDenseVector& interiorSourcenp)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& interiorSourcen,
+    CORE::LINALG::SerialDenseVector& interiorSourcenp)
 {
   int funcno = params.get<int>("sourcefuncno");
   if (funcno <= 0) return;  // there is no such thing as a volume force
@@ -1924,7 +1973,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeSource(
   const double factor = params.get<double>("mod_mu");
 
   // the vector to be filled
-  std::vector<Epetra_SerialDenseVector> source(2, Epetra_SerialDenseVector(nsd_));
+  std::vector<CORE::LINALG::SerialDenseVector> source(2, CORE::LINALG::SerialDenseVector(nsd_));
 
   // what time is it?
   double tn = params.get<double>("time");
@@ -1983,13 +2032,13 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
     }
   }
 
-  Epetra_SerialDenseMatrix tmpMat(ndofs_, ndofs_);
+  CORE::LINALG::SerialDenseMatrix tmpMat(ndofs_, ndofs_);
   // this temorary matrix is used to compute the numerical integration and the
   // values are then copied in the right places. Probably it is also possible
   // to have the matrix multiplication to obtain directly the correct matrices
   // but it would mean to compute three time sthe same value for each shape
   // function instead of computing it only omnce and then directly copying it.
-  tmpMat.Multiply('N', 'T', 1.0, massPart, massPartW, 0.0);
+  tmpMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPart, massPartW, 0.0);
   double alpha;
   if (mu < 0.1)
     alpha = 0.5 * (1 + std::log(dt) / std::log(mu));
@@ -2007,26 +2056,28 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
-    Emat.Scale(3.0 / (2.0 * dt));  // BDF2
-    Dmat.Scale(2.0 / (dt * dt));   // BDF2
+    Emat.scale(3.0 / (2.0 * dt));  // BDF2
+    Dmat.scale(2.0 / (dt * dt));   // BDF2
   }
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    Emat.Scale(25.0 / (12.0 * dt));  // BDF4
+    Emat.scale(25.0 / (12.0 * dt));  // BDF4
     if (epsilon != 0) dserror("Not implemented.");
   }
   else
   {
-    Emat.Scale(1.0 / dt);         // Implicit euler
-    Dmat.Scale(1.0 / (dt * dt));  // Implicit euler
+    Emat.scale(1.0 / dt);         // Implicit euler
+    Dmat.scale(1.0 / (dt * dt));  // Implicit euler
   }
 
   {  // We are creating this scope to destroy everything related to the matrix inversion
     // We are going to need both A and its inverse and therefore we are storing both
     invAmat += Amat;
-    Epetra_SerialDenseSolver invA;
-    invA.SetMatrix(invAmat);
-    int err = invA.Invert();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> invA;
+    invA.setMatrix(Teuchos::rcpFromRef(invAmat));
+    int err = invA.invert();
     if (err != 0) dserror("Inversion for Amat failed with errorcode %d", err);
   }
 
@@ -2053,7 +2104,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeInteriorMatr
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& elevec, double dt,
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& elevec, double dt,
     DRT::ELEMENTS::ElemagDiff& ele)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::ComputeResidual");
@@ -2072,8 +2123,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
 
   const unsigned int intdofs = ndofs_ * nsd_;
   // All the vectors are initilized to zero
-  Epetra_SerialDenseVector tempVec1(intdofs);
-  Epetra_SerialDenseVector tempVec2(intdofs);
+  CORE::LINALG::SerialDenseVector tempVec1(intdofs);
+  CORE::LINALG::SerialDenseVector tempVec2(intdofs);
   // Once the compute source is ready we will need to delete these
   // The ComputeSource is necesessary to include the forcing terms
   ComputeSource(params, tempVec2, tempVec1);
@@ -2082,60 +2133,73 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeResidual(
   {
     // The last -1.0 in the following function has not been removed such that once
     // the ComputeSource() has been created there will be no need to change it
-    tempVec1.Multiply(
-        'N', 'N', -1.0 / 3.0, Emat, ele.eleinteriorElectricnm1_, -1.0);  // (1/3)E E^{n} + I_s
-    tempVec1.Multiply('N', 'N', 4.0 / 3.0, Emat, ele.eleinteriorElectric_,
+    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, Emat,
+        ele.eleinteriorElectricnm1_, -1.0);  // (1/3)E E^{n} + I_s
+    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, Emat,
+        ele.eleinteriorElectric_,
         1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
     // Only if the D matrix is not zero <-> epsilon != 0
-    tempVec1.Multiply('N', 'N', 1.0 / 2.0, Dmat, ele.eleinteriorElectricnm2_, 1.0);
-    tempVec1.Multiply('N', 'N', -2.0, Dmat, ele.eleinteriorElectricnm1_, 1.0);
-    tempVec1.Multiply('N', 'N', 5.0 / 2.0, Dmat, ele.eleinteriorElectric_, 1.0);
+    tempVec1.multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0 / 2.0, Dmat, ele.eleinteriorElectricnm2_, 1.0);
+    tempVec1.multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, -2.0, Dmat, ele.eleinteriorElectricnm1_, 1.0);
+    tempVec1.multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 5.0 / 2.0, Dmat, ele.eleinteriorElectric_, 1.0);
   }
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
     // The last -1.0 in the following function has not been removed such that once
     // the ComputeSource() has been created there will be no need to change it
-    tempVec1.Multiply(
-        'N', 'N', -3.0 / 25.0, Emat, ele.eleinteriorElectricnm3_, -1.0);  // (1/3)E E^{n} + I_s
-    tempVec1.Multiply('N', 'N', 16.0 / 25.0, Emat, ele.eleinteriorElectricnm2_,
+    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, Emat,
+        ele.eleinteriorElectricnm3_, -1.0);  // (1/3)E E^{n} + I_s
+    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, Emat,
+        ele.eleinteriorElectricnm2_,
         1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    tempVec1.Multiply('N', 'N', -36.0 / 25.0, Emat, ele.eleinteriorElectricnm1_, 1.0);
-    tempVec1.Multiply('N', 'N', 48.0 / 25.0, Emat, ele.eleinteriorElectric_, 1.0);
+    tempVec1.multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, Emat, ele.eleinteriorElectricnm1_, 1.0);
+    tempVec1.multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, Emat, ele.eleinteriorElectric_, 1.0);
   }
   else
   {
     // Implicit euler
-    tempVec1.Multiply('N', 'N', 1.0, Emat, ele.eleinteriorElectric_, -1.0);  // E E^{n} -\dot{I}_s
+    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Emat, ele.eleinteriorElectric_,
+        -1.0);  // E E^{n} -\dot{I}_s
     // Only if the D matrix is not zero <-> epsilon != 0
-    tempVec1.Multiply(
-        'N', 'N', -1.0, Dmat, ele.eleinteriorElectricnm1_, 1.0);            // E E^{n} -\dot{I}_s
-    tempVec1.Multiply('N', 'N', 2.0, Dmat, ele.eleinteriorElectric_, 1.0);  // E E^{n} -\dot{I}_s
+    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Dmat, ele.eleinteriorElectricnm1_,
+        1.0);  // E E^{n} -\dot{I}_s
+    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 2.0, Dmat, ele.eleinteriorElectric_,
+        1.0);  // E E^{n} -\dot{I}_s
   }
 
-  Epetra_SerialDenseMatrix tempMat1(intdofs, intdofs);
-  tempMat1.Multiply('T', 'N', 1.0, Bmat, invAmat, 0.0);  // F A^{-1}
+  CORE::LINALG::SerialDenseMatrix tempMat1(intdofs, intdofs);
+  tempMat1.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, Bmat, invAmat, 0.0);  // F A^{-1}
 
-  Epetra_SerialDenseMatrix tempMat2(intdofs, intdofs);
+  CORE::LINALG::SerialDenseMatrix tempMat2(intdofs, intdofs);
 
   tempMat2 += Emat;
   tempMat2 += Gmat;
   tempMat2 += Dmat;
-  tempMat2.Multiply('N', 'N', -1.0, tempMat1, Bmat, 1.0);  // = (E + G) - F A^{-1} B
+  tempMat2.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, Bmat, 1.0);  // = (E + G) - F A^{-1} B
   {
-    Epetra_SerialDenseSolver inverseinW;
-    inverseinW.SetMatrix(tempMat2);
-    int err = inverseinW.Invert();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseinW;
+    inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
+    int err = inverseinW.invert();
     if (err != 0)
       dserror("Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
   }
   // tempMat2 = ((E + G) - F A^{-1} B)^{-1}
 
-  tempVec2.Multiply('N', 'N', 1.0, tempMat2, tempVec1, 0.0);  // y
-  elevec.Multiply('T', 'N', -1.0, Hmat, tempVec2, 0.0);       //  -Jy
+  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, tempVec1, 0.0);  // y
+  elevec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, -1.0, Hmat, tempVec2, 0.0);          //  -Jy
 
-  tempVec1.Multiply('N', 'N', 1.0, Bmat, tempVec2, 0.0);     // By
-  tempVec2.Multiply('N', 'N', 1.0, invAmat, tempVec1, 0.0);  //  x = A^{-1} By
-  elevec.Multiply('T', 'N', 1.0, Cmat, tempVec2, 1.0);       //  Ix - Jy
+  tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Bmat, tempVec2, 0.0);  // By
+  tempVec2.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, invAmat, tempVec1, 0.0);        //  x = A^{-1} By
+  elevec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, Cmat, tempVec2, 1.0);  //  Ix - Jy
 
   return;
 }  // ComputeResidual
@@ -2168,7 +2232,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatrices
   // shapesface_->nfdofs_*shapesface_->nfdofs_ or shapesface_->nfdofs_*ndofs_
   //(or vice-versa), divided by nsd_ * "matrix dimension" submatrices with all
   // entries set to zero.
-  Epetra_SerialDenseMatrix transformatrix(
+  CORE::LINALG::SerialDenseMatrix transformatrix(
       (nsd_ - 1) * shapesface_->nfdofs_, nsd_ * shapesface_->nfdofs_);
   for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
     for (unsigned int d = 0; d < nsd_; ++d)
@@ -2183,8 +2247,8 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatrices
   // loop over number of internal shape functions
   // Here we need to create only the first part of tghe D and H matrix to be multiplied by the
   // transformation matrices and then put in the real D and H matrices
-  Epetra_SerialDenseMatrix tempC(ndofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
-  Epetra_SerialDenseMatrix tempH(ndofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
+  CORE::LINALG::SerialDenseMatrix tempC(ndofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
+  CORE::LINALG::SerialDenseMatrix tempH(ndofs_ * nsd_, shapesface_->nfdofs_ * nsd_);
   for (unsigned int i = 0; i < ndofs_; ++i)
   {
     // If the shape function is zero on the face we can just skip it. Remember
@@ -2227,10 +2291,10 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatrices
 
   // Fill face values into the matrices
   {
-    Epetra_SerialDenseMatrix tempMat1(ndofs_ * nsd_, shapesface_->nfdofs_ * (nsd_ - 1));
-    Epetra_SerialDenseMatrix tempMat2(ndofs_ * nsd_, shapesface_->nfdofs_ * (nsd_ - 1));
-    tempMat1.Multiply('N', 'T', 1.0, tempC, transformatrix, 0.0);
-    tempMat2.Multiply('N', 'T', 1.0, tempH, transformatrix, 0.0);
+    CORE::LINALG::SerialDenseMatrix tempMat1(ndofs_ * nsd_, shapesface_->nfdofs_ * (nsd_ - 1));
+    CORE::LINALG::SerialDenseMatrix tempMat2(ndofs_ * nsd_, shapesface_->nfdofs_ * (nsd_ - 1));
+    tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, tempC, transformatrix, 0.0);
+    tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, tempH, transformatrix, 0.0);
 
     for (unsigned int i = 0; i < ndofs_ * nsd_; ++i)
       for (unsigned int j = 0; j < shapesface_->nfdofs_ * (nsd_ - 1); ++j)
@@ -2297,7 +2361,7 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeFaceMatrices
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPart(
-    Epetra_SerialDenseMatrix& eleMat)
+    CORE::LINALG::SerialDenseMatrix& eleMat)
 {
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ElemagDiffEleCalc::CondenseLocalPart");
 
@@ -2314,34 +2378,38 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPart(
 
   //   X = A^{-1} [ C - B Y ]
 
-  const unsigned int onfdofs = eleMat.M();
+  const unsigned int onfdofs = eleMat.numRows();
   const unsigned int intdofs = ndofs_ * nsd_;
 
   // Thi can be useful to remember when coding
   // int 	Multiply (char TransA, char TransB, double ScalarAB, Matrix &A, Matrix &B, double
   // ScalarThis) this = ScalarThis*this + ScalarAB*A*B
-  Epetra_SerialDenseMatrix tempMat1(intdofs, intdofs);
-  tempMat1.Multiply('T', 'N', 1.0, Bmat, invAmat, 0.0);  // =  F A^{-1}
+  CORE::LINALG::SerialDenseMatrix tempMat1(intdofs, intdofs);
+  tempMat1.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, Bmat, invAmat, 0.0);  // =  F A^{-1}
 
-  Epetra_SerialDenseMatrix tempMat2(intdofs, intdofs);
+  CORE::LINALG::SerialDenseMatrix tempMat2(intdofs, intdofs);
 
   // This is E+G
   tempMat2 += Emat;  // = E
   tempMat2 += Gmat;  // = E + G
   tempMat2 += Dmat;
 
-  tempMat2.Multiply('N', 'N', -1.0, tempMat1, Bmat, 1.0);  // = (E+G) - F A^{-1} B
+  tempMat2.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, Bmat, 1.0);  // = (E+G) - F A^{-1} B
 
-  Epetra_SerialDenseMatrix tempMat3(intdofs, onfdofs);
+  CORE::LINALG::SerialDenseMatrix tempMat3(intdofs, onfdofs);
   tempMat3 += Hmat;  // = H
 
-  tempMat3.Multiply('N', 'N', -1.0, tempMat1, Cmat, 1.0);  // = H - F A^{-1} C
+  tempMat3.multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, Cmat, 1.0);  // = H - F A^{-1} C
 
   // Inverting the first part of the Y matrix
   {
-    Epetra_SerialDenseSolver inverseinW;
-    inverseinW.SetMatrix(tempMat2);
-    int err = inverseinW.Invert();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseinW;
+    inverseinW.setMatrix(Teuchos::rcpFromRef(tempMat2));
+    int err = inverseinW.invert();
     if (err != 0)
       dserror("Inversion of temporary matrix for Schur complement failed with errorcode %d", err);
   }
@@ -2349,19 +2417,21 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPart(
 
   eleMat = Lmat;  // = L
   // reusing matrix that are not needed
-  tempMat1.Shape(intdofs, onfdofs);
-  tempMat1.Multiply(
-      'N', 'N', 1.0, tempMat2, tempMat3, 0.0);  //  Y = [(E+G) - F A^{-1} B]^{-1}(H - F A^{-1} C)
-  eleMat.Multiply('T', 'N', -1.0, Hmat, tempMat1, 1.0);  // = L - J Y
+  tempMat1.shape(intdofs, onfdofs);
+  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, tempMat3,
+      0.0);  //  Y = [(E+G) - F A^{-1} B]^{-1}(H - F A^{-1} C)
+  eleMat.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, -1.0, Hmat, tempMat1, 1.0);  // = L - J Y
 
-  tempMat2.Shape(intdofs, onfdofs);
+  tempMat2.shape(intdofs, onfdofs);
   tempMat2 = Cmat;
-  tempMat2.Multiply('N', 'N', -1.0, Bmat, tempMat1, 1.0);  // = C - B Y
+  tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Bmat, tempMat1, 1.0);  // = C - B Y
 
-  tempMat3.Shape(intdofs, onfdofs);
-  tempMat3.Multiply('N', 'N', 1.0, invAmat, tempMat2, 0.0);  // = X = A^{-1} ( C - B Y )
+  tempMat3.shape(intdofs, onfdofs);
+  tempMat3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, invAmat, tempMat2,
+      0.0);  // = X = A^{-1} ( C - B Y )
 
-  eleMat.Multiply('T', 'N', -1.0, Cmat, tempMat3, 1.0);  // = K = L - I X - J y
+  eleMat.multiply(
+      Teuchos::TRANS, Teuchos::NO_TRANS, -1.0, Cmat, tempMat3, 1.0);  // = K = L - I X - J y
 
   return;
 }  // CondenseLocalPart
@@ -2371,19 +2441,19 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::CondenseLocalPart(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::Symmetrify(
-    DRT::ELEMENTS::ElemagDiff& ele, Epetra_SerialDenseMatrix& eleMat, bool dodirich)
+    DRT::ELEMENTS::ElemagDiff& ele, CORE::LINALG::SerialDenseMatrix& eleMat, bool dodirich)
 {
   if (ele.lm_.lmdirich_.size())
-    for (int i = 0; i < eleMat.M(); ++i)
+    for (int i = 0; i < eleMat.numRows(); ++i)
       if (ele.lm_.lmdirich_[i])
-        for (int j = 0; j < eleMat.N(); ++j)
+        for (int j = 0; j < eleMat.numCols(); ++j)
         {
           eleMat(i, j) = 0.0;
           eleMat(j, i) = 0.0;
         }
 
-  for (int i = 0; i < eleMat.M(); ++i)
-    for (int j = i; j < eleMat.N(); ++j) eleMat(j, i) = eleMat(i, j);
+  for (int i = 0; i < eleMat.numRows(); ++i)
+    for (int j = i; j < eleMat.numCols(); ++j) eleMat(j, i) = eleMat(i, j);
 
   return;
 }  // Symmetrify
@@ -2406,15 +2476,15 @@ void DRT::ELEMENTS::ElemagDiffEleCalc<distype>::LocalSolver::ComputeMatrices(
 
   // Why this? Why do we need to make these matrices zero here? Why not all of them?
   // init face matrices
-  zeroMatrix(invAmat);
-  zeroMatrix(Amat);
-  zeroMatrix(Bmat);
-  zeroMatrix(Cmat);
-  zeroMatrix(Dmat);
-  zeroMatrix(Emat);
-  zeroMatrix(Gmat);
-  zeroMatrix(Hmat);
-  zeroMatrix(Lmat);
+  invAmat.putScalar(0.0);
+  Amat.putScalar(0.0);
+  Bmat.putScalar(0.0);
+  Cmat.putScalar(0.0);
+  Dmat.putScalar(0.0);
+  Emat.putScalar(0.0);
+  Gmat.putScalar(0.0);
+  Hmat.putScalar(0.0);
+  Lmat.putScalar(0.0);
 
   // Here is the computation for the matrices of volume integrals
   ComputeInteriorMatrices(dt, sigma, mu, epsilon);

@@ -1068,21 +1068,21 @@ void MAT::ConstraintMixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
           &massprodtemp, a1_->at(gp), 0, growthfactor);
       massstress(0) = massstresstemp;
       massprodcomp(0) = massprodtemp;
-      stresstemp.Scale(0.0);
+      stresstemp.putScalar(0.0);
       EvaluateFiberFamily(
           C, gp, &cmattemp, &stresstemp, a2_->at(gp), &masstemp, firstiter, time, 1);
       MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
           &massprodtemp, a2_->at(gp), 1, growthfactor);
       massstress(1) = massstresstemp;
       massprodcomp(1) = massprodtemp;
-      stresstemp.Scale(0.0);
+      stresstemp.putScalar(0.0);
       EvaluateFiberFamily(
           C, gp, &cmattemp, &stresstemp, a3_->at(gp), &masstemp, firstiter, time, 2);
       MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
           &massprodtemp, a3_->at(gp), 2, growthfactor);
       massstress(2) = massstresstemp;
       massprodcomp(2) = massprodtemp;
-      stresstemp.Scale(0.0);
+      stresstemp.putScalar(0.0);
       EvaluateFiberFamily(
           C, gp, &cmattemp, &stresstemp, a4_->at(gp), &masstemp, firstiter, time, 3);
       MassProductionSingleFiber(gp, *defgrd, stresstemp, &massstresstemp, inner_radius,
@@ -1685,9 +1685,9 @@ void MAT::ConstraintMixture::MassProduction(const int gp, CORE::LINALG::Matrix<3
   CORE::LINALG::Matrix<3, 3> temp2(true);
   temp1.Multiply(Smatrix, Cmatrix);
   temp2.Multiply(Cmatrix, temp1);
-  temp1.Scale(0.0);
+  temp1.putScalar(0.0);
   temp1.Multiply(Smatrix, temp2);
-  temp2.Scale(0.0);
+  temp2.putScalar(0.0);
   temp2.Multiply(1.0 / detC, Cmatrix, temp1);
 
   double sheardiff = 0.0;
@@ -2305,24 +2305,24 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
     DResidual.MultiplyNT(-1.0, dstressdmass, dmassdstress, 1.0);
 
     stretch = prestretchcollagen(1) / actcollstretch(1);
-    dstressdmass.Scale(0.0);
-    dmassdstress.Scale(0.0);
+    dstressdmass.putScalar(0.0);
+    dmassdstress.putScalar(0.0);
     GradStressDMass(glstrain, &dstressdmass, Cinv, a2_->at(gp), stretch, J, dt, true);
     GradMassDStress(&dmassdstress, defgrd, Smatrix, a2_->at(gp), J, massstress(1),
         localhomstress_->at(gp)(1), actcollstretch(1), growthfactor);
     DResidual.MultiplyNT(-1.0, dstressdmass, dmassdstress, 1.0);
 
     stretch = prestretchcollagen(2) / actcollstretch(2);
-    dstressdmass.Scale(0.0);
-    dmassdstress.Scale(0.0);
+    dstressdmass.putScalar(0.0);
+    dmassdstress.putScalar(0.0);
     GradStressDMass(glstrain, &dstressdmass, Cinv, a3_->at(gp), stretch, J, dt, true);
     GradMassDStress(&dmassdstress, defgrd, Smatrix, a3_->at(gp), J, massstress(2),
         localhomstress_->at(gp)(2), actcollstretch(2), growthfactor);
     DResidual.MultiplyNT(-1.0, dstressdmass, dmassdstress, 1.0);
 
     stretch = prestretchcollagen(3) / actcollstretch(3);
-    dstressdmass.Scale(0.0);
-    dmassdstress.Scale(0.0);
+    dstressdmass.putScalar(0.0);
+    dmassdstress.putScalar(0.0);
     GradStressDMass(glstrain, &dstressdmass, Cinv, a4_->at(gp), stretch, J, dt, true);
     GradMassDStress(&dmassdstress, defgrd, Smatrix, a4_->at(gp), J, massstress(3),
         localhomstress_->at(gp)(3), actcollstretch(3), growthfactor);
@@ -2357,7 +2357,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
 
       MassProduction(gp, defgrd, stepstress, &massstress, 0.0, &massprod, growthfactor);
       history_->back().SetMass(gp, massprod);
-      stressresidual.Scale(0.0);
+      stressresidual.putScalar(0.0);
       EvaluateStress(glstrain, gp, &cmattemp, &stressresidual, firstiter, time, elastin_survival);
 
       Residualtemp.Update(1.0, stepstress, -1.0, stressresidual);
@@ -2445,7 +2445,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll(CORE::LINALG::Matrix<3, 3> defg
   RHS.MultiplyNT(2.0, dstressdmass, dmassdstretch, 1.0);
   LM.MultiplyNT(-1.0, dstressdmass, dmassdstress, 1.0);
 
-  (*cmat).Scale(0.0);
+  (*cmat).putScalar(0.0);
   //----------------------------------------------------
   // solve linear system of equations: A.X=B
   //----------------------------------------------------
@@ -2529,8 +2529,8 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
   CORE::LINALG::Matrix<4, 1> massstress(true);
 
   // set stress and cmat to zero, as they are not zero here
-  (*stress).Scale(0.0);
-  (*cmat).Scale(0.0);
+  (*stress).putScalar(0.0);
+  (*cmat).putScalar(0.0);
 
   // everything related to the fiber families
   for (int idfiber = 0; idfiber < 4; idfiber++)
@@ -2637,7 +2637,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
         history_->back().SetMass(gp, massprod);
         massstress(idfiber) = massstressfiber;
         // compute stresses for the computed mass
-        stressresidual.Scale(0.0);
+        stressresidual.putScalar(0.0);
         EvaluateFiberFamily(
             C, gp, &cmattemp, &stressresidual, a, &currmassdenstemp, firstiter, time, idfiber);
 
@@ -2671,7 +2671,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
 
     currmassdensfiber = 0.0;
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatelastic(true);
-    stressfiber.Scale(0.0);
+    stressfiber.putScalar(0.0);
     EvaluateFiberFamily(
         C, gp, &cmatelastic, &stressfiber, a, &currmassdensfiber, firstiter, time, idfiber);
 
@@ -2694,7 +2694,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle(CORE::LINALG::Matrix<3, 3> d
     RHS.MultiplyNT(2.0, dstressdmass, dmassdstretch, 1.0);
     LM.MultiplyNT(-1.0, dstressdmass, dmassdstress, 1.0);
 
-    cmatfiber.Scale(0.0);
+    cmatfiber.putScalar(0.0);
     //----------------------------------------------------
     // solve linear system of equations: A.X=B
     //----------------------------------------------------
@@ -2845,7 +2845,7 @@ void MAT::ConstraintMixture::GradMassDStretch(CORE::LINALG::Matrix<NUM_STRESS_3D
   CORE::LINALG::Matrix<3, 1> temp(true);
   temp.Multiply(Cmatrix, a);
   SCa.Multiply(Smatrix, temp);
-  temp.Scale(0.0);
+  temp.putScalar(0.0);
   temp.Multiply(Cmatrix, SCa);
   SCSCa.Multiply(Smatrix, temp);
 
@@ -3129,7 +3129,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
     // update element geometry
     const int numnode = actele->NumNode();
     const int numdof = 3;
-    Epetra_SerialDenseMatrix xcurr(numnode, 3);  // material coord. of element
+    CORE::LINALG::SerialDenseMatrix xcurr(numnode, 3);  // material coord. of element
     for (int i = 0; i < numnode; ++i)
     {
       xcurr(i, 0) = actele->Nodes()[i]->X()[0] + mydisp[i * numdof + 0];
@@ -3137,7 +3137,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
       xcurr(i, 2) = actele->Nodes()[i]->X()[2] + mydisp[i * numdof + 2];
     }
     const DRT::Element::DiscretizationType distype = actele->Shape();
-    Epetra_SerialDenseVector funct(numnode);
+    CORE::LINALG::SerialDenseVector funct(numnode);
 
     // define gauss rule
     CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::undefined;
@@ -3172,8 +3172,8 @@ void MAT::ConstraintMixtureOutputToGmsh(
     {
       CORE::DRT::UTILS::shape_function_3D(
           funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
-      Epetra_SerialDenseMatrix point(1, 3);
-      point.Multiply('T', 'N', 1.0, funct, xcurr, 0.0);
+      CORE::LINALG::SerialDenseMatrix point(1, 3);
+      point.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, funct, xcurr, 0.0);
 
       // write mandel stress
       // CORE::LINALG::Matrix<3,1> mandelgp = grow->GetHomstress(gp);

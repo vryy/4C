@@ -15,7 +15,6 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_linalg_serialdensevector.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_lib_globalproblem.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
@@ -32,9 +31,10 @@ typedef Sacado::Fad::DFad<double> FAD;
  |  evaluate the element (public)                        mukherjee 04/15|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // start with "none"
   DRT::ELEMENTS::DiscSh3::ActionType act = DiscSh3::none;
@@ -369,7 +369,7 @@ int DRT::ELEMENTS::DiscSh3::Evaluate(Teuchos::ParameterList& params,
  | Evaluate PTC damping (public) mukherjee 12/15|
  *----------------------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::EvaluatePTC(
-    Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& elemat1)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& elemat1)
 {
   // PTC for translational degrees of freedom; the Lobatto integration weight is 0.5 for 3-noded
   // elements
@@ -387,7 +387,7 @@ void DRT::ELEMENTS::DiscSh3::EvaluatePTC(
  *----------------------------------------------------------------------------*/
 int DRT::ELEMENTS::DiscSh3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("Method not configured yet!");
   // get values and switches from the condition
@@ -421,8 +421,8 @@ int DRT::ELEMENTS::DiscSh3::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, const std::vector<double>& vel,
-    const std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseMatrix* massmatrix, Epetra_SerialDenseVector* force)
+    const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+    CORE::LINALG::SerialDenseMatrix* massmatrix, CORE::LINALG::SerialDenseVector* force)
 {
   x_n_ = SpatialConfiguration(disp);
   //  Teuchos::ParameterList StatMechParams =
@@ -505,10 +505,10 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList& params,
  dissipation      | | theorem (private) Mukherjee 08/15|
  *----------------------------------------------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::DiscSh3::CalcBrownian(Teuchos::ParameterList& params,
-    const std::vector<double>& vel,         //!< element velocity vector
-    const std::vector<double>& disp,        //!< element displacement vector
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    const std::vector<double>& vel,                //!< element velocity vector
+    const std::vector<double>& disp,               //!< element displacement vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // if no random numbers for generation of stochastic forces are passed to the element no Brownian
   // dynamics calculations are conducted
@@ -541,8 +541,8 @@ inline void DRT::ELEMENTS::DiscSh3::MyTranslationalDamping(
                                       //!< positions and nodal tangents of an element
     const std::vector<double>& disp,  //!< vector containing change in nodal positions and nodal
                                       //!< tangents of an element w.r.t. inital config.
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // get time step size
   double dt = params.get<double>("delta time", 0.0);
@@ -617,11 +617,11 @@ inline void DRT::ELEMENTS::DiscSh3::MyTranslationalDamping(
  | computes stochastic forces and resulting stiffness (private) mukherjee   10/15|
  *----------------------------------------------------------------------------------------------------------*/
 inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
-    Teuchos::ParameterList& params,         //!< parameter list
-    const std::vector<double>& vel,         //!< element velocity vector
-    const std::vector<double>& disp,        //!< element disp vector
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    Teuchos::ParameterList& params,                //!< parameter list
+    const std::vector<double>& vel,                //!< element velocity vector
+    const std::vector<double>& disp,               //!< element disp vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // damping coefficients for three translational and one rotatinal degree of freedom
   CORE::LINALG::Matrix<3, 1> gamma(true);
@@ -762,8 +762,8 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForces(
                                       //!< positions and nodal tangents of an element
     const std::vector<double>& disp,  //!< vector containing change in nodal positions and nodal
                                       //!< tangents of an element w.r.t. inital config.
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // Calculate damping force contribution from curvature constraint
   CalcDampingForces_ = true;
@@ -789,8 +789,8 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesArea(
                                       //!< positions and nodal tangents of an element
     const std::vector<double>& disp,  //!< vector containing change in nodal positions and nodal
                                       //!< tangents of an element w.r.t. inital config.
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // get time step size
   FAD dt = params.get<double>("delta time", 0.0);
@@ -927,8 +927,8 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesVol(
                                       //!< positions and nodal tangents of an element
     const std::vector<double>& disp,  //!< vector containing change in nodal positions and nodal
                                       //!< tangents of an element w.r.t. inital config.
-    Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
-    Epetra_SerialDenseVector* force)        //!< element internal force vector
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
+    CORE::LINALG::SerialDenseVector* force)        //!< element internal force vector
 {
   // get time step size
   FAD dt = params.get<double>("delta time", 0.0);
@@ -1066,7 +1066,8 @@ inline void DRT::ELEMENTS::DiscSh3::MyDampingForcesVol(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::CGConstrtStiffmass(Teuchos::ParameterList& params,
     const std::vector<double>& disp, const std::vector<double>& vel,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force, const int NumGlobalEles)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force,
+    const int NumGlobalEles)
 {
   FAD BehaviorFunctArea;
 
@@ -1145,7 +1146,8 @@ void DRT::ELEMENTS::DiscSh3::CGConstrtStiffmass(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList& params,
     const std::vector<double>& disp, const std::vector<double>& vel,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force, const int NumGlobalEles)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force,
+    const int NumGlobalEles)
 {
   FAD BehaviorFunctArea;
 
@@ -1155,10 +1157,10 @@ void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList& pa
   //    dserror("Please enter a non-zero CG_PENALTY");
   double cg_penalty = 0.0;
 
-  Teuchos::RCP<Epetra_SerialDenseVector> CG_ref_rcp =
-      params.get<Teuchos::RCP<Epetra_SerialDenseVector>>("reference CG", Teuchos::null);
-  Teuchos::RCP<Epetra_SerialDenseVector> CG_curr_rcp =
-      params.get<Teuchos::RCP<Epetra_SerialDenseVector>>("current CG", Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> CG_ref_rcp =
+      params.get<Teuchos::RCP<CORE::LINALG::SerialDenseVector>>("reference CG", Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> CG_curr_rcp =
+      params.get<Teuchos::RCP<CORE::LINALG::SerialDenseVector>>("current CG", Teuchos::null);
 
   FAD EnergyFuctional = 0;
 
@@ -1218,7 +1220,8 @@ void DRT::ELEMENTS::DiscSh3::CGGlobalConstrtStiffmass(Teuchos::ParameterList& pa
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::BaryConstrtStiffmass(Teuchos::ParameterList& params,
     const std::vector<double>& disp, const std::vector<double>& vel,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force, const int NumGlobalEles)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force,
+    const int NumGlobalEles)
 {
   //  Teuchos::ParameterList StatMechParams =
   //  DRT::Problem::Instance()->StatisticalMechanicsParams(); FAD
@@ -1295,7 +1298,7 @@ void DRT::ELEMENTS::DiscSh3::BaryConstrtStiffmass(Teuchos::ParameterList& params
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList& params,
     const std::vector<double>& disp, const std::vector<double>& vel,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
   FAD BehaviorFunctArea;
 
@@ -1424,7 +1427,7 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtStiffmass(Teuchos::ParameterList& params
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::AreaConstrtQuadStiffmass(Teuchos::ParameterList& params,
     const std::vector<double>& disp, const std::vector<double>& vel,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
   FAD BehaviorFunctArea;
 
@@ -1450,9 +1453,11 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtQuadStiffmass(Teuchos::ParameterList& pa
   double A = 0;            // interfacial area
   double A0 = 0;           // interfacial area Ref
   // first partial derivatives
-  Teuchos::RCP<Epetra_SerialDenseVector> Adiff = Teuchos::rcp(new Epetra_SerialDenseVector);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
   // second partial derivatives
-  Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2 =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
   ComputeAreaRef(x0, numnode, ndof, A0);
   ComputeAreaDeriv(x, numnode, ndof, A, Adiff, Adiff2);
@@ -1478,8 +1483,8 @@ void DRT::ELEMENTS::DiscSh3::AreaConstrtQuadStiffmass(Teuchos::ParameterList& pa
  |  evaluate the element (private)                       mukherjee 09/15|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList& params,
-    const std::vector<double>& disp, Epetra_SerialDenseMatrix* stiffmatrix,
-    Epetra_SerialDenseVector* force)
+    const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* stiffmatrix,
+    CORE::LINALG::SerialDenseVector* force)
 {
   dserror("stop");
   FAD BehaviorFunctVol;
@@ -1633,7 +1638,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtStiffmass(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
   //  Teuchos::ParameterList StatMechParams =
   //  DRT::Problem::Instance()->StatisticalMechanicsParams(); FAD
@@ -1767,7 +1772,7 @@ void DRT::ELEMENTS::DiscSh3::VolConstrtGlobalStiff(Teuchos::ParameterList& param
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::AreaConstrtGlobalStiff(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix* stiffmatrix, Epetra_SerialDenseVector* force)
+    CORE::LINALG::SerialDenseMatrix* stiffmatrix, CORE::LINALG::SerialDenseVector* force)
 {
   //  Teuchos::ParameterList StatMechParams =
   //  DRT::Problem::Instance()->StatisticalMechanicsParams(); FAD
@@ -2474,15 +2479,15 @@ CORE::LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3::CalcSurfaceNormal(std::v
  |  lump mass matrix (private)                           mukherjee 07/15|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::sh3_lumpmass(
-    const std::vector<double>& disp, Epetra_SerialDenseMatrix* massmatrix)
+    const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* massmatrix)
 {
   // lump mass matrix (In this case, dummy. There is no massterm. )
   if (massmatrix != NULL)
   {
     // we assume #elemat2 is a square matrix
-    for (int c = 0; c < (*massmatrix).N(); c++)  // parse columns
+    for (int c = 0; c < (*massmatrix).numCols(); c++)  // parse columns
     {
-      for (int r = 0; r < (*massmatrix).M(); r++)  // parse rows
+      for (int r = 0; r < (*massmatrix).numRows(); r++)  // parse rows
       {
         if (r == c)
         {

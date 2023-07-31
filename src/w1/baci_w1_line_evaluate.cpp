@@ -29,7 +29,7 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // set the interface pointer in the parent element
   ParentElement()->SetParamsInterfacePtr(params);
@@ -166,8 +166,8 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
       Teuchos::RCP<DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
-      std::vector<Epetra_SerialDenseVector> parentknots(2);
-      std::vector<Epetra_SerialDenseVector> boundknots(1);
+      std::vector<CORE::LINALG::SerialDenseVector> parentknots(2);
+      std::vector<CORE::LINALG::SerialDenseVector> boundknots(1);
 
       double normalfac = 0.0;
       bool zero_size = knots->GetBoundaryEleAndParentKnots(
@@ -175,7 +175,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
       if (zero_size) return (0);
 
-      Epetra_SerialDenseVector weights(NumNode());
+      CORE::LINALG::SerialDenseVector weights(NumNode());
       for (int inode = 0; inode < NumNode(); ++inode)
       {
         DRT::NURBS::ControlPoint* cp = dynamic_cast<DRT::NURBS::ControlPoint*>(Nodes()[inode]);
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
             {
               // calculate reference position of GP
               CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-              gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
+              gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
 
               // write coordinates in another datatype
               double gp_coord2[3];  // the position vector has to be given in 3D!!!
@@ -266,7 +266,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
         {
           // calculate reference position of GP
           CORE::LINALG::SerialDenseMatrix gp_coord(1, Wall1::numdim_);
-          gp_coord.Multiply('T', 'T', 1.0, shapefcts, xye, 0.0);
+          gp_coord.multiply(Teuchos::TRANS, Teuchos::TRANS, 1.0, shapefcts, xye, 0.0);
 
           // write coordinates in another datatype
           double gp_coord2[3];  // the position vector has to be given in 3D!!!
@@ -297,14 +297,14 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           int numdof = noddof * numnod;
 
           // directional derivative of surface
-          Epetra_SerialDenseMatrix a_Dnormal(Wall1::numdim_, numdof);
+          CORE::LINALG::SerialDenseMatrix a_Dnormal(Wall1::numdim_, numdof);
 
           //******************************************************************
           // compute directional derivative
           //******************************************************************
 
           // linearization of basis vector
-          Epetra_SerialDenseMatrix dg(Wall1::numdim_, numdof);
+          CORE::LINALG::SerialDenseMatrix dg(Wall1::numdim_, numdof);
           for (int node = 0; node < numnod; ++node)
             for (int k = 0; k < Wall1::numdim_; ++k) dg(k, node * noddof + k) = deriv(0, node);
 
@@ -322,7 +322,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
           // need to set the minus sign here.)
           for (int node = 0; node < numnod; ++node)
             for (int dim = 0; dim < 2; dim++)
-              for (int dof = 0; dof < elevec1.M(); dof++)
+              for (int dof = 0; dof < elevec1.length(); dof++)
                 (*elemat1)(node * noddof + dim, dof) -= shapefcts[node] * a_Dnormal(dim, dof) * fac;
         }
 
@@ -343,10 +343,10 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   case neum_orthopressure:
   {
     // prepare FD check
-    Epetra_SerialDenseMatrix fd_deriv(numnod*noddof,numnod*noddof);
-    Epetra_SerialDenseMatrix an_deriv = *elemat1;
-    Epetra_SerialDenseVector eleforce_ref = elevec1;
-    Epetra_SerialDenseVector eleforce_curr(numnod*noddof);
+    CORE::LINALG::SerialDenseMatrix fd_deriv(numnod*noddof,numnod*noddof);
+    CORE::LINALG::SerialDenseMatrix an_deriv = *elemat1;
+    CORE::LINALG::SerialDenseVector eleforce_ref = elevec1;
+    CORE::LINALG::SerialDenseVector eleforce_curr(numnod*noddof);
     double eps = 1.0e-8;
 
     // do FD step for all DOFs
@@ -443,8 +443,8 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
 
 // determinant of jacobian matrix
 
-double DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix& xye,
-    const Epetra_SerialDenseMatrix& deriv,
+double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDenseMatrix& xye,
+    const CORE::LINALG::SerialDenseMatrix& deriv,
     std::vector<double>* unrm,  // unit normal
     const int iel)
 {
@@ -472,8 +472,8 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix&
    */
   // compute derivative of parametrization
   double dr = 0.0;
-  Epetra_SerialDenseMatrix der_par(1, 2);
-  int err = der_par.Multiply('N', 'T', 1.0, deriv, xye, 0.0);
+  CORE::LINALG::SerialDenseMatrix der_par(1, 2);
+  int err = der_par.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xye, 0.0);
   if (err != 0) dserror("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != NULL)
@@ -486,9 +486,10 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix&
 
 /*======================================================================*/
 int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elematrix1,
-    Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseVector& elevector1,
-    Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
+    CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
+    CORE::LINALG::SerialDenseVector& elevector3)
 {
   const DiscretizationType distype = Shape();
 
@@ -531,8 +532,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
         const int numnod = NumNode();
-        Epetra_SerialDenseMatrix xsrefe(numnod, Wall1::numdim_);  // material coord. of element
-        Epetra_SerialDenseMatrix xscurr(numnod, Wall1::numdim_);  // material coord. of element
+        CORE::LINALG::SerialDenseMatrix xsrefe(
+            numnod, Wall1::numdim_);  // material coord. of element
+        CORE::LINALG::SerialDenseMatrix xscurr(
+            numnod, Wall1::numdim_);  // material coord. of element
         for (int i = 0; i < numnod; ++i)
         {
           xsrefe(i, 0) = Nodes()[i]->X()[0];
@@ -557,8 +560,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disptotal, mydisp, lm);
         const int numnod = NumNode();
-        Epetra_SerialDenseMatrix xsrefe(Wall1::numdim_, numnod);  // material coord. of element
-        Epetra_SerialDenseMatrix xscurr(Wall1::numdim_, numnod);  // current coord. of element
+        CORE::LINALG::SerialDenseMatrix xsrefe(
+            Wall1::numdim_, numnod);  // material coord. of element
+        CORE::LINALG::SerialDenseMatrix xscurr(
+            Wall1::numdim_, numnod);  // current coord. of element
         for (int i = 0; i < numnod; ++i)
         {
           xsrefe(0, i) = Nodes()[i]->X()[0];
@@ -626,8 +631,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       const int numnod = NumNode();
-      Epetra_SerialDenseMatrix xsrefe(numnod, Wall1::numdim_);  // material coord. of element
-      Epetra_SerialDenseMatrix xscurr(numnod, Wall1::numdim_);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xsrefe(numnod, Wall1::numdim_);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xscurr(numnod, Wall1::numdim_);  // material coord. of element
       for (int i = 0; i < numnod; ++i)
       {
         xsrefe(i, 0) = Nodes()[i]->X()[0];
@@ -656,9 +661,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
  * Evaluate method on mutliple dofsets                       vuong 11/12*
  * ---------------------------------------------------------------------*/
 int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la, Epetra_SerialDenseMatrix& elematrix1,
-    Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseVector& elevector1,
-    Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3)
+    DRT::Discretization& discretization, LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
+    CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
+    CORE::LINALG::SerialDenseVector& elevector3)
 {
   if (la.Size() == 1)
   {
@@ -701,7 +707,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       const CORE::DRT::UTILS::IntPointsAndWeights<1> intpoints(gaussrule);
 
       const int ngp = intpoints.IP().nquad;
-      Teuchos::RCP<Epetra_SerialDenseVector> poro = Teuchos::rcp(new Epetra_SerialDenseVector(ngp));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> poro =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(ngp));
       const int numdim = 2;
       const int numnode = NumNode();
       const int noddof = NumDofPerNode(*(Nodes()[0]));
@@ -713,8 +720,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lmpar);
 
       // update element geometry
-      Epetra_SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
-      Epetra_SerialDenseMatrix xcurr(numdim, nenparent);  // current  coord. of element
+      CORE::LINALG::SerialDenseMatrix xrefe(numdim, nenparent);  // material coord. of element
+      CORE::LINALG::SerialDenseMatrix xcurr(numdim, nenparent);  // current  coord. of element
 
       const DRT::Node* const* nodes = parentele->Nodes();
       for (int i = 0; i < nenparent; ++i)
@@ -736,14 +743,14 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> myvelpres(la[1].lm_.size());
       DRT::UTILS::ExtractMyValues(*velnp, myvelpres, la[1].lm_);
 
-      Epetra_SerialDenseVector mypres(numnode);
+      CORE::LINALG::SerialDenseVector mypres(numnode);
       for (int inode = 0; inode < numnode; ++inode)  // number of nodes
       {
-        (mypres)(inode, 0) = myvelpres[numdim + (inode * numdofpernode)];
+        (mypres)(inode) = myvelpres[numdim + (inode * numdofpernode)];
       }
 
       CORE::LINALG::SerialDenseMatrix pqxg;
-      Epetra_SerialDenseMatrix derivtrafo;
+      CORE::LINALG::SerialDenseMatrix derivtrafo;
 
       CORE::DRT::UTILS::BoundaryGPToParentGP<2>(
           pqxg, derivtrafo, intpoints, parentele->Shape(), distype, FaceParentNumber());
@@ -761,14 +768,14 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         CORE::DRT::UTILS::shape_function_1D(funct1D, intpoints.IP().qxg[gp][0], Shape());
 
         // pressure at integration point
-        double press = funct1D.Dot(mypres);
+        double press = funct1D.dot(mypres);
 
         // get Jacobian matrix and determinant w.r.t. spatial configuration
         //! transposed jacobian "dx/ds"
         CORE::LINALG::SerialDenseMatrix xjm(numdim, numdim);
-        xjm.Multiply('N', 'T', 1.0, deriv, xcurr, 0.0);
+        xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xcurr, 0.0);
         CORE::LINALG::SerialDenseMatrix Jmat(numdim, numdim);
-        Jmat.Multiply('N', 'T', 1.0, deriv, xrefe, 0.0);
+        Jmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xrefe, 0.0);
 
         double det = 0.0;
         double detJ = 0.0;
@@ -805,11 +812,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
-    Epetra_SerialDenseMatrix xscurr, Epetra_SerialDenseVector& elevector)
+    CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseVector& elevector)
 {
-  if (elevector.Length() != 4)
+  if (elevector.length() != 4)
   {
-    std::cout << "Length of element Vector: " << elevector.Length() << std::endl;
+    std::cout << "Length of element Vector: " << elevector.length() << std::endl;
     dserror("That is not the right size!");
   }
   // implementation of simple analytic solution
@@ -817,7 +824,7 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
   elevector[1] = xscurr(1, 0) - xscurr(0, 0);
   elevector[2] = xscurr(0, 1) + xscurr(1, 1);
   elevector[3] = xscurr(1, 0) - xscurr(0, 0);
-  elevector.Scale(-0.5);
+  elevector.scale(-0.5);
   return;
 }
 
@@ -826,7 +833,7 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrDeriv(
  * Second derivatives of areas with respect to the displacements        *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(
-    Epetra_SerialDenseMatrix xscurr, Epetra_SerialDenseMatrix& elematrix)
+    CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseMatrix& elematrix)
 {
   elematrix(0, 0) = 0.0;
   elematrix(0, 1) = -0.5;
@@ -848,6 +855,6 @@ void DRT::ELEMENTS::Wall1Line::ComputeAreaConstrStiff(
   elematrix(3, 2) = 0.5;
   elematrix(3, 3) = 0.0;
 
-  elematrix.Scale(-1.0);
+  elematrix.scale(-1.0);
   return;
 }

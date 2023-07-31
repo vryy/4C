@@ -179,9 +179,11 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // start with ActionType "none"
   typename So3_Scatra::ActionType act = So3_Scatra::none;
@@ -238,9 +240,9 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
     const CORE::LINALG::Matrix<3, 1>& xi, const std::vector<double>& disp_nodal_values,
     const std::vector<double>& scalar_nodal_values, const CORE::LINALG::Matrix<3, 1>& n,
     const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-    Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d_cauchyndir_ds,
-    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
-    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi)
+    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+    CORE::LINALG::SerialDenseMatrix* d_cauchyndir_ds, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
+    CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir, CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi)
 {
   auto scalar_values_at_xi =
       DRT::ELEMENTS::ProjectNodalQuantityToXi<distype>(xi, scalar_nodal_values);
@@ -252,12 +254,12 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
 
   if (d_cauchyndir_ds != nullptr)
   {
-    d_cauchyndir_ds->Shape(numnod_, 1);
+    d_cauchyndir_ds->shape(numnod_, 1);
     // get the shape functions
     CORE::LINALG::Matrix<numnod_, 1> shapefunct(true);
     CORE::DRT::UTILS::shape_function<distype>(xi, shapefunct);
     // calculate DsntDs
-    CORE::LINALG::Matrix<numnod_, 1>(d_cauchyndir_ds->A(), true)
+    CORE::LINALG::Matrix<numnod_, 1>(d_cauchyndir_ds->values(), true)
         .Update(d_cauchyndir_ds_gp, shapefunct, 1.0);
   }
 }
@@ -268,8 +270,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::GetCauchyNDirAndDerivativesAtX
  *----------------------------------------------------------------------*/
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::nln_kdS_ssi(DRT::Element::LocationArray& la,
-    std::vector<double>& disp,                  // current displacement
-    Epetra_SerialDenseMatrix& stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
+    std::vector<double>& disp,                         // current displacement
+    CORE::LINALG::SerialDenseMatrix& stiffmatrix_kdS,  // (numdim_*numnod_ ; numnod_)
     Teuchos::ParameterList& params)
 {
   // calculate current and material coordinates of element

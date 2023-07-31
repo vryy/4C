@@ -696,7 +696,7 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
   file << "// This point coordinates" << std::endl;
   std::stringstream point_name;
   point_name << "Point" << Id();
-  GEO::CUT::OUTPUT::GmshPointDump(file, this, Id(), point_name.str(), false, NULL);
+  CORE::GEO::CUT::OUTPUT::GmshPointDump(file, this, Id(), point_name.str(), false, NULL);
 
   if (merged_to_)
   {
@@ -743,29 +743,29 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
         file << "// original intersection was and because of it" << std::endl;
         std::stringstream side_section_name;
         side_section_name << "OriginalSide" << pre << counter;
-        GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
-        GEO::CUT::OUTPUT::GmshSideDump(file, original_connection.first, false, NULL);
-        GEO::CUT::OUTPUT::GmshEndSection(file, false);
+        CORE::GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
+        CORE::GEO::CUT::OUTPUT::GmshSideDump(file, original_connection.first, false, NULL);
+        CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 
         std::stringstream edge_section_name;
         edge_section_name << "OriginalEdge" << pre << counter;
-        GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
-        GEO::CUT::OUTPUT::GmshEdgeDump(file, original_connection.second, false, NULL);
-        GEO::CUT::OUTPUT::GmshEndSection(file, false);
+        CORE::GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
+        CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, original_connection.second, false, NULL);
+        CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
         or_cut = original_connection;
         file << "// " << GetCreationInfo(or_cut) << "\n";
         file << "// following connection is added later" << std::endl;
       }
       std::stringstream edge_section_name;
       edge_section_name << "Edge" << pre << counter;
-      GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
-      GEO::CUT::OUTPUT::GmshEdgeDump(file, (*it).second);
-      GEO::CUT::OUTPUT::GmshEndSection(file, false);
+      CORE::GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
+      CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, (*it).second);
+      CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
       std::stringstream side_section_name;
       side_section_name << "Side" << pre << counter;
-      GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
-      GEO::CUT::OUTPUT::GmshSideDump(file, (*it).first);
-      GEO::CUT::OUTPUT::GmshEndSection(file, false);
+      CORE::GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
+      CORE::GEO::CUT::OUTPUT::GmshSideDump(file, (*it).first);
+      CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
       file << "// " << GetCreationInfo(*it) << "\n";
 
       std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>::iterator
@@ -778,13 +778,13 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
           file << "// original point coordinates from real intersection \n";
           file << "View \"MergedPoint" << Id() << "_" << counter << "\"{\n";
           file << "SP (";
-          GEO::CUT::OUTPUT::GmshWriteCoords(file, merged_coord.first, false, NULL);
+          CORE::GEO::CUT::OUTPUT::GmshWriteCoords(file, merged_coord.first, false, NULL);
           file << "){";
           file << 0;
-          GEO::CUT::OUTPUT::GmshEndSection(file, false);
-          GEO::CUT::OUTPUT::GmshEndSection(file, false);
+          CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
+          CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
           file << "// Norm2 between point and merged is "
-               << GEO::CUT::DistanceBetweenPoints(this, merged_coord.first) << std::endl;
+               << CORE::GEO::CUT::DistanceBetweenPoints(this, merged_coord.first) << std::endl;
         }
         else
           file << "// Another point was merged here during insert cut\n";
@@ -805,9 +805,9 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
       {
         std::stringstream section_name;
         section_name << "IndividualEdge" << counter;
-        GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-        GEO::CUT::OUTPUT::GmshEdgeDump(file, (*it));
-        GEO::CUT::OUTPUT::GmshEndSection(file, false);
+        CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+        CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, (*it));
+        CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
         if (not NodalPoint((*it)->Nodes())) file << "// it is not a nodal point!" << std::endl;
       }
     }
@@ -818,9 +818,9 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
       {
         std::stringstream section_name;
         section_name << "IndividualSide" << counter;
-        GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-        GEO::CUT::OUTPUT::GmshSideDump(file, (*it));
-        GEO::CUT::OUTPUT::GmshEndSection(file, false);
+        CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
+        CORE::GEO::CUT::OUTPUT::GmshSideDump(file, (*it));
+        CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
         if (not NodalPoint((*it)->Nodes())) file << " // it is not a nodal point!" << std::endl;
       }
     }
@@ -980,7 +980,7 @@ void CORE::GEO::CUT::Point::ErasedContainingCutPairs(Edge* edge)
 
 #if CUT_CREATION_INFO
 
-void GEO::CUT::Point::AddCreationInfo(
+void CORE::GEO::CUT::Point::AddCreationInfo(
     const std::pair<Side*, Edge*>& cut_pair, const std::string& info)
 {
   typedef std::map<std::pair<Side*, Edge*>, std::string>::iterator info_iterator;
@@ -991,19 +991,19 @@ void GEO::CUT::Point::AddCreationInfo(
   }
 }
 
-void GEO::CUT::Point::AddAdditionalCreationInfo(const std::string& info)
+void CORE::GEO::CUT::Point::AddAdditionalCreationInfo(const std::string& info)
 {
   additional_creation_info_.append("// And more: \n");
   additional_creation_info_.append(info);
 }
 
-const std::string& GEO::CUT::Point::GetAdditionalCreationInfo()
+const std::string& CORE::GEO::CUT::Point::GetAdditionalCreationInfo()
 {
   return additional_creation_info_;
 }
 
 
-void GEO::CUT::Point::AddMergedPair(
+void CORE::GEO::CUT::Point::AddMergedPair(
     const std::pair<Side*, Edge*>& inter, CORE::LINALG::Matrix<3, 1>* coord)
 {
   std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>::iterator merged =

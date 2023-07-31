@@ -105,10 +105,10 @@ namespace XFEM
     );
 
     //! compute the measure of the elements surface with given local id
-    double ComputeMeasFace(DRT::Element* ele,  ///< fluid element
-        Epetra_SerialDenseMatrix& ele_xyze,    ///< element coordinates
-        const int local_face_id,               ///< the local id of the face w.r.t the fluid element
-        const int nsd                          ///< number of space dimensions
+    double ComputeMeasFace(DRT::Element* ele,       ///< fluid element
+        CORE::LINALG::SerialDenseMatrix& ele_xyze,  ///< element coordinates
+        const int local_face_id,  ///< the local id of the face w.r.t the fluid element
+        const int nsd             ///< number of space dimensions
     );
 
     //! compute volume-equivalent diameter
@@ -128,12 +128,12 @@ namespace XFEM
             xyze,
         CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
             1>* nurbs_weights = NULL,
-        std::vector<Epetra_SerialDenseVector>* nurbs_knots = NULL);
+        std::vector<CORE::LINALG::SerialDenseVector>* nurbs_knots = NULL);
 
     //! compute characteristic element length h_k
     template <DRT::Element::DiscretizationType distype>
     double ComputeCharEleLength(DRT::Element* ele,                 ///< fluid element
-        Epetra_SerialDenseMatrix& ele_xyze,                        ///< element coordinates
+        CORE::LINALG::SerialDenseMatrix& ele_xyze,                 ///< element coordinates
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager,  ///< XFEM condition manager
         const CORE::GEO::CUT::plain_volumecell_set&
             vcSet,  ///< volumecell sets for volume integration

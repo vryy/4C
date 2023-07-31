@@ -28,9 +28,11 @@ template <DRT::Element::DiscretizationType distype, unsigned probDim>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   const std::vector<int>& lm = la[0].lm_;
 
@@ -131,9 +133,9 @@ int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SetupCalc(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatCorrection(
-    const double penalty,            ///< element penalty parameter
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs   ///< element rhs to calculate
+    const double penalty,                   ///< element penalty parameter
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------
@@ -314,8 +316,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcElePenaltyParam
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSPenalty(
-    Epetra_SerialDenseVector& erhs, const double fac, const double penalty, const double deriv_sign,
-    const double norm_gradphizero)
+    CORE::LINALG::SerialDenseVector& erhs, const double fac, const double penalty,
+    const double deriv_sign, const double norm_gradphizero)
 {
   double vpenalty = fac * my::scatraparatimint_->Dt() * penalty * deriv_sign * norm_gradphizero;
 
@@ -335,9 +337,9 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSPenalty(
  *-------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatNodalVel(
-    const int dir,                   ///< current spatial direction
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs   ///< element rhs to calculate
+    const int dir,                          ///< current spatial direction
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------

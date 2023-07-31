@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_hex8fbar.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_lib_discret.H"
@@ -34,18 +34,20 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
 
   SetParamsInterfacePtr(params);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_SOH8, 1> elevec2(elevec2_epetra.values(), true);
   // elevec3 is not used anyway
 
   // start with "none"
@@ -589,7 +591,7 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       else  // old structural time integration
       {
         // check length of elevec1
-        if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1_epetra.length() < 1) dserror("The given result vector is too short.");
 
         elevec1_epetra(0) = intenergy;
       }
@@ -659,7 +661,7 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
   // get values and switches from the condition
@@ -968,8 +970,8 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
 
     // Green-Lagrange strains(F_bar) matrix E = 0.5 * (Cauchygreen(F_bar) - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_bar_epetra(MAT::NUM_STRESS_3D);
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain_bar(glstrain_bar_epetra.A(), true);
+    CORE::LINALG::SerialDenseVector glstrain_bar_epetra(MAT::NUM_STRESS_3D);
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain_bar(glstrain_bar_epetra.values(), true);
     glstrain_bar(0) = 0.5 * (cauchygreen_bar(0, 0) - 1.0);
     glstrain_bar(1) = 0.5 * (cauchygreen_bar(1, 1) - 1.0);
     glstrain_bar(2) = 0.5 * (cauchygreen_bar(2, 2) - 1.0);
@@ -1407,8 +1409,8 @@ void DRT::ELEMENTS::So_hex8fbar::nlnstiffmass(std::vector<int>& lm,  // location
         cauchygreen.MultiplyTN(defgrd, defgrd);
 
         // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-        Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.A(), true);
+        CORE::LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> glstrain(glstrain_epetra.values(), true);
         // if (kintype_ == DRT::ELEMENTS::So_hex8::soh8_nonlinear)
         //{
         // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
@@ -1495,7 +1497,7 @@ int DRT::ELEMENTS::So_hex8fbarType::Initialize(DRT::Discretization& dis)
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8fbar::DefGradient(const std::vector<double>& disp,
-    Epetra_SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
+    CORE::LINALG::SerialDenseMatrix& gpdefgrd, DRT::ELEMENTS::PreStress& prestress)
 {
   const static std::vector<CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8>> derivs = soh8_derivs();
   // derivatives at centroid point

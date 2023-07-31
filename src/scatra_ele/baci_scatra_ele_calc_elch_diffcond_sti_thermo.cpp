@@ -80,11 +80,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::GetMaterialPara
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-    const int k,                     //!< index of current scalar
-    const double fac,                //!< domain integration factor
-    const double timefacfac,         //!< domain integration factor times time integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+    const int k,                            //!< index of current scalar
+    const double fac,                       //!< domain integration factor
+    const double timefacfac,  //!< domain integration factor times time integration factor
     const double rhsfac,      //!< domain integration factor times time integration factor for
                               //!< right-hand side vector
     const double taufac,      //!< domain integration factor times stabilization parameter
@@ -170,16 +170,16 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::CalcMatAndRhs(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD(
-    DRT::Element* ele,                         //!< current element
-    Teuchos::ParameterList& params,            //!< parameter list
-    DRT::Discretization& discretization,       //!< discretization
-    const SCATRA::Action& action,              //!< action parameter
-    DRT::Element::LocationArray& la,           //!< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+    DRT::Element* ele,                                //!< current element
+    Teuchos::ParameterList& params,                   //!< parameter list
+    DRT::Discretization& discretization,              //!< discretization
+    const SCATRA::Action& action,                     //!< action parameter
+    DRT::Element::LocationArray& la,                  //!< location array
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+    CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
 )
 {
   // determine and evaluate action
@@ -212,8 +212,8 @@ int DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::EvaluateActionOD
  *------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::SysmatODScatraThermo(
-    DRT::Element* ele,              //!< current element
-    Epetra_SerialDenseMatrix& emat  //!< element matrix
+    DRT::Element* ele,                     //!< current element
+    CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
 )
 {
   // integration points and weights

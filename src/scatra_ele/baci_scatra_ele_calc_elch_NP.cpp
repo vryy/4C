@@ -56,11 +56,11 @@ DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::ScaTraEleCalcElchNP(
  *---------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate+
-    const int k,                     //!< index of current scalar
-    const double fac,                //!< domain-integration factor
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate+
+    const int k,                            //!< index of current scalar
+    const double fac,                       //!< domain-integration factor
+    const double timefacfac,  //!< domain-integration factor times time-integration factor
     const double rhsfac,      //!< time-integration factor for rhs times domain-integration factor
     const double taufac,      //!< tau times domain-integration factor
     const double timetaufac,  //!< domain-integration factor times tau times time-integration factor
@@ -268,11 +268,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhs(
  *----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatAndRhsOutsideScalarLoop(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,  //!< element rhs to calculate
-    const double fac,                //!< domain-integration factor
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double rhsfac  //!< time-integration factor for rhs times domain-integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element rhs to calculate
+    const double fac,                       //!< domain-integration factor
+    const double timefacfac,  //!< domain-integration factor times time-integration factor
+    const double rhsfac       //!< time-integration factor for rhs times domain-integration factor
 )
 {
   //-------------------------------------------------------------------------------------------
@@ -389,9 +389,9 @@ double DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRes(
  ------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+    const int k,                            //!< index of current scalar
+    const double timefacfac,  //!< domain-integration factor times time-integration factor
     const double taufac,      //!< stabilization parameter tau times domain-integration factor
     const double timetaufac,  //!< domain-integration factor times tau times time-integration factor
     CORE::LINALG::Matrix<nen_, 1>&
@@ -505,10 +505,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatConvStab(
  *-------------------------------------------------- --------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to calculate
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double frt,                //!< F/(RT)
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+    const int k,                            //!< index of current scalar
+    const double timefacfac,  //!< domain-integration factor times time-integration factor
+    const double frt,         //!< F/(RT)
     const CORE::LINALG::Matrix<nen_, 1>&
         migconv,         //!< migration operator: -F/(RT) \grad{\Phi} * \grad{N}
     const double conint  //!< concentration at GP
@@ -547,10 +547,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatMigr(
  *-----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double frt,                //!< F/(RT)
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const int k,                            //!< index of current scalar
+    const double timefacfac,  //!< domain-integration factor times time-integration factor
+    const double frt,         //!< F/(RT)
     const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
     const double conint                            //!< concentration at GP
 )
@@ -594,10 +594,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDE(
  *-------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double timefacfac,         //!< domain-integration factor times time-integration factor
-    const double frt,                //!< F/(RT)
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const int k,                            //!< index of current scalar
+    const double timefacfac,  //!< domain-integration factor times time-integration factor
+    const double frt,         //!< F/(RT)
     const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
     const double conint                            //!< concentration at GP
 )
@@ -658,11 +658,11 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquENCPDEElim(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquPoisson(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const int k,                     //!< index of current scalar
-    const double fac,                //!< domain-integration factor
-    const double epsilon,            //!< dielectric constant
-    const double faraday             //!< Faraday constant
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const int k,                            //!< index of current scalar
+    const double fac,                       //!< domain-integration factor
+    const double epsilon,                   //!< dielectric constant
+    const double faraday                    //!< Faraday constant
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -703,8 +703,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquPoisson(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquLaplace(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-    const double fac                 //!< domain-integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+    const double fac                        //!< domain-integration factor
 )
 {
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -731,8 +731,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcMatPotEquLaplace(
  *-----------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvAddCons(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+    const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
     const double conint,  //!< concentration at GP
     const double vdiv     //!< velocity divergence
@@ -752,8 +752,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvAddCons(
  ------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvStab(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+    const int k,                            //!< index of current scalar
     const double
         rhstaufac,  //!< time-integration factor for rhs times tau times domain-integration factor
     const CORE::LINALG::Matrix<nen_, 1>&
@@ -783,8 +783,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsConvStab(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsMigr(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+    const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
     const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
     const double conint                            //!< concentration at GP
@@ -806,8 +806,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsMigr(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+    const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
     const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
     const double conint,                           //!< concentration at GP
@@ -837,8 +837,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDE(
  *-------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
-    Epetra_SerialDenseVector& erhs,  //!< element vector to be filled
-    const int k,                     //!< index of current scalar
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
+    const int k,                            //!< index of current scalar
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
     const CORE::LINALG::Matrix<nen_, 1>& migconv,  //!< migration operator
     const double conint,                           //!< concentration at GP
@@ -877,7 +877,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquENCPDEElim(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
-    Epetra_SerialDenseVector& erhs,               //!< element vector to be filled
+    CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
     const int k,                                  //!< index of current scalar
     const double fac,                             //!< domain-integration factor
     const double epsilon,                         //!< dielectric constant
@@ -915,7 +915,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquPoisson(
  *-------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquLaplace(
-    Epetra_SerialDenseVector& erhs,               //!< element vector to be filled
+    CORE::LINALG::SerialDenseVector& erhs,        //!< element vector to be filled
     const double fac,                             //!< domain-integration factor
     const CORE::LINALG::Matrix<nsd_, 1>& gradpot  //!< gradient of potential at GP
 )
@@ -939,8 +939,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CalcRhsPotEquLaplace(
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcElchNP<distype>::CorrectionForFluxAcrossDC(
-    DRT::Discretization& discretization, const std::vector<int>& lm, Epetra_SerialDenseMatrix& emat,
-    Epetra_SerialDenseVector& erhs)
+    DRT::Discretization& discretization, const std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs)
 {
   if ((myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_enc_pde) or
       (myelch::elchparams_->EquPot() == INPAR::ELCH::equpot_enc_pde_elim))

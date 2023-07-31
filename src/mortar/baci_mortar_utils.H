@@ -195,7 +195,7 @@ namespace MORTAR
   \return number of removed points from collconvexhull
 
   */
-  int SortConvexHullPoints(bool out, Epetra_SerialDenseMatrix& transformed,
+  int SortConvexHullPoints(bool out, CORE::LINALG::SerialDenseMatrix& transformed,
       std::vector<Vertex>& collconvexhull, std::vector<Vertex>& respoly, double& tol);
 
   namespace UTILS

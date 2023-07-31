@@ -179,11 +179,11 @@ STRUMULTI::MicroStatic::MicroStatic(const int microdisnum, const double V0)
   //
   // -------------------------------------------------------------------
   {
-    lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-    oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-    oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-    oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
-    oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>);
+    lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+    oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+    oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+    oldKaainv_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
+    oldKda_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>);
   }
 
   // -------------------------------------------------------------------
@@ -313,7 +313,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(CORE::LINALG::Matrix<3, 3>* defgrd)
     p.set("delta time", dt_);
     // set vector values needed by elements
     discret_->ClearState();
-    disi_->Scale(0.0);
+    disi_->PutScalar(0.0);
     discret_->SetState("residual displacement", disi_);
     discret_->SetState("displacement", disn_);
     fintn_->PutScalar(0.0);  // initialise internal force vector
@@ -680,8 +680,8 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
 
     if (surf_stress_man_->HaveSurfStress()) surf_stress_man_->WriteRestart(step, time);
 
-    Teuchos::RCP<Epetra_SerialDenseMatrix> emptyalpha =
-        Teuchos::rcp(new Epetra_SerialDenseMatrix(1, 1));
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> emptyalpha =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(1, 1));
 
     DRT::PackBuffer data;
 
@@ -785,7 +785,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
  |  read restart (public)                                       lw 03/08|
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::ReadRestart(int step, Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
     Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man, std::string name)
 {
   Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name, true));
@@ -878,11 +878,11 @@ void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
     Teuchos::RCP<Epetra_Vector> disn, Teuchos::RCP<UTILS::SurfStressManager> surfman,
     Teuchos::RCP<std::vector<char>> stress, Teuchos::RCP<std::vector<char>> strain,
     Teuchos::RCP<std::vector<char>> plstrain,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> lastalpha,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldalpha,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldfeas,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKaainv,
-    Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>>> oldKda)
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> lastalpha,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldalpha,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldfeas,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKaainv,
+    Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> oldKda)
 {
   dis_ = dis;
   disn_ = disn;
@@ -938,11 +938,11 @@ void STRUMULTI::MicroStatic::SetEASData()
       p.set("oldKaainv", oldKaainv_);
       p.set("oldKda", oldKda_);
 
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
       std::vector<int> lm;
 
       actele->Evaluate(
@@ -1014,7 +1014,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(CORE::LINALG::Matrix<6, 1>* st
   // vector format
   // assembly of stresses (cf Solid3 Hex8): S11,S22,S33,S12,S23,S13
 
-  stress->Scale(0.);
+  stress->PutScalar(0.0);
 
   for (int i = 0; i < 3; ++i)
   {

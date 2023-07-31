@@ -1557,7 +1557,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer t
     e->GetVolumeCells(cells);
 
     if (cells.size() == 0)
-      dserror("GEO::CUT::Element %d does not contain any volume cell", ele->Id());
+      dserror("CORE::GEO::CUT::Element %d does not contain any volume cell", ele->Id());
 
     for (CORE::GEO::CUT::plain_volumecell_set::iterator cell_it = cells.begin();
          cell_it != cells.end(); cell_it++)

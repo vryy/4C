@@ -232,7 +232,7 @@ namespace DRT
         \endverbatim
 
       */
-      bool GetEleKnots(std::vector<Epetra_SerialDenseVector>& eleknots, int gid) const;
+      bool GetEleKnots(std::vector<CORE::LINALG::SerialDenseVector>& eleknots, int gid) const;
 
 
 
@@ -255,8 +255,8 @@ namespace DRT
       Zero sized elements are simply to be skipped during
       integration
       */
-      bool GetBoundaryEleAndParentKnots(std::vector<Epetra_SerialDenseVector>& eleknots,
-          std::vector<Epetra_SerialDenseVector>& surfknots, double& normalfac, int pgid,
+      bool GetBoundaryEleAndParentKnots(std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+          std::vector<CORE::LINALG::SerialDenseVector>& surfknots, double& normalfac, int pgid,
           const int surfaceid) const;
 
 

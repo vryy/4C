@@ -14,9 +14,9 @@
 
 // Todo get rid of header inclusions
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_lib_condition.H"

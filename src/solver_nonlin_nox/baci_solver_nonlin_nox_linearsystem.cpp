@@ -718,20 +718,20 @@ double NOX::NLN::LinearSystem::computeSerialConditionNumberOfJacobian(
 
   Teuchos::LAPACK<int, double> lapack;
 
-  const int N = dense_jac.N();
-  const int M = dense_jac.M();
-  double* A = dense_jac.A();
-  const int LDA = dense_jac.LDA();
+  const int N = dense_jac.numCols();
+  const int M = dense_jac.numRows();
+  double* A = dense_jac.values();
+  const int LDA = dense_jac.stride();
   double anorm = 0.0;
   char ctype = char();
   switch (condnum_type)
   {
     case LinSystem::ConditionNumber::one_norm:
-      anorm = dense_jac.NormOne();
+      anorm = dense_jac.normOne();
       ctype = '1';
       break;
     case LinSystem::ConditionNumber::inf_norm:
-      anorm = dense_jac.InfNorm();
+      anorm = dense_jac.normInf();
       ctype = 'I';
       break;
     default:
@@ -787,8 +787,8 @@ void NOX::NLN::LinearSystem::prepareBlockDenseMatrix(
   const int grows = block_sparse.FullRangeMap().NumGlobalElements();
   const int gcols = block_sparse.FullDomainMap().NumGlobalElements();
 
-  block_dense.Reshape(grows, gcols);
-  if (block_dense.N() != block_dense.M())
+  block_dense.reshape(grows, gcols);
+  if (block_dense.numCols() != block_dense.numRows())
     dserror("The complete block dense matrix is not quadratic!");
 }
 
@@ -797,10 +797,10 @@ void NOX::NLN::LinearSystem::prepareBlockDenseMatrix(
 void NOX::NLN::LinearSystem::throwIfZeroRow(
     const CORE::LINALG::SerialDenseMatrix& block_dense) const
 {
-  for (int r = 0; r < block_dense.N(); ++r)
+  for (int r = 0; r < block_dense.numCols(); ++r)
   {
     double csum = 0.0;
-    for (int c = 0; c < block_dense.M(); ++c) csum += std::abs(block_dense(r, c));
+    for (int c = 0; c < block_dense.numRows(); ++c) csum += std::abs(block_dense(r, c));
 
     if (std::abs(csum) < std::numeric_limits<double>::epsilon()) dserror("Zero row detected!");
   }
@@ -862,12 +862,12 @@ void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::Spar
   if (not sparse.Filled()) dserror("The sparse matrix must be filled!");
   Teuchos::RCP<const Epetra_CrsMatrix> crs_mat = sparse.EpetraMatrix();
 
-  if (dense.N() == 0 or dense.M() == 0)
+  if (dense.numCols() == 0 or dense.numRows() == 0)
   {
     const int numgrows = sparse.RowMap().NumGlobalElements();
     const int numgcols = sparse.ColMap().NumGlobalElements();
-    dense.Reshape(numgrows, numgcols);
-    dense.Zero();
+    dense.reshape(numgrows, numgcols);
+    dense.putScalar(0.0);
   }
 
   const int num_myrows = sparse.RowMap().NumMyElements();
@@ -913,16 +913,16 @@ void NOX::NLN::LinearSystem::solveNonSymmEigenValueProblem(CORE::LINALG::SerialD
 {
   // start debugging
   //  std::ofstream of("/home/hiermeier/Workspace/o/test/mat.csv",std::ios_base::out);
-  //  const int num_cols = mat.M();
-  //  for ( int r=0; r<mat.N(); ++r )
+  //  const int num_cols = mat.numRows();
+  //  for ( int r=0; r<mat.numCols(); ++r )
   //    for ( int c=0; c<num_cols; ++c )
   //      of << std::setprecision(16) << std::scientific << mat(r,c)
   //         << ( c != num_cols-1 ? "," : "\n" );
   //  of.close();
   // end debugging
 
-  reigenvalues.Size(mat.N());
-  ieigenvalues.Size(mat.N());
+  reigenvalues.size(mat.numCols());
+  ieigenvalues.size(mat.numCols());
 
   callGEEV(mat, reigenvalues, ieigenvalues);
 }
@@ -934,28 +934,30 @@ void NOX::NLN::LinearSystem::callGGEV(CORE::LINALG::SerialDenseMatrix& mat,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
   int info = 0;
-  int lwork = 8.0 * mat.N();
+  int lwork = 8.0 * mat.numCols();
   std::vector<double> work(lwork);
 
-  if (mat.N() != mat.M()) dserror("A N-by-N real non-symmetric matrix is expected by GGEV!");
+  if (mat.numCols() != mat.numRows())
+    dserror("A N-by-N real non-symmetric matrix is expected by GGEV!");
 
   // create dummy B matrix
   static bool first_execution = true;
   static CORE::LINALG::SerialDenseMatrix bmat;
-  if (first_execution or bmat.N() != mat.N())
+  if (first_execution or bmat.numCols() != mat.numCols())
   {
-    bmat.Reshape(mat.N(), mat.N());
-    for (int r = 0; r < bmat.N(); ++r) bmat(r, r) = 1.0;
+    bmat.reshape(mat.numCols(), mat.numCols());
+    for (int r = 0; r < bmat.numCols(); ++r) bmat(r, r) = 1.0;
   }
 
   CORE::LINALG::SerialDenseVector beta(reigenvalues);
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.GGEV('N', 'N', mat.N(), mat.A(), mat.LDA(), bmat.A(), bmat.LDA(), reigenvalues.A(),
-      ieigenvalues.A(), beta.A(), NULL, 1, NULL, 1, work.data(), lwork, &info);
+  lapack.GGEV('N', 'N', mat.numCols(), mat.values(), mat.stride(), bmat.values(), bmat.stride(),
+      reigenvalues.values(), ieigenvalues.values(), beta.values(), NULL, 1, NULL, 1, work.data(),
+      lwork, &info);
 
   // postprocess the actual eigenvalues
-  for (int i = 0; i < reigenvalues.N(); ++i)
+  for (int i = 0; i < reigenvalues.numCols(); ++i)
   {
     if (beta(i) == 0.0)
       dserror(
@@ -974,15 +976,16 @@ void NOX::NLN::LinearSystem::callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
     CORE::LINALG::SerialDenseVector& reigenvalues,
     CORE::LINALG::SerialDenseVector& ieigenvalues) const
 {
-  if (mat.N() != mat.M()) dserror("A N-by-N real non-symmetric matrix is expected by GEEV!");
+  if (mat.numCols() != mat.numRows())
+    dserror("A N-by-N real non-symmetric matrix is expected by GEEV!");
 
   int info = 0;
-  int lwork = 3.0 * mat.N();
+  int lwork = 3.0 * mat.numCols();
   std::vector<double> work(lwork);
 
   Teuchos::LAPACK<int, double> lapack;
-  lapack.GEEV('N', 'N', mat.N(), mat.A(), mat.LDA(), reigenvalues.A(), ieigenvalues.A(), NULL, 1,
-      NULL, 1, work.data(), lwork, &info);
+  lapack.GEEV('N', 'N', mat.numCols(), mat.values(), mat.stride(), reigenvalues.values(),
+      ieigenvalues.values(), NULL, 1, NULL, 1, work.data(), lwork, &info);
 
   if (info) dserror("GEEV failed!");
 }

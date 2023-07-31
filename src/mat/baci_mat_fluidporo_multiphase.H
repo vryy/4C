@@ -58,7 +58,7 @@ namespace MAT
       //@}
 
       //! transformation of degrees of freedom to true pressures
-      Teuchos::RCP<Epetra_SerialDenseMatrix> dof2pres_;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> dof2pres_;
 
       //! number of constraint saturation phase
       int constraintphaseID_;
@@ -183,15 +183,16 @@ namespace MAT
 
     //! evaluate derivative of degree of freedom with respect to pressure
     void EvaluateDerivOfDofWrtPressure(
-        Epetra_SerialDenseMatrix& derivs, const std::vector<double>& state) const;
+        CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& state) const;
 
     //! evaluate derivative of saturation with respect to pressure
     void EvaluateDerivOfSaturationWrtPressure(
-        Epetra_SerialDenseMatrix& derivs, const std::vector<double>& pressure) const;
+        CORE::LINALG::SerialDenseMatrix& derivs, const std::vector<double>& pressure) const;
 
     //! evaluate second derivative of saturation with respect to pressure
     void EvaluateSecondDerivOfSaturationWrtPressure(
-        std::vector<Epetra_SerialDenseMatrix>& derivs, const std::vector<double>& pressure) const;
+        std::vector<CORE::LINALG::SerialDenseMatrix>& derivs,
+        const std::vector<double>& pressure) const;
 
    private:
     /// clear everything

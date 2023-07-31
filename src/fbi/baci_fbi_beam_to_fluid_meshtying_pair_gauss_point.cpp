@@ -65,12 +65,12 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   CORE::LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
   // Resize and initialize the return variables.
-  if (forcevec1 != NULL) forcevec1->Size(beam::n_dof_);
-  if (forcevec2 != NULL) forcevec2->Size(fluid::n_dof_);
-  if (stiffmat11 != NULL) stiffmat11->Shape(beam::n_dof_, beam::n_dof_);
-  if (stiffmat12 != NULL) stiffmat12->Shape(beam::n_dof_, fluid::n_dof_);
-  if (stiffmat21 != NULL) stiffmat21->Shape(fluid::n_dof_, beam::n_dof_);
-  if (stiffmat22 != NULL) stiffmat22->Shape(fluid::n_dof_, fluid::n_dof_);
+  if (forcevec1 != NULL) forcevec1->size(beam::n_dof_);
+  if (forcevec2 != NULL) forcevec2->size(fluid::n_dof_);
+  if (stiffmat11 != NULL) stiffmat11->shape(beam::n_dof_, beam::n_dof_);
+  if (stiffmat12 != NULL) stiffmat12->shape(beam::n_dof_, fluid::n_dof_);
+  if (stiffmat21 != NULL) stiffmat21->shape(fluid::n_dof_, beam::n_dof_);
+  if (stiffmat22 != NULL) stiffmat22->shape(fluid::n_dof_, fluid::n_dof_);
 
   // Initialize scalar variables.
   double segment_jacobian, beam_segmentation_factor;

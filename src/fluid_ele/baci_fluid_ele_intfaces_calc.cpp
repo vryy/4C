@@ -243,14 +243,14 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
 
   // define element matrices and vectors
-  std::vector<Epetra_SerialDenseMatrix> elemat_blocks(numblocks);
-  std::vector<Epetra_SerialDenseVector> elevec_blocks(
+  std::vector<CORE::LINALG::SerialDenseMatrix> elemat_blocks(numblocks);
+  std::vector<CORE::LINALG::SerialDenseVector> elevec_blocks(
       numdofpernode);  // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
 
 
   for (int b = 0; b < numblocks; b++)
   {
-    int err = elemat_blocks[b].Shape(
+    int err = elemat_blocks[b].shape(
         numnodeinpatch, numnodeinpatch);  // new shape and init values to zero
 
     if (err != 0) dserror("element matrix Shape not successful");
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   for (int b = 0; b < numdofpernode; b++)
   {
-    int err = elevec_blocks[b].Size(numnodeinpatch);  // new size and init values to zero
+    int err = elevec_blocks[b].size(numnodeinpatch);  // new size and init values to zero
 
     if (err != 0) dserror("element matrix Shape not successful");
   }
@@ -355,8 +355,8 @@ int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(
     std::vector<int>& lm_faceToPatch,        ///< local map between face dofs and patchlm
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
     std::vector<int>& lm_slaveNodeToPatch,   ///< local map between slave nodes and nodes in patch
-    std::vector<Epetra_SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
-    std::vector<Epetra_SerialDenseVector>& elevec_blocks   ///< element vector blocks
+    std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
+    std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
 )
 {
   FLD::IntFaceAction act = FLD::ifa_none;

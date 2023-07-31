@@ -112,19 +112,19 @@ namespace
           pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
 
       EXPECT_TRUE(projects);
-      EXPECT_EQ(local_kff.M(), fluid_dofs);
-      EXPECT_EQ(local_kff.N(), fluid_dofs);
-      EXPECT_EQ(local_kfs.M(), fluid_dofs);
-      EXPECT_EQ(local_kfs.N(), beam_dofs);
-      EXPECT_EQ(local_fs.Length(), beam_dofs);
+      EXPECT_EQ(local_kff.numRows(), fluid_dofs);
+      EXPECT_EQ(local_kff.numCols(), fluid_dofs);
+      EXPECT_EQ(local_kfs.numRows(), fluid_dofs);
+      EXPECT_EQ(local_kfs.numCols(), beam_dofs);
+      EXPECT_EQ(local_fs.length(), beam_dofs);
 
 
-      for (int i_row = 0; i_row < local_kff.M(); i_row++)
+      for (int i_row = 0; i_row < local_kff.numRows(); i_row++)
       {
         EXPECT_NEAR((local_kff)(i_row, i_row), results_kff(i_row, i_row), 1e-11)
             << " for i_row = " << i_row;
         EXPECT_NEAR(local_ff(i_row), results_ff(i_row), 1e-11) << " for i_row = " << i_row;
-        for (int i_col = 0; i_col < local_kfs.N(); i_col++)
+        for (int i_col = 0; i_col < local_kfs.numCols(); i_col++)
           EXPECT_NEAR((local_kfs)(i_row, i_col), local_ksf(i_col, i_row), 1e-11)
               << " for i_row = " << i_row << ", i_col = " << i_col;
       }
@@ -162,8 +162,8 @@ namespace
     CORE::LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
     CORE::LINALG::SerialDenseVector results_fs(beam_type::n_dof_, true);
     CORE::LINALG::SerialDenseVector results_ff(fluid_type::n_dof_, true);
-    results_fs.Zero();
-    results_ff.Zero();
+    results_fs.putScalar(0.0);
+    results_ff.putScalar(0.0);
 
 
     // Define the geometry of the two elements.

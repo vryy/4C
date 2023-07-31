@@ -33,7 +33,7 @@ namespace DRT
      * \param ele element
      */
     void AssembleGaussPointValues(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-        const Epetra_SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele);
+        const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele);
 
     /*!
      * @brief calculate and return the value of the quantity at position xi based on the quantity

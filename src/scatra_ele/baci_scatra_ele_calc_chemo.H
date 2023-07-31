@@ -40,14 +40,14 @@ namespace DRT
 
      protected:
       //! calculation of chemotactic element matrix
-      virtual void CalcMatChemo(Epetra_SerialDenseMatrix& emat, const int k,
+      virtual void CalcMatChemo(CORE::LINALG::SerialDenseMatrix& emat, const int k,
           const double timefacfac, const double timetaufac, const double densnp,
           const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
           const CORE::LINALG::Matrix<nen_, 1>& diff);
 
       //! calculation of chemotactic RHS
-      virtual void CalcRHSChemo(Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,
-          const double rhstaufac, const double scatrares, const double densnp);
+      virtual void CalcRHSChemo(CORE::LINALG::SerialDenseVector& erhs, const int k,
+          const double rhsfac, const double rhstaufac, const double scatrares, const double densnp);
 
       //! get the material parameters
       virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with

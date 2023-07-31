@@ -266,8 +266,8 @@ void SCATRA::LevelSetAlgorithm::EvaluateErrorComparedToAnalyticalSol()
         discret_->SetState("phiref", phiref);
 
         // get error and volume
-        Teuchos::RCP<Epetra_SerialDenseVector> errors =
-            Teuchos::rcp(new Epetra_SerialDenseVector(2));
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
         discret_->EvaluateScalars(eleparams, errors);
         discret_->ClearState();
 
@@ -983,8 +983,8 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
       "INTERFACE_THICKNESS_TPF", levelsetparams_->get<double>("INTERFACE_THICKNESS_TPF"));
 
   // get masscenter and volume, last entry of vector is total volume of minus domain.
-  Teuchos::RCP<Epetra_SerialDenseVector> masscenter_and_volume =
-      Teuchos::rcp(new Epetra_SerialDenseVector(nsd_ + 1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> masscenter_and_volume =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(nsd_ + 1));
   discret_->EvaluateScalars(eleparams, masscenter_and_volume);
   discret_->ClearState();
 
@@ -992,7 +992,7 @@ void SCATRA::LevelSetAlgorithm::MassCenterUsingSmoothing()
 
   for (int idim = 0; idim < nsd_; idim++)
   {
-    center[idim] = masscenter_and_volume->Values()[idim] / (masscenter_and_volume->Values()[nsd_]);
+    center[idim] = masscenter_and_volume->values()[idim] / (masscenter_and_volume->values()[nsd_]);
   }
 
   if (nsd_ != 3)

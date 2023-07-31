@@ -840,7 +840,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForce()
     for (int i = 0; i < 2; ++i)
     {
       elegids[i] = elepairptr->GetEleGid(i);
-      bspotforce[i].Zero();
+      bspotforce[i].putScalar(0.0);
     }
 
     // evaluate beam linkage object to get forces and moments on binding spots
@@ -891,7 +891,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateStiff()
     {
       elegids[i] = elepairptr->GetEleGid(i);
 
-      for (int j = 0; j < 2; ++j) bspotstiff[i][j].Zero();
+      for (int j = 0; j < 2; ++j) bspotstiff[i][j].putScalar(0.0);
     }
 
     // evaluate beam linkage object to get linearizations of forces and moments on binding spots
@@ -944,9 +944,9 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForceStiff()
     for (int i = 0; i < 2; ++i)
     {
       elegids[i] = elepairptr->GetEleGid(i);
-      bspotforce[i].Zero();
+      bspotforce[i].putScalar(0.0);
 
-      for (int j = 0; j < 2; ++j) bspotstiff[i][j].Zero();
+      for (int j = 0; j < 2; ++j) bspotstiff[i][j].putScalar(0.0);
     }
 
     // evaluate beam linkage object to get forces and moments on binding spots
@@ -3401,8 +3401,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::CalcBellsForceDependentUn
   for (unsigned int i = 0; i < 2; ++i)
   {
     // currently, only forces (not moments) considered
-    bspotforce[i].Reshape(3, 1);
-    clbspotforcenorm[i] = bspotforce[i].Norm2();
+    bspotforce[i].reshape(3, 1);
+    clbspotforcenorm[i] = CORE::LINALG::Norm2(bspotforce[i]);
 
     // adjusted off-rate according to Bell's equation (Howard, eq 5.10, p.89)
     forcedependentkoff[i] = koff * exp(sgn * clbspotforcenorm[i] * delta / kt);

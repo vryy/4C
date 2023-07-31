@@ -28,7 +28,7 @@ extern "C"
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   ParentElement()->SetParamsInterfacePtr(params);
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
@@ -66,12 +66,12 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(Teuchos::ParameterList& params,
   const std::vector<double>* thick = ParentElement()->data_.Get<std::vector<double>>("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
 
-  const Epetra_SerialDenseMatrix* a3ref =
-      ParentElement()->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
+  const CORE::LINALG::SerialDenseMatrix* a3ref =
+      ParentElement()->data_.Get<CORE::LINALG::SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
 
   std::vector<double> funct(iel);
-  Epetra_SerialDenseMatrix deriv(2, iel);
+  CORE::LINALG::SerialDenseMatrix deriv(2, iel);
 
   double xrefe[3][MAXNOD_SHELL8];
   double xjm[3][3];

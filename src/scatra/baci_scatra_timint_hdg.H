@@ -75,7 +75,7 @@ namespace SCATRA
     /*!
     \brief Compare the numerical solution to the analytical one.
     */
-    virtual Teuchos::RCP<Epetra_SerialDenseVector> ComputeError() const;
+    virtual Teuchos::RCP<CORE::LINALG::SerialDenseVector> ComputeError() const;
 
     Teuchos::RCP<DRT::ResultTest> CreateScaTraFieldTest() override;
 

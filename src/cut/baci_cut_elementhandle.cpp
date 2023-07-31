@@ -264,7 +264,7 @@ void CORE::GEO::CUT::ElementHandle::AppendVolumeCellGaussPoints_DirectDivergence
   Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> gp = vc->GetGaussRule();
 
   // volume cell gausspoints are identified to be negligible in
-  // GEO::CUT::VolumeCell::DirectDivergenceGaussRule
+  // CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule
   if (gp == Teuchos::null) return;
 
   gpc->Append(gp);
@@ -356,7 +356,7 @@ void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints,
     const int bc_cubaturedegree)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin" );
 
   for (std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell*>>::const_iterator i = bcells.begin();
        i != bcells.end(); ++i)
@@ -487,7 +487,7 @@ bool CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints(
     std::vector<std::vector<CORE::DRT::UTILS::GaussIntegration>>& intpoints_sets,
     bool include_inner)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::ElementHandle::GetCellSets_DofSets_GaussPoints");
 
   GetVolumeCellsDofSets(cell_sets, nds_sets, include_inner);
 

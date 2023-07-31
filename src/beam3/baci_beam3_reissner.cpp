@@ -281,7 +281,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Beam3r::Beam3r(int id, int owner)
     : DRT::ELEMENTS::Beam3Base(id, owner),
-      stiff_ptc_(true),
+      stiff_ptc_(),
       useFAD_(false),
       isinit_(false),
       jacobiGPelastf_(0),
@@ -1418,10 +1418,10 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixVariationsAtXi(
   const unsigned int nnodetriad = this->NumNode();
 
   // safety check
-  if ((unsigned int)Ivar.M() != 6 or (unsigned int)
-                                             Ivar.N() != 3 * vpernode * nnodecl + 3 * nnodetriad)
+  if (static_cast<unsigned int>(Ivar.numRows()) != 6 or
+      static_cast<unsigned int>(Ivar.numCols()) != 3 * vpernode * nnodecl + 3 * nnodetriad)
     dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6,
-        3 * vpernode * nnodecl + 3 * nnodetriad, Ivar.M(), Ivar.N());
+        3 * vpernode * nnodecl + 3 * nnodetriad, Ivar.numRows(), Ivar.numCols());
 
   switch (nnodetriad)
   {
@@ -1536,10 +1536,10 @@ void DRT::ELEMENTS::Beam3r::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   const unsigned int nnodetriad = this->NumNode();
 
   // safety check
-  if ((unsigned int)Iinc.M() != 6 or (unsigned int)
-                                             Iinc.N() != 3 * vpernode * nnodecl + 3 * nnodetriad)
+  if (static_cast<unsigned int>(Iinc.numRows()) != 6 or
+      static_cast<unsigned int>(Iinc.numCols()) != 3 * vpernode * nnodecl + 3 * nnodetriad)
     dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6,
-        3 * vpernode * nnodecl + 3 * nnodetriad, Iinc.M(), Iinc.N());
+        3 * vpernode * nnodecl + 3 * nnodetriad, Iinc.numRows(), Iinc.numCols());
 
   switch (nnodetriad)
   {

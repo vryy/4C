@@ -43,10 +43,10 @@ DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Instance(
  *--------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Sysmat(
-    DRT::Element* ele,                   ///< current element
-    Epetra_SerialDenseMatrix& emat,      ///< element matrix
-    Epetra_SerialDenseVector& erhs,      ///< element right-hand side vector
-    Epetra_SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
+    DRT::Element* ele,                          ///< current element
+    CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
+    CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
 )
 {
   // density at t_(n)
@@ -123,11 +123,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::Sysmat(
  *------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-    const double& timefacfac,        //!< domain integration factor times time integration factor
-    const double& rhsfac  //!< domain integration factor times time integration factor for
-                          //!< right-hand side vector
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+    const double& timefacfac,  //!< domain integration factor times time integration factor
+    const double& rhsfac       //!< domain integration factor times time integration factor for
+                               //!< right-hand side vector
 )
 {
   // extract variables and parameters
@@ -180,8 +180,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJoule(
  *------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJouleSolid(
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const double& timefacfac,
-    const double& rhsfac)
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+    const double& timefacfac, const double& rhsfac)
 {
   // no contributions to matrix
 
@@ -201,11 +201,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsJouleSolid(
  *--------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-    const double& timefacfac,        //!< domain integration factor times time integration factor
-    const double& rhsfac  //!< domain integration factor times time integration factor for
-                          //!< right-hand side vector
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+    const double& timefacfac,  //!< domain integration factor times time integration factor
+    const double& rhsfac       //!< domain integration factor times time integration factor for
+                               //!< right-hand side vector
 )
 {
   // extract variables and parameters
@@ -255,11 +255,11 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsMixing(
  *------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    Epetra_SerialDenseVector& erhs,  //!< element right-hand side vector
-    const double& timefacfac,        //!< domain integration factor times time integration factor
-    const double& rhsfac  //!< domain integration factor times time integration factor for
-                          //!< right-hand side vector
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
+    const double& timefacfac,  //!< domain integration factor times time integration factor
+    const double& rhsfac       //!< domain integration factor times time integration factor for
+                               //!< right-hand side vector
 )
 {
   // extract variables and parameters
@@ -323,16 +323,16 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatAndRhsSoret(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::EvaluateActionOD(
-    DRT::Element* ele,                         //!< current element
-    Teuchos::ParameterList& params,            //!< parameter list
-    DRT::Discretization& discretization,       //!< discretization
-    const SCATRA::Action& action,              //!< action parameter
-    DRT::Element::LocationArray& la,           //!< location array
-    Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-    Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-    Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-    Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-    Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+    DRT::Element* ele,                                //!< current element
+    Teuchos::ParameterList& params,                   //!< parameter list
+    DRT::Discretization& discretization,              //!< discretization
+    const SCATRA::Action& action,                     //!< action parameter
+    DRT::Element::LocationArray& la,                  //!< location array
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+    CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
 )
 {
   // determine and evaluate action
@@ -365,8 +365,8 @@ int DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::EvaluateActionOD(
  *------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SysmatODThermoScatra(
-    DRT::Element* ele,              //!< current element
-    Epetra_SerialDenseMatrix& emat  //!< element matrix
+    DRT::Element* ele,                     //!< current element
+    CORE::LINALG::SerialDenseMatrix& emat  //!< element matrix
 )
 {
   // integration points and weights
@@ -404,8 +404,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::SysmatODThermoScatra(
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    const double& timefacfac         //!< domain integration factor times time integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    const double& timefacfac  //!< domain integration factor times time integration factor
 )
 {
   // extract variables and parameters
@@ -486,7 +486,7 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleOD(
  *------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleSolidOD(
-    Epetra_SerialDenseMatrix& emat, const double& timefacfac)
+    CORE::LINALG::SerialDenseMatrix& emat, const double& timefacfac)
 {
   // extract variables and parameters
   const CORE::LINALG::Matrix<nsd_, 1>& gradpot = VarManager()->GradPot();
@@ -519,8 +519,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatJouleSolidOD(
  *--------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    const double& timefacfac         //!< domain integration factor times time integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    const double& timefacfac  //!< domain integration factor times time integration factor
 )
 {
   // extract variables and parameters
@@ -573,8 +573,8 @@ void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatMixingOD(
  *------------------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcSTIDiffCond<distype>::CalcMatSoretOD(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    const double& timefacfac         //!< domain integration factor times time integration factor
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    const double& timefacfac  //!< domain integration factor times time integration factor
 )
 {
   // extract variables and parameters

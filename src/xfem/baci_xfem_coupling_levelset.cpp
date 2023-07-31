@@ -138,17 +138,17 @@ bool XFEM::LevelSetCoupling::HaveMatchingNodes(
 
     const int nsd = node_A->Dim();
 
-    Epetra_SerialDenseVector X_A(nsd);
-    Epetra_SerialDenseVector X_B(nsd);
+    CORE::LINALG::SerialDenseVector X_A(nsd);
+    CORE::LINALG::SerialDenseVector X_B(nsd);
 
-    std::copy(node_A->X(), node_A->X() + nsd, X_A.A());
-    std::copy(node_B->X(), node_B->X() + nsd, X_B.A());
+    std::copy(node_A->X(), node_A->X() + nsd, X_A.values());
+    std::copy(node_B->X(), node_B->X() + nsd, X_B.values());
 
-    Epetra_SerialDenseVector diff(X_A);
-    diff.Scale(-1.0);
+    CORE::LINALG::SerialDenseVector diff(X_A);
+    diff.scale(-1.0);
     diff += X_B;
 
-    if (diff.Norm2() > 1e-14) return false;
+    if (CORE::LINALG::Norm2(diff) > 1e-14) return false;
   }
 
   return true;
@@ -1745,7 +1745,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
     // get (smoothed) gradient of the G-function field at this node
     //-------------------------------------------------------------
     // smoothed normal vector at this node
-    Epetra_SerialDenseVector nvec(nsd_);
+    CORE::LINALG::SerialDenseVector nvec(nsd_);
     double curv = 0.0;
 
     GetSmoothedQuantitiesAtNode(nvec, curv, cutter_node, gradphinp_smoothed_node_col_,
@@ -1762,7 +1762,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
       }
 
       // possible change in normal direction compared to phi-gradient
-      nvec.Scale(normal_orientation_);
+      nvec.scale(normal_orientation_);
     }
 
     //------------------------
@@ -1790,15 +1790,17 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
     {
       // const double * cutter_node_xyz = cutter_node->X();
       // search for the fluid element, the current scatra node lies in to obtain the node's
-      // GEO::CUT::Point::PointPosition interpolate fluid quantities within the element afterwards
+      // CORE::GEO::CUT::Point::PointPosition interpolate fluid quantities within the element
+      // afterwards
 
       dserror("ask a mesh projector with a search tree for the right fluid phase!");
     }
 
-    Epetra_SerialDenseVector flvelconv(
+    CORE::LINALG::SerialDenseVector flvelconv(
         nsd_);  // the convective fluid velocity (Navier-Stokes) at this node
-    Epetra_SerialDenseVector flvelrel(nsd_);  // the relative interface(flame) velocity at this node
-    Epetra_SerialDenseVector flvelabs(
+    CORE::LINALG::SerialDenseVector flvelrel(
+        nsd_);  // the relative interface(flame) velocity at this node
+    CORE::LINALG::SerialDenseVector flvelabs(
         nsd_);  // the absolute interface(flame) velocity (transport velocity for interface)
 
     ComputeRelativeTransportVelocity(flvelrel, pos, nvec, curv);
@@ -1826,9 +1828,9 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
         INPAR::TWOPHASE::transport_dir_normal)  // OPTION 2: just the normal part (u*n^ij)*n^ij
                                                 // (OPTION 2)
     {
-      const double normal_vel = flvelconv.Dot(nvec);
+      const double normal_vel = flvelconv.dot(nvec);
       flvelconv = nvec;
-      flvelconv.Scale(normal_vel);
+      flvelconv.scale(normal_vel);
     }
     else if (transport_direction_ == INPAR::TWOPHASE::transport_dir_all)
     {
@@ -1868,24 +1870,24 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingTwoPhase::ComputeRelativeTransportVelocity(
-    Epetra_SerialDenseVector& flvelrel, const CORE::GEO::CUT::Point::PointPosition& position,
-    const Epetra_SerialDenseVector& nvec, const double& curv)
+    CORE::LINALG::SerialDenseVector& flvelrel, const CORE::GEO::CUT::Point::PointPosition& position,
+    const CORE::LINALG::SerialDenseVector& nvec, const double& curv)
 {
-  flvelrel.Scale(0.0);
+  flvelrel.putScalar(0.0);
 }
 
 
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-bool XFEM::LevelSetCouplingTwoPhase::RescaleNormal(Epetra_SerialDenseVector& normal)
+bool XFEM::LevelSetCouplingTwoPhase::RescaleNormal(CORE::LINALG::SerialDenseVector& normal)
 {
   // compute norm of smoothed normal vector
-  const double gradphi_norm = normal.Norm2();
+  const double gradphi_norm = CORE::LINALG::Norm2(normal);
 
   if (gradphi_norm > 1.0E-12)  // the standard case of non-vanishing normal
   {
-    normal.Scale(1.0 / gradphi_norm);  // scale it norm 1
+    normal.scale(1.0 / gradphi_norm);  // scale it norm 1
     return true;
   }
   else  // 'ngradnorm' == 0.0
@@ -1898,7 +1900,7 @@ bool XFEM::LevelSetCouplingTwoPhase::RescaleNormal(Epetra_SerialDenseVector& nor
     //    relative flame velocity 'flvelrel' turns out to be zero due to the zero average normal
     //    vector.
     // get the global id for current node
-    normal.Scale(0.0);
+    normal.putScalar(0.0);
     return false;
   }
 }
@@ -2058,15 +2060,15 @@ void XFEM::LevelSetCouplingTwoPhase::GetCouplingSpecificAverageWeights(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 //! get the smoothed level set gradient at a given node (not necessarily normalized to one)
-void XFEM::LevelSetCouplingTwoPhase::GetSmoothedQuantitiesAtNode(Epetra_SerialDenseVector& normal,
-    double& curvature, const DRT::Node* node,
+void XFEM::LevelSetCouplingTwoPhase::GetSmoothedQuantitiesAtNode(
+    CORE::LINALG::SerialDenseVector& normal, double& curvature, const DRT::Node* node,
     const Teuchos::RCP<const Epetra_MultiVector>& gradphinp_smoothed_node_col,
     const Teuchos::RCP<const Epetra_MultiVector>& curvaturenp_node_col,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds)
 {
   if (require_nodalcurvature_)
   {
-    Epetra_SerialDenseVector curvature_tmp(1);
+    CORE::LINALG::SerialDenseVector curvature_tmp(1);
     XFEM::UTILS::ExtractQuantityAtNode(curvature_tmp, node, curvaturenp_node_col, dis, nds, 1);
     curvature = curvature_tmp(0);
   }
@@ -2081,7 +2083,7 @@ void XFEM::LevelSetCouplingTwoPhase::GetSmoothedQuantitiesAtNode(Epetra_SerialDe
  *------------------------------------------------------------------------------------------------*/
 //! get the smoothed level set gradient at a given node (not necessarily normalized to one)
 void XFEM::LevelSetCouplingTwoPhase::GetSmoothedQuantitiesAtElement(
-    Epetra_SerialDenseMatrix& normal, Epetra_SerialDenseMatrix& curvature,
+    CORE::LINALG::SerialDenseMatrix& normal, CORE::LINALG::SerialDenseMatrix& curvature,
     const DRT::Element* element,
     const Teuchos::RCP<const Epetra_MultiVector>& gradphinp_smoothed_node_col,
     const Teuchos::RCP<const Epetra_MultiVector>& curvaturenp_node_col,
@@ -2102,7 +2104,7 @@ void XFEM::LevelSetCouplingTwoPhase::GetSmoothedQuantitiesAtElement(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 //! get the smoothed level set gradient at a given node (not necessarily normalized to one)
-void XFEM::LevelSetCouplingTwoPhase::GetPhiAtElement(Epetra_SerialDenseMatrix& phi_ele,
+void XFEM::LevelSetCouplingTwoPhase::GetPhiAtElement(CORE::LINALG::SerialDenseMatrix& phi_ele,
     const DRT::Element* element, const Teuchos::RCP<const Epetra_MultiVector>& phinp,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds)
 {
@@ -2349,8 +2351,8 @@ void XFEM::LevelSetCouplingCombustion::GetPhaseDensities(
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
 void XFEM::LevelSetCouplingCombustion::ComputeRelativeTransportVelocity(
-    Epetra_SerialDenseVector& flvelrel, const CORE::GEO::CUT::Point::PointPosition& position,
-    const Epetra_SerialDenseVector& nvec, const double& curv)
+    CORE::LINALG::SerialDenseVector& flvelrel, const CORE::GEO::CUT::Point::PointPosition& position,
+    const CORE::LINALG::SerialDenseVector& nvec, const double& curv)
 {
   //------------------------
   // get fluid material parameters
@@ -2394,7 +2396,7 @@ void XFEM::LevelSetCouplingCombustion::ComputeRelativeTransportVelocity(
   // compute the relative flame velocity at this node
   //-----------------------------------------------
   flvelrel = nvec;
-  flvelrel.Scale(-wallfac * speedfac);
+  flvelrel.scale(-wallfac * speedfac);
 
   if (transport_curvature_) dserror("how to account for curvature here?");
 }

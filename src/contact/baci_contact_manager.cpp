@@ -1534,7 +1534,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     CORE::LINALG::Export(*wearoutput, *wearoutputexp);
     output.WriteVector("wear", wearoutputexp);
-    GetStrategy().ContactWear()->Scale(0.0);
+    GetStrategy().ContactWear()->PutScalar(0.0);
   }
 
   // *********************************************************************

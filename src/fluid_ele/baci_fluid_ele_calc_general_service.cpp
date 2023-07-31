@@ -38,9 +38,10 @@
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // get the action required
   const FLD::Action act = DRT::INPUT::get<FLD::Action>(params, "action");
@@ -187,7 +188,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::EvaluateService(DRT::ELEMENTS
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // integrations points and weights
   return IntegrateShapeFunction(ele, discretization, lm, elevec1, intpoints_);
@@ -200,11 +201,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, const CORE::DRT::UTILS::GaussIntegration& intpoints)
+    CORE::LINALG::SerialDenseVector& elevec1, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // --------------------------------------------------
   // construct views
-  CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> vector(elevec1.A(), true);
+  CORE::LINALG::Matrix<numdofpernode_ * nen_, 1> vector(elevec1.values(), true);
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -264,7 +265,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // get node coordinates
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -308,7 +310,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Flui
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2)
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2)
 {
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors
@@ -380,7 +382,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2)
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2)
 {
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors
@@ -451,7 +453,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fluid* ele,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   double area = 0.0;
   double divu = 0.0;
@@ -542,7 +545,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
@@ -558,8 +562,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::Fluid* ele,
     Teuchos::ParameterList& params, Teuchos::RCP<MAT::Material>& mat,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-    const CORE::DRT::UTILS::GaussIntegration& intpoints)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseVector& elevec1, const CORE::DRT::UTILS::GaussIntegration& intpoints)
 {
   // analytical solution
   CORE::LINALG::Matrix<nsd_, 1> u(true);
@@ -2724,7 +2728,7 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS::Fluid* ele,
     //    Teuchos::ParameterList&              params,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra)
 {
   // set element id
   eid_ = ele->Id();
@@ -2876,8 +2880,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAndPressure(
     DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1_epetra,  // vectofill
-    Epetra_SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  // vectofill
+    CORE::LINALG::SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
 )
 {
   // declare and initialize matrix for shapefunction evaluation
@@ -3064,7 +3068,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   elevec1_epetra(4) = cauchystress(1, 2);
   elevec1_epetra(5) = cauchystress(0, 2);
 
-  if (elevec1_epetra.M() == 7)
+  if (elevec1_epetra.numRows() == 7)
   {
     elevec1_epetra(6) = -pressint(0, 0);
   }
@@ -3079,8 +3083,8 @@ template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::Enrich
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
     Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
     const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1_epetra,  // vectofill
-    Epetra_SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  // vectofill
+    CORE::LINALG::SerialDenseVector& elevec2_epetra   // given point in parameter space coordinates
 )
 {
   //----------------------------------------------------------------------
@@ -3400,8 +3404,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     Teuchos::ParameterList& params, DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization,  // fluid
     const std::vector<int>& lm, Teuchos::RCP<MAT::Material>& mat,
-    Epetra_SerialDenseVector& elevec1_epetra,  // vectofill
-    Epetra_SerialDenseVector& elevec2_epetra)
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,  // vectofill
+    CORE::LINALG::SerialDenseVector& elevec2_epetra)
 {
   // cast fluid element to immersed element to get/store immersed information
   DRT::ELEMENTS::FluidImmersedBase* immersedele =
@@ -3616,7 +3620,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
     DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2)
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    CORE::LINALG::SerialDenseVector& elevec2)
 {
   // coordinates of the current integration point
   CORE::LINALG::Matrix<nsd_, 1> elecoords = params.get<CORE::LINALG::Matrix<nsd_, 1>>("elecoords");
@@ -3668,7 +3673,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
     DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    std::vector<int>& lm, Epetra_SerialDenseVector& elevec1)
+    std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1)
 {
   // coordinates of the current integration point
   CORE::LINALG::Matrix<nsd_, 1> elecoords = params.get<CORE::LINALG::Matrix<nsd_, 1>>("elecoords");
@@ -3712,7 +3717,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
     // fill the local element vector with the global values
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &epre, "velnp");
 
-    if (elevec1.Length() != 2) dserror("velnp is set, there must be a vel as well");
+    if (elevec1.length() != 2) dserror("velnp is set, there must be a vel as well");
 
     elevec1[1] = funct_.Dot(epre);
   }
@@ -4425,7 +4430,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1)
+    CORE::LINALG::SerialDenseVector& elevec1)
 {
   // ---------------------------------------------------------------------------
   // Geometry
@@ -4501,7 +4506,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
     DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    const std::vector<int>& lm, Epetra_SerialDenseVector& elevec1, Teuchos::RCP<MAT::Material>& mat)
+    const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+    Teuchos::RCP<MAT::Material>& mat)
 {
   // set element id
   eid_ = ele->Id();
@@ -4596,7 +4602,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ResetImmersedEle(
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
     DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
   if (distype != DRT::Element::hex8 && distype != DRT::Element::tet4 &&
       distype != DRT::Element::quad4 && distype != DRT::Element::tri3)

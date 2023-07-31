@@ -21,9 +21,10 @@
  |  evaluate the element (public)                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, LocationArray& la,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // we assume here, that numdofpernode is equal for every node within
   // the element and does not change during the computations
@@ -48,11 +49,11 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
     case POROFLUIDMULTIPHASE::calc_valid_dofs:
     case POROFLUIDMULTIPHASE::calc_domain_integrals:
     {
-      std::vector<Epetra_SerialDenseMatrix*> elemat(2);
+      std::vector<CORE::LINALG::SerialDenseMatrix*> elemat(2);
       elemat[0] = &elemat1;
       elemat[1] = &elemat2;
 
-      std::vector<Epetra_SerialDenseVector*> elevec(3);
+      std::vector<CORE::LINALG::SerialDenseVector*> elevec(3);
       elevec[0] = &elevec1;
       elevec[1] = &elevec2;
       elevec[2] = &elevec3;
@@ -82,7 +83,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhase::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::PoroFluidMultiPhase::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("EvaluateNeumann for PoroFluidMultiPhase  not yet implemented!");
   //    The function is just a dummy. For PoroFluidMultiPhase elements, the integration

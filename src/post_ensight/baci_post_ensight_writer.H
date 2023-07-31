@@ -314,8 +314,8 @@ class EnsightWriter : public PostWriterBase
   void InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiVector> idata, const int dim,
       const int npatch, const std::vector<int>& vpoff, const std::vector<int>& ele_cart_id,
       const DRT::Element* actele, DRT::NURBS::NurbsDiscretization* nurbsdis,
-      const std::vector<Epetra_SerialDenseVector>& eleknots,
-      const Epetra_SerialDenseVector& weights, const int numdf,
+      const std::vector<CORE::LINALG::SerialDenseVector>& eleknots,
+      const CORE::LINALG::SerialDenseVector& weights, const int numdf,
       const std::vector<double>& my_data) const;
 
   void WriteNodalResultStepForNurbs(std::ofstream& file, const int numdf,

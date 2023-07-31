@@ -408,7 +408,7 @@ void CONTACT::AUG::Interface::ExportNodalNormals() const
  *----------------------------------------------------------------------------*/
 void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
 {
-  std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> normals;
+  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> normals;
 
   /*--------------------------------------------------------------------------*/
   // (0) Pack normals
@@ -423,11 +423,11 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
       if (!node) dserror("Cannot find node with gid %", gid);
       CoNode* cnode = dynamic_cast<CoNode*>(node);
 
-      Teuchos::RCP<Epetra_SerialDenseMatrix>& normals_i = normals[gid];
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& normals_i = normals[gid];
 
       // fill nodal matrix
-      normals_i = Teuchos::rcp(new Epetra_SerialDenseMatrix(3, 1));
-      Epetra_SerialDenseMatrix& n_i = *normals_i;
+      normals_i = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 1));
+      CORE::LINALG::SerialDenseMatrix& n_i = *normals_i;
       n_i(0, 0) = cnode->MoData().n()[0];
       n_i(1, 0) = cnode->MoData().n()[1];
       n_i(2, 0) = cnode->MoData().n()[2];
@@ -452,13 +452,13 @@ void CONTACT::AUG::Interface::ExportNodalNormalsOnly() const
       if (!node) dserror("Cannot find node with gid %", gid);
       CoNode& cnode = dynamic_cast<CoNode&>(*node);
 
-      Teuchos::RCP<Epetra_SerialDenseMatrix>& normals_i = normals[gid];
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& normals_i = normals[gid];
 
       if (normals_i.is_null()) dserror("GID %d could not be found!", gid);
 
       // fill nodal matrix
-      const Epetra_SerialDenseMatrix& n_i = *normals_i;
-      std::copy(n_i.A(), n_i.A() + 3, cnode.MoData().n());
+      const CORE::LINALG::SerialDenseMatrix& n_i = *normals_i;
+      std::copy(n_i.values(), n_i.values() + 3, cnode.MoData().n());
     }
   }
 
@@ -870,7 +870,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveRhs(
 
     std::vector<int> rGid(Dim());
     std::vector<int> rOwner(Dim(), cnode->Owner());
-    Epetra_SerialDenseVector rVal(Dim());
+    CORE::LINALG::SerialDenseVector rVal(Dim());
 
     for (int rDof = 0; rDof < cnode->NumDof(); ++rDof)
     {
@@ -922,7 +922,7 @@ void CONTACT::AUG::Interface::AssembleDLmTLmTRhs(Epetra_Vector& dLmTLmTRhs) cons
 
     std::vector<int> rGid(Dim() - 1);
     std::vector<int> rOwner(Dim() - 1, cnode->Owner());
-    Epetra_SerialDenseVector rVal(Dim() - 1);
+    CORE::LINALG::SerialDenseVector rVal(Dim() - 1);
 
     /*------------------------------------------------------------------*
      |* 2-D case *******************************************************|
@@ -1090,9 +1090,9 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
 
     const int numdof = cnode->NumDof();
 
-    if (vals.Length() != numdof)
+    if (vals.length() != numdof)
     {
-      vals.Resize(numdof);
+      vals.resize(numdof);
       rowIds.resize(numdof, -1);
       rowner.resize(numdof, -1);
     }
@@ -1101,7 +1101,7 @@ void CONTACT::AUG::Interface::AssembleAugInactiveDiagMatrix(Epetra_Vector& augIn
     vals(0) = cn_inv_scale * augA;
 
     // tangential directions
-    std::fill(vals.A() + 1, vals.A() + numdof, ct_inv * augA);
+    std::fill(vals.values() + 1, vals.values() + numdof, ct_inv * augA);
 
     // copy dof ids
     std::copy(cnode->Dofs(), cnode->Dofs() + numdof, rowIds.data());

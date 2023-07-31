@@ -612,7 +612,7 @@ void PARTICLEINTERACTION::SPHDensityBase::ContinuityEquationParticleWallContribu
     const int numnodes = ele->NumNode();
 
     // shape functions and location vector of wall element
-    Epetra_SerialDenseVector funct(numnodes);
+    CORE::LINALG::SerialDenseVector funct(numnodes);
     std::vector<int> lmele;
 
     if (walldatastate->GetVelCol() != Teuchos::null)

@@ -42,12 +42,12 @@ void CORE::GEO::CUT::LevelSetIntersection::AddCutSide(int levelset_sid)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(int eid,
-    const std::vector<int>& nids, const Epetra_SerialDenseMatrix& xyz,
+    const std::vector<int>& nids, const CORE::LINALG::SerialDenseMatrix& xyz,
     ::DRT::Element::DiscretizationType distype, const double* lsv, const bool lsv_only_plus_domain,
     const bool& check_lsv)
 {
   int numnode = nids.size();
-  if (numnode != xyz.N()) dserror("node coordinate number mismatch");
+  if (numnode != xyz.numCols()) dserror("node coordinate number mismatch");
 
   bool ltz = false;
   bool gtz = false;
@@ -86,7 +86,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::LevelSetIntersection::Cut_Mesh(bool screenoutput)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 1/3 --- Cut");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 1/3 --- Cut");
 
   Mesh& m = NormalMesh();
 
@@ -257,4 +257,4 @@ void CORE::GEO::CUT::LevelSetIntersection::Cut(
 
   // ######################################################################################
 
-}  // GEO::CUT::LevelSetIntersection::Cut
+}  // CORE::GEO::CUT::LevelSetIntersection::Cut

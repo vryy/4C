@@ -14,7 +14,7 @@
 
 #include "baci_lib_globalproblem.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -120,8 +120,8 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
 
       // build coefficient matrix and right-hand side
       const unsigned N = X_.size() - 2;
-      Epetra_SerialDenseMatrix A(N, N);
-      Epetra_SerialDenseVector M(N), B(N);
+      CORE::LINALG::SerialDenseMatrix A(N, N);
+      CORE::LINALG::SerialDenseVector M(N), B(N);
       for (unsigned i = 0; i < N; ++i)
       {
         const double Xm = X_[i + 1] - X_[i], Xp = X_[i + 2] - X_[i + 1], ocpm = ocp[i + 1] - ocp[i],
@@ -133,12 +133,14 @@ MAT::PAR::Electrode::Electrode(Teuchos::RCP<MAT::PAR::Material> matdata)
       }
 
       // solve for third-order coefficients for cubic spline interpolation
-      Epetra_SerialDenseSolver solver;
-      solver.SetMatrix(A);
-      solver.SetVectors(M, B);
-      solver.FactorWithEquilibration(true);
-      solver.SolveToRefinedSolution(true);
-      if (solver.Factor() or solver.Solve())
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> solver;
+      solver.setMatrix(Teuchos::rcpFromRef(A));
+      solver.setVectors(Teuchos::rcpFromRef(M), Teuchos::rcpFromRef(B));
+      solver.factorWithEquilibration(true);
+      solver.solveToRefinedSolution(true);
+      if (solver.factor() or solver.solve())
         dserror("Solution of linear system of equations failed!");
 
       // fill coefficient vectors

@@ -1112,7 +1112,7 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToEdge(const CORE::LINALG::Matrix
   double edgedisttmp = edgedist;
 
   // number of vertices of flame front patch (3 for tri3; 4 for quad4)
-  const size_t numvertices = patchcoord.N();
+  const size_t numvertices = patchcoord.numCols();
 
   // current vertex of the patch (first vertex)
   static CORE::LINALG::Matrix<3, 1> vertex1(true);
@@ -1184,7 +1184,7 @@ void SCATRA::LevelSetAlgorithm::ComputeDistanceToPatch(const CORE::LINALG::Matri
   double vertexdisttmp = vertexdist;
 
   // number of vertices of flame front patch (3 for tri3; 4 for quad4)
-  const size_t numvertices = patchcoord.N();
+  const size_t numvertices = patchcoord.numCols();
 
   // current vertex of the patch
   static CORE::LINALG::Matrix<3, 1> vertex(true);
@@ -1280,7 +1280,7 @@ bool SCATRA::LevelSetAlgorithm::ProjectNodeOnPatch(const CORE::LINALG::Matrix<3,
   // get coordinates of vertices of flame front patch
   // remark: here we only get a view (bool true) on the SerialDenseMatrix returned by
   // CellNodalPosXYZ()
-  CORE::LINALG::Matrix<nsd, numvertices> patchcoordfix(patchcoord.A(), true);
+  CORE::LINALG::Matrix<nsd, numvertices> patchcoordfix(patchcoord.values(), true);
 
   static CORE::LINALG::Matrix<numvertices, 1> funct(true);
   static CORE::LINALG::Matrix<2, numvertices> deriv(true);

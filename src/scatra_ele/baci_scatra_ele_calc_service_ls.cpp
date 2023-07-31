@@ -27,9 +27,11 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   //(for now) only first dof set considered
   const std::vector<int>& lm = la[0].lm_;
@@ -51,7 +53,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
       DRT::UTILS::ExtractMyValues<CORE::LINALG::Matrix<nen_, 1>>(*phizero, ephizero, lm);
 
       // check if length suffices
-      if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
+      if (elevec1_epetra.length() < 1) dserror("Result vector too short");
 
       CalErrorComparedToAnalytSolution(ele, ephizero, params, elevec1_epetra);
 
@@ -75,7 +77,7 @@ int DRT::ELEMENTS::ScaTraEleCalcLS<distype>::EvaluateAction(DRT::Element* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcLS<distype>::CalErrorComparedToAnalytSolution(
     const DRT::Element* ele, const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors)
 {
   // get element volume
   const double vol = my::EvalShapeFuncAndDerivsAtEleCenter();

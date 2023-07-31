@@ -461,8 +461,8 @@ void STR::MonitorDbc::GetArea(double area[], const DRT::Condition* rcond) const
     std::vector<double> mydispn;
     DRT::UTILS::ExtractMyValues(dispn_col, mydispn, fele_dofs);
 
-    xyze_ref.Reshape(DIM, num_fnodes);
-    xyze_curr.Reshape(DIM, num_fnodes);
+    xyze_ref.reshape(DIM, num_fnodes);
+    xyze_curr.reshape(DIM, num_fnodes);
 
     for (unsigned i = 0; i < num_fnodes; ++i)
     {

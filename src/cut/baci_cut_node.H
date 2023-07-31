@@ -319,7 +319,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       int nid_;       ///< node's id (the same as in  ::DRT::Discretization)
-      Point* point_;  ///< pointer to the GEO::CUT::Point which defines the node
+      Point* point_;  ///< pointer to the CORE::GEO::CUT::Point which defines the node
       double lsv_;    ///< levelset value if it is a levelset cut
 
       plain_edge_set edges_;  ///< all adjacent edges

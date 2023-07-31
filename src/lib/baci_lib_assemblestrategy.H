@@ -19,8 +19,9 @@
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Epetra_Vector.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::LINALG
 {
@@ -92,11 +93,11 @@ namespace DRT
     //@}
 
     //! @name Access Methods to Element Local Object
-    Epetra_SerialDenseMatrix& Elematrix1() { return elematrix1_; }
-    Epetra_SerialDenseMatrix& Elematrix2() { return elematrix2_; }
-    Epetra_SerialDenseVector& Elevector1() { return elevector1_; }
-    Epetra_SerialDenseVector& Elevector2() { return elevector2_; }
-    Epetra_SerialDenseVector& Elevector3() { return elevector3_; }
+    CORE::LINALG::SerialDenseMatrix& Elematrix1() { return elematrix1_; }
+    CORE::LINALG::SerialDenseMatrix& Elematrix2() { return elematrix2_; }
+    CORE::LINALG::SerialDenseVector& Elevector1() { return elevector1_; }
+    CORE::LINALG::SerialDenseVector& Elevector2() { return elevector2_; }
+    CORE::LINALG::SerialDenseVector& Elevector3() { return elevector3_; }
     //@}
 
     /// zero global storage
@@ -163,12 +164,12 @@ namespace DRT
 
     /// Assemble to given matrix using nodal stride
     virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
-        const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+        const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
         const std::vector<int>& lm, const std::vector<int>& lmowner);
 
     /// Assemble to given matrix
     virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, int eid,
-        const std::vector<int>& lmstride, const Epetra_SerialDenseMatrix& Aele,
+        const std::vector<int>& lmstride, const CORE::LINALG::SerialDenseMatrix& Aele,
         const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
         const std::vector<int>& lmcol);
 
@@ -176,12 +177,13 @@ namespace DRT
     virtual void Assemble(CORE::LINALG::SparseOperator& sysmat, double val, int rgid, int cgid);
 
     /// Assemble to given vector
-    virtual void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
+    virtual void Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVector& Vele,
         const std::vector<int>& lm, const std::vector<int>& lmowner);
 
     /// Assemble to given vector
-    virtual void Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
-        const std::vector<int>& lm, const std::vector<int>& lmowner);
+    virtual void Assemble(Epetra_MultiVector& V, const int n,
+        const CORE::LINALG::SerialDenseVector& Vele, const std::vector<int>& lm,
+        const std::vector<int>& lmowner);
 
     //@}
 
@@ -201,11 +203,11 @@ namespace DRT
 
     //! @name Element Local Objects
     /// define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1_;
-    Epetra_SerialDenseMatrix elematrix2_;
-    Epetra_SerialDenseVector elevector1_;
-    Epetra_SerialDenseVector elevector2_;
-    Epetra_SerialDenseVector elevector3_;
+    CORE::LINALG::SerialDenseMatrix elematrix1_;
+    CORE::LINALG::SerialDenseMatrix elematrix2_;
+    CORE::LINALG::SerialDenseVector elevector1_;
+    CORE::LINALG::SerialDenseVector elevector2_;
+    CORE::LINALG::SerialDenseVector elevector3_;
 
     //@}
   };

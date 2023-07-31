@@ -602,8 +602,8 @@ namespace BEAMINTERACTION
       // assemble both element vectors into global system vector
       if (fe_sysvec != Teuchos::null)
       {
-        fe_sysvec->SumIntoGlobalValues(elevec[0].Length(), lmrow1.data(), elevec[0].Values());
-        fe_sysvec->SumIntoGlobalValues(elevec[1].Length(), lmrow2.data(), elevec[1].Values());
+        fe_sysvec->SumIntoGlobalValues(elevec[0].length(), lmrow1.data(), elevec[0].values());
+        fe_sysvec->SumIntoGlobalValues(elevec[1].length(), lmrow2.data(), elevec[1].values());
       }
 
       // and finally also assemble stiffness contributions
@@ -704,15 +704,15 @@ namespace BEAMINTERACTION
         for (unsigned int iele = 0; iele < 2; ++iele)
         {
           // resize and clear variable
-          ((*eleforce)[iele]).Size(numdof_ele[iele]);
+          ((*eleforce)[iele]).size(numdof_ele[iele]);
 
           // safety check: dimensions
-          if ((unsigned int)eleforce_centerlineDOFs[iele].RowDim() !=
+          if ((unsigned int)eleforce_centerlineDOFs[iele].numRows() !=
               ele_centerlinedofindices[iele].size())
             dserror(
                 "size mismatch! need to assemble %d values of centerline-Dof based "
                 "force vector into element vector but only got %d element-local Dof indices",
-                eleforce_centerlineDOFs[iele].RowDim(), ele_centerlinedofindices[iele].size());
+                eleforce_centerlineDOFs[iele].numRows(), ele_centerlinedofindices[iele].size());
 
           // Todo maybe use a more general 'SerialDenseAssemble' method here
           for (unsigned int idof = 0; idof < ele_centerlinedofindices[iele].size(); ++idof)
@@ -728,23 +728,23 @@ namespace BEAMINTERACTION
           for (unsigned int jele = 0; jele < 2; ++jele)
           {
             // resize and clear variable
-            ((*elestiff)[iele][jele]).Shape(numdof_ele[iele], numdof_ele[jele]);
+            ((*elestiff)[iele][jele]).shape(numdof_ele[iele], numdof_ele[jele]);
 
             // safety check: dimensions
-            if ((unsigned int)elestiff_centerlineDOFs[iele][jele].RowDim() !=
+            if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numRows() !=
                 ele_centerlinedofindices[iele].size())
               dserror(
                   "size mismatch! need to assemble %d row values of centerline-Dof based "
                   "stiffness matrix into element matrix but only got %d element-local Dof indices",
-                  elestiff_centerlineDOFs[iele][jele].RowDim(),
+                  elestiff_centerlineDOFs[iele][jele].numRows(),
                   ele_centerlinedofindices[iele].size());
 
-            if ((unsigned int)elestiff_centerlineDOFs[iele][jele].ColDim() !=
+            if ((unsigned int)elestiff_centerlineDOFs[iele][jele].numCols() !=
                 ele_centerlinedofindices[jele].size())
               dserror(
                   "size mismatch! need to assemble %d column values of centerline-Dof based "
                   "stiffness matrix into element matrix but only got %d element-local Dof indices",
-                  elestiff_centerlineDOFs[iele][jele].ColDim(),
+                  elestiff_centerlineDOFs[iele][jele].numCols(),
                   ele_centerlinedofindices[jele].size());
 
             for (unsigned int idof = 0; idof < ele_centerlinedofindices[iele].size(); ++idof)
@@ -772,17 +772,17 @@ namespace BEAMINTERACTION
 
       // Fill in the centerline matrix into the full element matrix.
       // Resize and clear output matrix variable.
-      row_matrix_elementDOFs.Shape(row_matrix_centerlineDOFs.RowDim(), numdof_ele);
+      row_matrix_elementDOFs.shape(row_matrix_centerlineDOFs.numRows(), numdof_ele);
 
       // Safety check: dimensions.
-      if ((unsigned int)row_matrix_centerlineDOFs.ColDim() != ele_centerlinedofindices.size())
+      if ((unsigned int)row_matrix_centerlineDOFs.numCols() != ele_centerlinedofindices.size())
         dserror(
             "Size mismatch! Need to assemble %d col values of centerline-Dof based "
             "stiffness matrix into element matrix but only got %d element-local Dof indices",
-            row_matrix_centerlineDOFs.ColDim(), ele_centerlinedofindices.size());
+            row_matrix_centerlineDOFs.numCols(), ele_centerlinedofindices.size());
 
       // Fill in the values.
-      for (unsigned int i_row = 0; i_row < (unsigned int)row_matrix_elementDOFs.RowDim(); ++i_row)
+      for (unsigned int i_row = 0; i_row < (unsigned int)row_matrix_elementDOFs.numRows(); ++i_row)
         for (unsigned int i_col = 0; i_col < ele_centerlinedofindices.size(); ++i_col)
           row_matrix_elementDOFs(i_row, ele_centerlinedofindices[i_col]) =
               row_matrix_centerlineDOFs(i_row, i_col);
@@ -870,7 +870,7 @@ namespace BEAMINTERACTION
         const int numdof_ele = eledisp.size();
 
         // zero out and set correct size of transformation matrix
-        trafomatrix.Shape(6, numdof_ele);
+        trafomatrix.shape(6, numdof_ele);
 
         // I_variations
         if (elei == 0)
@@ -884,8 +884,9 @@ namespace BEAMINTERACTION
                   elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(elei)),
               eledisp);
 
-        eleforce[elei].Size(numdof_ele);
-        eleforce[elei].Multiply('T', 'N', 1.0, trafomatrix, bspotforce[elei], 0.0);
+        eleforce[elei].size(numdof_ele);
+        eleforce[elei].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotforce[elei], 0.0);
       }
     }
 
@@ -933,60 +934,68 @@ namespace BEAMINTERACTION
       // element 1:
       {
         // zero out and set correct size of transformation matrix
-        trafomatrix.Shape(6, numdof_ele1);
+        trafomatrix.shape(6, numdof_ele1);
 
         // i) I_variations
         cast_ele1->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
-        auxmat[0][0].Shape(numdof_ele1, 6);
-        auxmat[0][0].Multiply('T', 'N', 1.0, trafomatrix, bspotstiff[0][0], 0.0);
+        auxmat[0][0].shape(numdof_ele1, 6);
+        auxmat[0][0].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][0], 0.0);
 
-        auxmat[0][1].Shape(numdof_ele1, 6);
-        auxmat[0][1].Multiply('T', 'N', 1.0, trafomatrix, bspotstiff[0][1], 0.0);
+        auxmat[0][1].shape(numdof_ele1, 6);
+        auxmat[0][1].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][1], 0.0);
 
         // ii) I_increments
-        trafomatrix.Shape(6, numdof_ele1);
+        trafomatrix.shape(6, numdof_ele1);
 
         cast_ele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
-        elestiff[0][0].Shape(numdof_ele1, numdof_ele1);
-        elestiff[0][0].Multiply('N', 'N', 1.0, auxmat[0][0], trafomatrix, 0.0);
+        elestiff[0][0].shape(numdof_ele1, numdof_ele1);
+        elestiff[0][0].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[0][0], trafomatrix, 0.0);
 
-        auxmat[1][0].Shape(6, numdof_ele1);
-        auxmat[1][0].Multiply('N', 'N', 1.0, bspotstiff[1][0], trafomatrix, 0.0);
+        auxmat[1][0].shape(6, numdof_ele1);
+        auxmat[1][0].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, bspotstiff[1][0], trafomatrix, 0.0);
       }
 
       // element 2:
       {
         // i) I_variations
-        trafomatrix.Shape(6, numdof_ele2);
+        trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
-        elestiff[1][0].Shape(numdof_ele2, numdof_ele1);
-        elestiff[1][0].Multiply('T', 'N', 1.0, trafomatrix, auxmat[1][0], 0.0);
+        elestiff[1][0].shape(numdof_ele2, numdof_ele1);
+        elestiff[1][0].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, auxmat[1][0], 0.0);
 
-        auxmat[1][1].Shape(numdof_ele2, 6);
-        auxmat[1][1].Multiply('T', 'N', 1.0, trafomatrix, bspotstiff[1][1], 0.0);
+        auxmat[1][1].shape(numdof_ele2, 6);
+        auxmat[1][1].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[1][1], 0.0);
 
         // ii) I_increments
-        trafomatrix.Shape(6, numdof_ele2);
+        trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
-        elestiff[0][1].Shape(numdof_ele1, numdof_ele2);
-        elestiff[0][1].Multiply('N', 'N', 1.0, auxmat[1][0], trafomatrix, 0.0);
+        elestiff[0][1].shape(numdof_ele1, numdof_ele2);
+        elestiff[0][1].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[1][0], trafomatrix, 0.0);
 
-        elestiff[1][1].Shape(numdof_ele2, numdof_ele2);
-        elestiff[1][1].Multiply('N', 'N', 1.0, auxmat[1][1], trafomatrix, 0.0);
+        elestiff[1][1].shape(numdof_ele2, numdof_ele2);
+        elestiff[1][1].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[1][1], trafomatrix, 0.0);
       }
     }
 
@@ -1046,7 +1055,7 @@ namespace BEAMINTERACTION
       CORE::LINALG::SerialDenseMatrix stiffmat_lin_Ivar;
 
       // zero out and set correct size of transformation matrix
-      trafomatrix.Shape(6, numdof_ele1);
+      trafomatrix.shape(6, numdof_ele1);
 
       T1* cast_ele1 = dynamic_cast<T1*>(ele1);
       T2* cast_ele2 = dynamic_cast<T2*>(ele2);
@@ -1059,81 +1068,91 @@ namespace BEAMINTERACTION
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
-        eleforce[0].Size(numdof_ele1);
-        eleforce[0].Multiply('T', 'N', 1.0, trafomatrix, bspotforce[0], 0.0);
+        eleforce[0].size(numdof_ele1);
+        eleforce[0].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotforce[0], 0.0);
 
-        auxmat[0][0].Shape(numdof_ele1, 6);
-        auxmat[0][0].Multiply('T', 'N', 1.0, trafomatrix, bspotstiff[0][0], 0.0);
+        auxmat[0][0].shape(numdof_ele1, 6);
+        auxmat[0][0].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][0], 0.0);
 
-        auxmat[0][1].Shape(numdof_ele1, 6);
-        auxmat[0][1].Multiply('T', 'N', 1.0, trafomatrix, bspotstiff[0][1], 0.0);
+        auxmat[0][1].shape(numdof_ele1, 6);
+        auxmat[0][1].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][1], 0.0);
 
         // ii) I_increments
-        trafomatrix.Shape(6, numdof_ele1);
+        trafomatrix.shape(6, numdof_ele1);
 
         cast_ele1->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp);
 
-        elestiff[0][0].Shape(numdof_ele1, numdof_ele1);
-        elestiff[0][0].Multiply('N', 'N', 1.0, auxmat[0][0], trafomatrix, 0.0);
+        elestiff[0][0].shape(numdof_ele1, numdof_ele1);
+        elestiff[0][0].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[0][0], trafomatrix, 0.0);
 
-        auxmat[1][0].Shape(6, numdof_ele1);
-        auxmat[1][0].Multiply('N', 'N', 1.0, bspotstiff[1][0], trafomatrix, 0.0);
+        auxmat[1][0].shape(6, numdof_ele1);
+        auxmat[1][0].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, bspotstiff[1][0], trafomatrix, 0.0);
 
 
         // additional contribution from linearization of generalized interpolation matrix for
         // variations
-        stiffmat_lin_Ivar.Shape(numdof_ele1, numdof_ele1);
+        stiffmat_lin_Ivar.shape(numdof_ele1, numdof_ele1);
 
         cast_ele1->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(stiffmat_lin_Ivar,
             cast_ele1->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(0)),
             ele1disp, bspotforce[0]);
 
-        elestiff[0][0].Update(1.0, stiffmat_lin_Ivar, 1.0);
+        CORE::LINALG::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[0][0]);
       }
 
       // element 2
       {
         // i) I_variations
-        trafomatrix.Shape(6, numdof_ele2);
+        trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->GetGeneralizedInterpolationMatrixVariationsAtXi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
-        eleforce[1].Size(numdof_ele2);
-        eleforce[1].Multiply('T', 'N', 1.0, trafomatrix, bspotforce[1], 0.0);
+        eleforce[1].size(numdof_ele2);
+        eleforce[1].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotforce[1], 0.0);
 
-        elestiff[1][0].Shape(numdof_ele2, numdof_ele1);
-        elestiff[1][0].Multiply('T', 'N', 1.0, trafomatrix, auxmat[1][0], 0.0);
+        elestiff[1][0].shape(numdof_ele2, numdof_ele1);
+        elestiff[1][0].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, auxmat[1][0], 0.0);
 
-        auxmat[1][1].Shape(numdof_ele2, 6);
-        auxmat[1][1].Multiply('T', 'N', 1.0, trafomatrix, bspotstiff[1][1], 0.0);
+        auxmat[1][1].shape(numdof_ele2, 6);
+        auxmat[1][1].multiply(
+            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[1][1], 0.0);
 
         // ii) I_increments
-        trafomatrix.Shape(6, numdof_ele2);
+        trafomatrix.shape(6, numdof_ele2);
 
         cast_ele2->GetGeneralizedInterpolationMatrixIncrementsAtXi(trafomatrix,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp);
 
-        elestiff[0][1].Shape(numdof_ele1, numdof_ele2);
-        elestiff[0][1].Multiply('N', 'N', 1.0, auxmat[0][1], trafomatrix, 0.0);
+        elestiff[0][1].shape(numdof_ele1, numdof_ele2);
+        elestiff[0][1].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[0][1], trafomatrix, 0.0);
 
-        elestiff[1][1].Shape(numdof_ele2, numdof_ele2);
-        elestiff[1][1].Multiply('N', 'N', 1.0, auxmat[1][1], trafomatrix, 0.0);
+        elestiff[1][1].shape(numdof_ele2, numdof_ele2);
+        elestiff[1][1].multiply(
+            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[1][1], trafomatrix, 0.0);
 
 
         // additional contribution from linearization of generalized interpolation matrix for
         // variations
-        stiffmat_lin_Ivar.Shape(numdof_ele2, numdof_ele2);
+        stiffmat_lin_Ivar.shape(numdof_ele2, numdof_ele2);
 
         cast_ele2->GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(stiffmat_lin_Ivar,
             cast_ele2->GetBindingSpotXi(elepairptr->GetLinkerType(), elepairptr->GetLocBSpotNum(1)),
             ele2disp, bspotforce[1]);
 
-        elestiff[1][1].Update(1.0, stiffmat_lin_Ivar, 1.0);
+        CORE::LINALG::Update(1.0, stiffmat_lin_Ivar, 1.0, elestiff[1][1]);
       }
     }
 

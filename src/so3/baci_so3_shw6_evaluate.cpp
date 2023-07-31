@@ -5,6 +5,7 @@
 
 
 *----------------------------------------------------------------------*/
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_shw6.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
@@ -15,7 +16,6 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_mat_viscoanisotropic.H"
 #include "baci_mat_micromaterial.H"
 #include "baci_structure_new_elements_paramsinterface.H"
@@ -26,9 +26,11 @@
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // Check whether the solid material PostSetup() routine has already been called and call it if not
   EnsureMaterialPostSetup(params);
@@ -36,11 +38,11 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
   // get parameter interface
   SetParamsInterfacePtr(params);
 
-  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec1(elevec1_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec2(elevec2_epetra.A(), true);
-  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.A(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat1(elemat1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, NUMDOF_WEG6> elemat2(elemat2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec1(elevec1_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec2(elevec2_epetra.values(), true);
+  CORE::LINALG::Matrix<NUMDOF_WEG6, 1> elevec3(elevec3_epetra.values(), true);
 
   // start with "none"
   DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
@@ -212,8 +214,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
@@ -226,8 +228,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
@@ -295,18 +297,18 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
   ** EAS Technology: declare, intialize, set up, and alpha history -------- EAS
   */
   // in any case declare variables, sizes etc. only in eascase
-  Epetra_SerialDenseMatrix* alpha = nullptr;              // EAS alphas
-  std::vector<Epetra_SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;              // EAS alphas
+  std::vector<CORE::LINALG::SerialDenseMatrix>* M_GP = nullptr;  // EAS matrix M at all GPs
   CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soshw6_easpoisthick>
-      M;                                          // EAS matrix M at current GP, fixed for sosh8
-  Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
-  Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
-  Epetra_SerialDenseMatrix Kda;                   // EAS matrix Kda
-  double detJ0;                                   // detJ(origin)
-  Epetra_SerialDenseMatrix* oldfeas = nullptr;    // EAS history
-  Epetra_SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
-  Epetra_SerialDenseMatrix* oldKda = nullptr;     // EAS history
-  Epetra_SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
+      M;                                 // EAS matrix M at current GP, fixed for sosh8
+  CORE::LINALG::SerialDenseVector feas;  // EAS portion of internal forces
+  CORE::LINALG::SerialDenseMatrix Kaa;   // EAS matrix Kaa
+  CORE::LINALG::SerialDenseMatrix Kda;   // EAS matrix Kda
+  double detJ0;                          // detJ(origin)
+  CORE::LINALG::SerialDenseMatrix* oldfeas = nullptr;    // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;    // EAS increment
 
   // transformation matrix T0, maps M-matrix evaluated at origin
   // between local element coords and global coords
@@ -321,18 +323,18 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // get old alpha
+    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
     // evaluate current (updated) EAS alphas (from history variables)
     // get stored EAS history
-    oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-    eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
+    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
 
     // we need the (residual) displacement at the previous step
-    Epetra_SerialDenseVector res_d(NUMDOF_WEG6);
+    CORE::LINALG::SerialDenseVector res_d(NUMDOF_WEG6);
     for (int i = 0; i < NUMDOF_WEG6; ++i)
     {
       res_d(i) = residual[i];
@@ -346,10 +348,10 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
       {
         double alpha_ls = params.get<double>("alpha_ls");
         // undo step
-        eas_inc->Scale(-1.);
+        eas_inc->scale(-1.);
         alpha->operator+=(*eas_inc);
         // scale increment
-        eas_inc->Scale(-1. * alpha_ls);
+        eas_inc->scale(-1. * alpha_ls);
         // add reduced increment
         alpha->operator+=(*eas_inc);
       }
@@ -368,13 +370,13 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     /* end of EAS Update ******************/
 
     // EAS portion of internal forces, also called enhacement vector s or Rtilde
-    feas.Size(neas_);
+    feas.size(neas_);
 
     // EAS matrix K_{alpha alpha}, also called Dtilde
-    Kaa.Shape(neas_, neas_);
+    Kaa.shape(neas_, neas_);
 
     // EAS matrix K_{d alpha}
-    Kda.Shape(neas_, NUMDOF_WEG6);
+    Kda.shape(neas_, NUMDOF_WEG6);
 
     /* evaluation of EAS variables (which are constant for the following):
     ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -579,10 +581,10 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
       // map local M to global, also enhancement is refered to element origin
       // M = detJ0/detJ T0^{-T} . M
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D,
-          soshw6_easpoisthick>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).A());
+          soshw6_easpoisthick>(M.A(), detJ0 / detJ, T0invT.A(), M_GP->at(gp).values());
       // add enhanced strains = M . alpha to GL strains to "unlock" element
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, MAT::NUM_STRESS_3D, soshw6_easpoisthick, 1>(
-          1.0, glstrain.A(), 1.0, M.A(), (*alpha).A());
+          1.0, glstrain.A(), 1.0, M.A(), (*alpha).values());
     }  // ------------------------------------------------------------------ EAS
 
     // return gp GL strains (only possible option) if necessary
@@ -722,15 +724,15 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, soshw6_easpoisthick> cM;  // temporary c . M
         cM.Multiply(cmat, M);
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soshw6_easpoisthick, MAT::NUM_STRESS_3D,
-            soshw6_easpoisthick>(1.0, Kaa.A(), detJ_w, M.A(), cM.A());
+            soshw6_easpoisthick>(1.0, Kaa.values(), detJ_w, M.A(), cM.A());
 
         // integrate Kda: Kda += (M^T . cmat . B) * detJ * w(gp)
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soshw6_easpoisthick, MAT::NUM_STRESS_3D,
-            NUMDOF_WEG6>(1.0, Kda.A(), detJ_w, M.A(), cb.A());
+            NUMDOF_WEG6>(1.0, Kda.values(), detJ_w, M.A(), cb.A());
 
         // integrate feas: feas += (M^T . sigma) * detJ *wp(gp)
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, soshw6_easpoisthick, MAT::NUM_STRESS_3D,
-            1>(1.0, feas.A(), detJ_w, M.A(), stress.A());
+            1>(1.0, feas.values(), detJ_w, M.A(), stress.A());
       }  // ------------------------------------------------------------------ EAS
     }
 
@@ -760,7 +762,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
   if (eastype_ != soshw6_easnone && split_res)
     // only add for row-map elements
     if (params.get<int>("MyPID") == Owner())
-      params.get<double>("cond_rhs_norm") += pow(feas.Norm2(), 2.);
+      params.get<double>("cond_rhs_norm") += pow(CORE::LINALG::Norm2(feas), 2.);
 
   if (force != nullptr && stiffmatrix != nullptr)
   {
@@ -769,9 +771,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     if (eastype_ == soshw6_easpoisthick)
     {
       // we need the inverse of Kaa
-      Epetra_SerialDenseSolver solve_for_inverseKaa;
-      solve_for_inverseKaa.SetMatrix(Kaa);
-      solve_for_inverseKaa.Invert();
+      using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+      using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+      Teuchos::SerialDenseSolver<ordinalType, scalarType> solve_for_inverseKaa;
+      solve_for_inverseKaa.setMatrix(Teuchos::rcpFromRef(Kaa));
+      solve_for_inverseKaa.invert();
 
       CORE::LINALG::SerialDenseMatrix KdaTKaa(
           NUMDOF_WEG6, soshw6_easpoisthick);  // temporary Kda^T.Kaa^{-1}
@@ -780,11 +784,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kda
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_WEG6, soshw6_easpoisthick, NUMDOF_WEG6>(
-          1.0, stiffmatrix->A(), -1.0, KdaTKaa.A(), Kda.A());
+          1.0, stiffmatrix->A(), -1.0, KdaTKaa.values(), Kda.values());
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
       CORE::LINALG::DENSEFUNCTIONS::multiply<double, NUMDOF_WEG6, soshw6_easpoisthick, 1>(
-          1.0, force->A(), -1.0, KdaTKaa.A(), feas.A());
+          1.0, force->A(), -1.0, KdaTKaa.values(), feas.values());
 
       // store current EAS data in history
       for (int i = 0; i < soshw6_easpoisthick; ++i)
@@ -981,21 +985,21 @@ void DRT::ELEMENTS::So_shw6::soshw6_evaluateT(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_easinit()
 {
-  // all parameters are stored in Epetra_SerialDenseMatrix as only
+  // all parameters are stored in CORE::LINALG::SerialDenseMatrix as only
   // those can be added to DRT::Container
 
   // EAS enhanced strain parameters at currently investigated load/time step
-  Epetra_SerialDenseMatrix alpha(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix alpha(neas_, 1);
   // EAS enhanced strain parameters of last converged load/time step
-  Epetra_SerialDenseMatrix alphao(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix alphao(neas_, 1);
   // EAS portion of internal forces, also called enhacement vector s or Rtilde
-  Epetra_SerialDenseMatrix feas(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix feas(neas_, 1);
   // EAS matrix K_{alpha alpha}, also called Dtilde
-  Epetra_SerialDenseMatrix invKaa(neas_, neas_);
+  CORE::LINALG::SerialDenseMatrix invKaa(neas_, neas_);
   // EAS matrix K_{d alpha}
-  Epetra_SerialDenseMatrix Kda(neas_, NUMDOF_WEG6);
+  CORE::LINALG::SerialDenseMatrix Kda(neas_, NUMDOF_WEG6);
   // EAS increment
-  Epetra_SerialDenseMatrix eas_inc(neas_, 1);
+  CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
 
   // save EAS data into element container
   data_.Add("alpha", alpha);
@@ -1012,8 +1016,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
-    std::vector<Epetra_SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
-    double& detJ0,                                 // det of Jacobian at origin
+    std::vector<CORE::LINALG::SerialDenseMatrix>** M_GP,  // M-matrix evaluated at GPs
+    double& detJ0,                                        // det of Jacobian at origin
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
         T0invT,                                                   // maps M(origin) local to global
     const CORE::LINALG::Matrix<NUMNOD_WEG6, NUMDIM_WEG6>& xrefe)  // material element coords
@@ -1036,7 +1040,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   soshw6_evaluateT(jac0, T0invT);
 
   // build EAS interpolation matrix M, evaluated at the GPs of soshw6
-  static std::vector<Epetra_SerialDenseMatrix> M(NUMGPT_WEG6);
+  static std::vector<CORE::LINALG::SerialDenseMatrix> M(NUMGPT_WEG6);
   static bool M_eval;
 
   if (M_eval == true)
@@ -1063,7 +1067,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
       */
       for (int i = 0; i < intpoints.nquad; ++i)
       {
-        M[i].Shape(MAT::NUM_STRESS_3D, soshw6_easpoisthick);
+        M[i].shape(MAT::NUM_STRESS_3D, soshw6_easpoisthick);
         M[i](2, 0) = intpoints.qxg[i][2];  // t at gp
         // M[i](2,1) = intpoints.qxg[i][0]*intpoints.qxg[i][2];  // r*t at gp ->not activated at all
         // due to tri M[i](2,2) = intpoints.qxg[i][1]*intpoints.qxg[i][2];  // s*t at gp ->not
@@ -1105,7 +1109,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(
   CORE::LINALG::SerialDenseMatrix v(NUMDIM_WEG6, NUMDIM_WEG6);
   SVD(defgrd, u, s, v);  // Singular Value Decomposition
   CORE::LINALG::SerialDenseMatrix rot(NUMDIM_WEG6, NUMDIM_WEG6);
-  rot.Multiply('N', 'N', 1.0, u, v, 0.0);
+  rot.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, v, 0.0);
 
   // get modified squared stretch (U^mod)^2 from glstrain
   CORE::LINALG::SerialDenseMatrix Usq_mod(NUMDIM_WEG6, NUMDIM_WEG6);
@@ -1122,12 +1126,12 @@ void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(
   CORE::LINALG::SerialDenseMatrix U_mod(NUMDIM_WEG6, NUMDIM_WEG6);
   for (int i = 0; i < NUMDIM_SOH8; ++i) s(i, i) = sqrt(s(i, i));
   CORE::LINALG::SerialDenseMatrix temp2(NUMDIM_WEG6, NUMDIM_WEG6);
-  temp2.Multiply('N', 'N', 1.0, u, s, 0.0);
-  U_mod.Multiply('N', 'N', 1.0, temp2, v, 0.0);
+  temp2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, s, 0.0);
+  U_mod.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, temp2, v, 0.0);
 
   // F^mod = RU^mod
   CORE::LINALG::SerialDenseMatrix defgrd_consistent(NUMDIM_WEG6, NUMDIM_WEG6);
-  defgrd_consistent.Multiply('N', 'N', 1.0, rot, U_mod, 0.0);
+  defgrd_consistent.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, rot, U_mod, 0.0);
   defgrd.SetView(defgrd_consistent.A());
 #endif
   double detF = defgrd.Determinant();
@@ -1292,11 +1296,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
   const double step_length = StrParamsInterface().GetStepLength();
 
-  auto* oldfeas = data_.GetMutable<Epetra_SerialDenseMatrix>("feas");
-  auto* oldKda = data_.GetMutable<Epetra_SerialDenseMatrix>("Kda");
-  auto* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");
-  auto* eas_inc = data_.GetMutable<Epetra_SerialDenseMatrix>("eas_inc");
-  auto* oldKaainv = data_.GetMutable<Epetra_SerialDenseMatrix>("invKaa");
+  auto* oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+  auto* oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+  auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
+  auto* eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+  auto* oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
   if (StrParamsInterface().IsDefaultStep())
@@ -1307,7 +1311,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
     // add Kda . res_d to feas
     CORE::LINALG::DENSEFUNCTIONS::multiply<double, soshw6_easpoisthick, NUMDOF_WEG6, 1>(
-        1.0, oldfeas->A(), 1.0, oldKda->A(), residual.data());
+        1.0, oldfeas->values(), 1.0, oldKda->values(), residual.data());
     // "new" alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
     CORE::LINALG::DENSEFUNCTIONS::multiply<double, soshw6_easpoisthick, soshw6_easpoisthick, 1>(
         0.0, *eas_inc, -1.0, *oldKaainv, *oldfeas);

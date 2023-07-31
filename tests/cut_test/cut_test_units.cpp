@@ -22,7 +22,7 @@ void test_unit_intersection_touch()
     options.Init_for_Cuttests();  // use cln
     CORE::GEO::CUT::Mesh mesh(options, x);
 
-    Epetra_SerialDenseMatrix xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
     xyze(0, 0) = 0;
     xyze(1, 0) = 0;

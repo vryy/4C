@@ -588,7 +588,7 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 
   if (not nurbsdis) dserror("Cast to NURBS discretization failed.\n");
 
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
 
   const bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
 
@@ -749,7 +749,7 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 
   if (not nurbsdis) dserror("Cast to NURBS discretization failed.\n");
 
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   const bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
 
   if (zero_ele) return;
@@ -933,7 +933,7 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
 
   if (not nurbsdis) dserror("Cast to NURBS discretization failed.\n");
 
-  std::vector<Epetra_SerialDenseVector> myknots(3);
+  std::vector<CORE::LINALG::SerialDenseVector> myknots(3);
   bool zero_ele = (*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, ele->Id());
   if (zero_ele) return;
   std::vector<double> val(numdf);

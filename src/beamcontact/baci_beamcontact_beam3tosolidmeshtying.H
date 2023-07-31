@@ -93,8 +93,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates (and tangents) of all elements
     */
-    virtual void UpdateElePos(Epetra_SerialDenseMatrix& newele1pos,
-        std::vector<Epetra_SerialDenseMatrix>& newele2pos) = 0;
+    virtual void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
+        std::vector<CORE::LINALG::SerialDenseMatrix>& newele2pos) = 0;
 
     //! return appropriate internal implementation class (acts as a simple factory)
     static Teuchos::RCP<Beam3tosolidmeshtyinginterface> Impl(const int numnodessol,
@@ -186,8 +186,8 @@ namespace CONTACT
     /*
     \brief Update nodal coordinates (and tangents) of all elements
     */
-    void UpdateElePos(
-        Epetra_SerialDenseMatrix& newele1pos, std::vector<Epetra_SerialDenseMatrix>& newele2pos);
+    void UpdateElePos(CORE::LINALG::SerialDenseMatrix& newele1pos,
+        std::vector<CORE::LINALG::SerialDenseMatrix>& newele2pos);
     //@}
 
    private:

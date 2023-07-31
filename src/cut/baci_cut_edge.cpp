@@ -775,8 +775,8 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
   // nodal pseudo side coordinates
   /* Note: We insert the this edge as side. In this way we can use the
    * standard intersection object. */
-  Epetra_SerialDenseMatrix xyze_other;
-  xyze_other.Shape(other->ProbDim(), other->NumNodes());
+  CORE::LINALG::SerialDenseMatrix xyze_other;
+  xyze_other.shape(other->ProbDim(), other->NumNodes());
   other->Coordinates(xyze_other);
 
   Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> inter_ptr = IntersectionPtr(other->Shape());

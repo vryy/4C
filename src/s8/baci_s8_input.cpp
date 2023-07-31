@@ -147,10 +147,10 @@ bool DRT::ELEMENTS::Shell8::ReadElement(
   std::fill(alfao.begin(), alfao.end(), 0);
   std::fill(Rtild.begin(), Rtild.end(), 0);
 
-  Epetra_SerialDenseMatrix Dtildinv;
-  Epetra_SerialDenseMatrix Lt;
-  Dtildinv.Shape(nhyb_, nhyb_);
-  Lt.Shape(nhyb_, NumNode() * 6);
+  CORE::LINALG::SerialDenseMatrix Dtildinv;
+  CORE::LINALG::SerialDenseMatrix Lt;
+  Dtildinv.shape(nhyb_, nhyb_);
+  Lt.shape(nhyb_, NumNode() * 6);
 
   data_.Add("alfa", alfa);
   data_.Add("alfao", alfao);

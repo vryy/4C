@@ -56,7 +56,7 @@ namespace MORTAR
 
     */
     BaseBinaryTreeNode(DRT::Discretization& discret, std::vector<int> elelist,
-        const Epetra_SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
+        const CORE::LINALG::SerialDenseMatrix& dopnormals, const int& kdop, const int& dim,
         const bool& useauxpos, const int layer);
 
     /*!
@@ -153,7 +153,7 @@ namespace MORTAR
     \brief Return pointer to normals of DOP
 
     */
-    const Epetra_SerialDenseMatrix& Dopnormals() const { return dopnormals_; }
+    const CORE::LINALG::SerialDenseMatrix& Dopnormals() const { return dopnormals_; }
 
     /*!
     \brief Return pointer to element list of tree node
@@ -183,7 +183,7 @@ namespace MORTAR
     \brief Return pointer to slabs of DOP
 
     */
-    Epetra_SerialDenseMatrix& Slabs() { return slabs_; }
+    CORE::LINALG::SerialDenseMatrix& Slabs() { return slabs_; }
 
     /*!
     \brief Return bool indicating whether auxiliary position is used when computing dops
@@ -196,7 +196,7 @@ namespace MORTAR
     //! dimension of the problem
     const int dim_;
     //! reference to DOP normals
-    const Epetra_SerialDenseMatrix& dopnormals_;
+    const CORE::LINALG::SerialDenseMatrix& dopnormals_;
     //! list containing the gids of all elements of the tree node
     std::vector<int> elelist_;
     //! interface discretization
@@ -206,7 +206,7 @@ namespace MORTAR
     //! layer of tree node in tree (0=root node!)
     int layer_;
     //! geometry slabs of tree node, saved as Min|Max
-    Epetra_SerialDenseMatrix slabs_;
+    CORE::LINALG::SerialDenseMatrix slabs_;
     //! auxiliary position is used when computing dops
     const bool useauxpos_;
   };  // class BaseBinaryTreeNode
@@ -272,7 +272,7 @@ namespace MORTAR
     \brief Get matrix of DOP normals
 
     */
-    const Epetra_SerialDenseMatrix& DopNormals() const { return dopnormals_; }
+    const CORE::LINALG::SerialDenseMatrix& DopNormals() const { return dopnormals_; }
 
     /*!
     \brief Return factor "enlarge" to enlarge dops
@@ -305,7 +305,7 @@ namespace MORTAR
     //! problem dimension (2D or 3D)
     const int dim_;
     //! normals of DOP
-    Epetra_SerialDenseMatrix dopnormals_;
+    CORE::LINALG::SerialDenseMatrix dopnormals_;
     //! needed to enlarge dops
     double enlarge_;
     //! epsilon for enlarging dops (of user)

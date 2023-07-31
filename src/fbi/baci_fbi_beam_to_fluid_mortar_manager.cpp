@@ -455,24 +455,24 @@ void BEAMINTERACTION::BeamToFluidMortarManager::EvaluateGlobalDM(
       }
 
       // Save check the matrix sizes.
-      if (local_D_elementDOFs.RowDim() != (int)lambda_row.size() &&
-          local_D_elementDOFs.ColDim() != (int)beam_row.size())
+      if (local_D_elementDOFs.numRows() != (int)lambda_row.size() &&
+          local_D_elementDOFs.numCols() != (int)beam_row.size())
         dserror("Size of local D matrix does not match the GID vectors!");
-      if (local_M.RowDim() != (int)lambda_row.size() && local_M.ColDim() != (int)fluid_row.size())
+      if (local_M.numRows() != (int)lambda_row.size() && local_M.numCols() != (int)fluid_row.size())
         dserror("Size of local M matrix does not match the GID vectors!");
-      if (local_kappa.RowDim() != (int)lambda_row.size() && local_kappa.ColDim() != 1)
+      if (local_kappa.numRows() != (int)lambda_row.size() && local_kappa.numCols() != 1)
         dserror("Size of local kappa vector does not match the GID vector!");
 
       // Assemble into the global matrices.
       global_D_->FEAssemble(local_D_elementDOFs, lambda_row, beam_row);
       global_M_->FEAssemble(local_M, lambda_row, fluid_row);
       global_kappa_->SumIntoGlobalValues(
-          local_kappa.RowDim(), lambda_row.data(), local_kappa.Values());
+          local_kappa.numRows(), lambda_row.data(), local_kappa.values());
 
       // Set all entries in the local kappa vector to 1 and add them to the active vector.
-      for (int i_local = 0; i_local < local_kappa.RowDim(); i_local++) local_kappa(i_local) = 1.;
+      for (int i_local = 0; i_local < local_kappa.numRows(); i_local++) local_kappa(i_local) = 1.;
       global_active_lambda_->SumIntoGlobalValues(
-          local_kappa.RowDim(), lambda_row.data(), local_kappa.Values());
+          local_kappa.numRows(), lambda_row.data(), local_kappa.values());
     }
   }
 

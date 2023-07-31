@@ -14,8 +14,8 @@
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
@@ -278,7 +278,7 @@ int NOX::FSI::LinearSystemGCR::SolveGMRES(
     v.clear();
     v.push_back(Teuchos::rcp(new NOX::Epetra::Vector(r, NOX::ShapeCopy)));
     v[0]->update(1. / beta, r, 0.);
-    s.Scale(0.0);
+    s.putScalar(0.0);
     s(0) = beta;
 
     for (int i = 0; i < m and j <= max_iter; i++, j++)

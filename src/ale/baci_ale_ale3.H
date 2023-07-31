@@ -329,9 +329,9 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
 
       /*!
@@ -350,7 +350,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
 
       //@}
@@ -401,37 +402,37 @@ namespace DRT
       /// Internal implementation class for fluid element
       static Ale3_Impl_Interface* Impl(DRT::ELEMENTS::Ale3* ele);
 
-      virtual void static_ke_spring(Ale3* ele,       ///< pointer to element
-          Epetra_SerialDenseMatrix& sys_mat,         ///< element stiffness matrix (to be filled)
-          Epetra_SerialDenseVector& residual,        ///< element residual vector (to be filled)
-          const std::vector<double>& displacements,  ///< nodal displacements
-          const bool spatialconfiguration            ///< use spatial configuration (true), material
-                                                     ///< configuration (false)
+      virtual void static_ke_spring(Ale3* ele,        ///< pointer to element
+          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
+          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          const std::vector<double>& displacements,   ///< nodal displacements
+          const bool spatialconfiguration  ///< use spatial configuration (true), material
+                                           ///< configuration (false)
           ) = 0;
 
-      virtual void static_ke_nonlinear(Ale3* ele,  ///< pointer to element
-          DRT::Discretization& discretization,     ///< discretization
-          std::vector<int>& lm,                    ///< node owner procs
-          Epetra_SerialDenseMatrix& sys_mat,       ///< element stiffness matrix (to be filled)
-          Epetra_SerialDenseVector& residual,      ///< element residual vector (to be filled)
-          std::vector<double>& my_dispnp,          ///< nodal displacements
-          Teuchos::ParameterList& params,          ///< parameter list
-          const bool spatialconfiguration          ///< use spatial configuration (true), material
-                                                   ///< configuration (false)
+      virtual void static_ke_nonlinear(Ale3* ele,     ///< pointer to element
+          DRT::Discretization& discretization,        ///< discretization
+          std::vector<int>& lm,                       ///< node owner procs
+          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
+          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& my_dispnp,             ///< nodal displacements
+          Teuchos::ParameterList& params,             ///< parameter list
+          const bool spatialconfiguration  ///< use spatial configuration (true), material
+                                           ///< configuration (false)
           ) = 0;
 
-      virtual void static_ke_laplace(Ale3* ele,  ///< pointer to element
-          DRT::Discretization& dis,              ///< discretization
-          Epetra_SerialDenseMatrix& sys_mat,     ///< element stiffnes matrix (to be filled)
-          Epetra_SerialDenseVector& residual,    ///< element residual vector (to be filled)
-          std::vector<double>& my_dispnp,        ///< nodal displacements
-          Teuchos::RCP<MAT::Material> material,  ///< material law
-          const bool spatialconfiguration        ///< use spatial configuration (true), material
-                                                 ///< configuration (false)
+      virtual void static_ke_laplace(Ale3* ele,       ///< pointer to element
+          DRT::Discretization& dis,                   ///< discretization
+          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffnes matrix (to be filled)
+          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& my_dispnp,             ///< nodal displacements
+          Teuchos::RCP<MAT::Material> material,       ///< material law
+          const bool spatialconfiguration  ///< use spatial configuration (true), material
+                                           ///< configuration (false)
           ) = 0;
 
       virtual void ElementNodeNormal(
-          Ale3* ele, Epetra_SerialDenseVector& elevec1, std::vector<double>& my_dispnp) = 0;
+          Ale3* ele, CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& my_dispnp) = 0;
     };
 
     template <DRT::Element::DiscretizationType distype>
@@ -442,38 +443,40 @@ namespace DRT
       static Ale3_Impl<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
-      void static_ke_laplace(Ale3* ele,          ///< pointer to element
-          DRT::Discretization& dis,              ///< discretization
-          Epetra_SerialDenseMatrix& sys_mat,     ///< element stiffnes matrix (to be filled)
-          Epetra_SerialDenseVector& residual,    ///< element residual vector (to be filled)
-          std::vector<double>& my_dispnp,        ///< nodal displacements
-          Teuchos::RCP<MAT::Material> material,  ///< material law
-          const bool spatialconfiguration        ///< use spatial configuration (true), material
-                                                 ///< configuration (false)
-      );
-
-      void static_ke_spring(Ale3* ele,                ///< pointer to element
-          Epetra_SerialDenseMatrix& sys_mat_epetra,   ///< element stiffness matrix (to be filled)
-          Epetra_SerialDenseVector& residual_epetra,  ///< element residual vector (to be filled)
-          const std::vector<double>& displacements,   ///< nodal displacements
+      void static_ke_laplace(Ale3* ele,               ///< pointer to element
+          DRT::Discretization& dis,                   ///< discretization
+          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffnes matrix (to be filled)
+          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& my_dispnp,             ///< nodal displacements
+          Teuchos::RCP<MAT::Material> material,       ///< material law
           const bool spatialconfiguration  ///< use spatial configuration (true), material
                                            ///< configuration (false)
       );
 
-      void static_ke_nonlinear(Ale3* ele,       ///< pointer to element
-          DRT::Discretization& discretization,  ///< discretization
-          std::vector<int>& lm,                 ///< node owner procs
-          Epetra_SerialDenseMatrix& sys_mat,    ///< element stiffness matrix (to be filled)
-          Epetra_SerialDenseVector& residual,   ///< element residual vector (to be filled)
-          std::vector<double>& my_dispnp,       ///< nodal displacements
-          Teuchos::ParameterList& params,       ///< parameter list
-          const bool spatialconfiguration       ///< use spatial configuration (true), material
-                                                ///< configuration (false)
+      void static_ke_spring(Ale3* ele,  ///< pointer to element
+          CORE::LINALG::SerialDenseMatrix&
+              sys_mat_epetra,  ///< element stiffness matrix (to be filled)
+          CORE::LINALG::SerialDenseVector&
+              residual_epetra,                       ///< element residual vector (to be filled)
+          const std::vector<double>& displacements,  ///< nodal displacements
+          const bool spatialconfiguration            ///< use spatial configuration (true), material
+                                                     ///< configuration (false)
       );
 
-      void ElementNodeNormal(Ale3* ele,       ///< pointer to element
-          Epetra_SerialDenseVector& elevec1,  ///< normal vector (to be filled)
-          std::vector<double>& my_dispnp      ///< nodal displacements
+      void static_ke_nonlinear(Ale3* ele,             ///< pointer to element
+          DRT::Discretization& discretization,        ///< discretization
+          std::vector<int>& lm,                       ///< node owner procs
+          CORE::LINALG::SerialDenseMatrix& sys_mat,   ///< element stiffness matrix (to be filled)
+          CORE::LINALG::SerialDenseVector& residual,  ///< element residual vector (to be filled)
+          std::vector<double>& my_dispnp,             ///< nodal displacements
+          Teuchos::ParameterList& params,             ///< parameter list
+          const bool spatialconfiguration  ///< use spatial configuration (true), material
+                                           ///< configuration (false)
+      );
+
+      void ElementNodeNormal(Ale3* ele,              ///< pointer to element
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< normal vector (to be filled)
+          std::vector<double>& my_dispnp             ///< nodal displacements
       );
 
       //! Calculate Jacobian matrix and its determinant
@@ -723,9 +726,9 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
 
 
@@ -745,7 +748,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       //@}
 
@@ -755,9 +759,9 @@ namespace DRT
 
       //  compute kovariant metric tensor G for ale surface element
       //                                                  gammi 04/07
-      void f3_metric_tensor_for_surface(const Epetra_SerialDenseMatrix xyze,
-          const Epetra_SerialDenseMatrix deriv, Epetra_SerialDenseMatrix& metrictensor,
-          double* drs);
+      void f3_metric_tensor_for_surface(const CORE::LINALG::SerialDenseMatrix xyze,
+          const CORE::LINALG::SerialDenseMatrix deriv,
+          CORE::LINALG::SerialDenseMatrix& metrictensor, double* drs);
 
     };  // class Ale3Surface
 
@@ -774,7 +778,7 @@ namespace DRT
 
       virtual void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
+          CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp) = 0;
     };
 
     template <DRT::Element::DiscretizationType distype>
@@ -804,7 +808,7 @@ namespace DRT
 
       void ElementNodeNormal(Ale3Surface* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Epetra_SerialDenseVector& elevec1, std::vector<double>& mydispnp);
+          CORE::LINALG::SerialDenseVector& elevec1, std::vector<double>& mydispnp);
 
      private:
       //  static const int iel =

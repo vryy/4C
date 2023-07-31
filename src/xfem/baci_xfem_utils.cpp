@@ -142,7 +142,7 @@ void XFEM::UTILS::SafetyCheckMaterials(
 }
 
 //! Extract a quantity for an element
-void XFEM::UTILS::ExtractQuantityAtElement(Epetra_SerialDenseMatrix& element_vector,
+void XFEM::UTILS::ExtractQuantityAtElement(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
     const DRT::Element* element, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const int nsd)
 {
@@ -165,12 +165,12 @@ void XFEM::UTILS::ExtractQuantityAtElement(Epetra_SerialDenseMatrix& element_vec
     dserror("wrong size of (potentially resized) local matrix!");
 
   // copy local to normal....
-  std::copy(local_vector.begin(), local_vector.begin() + (nsd * numnode), element_vector.A());
+  CORE::LINALG::copy(local_vector.data(), element_vector);
 }
 
 
 //! Extract a quantity for a node
-void XFEM::UTILS::ExtractQuantityAtNode(Epetra_SerialDenseMatrix& element_vector,
+void XFEM::UTILS::ExtractQuantityAtNode(CORE::LINALG::SerialDenseMatrix::Base& element_vector,
     const DRT::Node* node, const Teuchos::RCP<const Epetra_MultiVector>& global_col_vector,
     Teuchos::RCP<DRT::Discretization>& dis, const int nds_vector, const unsigned int nsd)
 {
@@ -183,5 +183,5 @@ void XFEM::UTILS::ExtractQuantityAtNode(Epetra_SerialDenseMatrix& element_vector
   if (local_vector.size() != nsd) dserror("wrong size of (potentially resized) local matrix!");
 
   // copy local to nvec....
-  std::copy(local_vector.begin(), local_vector.begin() + nsd, element_vector.A());
+  CORE::LINALG::copy(local_vector.data(), element_vector);
 }

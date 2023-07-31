@@ -23,9 +23,10 @@
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Bele3Line::ActionType act = Bele3Line::none;
   std::string action = params.get<std::string>("action", "none");
@@ -77,7 +78,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
@@ -104,11 +105,11 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(Teuchos::ParameterList& params,
 
 
   // allocate vector for shape functions and for derivatives
-  Epetra_SerialDenseVector funct(iel);
-  Epetra_SerialDenseMatrix deriv(1, iel);
+  CORE::LINALG::SerialDenseVector funct(iel);
+  CORE::LINALG::SerialDenseMatrix deriv(1, iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix xye(2, iel);
+  CORE::LINALG::SerialDenseMatrix xye(2, iel);
 
   // get node coordinates
   for (size_t i = 0; i < iel; ++i)
@@ -199,14 +200,14 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Bele3Line::getOptimalGaussrule(
 }
 
 
-double DRT::ELEMENTS::Bele3Line::f2_substitution(
-    const Epetra_SerialDenseMatrix xye, const Epetra_SerialDenseMatrix deriv, const int iel)
+double DRT::ELEMENTS::Bele3Line::f2_substitution(const CORE::LINALG::SerialDenseMatrix xye,
+    const CORE::LINALG::SerialDenseMatrix deriv, const int iel)
 {
   // compute derivative of parametrization
   double dr = 0.0;
-  Epetra_SerialDenseVector der_par(iel);
-  der_par.Multiply('N', 'T', 1.0, xye, deriv, 0.0);
-  dr = der_par.Norm2();
+  CORE::LINALG::SerialDenseVector der_par(iel);
+  der_par.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, xye, deriv, 0.0);
+  dr = CORE::LINALG::Norm2(der_par);
   return dr;
 }
 
@@ -215,7 +216,7 @@ double DRT::ELEMENTS::Bele3Line::f2_substitution(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, const std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, const std::vector<double>& edispnp)
+    CORE::LINALG::SerialDenseVector& elevec1, const std::vector<double>& edispnp)
 {
   // there are 2 velocities and 1 pressure
   const int numdf = 3;
@@ -238,11 +239,11 @@ void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& pa
   const CORE::DRT::UTILS::IntegrationPoints1D intpoints(gaussrule);
 
   // allocate vector for shape functions and for derivatives
-  Epetra_SerialDenseVector funct(iel);
-  Epetra_SerialDenseMatrix deriv(1, iel);
+  CORE::LINALG::SerialDenseVector funct(iel);
+  CORE::LINALG::SerialDenseMatrix deriv(1, iel);
 
   // node coordinates
-  Epetra_SerialDenseMatrix xye(2, iel);
+  CORE::LINALG::SerialDenseMatrix xye(2, iel);
 
   // get node coordinates
   for (size_t i = 0; i < iel; ++i)

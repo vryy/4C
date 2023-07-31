@@ -62,8 +62,9 @@ void SlaveElementInterface<distype>::DefineStateNames(
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<SlaveElementInterface<distype>>
 SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
-    DRT::Element* slave_ele,             ///< coupling slave element
-    Epetra_SerialDenseMatrix& slave_xyz  ///< global node coordinates of coupling slave element
+    DRT::Element* slave_ele,  ///< coupling slave element
+    CORE::LINALG::SerialDenseMatrix&
+        slave_xyz  ///< global node coordinates of coupling slave element
 )
 {
   SlaveElementInterface* sla = NULL;
@@ -176,7 +177,7 @@ SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-    Epetra_SerialDenseMatrix& C_umum, Epetra_SerialDenseMatrix& rhC_um,
+    CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = NULL;
@@ -189,8 +190,9 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitscheCoupling_XFluidWDBC(
-    DRT::Element* bele, Epetra_SerialDenseMatrix& bele_xyz, Epetra_SerialDenseMatrix& C_umum,
-    Epetra_SerialDenseMatrix& rhC_um, const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
+    DRT::Element* bele, CORE::LINALG::SerialDenseMatrix::Base& bele_xyz,
+    CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
+    const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = NULL;
 
@@ -288,10 +290,11 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype>>
 NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
-    Epetra_SerialDenseMatrix& bele_xyz, Epetra_SerialDenseMatrix& C_umum,
-    Epetra_SerialDenseMatrix& C_usum, Epetra_SerialDenseMatrix& C_umus,
-    Epetra_SerialDenseMatrix& C_usus, Epetra_SerialDenseMatrix& rhC_um,
-    Epetra_SerialDenseMatrix& rhC_us, const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
+    CORE::LINALG::SerialDenseMatrix::Base& bele_xyz, CORE::LINALG::SerialDenseMatrix::Base& C_umum,
+    CORE::LINALG::SerialDenseMatrix::Base& C_usum, CORE::LINALG::SerialDenseMatrix::Base& C_umus,
+    CORE::LINALG::SerialDenseMatrix::Base& C_usus, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
+    CORE::LINALG::SerialDenseMatrix::Base& rhC_us,
+    const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = NULL;
 
@@ -398,10 +401,11 @@ NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitscheCoupling_TwoSided(
-    DRT::Element* vele, Epetra_SerialDenseMatrix& vele_xyz, Epetra_SerialDenseMatrix& C_umum,
-    Epetra_SerialDenseMatrix& C_usum, Epetra_SerialDenseMatrix& C_umus,
-    Epetra_SerialDenseMatrix& C_usus, Epetra_SerialDenseMatrix& rhC_um,
-    Epetra_SerialDenseMatrix& rhC_us, const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
+    DRT::Element* vele, CORE::LINALG::SerialDenseMatrix::Base& vele_xyz,
+    CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& C_usum,
+    CORE::LINALG::SerialDenseMatrix::Base& C_umus, CORE::LINALG::SerialDenseMatrix::Base& C_usus,
+    CORE::LINALG::SerialDenseMatrix::Base& rhC_um, CORE::LINALG::SerialDenseMatrix::Base& rhC_us,
+    const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = NULL;
 
@@ -494,8 +498,8 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<HybridLMInterface<distype>>
 HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
-    DRT::Element* bele,                  ///< boundary element
-    Epetra_SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
+    DRT::Element* bele,                         ///< boundary element
+    CORE::LINALG::SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
     bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard &
                                   ///< adjoint viscous term
 )
@@ -555,13 +559,13 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
 template <DRT::Element::DiscretizationType distype>
 Teuchos::RCP<HybridLMInterface<distype>>
 HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
-    DRT::Element* bele,                  ///< boundary element
-    Epetra_SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
-    Epetra_SerialDenseMatrix& C_usum,    ///< C_usum coupling matrix
-    Epetra_SerialDenseMatrix& C_umus,    ///< C_umus coupling matrix
-    Epetra_SerialDenseMatrix& rhC_us,    ///< C_us coupling rhs
-    Epetra_SerialDenseMatrix& G_s_us,    ///< \f$G_{u^s \sigma}\f$ coupling matrix
-    Epetra_SerialDenseMatrix& G_us_s,    ///< \f$G_{\sigma u^s}\f$ coupling matrix
+    DRT::Element* bele,                         ///< boundary element
+    CORE::LINALG::SerialDenseMatrix& bele_xyz,  ///< global node coordinates of boundary element
+    CORE::LINALG::SerialDenseMatrix& C_usum,    ///< C_usum coupling matrix
+    CORE::LINALG::SerialDenseMatrix& C_umus,    ///< C_umus coupling matrix
+    CORE::LINALG::SerialDenseMatrix& rhC_us,    ///< C_us coupling rhs
+    CORE::LINALG::SerialDenseMatrix& G_s_us,    ///< \f$G_{u^s \sigma}\f$ coupling matrix
+    CORE::LINALG::SerialDenseMatrix& G_us_s,    ///< \f$G_{\sigma u^s}\f$ coupling matrix
     bool is_viscAdjointSymmetric  ///< flag that indicates equal signs of Nitsche's standard &
                                   ///< adjoint viscous term
 )

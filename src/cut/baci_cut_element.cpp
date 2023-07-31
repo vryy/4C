@@ -339,7 +339,8 @@ void CORE::GEO::CUT::Element::MakeCutLines(Mesh& mesh)
  *-----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints(ele)");
+  TEUCHOS_FUNC_TIME_MONITOR(
+      "CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutPoints(ele)");
 
   // edges of element side cuts through cut side
   bool cut = ele_side.FindCutPoints(mesh, this, cut_side);
@@ -355,7 +356,7 @@ bool CORE::GEO::CUT::Element::FindCutPoints(Mesh& mesh, Side& ele_side, Side& cu
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Element::FindCutLines(Mesh& mesh, Side& ele_side, Side& cut_side)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutLines");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 4/6 --- Cut_MeshIntersection --- FindCutLines");
 
   return ele_side.FindCutLines(mesh, this, cut_side);
 }
@@ -981,7 +982,7 @@ void CORE::GEO::CUT::Element::CreateIntegrationCells(Mesh& mesh, int count, bool
  *----------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells" );
 
 
   if (cells_.size() == 1)  // in case there is only one volumecell, check if a simple shaped
@@ -998,10 +999,10 @@ bool CORE::GEO::CUT::Element::CreateSimpleShapedIntegrationCells(Mesh& mesh)
       //      if(intcells.size() != 1) dserror("there is not a unique integration cell");
       //      if(this->Shape() == intcells[0]->Shape())
       //      {
-      //        Epetra_SerialDenseMatrix xyze(3, intcells[0]->Points().size());
+      //        CORE::LINALG::SerialDenseMatrix xyze(3, intcells[0]->Points().size());
       //        this->Coordinates(xyze.A());
       //
-      //        double vol_diff = vc->Volume() - GEO::ElementVolume( this->Shape(), xyze );
+      //        double vol_diff = vc->Volume() - CORE::GEO::ElementVolume( this->Shape(), xyze );
       //
       //        if(fabs(vol_diff)<1e-14)
       //        {

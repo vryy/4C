@@ -15,16 +15,16 @@
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Vector.h>
 #include <Epetra_MultiVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_RCP.hpp>
 #include "baci_lib_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 namespace CORE::LINALG
 {
   /*!
-   \brief Assemble an Epetra_SerialDenseMatrix into an Epetra_CrsMatrix
+   \brief Assemble an CORE::LINALG::SerialDenseMatrix into an Epetra_CrsMatrix
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -44,12 +44,12 @@ namespace CORE::LINALG
    \param lmrowowner (in) : vector with owner procs of row gids
    \param lmcol (in)      : vector with column gids
    */
-  void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
+  void Assemble(Epetra_CrsMatrix& A, const CORE::LINALG::SerialDenseMatrix& Aele,
       const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
       const std::vector<int>& lmcol);
 
   /*!
-   \brief Assemble an Epetra_SerialDenseVector into an Epetra_Vector
+   \brief Assemble an CORE::LINALG::SerialDenseVector into an Epetra_Vector
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -61,14 +61,14 @@ namespace CORE::LINALG
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele, const std::vector<int>& lm,
-      const std::vector<int>& lmowner);
+  void Assemble(Epetra_Vector& V, const CORE::LINALG::SerialDenseVector& Vele,
+      const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*!
    \brief Assemble a CORE::LINALG::Matrix<3,1> into an Epetra_Vector
 
    This is a wrapper that converts CORE::LINALG::Matrix<3,1> to
-   Epetra_SerialDenseVector (view version)
+   CORE::LINALG::SerialDenseVector (view version)
 
    \param V (out)   : Vector to be assembled on
    \param Vele (in) : dense vector to be assembled
@@ -83,7 +83,7 @@ namespace CORE::LINALG
    owner is always the same
 
    This is a wrapper that converts CORE::LINALG::Matrix<3,1> to
-   Epetra_SerialDenseVector (view version)
+   CORE::LINALG::SerialDenseVector (view version)
 
    \param V (out)   : Vector to be assembled on
    \param Vele (in) : dense vector to be assembled
@@ -106,7 +106,7 @@ namespace CORE::LINALG
   void Assemble(Epetra_Vector& V, double& Vele, const int& lm, const int& lmowner);
 
   /*!
-   \brief Assemble a Epetra_SerialDenseVector into a Epetra_MultiVector
+   \brief Assemble a CORE::LINALG::SerialDenseVector into a Epetra_MultiVector
 
    This is an individual call.
    Will only assemble locally and will never do any commmunication.
@@ -119,7 +119,7 @@ namespace CORE::LINALG
    \param lm (in) : vector with gids
    \param lmowner (in) : vector with owner procs of gids
    */
-  void Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
+  void Assemble(Epetra_MultiVector& V, const int n, const CORE::LINALG::SerialDenseVector& Vele,
       const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*! \brief Assemble a source Epetra_Vector into a target Epetra_Vector

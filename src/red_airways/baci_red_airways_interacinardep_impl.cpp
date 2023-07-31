@@ -69,9 +69,11 @@ DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat)
 {
   // Get the vector with inter-acinar linkers
   Teuchos::RCP<const Epetra_Vector> ial = discretization.GetState("intr_ac_link");
@@ -97,7 +99,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(RedInterAcinarDep* ele,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const MAT::Material> material)
+    CORE::LINALG::SerialDenseVector& n_intr_acn_l, Teuchos::RCP<const MAT::Material> material)
 {
   DRT::REDAIRWAYS::EvaluationData& evaluation_data = DRT::REDAIRWAYS::EvaluationData::get();
 
@@ -122,8 +124,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(RedInterAcinarDep* ele,
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
-    std::vector<double>& ial, Epetra_SerialDenseMatrix& sysmat, Epetra_SerialDenseVector& rhs)
+void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(std::vector<double>& ial,
+    CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs)
 {
   // Get the number of inter_acinar linkers on the 1st node (N0)
   double N0 = ial[0];
@@ -139,7 +141,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
     sysmat(1, 0) = -1.0 / (N1);
     sysmat(1, 1) = 1.0 / (N1);
   }
-  rhs.Scale(0.0);
+  rhs.putScalar(0.0);
 }
 
 
@@ -150,7 +152,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Epetra_SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
+    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();
 
@@ -172,7 +174,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
   DRT::UTILS::ExtractMyValues(*pnp, mypnp, lm);
 
   // Create objects for element arrays
-  Epetra_SerialDenseVector epnp(numnode);
+  CORE::LINALG::SerialDenseVector epnp(numnode);
 
   // Get all values at the last computed time step
   for (int i = 0; i < numnode; ++i)
@@ -421,8 +423,8 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(RedInterAcinarDep* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseVector& elevec1,  // a_volumenp,
-    Epetra_SerialDenseVector& elevec2,  // a_volume_strain_np,
+    CORE::LINALG::SerialDenseVector& elevec1,  // a_volumenp,
+    CORE::LINALG::SerialDenseVector& elevec2,  // a_volume_strain_np,
     std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 
 {

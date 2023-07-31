@@ -127,12 +127,12 @@ namespace CORE::GEO
       template <class T>
       void Coordinates(T& xyze_lineElement)
       {
-        if (static_cast<unsigned>(xyze_lineElement.M()) != ProbDim())
+        if (static_cast<unsigned>(xyze_lineElement.numRows()) != ProbDim())
           dserror("xyze_lineElement has the wrong number of rows! (probdim = %d)", ProbDim());
-        if (static_cast<unsigned>(xyze_lineElement.N()) != NumNodes())
+        if (static_cast<unsigned>(xyze_lineElement.numCols()) != NumNodes())
           dserror("xyze_lineElement has the wrong number of columns! (dim = %d)", NumNodes());
 
-        Coordinates(xyze_lineElement.A());
+        Coordinates(xyze_lineElement.values());
       }
 
       /*! \brief Print the coordinates of the nodes on screen */
@@ -392,7 +392,7 @@ namespace CORE::GEO
         }
 
         //      std::cout <<"LS cut found? --> " << (cutfound ? "TRUE" : "FALSE") << std::endl;
-        //      dserror("GEO::CUT::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
+        //      dserror("CORE::GEO::CUT::Edge::LevelSetCut -- STOP -- hiermeier 08/16");
 
         return cutfound;
       }

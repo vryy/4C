@@ -46,9 +46,9 @@ namespace DRT
 
       virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
       /// Evaluate supporting methods of the element for xwall
       /*!
@@ -56,16 +56,17 @@ namespace DRT
        */
       virtual int EvaluateServiceXWall(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3);
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
       int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-          bool offdiag = false) override;
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       void Sysmat(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
           const CORE::LINALG::Matrix<nsd_, nen_>& eprescpgaf,
@@ -171,8 +172,8 @@ namespace DRT
 
       virtual int TauWViaGradient(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2);
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2);
 
       //! Get MK
       virtual double GetMK();
@@ -184,8 +185,8 @@ namespace DRT
 
       virtual int CalcMK(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2);
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2);
 
       /*! \brief Calculate statilization parameter mk
        *
@@ -199,8 +200,8 @@ namespace DRT
        */
       virtual int XWallProjection(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2);
+          Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2);
 
 
       //! nodal values of wall distance

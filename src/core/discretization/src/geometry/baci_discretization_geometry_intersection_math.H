@@ -15,9 +15,9 @@
 #define BACI_DISCRETIZATION_GEOMETRY_INTERSECTION_MATH_H
 
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_linalg_fixedsizematrix.H"
-#include <Epetra_SerialDenseSolver.h>
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 
 
 namespace CORE::GEO
@@ -149,8 +149,8 @@ namespace CORE::GEO
 
   // Selbe Funktion wie svdcmp nur SerialDenseMatrizen als Eingabeparameter
 
-  void svdcmpSerialDense(
-      Epetra_SerialDenseMatrix& A, Epetra_SerialDenseMatrix& W, Epetra_SerialDenseMatrix& V);
+  void svdcmpSerialDense(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseMatrix& W,
+      CORE::LINALG::SerialDenseMatrix& V);
 
 
   /*!

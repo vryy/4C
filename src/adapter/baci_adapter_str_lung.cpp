@@ -186,11 +186,11 @@ void ADAPTER::StructureLung::InitializeVolCon(
       params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
 
       // define element matrices and vectors
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
 
       std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
@@ -206,7 +206,7 @@ void ADAPTER::StructureLung::InitializeVolCon(
         curr->second->LocationVector(*Discretization(), lm, lmowner, lmstride);
 
         // reshape element matrices and vectors and init to zero
-        elevector3.Size(1);
+        elevector3.size(1);
 
         // call the element specific evaluate method
         int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
@@ -302,11 +302,11 @@ void ADAPTER::StructureLung::EvaluateVolCon(
     const double sign = (*SignVols)[lindex];
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
+    CORE::LINALG::SerialDenseMatrix elematrix1;
+    CORE::LINALG::SerialDenseMatrix elematrix2;
+    CORE::LINALG::SerialDenseVector elevector1;
+    CORE::LINALG::SerialDenseVector elevector2;
+    CORE::LINALG::SerialDenseVector elevector3;
 
     std::map<int, Teuchos::RCP<DRT::Element>>& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
@@ -325,12 +325,12 @@ void ADAPTER::StructureLung::EvaluateVolCon(
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
-      elematrix1.Shape(eledim, eledim);  // stiffness part
-      elematrix2.Shape(
+      elematrix1.shape(eledim, eledim);  // stiffness part
+      elematrix2.shape(
           eledim, eledim);      // this element matrix is only needed for the function call only
-      elevector1.Size(eledim);  // rhs part
-      elevector2.Size(eledim);  // constraint matrix
-      elevector3.Size(1);       // current volume
+      elevector1.size(eledim);  // rhs part
+      elevector2.size(eledim);  // constraint matrix
+      elevector3.size(1);       // current volume
 
       // call the element specific evaluate method
       int err = curr->second->Evaluate(params, *Discretization(), lm, elematrix1, elematrix2,
@@ -354,17 +354,17 @@ void ADAPTER::StructureLung::EvaluateVolCon(
       //   difference ("normal" volume constraint: Vref-Vcurr, lung volume constraint: Vcurr-Vref,
       //   which seems more natural in this case)
 
-      elematrix1.Scale(-lagraval * sign);
+      elematrix1.scale(-lagraval * sign);
       StructMatrix->Assemble(eid, lmstride, elematrix1, lm, lmowner);
 
       // assemble to rectangular matrix. The column corresponds to the constraint ID.
       std::vector<int> colvec(1);
       colvec[0] = gindex;
-      elevector2.Scale(-sign);
+      elevector2.scale(-sign);
       StructMatrix->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
 
       // "Newton-ready" residual -> already scaled with -1.0
-      elevector1.Scale(lagraval * sign);
+      elevector1.scale(lagraval * sign);
       CORE::LINALG::Assemble(*StructRHS, elevector1, lm, lmowner);
 
       // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
@@ -373,7 +373,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(
       std::vector<int> constrowner;
       constrlm.push_back(gindex);
       constrowner.push_back(curr->second->Owner());
-      elevector3.Scale(sign);
+      elevector3.scale(sign);
       CORE::LINALG::Assemble(*CurrVols, elevector3, constrlm, constrowner);
     }
   }

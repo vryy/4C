@@ -12,7 +12,7 @@
 #define BACI_SCATRA_RESULTTEST_HDG_H
 
 #include "baci_scatra_resulttest.H"
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 
 namespace SCATRA
 {
@@ -35,7 +35,7 @@ namespace SCATRA
     //! time integrator
     Teuchos::RCP<const TimIntHDG> scatratiminthdg_;
 
-    Teuchos::RCP<Epetra_SerialDenseVector> errors_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors_;
 
   };  // class HDGResultTest : public ScaTraResultTest
 }  // namespace SCATRA

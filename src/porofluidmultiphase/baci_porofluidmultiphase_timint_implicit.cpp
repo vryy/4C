@@ -271,7 +271,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::Init(bool isale, int nds_disp, int nds_vel
   num_domainint_funct_ = domainint_funct_.size();
 
   // the values of the integrals
-  domain_integrals_ = Teuchos::rcp(new Epetra_SerialDenseVector(num_domainint_funct_));
+  domain_integrals_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(num_domainint_funct_));
 
   // -------------------------------------------------------------------
   // set element parameters
@@ -1737,7 +1737,8 @@ void POROFLUIDMULTIPHASE::TimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   discret_->SetState("phinp_fluid", phinp_);
 
   // get (squared) error values
-  Teuchos::RCP<Epetra_SerialDenseVector> errors = Teuchos::rcp(new Epetra_SerialDenseVector(4));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4));
   discret_->EvaluateScalars(eleparams, errors);
   discret_->ClearState();
 
@@ -2076,7 +2077,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::CalcInitialTimeDerivative()
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed
-  trueresidual_->Scale(0.);
+  trueresidual_->PutScalar(0.0);
 
   double maxval = 0.0;
   phidtnp_->MaxValue(&maxval);

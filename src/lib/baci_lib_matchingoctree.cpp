@@ -67,7 +67,7 @@ int DRT::UTILS::MatchingOctree::Setup()
     //                 |  zmin  zmax  |
     //                 +-            -+
     //
-    Epetra_SerialDenseMatrix initialboundingbox(3, 2);
+    CORE::LINALG::SerialDenseMatrix initialboundingbox(3, 2);
     double pointcoord[3];
     CalcPointCoordinate(discret_, masterentityids_->at(0), pointcoord);
     for (int dim = 0; dim < 3; dim++)
@@ -847,7 +847,7 @@ int DRT::UTILS::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::ParOb
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::NodeMatchingOctree::CreateOctreeElement(
-    std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer)
+    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement = Teuchos::rcp(new OctreeNodalElement());
 
@@ -984,7 +984,7 @@ int DRT::UTILS::ElementMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::Pa
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::ElementMatchingOctree::CreateOctreeElement(
-    std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer)
+    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement = Teuchos::rcp(new OctreeElementElement());
 
@@ -1021,7 +1021,7 @@ void DRT::UTILS::OctreeNodalElement::CalcPointCoordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeNodalElement::CreateOctreeElement(
-    std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer)
+    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement = Teuchos::rcp(new OctreeNodalElement());
 
@@ -1062,7 +1062,7 @@ void DRT::UTILS::OctreeElementElement::CalcPointCoordinate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElementElement::CreateOctreeElement(
-    std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer)
+    std::vector<int>& nodeidstoadd, CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer)
 {
   Teuchos::RCP<DRT::UTILS::OctreeElement> newtreeelement = Teuchos::rcp(new OctreeElementElement());
 
@@ -1091,7 +1091,7 @@ DRT::UTILS::OctreeElement::OctreeElement()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int DRT::UTILS::OctreeElement::Init(const DRT::Discretization& actdis,
-    std::vector<int>& nodeidstoadd, const Epetra_SerialDenseMatrix& boundingboxtoadd,
+    std::vector<int>& nodeidstoadd, const CORE::LINALG::SerialDenseMatrix& boundingboxtoadd,
     const int layer, const int maxnodeperleaf, const double tol)
 {
   SetIsSetup(false);
@@ -1213,8 +1213,8 @@ int DRT::UTILS::OctreeElement::Setup()
     // This means an endless loop from the problem (*) ...
 
     // create bounding boxes for the children
-    Epetra_SerialDenseMatrix childboundingbox1(3, 2);
-    Epetra_SerialDenseMatrix childboundingbox2(3, 2);
+    CORE::LINALG::SerialDenseMatrix childboundingbox1(3, 2);
+    CORE::LINALG::SerialDenseMatrix childboundingbox2(3, 2);
 
     // initialise the new bounding boxes with the old values
     for (int dim = 0; dim < 3; dim++)

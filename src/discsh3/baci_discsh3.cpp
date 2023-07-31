@@ -547,8 +547,8 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
   }
 
   // Check if the normal vector is outwards
-  Teuchos::RCP<Epetra_SerialDenseVector> CG_ref_rcp =
-      params.get<Teuchos::RCP<Epetra_SerialDenseVector>>("reference CG", Teuchos::null);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> CG_ref_rcp =
+      params.get<Teuchos::RCP<CORE::LINALG::SerialDenseVector>>("reference CG", Teuchos::null);
   CORE::LINALG::Matrix<1, 3> CG(true);
   CORE::LINALG::Matrix<1, 3> Barycenter(true);
   for (int i = 0; i < 3; i++)
@@ -589,14 +589,15 @@ void DRT::ELEMENTS::DiscSh3::CheckIfOutwardsNormal(
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const CORE::LINALG::SerialDenseMatrix& x,
-    const int numnode, const int ndof, double& A, Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2)
+    const int numnode, const int ndof, double& A,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> Adiff,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Adiff2)
 {
   // initialization
   A = 0.;
-  Adiff->Size(ndof);
+  Adiff->size(ndof);
 
-  if (Adiff2 != Teuchos::null) Adiff2->Shape(ndof, ndof);
+  if (Adiff2 != Teuchos::null) Adiff2->shape(ndof, ndof);
 
   const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
 
@@ -627,7 +628,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const CORE::LINALG::SerialDenseMat
     CORE::LINALG::SerialDenseMatrix ddet2(3 * ndof, ndof, true);
     CORE::LINALG::SerialDenseVector jacobi_deriv(ndof, true);
 
-    dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
+    dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
 
     /*--------------- derivation of minor determiants of the Jacobian
      *----------------------------- with respect to the displacements */
@@ -765,11 +766,11 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaRef(
  * Evaluate sqrt of determinant of metric at gp (private)      gee 04/08|
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3::SurfaceIntegration(double& detA, std::vector<double>& normal,
-    const Epetra_SerialDenseMatrix& x, const Epetra_SerialDenseMatrix& deriv)
+    const CORE::LINALG::SerialDenseMatrix& x, const CORE::LINALG::SerialDenseMatrix& deriv)
 {
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-  dxyzdrs.Multiply('N', 'N', 1.0, deriv, x, 0.0);
+  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
@@ -782,7 +783,7 @@ void DRT::ELEMENTS::DiscSh3::SurfaceIntegration(double& detA, std::vector<double
   **        dr     dr            dr     ds            ds     ds
   */
   CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
-  metrictensor.Multiply('N', 'T', 1.0, dxyzdrs, dxyzdrs, 0.0);
+  metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, dxyzdrs, dxyzdrs, 0.0);
   detA = sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
   normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);

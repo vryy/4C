@@ -208,10 +208,11 @@ DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
-    bool offdiag)
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag)
 {
   return Evaluate(ele, discretization, lm, params, mat, elemat1_epetra, elemat2_epetra,
       elevec1_epetra, elevec2_epetra, elevec3_epetra, intpoints_, offdiag);
@@ -221,9 +222,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid* ele,
     DRT::Discretization& discretization, const std::vector<int>& lm, Teuchos::ParameterList& params,
-    Teuchos::RCP<MAT::Material>& mat, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra,
+    Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra,
     const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag)
 {
   // TEUCHOS_FUNC_TIME_MONITOR( "FLD::FluidEleCalc::Evaluate" );
@@ -1611,13 +1614,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::AddSurfaceTensionForce(
 
     // NON-smoothed gradient!!! Should be correct
     gradphi.Multiply(derxy_, escaaf);
-    // Normalizing the gradient shouldn't be done according to the paper
-    // of Rodriguez 2013.
-    //    const double normgradphi=gradphi.Norm2();
-    //    if(normgradphi>1e-9) //1e-9 is set to create a reasonable scaling.
-    //      gradphi.Scale(1.0/normgradphi);
-    //    else
-    //      gradphi.Scale(0.0); //This to catch the cases when gradphi \approx 0
 
     // Smoothed gradient (egradphi, should not be used!!!)
     if (fldpara_->GetSurfaceTensionApprox() ==
@@ -1639,11 +1635,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::AddSurfaceTensionForce(
       static CORE::LINALG::Matrix<nsd_, 1> gradphin;
       gaussescan = funct_.Dot(escaam);
       gradphin.Multiply(derxy_, escaam);
-      //    const double normgradphin=gradphin.Norm2();
-      //    if(normgradphin>1e-9) //1e-9 is set to create a reasonable scaling.
-      //      gradphin.Scale(1.0/normgradphin);
-      //    else
-      //      gradphin.Scale(0.0); //This to catch the cases when gradphi \approx 0
 
       Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * gaussescan / epsilon));
 

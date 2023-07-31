@@ -833,7 +833,7 @@ void IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcFluidTractionsOnStruc
         "proper position.");
 
   // reinitialize the transfer vector
-  struct_bdry_traction_->Scale(0.0);
+  struct_bdry_traction_->PutScalar(0.0);
 
   // declare and fill parameter list
   Teuchos::ParameterList params;
@@ -889,7 +889,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::CalcArtificialVelocity()
   if (not artificial_velocity_isvalid_)
   {
     // reinitialize the transfer vector
-    fluid_artificial_velocity_->Scale(0.0);
+    fluid_artificial_velocity_->PutScalar(0.0);
 
     // declare parameter list
     Teuchos::ParameterList params;

@@ -25,9 +25,11 @@
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateOD(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -63,9 +65,11 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
     const SCATRA::Action& action, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseMatrix& elemat2_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra, Epetra_SerialDenseVector& elevec2_epetra,
-    Epetra_SerialDenseVector& elevec3_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // determine and evaluate action
   switch (action)
@@ -100,9 +104,9 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateActionOD(DRT::Elemen
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
-    DRT::Element* ele,               ///< the element those matrix is calculated
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-    const int ndofpernodemesh        ///< number of DOF of mesh displacement field
+    DRT::Element* ele,                      ///< the element those matrix is calculated
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    const int ndofpernodemesh               ///< number of DOF of mesh displacement field
 )
 {
   //----------------------------------------------------------------------
@@ -262,9 +266,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODMesh(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
-    DRT::Element* ele,               ///< the element those matrix is calculated
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-    const int numdofpernode_fluid    ///< number of DOF of fluid field
+    DRT::Element* ele,                      ///< the element those matrix is calculated
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    const int numdofpernode_fluid           ///< number of DOF of fluid field
 )
 {
   //----------------------------------------------------------------------
@@ -389,7 +393,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SysmatODFluid(
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {
   // convective term in convective form
@@ -415,7 +419,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvODFluid(
  *------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddConsODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodefluid,
     const double timefacfac, const double densnp, const double phinp)
 {
   const double consfac = timefacfac * densnp * phinp;
@@ -438,9 +442,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddConsODFluid(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
-    const double fac, const double densam, const double densnp, const double phinp,
-    const double hist, const double J, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double rhsfac, const double fac, const double densam, const double densnp,
+    const double phinp, const double hist, const double J,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   double vtrans = 0.0;
 
@@ -472,7 +477,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODMesh(
  *---------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODMesh(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double J, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh,
     const double densnp)
 {
@@ -496,10 +501,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODMesh(
  |  standard Galerkin convective term (OD mesh)            vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(Epetra_SerialDenseMatrix& emat,
-    const int k, const int ndofpernodemesh, const double fac, const double rhsfac,
-    const double densnp, const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
-    const CORE::LINALG::Matrix<nsd_, 1>& convelint)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
+    const double rhsfac, const double densnp, const double J,
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint)
 {
   if (not scatraparatimint_->IsStationary())
   {
@@ -532,11 +537,11 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvODMesh(Epetra_Seria
  *-------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
-    Epetra_SerialDenseMatrix& emat,  //!< element matrix
-    const int k,                     //!< species index
-    const double fac,                //!< domain-integration factor
-    const double timefacfac,         //!< time-integration factor times domain-integration factor
-    const double densnp,             //!< density
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+    const int k,                            //!< species index
+    const double fac,                       //!< domain-integration factor
+    const double timefacfac,  //!< time-integration factor times domain-integration factor
+    const double densnp,      //!< density
     const double J  //!< Jacobian determinant of mapping between spatial and parameter coordinates
 ) const
 {
@@ -629,7 +634,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcConvConsODMesh(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
-    Epetra_SerialDenseMatrix& emat, const int k, const double rhsfac, const double densnp,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double rhsfac, const double densnp,
     const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
     const CORE::LINALG::Matrix<nsd_, 1>& convelint)
 {
@@ -742,10 +747,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ApplyShapeDerivsConv(
  |  standard Galerkin diffusive term (OD mesh)   vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_SerialDenseMatrix& emat,
-    const int k, const int ndofpernodemesh, const double diffcoeff, const double fac,
-    const double rhsfac, const double J, const CORE::LINALG::Matrix<nsd_, 1>& gradphi,
-    const CORE::LINALG::Matrix<nsd_, 1>& convelint,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double diffcoeff, const double fac, const double rhsfac, const double J,
+    const CORE::LINALG::Matrix<nsd_, 1>& gradphi, const CORE::LINALG::Matrix<nsd_, 1>& convelint,
     const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   const double vrhs = -rhsfac / J * diffcoeff;
@@ -939,9 +944,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODMesh(Epetra_Seria
  |  standard Galerkin reactive term (OD mesh)              vuong 08/14 |
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODMesh(Epetra_SerialDenseMatrix& emat,
-    const int k, const int ndofpernodemesh, const double rhsfac, const double rea_phi,
-    const double J, const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODMesh(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double rhsfac, const double rea_phi, const double J,
+    const CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dmesh)
 {
   if (reamanager_->Active())
   {
@@ -969,9 +975,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODMesh(Epetra_Seri
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
-    const double fac, const double densam, const double densnp, const double phinp,
-    const double hist)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double rhsfac, const double fac, const double densam, const double densnp,
+    const double phinp, const double hist)
 {
 }
 
@@ -980,7 +986,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcLinMassODFluid(
  *-------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double fac,
     const double rhsint, const double densnp)
 {
 }
@@ -990,8 +996,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcHistAndSourceODFluid(
  *----------------------------------------------------------------   */
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODFluid(
-    Epetra_SerialDenseMatrix& emat, const int k, const int ndofpernodemesh, const double rhsfac,
-    const double rea_phi)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const int ndofpernodemesh,
+    const double rhsfac, const double rea_phi)
 {
 }
 
@@ -1000,9 +1006,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcReactODFluid(
  *----------------------------------------------------------------   */
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcDiffODFluid(
-    Epetra_SerialDenseMatrix& emat,  //!< element current to be filled
-    const int k,                     //!< index of current scalar
-    const int ndofpernodemesh,       //!< number of dofs per node of ale element
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element current to be filled
+    const int k,                            //!< index of current scalar
+    const int ndofpernodemesh,              //!< number of dofs per node of ale element
     const double rhsfac,  //!< time-integration factor for rhs times domain-integration factor
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient at Gauss point
 )

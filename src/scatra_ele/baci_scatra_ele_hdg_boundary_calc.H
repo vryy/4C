@@ -48,8 +48,8 @@ namespace DRT
        */
       virtual int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra) = 0;
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra) = 0;
 
       //! Internal implementation class for ScaTraHDGBoundary elements
       static ScaTraHDGBoundaryImplInterface* Impl(const DRT::Element* ele);
@@ -81,8 +81,8 @@ namespace DRT
       //! Evaluate a Neumann boundary condition
       virtual int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseVector& elevec1_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra);
 
      private:
       //! node coordinates for boundary element

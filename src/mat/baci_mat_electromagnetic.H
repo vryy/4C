@@ -17,8 +17,8 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_material.H"
 #include "baci_lib_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 
 namespace MAT

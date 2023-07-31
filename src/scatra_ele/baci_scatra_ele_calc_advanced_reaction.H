@@ -89,8 +89,9 @@ namespace DRT
 
 
       //! calculation of reactive element matrix
-      virtual void CalcMatReact(Epetra_SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                                           //!< index of current scalar
+      virtual void CalcMatReact(
+          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                            //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau

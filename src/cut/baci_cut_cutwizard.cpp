@@ -233,9 +233,9 @@ void CORE::GEO::CutWizard::Cut(
   // safety checks if the cut is initialized correctly
   if (!SafetyChecks(false)) return;
 
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CutWizard::Cut");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CutWizard::Cut");
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\nGEO::CutWizard::Cut:" << IO::endl;
+  if (myrank_ == 0 and screenoutput_) IO::cout << "\nCORE::GEO::CutWizard::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -271,11 +271,11 @@ void CORE::GEO::CutWizard::Prepare()
   // safety checks if the cut is initialized correctly
   if (!SafetyChecks(true)) return;
 
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 1/6 --- Cut_Initialize");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 1/6 --- Cut_Initialize");
 
   const double t_start = Teuchos::Time::wallTime();
 
-  if (myrank_ == 0 and screenoutput_) IO::cout << "\nGEO::CutWizard::Prepare:" << IO::endl;
+  if (myrank_ == 0 and screenoutput_) IO::cout << "\nCORE::GEO::CutWizard::Prepare:" << IO::endl;
 
   if (myrank_ == 0 and screenoutput_) IO::cout << "\n\t * 1/6 Cut_Initialize ...";
 
@@ -379,7 +379,7 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
     const int numnode = element->NumNode();
     ::DRT::Node** nodes = element->Nodes();
 
-    Epetra_SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
 
     for (int i = 0; i < numnode; ++i)
     {
@@ -451,8 +451,8 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
 /*-------------------------------------------------------------*
  * prepare the cut, add background elements and cutting sides
  *--------------------------------------------------------------*/
-void CORE::GEO::CutWizard::AddMeshCuttingSide(
-    int mi, ::DRT::Element* ele, const Epetra_SerialDenseMatrix& xyze, const int start_ele_gid)
+void CORE::GEO::CutWizard::AddMeshCuttingSide(int mi, ::DRT::Element* ele,
+    const CORE::LINALG::SerialDenseMatrix& xyze, const int start_ele_gid)
 {
   const int numnode = ele->NumNode();
   const int* nodeids = ele->NodeIds();
@@ -499,7 +499,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
         if (conds[cidx]->ContainsNode(element->Nodes()[0]->Id()))
         {
           offset = conds[cidx]->GetDouble("xoffset");
-          if (xyze.N() != 8 || xyze.M() != 3)
+          if (xyze.numCols() != 8 || xyze.numRows() != 3)
             dserror("Please implement here for other element type than hex8!");
           else
           {
@@ -536,7 +536,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
   const int numnode = element->NumNode();
   const ::DRT::Node* const* nodes = element->Nodes();
 
-  xyze.Shape(3, numnode);
+  xyze.shape(3, numnode);
   for (int i = 0; i < numnode; ++i)
   {
     const ::DRT::Node& node = *nodes[i];
@@ -587,7 +587,7 @@ void CORE::GEO::CutWizard::GetPhysicalNodalCoordinates(
  * Add this background mesh element to the intersection class
  *--------------------------------------------------------------*/
 void CORE::GEO::CutWizard::AddElement(const ::DRT::Element* ele,
-    const Epetra_SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
+    const CORE::LINALG::SerialDenseMatrix& xyze, double* myphinp, bool lsv_only_plus_domain)
 {
   const int numnode = ele->NumNode();
   const int* nodeids = ele->NodeIds();
@@ -704,7 +704,7 @@ void CORE::GEO::CutWizard::FindPositionDofSets(bool include_inner)
 {
   comm_.Barrier();
 
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT --- 5/6 --- Cut_Positions_Dofsets (parallel)");
 
   if (myrank_ == 0 and screenoutput_) IO::cout << "\t * 5/6 Cut_Positions_Dofsets (parallel) ...";
 
@@ -910,7 +910,7 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
     const int numnode = element->NumNode();
     ::DRT::Node** nodes = element->Nodes();
 
-    Epetra_SerialDenseMatrix xyze(3, numnode);
+    CORE::LINALG::SerialDenseMatrix xyze(3, numnode);
     std::vector<int> dofs;
 
     for (int i = 0; i < numnode; ++i)
@@ -960,9 +960,9 @@ void CORE::GEO::CutWizard::UpdateBoundaryCellCoords(Teuchos::RCP<::DRT::Discreti
     CORE::GEO::CUT::SideHandle* sh = GetCutSide(element->Id() + start_ele_gid);
     if (!sh) dserror("couldn't get sidehandle!");
 
-    if (xyze.N() == 4 && sh->Shape() == ::DRT::Element::quad4)
+    if (xyze.numCols() == 4 && sh->Shape() == ::DRT::Element::quad4)
     {
-      CORE::LINALG::Matrix<3, 4> XYZE(xyze.A(), true);
+      CORE::LINALG::Matrix<3, 4> XYZE(xyze.values(), true);
 
       CORE::GEO::CUT::plain_side_set sides;
       sh->CollectSides(sides);

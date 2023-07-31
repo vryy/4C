@@ -32,7 +32,7 @@
  |  overlap pair to the weighted gap of the adjacent slave nodes.       |
  *----------------------------------------------------------------------*/
 bool CONTACT::CoIntegrator::AssembleG(
-    const Epetra_Comm& comm, MORTAR::MortarElement& sele, Epetra_SerialDenseVector& gseg)
+    const Epetra_Comm& comm, MORTAR::MortarElement& sele, CORE::LINALG::SerialDenseVector& gseg)
 {
   // get adjacent slave nodes to assemble to
   DRT::Node** snodes = sele.Nodes();
@@ -70,7 +70,7 @@ bool CONTACT::CoIntegrator::AssembleG(
  |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
  *----------------------------------------------------------------------*/
 bool CONTACT::CoIntegrator::AssembleG(
-    const Epetra_Comm& comm, MORTAR::IntElement& sintele, Epetra_SerialDenseVector& gseg)
+    const Epetra_Comm& comm, MORTAR::IntElement& sintele, CORE::LINALG::SerialDenseVector& gseg)
 {
   // get adjacent slave int nodes to assemble to
   DRT::Node** snodes = sintele.Nodes();

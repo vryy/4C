@@ -217,10 +217,11 @@ bool CORE::GEO::CUT::BoundingBox::Within(double norm, const double* x) const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-bool CORE::GEO::CUT::BoundingBox::Within(double norm, const Epetra_SerialDenseMatrix& xyz) const
+bool CORE::GEO::CUT::BoundingBox::Within(
+    double norm, const CORE::LINALG::SerialDenseMatrix& xyz) const
 {
   Teuchos::RCP<BoundingBox> bb = Teuchos::rcp(Create());
-  int numnode = xyz.N();
+  int numnode = xyz.numCols();
   for (int i = 0; i < numnode; ++i)
   {
     bb->AddPoint(&xyz(0, i));

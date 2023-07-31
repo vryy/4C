@@ -295,21 +295,24 @@ namespace DRT
                                                     ///< between control routine and elements
           DRT::Discretization& discretization,      ///< pointer to discretization for de-assembly
           std::vector<int>& lm,                     ///< (in) location matrix for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,  ///< (out) (stiffness-)matrix to be filled by element.
-                                              ///< If NULL on input, the controling method does not
-                                              ///< expect the element to fill this matrix.
-          Epetra_SerialDenseMatrix& elemat2,  ///< (out) (mass-)matrix to be filled by element. If
-                                              ///< NULL on input, the controling method does not
-                                              ///< expect the element to fill this matrix.
-          Epetra_SerialDenseVector& elevec1,  ///< (out) (internal force-)vector to be filled by
-                                              ///< element. If NULL on input, the controlling method
-                                              ///< does not expect the element to fill this vector
-          Epetra_SerialDenseVector& elevec2,  ///< (out)  vector to be filled by element. If NULL on
-                                              ///< input, the controlling method does not expect the
-                                              ///< element to fill this vector
-          Epetra_SerialDenseVector& elevec3   ///< (out) vector to be filled by element. If NULL on
-                                              ///< input, the controlling method does not expect the
-                                              ///< element to fill this vector
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  ///< (out) (stiffness-)matrix to be filled by
+                        ///< element. If NULL on input, the controling method
+                        ///< does not expect the element to fill this matrix.
+          CORE::LINALG::SerialDenseMatrix&
+              elemat2,  ///< (out) (mass-)matrix to be filled by element. If
+                        ///< NULL on input, the controling method does not
+                        ///< expect the element to fill this matrix.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  ///< (out) (internal force-)vector to be filled by
+                        ///< element. If NULL on input, the controlling method
+                        ///< does not expect the element to fill this vector
+          CORE::LINALG::SerialDenseVector& elevec2,  ///< (out)  vector to be filled by element. If
+                                                     ///< NULL on input, the controlling method does
+                                                     ///< not expect the element to fill this vector
+          CORE::LINALG::SerialDenseVector& elevec3   ///< (out) vector to be filled by element. If
+                                                     ///< NULL on input, the controlling method does
+                                                     ///< not expect the element to fill this vector
           ) override;
 
 
@@ -326,8 +329,8 @@ namespace DRT
       ///
       /// \return 0 if successful, negative otherwise
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
      private:
       /// don't want = operator
@@ -486,50 +489,52 @@ namespace DRT
       /// retrieve EAS parameters and incremental update of them
       template <int NUMEAS_T>
       static void EasUpdateIncrementally(
-          Epetra_SerialDenseMatrix*&
+          CORE::LINALG::SerialDenseMatrix*&
               oldfeas,  ///< EAS constraint \f$f_{EAS}^{k}\f$ of last iteration
-          Epetra_SerialDenseMatrix*& oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
-          Epetra_SerialDenseMatrix*& oldKad,     ///< tangent k_ad of last iteration
-          Epetra_SerialDenseMatrix*& oldKap,     ///< tangent k_ap of last iteration
-          Teuchos::RCP<Epetra_SerialDenseVector>&
+          CORE::LINALG::SerialDenseMatrix*&
+              oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
+          CORE::LINALG::SerialDenseMatrix*& oldKad,  ///< tangent k_ad of last iteration
+          CORE::LINALG::SerialDenseMatrix*& oldKap,  ///< tangent k_ap of last iteration
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>&
               feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
-          Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,     ///< current tangent k_aa
-          Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,     ///< current tangent k_ad
-          Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,     ///< current tangent k_ap
-          Epetra_SerialDenseMatrix*& alpha,                ///< EAS parameters
-          Teuchos::RCP<Epetra_SerialDenseMatrix>& M,       ///< EAS shape functions
-          DRT::Container& data,                            ///< (input) data
-          const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi,  ///< current residual displacements
-          const CORE::LINALG::Matrix<NUMPRES_, 1>& presi   ///< current residual pressures
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,  ///< current tangent k_ad
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap,  ///< current tangent k_ap
+          CORE::LINALG::SerialDenseMatrix*& alpha,             ///< EAS parameters
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& M,    ///< EAS shape functions
+          DRT::Container& data,                                ///< (input) data
+          const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi,      ///< current residual displacements
+          const CORE::LINALG::Matrix<NUMPRES_, 1>& presi       ///< current residual pressures
       );
 
       /// push parametric EAS GL strain to material/reference configuration
       template <int NUMEAS_T>
-      static void EasMaterialiseShapeFcts(const Teuchos::RCP<Epetra_SerialDenseMatrix>&
+      static void EasMaterialiseShapeFcts(const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>&
                                               M,  ///< EAS shape functions in material configuration
           const double& detJ0,  ///< material-to-parameter Jacobian determinant at origin
           const double& detJ,   ///< material-to-parameter Jacobian determinant at GP
           const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               T0invT,  ///< parameter-to-material transformation for 2-tensors
-          const Epetra_SerialDenseMatrix& Mloc  ///< parametric EAS shape function eval. at GP
+          const CORE::LINALG::SerialDenseMatrix&
+              Mloc  ///< parametric EAS shape function eval. at GP
       );
 
       /// add EAS strain contribution
       template <int NUMEAS_T>
       static void EasAddStrain(
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& glstrain,  ///< Green-Lagrange strain vector
-          const Teuchos::RCP<Epetra_SerialDenseMatrix>&
-              M,                                 ///< EAS shape functions in material configuration
-          const Epetra_SerialDenseMatrix* alpha  ///< EAS parameters
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>&
+              M,  ///< EAS shape functions in material configuration
+          const CORE::LINALG::SerialDenseMatrix* alpha  ///< EAS parameters
       );
 
       /// build EAS constraint and its tangents
       template <int NUMEAS_T>
-      static void EasConstraintAndTangent(Teuchos::RCP<Epetra_SerialDenseVector>&
+      static void EasConstraintAndTangent(Teuchos::RCP<CORE::LINALG::SerialDenseVector>&
                                               feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
-          Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
-          Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
-          Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,  ///< current tangent k_ap
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,  ///< current tangent k_ad
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap,  ///< current tangent k_ap
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>&
               defgradD,  ///< compatible deformation gradient
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>&
@@ -551,7 +556,7 @@ namespace DRT
           const CORE::LINALG::Matrix<NUMDFGR_, NUMDISP_>&
               defgradbydisp,  ///< deformation gradient diff'd w.r.t. displacements
           const CORE::LINALG::Matrix<NUMPRES_, 1>& prshfct,  ///< effective pressure shape functions
-          const Teuchos::RCP<Epetra_SerialDenseMatrix>&
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>&
               M  ///< EAS shape functions in material configuration
       );
 
@@ -565,16 +570,17 @@ namespace DRT
           CORE::LINALG::Matrix<NUMPRES_, NUMDISP_>*
               dargmatrix,  ///< 'transposed' element gradient matrix
           CORE::LINALG::Matrix<NUMPRES_, NUMPRES_>* stabmatrix,  ///< element stabilisation matrix
-          Epetra_SerialDenseMatrix*&
+          CORE::LINALG::SerialDenseMatrix*&
               oldfeas,  ///< EAS constraint \f$f_{EAS}^{k}\f$ of last iteration
-          Epetra_SerialDenseMatrix*& oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
-          Epetra_SerialDenseMatrix*& oldKad,     ///< tangent k_ad of last iteration
-          Epetra_SerialDenseMatrix*& oldKap,     ///< tangent k_ap of last iteration
-          const Teuchos::RCP<Epetra_SerialDenseVector>&
+          CORE::LINALG::SerialDenseMatrix*&
+              oldKaainv,  ///< inverted tangent k_aa^{-1} of last iteration
+          CORE::LINALG::SerialDenseMatrix*& oldKad,  ///< tangent k_ad of last iteration
+          CORE::LINALG::SerialDenseMatrix*& oldKap,  ///< tangent k_ap of last iteration
+          const Teuchos::RCP<CORE::LINALG::SerialDenseVector>&
               feas,  ///< current EAS constraint \f$f_{EAS}^{k+1}\f$
-          const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
-          const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kad,  ///< current tangent k_ad
-          const Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap   ///< current tangent k_ap
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kaa,  ///< current tangent k_aa
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kad,  ///< current tangent k_ad
+          const Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& Kap   ///< current tangent k_ap
       );
 
       //@}

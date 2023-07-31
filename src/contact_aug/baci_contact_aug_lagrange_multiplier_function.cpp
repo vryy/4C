@@ -223,7 +223,7 @@ Teuchos::RCP<Epetra_Vector> CONTACT::AUG::LagrangeMultiplierFunction::FirstOrder
 
   // --- second summand
   tmp_vec = GetStructureGradient(cparams);
-  tmp_vec_exp->Scale(0.0);
+  tmp_vec_exp->PutScalar(0.0);
   tmp_vec_exp->Import(*tmp_vec, exporter, Insert);
 
   Teuchos::RCP<Epetra_Vector> dincr_exp =

@@ -94,7 +94,7 @@ namespace CORE::DRT::NURBS::UTILS
 
   template <class V, class WG>
   bool nurbs_get_1D_funct(V& nurbs_shape_funct, const double& u,
-      const Epetra_SerialDenseVector& knots, const WG& weights,
+      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 0;
@@ -194,7 +194,7 @@ namespace CORE::DRT::NURBS::UTILS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    Epetra_SerialDenseVector bezier_shape_funct(size);
+    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
     CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots);
@@ -375,7 +375,7 @@ namespace CORE::DRT::NURBS::UTILS
 
   template <class VF, class VD, class WG>
   bool nurbs_get_1D_funct_deriv(VF& nurbs_shape_funct, VD& nurbs_shape_deriv, const double& u,
-      const Epetra_SerialDenseVector& knots, const WG& weights,
+      const CORE::LINALG::SerialDenseVector& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 0;
@@ -475,8 +475,8 @@ namespace CORE::DRT::NURBS::UTILS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    Epetra_SerialDenseVector bezier_shape_funct(size);
-    Epetra_SerialDenseVector bezier_shape_deriv(size);
+    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
+    CORE::LINALG::SerialDenseVector bezier_shape_deriv(size);
 
     // allocate bspline polynomials for both direction
     CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots);
@@ -621,7 +621,7 @@ namespace CORE::DRT::NURBS::UTILS
 
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_1D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
-      MSD& nurbs_shape_deriv2, const UV& u, const Epetra_SerialDenseVector& knots,
+      MSD& nurbs_shape_deriv2, const UV& u, const CORE::LINALG::SerialDenseVector& knots,
       const WG& weights, const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 1;
@@ -662,9 +662,9 @@ namespace CORE::DRT::NURBS::UTILS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    Epetra_SerialDenseVector bezier_shape_funct(size);
-    Epetra_SerialDenseVector bezier_shape_deriv(size);
-    Epetra_SerialDenseVector bezier_shape_deriv2(size);
+    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
+    CORE::LINALG::SerialDenseVector bezier_shape_deriv(size);
+    CORE::LINALG::SerialDenseVector bezier_shape_deriv2(size);
 
     // allocate bspline polynomials for both direction
     CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots);
@@ -839,7 +839,7 @@ namespace CORE::DRT::NURBS::UTILS
   */
   template <class VF, class UV, class WG, typename scalar_type = double>
   bool nurbs_get_2D_funct(VF& nurbs_shape_funct, const UV& uv,
-      const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 1;
@@ -1165,7 +1165,7 @@ namespace CORE::DRT::NURBS::UTILS
   */
   template <class VF, class MD, class UV, class WG, typename scalar_type = double>
   bool nurbs_get_2D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 1;
@@ -1579,8 +1579,9 @@ namespace CORE::DRT::NURBS::UTILS
 
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_2D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
-      MSD& nurbs_shape_deriv2, const UV& uv, const std::vector<Epetra_SerialDenseVector>& knots,
-      const WG& weights, const ::DRT::Element::DiscretizationType& distype)
+      MSD& nurbs_shape_deriv2, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 1;
 
@@ -1690,9 +1691,9 @@ namespace CORE::DRT::NURBS::UTILS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    Epetra_SerialDenseVector bezier_shape_funct(size);
-    Epetra_SerialDenseMatrix bezier_shape_deriv(2, size);
-    Epetra_SerialDenseMatrix bezier_shape_deriv2(3, size);
+    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
+    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv(2, size);
+    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv2(3, size);
 
     // allocate bspline polynomials for both direction
     CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
@@ -2163,7 +2164,7 @@ namespace CORE::DRT::NURBS::UTILS
 
   template <class V, class UV, class WG>
   bool nurbs_get_3D_funct(V& nurbs_shape_funct, const UV& uv,
-      const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 1;
@@ -2306,7 +2307,7 @@ namespace CORE::DRT::NURBS::UTILS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    Epetra_SerialDenseVector bezier_shape_funct(size);
+    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
 
     // allocate bspline polynomials for both direction
     CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
@@ -2569,7 +2570,7 @@ namespace CORE::DRT::NURBS::UTILS
 
   template <class VF, class UV, class MD, class WG>
   bool nurbs_get_3D_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 1;
@@ -2712,8 +2713,8 @@ namespace CORE::DRT::NURBS::UTILS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    Epetra_SerialDenseVector bezier_shape_funct(size);
-    Epetra_SerialDenseMatrix bezier_shape_deriv(3, size);
+    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
+    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv(3, size);
 
     // allocate bspline polynomials for both direction
     CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
@@ -3173,8 +3174,9 @@ namespace CORE::DRT::NURBS::UTILS
 
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_3D_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
-      MSD& nurbs_shape_deriv2, const UV& uv, const std::vector<Epetra_SerialDenseVector>& knots,
-      const WG& weights, const ::DRT::Element::DiscretizationType& distype)
+      MSD& nurbs_shape_deriv2, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const ::DRT::Element::DiscretizationType& distype)
   {
     int degree = 1;
 
@@ -3317,9 +3319,9 @@ namespace CORE::DRT::NURBS::UTILS
     //  PART I: EVALUATION OF  BEZIER SHAPE FUNCTIONS
     // -----------------------------------------------
 
-    Epetra_SerialDenseVector bezier_shape_funct(size);
-    Epetra_SerialDenseMatrix bezier_shape_deriv(3, size);
-    Epetra_SerialDenseMatrix bezier_shape_deriv2(6, size);
+    CORE::LINALG::SerialDenseVector bezier_shape_funct(size);
+    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv(3, size);
+    CORE::LINALG::SerialDenseMatrix bezier_shape_deriv2(6, size);
 
     // allocate bspline polynomials for both direction
     CORE::DRT::NURBS::UTILS::BsplinePolynomial bspline_xi(degree, knots[0]);
@@ -3810,8 +3812,9 @@ namespace CORE::DRT::NURBS::UTILS
   //! Evaluate basis functions, first and second derivatives of nurbs basis functions.
   template <class VF, class MD, class MSD, class UV, class WG>
   bool nurbs_get_funct_deriv_deriv2(VF& nurbs_shape_funct, MD& nurbs_shape_deriv,
-      MSD& nurbs_shape_deriv2, const UV& uv, const std::vector<Epetra_SerialDenseVector>& knots,
-      const WG& weights, const ::DRT::Element::DiscretizationType& distype)
+      MSD& nurbs_shape_deriv2, const UV& uv,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
+      const ::DRT::Element::DiscretizationType& distype)
   {
     switch (::CORE::DRT::UTILS::getDimension(distype))
     {
@@ -3839,7 +3842,7 @@ namespace CORE::DRT::NURBS::UTILS
   //! Evaluate basis functions and first derivatives of nurbs basis functions.
   template <class VF, class MD, class UV, class WG>
   bool nurbs_get_funct_deriv(VF& nurbs_shape_funct, MD& nurbs_shape_deriv, const UV& uv,
-      const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     switch (::CORE::DRT::UTILS::getDimension(distype))
@@ -3869,7 +3872,7 @@ namespace CORE::DRT::NURBS::UTILS
   //! Evaluate basis functions of nurbs basis functions.
   template <class VF, class UV, class WG>
   bool nurbs_get_funct(VF& nurbs_shape_funct, const UV& uv,
-      const std::vector<Epetra_SerialDenseVector>& knots, const WG& weights,
+      const std::vector<CORE::LINALG::SerialDenseVector>& knots, const WG& weights,
       const ::DRT::Element::DiscretizationType& distype)
   {
     switch (::CORE::DRT::UTILS::getDimension(distype))

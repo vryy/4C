@@ -20,7 +20,7 @@
 #include "baci_mat_fluidporo_multiphase_reactions.H"
 #include "baci_mat_fluidporo_multiphase_singlereaction.H"
 
-#include <Epetra_SerialDenseSolver.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 
 
@@ -624,13 +624,15 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::PhaseManagerDeriv(
 {
   const int numfluidphases = phasemanager_->NumFluidPhases();
   // initialize matrixes and vectors
-  pressurederiv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases, numfluidphases));
-  saturationderiv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases, numfluidphases));
-  saturationderivderiv_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(
-      numfluidphases, Epetra_SerialDenseMatrix(numfluidphases, numfluidphases)));
-  solidpressurederiv_ = Teuchos::rcp(new Epetra_SerialDenseVector(numfluidphases));
+  pressurederiv_ =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases));
+  saturationderiv_ =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases));
+  saturationderivderiv_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
+      numfluidphases, CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases)));
+  solidpressurederiv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(numfluidphases));
   solidpressurederivderiv_ =
-      Teuchos::rcp(new Epetra_SerialDenseMatrix(numfluidphases, numfluidphases));
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases));
 
   return;
 }
@@ -681,36 +683,40 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
   // of the pressure w.r.t. the dofs
   {
-    Epetra_SerialDenseSolver inverse;
-    inverse.SetMatrix(*pressurederiv_);
-    int err = inverse.Invert();
+    using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
+    using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
+    Teuchos::SerialDenseSolver<ordinalType, scalarType> inverse;
+    inverse.setMatrix(pressurederiv_);
+    int err = inverse.invert();
     if (err != 0)
       dserror("Inversion of matrix for pressure derivative failed with error code %d.", err);
   }
 
   // calculate derivatives of saturation w.r.t. pressure
-  Epetra_SerialDenseMatrix deriv(numfluidphases, numfluidphases);
+  CORE::LINALG::SerialDenseMatrix deriv(numfluidphases, numfluidphases);
   multiphasemat.EvaluateDerivOfSaturationWrtPressure(deriv, pressure);
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-  saturationderiv_->Multiply('N', 'N', 1.0, deriv, *pressurederiv_, 0.0);
+  saturationderiv_->multiply(
+      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, *pressurederiv_, 0.0);
 
   // calculate 2nd derivatives of saturation w.r.t. pressure
   // TODO: this should work for pressure und diffpressure DOFs, however not for
   //       saturation DOFs
-  Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix>> dummyderiv =
-      Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(
-          numfluidphases, Epetra_SerialDenseMatrix(numfluidphases, numfluidphases)));
+  Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> dummyderiv =
+      Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
+          numfluidphases, CORE::LINALG::SerialDenseMatrix(numfluidphases, numfluidphases)));
   multiphasemat.EvaluateSecondDerivOfSaturationWrtPressure(*dummyderiv, pressure);
   for (int i = 0; i < numfluidphases; i++)
   {
-    deriv.Multiply('T', 'N', 1.0, *pressurederiv_, (*dummyderiv)[i], 0.0);
-    (*saturationderivderiv_)[i].Multiply('N', 'N', 1.0, deriv, *pressurederiv_, 0.0);
+    deriv.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, *pressurederiv_, (*dummyderiv)[i], 0.0);
+    (*saturationderivderiv_)[i].multiply(
+        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, *pressurederiv_, 0.0);
   }
 
   // compute derivative of solid pressure w.r.t. dofs with product rule
-  solidpressurederiv_->Scale(0.0);
+  solidpressurederiv_->putScalar(0.0);
   for (int iphase = 0; iphase < numfluidphases; iphase++)
     for (int jphase = 0; jphase < numfluidphases; jphase++)
       (*solidpressurederiv_)(iphase) += (*pressurederiv_)(jphase, iphase) * saturation[jphase] +
@@ -718,7 +724,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
 
   // compute second derivative of solid pressure w.r.t. dofs with product rule
   // TODO also include second derivs of pressure and saturation
-  solidpressurederivderiv_->Scale(0.0);
+  solidpressurederivderiv_->putScalar(0.0);
   for (int iphase = 0; iphase < numfluidphases; iphase++)
     for (int jphase = 0; jphase < numfluidphases; jphase++)
       for (int kphase = 0; kphase < numfluidphases; kphase++)
@@ -741,12 +747,12 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::ClearGPState()
   phasemanager_->ClearGPState();
 
   // zero everything
-  pressurederiv_->Scale(0.0);
-  saturationderiv_->Scale(0.0);
+  pressurederiv_->putScalar(0.0);
+  saturationderiv_->putScalar(0.0);
   for (int iphase = 0; iphase < numfluidphases; iphase++)
-    (*saturationderivderiv_)[iphase].Scale(0.0);
-  solidpressurederiv_->Scale(0.0);
-  solidpressurederivderiv_->Scale(0.0);
+    (*saturationderivderiv_)[iphase].putScalar(0.0);
+  solidpressurederiv_->putScalar(0.0);
+  solidpressurederivderiv_->putScalar(0.0);
 
 
   return;
@@ -825,7 +831,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::PhaseManagerDeriv
 {
   const int totalnumdof = phasemanager_->TotalNumDof();
   // initialize matrixes and vectors
-  porosityderiv_ = Teuchos::rcp(new Epetra_SerialDenseVector(totalnumdof));
+  porosityderiv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(totalnumdof));
 
   return;
 }
@@ -898,7 +904,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::ClearGPState
   J_ = 0.0;
   dporosity_dJ_ = 0.0;
   dporosity_dp_ = 0.0;
-  porosityderiv_->Scale(0.0);
+  porosityderiv_->putScalar(0.0);
 
   return;
 }

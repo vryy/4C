@@ -586,7 +586,7 @@ CORE::LINALG::Matrix<1, 3, FAD> DRT::ELEMENTS::DiscSh3Line::CalcSurfaceNormalSla
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::ReassembleMATBlock(const int row_block,  ///< row block
     const int col_block,                                                  ///< column block
-    Epetra_SerialDenseMatrix& mat_block,                                  ///< matrix block
+    CORE::LINALG::SerialDenseMatrix& mat_block,                           ///< matrix block
     CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
         elematrix_mm,  ///< element matrix master-master block
     CORE::LINALG::Matrix<NUMDOF_DISCSH3, NUMDOF_DISCSH3>&
@@ -670,7 +670,7 @@ void DRT::ELEMENTS::DiscSh3Line::ReassembleMATBlock(const int row_block,  ///< r
  |   RHS to patch-node block for field (row)                                                     |
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::DiscSh3Line::ReassembleRHSBlock(const int row_block,  ///< row block
-    Epetra_SerialDenseVector& rhs_block,                                  ///< rhs block
+    CORE::LINALG::SerialDenseVector& rhs_block,                           ///< rhs block
     CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_m,  ///< element vector master block
     CORE::LINALG::Matrix<NUMDOF_DISCSH3, 1>& elevector_s,  ///< element vector slave block
     std::vector<int>& lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch

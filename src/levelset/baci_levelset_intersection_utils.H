@@ -174,7 +174,7 @@ namespace SCATRA
 
      protected:
       /** check the level set values before we add a new element to the
-       *  GEO::CUT::LevelSetIntersection object */
+       *  CORE::GEO::CUT::LevelSetIntersection object */
       bool check_lsv_;
 
       /// vector containing the desired positions ( default: outside )

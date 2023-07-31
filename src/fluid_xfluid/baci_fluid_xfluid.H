@@ -626,9 +626,9 @@ namespace FLD
 
     void UpdateIterIncrementally(Teuchos::RCP<const Epetra_Vector> vel);
 
-    void ComputeErrorNorms(Teuchos::RCP<Epetra_SerialDenseVector> glob_dom_norms,
-        Teuchos::RCP<Epetra_SerialDenseVector> glob_interf_norms,
-        Teuchos::RCP<Epetra_SerialDenseVector> glob_stab_norms);
+    void ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_dom_norms,
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_interf_norms,
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> glob_stab_norms);
 
     /*!
       \brief compute values at intermediate time steps for gen.-alpha
@@ -674,8 +674,8 @@ namespace FLD
     //    */
     //    void GetVolumeCellMaterial(DRT::Element* actele,
     //                               Teuchos::RCP<MAT::Material> & mat,
-    //                               const GEO::CUT::Point::PointPosition position =
-    //                               GEO::CUT::Point::outside);
+    //                               const CORE::GEO::CUT::Point::PointPosition position =
+    //                               CORE::GEO::CUT::Point::outside);
 
 
     //-------------------------------------------------------------------------------

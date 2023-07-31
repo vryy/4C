@@ -26,7 +26,7 @@
 #include "baci_beam3_base.H"
 
 
-#include <Epetra_SerialDenseVector.h>
+#include "baci_linalg_serialdensevector.H"
 
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_beaminteraction_beam3contact_tangentsmoothing.H"

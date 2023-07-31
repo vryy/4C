@@ -128,9 +128,11 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::SetupCalc(
 template <DRT::Element::DiscretizationType distype, int probdim>
 int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   //--------------------------------------------------------------------------------
   // preparations for element
@@ -381,8 +383,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::ExtractTurbulenceApproach(D
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::Sysmat(DRT::Element* ele,
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    Epetra_SerialDenseVector& subgrdiff)
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+    CORE::LINALG::SerialDenseVector& subgrdiff)
 {
   //----------------------------------------------------------------------
   // calculation of element volume both for tau at ele. cent. and int. pt.
@@ -1304,9 +1306,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::GetRhsInt(
 /*-----------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConv(Epetra_SerialDenseMatrix& emat,
-    const int k, const double timefacfac, const double densnp,
-    const CORE::LINALG::Matrix<nen_, 1>& sgconv)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConv(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
+    const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv)
 {
   const CORE::LINALG::Matrix<nen_, 1>& conv = scatravarmanager_->Conv(k);
 
@@ -1330,7 +1332,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConv(Epetra_SerialDe
  *------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddCons(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
   const double consfac = timefacfac * densnp * vdiv;
@@ -1352,7 +1354,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatConvAddCons(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatDiff(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   // diffusive term
   const double fac_diffus = timefacfac * diffmanager_->GetIsotropicDiff(k);
@@ -1374,8 +1376,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatDiff(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatTransConvDiffStab(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timetaufac, const double densnp,
-    const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timetaufac,
+    const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
+    const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   const CORE::LINALG::Matrix<nen_, 1>& conv = scatravarmanager_->Conv(k);
 
@@ -1454,7 +1457,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatTransConvDiffStab(
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(
-    Epetra_SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
+    CORE::LINALG::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam)
 {
   CalcMatMass(emat, k, fac, densam, funct_, funct_);
 }
@@ -1462,8 +1465,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(Epetra_SerialDenseMatrix& emat,
-    const int& k, const double& fac, const double& densam,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(
+    CORE::LINALG::SerialDenseMatrix& emat, const int& k, const double& fac, const double& densam,
     const CORE::LINALG::Matrix<nen_, 1>& sfunct, const CORE::LINALG::Matrix<nen_, 1>& tfunct) const
 {
   const double densamfac = fac * densam;
@@ -1487,9 +1490,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMass(Epetra_SerialDe
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMassStab(Epetra_SerialDenseMatrix& emat,
-    const int k, const double taufac, const double densam, const double densnp,
-    const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMassStab(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double taufac, const double densam,
+    const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
+    const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   const CORE::LINALG::Matrix<nen_, 1>& conv = scatravarmanager_->Conv(k);
   const double densamnptaufac = taufac * densam * densnp;
@@ -1535,10 +1539,10 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatMassStab(Epetra_Seri
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatReact(Epetra_SerialDenseMatrix& emat,
-    const int k, const double timefacfac, const double timetaufac, const double taufac,
-    const double densnp, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
-    const CORE::LINALG::Matrix<nen_, 1>& diff)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatReact(
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac,
+    const double timetaufac, const double taufac, const double densnp,
+    const CORE::LINALG::Matrix<nen_, 1>& sgconv, const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
   const CORE::LINALG::Matrix<nen_, 1>& conv = scatravarmanager_->Conv(k);
 
@@ -1665,8 +1669,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatReact(Epetra_SerialD
 /*------------------------------------------------------------------- *
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSLinMass(Epetra_SerialDenseVector& erhs,
-    const int k, const double rhsfac, const double fac, const double densam, const double densnp)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSLinMass(
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double fac,
+    const double densam, const double densnp)
 {
   const double& phinp = scatravarmanager_->Phinp(k);
   const double& hist = scatravarmanager_->Hist(k);
@@ -1828,7 +1833,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::RecomputeConvPhiForRhs(cons
  *---------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSHistAndSource(
-    Epetra_SerialDenseVector& erhs, const int k, const double fac, const double rhsint)
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double rhsint)
 {
   double vrhs = fac * rhsint;
   for (unsigned vi = 0; vi < nen_; ++vi)
@@ -1843,7 +1848,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSHistAndSource(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSConv(
-    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   const double& conv_phi = scatravarmanager_->ConvPhi(k);
 
@@ -1860,7 +1865,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSConv(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSDiff(
-    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   const CORE::LINALG::Matrix<nsd_, 1>& gradphi = scatravarmanager_->GradPhi(k);
 
@@ -1880,7 +1885,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSDiff(
  *--------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSTransConvDiffStab(
-    Epetra_SerialDenseVector& erhs, const int k, const double rhstaufac, const double densnp,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhstaufac, const double densnp,
     const double scatrares, const CORE::LINALG::Matrix<nen_, 1>& sgconv,
     const CORE::LINALG::Matrix<nen_, 1>& diff)
 {
@@ -1914,9 +1919,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSTransConvDiffStab(
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSReact(Epetra_SerialDenseVector& erhs,
-    const int k, const double rhsfac, const double rhstaufac, const double rea_phi,
-    const double densnp, const double scatrares)
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSReact(
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double rhstaufac,
+    const double rea_phi, const double densnp, const double scatrares)
 {
   // standard Galerkin term
   double vrhs = rhsfac * rea_phi;
@@ -1946,8 +1951,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSReact(Epetra_SerialD
 /*---------------------------------------------------------------------------*
  *---------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSFSSGD(Epetra_SerialDenseVector& erhs,
-    const int k, const double rhsfac, const double sgdiff,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSFSSGD(
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double sgdiff,
     const CORE::LINALG::Matrix<nsd_, 1> fsgradphi)
 {
   const double vrhs = rhsfac * sgdiff;
@@ -1964,8 +1969,8 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSFSSGD(Epetra_SerialD
 /*------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
-void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSMFS(Epetra_SerialDenseVector& erhs,
-    const int k, const double rhsfac, const double densnp,
+void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSMFS(
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac, const double densnp,
     const CORE::LINALG::Matrix<nsd_, 1> mfsggradphi, const CORE::LINALG::Matrix<nsd_, 1> mfsgvelint,
     const double mfssgphi, const double mfsvdiv)
 {
@@ -2004,8 +2009,9 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSMFS(Epetra_SerialDen
  *-----------------------------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
-    const DRT::Element* const ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    const int k, const int iquad, const double timefacfac, const double rhsfac)
+    const DRT::Element* const ele, CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const int iquad, const double timefacfac,
+    const double rhsfac)
 {
   // extract multi-scale scalar transport material
   const MAT::ScatraMatMultiScale* matmultiscale =
@@ -2045,7 +2051,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcMatAndRhsMultiScale(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcRHSEMD(
-    const DRT::Element* const ele, Epetra_SerialDenseVector& erhs, const double rhsfac)
+    const DRT::Element* const ele, CORE::LINALG::SerialDenseVector& erhs, const double rhsfac)
 {
   // (SPATIAL) FUNCTION BUSINESS
   const int functno = scatrapara_->EMDSource();

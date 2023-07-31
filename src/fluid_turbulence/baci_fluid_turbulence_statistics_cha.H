@@ -392,7 +392,7 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> planecoordinates_;
 
     //! a bounding box for the channel
-    Teuchos::RCP<Epetra_SerialDenseMatrix> boundingbox_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> boundingbox_;
 
     //! viscosity to calculate l_tau, y+ etc.
     double dens_;

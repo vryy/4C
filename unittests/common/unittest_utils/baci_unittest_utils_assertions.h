@@ -197,13 +197,14 @@ namespace TESTING::INTERNAL
     // argument is required for the EXPECT_PRED_FORMAT3 macro of GoogleTest for pretty printing
     (void)toleranceExpr;
 
-    const bool dimensionsMatch = mat1.RowDim() == mat2.RowDim() and mat1.ColDim() == mat2.ColDim();
+    const bool dimensionsMatch =
+        mat1.numRows() == mat2.numRows() and mat1.numCols() == mat2.numCols();
     if (!dimensionsMatch)
     {
       return ::testing::AssertionFailure()
-             << "dimension mismatch: " << mat1Expr << " has dimension " << mat1.RowDim() << "x"
-             << mat1.ColDim() << " but " << mat2Expr << " has dimension " << mat2.RowDim() << "x"
-             << mat2.ColDim() << std::endl;
+             << "dimension mismatch: " << mat1Expr << " has dimension " << mat1.numRows() << "x"
+             << mat1.numCols() << " but " << mat2Expr << " has dimension " << mat2.numRows() << "x"
+             << mat2.numCols() << std::endl;
     }
 
     const std::string nonMatchingEntries = std::invoke(
@@ -211,9 +212,9 @@ namespace TESTING::INTERNAL
         {
           std::stringstream ss;
           ss << std::fixed << std::setprecision(PrecisionForPrinting(tolerance));
-          for (int i = 0; i < mat1.RowDim(); ++i)
+          for (int i = 0; i < mat1.numRows(); ++i)
           {
-            for (int j = 0; j < mat1.ColDim(); ++j)
+            for (int j = 0; j < mat1.numCols(); ++j)
             {
               if (std::fabs(mat1(i, j) - mat2(i, j)) > tolerance)
               {

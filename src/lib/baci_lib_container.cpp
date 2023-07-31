@@ -48,9 +48,9 @@ DRT::Container::Container(const DRT::Container& old) : ParObject(old), stringdat
   for (mfool = old.mapdata_.begin(); mfool != old.mapdata_.end(); ++mfool)
     mapdata_[mfool->first] = Teuchos::rcp(new std::map<int, std::vector<double>>(*(mfool->second)));
 
-  std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::const_iterator curr;
+  std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator curr;
   for (curr = old.matdata_.begin(); curr != old.matdata_.end(); ++curr)
-    matdata_[curr->first] = Teuchos::rcp(new Epetra_SerialDenseMatrix(*(curr->second)));
+    matdata_[curr->first] = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(*(curr->second)));
 
   std::map<std::string, Teuchos::RCP<Epetra_MultiVector>>::const_iterator eveccurr;
   for (eveccurr = old.evecdata_.begin(); eveccurr != old.evecdata_.end(); ++eveccurr)
@@ -141,7 +141,7 @@ void DRT::Container::Pack(DRT::PackBuffer& data) const
     AddtoPack(data, scurr->second);
   }
   // iterate though matdata_ and add to pack
-  std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::const_iterator mcurr;
+  std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator mcurr;
   for (mcurr = matdata_.begin(); mcurr != matdata_.end(); ++mcurr)
   {
     AddtoPack(data, mcurr->first);
@@ -226,7 +226,7 @@ void DRT::Container::Unpack(const std::vector<char>& data)
   {
     std::string key;
     ExtractfromPack(position, data, key);
-    Epetra_SerialDenseMatrix value(0, 0);
+    CORE::LINALG::SerialDenseMatrix value(0, 0);
     ExtractfromPack(position, data, value);
     Add(key, value);
   }
@@ -281,7 +281,7 @@ void DRT::Container::Print(std::ostream& os) const
   for (scurr = stringdata_.begin(); scurr != stringdata_.end(); ++scurr)
     os << scurr->first << " : " << scurr->second << " ";
 
-  std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::const_iterator matcurr;
+  std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator matcurr;
   for (matcurr = matdata_.begin(); matcurr != matdata_.end(); ++matcurr)
     os << std::endl << matcurr->first << " :\n" << *(matcurr->second);
 
@@ -380,9 +380,9 @@ void DRT::Container::Add(const std::string& name, const std::string& data)
  |  Add stuff to the container                                 (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const std::string& name, const Epetra_SerialDenseMatrix& matrix)
+void DRT::Container::Add(const std::string& name, const CORE::LINALG::SerialDenseMatrix& matrix)
 {
-  matdata_[name] = Teuchos::rcp(new Epetra_SerialDenseMatrix(matrix));
+  matdata_[name] = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(matrix));
   return;
 }
 
@@ -390,7 +390,8 @@ void DRT::Container::Add(const std::string& name, const Epetra_SerialDenseMatrix
  |  Add stuff to the container                                 (public) |
  |                                                             lw 04/08 |
  *----------------------------------------------------------------------*/
-void DRT::Container::Add(const std::string& name, Teuchos::RCP<Epetra_SerialDenseMatrix> matrix)
+void DRT::Container::Add(
+    const std::string& name, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matrix)
 {
   matdata_[name] = matrix;
   return;
@@ -451,7 +452,7 @@ void DRT::Container::Delete(const std::string& name)
     return;
   }
 
-  std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::iterator matcurr =
+  std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::iterator matcurr =
       matdata_.find(name);
   if (matcurr != matdata_.end())
   {
@@ -537,9 +538,9 @@ namespace DRT
    |                                                            gee 02/07 |
    *----------------------------------------------------------------------*/
   template <>
-  const Epetra_SerialDenseMatrix* Container::Get(const std::string& name) const
+  const CORE::LINALG::SerialDenseMatrix* Container::Get(const std::string& name) const
   {
-    std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::const_iterator mcurr =
+    std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::const_iterator mcurr =
         matdata_.find(name);
     if (mcurr != matdata_.end())
       return mcurr->second.get();
@@ -642,9 +643,9 @@ namespace DRT
    |                                                            gee 02/07 |
    *----------------------------------------------------------------------*/
   template <>
-  Epetra_SerialDenseMatrix* Container::GetMutable(const std::string& name)
+  CORE::LINALG::SerialDenseMatrix* Container::GetMutable(const std::string& name)
   {
-    std::map<std::string, Teuchos::RCP<Epetra_SerialDenseMatrix>>::iterator mcurr =
+    std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::iterator mcurr =
         matdata_.find(name);
     if (mcurr != matdata_.end())
       return mcurr->second.get();

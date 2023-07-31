@@ -1007,7 +1007,6 @@ int CORE::LINEAR_SOLVER::BlockSmoother_Operator::ApplyInverse(
 
   if (S_ == Teuchos::null) dserror("Null pointer. We cannot call the smoother");
 
-  // Ybl.Scale(0.0);
   S_->Solve(Xbl, Ybl, true);
 
   for (int i = 0; i < NumBlocks; i++) domain_ex.InsertVector(*(Ybl.GetVector(i)), i, Y);

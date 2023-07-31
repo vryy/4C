@@ -100,8 +100,8 @@ double DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcFreeChargeDerC
 /*----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotCoulomb(
-    Epetra_SerialDenseMatrix& emat, const double fac, const double invf, const double scalefac,
-    const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
+    CORE::LINALG::SerialDenseMatrix& emat, const double fac, const double invf,
+    const double scalefac, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -123,8 +123,9 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotCoulomb(
 /*----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotCoulomb(
-    Epetra_SerialDenseVector& erhs, const double fac, const double invf, const double cond_invperm,
-    const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot, const double epsilon)
+    CORE::LINALG::SerialDenseVector& erhs, const double fac, const double invf,
+    const double cond_invperm, const CORE::LINALG::Matrix<my::nsd_, 1>& gradpot,
+    const double epsilon)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
   {
@@ -140,7 +141,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotCoulomb(
 /*----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotSrc(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double invf,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double invf,
     const double cond_invperm, const double z_k_F)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
@@ -157,7 +158,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatPotSrc(
 /*----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotSrc(
-    Epetra_SerialDenseVector& erhs, const int k, const double fac, const double invf,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double fac, const double invf,
     const double cond_invperm, const double q_F)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
@@ -171,7 +172,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsPotSrc(
 /*----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsDiffCur(
-    Epetra_SerialDenseVector& erhs, const double rhsfac, const std::vector<double>& invfval,
+    CORE::LINALG::SerialDenseVector& erhs, const double rhsfac, const std::vector<double>& invfval,
     const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
   if (diffcondmat_ != INPAR::ELCH::diffcondmat_scl)
@@ -195,7 +196,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcRhsDiffCur(
 /*----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatDiffCur(
-    Epetra_SerialDenseMatrix& emat, const double timefacfac, const std::vector<double>& invfval,
+    CORE::LINALG::SerialDenseMatrix& emat, const double timefacfac,
+    const std::vector<double>& invfval,
     const std::vector<CORE::LINALG::Matrix<my::nsd_, 1>>& gradphi)
 {
   for (unsigned vi = 0; vi < my::nen_; ++vi)
@@ -228,9 +230,10 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatDiffCur(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const int k, const double fac,
-    const double timefacfac, const double rhsfac, const double taufac, const double timetaufac,
-    const double rhstaufac, CORE::LINALG::Matrix<my::nen_, 1>& tauderpot, double& rhsint)
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const int k,
+    const double fac, const double timefacfac, const double rhsfac, const double taufac,
+    const double timetaufac, const double rhstaufac, CORE::LINALG::Matrix<my::nen_, 1>& tauderpot,
+    double& rhsint)
 {
   //----------------------------------------------------------------
   // 1) element matrix: instationary terms
@@ -312,7 +315,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhs(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchScl<distype, probdim>::CalcMatAndRhsOutsideScalarLoop(
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs, const double fac,
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs, const double fac,
     const double timefacfac, const double rhsfac)
 {
   //----------------------------------------------------------------

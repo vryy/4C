@@ -15,7 +15,7 @@ Validate a given BACI input file (after all preprocessing steps)
 
 #include <string>
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_lib_element.H"
 
 
@@ -42,7 +42,7 @@ namespace EXODUS
 
   //! Check one element for positive Jacobi determinant
   bool PositiveEle(const int& eleid, const std::vector<int>& nodes, const EXODUS::Mesh& mymesh,
-      const Epetra_SerialDenseMatrix& deriv);
+      const CORE::LINALG::SerialDenseMatrix& deriv);
   int EleSaneSign(
       const std::vector<int>& nodes, const std::map<int, std::vector<double>>& nodecoords);
 

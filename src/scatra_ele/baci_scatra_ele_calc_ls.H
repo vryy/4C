@@ -37,15 +37,17 @@ namespace DRT
 
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
-          DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-          Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-          Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra);
+          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,
+          CORE::LINALG::SerialDenseVector& elevec3_epetra);
 
      private:
       // calculate error compared to analytical solution
       void CalErrorComparedToAnalytSolution(const DRT::Element* ele,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephizero,
-          Teuchos::ParameterList& params, Epetra_SerialDenseVector& errors);
+          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector& errors);
 
       // smoothed heaviside function
       void SmoothHeavisideFunction(const double charelelength, const double phi, double& smoothH);

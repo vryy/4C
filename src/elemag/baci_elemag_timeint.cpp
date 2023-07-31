@@ -231,8 +231,8 @@ void ELEMAG::ElemagTimeInt::Integrate()
 void ELEMAG::ElemagTimeInt::ElementsInit()
 {
   // Initializing siome vectors and parameters
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
 
   // loop over all elements on the processor
@@ -253,8 +253,8 @@ void ELEMAG::ElemagTimeInt::ElementsInit()
 
     initParams.set<int>("action", ELEMAG::ele_init);
     initParams.set<INPAR::ELEMAG::DynamicType>("dyna", elemagdyna_);
-    Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-    Epetra_SerialDenseMatrix elemat1, elemat2;
+    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
   }
   return;
@@ -301,8 +301,8 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
       }
 
       // Initializing siome vectors and parameters
-      Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-      Epetra_SerialDenseMatrix elemat1, elemat2;
+      CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+      CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
       Teuchos::ParameterList initParams;
       initParams.set<int>("action", ELEMAG::project_field);
       initParams.set("startfuncno", startfuncno);
@@ -320,9 +320,9 @@ void ELEMAG::ElemagTimeInt::SetInitialField(const INPAR::ELEMAG::InitialField in
         ele->LocationVector(*discret_, la, false);
 
         // Reshaping the vectors
-        if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-          elevec1.Shape(la[0].lm_.size(), 1);
-        if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+        if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+          elevec1.size(la[0].lm_.size());
+        if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
         ele->Evaluate(
             initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
       }
@@ -355,8 +355,8 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
   Teuchos::ParameterList initParams;
   DRT::Element::LocationArray la(2);
 
-  Epetra_SerialDenseVector elevec1, elevec2;  //, elevec3;
-  Epetra_SerialDenseMatrix elemat;            //, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2;  //, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat;            //, elemat2;
 
   initParams.set<int>("action", ELEMAG::project_electric_from_scatra_field);
   initParams.set<INPAR::ELEMAG::DynamicType>("dyna", elemagdyna_);
@@ -382,13 +382,13 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
     DRT::Element *elemagele = discret_->lColElement(el);
 
     elemagele->LocationVector(*discret_, la, false);
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, elemagele))
-      elevec2.Shape(discret_->NumDof(1, elemagele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, elemagele))
+      elevec2.size(discret_->NumDof(1, elemagele));
 
-    Teuchos::RCP<Epetra_SerialDenseVector> nodevals_phi =
-        Teuchos::rcp(new Epetra_SerialDenseVector);
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> nodevals_phi =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
 
     if (ishdg)
     {
@@ -401,7 +401,7 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
     else
     {
       int numscatranode = scatraele->NumNode();
-      (*nodevals_phi).Resize(numscatranode);
+      (*nodevals_phi).resize(numscatranode);
       // fill nodevals with node coords and nodebased solution values
       DRT::Node **scatranodes = scatraele->Nodes();
       for (int i = 0; i < numscatranode; ++i)
@@ -415,7 +415,7 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
       }
     }
 
-    initParams.set<Teuchos::RCP<Epetra_SerialDenseVector>>("nodevals_phi", nodevals_phi);
+    initParams.set<Teuchos::RCP<CORE::LINALG::SerialDenseVector>>("nodevals_phi", nodevals_phi);
 
     // evaluate the element
     elemagele->Evaluate(
@@ -431,11 +431,11 @@ void ELEMAG::ElemagTimeInt::SetInitialElectricField(
 /*----------------------------------------------------------------------*
  |  Compute error routine (public)                     berardocco 08/18 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
+Teuchos::RCP<CORE::LINALG::SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
 {
   // Initializing siome vectors and parameters
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList params;
   params.set<int>("action", ELEMAG::compute_error);
   params.set<int>("funcno", errfunct_);
@@ -444,8 +444,8 @@ Teuchos::RCP<Epetra_SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
   params.set<bool>("postprocess", postprocess_);
 
   const int numberOfErrorMeasures = 11;
-  Teuchos::RCP<Epetra_SerialDenseVector> errors =
-      Teuchos::rcp(new Epetra_SerialDenseVector(numberOfErrorMeasures));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(numberOfErrorMeasures));
 
   // call loop over elements (assemble nothing)
   discret_->EvaluateScalars(params, errors);
@@ -454,7 +454,7 @@ Teuchos::RCP<Epetra_SerialDenseVector> ELEMAG::ElemagTimeInt::ComputeError()
   return errors;
 }
 
-void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &errors)
+void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<CORE::LINALG::SerialDenseVector> &errors)
 {
   if (myrank_ == 0)
   {
@@ -521,8 +521,8 @@ void ELEMAG::ElemagTimeInt::PrintErrors(Teuchos::RCP<Epetra_SerialDenseVector> &
 void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
 {
   // Initializing siome vectors and parameters
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
   initParams.set<int>("action", ELEMAG::project_field_test);
   initParams.set("startfuncno", startfuncno);
@@ -541,9 +541,9 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTest(const int startfuncno)
     ele->LocationVector(*discret_, la, false);
 
     // Reshaping the vectors
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
   }
   return;
@@ -558,8 +558,8 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTestTrace(const int startfuncno)
   const Epetra_Map *dofrowmap = discret_->DofRowMap();
 
   // Initializing siome vectors and parameters
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
   initParams.set<int>("action", ELEMAG::project_field_test_trace);
   initParams.set("startfuncno", startfuncno);
@@ -577,9 +577,9 @@ void ELEMAG::ElemagTimeInt::ProjectFieldTestTrace(const int startfuncno)
     ele->LocationVector(*discret_, la, false);
 
     // Reshaping the vectors
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
     // now fill the ele vector into the discretization
     for (unsigned int i = 0; i < la[0].lm_.size(); ++i)
@@ -654,7 +654,7 @@ void ELEMAG::ElemagTimeInt::AssembleMatAndRHS()
   Teuchos::ParameterList eleparams;
 
   // reset residual and sysmat
-  residual_->Scale(0.0);
+  residual_->PutScalar(0.0);
   sysmat_->Zero();
 
   //----------------------------------------------------------------------
@@ -716,7 +716,7 @@ void ELEMAG::ElemagTimeInt::UpdateInteriorVariablesAndAssembleRHS()
   eleparams.set<int>("step", step_);
   eleparams.set<bool>("resonly", true);
 
-  residual_->Scale(0.0);
+  residual_->PutScalar(0.0);
   discret_->SetState("trace", trace_);
 
   discret_->Evaluate(
@@ -847,9 +847,9 @@ namespace
     dis.SetState(0, "trace", traceValues);
     // Declaring all the necessary entry for Evaluate()
     DRT::Element::LocationArray la(2);
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
-    Epetra_SerialDenseVector interpolVec;
+    CORE::LINALG::SerialDenseMatrix dummyMat;
+    CORE::LINALG::SerialDenseVector dummyVec;
+    CORE::LINALG::SerialDenseVector interpolVec;
     std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
 
     // For every element of the processor
@@ -868,8 +868,8 @@ namespace
       // Electric field
       // Magnetic field
       ele->LocationVector(dis, la, false);
-      if (interpolVec.M() == 0) interpolVec.Resize(ele->NumNode() * 4 * ndim);
-      for (int i = 0; i < interpolVec.Length(); i++) interpolVec(i) = 0.0;
+      if (interpolVec.numRows() == 0) interpolVec.resize(ele->NumNode() * 4 * ndim);
+      for (int i = 0; i < interpolVec.length(); i++) interpolVec(i) = 0.0;
 
       // Interpolating hdg internal values to the node
       ele->Evaluate(params, dis, la[0].lm_, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);

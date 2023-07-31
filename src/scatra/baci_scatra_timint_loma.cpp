@@ -163,7 +163,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialThermPressureDeriv()
   // method
 
   // variables for integrals of domain and bodyforce
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars = Teuchos::rcp(new Epetra_SerialDenseVector(2));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(2));
 
   // evaluate domain and bodyforce integral
   discret_->EvaluateScalars(eleparams, scalars);
@@ -249,8 +250,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeInitialMass()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integral of inverse temperature
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-      Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumScal() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();  // clean up
 
@@ -291,8 +292,8 @@ void SCATRA::ScaTraTimIntLoma::ComputeThermPressureFromMassCons()
   eleparams.set("calc_grad_phi", false);
 
   // evaluate integral of inverse temperature
-  Teuchos::RCP<Epetra_SerialDenseVector> scalars =
-      Teuchos::rcp(new Epetra_SerialDenseVector(NumScal() + 1));
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(NumScal() + 1));
   discret_->EvaluateScalars(eleparams, scalars);
   discret_->ClearState();  // clean up
 

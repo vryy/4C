@@ -30,7 +30,7 @@
 #include <EpetraExt_RowMatrixOut.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_so3_surface.H"
 #include "baci_so3_line.H"
@@ -337,7 +337,7 @@ void FSI::UTILS::SlideAleUtils::Remeshing(ADAPTER::FSIStructureWrapper& structur
   }
 
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
-  idispms_->Scale(0.0);
+  idispms_->PutScalar(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
       CORE::LINALG::MergeMap(*structdofrowmap_, *fluiddofrowmap_, true);
@@ -360,7 +360,7 @@ void FSI::UTILS::SlideAleUtils::EvaluateMortar(Teuchos::RCP<Epetra_Vector> idisp
     Teuchos::RCP<Epetra_Vector> ifluid, CORE::ADAPTER::CouplingMortar& coupsf)
 {
   // merge displacement values of interface nodes (struct+fluid) into idispms_ for mortar
-  idispms_->Scale(0.0);
+  idispms_->PutScalar(0.0);
 
   Teuchos::RCP<Epetra_Map> dofrowmap =
       CORE::LINALG::MergeMap(*structdofrowmap_, *fluiddofrowmap_, true);
@@ -425,11 +425,11 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
 
   // define stuff needed by the elements
   Teuchos::ParameterList params;
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // prepare variables for length (2D) or area (3D) of the interface
   std::vector<double> mycenterdisp(dim);
@@ -446,8 +446,8 @@ std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp(
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     iele->LocationVector(*structdis, lm, lmowner, lmstride);
-    elevector2.Size(1);    // length of circ with gaussinteg
-    elevector3.Size(dim);  // centerdisp part of ele
+    elevector2.size(1);    // length of circ with gaussinteg
+    elevector3.size(dim);  // centerdisp part of ele
 
     params.set<std::string>("action", "calc_struct_centerdisp");
     int err = iele->Evaluate(
@@ -804,11 +804,11 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
          elemiter++)
     {
       // define stuff needed by the elements
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
       Teuchos::RCP<DRT::Element> iele = elemiter->second;
@@ -816,8 +816,8 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       iele->LocationVector(mtrdis, lm, lmowner, lmstride);
-      elevector2.Size(1);  // circumference (2D) or surface area (3D) of the considered elements
-      elevector3.Size(1);  // normalized displacement in tangential direction ('rotation')
+      elevector2.size(1);  // circumference (2D) or surface area (3D) of the considered elements
+      elevector3.size(1);  // normalized displacement in tangential direction ('rotation')
 
       params.set<std::string>("action", "calc_struct_rotation");
       params.set<double>("maxcoord", maxcoord);
@@ -847,11 +847,11 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
          elemiter++)
     {
       // define stuff needed by the elements
-      Epetra_SerialDenseMatrix elematrix1;
-      Epetra_SerialDenseMatrix elematrix2;
-      Epetra_SerialDenseVector elevector1;
-      Epetra_SerialDenseVector elevector2;
-      Epetra_SerialDenseVector elevector3;
+      CORE::LINALG::SerialDenseMatrix elematrix1;
+      CORE::LINALG::SerialDenseMatrix elematrix2;
+      CORE::LINALG::SerialDenseVector elevector1;
+      CORE::LINALG::SerialDenseVector elevector2;
+      CORE::LINALG::SerialDenseVector elevector3;
       Teuchos::ParameterList params;
 
       Teuchos::RCP<DRT::Element> iele = elemiter->second;
@@ -859,7 +859,7 @@ void FSI::UTILS::SlideAleUtils::Rotation(DRT::Discretization& mtrdis,  ///< flui
       std::vector<int> lmowner;
       std::vector<int> lmstride;
       iele->LocationVector(mtrdis, lm, lmowner, lmstride);
-      elevector1.Size(lm.size());
+      elevector1.size(lm.size());
 
       params.set<std::string>("action", "calc_undo_struct_rotation");
       params.set<double>("maxcoord", maxcoord);

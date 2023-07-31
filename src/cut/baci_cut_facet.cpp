@@ -242,7 +242,7 @@ bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, bool dotriangulate)
  *----------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::Facet::IsPlanar(Mesh& mesh, const std::vector<Point*>& points)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::IsPlanar" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Facet::IsPlanar" );
 
   if (isPlanarComputed_) return isPlanar_;
 
@@ -1319,7 +1319,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Facet::OtherPoint(Point* p1, Point* p2)
 void CORE::GEO::CUT::Facet::CornerPointsLocal(
     Element* elem1, std::vector<std::vector<double>>& cornersLocal, bool shadow)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::Facet::CornerPointsLocal" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::Facet::CornerPointsLocal" );
 
   // TODO: this routine is expensive
   cornersLocal.clear();

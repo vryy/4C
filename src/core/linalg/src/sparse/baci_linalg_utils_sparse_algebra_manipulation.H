@@ -17,8 +17,6 @@
 #include <Epetra_MultiVector.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include <Teuchos_RCP.hpp>
 #include "baci_lib_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"

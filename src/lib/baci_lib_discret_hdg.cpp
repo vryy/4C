@@ -556,8 +556,8 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
   // do we have faces?
   if (discret.NumMyRowFaces() > 0)
   {
-    Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-    Epetra_SerialDenseMatrix elemat1, elemat2;
+    CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+    CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
     if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag)
@@ -625,7 +625,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
 
       initParams.set<unsigned int>(
           "faceconsider", static_cast<unsigned int>(faceele->FaceMasterNumber()));
-      if (static_cast<unsigned int>(elevec1.M()) != dofperface) elevec1.Shape(dofperface, 1);
+      if (static_cast<unsigned int>(elevec1.numRows()) != dofperface) elevec1.shape(dofperface, 1);
       std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
 
       bool do_evaluate = false;

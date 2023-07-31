@@ -16,8 +16,8 @@
 #include <Teuchos_SerialDenseMatrix.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
@@ -246,21 +246,21 @@ namespace DRT
                                            ///< control routine and elements
           DRT::Discretization& discretization,  ///< A reference to the underlying discretization
           std::vector<int>& lm,                 ///< location vector of this element
-          Epetra_SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If NULL on input,
-                                              ///< the controling method does not epxect the element
-                                              ///< to fill this matrix.
-          Epetra_SerialDenseMatrix& elemat2,  ///< matrix to be filled by element. If NULL on input,
-                                              ///< the controling method does not epxect the element
-                                              ///< to fill this matrix.
-          Epetra_SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on input,
-                                              ///< the controlling method does not epxect the
-                                              ///< element to fill this vector
-          Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element. If NULL on input,
-                                              ///< the controlling method does not epxect the
-                                              ///< element to fill this vector
-          Epetra_SerialDenseVector& elevec3   ///< vector to be filled by element. If NULL on input,
-                                             ///< the controlling method does not epxect the element
-                                             ///< to fill this vector
+          CORE::LINALG::SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If NULL on
+                                                     ///< input, the controling method does not
+                                                     ///< epxect the element to fill this matrix.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< matrix to be filled by element. If NULL on
+                                                     ///< input, the controling method does not
+                                                     ///< epxect the element to fill this matrix.
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on
+                                                     ///< input, the controlling method does not
+                                                     ///< epxect the element to fill this vector
+          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element. If NULL on
+                                                     ///< input, the controlling method does not
+                                                     ///< epxect the element to fill this vector
+          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element. If NULL on
+                                                     ///< input, the controlling method does not
+                                                     ///< epxect the element to fill this vector
       );
 
       /// Evaluate a Neumann boundary condition
@@ -274,8 +274,9 @@ namespace DRT
           DRT::Discretization& discretization,  ///< A reference to the underlying discretization
           DRT::Condition& condition,            ///<  The condition to be evaluated
           std::vector<int>& lm,                 ///< location vector of this element
-          Epetra_SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on input
-          Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  ///< vector to be filled by element. If NULL on input
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       //@}
 
@@ -342,70 +343,75 @@ namespace DRT
 
       /// evaluate the element forces and stiffness and mass
       /// \author mgit \date 03/07
-      void w1_nlnstiffmass(const std::vector<int>& lm,     ///< location vector
-          const std::vector<double>& disp,                 ///< element displacements
-          const std::vector<double>& residual,             ///< residual displacements
-          const std::vector<double>& dispmat,              ///< residual displacements
-          std::vector<Epetra_SerialDenseVector>& myknots,  ///< knot vector for nurbs elements
-          Epetra_SerialDenseMatrix* stiffmatrix,           ///< element stiffness matrix
-          Epetra_SerialDenseMatrix* massmatrix,            ///< element mass matrix
-          Epetra_SerialDenseVector* force,                 ///< element internal force vector
-          Epetra_SerialDenseMatrix* elestress,             ///< element stresses
-          Epetra_SerialDenseMatrix* elestrain,             ///< element strains
-          Teuchos::RCP<const MAT::Material> material,      ///< element material
-          Teuchos::ParameterList& params,                  ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,           ///< stress output option
-          const INPAR::STR::StrainType iostrain            ///< strain output option
+      void w1_nlnstiffmass(const std::vector<int>& lm,  ///< location vector
+          const std::vector<double>& disp,              ///< element displacements
+          const std::vector<double>& residual,          ///< residual displacements
+          const std::vector<double>& dispmat,           ///< residual displacements
+          std::vector<CORE::LINALG::SerialDenseVector>&
+              myknots,                                   ///< knot vector for nurbs elements
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::SerialDenseMatrix* massmatrix,   ///< element mass matrix
+          CORE::LINALG::SerialDenseVector* force,        ///< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* elestress,    ///< element stresses
+          CORE::LINALG::SerialDenseMatrix* elestrain,    ///< element strains
+          Teuchos::RCP<const MAT::Material> material,    ///< element material
+          Teuchos::ParameterList& params,                ///< algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress,         ///< stress output option
+          const INPAR::STR::StrainType iostrain          ///< strain output option
       );
 
       /// evaluate the geometrically linear element forces and stiffness and mass
-      void w1_linstiffmass(const std::vector<int>& lm,     ///< location vector
-          const std::vector<double>& disp,                 ///< element displacements
-          const std::vector<double>& residual,             ///< residual displacements
-          const std::vector<double>& dispmat,              ///< residual displacements
-          std::vector<Epetra_SerialDenseVector>& myknots,  ///< knot vector for nurbs elements
-          Epetra_SerialDenseMatrix* stiffmatrix,           ///< element stiffness matrix
-          Epetra_SerialDenseMatrix* massmatrix,            ///< element mass matrix
-          Epetra_SerialDenseVector* force,                 ///< element internal force vector
-          Epetra_SerialDenseMatrix* elestress,             ///< element stresses
-          Epetra_SerialDenseMatrix* elestrain,             ///< element strains
-          Teuchos::RCP<const MAT::Material> material,      ///< element material
-          Teuchos::ParameterList& params,                  ///< algorithmic parameters e.g. time
-          const INPAR::STR::StressType iostress,           ///< stress output option
-          const INPAR::STR::StrainType iostrain            ///< strain output option
+      void w1_linstiffmass(const std::vector<int>& lm,  ///< location vector
+          const std::vector<double>& disp,              ///< element displacements
+          const std::vector<double>& residual,          ///< residual displacements
+          const std::vector<double>& dispmat,           ///< residual displacements
+          std::vector<CORE::LINALG::SerialDenseVector>&
+              myknots,                                   ///< knot vector for nurbs elements
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix
+          CORE::LINALG::SerialDenseMatrix* massmatrix,   ///< element mass matrix
+          CORE::LINALG::SerialDenseVector* force,        ///< element internal force vector
+          CORE::LINALG::SerialDenseMatrix* elestress,    ///< element stresses
+          CORE::LINALG::SerialDenseMatrix* elestrain,    ///< element strains
+          Teuchos::RCP<const MAT::Material> material,    ///< element material
+          Teuchos::ParameterList& params,                ///< algorithmic parameters e.g. time
+          const INPAR::STR::StressType iostress,         ///< stress output option
+          const INPAR::STR::StrainType iostrain          ///< strain output option
       );
 
       /// Jacobian matrix for mapping from parameter space in physical material space
       /// at point parameter space
       /// \author mgit \date 04/07
-      void w1_jacobianmatrix(const Epetra_SerialDenseMatrix&
+      void w1_jacobianmatrix(const CORE::LINALG::SerialDenseMatrix&
                                  xrefe,  ///< reference/material co-ordinates of element nodes
-          const Epetra_SerialDenseMatrix&
-              deriv,                      ///< derivatives of shape functions at parameter point
-          Epetra_SerialDenseMatrix& xjm,  ///< Jacobi matrix
-          double* det,                    ///< determinant of Jacobi matrix
-          const int iel                   ///< actual number of element nodes
+          const CORE::LINALG::SerialDenseMatrix&
+              deriv,  ///< derivatives of shape functions at parameter point
+          CORE::LINALG::SerialDenseMatrix& xjm,  ///< Jacobi matrix
+          double* det,                           ///< determinant of Jacobi matrix
+          const int iel                          ///< actual number of element nodes
       );
 
       /// Linear B-operator in reference configuration at point parameter space
       /// \author mgit \date 04/07
-      void w1_boplin(Epetra_SerialDenseMatrix& boplin,  ///< the B-operator
-          Epetra_SerialDenseMatrix& deriv,  ///< derivatives of shape functions at parameter point
-          Epetra_SerialDenseMatrix& xjm,    ///< Jacobian at parameter point
-          double& det,                      ///< Jacobian determinant at parameter point
-          const int iel                     ///< number of element nodes
+      void w1_boplin(CORE::LINALG::SerialDenseMatrix& boplin,  ///< the B-operator
+          CORE::LINALG::SerialDenseMatrix&
+              deriv,  ///< derivatives of shape functions at parameter point
+          CORE::LINALG::SerialDenseMatrix& xjm,  ///< Jacobian at parameter point
+          double& det,                           ///< Jacobian determinant at parameter point
+          const int iel                          ///< number of element nodes
       );
 
       /// (Material) Deformation gradient \f$F\f$ and Green-Lagrange strains \f$E\f$
       /// at parameter point
       /// \author mgit \date 04/07
-      void w1_defgrad(Epetra_SerialDenseVector& F,  ///< deformation gradient
-          Epetra_SerialDenseVector& strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
-          const Epetra_SerialDenseMatrix&
+      void w1_defgrad(CORE::LINALG::SerialDenseVector& F,  ///< deformation gradient
+          CORE::LINALG::SerialDenseVector&
+              strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
+          const CORE::LINALG::SerialDenseMatrix&
               xrefe,  ///< reference/material co-ordinates of element nodes
-          const Epetra_SerialDenseMatrix& xcure,  ///< current/spatial co-ordinates of element nodes
-          Epetra_SerialDenseMatrix& boplin,       ///< linear B-operator
-          const int iel                           ///< number of element nodes
+          const CORE::LINALG::SerialDenseMatrix&
+              xcure,  ///< current/spatial co-ordinates of element nodes
+          CORE::LINALG::SerialDenseMatrix& boplin,  ///< linear B-operator
+          const int iel                             ///< number of element nodes
       );
 
       /// Deformation gradient, measures distortion of the mesh of the
@@ -413,68 +419,69 @@ namespace DRT
       /// in structure with ale approaches (fractional step method)
       /// \author mgit \date 04/11
       void w1_defgradmat(
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseVector&
               F,  ///< deformation gradient (mesh distortion of material configuration)
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseVector&
               Fmat,  ///< deformation gradient (mesh distortion of spatial configuration)
-          Epetra_SerialDenseVector& FFmatinv,  ///< product of F and Fmat(inv)
-          Epetra_SerialDenseVector& strain,    ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
-          const Epetra_SerialDenseMatrix& xrefe,  ///< reference coordinates of element nodes
-          const Epetra_SerialDenseMatrix& xmat,   ///< material coordinates of element nodes
-          Epetra_SerialDenseMatrix& boplin,       ///< linear B-operator
-          const int iel                           ///< number of element nodes
+          CORE::LINALG::SerialDenseVector& FFmatinv,  ///< product of F and Fmat(inv)
+          CORE::LINALG::SerialDenseVector&
+              strain,  ///< GL strain \f$E^T=[E_{11} \; E_{22} \; E_{12}]\f$
+          const CORE::LINALG::SerialDenseMatrix& xrefe,  ///< reference coordinates of element nodes
+          const CORE::LINALG::SerialDenseMatrix& xmat,   ///< material coordinates of element nodes
+          CORE::LINALG::SerialDenseMatrix& boplin,       ///< linear B-operator
+          const int iel                                  ///< number of element nodes
       );
 
       /// Non-linear B-operator in reference configuration
       /// \author mgit \date 04/07
-      void w1_boplin_cure(Epetra_SerialDenseMatrix& b_cure,  ///< non-linear B-operator
-          const Epetra_SerialDenseMatrix& boplin,            ///< linear B-operator
-          const Epetra_SerialDenseVector& F,  ///< deformation gradient as Voigt-vector
-          const int numeps,                   ///< number of strains
-          const int nd                        ///< number of element nodes
+      void w1_boplin_cure(CORE::LINALG::SerialDenseMatrix& b_cure,  ///< non-linear B-operator
+          const CORE::LINALG::SerialDenseMatrix& boplin,            ///< linear B-operator
+          const CORE::LINALG::SerialDenseVector& F,  ///< deformation gradient as Voigt-vector
+          const int numeps,                          ///< number of strains
+          const int nd                               ///< number of element nodes
       );
 
       /// Geometric stiffness constribution (total Lagrange)
       /// \author mgit \date 05/07
-      void w1_kg(Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix
-          const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
-          const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress vector
-          const double fac,                        ///< integration factor
-          const int nd,                            ///< number of element DOFs
-          const int numeps                         ///< number of strains
+      void w1_kg(CORE::LINALG::SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix
+          const CORE::LINALG::SerialDenseMatrix& boplin,  ///< linear B-operator
+          const CORE::LINALG::SerialDenseMatrix& stress,  ///< PK2 stress vector
+          const double fac,                               ///< integration factor
+          const int nd,                                   ///< number of element DOFs
+          const int numeps                                ///< number of strains
       );
 
       /// elastic and initial displacement stiffness contribution (total Lagrange)
       /// \author mgit \date 05/07
-      void w1_keu(Epetra_SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix
-          const Epetra_SerialDenseMatrix& b_cure,   ///< non-linear B-operator
-          const Epetra_SerialDenseMatrix& C,        ///< elasticity matrix
-          const double fac,                         ///< integration factor
-          const int nd,                             ///< number of element DOFs
-          const int numeps                          ///< number of strains
+      void w1_keu(CORE::LINALG::SerialDenseMatrix& estif,  ///< (in/out) element stiffness matrix
+          const CORE::LINALG::SerialDenseMatrix& b_cure,   ///< non-linear B-operator
+          const CORE::LINALG::SerialDenseMatrix& C,        ///< elasticity matrix
+          const double fac,                                ///< integration factor
+          const int nd,                                    ///< number of element DOFs
+          const int numeps                                 ///< number of strains
       );
 
       /// Evaluate internal element forces for large def (total Lagr)
       /// \author mgit \date 05/07
-      void w1_fint(const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress vector
-          const Epetra_SerialDenseMatrix& b_cure,           ///< non-linear B-op
-          Epetra_SerialDenseVector& intforce,               ///< internal force vector
-          const double fac,                                 ///< integration factor
-          const int nd                                      ///< number of element DOFs
+      void w1_fint(const CORE::LINALG::SerialDenseMatrix& stress,  ///< PK2 stress vector
+          const CORE::LINALG::SerialDenseMatrix& b_cure,           ///< non-linear B-op
+          CORE::LINALG::SerialDenseVector& intforce,               ///< internal force vector
+          const double fac,                                        ///< integration factor
+          const int nd                                             ///< number of element DOFs
       );
 
       /// lump mass matrix
-      void w1_lumpmass(Epetra_SerialDenseMatrix* emass  ///< (in/out) element mass matrix
+      void w1_lumpmass(CORE::LINALG::SerialDenseMatrix* emass  ///< (in/out) element mass matrix
       );
 
       /// determine cauchy stress and store it
-      void StressCauchy(const int ip,              ///< Gauss point index
-          const double& F11,                       ///< F_{11} component of def.grad.
-          const double& F22,                       ///< F_{22} component of def.grad.
-          const double& F12,                       ///< F_{12} component of def.grad.
-          const double& F21,                       ///< F_{21} component of def.grad.
-          const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress matrix
-          Epetra_SerialDenseMatrix* elestress      ///< element stress array
+      void StressCauchy(const int ip,                     ///< Gauss point index
+          const double& F11,                              ///< F_{11} component of def.grad.
+          const double& F22,                              ///< F_{22} component of def.grad.
+          const double& F12,                              ///< F_{12} component of def.grad.
+          const double& F21,                              ///< F_{21} component of def.grad.
+          const CORE::LINALG::SerialDenseMatrix& stress,  ///< PK2 stress matrix
+          CORE::LINALG::SerialDenseMatrix* elestress      ///< element stress array
       );
 
       /// determine internal energy
@@ -482,7 +489,7 @@ namespace DRT
           const std::vector<int>& lm,              ///< location vector
           const std::vector<double>&
               dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
-          Epetra_SerialDenseVector* energies,         ///< (in/out) energies
+          CORE::LINALG::SerialDenseVector* energies,  ///< (in/out) energies
           Teuchos::RCP<const MAT::Material> material  ///< element material
       );
 
@@ -494,12 +501,12 @@ namespace DRT
       int w1_neas() const { return neas_; };
 
       /// setup of constant EAS data
-      void w1_eassetup(Epetra_SerialDenseMatrix& boplin0,  ///< linear B-op at origin
-          Epetra_SerialDenseVector& F0,                    ///< deformation gradient at origin
-          Epetra_SerialDenseMatrix& xjm0,                  ///< jacobian matrix at origin
+      void w1_eassetup(CORE::LINALG::SerialDenseMatrix& boplin0,  ///< linear B-op at origin
+          CORE::LINALG::SerialDenseVector& F0,             ///< deformation gradient at origin
+          CORE::LINALG::SerialDenseMatrix& xjm0,           ///< jacobian matrix at origin
           double& detJ0,                                   ///< det of Jacobian at origin
-          const Epetra_SerialDenseMatrix& xrefe,           ///< material element coords
-          const Epetra_SerialDenseMatrix& xcure,           ///< current element coords
+          const CORE::LINALG::SerialDenseMatrix& xrefe,    ///< material element coords
+          const CORE::LINALG::SerialDenseMatrix& xcure,    ///< current element coords
           const DRT::Element::DiscretizationType& distype  ///< discretisation type
       );
 
@@ -508,78 +515,80 @@ namespace DRT
       /// at point in parameter space
       /// \author mgit \date 01/08
       void w1_call_defgrad_enh(
-          Epetra_SerialDenseMatrix& F_enh,         ///< enhanced deformation gradient vector
-          const Epetra_SerialDenseMatrix xjm0,     ///< Jacobian at origin
-          const Epetra_SerialDenseMatrix xjm,      ///< Jacobian at parameter point
-          const double detJ0,                      ///< det of Jacobian at origin
-          const double det,                        ///< det of Jacobian at parameter point
-          const Epetra_SerialDenseVector F0,       ///< deformation gradient at origin
-          const Epetra_SerialDenseMatrix alpha,    ///< alpha parameters (EAS params)
-          const double e1,                         ///< \f$\xi\f$ co-ordinate of parameter point
-          const double e2,                         ///< \f$\eta\f$ co-ordinate of parameter point
-          Epetra_SerialDenseMatrix& G,             ///< G-operator
-          Epetra_SerialDenseMatrix& W0,            ///< W_0-operator
-          const Epetra_SerialDenseMatrix boplin0,  ///< linear B-op at origin
-          Epetra_SerialDenseMatrix& Z              ///< Z-operator
+          CORE::LINALG::SerialDenseMatrix& F_enh,       ///< enhanced deformation gradient vector
+          const CORE::LINALG::SerialDenseMatrix xjm0,   ///< Jacobian at origin
+          const CORE::LINALG::SerialDenseMatrix xjm,    ///< Jacobian at parameter point
+          const double detJ0,                           ///< det of Jacobian at origin
+          const double det,                             ///< det of Jacobian at parameter point
+          const CORE::LINALG::SerialDenseVector F0,     ///< deformation gradient at origin
+          const CORE::LINALG::SerialDenseMatrix alpha,  ///< alpha parameters (EAS params)
+          const double e1,                      ///< \f$\xi\f$ co-ordinate of parameter point
+          const double e2,                      ///< \f$\eta\f$ co-ordinate of parameter point
+          CORE::LINALG::SerialDenseMatrix& G,   ///< G-operator
+          CORE::LINALG::SerialDenseMatrix& W0,  ///< W_0-operator
+          const CORE::LINALG::SerialDenseMatrix boplin0,  ///< linear B-op at origin
+          CORE::LINALG::SerialDenseMatrix& Z              ///< Z-operator
       );
 
       /// Total deformation gradient and (enhanced) Green-Lagrange strain
       /// \author mgit \date 01/08
-      void w1_call_defgrad_tot(const Epetra_SerialDenseMatrix& F_enh,  ///< enhanced def.grad.
-          Epetra_SerialDenseMatrix& F_tot,                             ///< total def.grad.
-          const Epetra_SerialDenseVector& F,                           ///< displ.-based def.grad.
-          Epetra_SerialDenseVector& strain                             ///< GL strains
+      void w1_call_defgrad_tot(
+          const CORE::LINALG::SerialDenseMatrix& F_enh,  ///< enhanced def.grad.
+          CORE::LINALG::SerialDenseMatrix& F_tot,        ///< total def.grad.
+          const CORE::LINALG::SerialDenseVector& F,      ///< displ.-based def.grad.
+          CORE::LINALG::SerialDenseVector& strain        ///< GL strains
       );
 
       /// first Piola-Kirchhoff stress vector
       /// \author mgit \author 02/08
-      void w1_stress_eas(const Epetra_SerialDenseMatrix& stress,  ///< PK2 stress vector
-          const Epetra_SerialDenseMatrix& F_tot,                  ///< total def.grad.
-          Epetra_SerialDenseMatrix& p_stress                      ///< PK1 stress vector
+      void w1_stress_eas(const CORE::LINALG::SerialDenseMatrix& stress,  ///< PK2 stress vector
+          const CORE::LINALG::SerialDenseMatrix& F_tot,                  ///< total def.grad.
+          CORE::LINALG::SerialDenseMatrix& p_stress                      ///< PK1 stress vector
       );
 
       /// calculate stiffness matrix kdd \f$\partial f_{int}/\partial d\f$
       /// \author mgit \date 03/08
-      void w1_kdd(const Epetra_SerialDenseMatrix& boplin,  ///< linear B-op
-          const Epetra_SerialDenseMatrix& W0,              ///< W-operator at origin
-          const Epetra_SerialDenseMatrix& F,               ///< total def.grad.
-          const Epetra_SerialDenseMatrix& C,               ///< consititutive matrix
-          const Epetra_SerialDenseMatrix& stress,          ///< PK2 stress vector
-          Epetra_SerialDenseMatrix& FCF,                   ///< \f$F^T \dot C \dot F\f$
-          Epetra_SerialDenseMatrix& estif,                 ///< element stiff matrix
-          const double fac                                 ///< integration factor
+      void w1_kdd(const CORE::LINALG::SerialDenseMatrix& boplin,  ///< linear B-op
+          const CORE::LINALG::SerialDenseMatrix& W0,              ///< W-operator at origin
+          const CORE::LINALG::SerialDenseMatrix& F,               ///< total def.grad.
+          const CORE::LINALG::SerialDenseMatrix& C,               ///< consititutive matrix
+          const CORE::LINALG::SerialDenseMatrix& stress,          ///< PK2 stress vector
+          CORE::LINALG::SerialDenseMatrix& FCF,                   ///< \f$F^T \dot C \dot F\f$
+          CORE::LINALG::SerialDenseMatrix& estif,                 ///< element stiff matrix
+          const double fac                                        ///< integration factor
       );
 
       /// calculate tangential matrix kda \f$\partial f_{int}/\partial \alpha\f$
       /// \author mgit \date 03/08
-      void w1_kda(const Epetra_SerialDenseMatrix& FCF,  ///< a product
-          const Epetra_SerialDenseMatrix& W0,           ///< W-operator at origin
-          const Epetra_SerialDenseMatrix& boplin,       ///< linear B-op
-          const Epetra_SerialDenseMatrix& stress,       ///< PK2 stress
-          const Epetra_SerialDenseMatrix& G,            ///< G-operator
-          const Epetra_SerialDenseMatrix& Z,            ///< Z-operator
-          Epetra_SerialDenseMatrix& Kda,                ///< target: kda
-          const Epetra_SerialDenseMatrix& p_stress,     ///< PK1 stress
-          const double fac                              ///< integration factor
+      void w1_kda(const CORE::LINALG::SerialDenseMatrix& FCF,  ///< a product
+          const CORE::LINALG::SerialDenseMatrix& W0,           ///< W-operator at origin
+          const CORE::LINALG::SerialDenseMatrix& boplin,       ///< linear B-op
+          const CORE::LINALG::SerialDenseMatrix& stress,       ///< PK2 stress
+          const CORE::LINALG::SerialDenseMatrix& G,            ///< G-operator
+          const CORE::LINALG::SerialDenseMatrix& Z,            ///< Z-operator
+          CORE::LINALG::SerialDenseMatrix& Kda,                ///< target: kda
+          const CORE::LINALG::SerialDenseMatrix& p_stress,     ///< PK1 stress
+          const double fac                                     ///< integration factor
       );
 
       /// calculate tangential matrix kaa \f$\partial s/\partial \alpha\f$
       /// \author mgit \date 03/08
-      void w1_kaa(const Epetra_SerialDenseMatrix& FCF,  ///< a product \f$F^T \dot C \dot F\f$
-          const Epetra_SerialDenseMatrix& stress,       ///< PK2 stress
-          const Epetra_SerialDenseMatrix& G,            ///< G-op
-          Epetra_SerialDenseMatrix& Kaa,                ///< target: kaa
-          const double fac                              ///< integration factor
+      void w1_kaa(
+          const CORE::LINALG::SerialDenseMatrix& FCF,     ///< a product \f$F^T \dot C \dot F\f$
+          const CORE::LINALG::SerialDenseMatrix& stress,  ///< PK2 stress
+          const CORE::LINALG::SerialDenseMatrix& G,       ///< G-op
+          CORE::LINALG::SerialDenseMatrix& Kaa,           ///< target: kaa
+          const double fac                                ///< integration factor
       );
 
       /// calculate internal forces fint(displacements u) and feas
-      void w1_fint_eas(const Epetra_SerialDenseMatrix& W0,  ///< W-op at origin
-          const Epetra_SerialDenseMatrix& boplin,           ///< linear B-op
-          const Epetra_SerialDenseMatrix& G,                ///< G-op
-          const Epetra_SerialDenseMatrix& p_stress,         ///< PK1 stress
-          Epetra_SerialDenseVector& intforce,               ///< internal force vector
-          Epetra_SerialDenseVector& feas,                   ///< internal EAS constraint condition
-          const double fac                                  ///< integration factor
+      void w1_fint_eas(const CORE::LINALG::SerialDenseMatrix& W0,  ///< W-op at origin
+          const CORE::LINALG::SerialDenseMatrix& boplin,           ///< linear B-op
+          const CORE::LINALG::SerialDenseMatrix& G,                ///< G-op
+          const CORE::LINALG::SerialDenseMatrix& p_stress,         ///< PK1 stress
+          CORE::LINALG::SerialDenseVector& intforce,               ///< internal force vector
+          CORE::LINALG::SerialDenseVector& feas,  ///< internal EAS constraint condition
+          const double fac                        ///< integration factor
       );
 
       //@}
@@ -590,24 +599,24 @@ namespace DRT
       /// Constitutive matrix \f$C\f$ and stresses
       /// \author mgit \date 05/07
       void w1_call_matgeononl(
-          const Epetra_SerialDenseVector& strain,      ///< Green-Lagrange strain vector
-          Epetra_SerialDenseMatrix& stress,            ///< stress matrix
-          Epetra_SerialDenseMatrix& C,                 ///< elasticity matrix
-          const int numeps,                            ///< number of strains
-          Teuchos::RCP<const MAT::Material> material,  ///< the material data
-          Teuchos::ParameterList& params,              ///< element parameter list
-          int gp                                       ///< Gauss point
+          const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+          CORE::LINALG::SerialDenseMatrix& stress,        ///< stress matrix
+          CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
+          const int numeps,                               ///< number of strains
+          Teuchos::RCP<const MAT::Material> material,     ///< the material data
+          Teuchos::ParameterList& params,                 ///< element parameter list
+          int gp                                          ///< Gauss point
       );
 
       /// Stress and constitutive matrix mapper from 3d to 2d
       /// due to dimensional reduction #wtype_
       ///
       /// \author bborn \date 06/09
-      void MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stress,  ///< stress matrix
-          Epetra_SerialDenseMatrix& C,                                ///< elasticity matrix
-          const Epetra_SerialDenseVector& strain,  ///< Green-Lagrange strain vector
-          Teuchos::ParameterList& params,          ///< element parameter list
-          int gp                                   ///< Gauss point
+      void MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatrix& stress,  ///< stress matrix
+          CORE::LINALG::SerialDenseMatrix& C,                                ///< elasticity matrix
+          const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+          Teuchos::ParameterList& params,                 ///< element parameter list
+          int gp                                          ///< Gauss point
       );
 
       /// Generic 3D stress response
@@ -622,22 +631,22 @@ namespace DRT
       );
 
       /// Map plane Green-Lagrange strains to 3d
-      void GreenLagrangePlane3d(
-          const Epetra_SerialDenseVector& glplane,  ///< 2d version of GL strain (Voigt notation)
-          CORE::LINALG::Matrix<6, 1>& gl3d          ///< 3d version of GL strain (Voigt notation)
+      void GreenLagrangePlane3d(const CORE::LINALG::SerialDenseVector&
+                                    glplane,  ///< 2d version of GL strain (Voigt notation)
+          CORE::LINALG::Matrix<6, 1>& gl3d    ///< 3d version of GL strain (Voigt notation)
       );
 
       /// Internal/strain energy
       double EnergyInternal(Teuchos::RCP<const MAT::Material> material,  ///< element material
           Teuchos::ParameterList& params,                                ///< element parameter list
-          const Epetra_SerialDenseVector& Ev,  ///< Green-Lagrange strain vector
-          int gp                               ///< Gauss point
+          const CORE::LINALG::SerialDenseVector& Ev,  ///< Green-Lagrange strain vector
+          int gp                                      ///< Gauss point
       );
 
       /// Kinetic Energy
       /// \return kinetic energy of element
-      double EnergyKinetic(const Epetra_SerialDenseMatrix& mass,  ///< element mass matrix
-          const std::vector<double>& vel                          ///< element velocity vector
+      double EnergyKinetic(const CORE::LINALG::SerialDenseMatrix& mass,  ///< element mass matrix
+          const std::vector<double>& vel  ///< element velocity vector
       );
 
       //@}
@@ -658,12 +667,12 @@ namespace DRT
               disp,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n+1}\f$
           const std::vector<double>&
               residual,  ///< residual displacements \f$\Delta d_{n+1}^{<k>(e)}\f$
-          Epetra_SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix \f$k^{(e)}\f$
-          Epetra_SerialDenseMatrix* massmatrix,   ///< element mass matrix \f$m^{(e)}\f$
-          Epetra_SerialDenseVector*
+          CORE::LINALG::SerialDenseMatrix* stiffmatrix,  ///< element stiffness matrix \f$k^{(e)}\f$
+          CORE::LINALG::SerialDenseMatrix* massmatrix,   ///< element mass matrix \f$m^{(e)}\f$
+          CORE::LINALG::SerialDenseVector*
               force,  ///< element internal mid-force vector \f$f_{int;m}^{(e)}\f$
-          Epetra_SerialDenseMatrix* elestress,         ///< element stresses
-          Epetra_SerialDenseMatrix* elestrain,         ///< element strains
+          CORE::LINALG::SerialDenseMatrix* elestress,  ///< element stresses
+          CORE::LINALG::SerialDenseMatrix* elestrain,  ///< element strains
           Teuchos::RCP<const MAT::Material> material,  ///< element material
           const INPAR::STR::StressType iostress,       ///< stress output option
           const INPAR::STR::StrainType iostrain        ///< strain output option
@@ -674,68 +683,71 @@ namespace DRT
       void TangFintByDispGEMM(const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
           const double& xigemm,                          ///< GEMM's \f$\xi\f$ coefficient
           const double& fac,                             ///< integration factor
-          const Epetra_SerialDenseMatrix& bopm,          ///< non-lin. mid-B-op. \f$B_{m}\f$
-          const Epetra_SerialDenseMatrix&
+          const CORE::LINALG::SerialDenseMatrix& bopm,   ///< non-lin. mid-B-op. \f$B_{m}\f$
+          const CORE::LINALG::SerialDenseMatrix&
               bop,  ///< non-linear B-operator \f$B_{n+1}\f$ at \f$t_{n+1}\f$
-          const Epetra_SerialDenseMatrix& C,       ///< constitutive matrix
-          const Epetra_SerialDenseMatrix& boplin,  ///< linear B-operator
-          const Epetra_SerialDenseMatrix& Smm,     ///< PK2 mid-stress matrix \f$\bar{S}_{m}\f$
-          Epetra_SerialDenseMatrix& estif          ///< (in/out) element stiffness matrix
+          const CORE::LINALG::SerialDenseMatrix& C,       ///< constitutive matrix
+          const CORE::LINALG::SerialDenseMatrix& boplin,  ///< linear B-operator
+          const CORE::LINALG::SerialDenseMatrix& Smm,  ///< PK2 mid-stress matrix \f$\bar{S}_{m}\f$
+          CORE::LINALG::SerialDenseMatrix& estif       ///< (in/out) element stiffness matrix
       );
 
       /// Tangent of internal force vector \f$f_{int;m}\f$ with respect to displacements
       /// \f$d_{n+1}\f$ in EAS approach
-      void TangFintByDispGEMM(const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
-          const double& xigemm,                          ///< GEMM's \f$\xi\f$ coefficient
-          const double& fac,                             ///< integration factor
-          const Epetra_SerialDenseMatrix& boplin,        ///< linear B-operator \f$B_L\f$
-          const Epetra_SerialDenseMatrix& W0m,           ///< mid-W-operator \f$W_{0;m}\f$
-          const Epetra_SerialDenseMatrix& W0,            ///< W-operator \f$W_{0;n+1}\f$
-          const Epetra_SerialDenseMatrix& Fmm,           ///< mid def.grad. matrix \f$\bar{F}_m\f$
-          const Epetra_SerialDenseMatrix& Fm,            ///< def.grad. matrix \f$\bar{F}_{n+1}\f$
-          const Epetra_SerialDenseMatrix& C,             ///< constititive matrix \f$C\f$
-          const Epetra_SerialDenseMatrix&
+      void TangFintByDispGEMM(const double& alphafgemm,   ///< GEMM's \f$\alpha_f\f$ coefficient
+          const double& xigemm,                           ///< GEMM's \f$\xi\f$ coefficient
+          const double& fac,                              ///< integration factor
+          const CORE::LINALG::SerialDenseMatrix& boplin,  ///< linear B-operator \f$B_L\f$
+          const CORE::LINALG::SerialDenseMatrix& W0m,     ///< mid-W-operator \f$W_{0;m}\f$
+          const CORE::LINALG::SerialDenseMatrix& W0,      ///< W-operator \f$W_{0;n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix& Fmm,     ///< mid def.grad. matrix \f$\bar{F}_m\f$
+          const CORE::LINALG::SerialDenseMatrix& Fm,      ///< def.grad. matrix \f$\bar{F}_{n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix& C,       ///< constititive matrix \f$C\f$
+          const CORE::LINALG::SerialDenseMatrix&
               Smm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
-          Epetra_SerialDenseMatrix&
+          CORE::LINALG::SerialDenseMatrix&
               FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
-          Epetra_SerialDenseMatrix& estif  ///< (in/out) element stiffness matrix
+          CORE::LINALG::SerialDenseMatrix& estif  ///< (in/out) element stiffness matrix
       );
 
       /// Tangent of internal force vector \f$f_{int,m}\f$ with respect to enhanced strain
       /// parameters \f$\alpha_{n+1}\f$
-      void TangFintByEnhGEMM(const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
-          const double& xigemm,                         ///< GEMM's \f$\xi\f$ coefficient
-          const double& fac,                            ///< integration factor
-          const Epetra_SerialDenseMatrix& boplin,       ///< linear B-operator \f$B_L\f$
-          const Epetra_SerialDenseMatrix& W0m,          ///< mid-W-operator \f$W_{0;m}\f$
-          const Epetra_SerialDenseMatrix&
+      void TangFintByEnhGEMM(const double& alphafgemm,    ///< GEMM's \f$\alpha_f\f$ coefficient
+          const double& xigemm,                           ///< GEMM's \f$\xi\f$ coefficient
+          const double& fac,                              ///< integration factor
+          const CORE::LINALG::SerialDenseMatrix& boplin,  ///< linear B-operator \f$B_L\f$
+          const CORE::LINALG::SerialDenseMatrix& W0m,     ///< mid-W-operator \f$W_{0;m}\f$
+          const CORE::LINALG::SerialDenseMatrix&
               FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
-          const Epetra_SerialDenseMatrix&
+          const CORE::LINALG::SerialDenseMatrix&
               Smm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
-          const Epetra_SerialDenseMatrix& G,     ///< G-operator \f$G_{n+1}\f$
-          const Epetra_SerialDenseMatrix& Z,     ///< Z-operator \f$Z_{n+1}\f$
-          const Epetra_SerialDenseMatrix& Pvmm,  ///< mid-mid 1st Piola-Kirchhoff stress vector
-                                                 ///< \f$\tilde{P}_{mm} = \bar{F}_m \cdot S_m\f$
-          Epetra_SerialDenseMatrix&
+          const CORE::LINALG::SerialDenseMatrix& G,  ///< G-operator \f$G_{n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix& Z,  ///< Z-operator \f$Z_{n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix&
+              Pvmm,  ///< mid-mid 1st Piola-Kirchhoff stress vector
+                     ///< \f$\tilde{P}_{mm} = \bar{F}_m \cdot S_m\f$
+          CORE::LINALG::SerialDenseMatrix&
               kda  ///< (in/out) tangent \f$\partial f_{int;m}/\partial \alpha_{n+1}\f$
       );
 
       /// Tangent of enhancemed constraint vector \f$s_m\f$ with respect to displacements
       /// \f$d_{n+1}\f$
-      void TangEconByDispGEMM(const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
-          const double& xigemm,                          ///< GEMM's \f$\xi\f$ coefficient
-          const double& fac,                             ///< integration factor
-          const Epetra_SerialDenseMatrix& boplin,        ///< linear B-operator \f$B_L\f$
-          const Epetra_SerialDenseMatrix& W0,            ///< W-operator \f$W_{0;n+1}\f$
-          const Epetra_SerialDenseMatrix&
+      void TangEconByDispGEMM(const double& alphafgemm,   ///< GEMM's \f$\alpha_f\f$ coefficient
+          const double& xigemm,                           ///< GEMM's \f$\xi\f$ coefficient
+          const double& fac,                              ///< integration factor
+          const CORE::LINALG::SerialDenseMatrix& boplin,  ///< linear B-operator \f$B_L\f$
+          const CORE::LINALG::SerialDenseMatrix& W0,      ///< W-operator \f$W_{0;n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix&
               FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
-          const Epetra_SerialDenseMatrix&
+          const CORE::LINALG::SerialDenseMatrix&
               Smm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
-          const Epetra_SerialDenseMatrix& Gm,    ///< mid-G-operator \f$G_{m}\f$
-          const Epetra_SerialDenseMatrix& Z,     ///< Z-operator \f$Z_{n+1}\f$
-          const Epetra_SerialDenseMatrix& Pvmm,  ///< mid-mid 1st Piola-Kirchhoff stress vector
-                                                 ///< \f$\tilde{P}_{mm} = \bar{F}_m \cdot S_m\f$
-          Epetra_SerialDenseMatrix& kad  ///< (in/out) tangent \f$\partial s_{m}/\partial d_{n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix& Gm,  ///< mid-G-operator \f$G_{m}\f$
+          const CORE::LINALG::SerialDenseMatrix& Z,   ///< Z-operator \f$Z_{n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix&
+              Pvmm,  ///< mid-mid 1st Piola-Kirchhoff stress vector
+                     ///< \f$\tilde{P}_{mm} = \bar{F}_m \cdot S_m\f$
+          CORE::LINALG::SerialDenseMatrix&
+              kad  ///< (in/out) tangent \f$\partial s_{m}/\partial d_{n+1}\f$
       );
 
       /// Tangent of enhancemed constraint vector \f$s_m\f$ with respect to enhanced strain
@@ -743,13 +755,13 @@ namespace DRT
       void TangEconByEnhGEMM(const double& alphafgemm,  ///< GEMM's \f$\alpha_f\f$ coefficient
           const double& xigemm,                         ///< GEMM's \f$\xi\f$ coefficient
           const double& fac,                            ///< integration factor
-          const Epetra_SerialDenseMatrix&
+          const CORE::LINALG::SerialDenseMatrix&
               FmCF,  ///< the product \f$\bar{F}_m \cdot C \cdot \bar{F}_{n+1}^T\f$
-          const Epetra_SerialDenseMatrix&
+          const CORE::LINALG::SerialDenseMatrix&
               Smm,  ///< 2nd Piola-Kirchhof mid-stress matrix \f$\bar{S}_m\f$
-          const Epetra_SerialDenseMatrix& G,   ///< G-operator \f$G_{n+1}\f$
-          const Epetra_SerialDenseMatrix& Gm,  ///< mid-G-operator \f$G_{m}\f$
-          Epetra_SerialDenseMatrix&
+          const CORE::LINALG::SerialDenseMatrix& G,   ///< G-operator \f$G_{n+1}\f$
+          const CORE::LINALG::SerialDenseMatrix& Gm,  ///< mid-G-operator \f$G_{m}\f$
+          CORE::LINALG::SerialDenseMatrix&
               kaa  ///< (in/out) tangent \f$\partial s_{m}/\partial \alpha_{n+1}\f$
       );
 
@@ -914,9 +926,9 @@ namespace DRT
               discretization,         ///< (in) A reference to the underlying discretization
           DRT::Condition& condition,  ///< (in) The condition to be evaluated
           std::vector<int>& lm,       ///< (in) location vector of this element
-          Epetra_SerialDenseVector&
+          CORE::LINALG::SerialDenseVector&
               elevec1,  ///< (out) vector to be filled by element. If NULL on input
-          Epetra_SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
 
       /// Evaluate a boundary condition
       ///
@@ -929,15 +941,15 @@ namespace DRT
           DRT::Discretization&
               discretization,    ///< (in) A reference to the underlying discretization
           std::vector<int>& lm,  ///< (in) location vector of this element
-          Epetra_SerialDenseMatrix& elematrix1, Epetra_SerialDenseMatrix& elematrix2,
-          Epetra_SerialDenseVector& elevector1, Epetra_SerialDenseVector& elevector2,
-          Epetra_SerialDenseVector& elevector3);
+          CORE::LINALG::SerialDenseMatrix& elematrix1, CORE::LINALG::SerialDenseMatrix& elematrix2,
+          CORE::LINALG::SerialDenseVector& elevector1, CORE::LINALG::SerialDenseVector& elevector2,
+          CORE::LINALG::SerialDenseVector& elevector3);
 
       //! Evaluate method on mutliple dofsets for wall element
       virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          LocationArray& la, Epetra_SerialDenseMatrix& elematrix1,
-          Epetra_SerialDenseMatrix& elematrix2, Epetra_SerialDenseVector& elevector1,
-          Epetra_SerialDenseVector& elevector2, Epetra_SerialDenseVector& elevector3);
+          LocationArray& la, CORE::LINALG::SerialDenseMatrix& elematrix1,
+          CORE::LINALG::SerialDenseMatrix& elematrix2, CORE::LINALG::SerialDenseVector& elevector1,
+          CORE::LINALG::SerialDenseVector& elevector2, CORE::LINALG::SerialDenseVector& elevector3);
 
       //@}
 
@@ -957,15 +969,15 @@ namespace DRT
 
       /// Submethod to compute necessary change to stiffness matrix due to the constraint
       void ComputeAreaConstrStiff(
-          Epetra_SerialDenseMatrix xscurr, Epetra_SerialDenseMatrix& elematrix);
+          CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseMatrix& elematrix);
 
       /// Submethod to compute first derivatives of constraint area w.r.t. the displacements
       void ComputeAreaConstrDeriv(
-          Epetra_SerialDenseMatrix xscurr, Epetra_SerialDenseVector& elevector);
+          CORE::LINALG::SerialDenseMatrix xscurr, CORE::LINALG::SerialDenseVector& elevector);
 
       /// compute infintesimal line element dr for integration along the line
-      double w1_substitution(const Epetra_SerialDenseMatrix& xyze,
-          const Epetra_SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
+      double w1_substitution(const CORE::LINALG::SerialDenseMatrix& xyze,
+          const CORE::LINALG::SerialDenseMatrix& deriv, std::vector<double>* unrm, const int iel);
 
       /// set number of gauss points to element shape default
       CORE::DRT::UTILS::GaussRule1D getOptimalGaussrule(const DiscretizationType& distype);

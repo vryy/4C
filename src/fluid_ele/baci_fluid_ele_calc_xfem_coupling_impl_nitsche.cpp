@@ -27,15 +27,15 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Epetra_SerialDenseMatrix& C_umum,  ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix& rhC_um,  ///< C_um coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
           const DRT::ELEMENTS::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(),
             fldparaxfem_(fldparaxfem),
-            C_umum_(C_umum.A(), true),
-            rhC_um_(rhC_um.A(), true),
+            C_umum_(C_umum.values(), true),
+            rhC_um_(rhC_um.values(), true),
             adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(false)
       {
@@ -46,16 +46,17 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Epetra_SerialDenseMatrix& slave_xyze,  ///< global node coordinates of slave element
-          Epetra_SerialDenseMatrix& C_umum,      ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix& rhC_um,      ///< C_um coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base&
+              slave_xyze,  ///< global node coordinates of slave element
+          CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
           const DRT::ELEMENTS::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
             fldparaxfem_(fldparaxfem),
-            C_umum_(C_umum.A(), true),
-            rhC_um_(rhC_um.A(), true),
+            C_umum_(C_umum.values(), true),
+            rhC_um_(rhC_um.values(), true),
             adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(false)
       {
@@ -66,24 +67,25 @@ namespace DRT
       template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType slave_distype, unsigned int slave_numdof>
       NitscheCoupling<distype, slave_distype, slave_numdof>::NitscheCoupling(
-          Epetra_SerialDenseMatrix& slave_xyze,  ///< global node coordinates of slave element
-          Epetra_SerialDenseMatrix& C_umum,      ///< C_umum coupling matrix
-          Epetra_SerialDenseMatrix& C_usum,      ///< C_usum coupling matrix
-          Epetra_SerialDenseMatrix& C_umus,      ///< C_umus coupling matrix
-          Epetra_SerialDenseMatrix& C_usus,      ///< C_usus coupling matrix
-          Epetra_SerialDenseMatrix& rhC_um,      ///< C_um coupling rhs
-          Epetra_SerialDenseMatrix& rhC_us,      ///< C_us coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base&
+              slave_xyze,  ///< global node coordinates of slave element
+          CORE::LINALG::SerialDenseMatrix::Base& C_umum,  ///< C_umum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& C_usum,  ///< C_usum coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& C_umus,  ///< C_umus coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& C_usus,  ///< C_usus coupling matrix
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_um,  ///< C_um coupling rhs
+          CORE::LINALG::SerialDenseMatrix::Base& rhC_us,  ///< C_us coupling rhs
           const DRT::ELEMENTS::FluidEleParameterXFEM&
               fldparaxfem  ///< specific XFEM based fluid parameters
           )
           : SlaveElementRepresentation<distype, slave_distype, slave_numdof>(slave_xyze),
             fldparaxfem_(fldparaxfem),
-            C_umum_(C_umum.A(), true),
-            C_usum_(C_usum.A(), true),
-            C_umus_(C_umus.A(), true),
-            C_usus_(C_usus.A(), true),
-            rhC_um_(rhC_um.A(), true),
-            rhC_us_(rhC_us.A(), true),
+            C_umum_(C_umum.values(), true),
+            C_usum_(C_usum.values(), true),
+            C_umus_(C_umus.values(), true),
+            C_usus_(C_usus.values(), true),
+            rhC_um_(rhC_um.values(), true),
+            rhC_us_(rhC_us.values(), true),
             adj_visc_scale_(fldparaxfem_.GetViscousAdjointScaling()),
             eval_coupling_(true)
       {
@@ -226,7 +228,7 @@ namespace DRT
               proj_tangential,  ///< tangential projection matrix
           const CORE::LINALG::Matrix<nsd_, nsd_>&
               LB_proj_matrix,  ///< prescribed projection matrix for laplace-beltrami problems
-          const std::vector<Epetra_SerialDenseMatrix>&
+          const std::vector<CORE::LINALG::SerialDenseMatrix>&
               solid_stress,  ///< structural cauchy stress and linearization
           std::map<INPAR::XFEM::CoupTerm, std::pair<bool, double>>&
               configmap  ///< Interface Terms configuration map
@@ -251,7 +253,7 @@ namespace DRT
         // Create projection matrices
         //--------------------------------------------
         proj_tangential_ = proj_tangential;
-        proj_normal_.Scale(0.0);
+        proj_normal_.putScalar(0.0);
         for (unsigned i = 0; i < nsd_; i++) proj_normal_(i, i) = 1.0;
         proj_normal_.Update(-1.0, proj_tangential_, 1.0);
 
@@ -694,15 +696,16 @@ namespace DRT
             configmap.at(INPAR::XFEM::XS_Adj_n_Row).first ||
             configmap.at(INPAR::XFEM::XS_Adj_t_Row).first)
         {
-          traction_ = CORE::LINALG::Matrix<nsd_, 1>(solid_stress[0].A(), true);
-          dtraction_vel_ = CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_>(solid_stress[1].A(), true);
+          traction_ = CORE::LINALG::Matrix<nsd_, 1>(solid_stress[0].values(), true);
+          dtraction_vel_ =
+              CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_>(solid_stress[1].values(), true);
 
-          d2traction_vel_[0] =
-              CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[2].A(), true);
-          d2traction_vel_[1] =
-              CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[3].A(), true);
-          d2traction_vel_[2] =
-              CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(solid_stress[4].A(), true);
+          d2traction_vel_[0] = CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(
+              solid_stress[2].values(), true);
+          d2traction_vel_[1] = CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(
+              solid_stress[3].values(), true);
+          d2traction_vel_[2] = CORE::LINALG::Matrix<nsd_ * slave_nen_, nsd_ * slave_nen_>(
+              solid_stress[4].values(), true);
 
           if (configmap.at(INPAR::XFEM::XS_Con_Col).first)
           {
@@ -1062,7 +1065,7 @@ namespace DRT
         // Create projection matrices
         //--------------------------------------------
         proj_tangential_ = proj_tangential;
-        proj_normal_.Scale(0.0);
+        proj_normal_.putScalar(0.0);
         for (unsigned i = 0; i < nsd_; i++) proj_normal_(i, i) = 1.0;
         proj_normal_.Update(-1.0, proj_tangential_, 1.0);
 
@@ -3182,7 +3185,7 @@ namespace DRT
           )
       {
         // Create the identity matrix (Probably not the fastest way...) Might make it global?
-        proj_tangential_.Scale(0.0);
+        proj_tangential_.putScalar(0.0);
         for (unsigned int i = 0; i < nsd_; ++i) proj_tangential_(i, i) = 1;
 
         //   Non-smoothed projection matrix
@@ -3194,7 +3197,7 @@ namespace DRT
           }
         }
 
-        proj_normal_.Scale(0.0);
+        proj_normal_.putScalar(0.0);
         for (unsigned i = 0; i < nsd_; ++i) proj_normal_(i, i) = 1.0;
         proj_normal_.Update(-1.0, proj_tangential_, 1.0);
       }

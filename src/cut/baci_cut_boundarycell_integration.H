@@ -48,7 +48,7 @@ namespace CORE::GEO
       Unlike facet integration facets, whose x-component of normal is zero, cannot be eliminated
       from the integration.
        */
-      Epetra_SerialDenseVector GenerateBoundaryCellIntegrationRule();
+      CORE::LINALG::SerialDenseVector GenerateBoundaryCellIntegrationRule();
 
       /*!
       \brief Returns the location of Gauss points over the boundarycell

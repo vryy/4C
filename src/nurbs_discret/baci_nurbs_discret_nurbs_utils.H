@@ -32,7 +32,7 @@ namespace DRT
     */
     template <class WG>
     bool GetMyNurbsKnotsAndWeights(const DRT::DiscretizationInterface& dis, const DRT::Element* ele,
-        std::vector<Epetra_SerialDenseVector>& myknots, WG& weights)
+        std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& weights)
     {
       // try to cast dis to a nurbs discretisation
       const DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -104,8 +104,8 @@ namespace DRT
     bool GetKnotVectorAndWeightsForNurbsBoundary(const DRT::Element* boundaryele,
         const int localsurfaceid, const int parenteleid,
         const DRT::DiscretizationInterface& discretization,
-        std::vector<Epetra_SerialDenseVector>& mypknots,
-        std::vector<Epetra_SerialDenseVector>& myknots, WG& weights, double& normalfac)
+        std::vector<CORE::LINALG::SerialDenseVector>& mypknots,
+        std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& weights, double& normalfac)
     {
       // get knotvector(s)
       const DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -157,8 +157,8 @@ namespace DRT
     bool GetKnotVectorAndWeightsForNurbsBoundaryAndParent(DRT::Element* parentele,
         DRT::Element* boundaryele, const int localsurfaceid,
         const DRT::DiscretizationInterface& discretization,
-        std::vector<Epetra_SerialDenseVector>& mypknots,
-        std::vector<Epetra_SerialDenseVector>& myknots, WG& pweights, WG& weights,
+        std::vector<CORE::LINALG::SerialDenseVector>& mypknots,
+        std::vector<CORE::LINALG::SerialDenseVector>& myknots, WG& pweights, WG& weights,
         double& normalfac)
     {
       // get knotvector(s)

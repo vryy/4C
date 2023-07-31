@@ -71,7 +71,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetAdvancedReactionTerms(
  *------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatConvAddCons(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac, const double vdiv,
     const double densnp)
 {
   dserror(
@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::SetInternalVariablesForMa
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   CORE::LINALG::Matrix<nsd_, nsd_> Diff_tens(C_inv_);
   Diff_tens.Scale(my::diffmanager_->GetIsotropicDiff(k));
@@ -204,7 +204,7 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcMatDiff(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
-    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac)
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac)
 {
   /////////////////////////////////////////////////////////////////////
   // \D* \grad c_0 \times \grad \phi ...

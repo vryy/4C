@@ -1690,9 +1690,9 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
 
   // Dual shape functions coefficient matrix and linearization
   SlaveElement().MoData().DerivDualShape() =
-      Teuchos::rcp(new CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>(
-          (nnodes + mnodes) * ndof, 0, Epetra_SerialDenseMatrix(nnodes, nnodes)));
-  CORE::GEN::pairedvector<int, Epetra_SerialDenseMatrix>& derivae =
+      Teuchos::rcp(new CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>(
+          (nnodes + mnodes) * ndof, 0, CORE::LINALG::SerialDenseMatrix(nnodes, nnodes)));
+  CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& derivae =
       *(SlaveElement().MoData().DerivDualShape());
 
   // various variables
@@ -1926,7 +1926,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
       dserror("incorrect element shape for linear interpolation of quadratic element!");
 
     // get solution matrix with dual parameters
-    ae.Multiply('N', 'N', 1.0, de, meinv, 0.0);
+    ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, meinv, 0.0);
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else
@@ -1941,7 +1941,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
   for (_CIM p = derivde_new.begin(); p != derivde_new.end(); ++p)
   {
     CORE::LINALG::Matrix<max_nnodes + 1, max_nnodes>& dtmp = derivde_new[p->first];
-    Epetra_SerialDenseMatrix& pt = derivae[p->first];
+    CORE::LINALG::SerialDenseMatrix& pt = derivae[p->first];
     for (int i = 0; i < nnodes; ++i)
       for (int j = 0; j < nnodes; ++j)
       {

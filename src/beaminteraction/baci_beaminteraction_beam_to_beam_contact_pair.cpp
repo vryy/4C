@@ -233,13 +233,13 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
   unsigned int dim2 = 3 * numnodes * numnodalvalues;
 
   // resize and initialize variables to zero
-  if (forcevec1 != NULL) forcevec1->Size(dim1);
-  if (forcevec2 != NULL) forcevec2->Size(dim2);
+  if (forcevec1 != NULL) forcevec1->size(dim1);
+  if (forcevec2 != NULL) forcevec2->size(dim2);
 
-  if (stiffmat11 != NULL) stiffmat11->Shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->Shape(dim1, dim2);
-  if (stiffmat21 != NULL) stiffmat21->Shape(dim2, dim1);
-  if (stiffmat22 != NULL) stiffmat22->Shape(dim2, dim2);
+  if (stiffmat11 != NULL) stiffmat11->shape(dim1, dim1);
+  if (stiffmat12 != NULL) stiffmat12->shape(dim1, dim2);
+  if (stiffmat21 != NULL) stiffmat21->shape(dim2, dim1);
+  if (stiffmat22 != NULL) stiffmat22->shape(dim2, dim2);
 
 
   //**********************************************************************
@@ -370,12 +370,12 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
   // Todo avoid computation of norm here and rather use the maximum of all 'DoNotAssemble' flags
   //      which is set for each cp, gp and ep of this element pair (in EvaluateFcContact
   //      EvaluateStiffcContact)
-  if ((forcevec1 != NULL and forcevec1->NormInf() > 0) or
-      (forcevec2 != NULL and forcevec2->NormInf() > 0) or
-      (stiffmat11 != NULL and stiffmat11->NormInf() > 0) or
-      (stiffmat12 != NULL and stiffmat12->NormInf() > 0) or
-      (stiffmat21 != NULL and stiffmat21->NormInf() > 0) or
-      (stiffmat22 != NULL and stiffmat22->NormInf() > 0))
+  if ((forcevec1 != NULL and forcevec1->normInf() > 0) or
+      (forcevec2 != NULL and forcevec2->normInf() > 0) or
+      (stiffmat11 != NULL and stiffmat11->normInf() > 0) or
+      (stiffmat12 != NULL and stiffmat12->normInf() > 0) or
+      (stiffmat21 != NULL and stiffmat21->normInf() > 0) or
+      (stiffmat22 != NULL and stiffmat22->normInf() > 0))
   {
     return true;
   }
@@ -3663,8 +3663,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs
   CORE::LINALG::Matrix<dim1, dim1 + dim2, TYPE> stiffc1_FAD(true);
   CORE::LINALG::Matrix<dim2, dim1 + dim2, TYPE> stiffc2_FAD(true);
-  Epetra_SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
-  Epetra_SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact1(dim1, dim1 + dim2);
+  CORE::LINALG::SerialDenseMatrix stiffcontact2(dim2, dim1 + dim2);
   std::vector<int> lmrow1(dim1);
   std::vector<int> lmrow2(dim2);
   std::vector<int> lmrowowner1(dim1);

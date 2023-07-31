@@ -148,8 +148,9 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain()
         "action", SCATRA::Action::integrate_shape_functions, params);
 
     // integrate shape functions
-    Epetra_IntSerialDenseVector dofids(NumDofPerNode());
-    memset(dofids.A(), 1, dofids.Length() * sizeof(int));  // integrate shape functions for all dofs
+    Teuchos::RCP<CORE::LINALG::IntSerialDenseVector> dofids =
+        Teuchos::rcp(new CORE::LINALG::IntSerialDenseVector(NumDofPerNode()));
+    dofids->putScalar(1);  // integrate shape functions for all dofs
     params.set("dofids", dofids);
     discret_->Evaluate(
         params, Teuchos::null, Teuchos::null, integratedshapefcts, Teuchos::null, Teuchos::null);
@@ -415,8 +416,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
           "action", SCATRA::BoundaryAction::calc_boundary_integral, params);
 
       // initialize one-component result vector for value of boundary integral
-      Teuchos::RCP<Epetra_SerialDenseVector> boundaryint_vector =
-          Teuchos::rcp(new Epetra_SerialDenseVector(1));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> boundaryint_vector =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
 
       // compute value of boundary integral
       discret_->EvaluateScalars(params, boundaryint_vector, "ScaTraFluxCalc", icond);
@@ -673,7 +674,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialTimeDerivative()
 
   // reset true residual vector computed during assembly of the standard global system of equations,
   // since not yet needed
-  trueresidual_->Scale(0.);
+  trueresidual_->PutScalar(0.0);
 
   // restore history vector as explained above
   hist_ = hist;
@@ -1598,11 +1599,11 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     double global_sumVol = 0.0;
 
     // define element matrices and vectors --- dummies
-    Epetra_SerialDenseMatrix emat1;
-    Epetra_SerialDenseMatrix emat2;
-    Epetra_SerialDenseVector evec1;
-    Epetra_SerialDenseVector evec2;
-    Epetra_SerialDenseVector evec3;
+    CORE::LINALG::SerialDenseMatrix emat1;
+    CORE::LINALG::SerialDenseMatrix emat2;
+    CORE::LINALG::SerialDenseVector evec1;
+    CORE::LINALG::SerialDenseVector evec2;
+    CORE::LINALG::SerialDenseVector evec3;
 
     // generate a parameterlist for communication and control
     Teuchos::ParameterList myparams;
@@ -2340,8 +2341,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       discret_->SetState("phinp", phinp_);
 
       // get (squared) error values
-      Teuchos::RCP<Epetra_SerialDenseVector> errors =
-          Teuchos::rcp(new Epetra_SerialDenseVector(4 * NumDofPerNode()));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4 * NumDofPerNode()));
       discret_->EvaluateScalars(eleparams, errors);
 
       for (int k = 0; k < NumDofPerNode(); ++k)
@@ -2427,8 +2428,8 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
         discret_->SetState("phinp", phinp_);
 
         // get (squared) error values
-        Teuchos::RCP<Epetra_SerialDenseVector> errors =
-            Teuchos::rcp(new Epetra_SerialDenseVector(4 * NumDofPerNode()));
+        Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+            Teuchos::rcp(new CORE::LINALG::SerialDenseVector(4 * NumDofPerNode()));
         discret_->EvaluateScalars(eleparams, errors, "ScatraRelError", condid);
 
         // compute index offset
@@ -2817,7 +2818,7 @@ void SCATRA::OutputScalarsStrategyDomain::EvaluateIntegrals(
   // first components = scalar integrals, last component = domain integral
   const int num_active_scalars = output_mean_grad_ ? numscal_ : 0;
   auto scalars =
-      Teuchos::rcp(new Epetra_SerialDenseVector(numdofpernode_ + 1 + num_active_scalars));
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector(numdofpernode_ + 1 + num_active_scalars));
 
   // perform integration
   scatratimint->discret_->EvaluateScalars(eleparams, scalars);
@@ -3064,8 +3065,8 @@ void SCATRA::OutputDomainIntegralStrategy::EvaluateIntegralsAndPrintResults(
   for (int condid = 0; condid < static_cast<int>(conditions.size()); ++condid)
   {
     // initialize one-component result vector for value of current domain or boundary integral
-    Teuchos::RCP<Epetra_SerialDenseVector> integralvalue =
-        Teuchos::rcp(new Epetra_SerialDenseVector(1));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> integralvalue =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(1));
 
     // compute value of current domain or boundary integral
     discret->EvaluateScalars(condparams, integralvalue, condstring, condid);
@@ -3136,8 +3137,8 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
     // first components = scalar integrals, last component = domain integral
     const int num_active_scalars = output_mean_grad_ ? numscalpernode : 0;
     const int num_micro_dis = output_micro_dis_ ? 1 : 0;
-    auto scalars = Teuchos::rcp(
-        new Epetra_SerialDenseVector(numdofpernode + 1 + num_active_scalars + num_micro_dis));
+    auto scalars = Teuchos::rcp(new CORE::LINALG::SerialDenseVector(
+        numdofpernode + 1 + num_active_scalars + num_micro_dis));
 
     // perform integration
     scatratimint->discret_->EvaluateScalars(eleparams, scalars, "TotalAndMeanScalar", condid);
@@ -3159,7 +3160,7 @@ void SCATRA::OutputScalarsStrategyCondition::EvaluateIntegrals(
         meangradients_[condid][k] = std::abs(mean_gradient) < 1.0e-10 ? 0.0 : mean_gradient;
       }
     }
-    if (output_micro_dis_) micrototalscalars_[condid][0] = (*scalars)[scalars->Length() - 1];
+    if (output_micro_dis_) micrototalscalars_[condid][0] = (*scalars)[scalars->length() - 1];
   }
 }
 

@@ -175,11 +175,13 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  //!< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  //!< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
           ) override;
 
       // PreEvaluate undertakes the task to calculate coupling term of matrix
@@ -253,11 +255,13 @@ namespace DRT
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
           DRT::Element::LocationArray& la,      //!< location array for de-assembly
-          Epetra_SerialDenseMatrix& elemat1,    //!< (stiffness-)matrix to be filled by element.
-          Epetra_SerialDenseMatrix& elemat2,    //!< (mass-)matrix to be filled by element.
-          Epetra_SerialDenseVector& elevec1,    //!< (internal force-)vector to be filled by element
-          Epetra_SerialDenseVector& elevec2,    //!< vector to be filled by element
-          Epetra_SerialDenseVector& elevec3     //!< vector to be filled by element
+          CORE::LINALG::SerialDenseMatrix&
+              elemat1,  //!< (stiffness-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseMatrix& elemat2,  //!< (mass-)matrix to be filled by element.
+          CORE::LINALG::SerialDenseVector&
+              elevec1,  //!< (internal force-)vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
+          CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
       );
 
       //! Calculate temperature coupling term for the internal force (geometric linear)

@@ -400,10 +400,10 @@ void MAT::BeamPlasticMaterial<T>::Update()
   {
     gammaplastaccum_[gp] += std::abs(gammaplastconv_[gp](0) - gammaplastnew_[gp](0));
     gammaplastconv_[gp] = gammaplastnew_[gp];
-    cN_eff_[gp].Scale(0.0);
+    cN_eff_[gp].putScalar(0.0);
     effyieldstressN_[gp] = 0.0;
-    deltaGammaplast_[gp].Scale(0.0);
-    deltastressN_[gp].Scale(0.0);
+    deltaGammaplast_[gp].putScalar(0.0);
+    deltastressN_[gp].putScalar(0.0);
   }
   for (unsigned int gp = 0; gp < numgp_moment_; gp++)
   {
@@ -414,11 +414,11 @@ void MAT::BeamPlasticMaterial<T>::Update()
                                       (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)) *
                                           (kappaplastconv_[gp](2) - kappaplastnew_[gp](2)));
     kappaplastconv_[gp] = kappaplastnew_[gp];
-    cM_eff_[gp].Scale(0.0);
+    cM_eff_[gp].putScalar(0.0);
     effyieldstressM_[gp] = 0.0;
-    kappaelast_[gp].Scale(0.0);
-    kappaelastflow_[gp].Scale(0.0);
-    elastic_curvature_[gp].Scale(0.0);
+    kappaelast_[gp].putScalar(0.0);
+    kappaelastflow_[gp].putScalar(0.0);
+    elastic_curvature_[gp].putScalar(0.0);
     deltaKappaplast_[gp] = 0.0;
     normstressM_[gp] = 0.0;
     deltastressM_[gp] = 0.0;

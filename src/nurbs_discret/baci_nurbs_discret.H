@@ -226,10 +226,10 @@ namespace DRT
       */
       template <DRT::Element::DiscretizationType distype>
       void FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<DRT::Element> ele,
-          const std::vector<Epetra_SerialDenseVector>* knots, const std::vector<int>& lm,
+          const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-          const double time, Epetra_SerialDenseMatrix& elemass,
-          std::vector<Epetra_SerialDenseVector>& elerhs) const;
+          const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+          std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const;
 
       /*!
       \brief Fill mass matrix and rhs vector for evaluation of least squares dirichlet on a domain
@@ -247,10 +247,10 @@ namespace DRT
       */
       template <DRT::Element::DiscretizationType distype>
       void FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT::Element> ele,
-          const std::vector<Epetra_SerialDenseVector>* knots, const std::vector<int>& lm,
+          const std::vector<CORE::LINALG::SerialDenseVector>* knots, const std::vector<int>& lm,
           const std::vector<int>* funct, const std::vector<double>* val, const unsigned deg,
-          const double time, Epetra_SerialDenseMatrix& elemass,
-          std::vector<Epetra_SerialDenseVector>& elerhs) const;
+          const double time, CORE::LINALG::SerialDenseMatrix& elemass,
+          std::vector<CORE::LINALG::SerialDenseVector>& elerhs) const;
 
     };  // class DbcNurbs
   }     // namespace UTILS

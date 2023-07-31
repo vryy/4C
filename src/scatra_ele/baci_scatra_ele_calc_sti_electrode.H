@@ -54,49 +54,49 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action for off-diagonal system matrix block
-      int EvaluateActionOD(DRT::Element* ele,        //!< current element
-          Teuchos::ParameterList& params,            //!< parameter list
-          DRT::Discretization& discretization,       //!< discretization
-          const SCATRA::Action& action,              //!< action parameter
-          DRT::Element::LocationArray& la,           //!< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+      int EvaluateActionOD(DRT::Element* ele,               //!< current element
+          Teuchos::ParameterList& params,                   //!< parameter list
+          DRT::Discretization& discretization,              //!< discretization
+          const SCATRA::Action& action,                     //!< action parameter
+          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
       );
 
       //! calculate element matrix and element right-hand side vector
-      void Sysmat(DRT::Element* ele,           ///< current element
-          Epetra_SerialDenseMatrix& emat,      ///< element matrix
-          Epetra_SerialDenseVector& erhs,      ///< element right-hand side vector
-          Epetra_SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
+      void Sysmat(DRT::Element* ele,                  ///< current element
+          CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,      ///< element right-hand side vector
+          CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid diffusivity scaling vector
       );
 
       //! fill element matrix with linearizations of discrete thermo residuals w.r.t. scatra dofs
       void SysmatODThermoScatra(DRT::Element* ele,  //!< current element
-          Epetra_SerialDenseMatrix& emat            //!< element matrix
+          CORE::LINALG::SerialDenseMatrix& emat     //!< element matrix
       );
 
       //! element matrix and right-hand side vector contributions arising from Joule's heat
-      void CalcMatAndRhsJoule(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          Epetra_SerialDenseVector& erhs,                      //!< element right-hand side vector
+      void CalcMatAndRhsJoule(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
       );
 
       //! element matrix and right-hand side vector contributions arising from heat of mixing
-      void CalcMatAndRhsMixing(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          Epetra_SerialDenseVector& erhs,                       //!< element right-hand side vector
+      void CalcMatAndRhsMixing(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
       );
 
       //! element matrix and right-hand side vector contributions arising from Soret effect
-      void CalcMatAndRhsSoret(Epetra_SerialDenseMatrix& emat,  //!< element matrix
-          Epetra_SerialDenseVector& erhs,                      //!< element right-hand side vector
+      void CalcMatAndRhsSoret(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
+          CORE::LINALG::SerialDenseVector& erhs,  //!< element right-hand side vector
           const double& timefacfac,  //!< domain integration factor times time integration factor
           const double& rhsfac  //!< domain integration factor times time integration factor for
                                 //!< right-hand side vector
@@ -104,19 +104,19 @@ namespace DRT
 
       //! provide element matrix with linearizations of Joule's heat term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      void CalcMatJouleOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      void CalcMatJouleOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
       );
 
       //! provide element matrix with linearizations of heat of mixing term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      void CalcMatMixingOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      void CalcMatMixingOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
       );
 
       //! provide element matrix with linearizations of Soret effect term in discrete thermo
       //! residuals w.r.t. scatra dofs
-      void CalcMatSoretOD(Epetra_SerialDenseMatrix& emat,  //!< element matrix
+      void CalcMatSoretOD(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
           const double& timefacfac  //!< domain integration factor times time integration factor
       );
 

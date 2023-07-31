@@ -1367,12 +1367,12 @@ namespace CORE::GEO
           if (all_distance_done_once_ and all_intersections_done_once_ and
               all_position_done_once_ and (!custom_allocator_run_))
           {
-            GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
+            CORE::GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
             ReportIntersectionAllocated();
             ReportPositionAllocated();
             ReportDistanceAllocated();
             ReportTotalAllocated();
-            GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
+            CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
             custom_allocator_run_ = true;
           }
           if (first_run_) std::cout << "In cut position statistics is" << std::endl;
@@ -1385,7 +1385,7 @@ namespace CORE::GEO
             // set current constainer for most frequenty byte size allocation for this iteration
             if (custom_allocator_run_)
 #endif
-              GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
+              CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
                   cln_byte_size_[iter]);
 #endif
 
@@ -1393,13 +1393,13 @@ namespace CORE::GEO
             // Report memory allocation of the class if doing this for the first time
             if (first_run_)
             {
-              if (GEO::CUT::MemorySingleton::getInstance().IsRecording())
+              if (CORE::GEO::CUT::MemorySingleton::getInstance().IsRecording())
               {
                 UpdateMemoryAllocations(
-                    GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
-                GEO::CUT::MemorySingleton::getInstance().StopRecord();
+                    CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
+                CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
               }
-              GEO::CUT::MemorySingleton::getInstance().StartRecord();
+              CORE::GEO::CUT::MemorySingleton::getInstance().StartRecord();
             }
 #endif
             // convertion to correspondent precison
@@ -1539,10 +1539,10 @@ namespace CORE::GEO
 #if DEBUG_MEMORY_ALLOCATION
           if (first_run_)
           {
-            GEO::CUT::MemorySingleton::getInstance().StopRecord();
+            CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
 
             std::unordered_map<size_t, int>& allocation_map =
-                GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
+                CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
 
             // update the global number of allocations to the maximum
             int max_num = 0;
@@ -1571,7 +1571,7 @@ namespace CORE::GEO
             else
               dserror("This should not be possible!");
 
-            GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
+            CORE::GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
           }
 #endif
         }
@@ -1650,7 +1650,7 @@ namespace CORE::GEO
               ClnWrapper::ResetPrecision();
             }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-            GEO::CUT::MemorySingleton::getInstance().Finalize();
+            CORE::GEO::CUT::MemorySingleton::getInstance().Finalize();
 #endif
           }
 #endif
@@ -2478,15 +2478,15 @@ namespace CORE::GEO
               all_position_done_once_ and (!custom_allocator_run_))
           {
 #if DEBUG_MEMORY_ALLOCATION
-            GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
+            CORE::GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
             ReportIntersectionAllocated();
             ReportPositionAllocated();
             ReportDistanceAllocated();
             ReportTotalAllocated();
             // start setting up the memory container
-            GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
+            CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
 #else
-            GEO::CUT::MemorySingleton::getInstance().SwitchState();
+            CORE::GEO::CUT::MemorySingleton::getInstance().SwitchState();
 #endif
             custom_allocator_run_ = true;
           }
@@ -2501,20 +2501,20 @@ namespace CORE::GEO
 #if DEBUG_MEMORY_ALLOCATION
             if (custom_allocator_run_)
 #endif
-              GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
+              CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
                   cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
 
             if (first_run_)
             {
-              if (GEO::CUT::MemorySingleton::getInstance().IsRecording())
+              if (CORE::GEO::CUT::MemorySingleton::getInstance().IsRecording())
               {
                 UpdateMemoryAllocations(
-                    GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
-                GEO::CUT::MemorySingleton::getInstance().StopRecord();
+                    CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
+                CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
               }
-              GEO::CUT::MemorySingleton::getInstance().StartRecord();
+              CORE::GEO::CUT::MemorySingleton::getInstance().StartRecord();
             }
 
 #endif
@@ -2796,10 +2796,10 @@ namespace CORE::GEO
 
           if (first_run_)
           {
-            GEO::CUT::MemorySingleton::getInstance().StopRecord();
+            CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
 
             std::unordered_map<size_t, int>& allocation_map =
-                GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
+                CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
             int max_num = 0;
             int size_max_num = 0;
             // update the global number of allocations to the maximum
@@ -2827,7 +2827,7 @@ namespace CORE::GEO
             else
               dserror("This should not be possible");
 
-            GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
+            CORE::GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
           }
 #endif
         }
@@ -3000,7 +3000,7 @@ namespace CORE::GEO
               }
               // finalize memory allocator
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-              GEO::CUT::MemorySingleton::getInstance().Finalize();
+              CORE::GEO::CUT::MemorySingleton::getInstance().Finalize();
 #endif
 #if DOUBLE_PLUS_CLN_COMPUTE
             }
@@ -3650,7 +3650,7 @@ namespace CORE::GEO
 
             std::stringstream f_str;
             f_str << ".NewtonFailed_intersection.pos";
-            std::string filename(GEO::CUT::OUTPUT::GenerateGmshOutputFilename(f_str.str()));
+            std::string filename(CORE::GEO::CUT::OUTPUT::GenerateGmshOutputFilename(f_str.str()));
             std::ofstream file(filename.c_str());
             WritetoGmsh(file);
           }
@@ -3941,14 +3941,14 @@ namespace CORE::GEO
               all_position_done_once_ and (!custom_allocator_run_))
           {
 #if DEBUG_MEMORY_ALLOCATION
-            GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
+            CORE::GEO::CUT::MemorySingleton::getInstance().ReportAllocated();
             ReportIntersectionAllocated();
             ReportPositionAllocated();
             ReportDistanceAllocated();
             ReportTotalAllocated();
-            GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
+            CORE::GEO::CUT::MemorySingleton::getInstance().SetState(1, memory_allocations_);
 #else
-            GEO::CUT::MemorySingleton::getInstance().SwitchState();
+            CORE::GEO::CUT::MemorySingleton::getInstance().SwitchState();
 #endif
             custom_allocator_run_ = true;
           }
@@ -3964,20 +3964,20 @@ namespace CORE::GEO
 #if DEBUG_MEMORY_ALLOCATION
             if (custom_allocator_run_)
 #endif
-              GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
+              CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPoolAllocator().SetCurrent(
                   cln_byte_size_[iter]);
 #endif
 #if DEBUG_MEMORY_ALLOCATION
 
             if (first_run_)
             {
-              if (GEO::CUT::MemorySingleton::getInstance().IsRecording())
+              if (CORE::GEO::CUT::MemorySingleton::getInstance().IsRecording())
               {
                 UpdateMemoryAllocations(
-                    GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
-                GEO::CUT::MemorySingleton::getInstance().StopRecord();
+                    CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern());
+                CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
               }
-              GEO::CUT::MemorySingleton::getInstance().StartRecord();
+              CORE::GEO::CUT::MemorySingleton::getInstance().StartRecord();
             }
 
 #endif
@@ -4275,10 +4275,10 @@ namespace CORE::GEO
           // if first run need also to run until the end
           if (first_run_)
           {
-            GEO::CUT::MemorySingleton::getInstance().StopRecord();
+            CORE::GEO::CUT::MemorySingleton::getInstance().StopRecord();
 
             std::unordered_map<size_t, int>& allocation_map =
-                GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
+                CORE::GEO::CUT::MemorySingleton::getInstance().GetMemoryPattern();
 
             int max_num = 0;
             int size_max_num = 0;
@@ -4307,7 +4307,7 @@ namespace CORE::GEO
             else
               dserror("This should not be possible!");
 
-            GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
+            CORE::GEO::CUT::MemorySingleton::getInstance().ResetAllocated();
           }
 #endif
         }
@@ -4415,7 +4415,7 @@ namespace CORE::GEO
                 ClnWrapper::ResetPrecision();
               }
 #ifdef CUSTOM_MEMORY_ALLOCATOR
-              GEO::CUT::MemorySingleton::getInstance().Finalize();
+              CORE::GEO::CUT::MemorySingleton::getInstance().Finalize();
 #endif
 #if DOUBLE_PLUS_CLN_COMPUTE
             }
@@ -4864,7 +4864,7 @@ template <class Strategy, unsigned probDim, ::DRT::Element::DiscretizationType e
 size_t CORE::GEO::CUT::KERNEL::ComputePositionAdaptivePrecision<Strategy, probDim, elementType,
     numNodesElement, dim>::cln_sizes_[];
 
-// GEO::CUT::KERNEL::ComputeDistance
+// CORE::GEO::CUT::KERNEL::ComputeDistance
 
 template <class Strategy, unsigned probDim, ::DRT::Element::DiscretizationType sideType,
     unsigned dimSide, unsigned numNodesSide>
@@ -4883,7 +4883,7 @@ template <class Strategy, unsigned probDim, ::DRT::Element::DiscretizationType s
 size_t CORE::GEO::CUT::KERNEL::ComputeDistanceAdaptivePrecision<Strategy, probDim, sideType,
     dimSide, numNodesSide>::cln_sizes_[];
 
-// GEO::CUT::KERNEL::ComputeIntersection
+// CORE::GEO::CUT::KERNEL::ComputeIntersection
 
 template <class Strategy, unsigned probDim, ::DRT::Element::DiscretizationType edgeType,
     ::DRT::Element::DiscretizationType sideType, unsigned dimEdge, unsigned dimSide,

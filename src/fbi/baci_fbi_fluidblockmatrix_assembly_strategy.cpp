@@ -24,7 +24,7 @@
 
 void FBI::UTILS::FBIBlockAssemblyStrategy::AssembleFluidMatrix(
     Teuchos::RCP<CORE::LINALG::SparseOperator> cff, int elegid, const std::vector<int>& lmstride,
-    const Epetra_SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
+    const CORE::LINALG::SerialDenseMatrix& elemat, const std::vector<int>& lmrow,
     const std::vector<int>& lmrowowner, const std::vector<int>& lmcol)
 {
   cff->Assemble(elegid, lmstride, elemat, lmrow, lmrowowner, lmcol);

@@ -13,6 +13,7 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 
 /*----------------------------------------------------------------------*/
 
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_mat_plastic_VarConstUpdate.H"
 #include "baci_matelast_summand.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
@@ -20,7 +21,6 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_lib_voigt_notation.H"
 

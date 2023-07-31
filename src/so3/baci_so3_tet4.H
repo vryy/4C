@@ -300,9 +300,10 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
 
       /*!
@@ -320,8 +321,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
       /*!
       \brief Return value how expensive it is to evaluate this element
@@ -339,15 +340,17 @@ namespace DRT
       void GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG::Matrix<3, 1>& xi,
           const std::vector<double>& disp, const CORE::LINALG::Matrix<3, 1>& n,
           const CORE::LINALG::Matrix<3, 1>& dir, double& cauchy_n_dir,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dd, Epetra_SerialDenseMatrix* d2_cauchyndir_dd2,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dn,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_ddir,
-          Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dxi,
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dd,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd2,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dn,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_ddir,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dxi,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dn,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_ddir,
           CORE::LINALG::Matrix<3, 1>* d_cauchyndir_dxi, const std::vector<double>* temp,
-          Epetra_SerialDenseMatrix* d_cauchyndir_dT, Epetra_SerialDenseMatrix* d2_cauchyndir_dd_dT,
-          const double* concentration, double* d_cauchyndir_dc) override;
+          CORE::LINALG::SerialDenseMatrix* d_cauchyndir_dT,
+          CORE::LINALG::SerialDenseMatrix* d2_cauchyndir_dd_dT, const double* concentration,
+          double* d_cauchyndir_dc) override;
       //@}
 
      protected:
@@ -396,7 +399,7 @@ namespace DRT
       void UpdateJacobianMapping(
           const std::vector<double>& disp, DRT::ELEMENTS::PreStress& prestress);
       /// compute defgrd ypein all gp for given disp
-      void DefGradient(const std::vector<double>& disp, Epetra_SerialDenseMatrix& gpdefgrd,
+      void DefGradient(const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix& gpdefgrd,
           DRT::ELEMENTS::PreStress& prestress);
 
       /*!

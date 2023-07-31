@@ -13,7 +13,7 @@
 #include "baci_mat_par_parameter.H"
 #include "baci_inpar_material.H"
 
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace MAT
 {
@@ -45,7 +45,7 @@ namespace MAT
       virtual INPAR::MAT::MaterialType PoroPhaseLawType() const = 0;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      virtual void FillDoFMatrix(Epetra_SerialDenseMatrix& dofmat, int numphase) const = 0;
+      virtual void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const = 0;
 
       /// evaluate saturation of the phase
       virtual double EvaluateSaturation(int phasenum, const std::vector<double>& state,
@@ -84,7 +84,7 @@ namespace MAT
       INPAR::MAT::MaterialType PoroPhaseLawType() const;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      virtual void FillDoFMatrix(Epetra_SerialDenseMatrix& dofmat, int numphase) const;
+      virtual void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const;
 
       /// evaluate saturation of the phase
       virtual double EvaluateSaturation(int phasenum, const std::vector<double>& state,
@@ -129,7 +129,7 @@ namespace MAT
       INPAR::MAT::MaterialType PoroPhaseLawType() const;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      virtual void FillDoFMatrix(Epetra_SerialDenseMatrix& dofmat, int numphase) const;
+      virtual void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const;
 
       /// evaluate saturation of the phase
       virtual double EvaluateSaturation(int phasenum, const std::vector<double>& state,
@@ -176,7 +176,7 @@ namespace MAT
       INPAR::MAT::MaterialType PoroPhaseLawType() const;
 
       /// mark dofs associated with this phase in a given row (=numphase) in a matrix
-      virtual void FillDoFMatrix(Epetra_SerialDenseMatrix& dofmat, int numphase) const;
+      virtual void FillDoFMatrix(CORE::LINALG::SerialDenseMatrix& dofmat, int numphase) const;
 
       /// evaluate saturation of the phase
       virtual double EvaluateSaturation(int phasenum, const std::vector<double>& state,

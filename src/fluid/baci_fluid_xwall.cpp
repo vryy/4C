@@ -1011,11 +1011,11 @@ void FLD::XWall::CalcTauW(
     std::vector<int> lmstride;
 
     // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
+    CORE::LINALG::SerialDenseMatrix elematrix1;
+    CORE::LINALG::SerialDenseMatrix elematrix2;
+    CORE::LINALG::SerialDenseVector elevector1;
+    CORE::LINALG::SerialDenseVector elevector2;
+    CORE::LINALG::SerialDenseVector elevector3;
 
     // get number of elements
     const int numele = xwdiscret_->NumMyColElements();
@@ -1037,8 +1037,8 @@ void FLD::XWall::CalcTauW(
       // get element location vector and ownerships
       actele->LocationVector(*xwdiscret_, lm, lmowner, lmstride);
 
-      elevector1.Size(numnode);
-      elevector2.Size(numnode);
+      elevector1.size(numnode);
+      elevector2.size(numnode);
 
       // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
       // elevector1 has to be NULL here, because I am assuming a dof-based vector otherwise
@@ -1164,12 +1164,12 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
   std::vector<int> lmstride;
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevectordummy;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevectordummy;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
   // get number of elements
   const int numele = xwdiscret_->NumMyColElements();
@@ -1186,9 +1186,9 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
     actele->LocationVector(*xwdiscret_, lm, lmowner, lmstride);
 
     // Reshape element matrices and vectors and initialize to zero
-    elematrix1.Shape(numnode * numdf, numnode * numdf);
+    elematrix1.shape(numnode * numdf, numnode * numdf);
     // Reshape element matrices and vectors and initialize to zero
-    elematrix2.Shape(
+    elematrix2.shape(
         numnode * numdf, numberofrhs);  // we have 3 right hand sides for now: 3 velocity components
 
     // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
@@ -1215,7 +1215,7 @@ void FLD::XWall::L2ProjectVector(Teuchos::RCP<Epetra_Vector> veln,
 
     // assembling into node maps
     // assemble numberofrhs entries in rhs vector sequentially
-    elevector1.Size(numnode * numdf);
+    elevector1.size(numnode * numdf);
     for (int n = 0; n < numberofrhs; ++n)
     {
       // copy results into Serial_DenseVector for assembling

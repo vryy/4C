@@ -12,6 +12,7 @@
 
 /*----------------------------------------------------------------------*/
 // headers
+#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
 #include "baci_utils_exceptions.H"
@@ -20,7 +21,6 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_lib_element.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include <Epetra_SerialDenseSolver.h>
 
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_mat_elasthyper.H"
@@ -36,13 +36,13 @@
  | Constitutive matrix C and stresses (private)                mgit 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
-    const Epetra_SerialDenseVector& strain,      ///< Green-Lagrange strain vector
-    Epetra_SerialDenseMatrix& stress,            ///< stress vector
-    Epetra_SerialDenseMatrix& C,                 ///< elasticity matrix
-    const int numeps,                            ///< number of strains
-    Teuchos::RCP<const MAT::Material> material,  ///< the material data
-    Teuchos::ParameterList& params,              ///< element parameter list
-    const int gp                                 ///< Gauss point
+    const CORE::LINALG::SerialDenseVector& strain,  ///< Green-Lagrange strain vector
+    CORE::LINALG::SerialDenseMatrix& stress,        ///< stress vector
+    CORE::LINALG::SerialDenseMatrix& C,             ///< elasticity matrix
+    const int numeps,                               ///< number of strains
+    Teuchos::RCP<const MAT::Material> material,     ///< the material data
+    Teuchos::ParameterList& params,                 ///< element parameter list
+    const int gp                                    ///< Gauss point
 )
 {
   if (material->MaterialType() == INPAR::MAT::m_structporo or
@@ -148,8 +148,8 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
       /*-------------------------- evaluate 2.PK-stresses -------------------*/
       /*------------------ Summenschleife -> += (2.PK stored as vecor) ------*/
 
-      Epetra_SerialDenseVector svector;
-      svector.Size(3);
+      CORE::LINALG::SerialDenseVector svector;
+      svector.size(3);
 
       for (int k = 0; k < 3; k++)
       {
@@ -190,8 +190,8 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& stress,
-    Epetra_SerialDenseMatrix& C, const Epetra_SerialDenseVector& strain,
+void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(CORE::LINALG::SerialDenseMatrix& stress,
+    CORE::LINALG::SerialDenseMatrix& C, const CORE::LINALG::SerialDenseVector& strain,
     Teuchos::ParameterList& params, const int gp)
 {
   // make 3d equivalent of Green-Lagrange strain
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3dPlane(Epetra_SerialDenseMatrix& str
   }
 
   // transform 2nd Piola--Kirchhoff stress back to 2d stress matrix
-  memset(stress.A(), 0, stress.M() * stress.N() * sizeof(double));     // zerofy
+  stress.putScalar(0.0);                                               // zerofy
   stress(0, 0) = stress(3, 3) = pk2(0);                                // S_{11}
   stress(1, 1) = stress(2, 2) = pk2(1);                                // S_{22}
   stress(0, 2) = stress(1, 3) = stress(3, 1) = stress(2, 0) = pk2(3);  // S_{12}
@@ -355,21 +355,21 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress
 | deliver internal/strain energy                                    bborn 08/08|
 *-----------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> material,
-    Teuchos::ParameterList& params, const Epetra_SerialDenseVector& Ev, const int gp)
+    Teuchos::ParameterList& params, const CORE::LINALG::SerialDenseVector& Ev, const int gp)
 {
   // switch material type
   switch (material->MaterialType())
   {
     case INPAR::MAT::m_stvenant:  // linear elastic
     {
-      Epetra_SerialDenseMatrix Cm(Wall1::numnstr_, Wall1::numnstr_);  // elasticity matrix
-      Epetra_SerialDenseMatrix Sm(Wall1::numnstr_, Wall1::numnstr_);  // 2nd PK stress matrix
+      CORE::LINALG::SerialDenseMatrix Cm(Wall1::numnstr_, Wall1::numnstr_);  // elasticity matrix
+      CORE::LINALG::SerialDenseMatrix Sm(Wall1::numnstr_, Wall1::numnstr_);  // 2nd PK stress matrix
       w1_call_matgeononl(Ev, Sm, Cm, Wall1::numnstr_, material, params, gp);
-      Epetra_SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
+      CORE::LINALG::SerialDenseVector Sv(Wall1::numnstr_);  // 2nd PK stress vector
       Sv(0) = Sm(0, 0);
       Sv(1) = Sm(1, 1);
       Sv(2) = Sv(3) = Sm(0, 2);
-      return 0.5 * Sv.Dot(Ev);
+      return 0.5 * Sv.dot(Ev);
     }
     break;
     case INPAR::MAT::m_elasthyper:
@@ -423,7 +423,7 @@ double DRT::ELEMENTS::Wall1::EnergyInternal(Teuchos::RCP<const MAT::Material> ma
 | deliver kinetic energy                                            bborn 08/08|
 *-----------------------------------------------------------------------------*/
 double DRT::ELEMENTS::Wall1::EnergyKinetic(
-    const Epetra_SerialDenseMatrix& mass, const std::vector<double>& vel)
+    const CORE::LINALG::SerialDenseMatrix& mass, const std::vector<double>& vel)
 {
   double kin = 0.0;
   for (int i = 0; i < 2 * NumNode(); ++i)

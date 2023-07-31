@@ -458,84 +458,84 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   // allocate arrays for sums of mean values
   //----------------------------------------------------------------------
   // x1-direction
-  x1sump_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sump_->Reshape(numx2statlocations_, numx1coor_);
+  x1sump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sump_->reshape(numx2statlocations_, numx1coor_);
 
-  x1sumu_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sumu_->Reshape(numx2statlocations_, numx1coor_);
+  x1sumu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sumu_->reshape(numx2statlocations_, numx1coor_);
 
   // the following vectors are only necessary for low-Mach-number flow
-  x1sumrho_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sumrho_->Reshape(numx2statlocations_, numx1coor_);
+  x1sumrho_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sumrho_->reshape(numx2statlocations_, numx1coor_);
 
-  x1sumT_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sumT_->Reshape(numx2statlocations_, numx1coor_);
+  x1sumT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sumT_->reshape(numx2statlocations_, numx1coor_);
 
-  x1sumtauw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x1sumtauw_->Reshape(numx2statlocations_, numx1coor_);
+  x1sumtauw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x1sumtauw_->reshape(numx2statlocations_, numx1coor_);
 
   // x2-direction
   // first-order moments
-  x2sumu_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumu_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumv_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumw_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sump_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sump_->Reshape(numx1statlocations_, numx2coor_);
+  x2sump_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sump_->reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
-  x2sumsqu_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumsqu_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumsqu_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqu_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumsqv_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumsqv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumsqw_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumsqw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqp_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumsqp_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumsqp_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqp_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuv_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumuv_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumuv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumuv_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumuw_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumuw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumuw_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumvw_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumvw_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumvw_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumvw_->reshape(numx1statlocations_, numx2coor_);
 
   // the following vectors are only necessary for low-Mach-number flow
   // first-order moments
-  x2sumrho_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumrho_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumrho_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumrho_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumT_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumT_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumT_->reshape(numx1statlocations_, numx2coor_);
 
   // second-order moments
-  x2sumsqrho_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumsqrho_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumsqrho_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqrho_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumsqT_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumsqT_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumsqT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumsqT_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumrhou_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumrhou_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumrhou_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumrhou_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumuT_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumuT_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumuT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumuT_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumrhov_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumrhov_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumrhov_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumrhov_->reshape(numx1statlocations_, numx2coor_);
 
-  x2sumvT_ = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-  x2sumvT_->Reshape(numx1statlocations_, numx2coor_);
+  x2sumvT_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  x2sumvT_->reshape(numx1statlocations_, numx2coor_);
 
   // set number of samples to zero
   numsamp_ = 0;

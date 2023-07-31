@@ -241,7 +241,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   //      max |     |     |
   //
   //
-  boundingbox_ = Teuchos::rcp(new Epetra_SerialDenseMatrix(2, 3));
+  boundingbox_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(2, 3));
   for (int row = 0; row < 3; ++row)
   {
     (*boundingbox_)(0, row) = +10e+19;
@@ -467,11 +467,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       const int numnp = actele->NumNode();
 
       // access elements knot span
-      std::vector<Epetra_SerialDenseVector> knots(3);
+      std::vector<CORE::LINALG::SerialDenseVector> knots(3);
       (*((*nurbsdis).GetKnotVector())).GetEleKnots(knots, actele->Id());
 
       // aquire weights from nodes
-      Epetra_SerialDenseVector weights(numnp);
+      CORE::LINALG::SerialDenseVector weights(numnp);
 
       for (int inode = 0; inode < numnp; ++inode)
       {
@@ -481,7 +481,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
       }
 
       // get shapefunctions, compute all visualisation point positions
-      Epetra_SerialDenseVector nurbs_shape_funct(numnp);
+      CORE::LINALG::SerialDenseVector nurbs_shape_funct(numnp);
 
       switch (actele->Shape())
       {
@@ -489,7 +489,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
         case DRT::Element::nurbs27:
         {
           // element local point position
-          Epetra_SerialDenseVector uv(3);
+          CORE::LINALG::SerialDenseVector uv(3);
 
           {
             // standard

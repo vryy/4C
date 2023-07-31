@@ -55,8 +55,9 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcMatAndRhsMultiScale(
-    const DRT::Element* const ele, Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    const int k, const int iquad, const double timefacfac, const double rhsfac)
+    const DRT::Element* const ele, CORE::LINALG::SerialDenseMatrix& emat,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const int iquad, const double timefacfac,
+    const double rhsfac)
 {
   // extract multi-scale Newman material
   const Teuchos::RCP<const MAT::ElchMat> elchmat =
@@ -164,8 +165,8 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::CalcM
  *------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype, probdim>::Sysmat(DRT::Element* ele,
-    Epetra_SerialDenseMatrix& emat, Epetra_SerialDenseVector& erhs,
-    Epetra_SerialDenseVector& subgrdiff)
+    CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs,
+    CORE::LINALG::SerialDenseVector& subgrdiff)
 {
   // call base class routine
   mydiffcond::Sysmat(ele, emat, erhs, subgrdiff);

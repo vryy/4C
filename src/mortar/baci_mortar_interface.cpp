@@ -2667,7 +2667,7 @@ void MORTAR::MortarInterface::EvaluateNodalNormals(std::map<int, std::vector<dou
 void MORTAR::MortarInterface::ExportNodalNormals() const
 {
   // create empty data objects
-  std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix>> triad;
+  std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>> triad;
 
   // build info on row map
   for (int i = 0; i < snoderowmapbound_->NumMyElements(); ++i)
@@ -2678,7 +2678,8 @@ void MORTAR::MortarInterface::ExportNodalNormals() const
     auto* mrtrnode = dynamic_cast<MortarNode*>(node);
 
     // fill nodal matrix
-    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = Teuchos::rcp(new Epetra_SerialDenseMatrix(3, 1));
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(3, 1));
     (*loc)(0, 0) = mrtrnode->MoData().n()[0];
     (*loc)(1, 0) = mrtrnode->MoData().n()[1];
     (*loc)(2, 0) = mrtrnode->MoData().n()[2];
@@ -2702,7 +2703,7 @@ void MORTAR::MortarInterface::ExportNodalNormals() const
     auto* mrtrnode = dynamic_cast<MortarNode*>(node);
 
     // extract info
-    Teuchos::RCP<Epetra_SerialDenseMatrix> loc = triad[gid];
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> loc = triad[gid];
     mrtrnode->MoData().n()[0] = (*loc)(0, 0);
     mrtrnode->MoData().n()[1] = (*loc)(1, 0);
     mrtrnode->MoData().n()[2] = (*loc)(2, 0);
@@ -2782,7 +2783,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   enlarge = eps * lmin;
 
   // define dopnormals
-  Epetra_SerialDenseMatrix dopnormals;
+  CORE::LINALG::SerialDenseMatrix dopnormals;
   int kdop = 0;
 
   if (dim_ == 2)
@@ -2790,7 +2791,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
     kdop = 8;
 
     // setup normals for DOP
-    dopnormals.Reshape(4, 3);
+    dopnormals.reshape(4, 3);
     dopnormals(0, 0) = 1;
     dopnormals(0, 1) = 0;
     dopnormals(0, 2) = 0;
@@ -2809,7 +2810,7 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
     kdop = 18;
 
     // setup normals for DOP
-    dopnormals.Reshape(9, 3);
+    dopnormals.reshape(9, 3);
     dopnormals(0, 0) = 1;
     dopnormals(0, 1) = 0;
     dopnormals(0, 2) = 0;
@@ -2845,8 +2846,8 @@ void MORTAR::MortarInterface::EvaluateSearchBruteForce(const double& eps)
   const bool useauxpos = SearchUseAuxPos();
 
   // define slave and master slabs
-  Epetra_SerialDenseMatrix sslabs(kdop / 2, 2);
-  Epetra_SerialDenseMatrix mslabs(kdop / 2, 2);
+  CORE::LINALG::SerialDenseMatrix sslabs(kdop / 2, 2);
+  CORE::LINALG::SerialDenseMatrix mslabs(kdop / 2, 2);
 
   //**********************************************************************
   // perform brute-force search (element-based)
@@ -3355,7 +3356,7 @@ void MORTAR::MortarInterface::AssembleLM(Epetra_Vector& zglobal)
     int dim = mrtrnode->NumDof();
     double* lm = mrtrnode->MoData().lm();
 
-    Epetra_SerialDenseVector lmnode(dim);
+    CORE::LINALG::SerialDenseVector lmnode(dim);
     std::vector<int> lmdof(dim);
     std::vector<int> lmowner(dim);
 
@@ -3501,7 +3502,7 @@ void MORTAR::MortarInterface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
       int rowsize = mrtrnode->NumDof();
       int colsize = (int)mmap.size() * rowsize;
 
-      Epetra_SerialDenseMatrix Mnode(rowsize, colsize);
+      CORE::LINALG::SerialDenseMatrix Mnode(rowsize, colsize);
       std::vector<int> lmrow(rowsize);
       std::vector<int> lmcol(colsize);
       std::vector<int> lmrowowner(rowsize);

@@ -54,7 +54,7 @@ namespace
     double h2 = (*s8->GetThickness())[j] / 2.0;
 
     // get director
-    const Epetra_SerialDenseMatrix* a3ref = s8->GetDirectors();
+    const CORE::LINALG::SerialDenseMatrix* a3ref = s8->GetDirectors();
     dir(0, 0) = (*a3ref)(0, j) * h2;
     dir(0, 1) = (*a3ref)(1, j) * h2;
     dir(0, 2) = (*a3ref)(2, j) * h2;

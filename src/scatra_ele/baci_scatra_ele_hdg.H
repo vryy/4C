@@ -272,15 +272,16 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-          Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-          Epetra_SerialDenseVector& elevec3) override;
+          LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //@}
 
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1) override
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1) override
       {
         dserror("Volume Neumann not implemented");
         return 0;
@@ -296,34 +297,35 @@ namespace DRT
       // element matrices are calculated on the fly
       //! @name element matrices
       //!@{
-      Epetra_SerialDenseMatrix Amat_;    //!< concentrations - concentrations
-      Epetra_SerialDenseMatrix Bmat_;    //!< concentrations - concentrations gradients
-      Epetra_SerialDenseMatrix Cmat_;    //!< concentration - trace
-      Epetra_SerialDenseMatrix Dmat_;    //!< concentrations gradients - concentrations gradients
-      Epetra_SerialDenseMatrix Emat_;    //!< trace - concentrations gradients
-      Epetra_SerialDenseMatrix Gmat_;    //!< concentrations gradients
-      Epetra_SerialDenseMatrix Hmat_;    //!< trace -trace
-      Epetra_SerialDenseMatrix Mmat_;    //!< mass matrix (concentrations - concentrations)
-      Epetra_SerialDenseMatrix EmatT_;   //!< trace - concentrations gradients (E^T)
-      Epetra_SerialDenseMatrix BmatMT_;  //!< concentrations gradients- concentrations (-B^T)
+      CORE::LINALG::SerialDenseMatrix Amat_;  //!< concentrations - concentrations
+      CORE::LINALG::SerialDenseMatrix Bmat_;  //!< concentrations - concentrations gradients
+      CORE::LINALG::SerialDenseMatrix Cmat_;  //!< concentration - trace
+      CORE::LINALG::SerialDenseMatrix
+          Dmat_;  //!< concentrations gradients - concentrations gradients
+      CORE::LINALG::SerialDenseMatrix Emat_;    //!< trace - concentrations gradients
+      CORE::LINALG::SerialDenseMatrix Gmat_;    //!< concentrations gradients
+      CORE::LINALG::SerialDenseMatrix Hmat_;    //!< trace -trace
+      CORE::LINALG::SerialDenseMatrix Mmat_;    //!< mass matrix (concentrations - concentrations)
+      CORE::LINALG::SerialDenseMatrix EmatT_;   //!< trace - concentrations gradients (E^T)
+      CORE::LINALG::SerialDenseMatrix BmatMT_;  //!< concentrations gradients- concentrations (-B^T)
 
-      Epetra_SerialDenseMatrix Kmat_;      //!< condensed matrix
-      Epetra_SerialDenseMatrix invAMmat_;  //!< inverse of [A + (1/(dt*theta))*M]
+      CORE::LINALG::SerialDenseMatrix Kmat_;      //!< condensed matrix
+      CORE::LINALG::SerialDenseMatrix invAMmat_;  //!< inverse of [A + (1/(dt*theta))*M]
       //!@}
 
       //!@{ auxiliary stuff to store
-      Epetra_SerialDenseMatrix BTAMmat_;
-      Epetra_SerialDenseMatrix invCondmat_;
-      Epetra_SerialDenseMatrix Xmat_;
-      Epetra_SerialDenseVector Ivecnp_;
-      Epetra_SerialDenseVector Ivecn_;
-      Epetra_SerialDenseMatrix Imatnpderiv_;
+      CORE::LINALG::SerialDenseMatrix BTAMmat_;
+      CORE::LINALG::SerialDenseMatrix invCondmat_;
+      CORE::LINALG::SerialDenseMatrix Xmat_;
+      CORE::LINALG::SerialDenseVector Ivecnp_;
+      CORE::LINALG::SerialDenseVector Ivecn_;
+      CORE::LINALG::SerialDenseMatrix Imatnpderiv_;
       //!@}
 
       //! diffusion tensor
-      Epetra_SerialDenseMatrix diff_;
+      CORE::LINALG::SerialDenseMatrix diff_;
       //! inverse diffusion tensor
-      std::vector<Epetra_SerialDenseMatrix> invdiff_;
+      std::vector<CORE::LINALG::SerialDenseMatrix> invdiff_;
       //! main diffusivity
       double diff1_;
 
@@ -548,9 +550,10 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -569,8 +572,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL) override;
 
       //@}
 
@@ -883,9 +886,10 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-          Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+          std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+          CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -904,8 +908,8 @@ namespace DRT
       \return 0 if successful, negative otherwise
       */
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-          Epetra_SerialDenseMatrix* elemat1 = NULL) override;
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL) override;
 
       /*!
       \brief return the master parent ScaTraHDG element

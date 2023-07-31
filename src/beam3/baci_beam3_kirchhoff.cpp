@@ -1115,10 +1115,11 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   const unsigned int numdof = ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS;
 
   // safety check
-  if ((unsigned int)Ivar.M() != 2 * ndim or (unsigned int) Ivar.N() != numdof)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Ivar.M(), Ivar.N());
+  if ((unsigned int)Ivar.numRows() != 2 * ndim or (unsigned int) Ivar.numCols() != numdof)
+    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Ivar.numRows(),
+        Ivar.numCols());
 
-  Ivar.Zero();
+  Ivar.putScalar(0.0);
 
   // *******************************************************************************
   // concerning interpolation of variation of CENTERLINE POSITION \vardelta r:
@@ -1133,8 +1134,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
 
   // this part is associated with the variation of the centerline position
   // (first three rows of Ivar)
-  for (unsigned int irow = 0; irow < N.M(); ++irow)
-    for (unsigned int icol = 0; icol < N.N(); ++icol) Ivar(irow, icol) += N(irow, icol);
+  for (unsigned int irow = 0; irow < N.numRows(); ++irow)
+    for (unsigned int icol = 0; icol < N.numCols(); ++icol) Ivar(irow, icol) += N(irow, icol);
 
   // *******************************************************************************
   // concerning interpolation of variation of CENTERLINE ORIENTATION \vardelta \theta:
@@ -1247,8 +1248,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   // (expressed as rotation vector theta)
   // (rows 4-6 of Iinc)
   // note: we need the transposed of v_theta_bar (rows <-> cols)
-  for (unsigned int irow = 0; irow < v_theta_bar.N(); ++irow)
-    for (unsigned int icol = 0; icol < v_theta_bar.M(); ++icol)
+  for (unsigned int irow = 0; irow < v_theta_bar.numCols(); ++irow)
+    for (unsigned int icol = 0; icol < v_theta_bar.numRows(); ++icol)
       Ivar(ndim + irow, icol) += v_theta_bar(icol, irow);
 }
 
@@ -1270,11 +1271,11 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
   const unsigned int numdof = ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS;
 
   // safety check
-  if ((unsigned int)stiffmat.M() != numdof or (unsigned int) stiffmat.N() != numdof)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", numdof, numdof, stiffmat.M(),
-        stiffmat.N());
+  if ((unsigned int)stiffmat.numRows() != numdof or (unsigned int) stiffmat.numCols() != numdof)
+    dserror("size mismatch! expected %dx%d matrix and got %dx%d", numdof, numdof,
+        stiffmat.numRows(), stiffmat.numCols());
 
-  stiffmat.Zero();
+  stiffmat.putScalar(0.0);
 
   // create an auxiliary fixed size matrix and set as a view to original data in stiffmat
   CORE::LINALG::Matrix<numdof, numdof, double> stiffmat_fixedsize(stiffmat, true);
@@ -1408,10 +1409,11 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   const unsigned int numdof = ndim * vpernode * nnodecl + BEAM3K_COLLOCATION_POINTS;
 
   // safety check
-  if ((unsigned int)Iinc.M() != 2 * ndim or (unsigned int) Iinc.N() != numdof)
-    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Iinc.M(), Iinc.N());
+  if ((unsigned int)Iinc.numRows() != 2 * ndim or (unsigned int) Iinc.numCols() != numdof)
+    dserror("size mismatch! expected %dx%d matrix and got %dx%d", 6, numdof, Iinc.numRows(),
+        Iinc.numCols());
 
-  Iinc.Zero();
+  Iinc.putScalar(0.0);
 
 
   // *******************************************************************************
@@ -1427,8 +1429,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
 
   // this part is associated with the increment of the centerline position
   // (first three rows of Iinc)
-  for (unsigned int irow = 0; irow < N.M(); ++irow)
-    for (unsigned int icol = 0; icol < N.N(); ++icol) Iinc(irow, icol) += N(irow, icol);
+  for (unsigned int irow = 0; irow < N.numRows(); ++irow)
+    for (unsigned int icol = 0; icol < N.numCols(); ++icol) Iinc(irow, icol) += N(irow, icol);
 
 
   // *******************************************************************************
@@ -1581,8 +1583,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   // this part is associated with the increment of the centerline orientation
   // (expressed as rotation vector theta)
   // (rows 4-6 of Iinc)
-  for (unsigned int irow = 0; irow < lin_theta_bar.M(); ++irow)
-    for (unsigned int icol = 0; icol < lin_theta_bar.N(); ++icol)
+  for (unsigned int irow = 0; irow < lin_theta_bar.numRows(); ++irow)
+    for (unsigned int icol = 0; icol < lin_theta_bar.numCols(); ++icol)
       Iinc(ndim + irow, icol) += lin_theta_bar(irow, icol);
 }
 

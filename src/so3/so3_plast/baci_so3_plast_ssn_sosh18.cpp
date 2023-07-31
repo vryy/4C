@@ -209,21 +209,22 @@ void DRT::ELEMENTS::So_sh18Plast::SyncEAS()
   {
     eastype_ = soh18p_eassosh18;
     neas_ = num_eas;
-    So3_Plast<DRT::Element::hex18>::KaaInv_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseMatrix(View, So_sh18::KaaInv_.A(), num_eas, num_eas, num_eas));
+    So3_Plast<DRT::Element::hex18>::KaaInv_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
+        Teuchos::View, So_sh18::KaaInv_.A(), num_eas, num_eas, num_eas));
     So3_Plast<DRT::Element::hex18>::Kad_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(
-        View, So_sh18::Kad_.A(), num_eas, num_eas, numdofperelement_));
-    So3_Plast<DRT::Element::hex18>::feas_ =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(View, So_sh18::feas_.A(), num_eas));
-    So3_Plast<DRT::Element::hex18>::alpha_eas_ =
-        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(View, So_sh18::alpha_eas_.A(), num_eas));
-    So3_Plast<DRT::Element::hex18>::alpha_eas_last_timestep_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(View, So_sh18::alpha_eas_last_timestep_.A(), num_eas));
+        Teuchos::View, So_sh18::Kad_.A(), num_eas, num_eas, numdofperelement_));
+    So3_Plast<DRT::Element::hex18>::feas_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::feas_.A(), num_eas));
+    So3_Plast<DRT::Element::hex18>::alpha_eas_ = Teuchos::rcp(
+        new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::alpha_eas_.A(), num_eas));
+    So3_Plast<DRT::Element::hex18>::alpha_eas_last_timestep_ =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(
+            Teuchos::View, So_sh18::alpha_eas_last_timestep_.A(), num_eas));
     So3_Plast<DRT::Element::hex18>::alpha_eas_delta_over_last_timestep_ =
         Teuchos::rcp(new CORE::LINALG::SerialDenseVector(
-            View, So_sh18::alpha_eas_delta_over_last_timestep_.A(), num_eas));
+            Teuchos::View, So_sh18::alpha_eas_delta_over_last_timestep_.A(), num_eas));
     So3_Plast<DRT::Element::hex18>::alpha_eas_inc_ = Teuchos::rcp(
-        new CORE::LINALG::SerialDenseVector(View, So_sh18::alpha_eas_inc_.A(), num_eas));
+        new CORE::LINALG::SerialDenseVector(Teuchos::View, So_sh18::alpha_eas_inc_.A(), num_eas));
     Kba_ = Teuchos::rcp(new std::vector<CORE::LINALG::SerialDenseMatrix>(
         numgpt_, CORE::LINALG::SerialDenseMatrix(plspintype_, num_eas, true)));
   }
@@ -299,8 +300,8 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
   std::vector<CORE::LINALG::Matrix<6, num_eas>> M_gp(num_eas);
   CORE::LINALG::Matrix<3, 1> G3_0_contra;
   CORE::LINALG::Matrix<6, num_eas> M;
-  Epetra_SerialDenseMatrix M_ep(View, M.A(), 6, 6, num_eas);
-  Epetra_SerialDenseMatrix Kda(numdofperelement_, num_eas);
+  CORE::LINALG::SerialDenseMatrix M_ep(Teuchos::View, M.A(), 6, 6, num_eas);
+  CORE::LINALG::SerialDenseMatrix Kda(numdofperelement_, num_eas);
 
   // prepare EAS***************************************
   if (eas_)
@@ -540,7 +541,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
         So_sh18::Kad_.MultiplyTN(detJ_w, M, cb, 1.);
         So_sh18::feas_.MultiplyTN(detJ_w, M, pk2, 1.);
         CORE::LINALG::DENSEFUNCTIONS::multiplyTN<double, numdofperelement_, numstr_, num_eas>(
-            1.0, Kda.A(), detJ_w, cb.A(), M.A());
+            1.0, Kda.values(), detJ_w, cb.A(), M.A());
       }
       // EAS technology: integrate matrices --------------------------------- EAS
     }
@@ -606,7 +607,7 @@ void DRT::ELEMENTS::So_sh18Plast::nln_stiffmass(std::vector<double>& disp,  // c
 
     CORE::LINALG::Matrix<NUMDOF_SOH18, num_eas> KdaKaa;
     CORE::LINALG::DENSEFUNCTIONS::multiply<double, numdofperelement_, num_eas, num_eas>(
-        0., KdaKaa.A(), 1., Kda.A(), So_sh18::KaaInv_.A());
+        0., KdaKaa.A(), 1., Kda.values(), So_sh18::KaaInv_.A());
     if (stiffmatrix) stiffmatrix->Multiply(-1., KdaKaa, So_sh18::Kad_, 1.);
     if (force) force->Multiply(-1., KdaKaa, So_sh18::feas_, 1.);
   }

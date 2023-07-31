@@ -321,11 +321,11 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
 
   // dummy variables
-  Epetra_SerialDenseMatrix dummyMat;
-  Epetra_SerialDenseVector dummyVec;
+  CORE::LINALG::SerialDenseMatrix dummyMat;
+  CORE::LINALG::SerialDenseVector dummyVec;
 
   // initialize elemental local increments
-  Epetra_SerialDenseVector elemintinc;
+  CORE::LINALG::SerialDenseVector elemintinc;
 
   // initialize increments of local variables
   Teuchos::RCP<Epetra_Vector> intvelincnp = CORE::LINALG::CreateVector(*intdofrowmap, true);
@@ -349,7 +349,7 @@ void FLD::TimIntHDGWeakComp::IterUpdate(const Teuchos::RCP<const Epetra_Vector> 
       std::vector<int> localDofs = discret_->Dof(1, ele);
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      intvelincnp->ReplaceMyValues(localDofs.size(), elemintinc.A(), localDofs.data());
+      intvelincnp->ReplaceMyValues(localDofs.size(), elemintinc.values(), localDofs.data());
     }
   }
 
@@ -409,7 +409,7 @@ void FLD::TimIntHDGWeakComp::UpdateGridv()
   }
   else if (timealgoset_ == INPAR::FLUID::timeint_stationary)
   {
-    gridv_->Scale(0.0);
+    gridv_->PutScalar(0.0);
   }
 }
 
@@ -423,8 +423,8 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
 {
   const Epetra_Map* dofrowmap = discret_->DofRowMap();
   const Epetra_Map* intdofrowmap = discret_->DofRowMap(1);
-  Epetra_SerialDenseVector elevec1, elevec2, elevec3;
-  Epetra_SerialDenseMatrix elemat1, elemat2;
+  CORE::LINALG::SerialDenseVector elevec1, elevec2, elevec3;
+  CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
   Teuchos::ParameterList initParams;
   initParams.set<int>("action", FLD::project_fluid_field);
   initParams.set("startfuncno", startfuncno);
@@ -438,9 +438,9 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
     DRT::Element* ele = discret_->lColElement(el);
 
     ele->LocationVector(*discret_, la, false);
-    if (static_cast<std::size_t>(elevec1.M()) != la[0].lm_.size())
-      elevec1.Shape(la[0].lm_.size(), 1);
-    if (elevec2.M() != discret_->NumDof(1, ele)) elevec2.Shape(discret_->NumDof(1, ele), 1);
+    if (static_cast<std::size_t>(elevec1.numRows()) != la[0].lm_.size())
+      elevec1.size(la[0].lm_.size());
+    if (elevec2.numRows() != discret_->NumDof(1, ele)) elevec2.size(discret_->NumDof(1, ele));
 
     ele->Evaluate(initParams, *discret_, la[0].lm_, elemat1, elemat2, elevec1, elevec2, elevec3);
 
@@ -460,12 +460,12 @@ void FLD::TimIntHDGWeakComp::SetInitialFlowField(
     if (ele->Owner() == discret_->Comm().MyPID())
     {
       std::vector<int> localDofs = discret_->Dof(1, ele);
-      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.M()), "Internal error");
+      dsassert(localDofs.size() == static_cast<std::size_t>(elevec2.numRows()), "Internal error");
       for (unsigned int i = 0; i < localDofs.size(); ++i)
         localDofs[i] = intdofrowmap->LID(localDofs[i]);
-      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
-      intveln_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
-      intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.A(), localDofs.data());
+      intvelnp_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
+      intveln_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
+      intvelnm_->ReplaceMyValues(localDofs.size(), elevec2.values(), localDofs.data());
     }
   }
 
@@ -527,8 +527,8 @@ Teuchos::RCP<std::vector<double>> FLD::TimIntHDGWeakComp::EvaluateErrorComparedT
       // (3: analytical mixed variable for L2 norm)
       // (4: analytical density for L2 norm)
       // (5: analytical momentum for L2 norm)
-      Teuchos::RCP<Epetra_SerialDenseVector> errors =
-          Teuchos::rcp(new Epetra_SerialDenseVector(3 + 3));
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> errors =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector(3 + 3));
 
       // call loop over elements (assemble nothing)
       discret_->EvaluateScalars(eleparams, errors);
@@ -667,9 +667,9 @@ namespace
     dis.SetState(1, "intvelnp", interiorValues);
     dis.SetState(0, "velnp", traceValues);
     std::vector<int> dummy;
-    Epetra_SerialDenseMatrix dummyMat;
-    Epetra_SerialDenseVector dummyVec;
-    Epetra_SerialDenseVector interpolVec;
+    CORE::LINALG::SerialDenseMatrix dummyMat;
+    CORE::LINALG::SerialDenseVector dummyVec;
+    CORE::LINALG::SerialDenseVector interpolVec;
     std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
     mixedvar->PutScalar(0.);
     density->PutScalar(0.);
@@ -678,7 +678,8 @@ namespace
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
       DRT::Element* ele = dis.lColElement(el);
-      if (interpolVec.M() == 0) interpolVec.Resize(ele->NumNode() * (msd + 1 + ndim + 1 + ndim));
+      if (interpolVec.numRows() == 0)
+        interpolVec.resize(ele->NumNode() * (msd + 1 + ndim + 1 + ndim));
 
       ele->Evaluate(params, dis, dummy, dummyMat, dummyMat, interpolVec, dummyVec, dummyVec);
 

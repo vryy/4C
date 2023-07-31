@@ -403,8 +403,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
           Teuchos::rcp_dynamic_cast<DRT::NURBS::NurbsDiscretization>(masterdis);
 
       Teuchos::RCP<DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
-      std::vector<Epetra_SerialDenseVector> parentknots(dim);
-      std::vector<Epetra_SerialDenseVector> mortarknots(dim - 1);
+      std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
+      std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
       Teuchos::RCP<DRT::FaceElement> faceele =
           Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
@@ -440,8 +440,8 @@ void ADAPTER::CouplingNonLinMortar::AddMortarElements(Teuchos::RCP<DRT::Discreti
             Teuchos::rcp_dynamic_cast<DRT::NURBS::NurbsDiscretization>(slavedis);
 
         Teuchos::RCP<DRT::NURBS::Knotvector> knots = (*nurbsdis).GetKnotVector();
-        std::vector<Epetra_SerialDenseVector> parentknots(dim);
-        std::vector<Epetra_SerialDenseVector> mortarknots(dim - 1);
+        std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
+        std::vector<CORE::LINALG::SerialDenseVector> mortarknots(dim - 1);
 
         Teuchos::RCP<DRT::FaceElement> faceele =
             Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);

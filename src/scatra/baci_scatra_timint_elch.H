@@ -124,14 +124,14 @@ namespace SCATRA
     //! \param condid      ID of condition to be evaluated
     //! \param condstring  name of condition to be evaluated
     //! \return            evaluated scalars
-    Teuchos::RCP<Epetra_SerialDenseVector> EvaluateSingleElectrodeInfo(
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> EvaluateSingleElectrodeInfo(
         int condid, const std::string& condstring);
 
     //! \brief evaluate status information on single point electrode
     //!
     //! \param condition   condition to be evaluated
     //! \return            evaluated scalars
-    Teuchos::RCP<Epetra_SerialDenseVector> EvaluateSingleElectrodeInfoPoint(
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> EvaluateSingleElectrodeInfoPoint(
         Teuchos::RCP<DRT::Condition> condition);
 
     //! \brief post-process status information on single electrode
@@ -145,9 +145,9 @@ namespace SCATRA
     //! \param electrodeint   physical dimensions of the electrode region (out)
     //! \param electrodepot   electrode potential on electrode side (out)
     //! \param meanoverpot    mean overpotential (out)
-    void PostProcessSingleElectrodeInfo(Epetra_SerialDenseVector& scalars, int id, bool print,
-        double& currentsum, double& currtangent, double& currresidual, double& electrodeint,
-        double& electrodepot, double& meanoverpot);
+    void PostProcessSingleElectrodeInfo(CORE::LINALG::SerialDenseVector& scalars, int id,
+        bool print, double& currentsum, double& currtangent, double& currresidual,
+        double& electrodeint, double& electrodepot, double& meanoverpot);
 
     //! output electrode interior status information to screen and files
     void OutputElectrodeInfoInterior();
@@ -283,7 +283,7 @@ namespace SCATRA
     //! \param specresist  flag for computation of specific electrolyte resistance
     //! \return            specific resistance
     double ComputeConductivity(
-        Epetra_SerialDenseVector& sigma, bool effCond = false, bool specresist = false);
+        CORE::LINALG::SerialDenseVector& sigma, bool effCond = false, bool specresist = false);
 
     //! apply galvanostatic control (update electrode potential) (ELCH)
     bool ApplyGalvanostaticControl();

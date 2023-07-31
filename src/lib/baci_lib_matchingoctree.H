@@ -13,7 +13,7 @@
 #define BACI_LIB_MATCHINGOCTREE_H
 
 #include <Teuchos_RCP.hpp>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensematrix.H"
 #include <vector>
 #include "baci_utils_exceptions.H"
 
@@ -127,7 +127,7 @@ namespace DRT
 
       //! create an octree element
       virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
-          Epetra_SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
       //@}
 
@@ -292,8 +292,8 @@ namespace DRT
       virtual int CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o);
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(
-          std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer);
+      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
 
     };  // class NodeMatchingOctree
 
@@ -332,8 +332,8 @@ namespace DRT
       virtual int CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o);
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(
-          std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer);
+      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
 
      private:
       //! \brief Map that stores id and RCP to flying nodes
@@ -389,8 +389,8 @@ namespace DRT
 
       \return  int  */
       virtual int Init(const DRT::Discretization& actdis, std::vector<int>& nodeids,
-          const Epetra_SerialDenseMatrix& boundingbox, const int layer, const int maxnodeperleaf,
-          const double tol);
+          const CORE::LINALG::SerialDenseMatrix& boundingbox, const int layer,
+          const int maxnodeperleaf, const double tol);
 
       //! setup this class
       virtual int Setup();
@@ -472,13 +472,13 @@ namespace DRT
 
       //! create an octree element
       virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
-          Epetra_SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) = 0;
 
      protected:
       //! all nodes belong to this discretisation
       const DRT::Discretization* discret_;
       //! the bounding box of the element
-      Epetra_SerialDenseMatrix boundingbox_;
+      CORE::LINALG::SerialDenseMatrix boundingbox_;
       //! the nodeids (needs to be a copy !)
       std::vector<int> nodeids_;
       //! \brief depth of the octree element in the tree
@@ -543,8 +543,8 @@ namespace DRT
       virtual void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord);
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(
-          std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer);
+      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
 
     };  // OctreeNodalElement
 
@@ -564,8 +564,8 @@ namespace DRT
       virtual void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord);
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(
-          std::vector<int>& nodeidstoadd, Epetra_SerialDenseMatrix& boundingboxtoadd, int layer);
+      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
 
     };  // OctreeNodalElement
 

@@ -289,8 +289,8 @@ std::vector<int> CORE::GEO::CUT::KERNEL::CheckConvexity(const std::vector<Point*
                                                                                           Sudhakar
 01/13
 *------------------------------------------------------------------------------------------------------*/
-/*std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist, bool
-DeleteInlinePts )
+/*std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist,
+bool DeleteInlinePts )
 {
   std::vector<double> eqn_plane(4);
   if( ptlist.size() == 3 )
@@ -436,7 +436,7 @@ vertices ---> so very general and robust
 std::vector<double> CORE::GEO::CUT::KERNEL::EqnPlaneOfPolygon(
     const std::vector<std::vector<double>>& vertices)
 {
-  TEUCHOS_FUNC_TIME_MONITOR("GEO::CUT::KERNEL::EqnPlaneOfPolygon");
+  TEUCHOS_FUNC_TIME_MONITOR("CORE::GEO::CUT::KERNEL::EqnPlaneOfPolygon");
 
   // TODO: improvement by a factor of 4
 
@@ -665,7 +665,7 @@ void CORE::GEO::CUT::KERNEL::FindProjectionPlane(
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::KERNEL::DeleteInlinePts(std::vector<Point*>& poly)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::DeleteInlinePts" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::DeleteInlinePts" );
 
 
   bool anyInLine = false;
@@ -746,7 +746,7 @@ std::vector<CORE::GEO::CUT::Point*> CORE::GEO::CUT::KERNEL::Get3NoncollinearPts(
 double CORE::GEO::CUT::KERNEL::getAreaTri(
     const std::vector<Point*>& poly, CORE::LINALG::Matrix<3, 1>* normalvec)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaTri" );
 
   if (poly.size() != 3) dserror("expecting a triangle");
 
@@ -763,7 +763,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(
 double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1_ptr,
     const double* p2_ptr, CORE::LINALG::Matrix<3, 1>* normalvec)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaTri" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaTri" );
 
   // create planes consisting of 3 nodes each
   const CORE::LINALG::Matrix<3, 1> p0(p0_ptr, true);
@@ -847,7 +847,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
  *----------------------------------------------------------------------------*/
 double CORE::GEO::CUT::KERNEL::getAreaConvexQuad(std::vector<Point*>& poly)
 {
-  // TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT::KERNEL::getAreaConvexQuad" );
+  // TEUCHOS_FUNC_TIME_MONITOR( "CORE::GEO::CUT::KERNEL::getAreaConvexQuad" );
 
   if (poly.size() != 4) dserror("expecting a quad");
 

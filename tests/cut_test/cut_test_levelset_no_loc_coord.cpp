@@ -32,9 +32,9 @@
 #define PRECISION24
 // #define GMSH_OUTPUT_LSNOLOC_CUT_TEST
 
-Epetra_SerialDenseMatrix GetLocalHex8Coords()
+CORE::LINALG::SerialDenseMatrix GetLocalHex8Coords()
 {
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -73,7 +73,7 @@ Epetra_SerialDenseMatrix GetLocalHex8Coords()
 
 
 CORE::GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
-    std::vector<double> lsvs, Epetra_SerialDenseMatrix xyze, std::string testname)
+    std::vector<double> lsvs, CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
   CORE::GEO::CUT::CombIntersection ci(-1);
@@ -102,7 +102,7 @@ CORE::GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
 }
 
 CORE::GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids,
-    std::vector<double> lsvs, Epetra_SerialDenseMatrix xyze, std::string testname)
+    std::vector<double> lsvs, CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
   CORE::GEO::CUT::CombIntersection ci(-1);
@@ -132,7 +132,7 @@ CORE::GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids
 
 
 void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<double> lsvs,
-    Epetra_SerialDenseMatrix xyze, std::string testname)
+    CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
   CORE::GEO::CUT::CombIntersection ci(-1);
@@ -236,7 +236,7 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 
 
 void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vector<double> lsvs,
-    Epetra_SerialDenseMatrix xyze, std::string testname)
+    CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   CORE::GEO::CUT::CombIntersection ci = Cut_With_Tesselation(nids, lsvs, xyze, testname);
 
@@ -324,8 +324,8 @@ void test_ls_hex8_magnus1()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
-  // Epetra_SerialDenseMatrix xyze_local( 3, 8 );
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  // CORE::LINALG::SerialDenseMatrix xyze_local( 3, 8 );
 
 
   for (int i = 0; i < 8; ++i)
@@ -441,7 +441,7 @@ void test_ls_hex8_magnus2()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -553,7 +553,7 @@ void test_ls_hex8_magnus3()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -664,7 +664,7 @@ void test_ls_hex8_magnus4()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -776,7 +776,7 @@ void test_ls_hex8_magnus5()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -889,8 +889,8 @@ void test_ls_hex8_magnus12()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
-  Epetra_SerialDenseMatrix xyze_local(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze_local(3, 8);
 
 
   for (int i = 0; i < 8; ++i)
@@ -1029,7 +1029,7 @@ void test_ls_hex8_magnus12()
   double delh = 0.05;
 
   // Stupid-projection to "local coordinates".
-  Epetra_SerialDenseMatrix xyze_scaled(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze_scaled(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1056,7 +1056,7 @@ void test_ls_hex8_magnus6()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1164,7 +1164,7 @@ void test_ls_hex8_tes_dd_simple()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1238,7 +1238,7 @@ void test_ls_mesh_hex8_simple()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
 
   CORE::GEO::CUT::MeshIntersection intersection;
@@ -1247,7 +1247,7 @@ void test_ls_mesh_hex8_simple()
 
   int sidecount = 0;
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 2) = -1.0;
     tri3_xyze(1, 2) = 0.0;
@@ -1344,7 +1344,7 @@ void test_ls_hex8_experiment_magnus()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1468,7 +1468,7 @@ void test_ls_hex8_magnus7()
   lsvs[6] = -8.6e-09;
   lsvs[7] = -8.6e-09;
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   nids.clear();
   hex8_xyze(0, 0) = -0.34;
@@ -1525,7 +1525,7 @@ void test_ls_hex8_magnus7()
 //  // simple hex8 element
 //  std::vector<int> nids( 8 );
 //  std::vector<double> lsvs( 8 );
-//  Epetra_SerialDenseMatrix xyze( 3, 8 );
+//  CORE::LINALG::SerialDenseMatrix xyze( 3, 8 );
 //
 //  for ( int i=0; i<8; ++i )
 //  {

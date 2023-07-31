@@ -313,9 +313,10 @@ int MORTAR::MortarElement::NumDofPerNode(const DRT::Node& node) const
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
 int MORTAR::MortarElement::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   dserror("MORTAR::MortarElement::Evaluate not implemented!");
   return -1;
@@ -603,7 +604,8 @@ int MORTAR::MortarElement::GetLocalNodeId(int nid) const
 /*----------------------------------------------------------------------*
  |  Build element normal at node                              popp 12/07|
  *----------------------------------------------------------------------*/
-void MORTAR::MortarElement::BuildNormalAtNode(int nid, int& i, Epetra_SerialDenseMatrix& elens)
+void MORTAR::MortarElement::BuildNormalAtNode(
+    int nid, int& i, CORE::LINALG::SerialDenseMatrix& elens)
 {
   // find this node in my list of nodes and get local numbering
   int lid = GetLocalNodeId(nid);
@@ -622,7 +624,7 @@ void MORTAR::MortarElement::BuildNormalAtNode(int nid, int& i, Epetra_SerialDens
  |  Compute element normal at loc. coord. xi                  popp 09/08|
  *----------------------------------------------------------------------*/
 void MORTAR::MortarElement::ComputeNormalAtXi(
-    const double* xi, int& i, Epetra_SerialDenseMatrix& elens)
+    const double* xi, int& i, CORE::LINALG::SerialDenseMatrix& elens)
 {
   // empty local basis vectors
   double gxi[3];
@@ -834,7 +836,7 @@ void MORTAR::MortarElement::GetNodalCoords(CORE::LINALG::SerialDenseMatrix& coor
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
   if (!mynodes) dserror("GetNodalCoords: Null pointer!");
-  if (coord.M() != 3 || coord.N() != nnodes) dserror("GetNodalCoords: Dimensions!");
+  if (coord.numRows() != 3 || coord.numCols() != nnodes) dserror("GetNodalCoords: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -856,7 +858,7 @@ void MORTAR::MortarElement::GetNodalCoordsOld(CORE::LINALG::SerialDenseMatrix& c
   const int nnodes = NumPoint();
   DRT::Node** mynodes = Points();
   if (!mynodes) dserror("GetNodalCoordsOld: Null pointer!");
-  if (coord.M() != 3 || coord.N() != nnodes) dserror("GetNodalCoordsOld: Dimensions!");
+  if (coord.numRows() != 3 || coord.numCols() != nnodes) dserror("GetNodalCoordsOld: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {
@@ -879,7 +881,8 @@ void MORTAR::MortarElement::GetNodalLagMult(CORE::LINALG::SerialDenseMatrix& lag
   int nnodes = NumNode();
   DRT::Node** mynodes = Nodes();
   if (!mynodes) dserror("GetNodalLagMult: Null pointer!");
-  if (lagmult.M() != 3 || lagmult.N() != nnodes) dserror("GetNodalLagMult: Dimensions!");
+  if (lagmult.numRows() != 3 || lagmult.numCols() != nnodes)
+    dserror("GetNodalLagMult: Dimensions!");
 
   for (int i = 0; i < nnodes; ++i)
   {

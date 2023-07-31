@@ -15,7 +15,7 @@
 
 CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh)
 {
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 2;
   xyze(1, 0) = 0;
@@ -39,7 +39,7 @@ CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh)
 CORE::GEO::CUT::Side* create_quad4(
     CORE::GEO::CUT::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
 {
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = x - dx;
   xyze(1, 0) = -0.5;
@@ -88,7 +88,7 @@ void test_tet4_simple()
   options.Init_for_Cuttests();
   CORE::GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0;
   xyze(1, 0) = 0;
@@ -122,7 +122,7 @@ void test_pyramid5_simple()
   options.Init_for_Cuttests();
   CORE::GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze(3, 5);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 5);
 
   xyze(0, 0) = 0;
   xyze(1, 0) = 0;
@@ -160,7 +160,7 @@ void test_wedge6_simple()
   options.Init_for_Cuttests();
   CORE::GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze(3, 6);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 6);
 
   xyze(0, 0) = 0;
   xyze(1, 0) = 0;
@@ -235,7 +235,7 @@ void test_hex8_tet4()
   w.CreateHex8();
   w.CreateTet4Sides();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   // add second cut to be able to find nodal positions
 
@@ -278,7 +278,7 @@ void test_hex8_touch()
   w.CreateHex8();
   w.CreateHex8Sides(1, 0, 0);
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   // add second cut to be able to find nodal positions
 
@@ -320,7 +320,7 @@ void test_hex8_schraeg()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0;
@@ -350,7 +350,7 @@ void test_hex8_quad4_woelbung()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = -0.5;
   xyze(1, 0) = -0.5;
@@ -381,7 +381,7 @@ void test_hex8_tet4_touch()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 2;
   xyze(1, 0) = 0;
@@ -431,7 +431,7 @@ void test_hex8_tet4_touch2()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -497,7 +497,7 @@ void test_hex8_bad1()
   options.Init_for_Cuttests();
   CORE::GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 0.7291666666666666;
   xyze(1, 0) = 0.5208333333332368;
@@ -564,7 +564,7 @@ void test_hex8_bad2()
   options.Init_for_Cuttests();
   CORE::GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 1.05556;
   xyze(1, 0) = 0.444444;
@@ -631,7 +631,7 @@ void test_hex8_bad3()
   options.Init_for_Cuttests();
   CORE::GEO::CUT::Mesh mesh(options);
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 1.05556;
   xyze(1, 0) = 0.444444;
@@ -712,7 +712,7 @@ void test_hex8_bad4()
 
   double quad4_xyz[12] = {1, 0, 0.0505, 1, 0.0555556, 0.0505, 1, 0.0555556, 3.40507e-19, 1, 0, 0};
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   std::copy(hex8_xyz, hex8_xyz + 24, &xyze(0, 0));
 
@@ -735,7 +735,7 @@ void test_hex8_wedge6()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 6);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 6);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 2;
@@ -773,7 +773,7 @@ void test_hex8_quad4_touch()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0;
@@ -803,7 +803,7 @@ void test_hex8_quad4_touch2()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -833,7 +833,7 @@ void test_hex8_quad4_touch3()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -863,7 +863,7 @@ void test_hex8_quad4_cut()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 0;
@@ -905,7 +905,7 @@ void test_hex8_hex8_durchstoss()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -0.5;
   xyze(1, 0) = 0.2;
@@ -971,7 +971,7 @@ void test_hex8_hex8_onside()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 0.5;
@@ -1035,7 +1035,7 @@ void test_hex8_hex8_internal()
 {
   SimpleWrapper w;
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -1113,7 +1113,7 @@ void test_hex8_hex8_sideintersection()
 {
   SimpleWrapper w;
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -1211,7 +1211,7 @@ void test_hex8_hex8_inside()
 {
   SimpleWrapper w;
 
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -1291,7 +1291,7 @@ void test_hex8_quad4_schnitt()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.5;
   xyze(1, 0) = 0.5;
@@ -1321,7 +1321,7 @@ void test_hex8_quad4_touch4()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.2;
   xyze(1, 0) = 0;
@@ -1351,7 +1351,7 @@ void test_hex8_quad4_touch5()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 0.2;
   xyze(1, 0) = 0;
@@ -1381,7 +1381,7 @@ void test_hex8_quad4_touch6()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;
@@ -1431,7 +1431,7 @@ void test_hex8_quad4_touch7()
 
   w.CreateHex8();
 
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 1;
   xyze(1, 0) = 0.5;

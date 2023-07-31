@@ -9,10 +9,9 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_H
 
+#include <cmath>
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_utils_densematrix_determinant.H"
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 
 namespace CORE::LINALG
 {
@@ -162,7 +161,7 @@ namespace CORE::LINALG
   bool InverseDoNotThrowErrorOnZeroDeterminant(CORE::LINALG::Matrix<dim, dim, T>& A, double eps)
   {
     T det = Determinant(A);
-    if (abs(det) < eps) return false;
+    if (std::abs(det) < eps) return false;
     InverseReorderMatrixEntries(A);
     A.Scale(1. / det);
     return true;
@@ -197,7 +196,7 @@ namespace CORE::LINALG
       max_value = 0.0;
       for (unsigned int i_col = 0; i_col < dim; i_col++)
       {
-        if (abs(A(i_row, i_col)) > max_value) max_value = abs(A(i_row, i_col));
+        if (std::abs(A(i_row, i_col)) > max_value) max_value = std::abs(A(i_row, i_col));
       }
       if (max_value < 1e-12) continue;
       for (unsigned int i_col = 0; i_col < dim; i_col++)
@@ -206,7 +205,7 @@ namespace CORE::LINALG
     }
 
     T det = Determinant(A);
-    if (abs(det) < eps) return false;
+    if (std::abs(det) < eps) return false;
     InverseReorderMatrixEntries(A);
     A.Scale(1. / det);
     x.Multiply(A, b);
@@ -392,7 +391,7 @@ namespace CORE::LINALG
    \param A (in/out): Matrix to be inverted
    \param dim (in) :  Dimension of matrix
    */
-  void SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim);
+  void SymmetricInverse(CORE::LINALG::SerialDenseMatrix& A, const int dim);
 
 }  // namespace CORE::LINALG
 

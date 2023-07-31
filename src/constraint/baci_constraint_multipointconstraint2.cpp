@@ -279,11 +279,11 @@ void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
   bool assemblevec3 = systemvector3 != Teuchos::null;
 
   // define element matrices and vectors
-  Epetra_SerialDenseMatrix elematrix1;
-  Epetra_SerialDenseMatrix elematrix2;
-  Epetra_SerialDenseVector elevector1;
-  Epetra_SerialDenseVector elevector2;
-  Epetra_SerialDenseVector elevector3;
+  CORE::LINALG::SerialDenseMatrix elematrix1;
+  CORE::LINALG::SerialDenseMatrix elematrix2;
+  CORE::LINALG::SerialDenseVector elevector1;
+  CORE::LINALG::SerialDenseVector elevector2;
+  CORE::LINALG::SerialDenseVector elevector3;
 
 
   const double time = params.get("total time", -1.0);
@@ -329,11 +329,11 @@ void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
       const int eledim = (int)lm.size();
-      if (assemblemat1) elematrix1.Shape(eledim, eledim);
-      if (assemblemat2) elematrix2.Shape(eledim, eledim);
-      if (assemblevec1) elevector1.Size(eledim);
-      if (assemblevec2) elevector2.Size(eledim);
-      if (assemblevec3) elevector3.Size(1);  // elevector3 always contains a scalar
+      if (assemblemat1) elematrix1.shape(eledim, eledim);
+      if (assemblemat2) elematrix2.shape(eledim, eledim);
+      if (assemblevec1) elevector1.size(eledim);
+      if (assemblevec2) elevector2.size(eledim);
+      if (assemblevec3) elevector3.size(1);  // elevector3 always contains a scalar
 
       params.set("ConditionID", condID);
       params.set<Teuchos::RCP<DRT::Condition>>("condition", Teuchos::rcp(&cond, false));
@@ -349,19 +349,19 @@ void UTILS::MPConstraint2::EvaluateConstraint(Teuchos::RCP<DRT::Discretization> 
       if (assemblemat1)
       {
         // scale with time integrator dependent value
-        elematrix1.Scale(scStiff * lagraval);
+        elematrix1.scale(scStiff * lagraval);
         systemmatrix1->Assemble(eid, lmstride, elematrix1, lm, lmowner);
       }
       if (assemblemat2)
       {
         std::vector<int> colvec(1);
         colvec[0] = gindex;
-        elevector2.Scale(scConMat);
+        elevector2.scale(scConMat);
         systemmatrix2->Assemble(eid, lmstride, elevector2, lm, lmowner, colvec);
       }
       if (assemblevec1)
       {
-        elevector1.Scale(lagraval);
+        elevector1.scale(lagraval);
         CORE::LINALG::Assemble(*systemvector1, elevector1, lm, lmowner);
       }
       if (assemblevec3)

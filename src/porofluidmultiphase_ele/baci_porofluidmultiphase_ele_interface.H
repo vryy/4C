@@ -14,8 +14,8 @@
 
 #include <vector>
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_lib_element.H"
 
 namespace DRT
@@ -46,8 +46,8 @@ namespace DRT
        */
       virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          std::vector<Epetra_SerialDenseMatrix*>& elemat,
-          std::vector<Epetra_SerialDenseVector*>& elevec) = 0;
+          std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec) = 0;
     };
   }  // namespace ELEMENTS
 }  // namespace DRT

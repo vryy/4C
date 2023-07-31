@@ -154,7 +154,7 @@ namespace CORE::GEO
   template <class matrixtype>
   double ElementLength(const ::DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
   {
-    if (distype != ::DRT::Element::line2 or xyze.N() != 2)
+    if (distype != ::DRT::Element::line2 or xyze.numCols() != 2)
       dserror("Currently only line2 elements are supported!");
 
     // calculate the distance between the two given nodes and return

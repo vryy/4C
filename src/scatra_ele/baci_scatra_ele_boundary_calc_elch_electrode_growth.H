@@ -56,16 +56,16 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      int EvaluateAction(DRT::FaceElement* ele,      //!< boundary element
-          Teuchos::ParameterList& params,            //!< parameter list
-          DRT::Discretization& discretization,       //!< discretization
-          SCATRA::BoundaryAction action,             //!< action
-          DRT::Element::LocationArray& la,           //!< location array
-          Epetra_SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
-          Epetra_SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
-          Epetra_SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
-          Epetra_SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
-          Epetra_SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
+      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
+          Teuchos::ParameterList& params,                   //!< parameter list
+          DRT::Discretization& discretization,              //!< discretization
+          SCATRA::BoundaryAction action,                    //!< action
+          DRT::Element::LocationArray& la,                  //!< location array
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,  //!< element matrix 1
+          CORE::LINALG::SerialDenseMatrix& elemat2_epetra,  //!< element matrix 2
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
+          CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
+          CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
           ) override;
 
       //! evaluate minimum and maximum interfacial overpotential associated with scatra-scatra
@@ -89,39 +89,40 @@ namespace DRT
        */
       void EvaluateS2ICoupling(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Epetra_SerialDenseMatrix& eslavematrix, Epetra_SerialDenseMatrix& emastermatrix,
-          Epetra_SerialDenseVector& eslaveresidual) override;
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,
+          CORE::LINALG::SerialDenseMatrix& emastermatrix,
+          CORE::LINALG::SerialDenseVector& eslaveresidual) override;
 
       //! evaluate global growth-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
       void EvaluateS2ICouplingGrowthGrowth(
-          const DRT::FaceElement* ele,              ///< current boundary element
-          Teuchos::ParameterList& params,           ///< parameter list
-          DRT::Discretization& discretization,      ///< discretization
-          DRT::Element::LocationArray& la,          ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
-          Epetra_SerialDenseVector& eslaveresidual  ///< element residual for slave side
+          const DRT::FaceElement* ele,                     ///< current boundary element
+          Teuchos::ParameterList& params,                  ///< parameter list
+          DRT::Discretization& discretization,             ///< discretization
+          DRT::Element::LocationArray& la,                 ///< location array
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,   ///< element matrix for slave side
+          CORE::LINALG::SerialDenseVector& eslaveresidual  ///< element residual for slave side
       );
 
       //! evaluate global growth-scatra matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
       void EvaluateS2ICouplingGrowthScatra(
-          const DRT::FaceElement* ele,             ///< current boundary element
-          Teuchos::ParameterList& params,          ///< parameter list
-          DRT::Discretization& discretization,     ///< discretization
-          DRT::Element::LocationArray& la,         ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
-          Epetra_SerialDenseMatrix& emastermatrix  ///< element matrix for master side
+          const DRT::FaceElement* ele,                    ///< current boundary element
+          Teuchos::ParameterList& params,                 ///< parameter list
+          DRT::Discretization& discretization,            ///< discretization
+          DRT::Element::LocationArray& la,                ///< location array
+          CORE::LINALG::SerialDenseMatrix& eslavematrix,  ///< element matrix for slave side
+          CORE::LINALG::SerialDenseMatrix& emastermatrix  ///< element matrix for master side
       );
 
       //! evaluate global scatra-growth matrix block for scatra-scatra interface coupling involving
       //! interface layer growth
       void EvaluateS2ICouplingScatraGrowth(
-          const DRT::FaceElement* ele,            ///< current boundary element
-          Teuchos::ParameterList& params,         ///< parameter list
-          DRT::Discretization& discretization,    ///< discretization
-          DRT::Element::LocationArray& la,        ///< location array
-          Epetra_SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
+          const DRT::FaceElement* ele,                   ///< current boundary element
+          Teuchos::ParameterList& params,                ///< parameter list
+          DRT::Discretization& discretization,           ///< discretization
+          DRT::Element::LocationArray& la,               ///< location array
+          CORE::LINALG::SerialDenseMatrix& eslavematrix  ///< element matrix for slave side
       );
 
       //! extract nodal state variables associated with boundary element

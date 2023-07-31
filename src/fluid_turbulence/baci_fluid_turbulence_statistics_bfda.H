@@ -120,12 +120,12 @@ namespace FLD
     Teuchos::SerialDenseMatrix<int, double> rcoordinates_;
 
     //! matrices for mean values along z-axis
-    Teuchos::RCP<Epetra_SerialDenseMatrix> zsumw_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> zsump_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> zsumw_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> zsump_;
 
     //! matrices for mean values of evaluation planes
-    Teuchos::RCP<Epetra_SerialDenseMatrix> rsumw_;
-    Teuchos::RCP<Epetra_SerialDenseMatrix> rsump_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> rsumw_;
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> rsump_;
   };
 
 }  // namespace FLD

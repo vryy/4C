@@ -225,8 +225,8 @@ namespace CORE::GEO
           Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell);
 
       /// creates a new hex8 integration cell, based on xyz coordinates
-      Tet4IntegrationCell* NewTet4Cell(
-          Point::PointPosition position, const Epetra_SerialDenseMatrix& xyz, VolumeCell* cell);
+      Tet4IntegrationCell* NewTet4Cell(Point::PointPosition position,
+          const CORE::LINALG::SerialDenseMatrix& xyz, VolumeCell* cell);
 
       /// creates a new wedge6 integration cell
       Wedge6IntegrationCell* NewWedge6Cell(
@@ -485,7 +485,7 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// check if xyz-coordinates lie within the mesh's bounding box
-      bool WithinBB(const Epetra_SerialDenseMatrix& xyz);
+      bool WithinBB(const CORE::LINALG::SerialDenseMatrix& xyz);
 
       /// check if the element lies within the bounding box
       bool WithinBB(Element& element);

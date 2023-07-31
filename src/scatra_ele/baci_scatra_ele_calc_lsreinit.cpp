@@ -80,9 +80,11 @@ DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::ScaTraEleCalcLsReinit(
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 int DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::Evaluate(DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseMatrix& elemat2_epetra, Epetra_SerialDenseVector& elevec1_epetra,
-    Epetra_SerialDenseVector& elevec2_epetra, Epetra_SerialDenseVector& elevec3_epetra)
+    DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec2_epetra,
+    CORE::LINALG::SerialDenseVector& elevec3_epetra)
 {
   // setup
   if (SetupCalc(ele, discretization) == -1) return 0;
@@ -106,7 +108,8 @@ template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitialization(
     const Epetra_Vector& phinp, const std::vector<int>& lm, DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   // --- standard case --------------------------------------------------------
   if (probDim == this->nsd_ele_)
@@ -126,8 +129,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializationEmbedded(
     const std::vector<int>& lm, DRT::Element* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, Epetra_SerialDenseMatrix& elemat1_epetra,
-    Epetra_SerialDenseVector& elevec1_epetra)
+    DRT::Discretization& discretization, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   // distinguish reinitalization
   switch (lsreinitparams_->ReinitType())
@@ -217,7 +220,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
  *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EllipticNewtonSystem(
-    Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
+    CORE::LINALG::SerialDenseMatrix* emat, CORE::LINALG::SerialDenseVector* erhs,
     const CORE::LINALG::Matrix<nen_, 1>& el2sysmat_diag_inv,
     const CORE::GEO::BoundaryIntCellPtrs& bcell)
 {
@@ -344,7 +347,8 @@ template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializationStd(
     const Epetra_Vector& phinp, const std::vector<int>& lm, DRT::Element* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    Epetra_SerialDenseMatrix& elemat1_epetra, Epetra_SerialDenseVector& elevec1_epetra)
+    CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+    CORE::LINALG::SerialDenseVector& elevec1_epetra)
 {
   // distinguish reinitalization
   switch (lsreinitparams_->ReinitType())
@@ -417,8 +421,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
-    Epetra_SerialDenseMatrix& emat,  ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs   ///< element rhs to calculate
+    CORE::LINALG::SerialDenseMatrix& emat,  ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs   ///< element rhs to calculate
 )
 {
   //----------------------------------------------------------------------
@@ -612,7 +616,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
     {
       // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
       my::GetLaplacianStrongForm(diff);
-      diff.Scale(0.0);
+      diff.putScalar(0.0);
     }
 
     // get history data (or acceleration)
@@ -779,8 +783,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatHyperbolic(
 *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::SysmatElliptic(
-    Epetra_SerialDenseMatrix& emat,              ///< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,              ///< element rhs to calculate
+    CORE::LINALG::SerialDenseMatrix& emat,       ///< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs,       ///< element rhs to calculate
     const CORE::GEO::BoundaryIntCellPtrs& bcell  ///< interface for penalty term
 )
 {
@@ -1050,7 +1054,7 @@ double DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcCharEleLength
  *--------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
-    Epetra_SerialDenseMatrix& emat, const int k, const double timefacfac)
+    CORE::LINALG::SerialDenseMatrix& emat, const int k, const double timefacfac)
 {
   // flag for anisotropic diffusion
   const bool crosswind = DiffManager()->HaveCrossWindDiff();
@@ -1090,7 +1094,7 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcMatDiff(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
-    Epetra_SerialDenseVector& erhs, const int k, const double rhsfac,
+    CORE::LINALG::SerialDenseVector& erhs, const int k, const double rhsfac,
     const CORE::LINALG::Matrix<nsd_, 1>& gradphi)
 {
   // flag for anisotropic diffusion
@@ -1132,8 +1136,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcRHSDiff(
  *---------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateInterfaceTerm(
-    Epetra_SerialDenseMatrix* emat,              //!< element matrix to calculate
-    Epetra_SerialDenseVector* erhs,              //!< element vector to calculate
+    CORE::LINALG::SerialDenseMatrix* emat,       //!< element matrix to calculate
+    CORE::LINALG::SerialDenseVector* erhs,       //!< element vector to calculate
     const CORE::GEO::BoundaryIntCellPtrs& bcell  //!< interface for penalty term
 )
 {
@@ -1179,11 +1183,11 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvaluateInterfaceTe
  *----------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
-    Epetra_SerialDenseMatrix* emat, Epetra_SerialDenseVector* erhs,
+    CORE::LINALG::SerialDenseMatrix* emat, CORE::LINALG::SerialDenseVector* erhs,
     const CORE::GEO::BoundaryIntCell& cell)
 {
   // get the cut position ( local parent element coordinates )
-  const CORE::LINALG::Matrix<nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().A(), true);
+  const CORE::LINALG::Matrix<nsd_ele_, 1> posXiDomain(cell.CellNodalPosXiDomain().values(), true);
 
   // --------------------------------------------------------------------------
   // evaluate shape functions at the cut position
@@ -1217,8 +1221,8 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm_0D(
 template <DRT::Element::DiscretizationType distype, unsigned probDim>
 template <DRT::Element::DiscretizationType celldistype>
 void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::CalcPenaltyTerm(
-    Epetra_SerialDenseMatrix& emat,         //!< element matrix to calculate
-    Epetra_SerialDenseVector& erhs,         //!< element vector to calculate
+    CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to calculate
+    CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to calculate
     const CORE::GEO::BoundaryIntCell& cell  //!< interface cell
 )
 {

@@ -18,7 +18,6 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include <Epetra_SerialDenseSolver.h>
 #include "baci_mat_newtonianfluid.H"
 
 
@@ -27,9 +26,10 @@
  |  evaluate the element (public)                            gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   // start with "none"
   DRT::ELEMENTS::Bele3::ActionType act = Bele3::none;
@@ -113,9 +113,11 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
       SpatialConfiguration(xscurr, mydisp);
       double volumeele;
       // first partial derivatives
-      Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1 = Teuchos::rcp(new Epetra_SerialDenseVector);
+      Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff1 =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
       // second partial derivatives
-      Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2 = Teuchos::rcp(new Epetra_SerialDenseMatrix);
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Vdiff2 =
+          Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
 
       // get projection method
       Teuchos::RCP<DRT::Condition> condition =
@@ -165,7 +167,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   return 0;
 }
@@ -221,12 +223,12 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, 3);
-      metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
+      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
       // CORE::LINALG::SerialDenseMatrix metrictensor(2,2);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
-      const double dotprodc = funct.Dot(c);
+      const double dotprodc = funct.dot(c);
       // add weighted volume at gausspoint
       V -= dotprodc * detA * intpoints.qwgt[gpid];
     }
@@ -239,8 +241,9 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
  * with respect to the displacements                                    *
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix& xc,
-    const int numnode, const int ndof, double& V, Teuchos::RCP<Epetra_SerialDenseVector> Vdiff1,
-    Teuchos::RCP<Epetra_SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
+    const int numnode, const int ndof, double& V,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> Vdiff1,
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> Vdiff2, const int minindex, const int maxindex)
 {
   // necessary constants
   const int numdim = 3;
@@ -248,8 +251,8 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
 
   // initialize
   V = 0.0;
-  Vdiff1->Size(ndof);
-  if (Vdiff2 != Teuchos::null) Vdiff2->Shape(ndof, ndof);
+  Vdiff1->size(ndof);
+  if (Vdiff2 != Teuchos::null) Vdiff2->shape(ndof, ndof);
 
   // Volume is calculated by evaluating the integral
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
@@ -295,11 +298,11 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
       double detA;
       // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, numdim);
-      metrictensor.Multiply('N', 'N', 1.0, deriv, ab, 0.0);
+      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
-      const double dotprodc = funct.Dot(c);
+      const double dotprodc = funct.dot(c);
       // add weighted volume at gausspoint
       V -= dotprodc * detA * intpoints.qwgt[gpid];
 
