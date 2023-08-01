@@ -51,6 +51,7 @@ bool CONTACT::UTILS::UseSafeRedistributeAndGhosting(const Teuchos::ParameterList
       if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(contactParams, "ALGORITHM") ==
               INPAR::MORTAR::algorithm_mortar &&
           (DRT::Problem::Instance()->GetProblemType() != ProblemType::poroelast &&
+              DRT::Problem::Instance()->GetProblemType() != ProblemType::poroscatra &&
               DRT::Problem::Instance()->GetProblemType() != ProblemType::struct_ale))
         use_safe_ghosting_branch = true;
     }
