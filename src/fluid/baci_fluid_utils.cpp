@@ -22,11 +22,9 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linear_solver_method_linalg.H"
 
-#include <stdio.h>
-
-//////////// For WSS aggregation ///////////////
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
+#include <stdio.h>
 
 
 /*----------------------------------------------------------------------*

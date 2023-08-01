@@ -16,9 +16,18 @@
 #include "baci_tsi_monolithic.H"
 
 #include "baci_adapter_str_structure_new.H"
+#include "baci_contact_abstract_strategy.H"
+#include "baci_contact_interface.H"
+#include "baci_contact_meshtying_contact_bridge.H"
+#include "baci_contact_nitsche_strategy_tsi.H"
+#include "baci_contact_node.H"
+#include "baci_contact_tsi_interface.H"
+#include "baci_contact_tsi_lagrange_strategy.H"
+#include "baci_coupling_adapter_volmortar.H"
 #include "baci_inpar_solver.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_elements_paramsminimal.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
 #include "baci_linalg_blocksparsematrix.H"
@@ -27,31 +36,18 @@
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_mortar_manager_base.H"
+#include "baci_mortar_multifield_coupling.H"
+#include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_model_evaluator_structure.H"
+#include "baci_structure_new_timint_base.H"
 #include "baci_thermo_ele_action.H"
 #include "baci_thermo_timint.H"
 #include "baci_tsi_defines.H"
 #include "baci_tsi_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-// contact
-#include "baci_contact_abstract_strategy.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_contact_nitsche_strategy_tsi.H"
-#include "baci_contact_node.H"
-#include "baci_contact_tsi_interface.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
-#include "baci_mortar_manager_base.H"
-
-// for coupling of nonmatching meshes
-#include "baci_coupling_adapter_volmortar.H"
-#include "baci_lib_elements_paramsminimal.H"
-#include "baci_mortar_multifield_coupling.H"
-#include "baci_structure_new_model_evaluator_contact.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_model_evaluator_structure.H"
-#include "baci_structure_new_timint_base.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries

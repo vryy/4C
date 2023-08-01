@@ -13,15 +13,6 @@
 
 #include "baci_utils_exceptions.H"
 
-// NOX includes
-#include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Interface_Preconditioner.H>
-#include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Epetra_Scaling.H>
-#include <NOX_Utils.H>
-#include <Teuchos_ParameterList.hpp>
-
-// External include files for Epetra
 #include <AztecOO.h>
 #include <AztecOO_Operator.h>
 #include <AztecOO_StatusTest.h>
@@ -33,6 +24,12 @@
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
+#include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Epetra_Scaling.H>
+#include <NOX_Utils.H>
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 #include <typeinfo>

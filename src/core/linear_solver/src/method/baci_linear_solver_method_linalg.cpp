@@ -12,20 +12,16 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"  // access global problem. can we avoid this?
 #include "baci_linalg_sparsematrix.H"
+#include "baci_linear_solver_method_belos.H"
+#include "baci_linear_solver_method_direct.H"
 
+#include <BelosTypes.hpp>  // for Belos verbosity codes
 #include <Epetra_LinearProblem.h>
 #include <Epetra_MpiComm.h>
+#include <ml_MultiLevelPreconditioner.h>  // includes for ML parameter list validation
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-
-// some more Trilinos headers
-#include <BelosTypes.hpp>                 // for Belos verbosity codes
-#include <ml_MultiLevelPreconditioner.h>  // includes for ML parameter list validation
-
-// solver interfaces
-#include "baci_linear_solver_method_belos.H"
-#include "baci_linear_solver_method_direct.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

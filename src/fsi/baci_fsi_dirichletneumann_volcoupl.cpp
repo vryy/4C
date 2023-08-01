@@ -19,6 +19,10 @@
 #include "baci_adapter_fld_fluid_xfem.H"
 #include "baci_adapter_fld_fluid_xfsi.H"
 #include "baci_adapter_str_fsiwrapper.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_volmortar.H"
+#include "baci_discretization_geometry_searchtree.H"
+#include "baci_discretization_geometry_searchtree_service.H"
 #include "baci_fsi_debugwriter.H"
 #include "baci_inpar_fsi.H"
 #include "baci_io_control.H"
@@ -30,12 +34,6 @@
 #include "baci_mortar_calc_utils.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-// search
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_volmortar.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

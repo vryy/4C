@@ -12,12 +12,11 @@
 
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_utils_exceptions.H"
-// material headers
 #include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_thermostvenantkirchhoff.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
 

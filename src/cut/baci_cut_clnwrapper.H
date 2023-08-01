@@ -18,7 +18,7 @@
 #include <sstream>
 #include <unordered_map>
 
-// whether we want to use CLN at all or not
+
 #define CLN_CALC
 #ifdef CLN_CALC
 #include <cln/cln.h>

@@ -11,18 +11,16 @@
 
 #include "baci_structure_new_factory.H"
 
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_utils_exceptions.H"
-
-// supported implicit time integrators
 #include "baci_lib_prestress_service.H"
+#include "baci_structure_new_dbc.H"
 #include "baci_structure_new_impl_gemm.H"
 #include "baci_structure_new_impl_genalpha.H"
 #include "baci_structure_new_impl_genalpha_liegroup.H"
 #include "baci_structure_new_impl_ost.H"        // derived from ost
 #include "baci_structure_new_impl_prestress.H"  // derived from statics
 #include "baci_structure_new_impl_statics.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

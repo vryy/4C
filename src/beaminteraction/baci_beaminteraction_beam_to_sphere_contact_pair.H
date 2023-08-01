@@ -10,10 +10,8 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_H
 #define BACI_BEAMINTERACTION_BEAM_TO_SPHERE_CONTACT_PAIR_H
 
-#include "baci_beaminteraction_contact_pair.H"
-
-// Todo get rid of header inclusions
 #include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_contact_pair.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_condition.H"
 #include "baci_lib_element.H"

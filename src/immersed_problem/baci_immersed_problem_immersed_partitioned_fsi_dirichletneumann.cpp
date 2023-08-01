@@ -11,6 +11,8 @@
 
 #include "baci_adapter_fld_fluid_immersed.H"
 #include "baci_adapter_str_fsiwrapper_immersed.H"
+#include "baci_discretization_geometry_searchtree.H"
+#include "baci_discretization_geometry_searchtree_service.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_immersed_problem_fsi_partitioned_immersed.H"
 #include "baci_inpar_immersed.H"
@@ -18,11 +20,6 @@
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_structure_aux.H"
 
-// search tree related
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-
-// time monitoring
 #include <Teuchos_TimeMonitor.hpp>
 
 

@@ -17,13 +17,12 @@
 #ifndef BACI_LEVELSET_INTERSECTION_UTILS_H
 #define BACI_LEVELSET_INTERSECTION_UTILS_H
 
+#include "baci_cut_point.H"
 #include "baci_discretization_geometry_geo_utils.H"
 
 #include <Epetra_MpiComm.h>
 #include <Epetra_MultiVector.h>
 #include <Teuchos_RCP.hpp>
-// only due to enumerator use (can be resolved with C++11)
-#include "baci_cut_point.H"
 
 namespace DRT
 {

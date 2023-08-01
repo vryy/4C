@@ -12,10 +12,6 @@
 
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
 #include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-
-// Todo @grill: check for obsolete header inclusions
-#include "baci_beaminteraction_periodic_boundingbox.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
@@ -26,6 +22,7 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
 

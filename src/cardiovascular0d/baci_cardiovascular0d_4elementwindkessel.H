@@ -11,6 +11,7 @@
 #ifndef BACI_CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_H
 #define BACI_CARDIOVASCULAR0D_4ELEMENTWINDKESSEL_H
 
+#include "baci_cardiovascular0d.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_cardiovascular0d.H"
 
@@ -20,8 +21,6 @@
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-// class which is inherited from
-#include "baci_cardiovascular0d.H"
 
 
 // forward declarations

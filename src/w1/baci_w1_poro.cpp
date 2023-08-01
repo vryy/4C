@@ -10,16 +10,14 @@
 
 #include "baci_w1_poro.H"
 
+#include "baci_discretization_fem_general_utils_shapefunctions_service.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
-#include "baci_poroelast_utils.H"
-
-// for secondDerivativesZero
-#include "baci_discretization_fem_general_utils_shapefunctions_service.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_structporo.H"
+#include "baci_poroelast_utils.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(int id, int owner)

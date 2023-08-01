@@ -12,13 +12,11 @@
 
 #include "baci_adapter_fld_fluid.H"
 #include "baci_adapter_str_fsiwrapper.H"
+#include "baci_comm_utils.H"
 #include "baci_fsi_overlapprec_hybrid.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_preconditioner_linalg.H"
-
-// needed for dserror nested parallelism AMG FSI
-#include "baci_comm_utils.H"
-#include "baci_lib_globalproblem.H"
 
 #include <EpetraExt_SolverMap_CrsMatrix.h>
 #include <ml_MultiLevelPreconditioner.h>

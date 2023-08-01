@@ -10,9 +10,6 @@
 
 /*----------------------------------------------------------------------------*/
 // Teuchos
-#include <Teuchos_TimeMonitor.hpp>
-
-// baci
 #include "baci_adapter_ale.H"
 #include "baci_adapter_ale_fsi.H"
 #include "baci_adapter_fld_fluid_fsi.H"
@@ -35,6 +32,8 @@
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_rebalance.H"
 #include "baci_structure_aux.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*/
 void FSI::BlockMonolithic::RedistributeMonolithicGraph(

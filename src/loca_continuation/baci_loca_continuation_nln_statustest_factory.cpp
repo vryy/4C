@@ -18,7 +18,6 @@
 #include "baci_loca_continuation_nln_statustest_factory.H"
 #include "baci_utils_exceptions.H"
 
-// Concrete StatusTest Objects
 #include <LOCA_StatusTest_Combo.H>
 #include <LOCA_StatusTest_MaxIters.H>
 

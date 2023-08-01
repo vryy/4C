@@ -10,7 +10,6 @@
 
 #include "baci_solver_nonlin_nox_direction_factory.H"
 
-// supported directions
 #include "baci_solver_nonlin_nox_direction_modified_newton.H"
 
 /*----------------------------------------------------------------------------*

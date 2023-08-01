@@ -12,8 +12,6 @@
 
 #include "baci_beam3_spatial_discretization_utils.H"
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-
-// Todo @grill: check for obsolete header inclusions
 #include "baci_beaminteraction_periodic_boundingbox.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_inpar_structure.H"

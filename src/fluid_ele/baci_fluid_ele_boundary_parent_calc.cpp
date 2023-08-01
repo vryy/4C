@@ -17,8 +17,6 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_fluid_ele.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_nurbs_discret_nurbs_utils.H"
-// TODO: remove after Nurbs functions are changed
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
@@ -35,6 +33,7 @@
 #include "baci_mat_sutherland.H"
 #include "baci_mat_tempdepwater.H"
 #include "baci_nurbs_discret.H"
+#include "baci_nurbs_discret_nurbs_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

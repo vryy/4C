@@ -12,16 +12,14 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-
-// MATERIALS
 #include "baci_mat_growth_law.H"
 #include "baci_mat_list.H"
 #include "baci_mat_list_reactions.H"
 #include "baci_mat_scatra_mat.H"
 #include "baci_mat_scatra_reaction_mat.H"
 #include "baci_mat_so3_material.H"
+#include "baci_scatra_ele_parameter_std.H"
+#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

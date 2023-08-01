@@ -26,7 +26,10 @@
 
 #include "baci_comm_utils.H"
 #include "baci_coupling_adapter_mortar.H"
+#include "baci_discretization_geometry_position_array.H"
+#include "baci_fluid_DbcHDG.h"
 #include "baci_fluid_ele.H"
+#include "baci_fluid_ele_intfaces_calc.H"
 #include "baci_fluid_impedancecondition.H"
 #include "baci_fluid_meshtying.H"
 #include "baci_fluid_MHD_evaluate.H"
@@ -44,40 +47,30 @@
 #include "baci_fluid_xwall.H"
 #include "baci_inpar_xfem.H"  //for enums only
 #include "baci_io.H"
+#include "baci_io_control.H"
 #include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_gmsh.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
+#include "baci_lib_discret_faces.H"
+#include "baci_lib_discret_hdg.H"
 #include "baci_lib_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
+#include "baci_lib_utils_discret.H"
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_nurbs_discret_apply_nurbs_initial_condition.H"
 
-#include <fstream>
-#include <iostream>
-#include <string>
-
-// print error file for function EvaluateErrorComparedToAnalyticalSol()
-#include "baci_io_control.H"
-
-// for AVM3 solver:
-#include "baci_io_gmsh.H"
-
 #include <MLAPI_Aggregation.h>
 #include <MLAPI_Workspace.h>
 
 #include <cmath>
-
-// allows for dealing with edged-based stabilization
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_fluid_DbcHDG.h"
-#include "baci_fluid_ele_intfaces_calc.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_utils_discret.H"
+#include <fstream>
+#include <iostream>
+#include <string>
 
 
 /*----------------------------------------------------------------------*

@@ -11,6 +11,11 @@
 #define BACI_LINEAR_SOLVER_AMGNXN_VCYCLE_H
 
 // Trilinos includes
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linear_solver_amgnxn_smoothers.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_type.H"
+
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <MueLu.hpp>
@@ -19,12 +24,6 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_Utilities.hpp>
 #include <Teuchos_RCP.hpp>
-
-// Baci includes
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linear_solver_amgnxn_smoothers.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_type.H"
 
 
 namespace CORE::LINEAR_SOLVER::AMGNXN

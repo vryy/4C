@@ -8,16 +8,14 @@
  | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
+#include "baci_thermo_dyn.H"
 
-/*----------------------------------------------------------------------*
- | headers                                                   gjb 01/08 |
- *----------------------------------------------------------------------*/
 #include "baci_adapter_thermo.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_thermo_dyn.H"
 #include "baci_thermo_resulttest.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  | main control routine for (in)stationary heat conduction              |

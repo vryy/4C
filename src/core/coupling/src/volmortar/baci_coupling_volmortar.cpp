@@ -18,8 +18,14 @@
 #include "baci_coupling_volmortar_integrator.H"
 #include "baci_coupling_volmortar_shape.H"
 #include "baci_coupling_volmortar_utils.H"
+#include "baci_cut_cutwizard.H"
+#include "baci_cut_elementhandle.H"
+#include "baci_cut_volumecell.H"
+#include "baci_discretization_geometry_searchtree.H"
+#include "baci_discretization_geometry_searchtree_service.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_multiply.H"
@@ -27,22 +33,10 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
-
-// std. interface mortar
 #include "baci_mortar_calc_utils.H"
 #include "baci_mortar_coupling3d.H"
 #include "baci_mortar_element.H"
 #include "baci_mortar_utils.H"
-
-// Cut
-#include "baci_cut_cutwizard.H"
-#include "baci_cut_elementhandle.H"
-#include "baci_cut_volumecell.H"
-
-// search
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_utils_pairedvector.H"
 
 #include <Teuchos_Time.hpp>

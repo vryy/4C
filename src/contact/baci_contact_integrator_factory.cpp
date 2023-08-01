@@ -10,7 +10,6 @@
 
 #include "baci_contact_integrator_factory.H"
 
-// supported contact integrators
 #include "baci_contact_aug_integrator.H"
 #include "baci_contact_ehl_integrator.H"
 #include "baci_contact_nitsche_integrator.H"

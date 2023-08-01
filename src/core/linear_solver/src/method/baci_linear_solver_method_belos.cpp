@@ -8,6 +8,21 @@
 */
 /*---------------------------------------------------------------------*/
 
+#include "baci_linear_solver_method_belos.H"
+
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_block.H"
+#include "baci_linear_solver_preconditioner_ifpack.H"
+#include "baci_linear_solver_preconditioner_krylovprojection.H"
+#include "baci_linear_solver_preconditioner_ml.H"
+#include "baci_linear_solver_preconditioner_point.H"
+
+#include <BelosBiCGStabSolMgr.hpp>
+#include <BelosBlockCGSolMgr.hpp>
+#include <BelosBlockGmresSolMgr.hpp>
+#include <BelosConfigDefs.hpp>
+#include <BelosEpetraAdapter.hpp>
+#include <BelosLinearProblem.hpp>
 #include <MueLu.hpp>
 #include <MueLu_ConfigDefs.hpp>
 #include <MueLu_DirectSolver.hpp>
@@ -22,23 +37,6 @@
 #include <Xpetra_MapFactory.hpp>
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
-
-// Belos headers
-#include <BelosBiCGStabSolMgr.hpp>
-#include <BelosBlockCGSolMgr.hpp>
-#include <BelosBlockGmresSolMgr.hpp>
-#include <BelosConfigDefs.hpp>
-#include <BelosEpetraAdapter.hpp>
-#include <BelosLinearProblem.hpp>
-
-// BACI headers
-#include "baci_linear_solver_method_belos.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_block.H"
-#include "baci_linear_solver_preconditioner_ifpack.H"
-#include "baci_linear_solver_preconditioner_krylovprojection.H"
-#include "baci_linear_solver_preconditioner_ml.H"
-#include "baci_linear_solver_preconditioner_point.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

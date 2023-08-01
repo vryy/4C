@@ -18,12 +18,10 @@ MAT x KINEM nonlinear THICK x STRESS_STRAIN [plane_stress/plane_strain]
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_membrane_eletypes.H"
+#include "baci_thermo_ele_impl_utils.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-// include header because number of Gauss points are determined dependent on distype
-#include "baci_thermo_ele_impl_utils.H"
 
 
 // forward declaration

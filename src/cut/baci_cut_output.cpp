@@ -10,21 +10,19 @@
 
 #include "baci_cut_output.H"
 
+#include "baci_cut_boundarycell.H"
 #include "baci_cut_cycle.H"
 #include "baci_cut_edge.H"
 #include "baci_cut_element.H"
+#include "baci_cut_facet.H"
+#include "baci_cut_kernel.H"
 #include "baci_cut_line.H"
 #include "baci_cut_point.H"
 #include "baci_cut_side.H"
+#include "baci_cut_volumecell.H"
 
 #include <iosfwd>
 #include <vector>
-
-// Needed for LS info.
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_facet.H"
-#include "baci_cut_kernel.H"
-#include "baci_cut_volumecell.H"
 
 
 /*----------------------------------------------------------------------------*

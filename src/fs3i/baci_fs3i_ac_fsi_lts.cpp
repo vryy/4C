@@ -17,6 +17,7 @@
 #include "baci_adapter_ale_fsi.H"
 #include "baci_adapter_fld_fluid_ac_fsi.H"
 #include "baci_adapter_str_fsiwrapper.H"
+#include "baci_fluid_utils_mapextractor.H"
 #include "baci_fs3i_ac_fsi.H"
 #include "baci_fsi_monolithic.H"
 #include "baci_inpar_material.H"
@@ -36,9 +37,6 @@
 #include "baci_mat_so3_material.H"
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_implicit.H"
-
-// FOR WSS CALCULATIONS
-#include "baci_fluid_utils_mapextractor.H"
 #include "baci_structure_aux.H"
 
 /*----------------------------------------------------------------------*

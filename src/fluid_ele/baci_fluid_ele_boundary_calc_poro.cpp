@@ -11,6 +11,7 @@
 
 #include "baci_fluid_ele_boundary_calc_poro.H"
 
+#include "baci_coupling_volmortar_shape.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_fluid_ele.H"
 #include "baci_fluid_ele_action.H"
@@ -22,9 +23,6 @@
 #include "baci_mat_structporo.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_poroelast_utils.H"
-
-// for dual shape functions
-#include "baci_coupling_volmortar_shape.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>*

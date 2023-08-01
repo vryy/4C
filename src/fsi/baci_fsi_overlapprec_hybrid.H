@@ -23,16 +23,12 @@ namespace CORE::LINEAR_SOLVER
 /*----------------------------------------------------------------------------*/
 /* headers */
 // Standard library
-#include <list>
+#include "baci_fsi_overlapprec.H"
 
-// Ifpack
 #include <Ifpack.h>
-
-// Teuchos
 #include <Teuchos_RCP.hpp>
 
-// baci
-#include "baci_fsi_overlapprec.H"
+#include <list>
 
 namespace FSI
 {

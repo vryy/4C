@@ -14,12 +14,10 @@
 #define BACI_TWO_PHASE_FLOW_ALGORITHM_H
 
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
+#include "baci_inpar_twophase.H"
 #include "baci_linalg_mapextractor.H"
 
 #include <Epetra_Comm.h>
-
-// Needed for input parameter
-#include "baci_inpar_twophase.H"
 
 namespace TWOPHASEFLOW
 {

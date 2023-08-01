@@ -26,20 +26,16 @@ between the xfluid class and the cut-library
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mat_elasthyper.H"
+#include "baci_mat_newtonianfluid.H"
+#include "baci_so3_hex8.H"
+#include "baci_so3_surface.H"
 #include "baci_xfem_discretization_utils.H"
 #include "baci_xfem_interface_utils.H"
 #include "baci_xfem_utils.H"
 #include "baci_xfem_xfluid_contact_communicator.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-// Needed for Slave Solid XFSI --> should go to xfem_coulpling_mesh_fsi
-#include "baci_mat_elasthyper.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_surface.H"
-
-// Needed for Slave Fluid XFF --> should go to xfem_coulpling_mesh_ff
-#include "baci_mat_newtonianfluid.H"
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

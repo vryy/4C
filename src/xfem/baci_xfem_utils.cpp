@@ -16,8 +16,6 @@
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-
-// Materials supported in XFEM currently
 #include "baci_mat_list.H"
 #include "baci_mat_material.H"
 #include "baci_mat_newtonianfluid.H"

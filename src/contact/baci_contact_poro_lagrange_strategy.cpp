@@ -18,6 +18,7 @@ interface
 #include "baci_coupling_adapter_converter.H"
 #include "baci_inpar_contact.H"
 #include "baci_io.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_multiply.H"
@@ -26,11 +27,6 @@ interface
 #include "baci_mortar_utils.H"
 
 #include <Epetra_SerialComm.h>
-
-// this is not nice, but since there is no chance at them moment to set the
-// full displacement during a restart from outside before the contact tries to
-// evaluate I'm force to do this atm...
-#include "baci_lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 08/14|

@@ -9,7 +9,6 @@
 
 #include "baci_ssi_coupling.H"
 
-// for coupling of nonmatching meshes
 #include "baci_adapter_scatra_base_algorithm.H"
 #include "baci_adapter_str_wrapper.H"
 #include "baci_coupling_adapter_mortar.H"

@@ -10,6 +10,11 @@ Created on: Feb 27, 2014
 #define BACI_LINEAR_SOLVER_AMGNXN_SMOOTHERS_H
 
 // Trilinos includes
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linear_solver_amgnxn_objects.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_type.H"
+
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
 #include <Ifpack.h>
@@ -19,12 +24,6 @@ Created on: Feb 27, 2014
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_Utilities.hpp>
 #include <Teuchos_RCP.hpp>
-
-// Baci includes
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linear_solver_amgnxn_objects.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_type.H"
 
 
 namespace CORE::LINEAR_SOLVER::AMGNXN

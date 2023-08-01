@@ -12,6 +12,11 @@
 
 #include "baci_solver_nonlin_nox_inner_statustest_factory.H"
 
+#include "baci_solver_nonlin_nox_inner_statustest_armijo.H"
+#include "baci_solver_nonlin_nox_inner_statustest_combo.H"
+#include "baci_solver_nonlin_nox_inner_statustest_filter.H"
+#include "baci_solver_nonlin_nox_inner_statustest_upperbound.H"
+#include "baci_solver_nonlin_nox_inner_statustest_volume_change.H"
 #include "baci_solver_nonlin_nox_params_utils.H"
 #include "baci_utils_exceptions.H"
 
@@ -19,13 +24,6 @@
 #include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-// supported inner status tests
-#include "baci_solver_nonlin_nox_inner_statustest_armijo.H"
-#include "baci_solver_nonlin_nox_inner_statustest_combo.H"
-#include "baci_solver_nonlin_nox_inner_statustest_filter.H"
-#include "baci_solver_nonlin_nox_inner_statustest_upperbound.H"
-#include "baci_solver_nonlin_nox_inner_statustest_volume_change.H"
 
 
 /*----------------------------------------------------------------------------*

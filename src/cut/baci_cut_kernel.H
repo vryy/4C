@@ -24,7 +24,7 @@
 
 #include <unordered_map>
 
-// activate debug intersection output in cut_kernel
+
 // #define DEBUG_CUTKERNEL_OUTPUT
 
 

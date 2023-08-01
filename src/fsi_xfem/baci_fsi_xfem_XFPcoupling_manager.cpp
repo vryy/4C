@@ -10,14 +10,12 @@
 
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_coupling_adapter.H"
 #include "baci_fluid_xfluid.H"
 #include "baci_io.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_poroelast_base.H"
 #include "baci_xfem_condition_manager.H"
-
-// remove me
-#include "baci_coupling_adapter.H"
 
 XFEM::XFPCoupling_Manager::XFPCoupling_Manager(Teuchos::RCP<XFEM::ConditionManager> condmanager,
     Teuchos::RCP<POROELAST::PoroBase> poro, Teuchos::RCP<FLD::XFluid> xfluid, std::vector<int> idx)

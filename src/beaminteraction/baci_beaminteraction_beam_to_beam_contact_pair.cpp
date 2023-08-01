@@ -10,19 +10,17 @@
 
 #include "baci_beaminteraction_beam_to_beam_contact_pair.H"
 
+#include "baci_beam3_euler_bernoulli.H"
+#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_reissner.H"
+#include "baci_beam3_spatial_discretization_utils.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
 #include "baci_beaminteraction_beam3contact_utils.H"
 #include "baci_beaminteraction_beam_to_beam_contact_params.H"
 #include "baci_beaminteraction_beam_to_beam_contact_variables.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
-
-// Todo check and get rid of outdated header inclusions
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_kirchhoff.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_spatial_discretization_utils.H"
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"

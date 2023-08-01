@@ -7,6 +7,8 @@
 
 */
 
+#include "baci_thermo_ele_impl.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_discretization_geometry_position_array.H"
@@ -15,17 +17,14 @@
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_nurbs_discret.H"
-
-// material headers
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_plasticelasthyper.H"
 #include "baci_mat_thermoplastichyperelast.H"
 #include "baci_mat_thermoplasticlinelast.H"
 #include "baci_mat_thermostvenantkirchhoff.H"
 #include "baci_mat_trait_thermo_solid.H"
+#include "baci_nurbs_discret.H"
 #include "baci_thermo_ele_action.H"
-#include "baci_thermo_ele_impl.H"
 #include "baci_thermo_element.H"  // only for visualization of element data
 
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)

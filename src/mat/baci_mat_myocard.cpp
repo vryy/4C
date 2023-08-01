@@ -15,16 +15,15 @@
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_mat_par_bundle.H"
-
-#include <fstream>  // For plotting ion concentrations
-#include <vector>
-// Possible Cell models
 #include "baci_mat_myocard_fitzhugh_nagumo.H"
 #include "baci_mat_myocard_inada.H"
 #include "baci_mat_myocard_minimal.H"
 #include "baci_mat_myocard_san_garny.H"
 #include "baci_mat_myocard_tentusscher.H"
+#include "baci_mat_par_bundle.H"
+
+#include <fstream>  // For plotting ion concentrations
+#include <vector>
 
 
 /*----------------------------------------------------------------------*

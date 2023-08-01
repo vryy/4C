@@ -13,12 +13,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_utils_exceptions.H"
 
-// Teuchos
-#include <Teuchos_ArrayRCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-
-// MueLu
+#include <EpetraExt_BlockMapOut.h>
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_CoalesceDropFactory.hpp>
 #include <MueLu_CreateXpetraPreconditioner.hpp>
@@ -31,11 +26,9 @@
 #include <MueLu_TentativePFactory.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
 #include <MueLu_VerbosityLevel.hpp>
-
-// EpetraExt
-#include <EpetraExt_BlockMapOut.h>
-
-// Xpetra
+#include <Teuchos_ArrayRCP.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Xpetra_BlockedCrsMatrix.hpp>
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_EpetraCrsMatrix.hpp>

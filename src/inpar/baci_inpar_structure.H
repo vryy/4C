@@ -13,9 +13,6 @@
 
 
 #include "baci_inpar_parameterlist_utils.H"
-
-/*----------------------------------------------------------------------*/
-/* headers */
 #include "baci_utils_exceptions.H"
 
 // forward declaration

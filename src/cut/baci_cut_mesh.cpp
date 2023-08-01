@@ -16,12 +16,10 @@ mesh
 #include "baci_cut_point_impl.H"
 #include "baci_cut_volumecell.H"
 #include "baci_discretization_geometry_element_volume.H"
+#include "baci_discretization_geometry_searchtree.H"
 #include "baci_lib_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-// search
-#include "baci_discretization_geometry_searchtree.H"
 
 
 /*-------------------------------------------------------------------------------------*

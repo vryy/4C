@@ -21,17 +21,15 @@ bridge between the xfluid class and the cut-library
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mat_newtonianfluid.H"
 #include "baci_xfem_interface_utils.H"
 #include "baci_xfem_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-// Needed to find element conditions
-#include "baci_lib_condition_utils.H"
-#include "baci_mat_newtonianfluid.H"
 
 // TODO: CouplingBase should become abstract class
 

@@ -16,14 +16,12 @@
 
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_immersed_node.H"
 #include "baci_lib_utils_factory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_nurbs_discret.H"
-
-// required for utility function CloneDiscretization()
-#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_Time.hpp>
 

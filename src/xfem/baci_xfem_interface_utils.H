@@ -13,12 +13,10 @@
 
 // forward declaration of enums not possible
 #include "baci_cut_utils.H"
+#include "baci_fluid_ele_calc_xfem_coupling.H"
 #include "baci_inpar_xfem.H"
 #include "baci_lib_element.H"
 #include "baci_lib_element_integration_select.H"
-
-// avoid forward declaration for templated class
-#include "baci_fluid_ele_calc_xfem_coupling.H"
 
 // forward declarations
 namespace DRT

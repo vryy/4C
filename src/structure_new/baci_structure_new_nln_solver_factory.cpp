@@ -11,7 +11,6 @@
 
 #include "baci_structure_new_nln_solver_factory.H"
 
-// supported nonlinear solvers
 #include "baci_structure_new_nln_solver_fullnewton.H"
 #include "baci_structure_new_nln_solver_nox.H"
 #include "baci_structure_new_nln_solver_ptc.H"

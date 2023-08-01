@@ -13,6 +13,7 @@
 
 #include "baci_discretization_fem_general_utils_shapefunctions_service.H"
 #include "baci_inpar_tsi.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
 #include "baci_lib_utils_parameter_list.H"
@@ -20,10 +21,6 @@
 #include "baci_mat_plasticelasthyper.H"
 #include "baci_so3_line.H"
 #include "baci_so3_surface.H"
-
-// include this thermo-implementation to make sure, that the same Gauss-rule
-// is used in the structural and the thermal part in a TSI problem
-#include "baci_lib_globalproblem.H"
 #include "baci_thermo_ele_impl_utils.H"
 
 /*----------------------------------------------------------------------*

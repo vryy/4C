@@ -15,8 +15,6 @@
 #include "baci_solver_nonlin_nox_group.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"
 #include "baci_solver_nonlin_nox_linesearch_factory.H"
-
-// templated status tests
 #include "baci_solver_nonlin_nox_statustest_activeset.H"
 #include "baci_solver_nonlin_nox_statustest_normf.H"
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"

@@ -14,8 +14,6 @@
 #include "baci_ale_meshsliding.H"
 #include "baci_ale_resulttest.H"
 #include "baci_ale_utils_mapextractor.H"
-
-// further includes for AleBaseAlgorithm:
 #include "baci_inpar_ale.H"
 #include "baci_inpar_fsi.H"
 #include "baci_io.H"

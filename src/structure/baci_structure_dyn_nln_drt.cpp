@@ -18,6 +18,7 @@
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_periodicbc.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_resulttest.H"
@@ -29,9 +30,6 @@
 #include <ctime>
 #include <iostream>
 #include <vector>
-
-// periodic boundary conditions
-#include "baci_lib_periodicbc.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -26,6 +26,7 @@ valves with k_p -> 0
 #ifndef BACI_CARDIOVASCULAR0D_ARTERIALPROXDIST_H
 #define BACI_CARDIOVASCULAR0D_ARTERIALPROXDIST_H
 
+#include "baci_cardiovascular0d.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_cardiovascular0d.H"
 
@@ -35,8 +36,6 @@ valves with k_p -> 0
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-// class which is inherited from
-#include "baci_cardiovascular0d.H"
 
 
 // forward declarations

@@ -32,11 +32,11 @@
 
 #include "baci_scatra_turbulence_hit_scalar_forcing.H"
 
-// for AVM3 solver:
+
 #include <MLAPI_Workspace.h>
 #include <MLAPI_Aggregation.h>
 
-// for printing electrode status to file
+
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"

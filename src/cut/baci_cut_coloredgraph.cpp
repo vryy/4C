@@ -8,16 +8,16 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_cut_coloredgraph.H"
+
+#include "baci_cut_facet.H"
+#include "baci_cut_output.H"
+
 #include <algorithm>
 #include <fstream>
 #include <queue>
 #include <stack>
 #include <stdexcept>
-
-// For useful debug output
-#include "baci_cut_coloredgraph.H"
-#include "baci_cut_facet.H"
-#include "baci_cut_output.H"
 
 bool CORE::GEO::CUT::COLOREDGRAPH::ForkFinder::operator()(
     const std::pair<const int, plain_int_set>& point)

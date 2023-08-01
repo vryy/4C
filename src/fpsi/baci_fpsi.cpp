@@ -11,12 +11,8 @@
 #include "baci_fpsi.H"
 
 #include "baci_fpsi_utils.H"
-
-// lib includes
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-
-// POROELAST includes
 #include "baci_poroelast_utils.H"
 
 FPSI::FPSI_Base::FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams)

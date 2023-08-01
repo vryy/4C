@@ -13,6 +13,7 @@
  *----------------------------------------------------------------------*/
 #include "baci_adapter_thermo.H"
 
+#include "baci_inpar_thermo.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_thermo_timint_expleuler.H"
@@ -21,10 +22,6 @@
 #include "baci_thermo_timint_statics.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-// further includes for ThermoBaseAlgorithm:
-#include "baci_inpar_thermo.H"
-
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
