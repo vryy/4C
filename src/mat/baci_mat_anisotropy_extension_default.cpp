@@ -9,9 +9,11 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mat_anisotropy_extension_default.H"
-#include "baci_mat_service.H"
-#include "baci_mat_anisotropy_extension.H"
+
 #include "baci_lib_parobject.H"
+#include "baci_mat_anisotropy_extension.H"
+#include "baci_mat_service.H"
+
 #include <algorithm>
 
 template <unsigned int numfib>

@@ -11,18 +11,17 @@
 #define BACI_IO_VTK_WRITER_BASE_H
 
 
-#include <string>
-#include <map>
-#include <vector>
-#include <fstream>
-#include <sstream>
+#include "baci_utils_exceptions.H"
 
 #include <bits/c++config.h>
 #include <stdint.h>
 #include <zlib.h>
 
-
-#include "baci_utils_exceptions.H"
+#include <fstream>
+#include <map>
+#include <sstream>
+#include <string>
+#include <vector>
 
 
 

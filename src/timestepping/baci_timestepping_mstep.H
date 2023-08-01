@@ -13,12 +13,13 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <vector>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-
 #include "baci_utils_exceptions.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 /* A collection of time integration utilities */

@@ -16,10 +16,10 @@
 #define BACI_INPAR_VALIDCONTACTCONSTITUTIVELAW_H
 
 /*----------------------------------------------------------------------*/
-#include <vector>
-#include <iostream>
-
 #include <Teuchos_RCP.hpp>
+
+#include <iostream>
+#include <vector>
 
 namespace CONTACT
 {

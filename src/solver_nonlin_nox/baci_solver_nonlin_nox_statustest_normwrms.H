@@ -15,13 +15,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_H
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_NORMWRMS_H
 
-#include <vector>
+#include "baci_solver_nonlin_nox_enum_lists.H"
 
 #include <NOX_StatusTest_Generic.H>  // base class
-
 #include <Teuchos_RCP.hpp>
 
-#include "baci_solver_nonlin_nox_enum_lists.H"
+#include <vector>
 
 namespace NOX
 {

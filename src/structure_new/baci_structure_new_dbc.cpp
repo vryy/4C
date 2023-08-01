@@ -10,17 +10,15 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_dbc.H"
-#include "baci_structure_new_timint_base.H"
-
-#include "baci_solver_nonlin_nox_linearsystem_prepostoperator.H"
-
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 #include "baci_lib_discret.H"
 #include "baci_lib_locsys.H"
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_solver_nonlin_nox_linearsystem_prepostoperator.H"
+#include "baci_structure_new_timint_base.H"
 
 #include <Epetra_Vector.h>
 #include <NOX_Epetra_Vector.H>

@@ -14,11 +14,12 @@
 #define BACI_SOLVER_NONLIN_NOX_CONSTRAINT_INTERFACE_PRECONDITIONER_H
 
 
-#include <vector>
+#include "baci_solver_nonlin_nox_enum_lists.H"
 
 #include <NOX_Epetra_Interface_Preconditioner.H>
-#include "baci_solver_nonlin_nox_enum_lists.H"
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 // forward declarations...
 class Epetra_Map;

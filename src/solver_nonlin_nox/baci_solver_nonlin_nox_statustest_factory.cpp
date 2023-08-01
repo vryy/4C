@@ -11,19 +11,17 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_statustest_factory.H"  // class definition
+
 #include "baci_solver_nonlin_nox_enum_lists.H"
-
-#include <NOX_StatusTest_Factory.H>
-#include <NOX_Abstract_Vector.H>
-
-#include <Teuchos_ParameterList.hpp>
-
-// different status tests
+#include "baci_solver_nonlin_nox_statustest_activeset.H"
+#include "baci_solver_nonlin_nox_statustest_combo.H"
 #include "baci_solver_nonlin_nox_statustest_normf.H"
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"
 #include "baci_solver_nonlin_nox_statustest_normwrms.H"
-#include "baci_solver_nonlin_nox_statustest_activeset.H"
-#include "baci_solver_nonlin_nox_statustest_combo.H"
+
+#include <NOX_Abstract_Vector.H>
+#include <NOX_StatusTest_Factory.H>
+#include <Teuchos_ParameterList.hpp>
 
 
 /*----------------------------------------------------------------------------*

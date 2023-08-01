@@ -11,12 +11,12 @@
 #ifndef BACI_CONSTRAINT_PENALTY_H
 #define BACI_CONSTRAINT_PENALTY_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_constraint.H"
+
+#include <Epetra_Operator.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace UTILS
 {

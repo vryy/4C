@@ -11,18 +11,16 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_linesearch_backtrack.H"  // class definition
-#include "baci_solver_nonlin_nox_statustest_normf.H"
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-#include "baci_solver_nonlin_nox_linesearch_prepostoperator.H"
 
+#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_linesearch_prepostoperator.H"
+#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
+#include "baci_solver_nonlin_nox_statustest_normf.H"
 #include "baci_utils_exceptions.H"
 
-#include <NOX_Utils.H>
-#include <NOX_GlobalData.H>
-#include "baci_solver_nonlin_nox_group.H"
-
 #include <Epetra_Vector.h>
-
+#include <NOX_GlobalData.H>
+#include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

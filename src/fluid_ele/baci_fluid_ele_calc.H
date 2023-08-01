@@ -12,9 +12,9 @@
 #ifndef BACI_FLUID_ELE_CALC_H
 #define BACI_FLUID_ELE_CALC_H
 
+#include "baci_fluid_ele.H"
 #include "baci_fluid_ele_interface.H"
 #include "baci_inpar_fluid.H"
-#include "baci_fluid_ele.H"
 
 // forward declarations
 namespace FLD

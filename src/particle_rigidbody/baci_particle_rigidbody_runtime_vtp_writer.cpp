@@ -10,13 +10,11 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_rigidbody_runtime_vtp_writer.H"
 
-#include "baci_particle_rigidbody_datastate.H"
-
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_runtime_vtp_writer.H"
-
 #include "baci_lib_globalproblem.H"
+#include "baci_particle_rigidbody_datastate.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

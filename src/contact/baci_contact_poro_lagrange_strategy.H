@@ -12,8 +12,8 @@ interface
 #define BACI_CONTACT_PORO_LAGRANGE_STRATEGY_H
 
 #include "baci_contact_monocoupled_lagrange_strategy.H"
-#include "baci_utils_exceptions.H"
 #include "baci_coupling_adapter.H"
+#include "baci_utils_exceptions.H"
 
 namespace ADAPTER
 {

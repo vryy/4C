@@ -8,14 +8,14 @@
 
 // TODO replace me by EpetraExt routines
 // includes for MLMultiply...
+#include "baci_linalg_multiply.H"
+
+#include "baci_linalg_sparsematrix.H"
+
+#include <EpetraExt_Transpose_RowMatrix.h>
 #include <ml_MultiLevelPreconditioner.h>
 #include <MLAPI_Operator_Utils.h>
 #include <MLAPI_Workspace.h>
-
-#include <EpetraExt_Transpose_RowMatrix.h>
-
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_sparsematrix.H"
 
 /*----------------------------------------------------------------------*
  | Multiply matrices A*B                                     mwgee 02/08|

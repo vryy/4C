@@ -10,20 +10,20 @@
 #ifndef BACI_LINEAR_SOLVER_AMGNXN_PRECONDITIONER_H
 #define BACI_LINEAR_SOLVER_AMGNXN_PRECONDITIONER_H
 
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linear_solver_amgnxn_hierarchies.H"
+#include "baci_linear_solver_amgnxn_smoothers.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_type.H"
+
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
 #include <MueLu.hpp>
-#include <MueLu_Level.hpp>
 #include <MueLu_BaseClass.hpp>
-#include <MueLu_Utilities.hpp>
+#include <MueLu_Level.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linear_solver_preconditioner_type.H"
-#include "baci_linear_solver_amgnxn_smoothers.H"
-#include "baci_linear_solver_amgnxn_hierarchies.H"
+#include <MueLu_Utilities.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 namespace CORE::LINEAR_SOLVER

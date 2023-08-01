@@ -11,8 +11,8 @@
 #ifndef BACI_INPAR_SOLVER_NONLIN_H
 #define BACI_INPAR_SOLVER_NONLIN_H
 
-#include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCPDecl.hpp>
 
 /*----------------------------------------------------------------------*/
 namespace INPAR

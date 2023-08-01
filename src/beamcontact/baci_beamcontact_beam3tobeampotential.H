@@ -10,16 +10,16 @@
 #ifndef BACI_BEAMCONTACT_BEAM3TOBEAMPOTENTIAL_H
 #define BACI_BEAMCONTACT_BEAM3TOBEAMPOTENTIAL_H
 
-#include "baci_beaminteraction_beam3contact_utils.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include <Sacado.hpp>
-
+#include "baci_beam3_base.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
-#include "baci_beam3_base.H"
+#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_sparsematrix.H"
+
+#include <Sacado.hpp>
 
 
 namespace CONTACT

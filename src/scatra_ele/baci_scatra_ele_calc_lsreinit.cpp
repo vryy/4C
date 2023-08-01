@@ -10,16 +10,14 @@
 
 #include "baci_scatra_ele_calc_lsreinit.H"
 
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_discretization_geometry_integrationcell_coordtrafo.H"
+#include "baci_discretization_geometry_position_array.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_utils.H"
 #include "baci_scatra_ele_parameter_lsreinit.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
-
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_discret.H"
-
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_geometry_integrationcell_coordtrafo.H"
 #include "baci_utils_singleton_owner.H"
 
 #define USE_PHIN_FOR_VEL

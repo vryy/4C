@@ -12,8 +12,9 @@
 #ifndef BACI_LIB_FUNCTIONVARIABLES_H
 #define BACI_LIB_FUNCTIONVARIABLES_H
 
-#include <Sacado.hpp>
 #include "baci_lib_symbolic_expression.H"
+
+#include <Sacado.hpp>
 
 // define periodicstruct
 struct periodicstruct

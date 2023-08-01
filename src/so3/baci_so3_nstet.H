@@ -9,11 +9,10 @@
 #ifndef BACI_SO3_NSTET_H
 #define BACI_SO3_NSTET_H
 
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_parobjectfactory.H"
-#include "baci_inpar_structure.H"
-
 #include "baci_mat_material.H"
 
 // #define PRINT_NSTET            ///< printout of setup

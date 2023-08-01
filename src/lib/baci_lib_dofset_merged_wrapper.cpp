@@ -11,13 +11,13 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_lib_matchingoctree.H"
-#include "baci_lib_condition_utils.H"
+#include "baci_lib_dofset_merged_wrapper.H"
 
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_matchingoctree.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_Export.h>
-#include "baci_lib_dofset_merged_wrapper.H"
 
 
 /*----------------------------------------------------------------------*

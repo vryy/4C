@@ -9,29 +9,27 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "baci_beam3_reissner.H"
-
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
 #include "baci_beam3_spatial_discretization_utils.H"
-
-#include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_utils.H"
-#include "baci_mat_beam_elasthyper.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_fixedsizematrix.H"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
 #include "baci_discretization_fem_general_largerotations.H"
-#include "baci_utils_fad.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_exporter.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_mat_beam_elasthyper.H"
 #include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_enum_lists.H"
-
-#include <iostream>
-#include <iomanip>
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_utils_exceptions.H"
+#include "baci_utils_fad.H"
 
 #include <Teuchos_RCP.hpp>
+
+#include <iomanip>
+#include <iostream>
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) cyron 01/08|

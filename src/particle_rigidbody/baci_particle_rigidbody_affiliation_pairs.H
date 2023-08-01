@@ -15,9 +15,10 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include <Epetra_Comm.h>
-#include <vector>
-#include <unordered_map>
+
 #include <memory>
+#include <unordered_map>
+#include <vector>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

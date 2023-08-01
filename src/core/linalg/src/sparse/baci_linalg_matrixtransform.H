@@ -11,13 +11,14 @@
 #ifndef BACI_LINALG_MATRIXTRANSFORM_H
 #define BACI_LINALG_MATRIXTRANSFORM_H
 
-#include <map>
-
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Import.h>
-#include <Epetra_Export.h>
-#include <Epetra_CrsMatrix.h>
 #include "baci_coupling_adapter.H"
+
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Export.h>
+#include <Epetra_Import.h>
+#include <Teuchos_RCP.hpp>
+
+#include <map>
 
 // forward declarations
 namespace CORE::ADAPTER

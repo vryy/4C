@@ -17,10 +17,10 @@
 #include "baci_particle_engine_enums.H"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <tuple>
 #include <vector>
-#include <memory>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

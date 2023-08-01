@@ -8,16 +8,15 @@ multi-scale framework
 
 */
 /*--------------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
-#include "baci_scatra_ele_parameter_std.H"
-
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
 #include "baci_mat_newman_multiscale.H"
+#include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
+#include "baci_scatra_ele_parameter_std.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

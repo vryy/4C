@@ -7,20 +7,19 @@
 
  *------------------------------------------------------------------------------------------------*/
 
+#include "baci_cut_selfcut.H"
+
 #include "baci_cut_kernel.H"
-#include "baci_cut_point_impl.H"
-#include "baci_cut_pointgraph.H"
 #include "baci_cut_mesh.H"
 #include "baci_cut_meshhandle.H"
-#include "baci_cut_triangulateFacet.H"
-#include "baci_cut_side.H"
-#include "baci_cut_pointpool.H"
 #include "baci_cut_options.H"
 #include "baci_cut_output.H"
-
+#include "baci_cut_point_impl.H"
+#include "baci_cut_pointgraph.H"
+#include "baci_cut_pointpool.H"
+#include "baci_cut_side.H"
+#include "baci_cut_triangulateFacet.H"
 #include "baci_discretization_geometry_searchtree.H"
-
-#include "baci_cut_selfcut.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

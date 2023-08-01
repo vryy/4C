@@ -13,8 +13,8 @@
 #define BACI_MIXTURE_CONSTITUENT_SOLIDMATERIAL_H
 
 #include "baci_mat_par_parameter.H"
-#include "baci_mixture_constituent.H"
 #include "baci_mat_so3_material.H"
+#include "baci_mixture_constituent.H"
 
 
 namespace MIXTURE

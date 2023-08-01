@@ -12,8 +12,8 @@ equations
 #define BACI_CUT_FACET_INTEGRATION_H
 
 #include "baci_cut_element.H"
-#include "baci_cut_mesh.H"
 #include "baci_cut_enum.H"
+#include "baci_cut_mesh.H"
 
 // #define DIRECTDIV_EXTENDED_DEBUG_OUTPUT
 // #define TRIANGULATE_ALL_FACETS_FOR_DIVERGENCECELLS

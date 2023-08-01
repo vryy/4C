@@ -13,10 +13,12 @@ to be called!
 */
 /*---------------------------------------------------------------------*/
 
-#include <Epetra_SerialComm.h>
 #include "baci_contact_monocoupled_lagrange_strategy.H"
+
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <Epetra_SerialComm.h>
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              ager 02/15|

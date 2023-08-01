@@ -11,8 +11,8 @@
 
 #include "baci_structure_new_impl_gemm.H"
 
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_sparseoperator.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 

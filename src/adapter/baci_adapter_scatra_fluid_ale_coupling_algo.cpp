@@ -10,11 +10,12 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_adapter_scatra_fluid_ale_coupling_algo.H"
+
+#include "baci_ale_utils_mapextractor.H"
 #include "baci_coupling_adapter.H"
 #include "baci_fluid_utils_mapextractor.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

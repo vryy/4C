@@ -21,18 +21,17 @@
 #define BACI_BEAM3_REISSNER_H
 
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include "baci_lib_node.H"
+#include "baci_beam3_base.H"
+#include "baci_beam3_spatial_discretization_utils.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
-#include <Sacado.hpp>
+#include "baci_lib_node.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_fad.H"
 
-#include "baci_structure_new_elements_paramsinterface.H"
-
-#include "baci_beam3_spatial_discretization_utils.H"
-#include "baci_beam3_base.H"
+#include <Sacado.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;
 

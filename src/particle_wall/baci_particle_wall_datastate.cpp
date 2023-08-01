@@ -11,12 +11,9 @@
 #include "baci_particle_wall_datastate.H"
 
 #include "baci_inpar_particle.H"
-
-#include "baci_lib_discret.H"
-
 #include "baci_io.H"
 #include "baci_io_control.H"
-
+#include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 /*---------------------------------------------------------------------------*

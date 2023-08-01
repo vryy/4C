@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_scatra_ele_boundary_calc_elch_electrode_growth_utils.H"
+
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_std.H"
 

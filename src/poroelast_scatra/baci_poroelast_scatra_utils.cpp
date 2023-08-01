@@ -8,30 +8,26 @@
  */
 
 #include "baci_poroelast_scatra_utils.H"
-#include "baci_poroelast_utils.H"
-#include "baci_poroelast_scatra_utils_clonestrategy.H"
 
-#include <Epetra_Time.h>
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
-
 #include "baci_poroelast_base.H"
 #include "baci_poroelast_monolithic.H"
-
 #include "baci_poroelast_scatra_base.H"
+#include "baci_poroelast_scatra_monolithic.H"
 #include "baci_poroelast_scatra_part_1wc.H"
 #include "baci_poroelast_scatra_part_2wc.H"
-#include "baci_poroelast_scatra_monolithic.H"
-
-#include "baci_so3_poro_scatra_eletypes.H"
+#include "baci_poroelast_scatra_utils_clonestrategy.H"
+#include "baci_poroelast_utils.H"
 #include "baci_so3_poro_p1_scatra_eletypes.H"
-
-#include "baci_w1_poro_scatra_eletypes.H"
+#include "baci_so3_poro_scatra_eletypes.H"
 #include "baci_w1_poro_p1_scatra_eletypes.H"
+#include "baci_w1_poro_scatra_eletypes.H"
+
+#include <Epetra_Time.h>
 
 
 bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)

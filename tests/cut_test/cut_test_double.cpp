@@ -6,9 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_mesh.H"
 #include "baci_cut_element.H"
+#include "baci_cut_mesh.H"
 #include "baci_cut_meshintersection.H"
+
 #include "cut_test_utils.H"
 
 void test_hex8_quad4_double_cut()

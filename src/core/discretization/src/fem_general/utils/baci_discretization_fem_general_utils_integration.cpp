@@ -7,11 +7,12 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_utils_integration.H"
+
+#include "baci_utils_exceptions.H"
+
 #include <cmath>
 #include <iostream>
-
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_utils_exceptions.H"
 
 
 namespace internal

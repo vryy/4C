@@ -9,11 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mat_anisotropy.H"
-#include "baci_mat_service.H"
-#include "baci_lib_parobject.H"
+
 #include "baci_fiber_nodal_fiber_holder.H"
-#include "baci_mat_anisotropy_utils.H"
+#include "baci_lib_parobject.H"
 #include "baci_mat_anisotropy_extension.H"
+#include "baci_mat_anisotropy_utils.H"
+#include "baci_mat_service.H"
 
 MAT::Anisotropy::Anisotropy()
     : element_fibers_initialized_(false),

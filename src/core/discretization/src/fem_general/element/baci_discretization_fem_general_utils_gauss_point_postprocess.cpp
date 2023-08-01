@@ -7,10 +7,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_lib_element.H"
+
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_element.H"
 
 namespace
 {

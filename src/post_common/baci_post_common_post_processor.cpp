@@ -7,18 +7,15 @@
 
  */
 
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_post_common.H"
+#include "baci_post_common_single_field_writers.H"
+#include "baci_post_common_writer_base.H"
+#include "baci_scatra_ele.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_MpiComm.h>
-
-#include "baci_post_common_writer_base.H"
-#include "baci_post_common_single_field_writers.H"
-
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-
-#include "baci_scatra_ele.H"
 
 
 void runEnsightVtuFilter(PostProblem& problem)

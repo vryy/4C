@@ -10,8 +10,8 @@
 
 #include "baci_w1_scatra.H"
 
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_linedefinition.H"
 
 DRT::ELEMENTS::Wall1ScatraType DRT::ELEMENTS::Wall1ScatraType::instance_;
 

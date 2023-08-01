@@ -10,17 +10,19 @@
 
 
 #include "baci_structure_new_resulttest.H"
-#include <Teuchos_RCPDecl.hpp>
-#include <optional>
-#include <string>
-#include <Epetra_MultiVector.h>
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_model_evaluator_data.H"
 
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_timint_base.H"
+
+#include <Epetra_MultiVector.h>
+#include <Teuchos_RCPDecl.hpp>
+
+#include <optional>
+#include <string>
 
 
 namespace

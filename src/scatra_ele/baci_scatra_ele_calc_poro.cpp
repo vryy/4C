@@ -10,20 +10,17 @@
 
 #include "baci_scatra_ele_calc_poro.H"
 
-#include "baci_lib_globalproblem.H"
+#include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
-
-#include "baci_mat_structporo.H"
-#include "baci_mat_scatra_mat.H"
 #include "baci_mat_list.H"
-
+#include "baci_mat_scatra_mat.H"
+#include "baci_mat_structporo.H"
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
-
-#include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

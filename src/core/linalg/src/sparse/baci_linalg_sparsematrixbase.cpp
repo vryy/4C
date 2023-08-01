@@ -7,6 +7,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_linalg_sparsematrixbase.H"
+
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 

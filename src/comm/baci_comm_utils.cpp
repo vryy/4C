@@ -11,6 +11,7 @@
  | headers                                                  ghamm 01/12 |
  *----------------------------------------------------------------------*/
 #include "baci_comm_utils.H"
+
 #include "baci_io_pstream.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -19,10 +20,10 @@
 #include <Epetra_Import.h>
 #include <Epetra_MpiComm.h>
 
-#include <vector>
+#include <iomanip>
 #include <sstream>
 #include <string>
-#include <iomanip>
+#include <vector>
 
 
 /*----------------------------------------------------------------------*

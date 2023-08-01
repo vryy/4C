@@ -9,12 +9,13 @@
 #ifndef BACI_SO3_SURFACE_H
 #define BACI_SO3_SURFACE_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include "baci_lib_element.H"
-#include "baci_lib_elementtype.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
+#include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 namespace DRT

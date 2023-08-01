@@ -11,9 +11,9 @@
 #define BACI_UTILS_SINGLETON_OWNER_H
 
 #include <functional>
+#include <map>
 #include <memory>
 #include <type_traits>
-#include <map>
 
 namespace CORE::UTILS
 {

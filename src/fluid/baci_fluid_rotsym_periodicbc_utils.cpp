@@ -11,9 +11,10 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_fluid_rotsym_periodicbc_utils.H"
+
+#include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_node.H"
-#include "baci_lib_condition.H"
 
 
 /*----------------------------------------------------------------------*/

@@ -13,8 +13,8 @@
 
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-#include "baci_scatra_ele_calc.H"
 #include "baci_mat_cnst_1d_art.H"
+#include "baci_scatra_ele_calc.H"
 
 
 namespace DRT

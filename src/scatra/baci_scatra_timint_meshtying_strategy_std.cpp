@@ -10,12 +10,10 @@
 #include "baci_scatra_timint_meshtying_strategy_std.H"
 
 #include "baci_lib_discret.H"
-
-#include "baci_scatra_timint_implicit.H"
 #include "baci_lib_globalproblem.H"
-
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

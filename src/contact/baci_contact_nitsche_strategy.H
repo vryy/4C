@@ -13,6 +13,7 @@
 #include "baci_contact_abstract_strategy.H"
 
 #include <Epetra_FEVector.h>
+
 #include <utility>
 
 namespace CONTACT

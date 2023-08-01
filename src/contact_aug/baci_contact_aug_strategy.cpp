@@ -8,37 +8,33 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_contact_aug_strategy.H"
+
+#include "baci_contact_aug_active_set.H"
 #include "baci_contact_aug_interface.H"
+#include "baci_contact_aug_parallel_distribution_controller.H"
 #include "baci_contact_aug_potential.H"
 #include "baci_contact_aug_steepest_ascent_strategy.H"
-#include "baci_contact_aug_active_set.H"
 #include "baci_contact_aug_timemonitor.H"
-#include "baci_contact_aug_parallel_distribution_controller.H"
-
-#include "baci_mortar_matrix_transform.H"
-
-#include "baci_contact_node.H"
-#include "baci_contact_lagrange_strategy.H"
 #include "baci_contact_defines.H"
+#include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_node.H"
 #include "baci_contact_paramsinterface.H"
 #include "baci_contact_utils.H"
-#include "baci_mortar_utils.H"
-
-#include "baci_lib_utils_parallel.H"
-#include "baci_lib_epetra_utils.H"
-
-#include "baci_io_pstream.H"
-#include "baci_io.H"
-
 #include "baci_inpar_contact.H"
-
+#include "baci_io.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_epetra_utils.H"
+#include "baci_lib_utils_parallel.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mortar_matrix_transform.H"
+#include "baci_mortar_utils.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 #include <unordered_map>
-#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

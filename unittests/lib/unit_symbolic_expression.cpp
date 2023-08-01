@@ -8,7 +8,6 @@
 #include <gtest/gtest.h>
 
 #include "baci_lib_symbolic_expression.H"
-
 #include "baci_unittest_utils_assertions.h"
 
 

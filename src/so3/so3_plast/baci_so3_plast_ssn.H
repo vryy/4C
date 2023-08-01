@@ -13,17 +13,12 @@
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
-#include "baci_so3_plast_ssn_eletypes.H"
-#include "baci_thermo_ele_impl_utils.H"
-
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-
-// include header because number of Gauss points are determined
-// dependent on distype
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "baci_so3_plast_ssn_eletypes.H"
+#include "baci_thermo_ele_impl_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                          seitz 07/13 |

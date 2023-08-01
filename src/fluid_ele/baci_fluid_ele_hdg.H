@@ -12,11 +12,10 @@
 #ifndef BACI_FLUID_ELE_HDG_H
 #define BACI_FLUID_ELE_HDG_H
 
-#include <Teuchos_RCP.hpp>
-
-
-#include "baci_fluid_ele.H"
 #include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_fluid_ele.H"
+
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

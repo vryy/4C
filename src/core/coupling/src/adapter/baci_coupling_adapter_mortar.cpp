@@ -9,21 +9,22 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_coupling_adapter_mortar.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_utils.H"
-#include "baci_mortar_coupling3d_classes.H"
+
+#include "baci_inpar_fluid.H"
+#include "baci_io.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_io.H"
 #include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_inpar_fluid.H"
+#include "baci_mortar_coupling3d_classes.H"
+#include "baci_mortar_element.H"
+#include "baci_mortar_interface.H"
+#include "baci_mortar_node.H"
+#include "baci_mortar_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

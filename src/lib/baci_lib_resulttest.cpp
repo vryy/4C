@@ -9,15 +9,16 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <utility>
-
 #include "baci_lib_resulttest.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_inputreader.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_utils_exceptions.H"
+
+#include <utility>
 
 
 DRT::ResultTest::ResultTest(std::string name) : myname_(std::move(name)) {}

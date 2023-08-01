@@ -9,10 +9,11 @@
 #ifndef BACI_CONTACT_SELFCONTACT_BINARYTREE_H
 #define BACI_CONTACT_SELFCONTACT_BINARYTREE_H
 
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Map.h>
 #include "baci_lib_element.H"
 #include "baci_mortar_base_binarytree.H"
+
+#include <Epetra_Map.h>
+#include <Teuchos_ParameterList.hpp>
 
 // forward declarations
 namespace DRT

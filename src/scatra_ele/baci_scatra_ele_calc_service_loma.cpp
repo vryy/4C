@@ -8,20 +8,17 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "baci_discretization_geometry_position_array.H"
-
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-
-#include "baci_mat_material.H"
-#include "baci_mat_list.H"
 #include "baci_mat_arrhenius_temp.H"
+#include "baci_mat_list.H"
+#include "baci_mat_material.H"
 #include "baci_mat_sutherland.H"
 #include "baci_mat_tempdepwater.H"
-
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_calc_loma.H"
+#include "baci_scatra_ele_parameter_timint.H"
 
 /*----------------------------------------------------------------------*
  | evaluate action                                           fang 02/15 |

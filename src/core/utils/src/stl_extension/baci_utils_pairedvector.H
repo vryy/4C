@@ -13,16 +13,16 @@
 #ifndef BACI_UTILS_PAIREDVECTOR_H
 #define BACI_UTILS_PAIREDVECTOR_H
 
-#include <vector>
-#include <utility>
-#include <cstddef>
-#include <stdexcept>
+#include "baci_utils_pairedobj_insert_policy.H"
+
 #include <algorithm>
-#include <ostream>
+#include <cstddef>
 #include <iomanip>
 #include <map>
-
-#include "baci_utils_pairedobj_insert_policy.H"
+#include <ostream>
+#include <stdexcept>
+#include <utility>
+#include <vector>
 
 namespace CORE::GEN
 {

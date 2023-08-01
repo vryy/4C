@@ -10,18 +10,15 @@
 /*----------------------------------------------------------------------*/
 #include "baci_contact_nox_nln_meshtying_linearsystem.H"  // base class
 
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_contact_abstract_strategy.H"
+#include "baci_inpar_contact.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_mortar_strategy_base.H"
+#include "baci_solver_nonlin_nox_aux.H"
 #include "baci_solver_nonlin_nox_interface_jacobian.H"
 #include "baci_solver_nonlin_nox_interface_required.H"
-#include "baci_solver_nonlin_nox_aux.H"
-
-#include "baci_mortar_strategy_base.H"
-#include "baci_contact_abstract_strategy.H"
-
-#include "baci_inpar_contact.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

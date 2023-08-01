@@ -8,30 +8,30 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <iostream>
-#include <stdexcept>
-#include <csignal>
-#include <Epetra_MpiComm.h>
-
-#include "baci_lib_globalproblem.H"
-#include "baci_comm_utils.H"
 #include "baci_config_compile_settings.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_validcontactconstitutivelaw.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_inpar_validmaterials.H"
-#include "baci_lib_function.H"
-#include "baci_lib_elementdefinition.H"
-#include "baci_lib_resulttest.H"
-#include "baci_utils_exceptions.H"
-#include "baci_module_registry_parobjectregister.H"
-#include "baci_lib_utils_createdis.H"
 
+#include "baci_comm_utils.H"
 #include "baci_config_revision.H"
 #include "baci_config_trilinos_version.H"
+#include "baci_inpar_validconditions.H"
+#include "baci_inpar_validcontactconstitutivelaw.H"
+#include "baci_inpar_validmaterials.H"
+#include "baci_inpar_validparameters.H"
+#include "baci_lib_elementdefinition.H"
+#include "baci_lib_function.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_resulttest.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_module_registry_parobjectregister.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_MpiComm.h>
+#include <Kokkos_Core.hpp>
 #include <unistd.h>
 
-#include <Kokkos_Core.hpp>
+#include <csignal>
+#include <iostream>
+#include <stdexcept>
 
 #ifdef TRAP_FE
 #include <cfenv>

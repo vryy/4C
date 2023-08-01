@@ -8,40 +8,35 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <MueLu_ConfigDefs.hpp>
-
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_MultiVectorFactory.hpp>
-#include <Xpetra_MapFactory.hpp>
-#include <Xpetra_CrsMatrixWrap.hpp>
-
-#include <MueLu.hpp>
-#include <MueLu_FactoryBase.hpp>
-#include <MueLu_PermutationFactory.hpp>
-#include <MueLu_SmootherPrototype.hpp>
-#include <MueLu_SmootherFactory.hpp>
-#include <MueLu_DirectSolver.hpp>
-#include <Trilinos_version.h>
-#include <MueLu_HierarchyUtils.hpp>
-#include <MueLu_VerboseObject.hpp>
-
-// Belos headers
-#include <BelosConfigDefs.hpp>
-#include <BelosLinearProblem.hpp>
-#include <BelosEpetraAdapter.hpp>
-#include <BelosBlockCGSolMgr.hpp>
-#include <BelosBlockGmresSolMgr.hpp>
-#include <BelosBiCGStabSolMgr.hpp>
-
-// BACI headers
 #include "baci_linear_solver_method_belos.H"
-#include "baci_linear_solver_preconditioner_point.H"
-#include "baci_linear_solver_preconditioner_block.H"
-#include "baci_linear_solver_preconditioner_krylovprojection.H"
-#include "baci_linear_solver_preconditioner_ifpack.H"
-#include "baci_linear_solver_preconditioner_ml.H"
 
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_block.H"
+#include "baci_linear_solver_preconditioner_ifpack.H"
+#include "baci_linear_solver_preconditioner_krylovprojection.H"
+#include "baci_linear_solver_preconditioner_ml.H"
+#include "baci_linear_solver_preconditioner_point.H"
+
+#include <BelosBiCGStabSolMgr.hpp>
+#include <BelosBlockCGSolMgr.hpp>
+#include <BelosBlockGmresSolMgr.hpp>
+#include <BelosConfigDefs.hpp>
+#include <BelosEpetraAdapter.hpp>
+#include <BelosLinearProblem.hpp>
+#include <MueLu.hpp>
+#include <MueLu_ConfigDefs.hpp>
+#include <MueLu_DirectSolver.hpp>
+#include <MueLu_FactoryBase.hpp>
+#include <MueLu_HierarchyUtils.hpp>
+#include <MueLu_PermutationFactory.hpp>
+#include <MueLu_SmootherFactory.hpp>
+#include <MueLu_SmootherPrototype.hpp>
+#include <MueLu_VerboseObject.hpp>
+#include <Trilinos_version.h>
+#include <Xpetra_CrsMatrixWrap.hpp>
+#include <Xpetra_MapFactory.hpp>
+#include <Xpetra_Matrix.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

@@ -9,12 +9,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_w1.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_utils_exceptions.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::Wall1Type DRT::ELEMENTS::Wall1Type::instance_;
 

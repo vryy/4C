@@ -13,20 +13,21 @@
 
 #include "baci_post_common.H"
 
-#include <stack>
-#include "baci_lib_exporter.H"
-#include <EpetraExt_Transpose_CrsGraph.h>
-#include <Epetra_MpiComm.h>
-#include "baci_module_registry_parobjectregister.H"
-#include "baci_lib_parobject.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_periodicbc.H"
-#include "baci_nurbs_discret.H"
-#include "baci_lib_dofset_independent.H"
-#include "baci_rigidsphere.H"
 #include "baci_inpar_problemtype.H"
-
 #include "baci_io_legacy_table_cpp.h"
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_dofset_independent.H"
+#include "baci_lib_exporter.H"
+#include "baci_lib_parobject.H"
+#include "baci_lib_periodicbc.H"
+#include "baci_module_registry_parobjectregister.H"
+#include "baci_nurbs_discret.H"
+#include "baci_rigidsphere.H"
+
+#include <Epetra_MpiComm.h>
+#include <EpetraExt_Transpose_CrsGraph.h>
+
+#include <stack>
 extern "C"
 {
 #include "baci_io_legacy_table_iter.h"

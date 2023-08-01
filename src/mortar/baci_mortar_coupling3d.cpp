@@ -7,17 +7,17 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mortar_coupling3d.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_projector.H"
-#include "baci_mortar_integrator.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_utils.H"
-#include "baci_mortar_calc_utils.H"
+
 #include "baci_contact_interpolator.H"  // MT interpolator is located in here
 #include "baci_lib_discret.H"
-
-#include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_mortar_calc_utils.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_integrator.H"
+#include "baci_mortar_node.H"
+#include "baci_mortar_projector.H"
+#include "baci_mortar_utils.H"
 
 
 /*----------------------------------------------------------------------*

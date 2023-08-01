@@ -9,9 +9,9 @@
 #ifndef BACI_MATELAST_COUPANISOEXPO_H
 #define BACI_MATELAST_COUPANISOEXPO_H
 
-#include "baci_matelast_coupanisoexpobase.H"
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_anisotropy_extension_provider.H"
+#include "baci_matelast_coupanisoexpobase.H"
 
 
 namespace MAT

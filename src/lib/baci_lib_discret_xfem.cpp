@@ -9,12 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_lib_discret_xfem.H"
+
 #include "baci_lib_xfem_dofset.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*

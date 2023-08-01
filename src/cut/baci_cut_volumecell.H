@@ -13,7 +13,6 @@
 
 #include "baci_cut_facet.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
-
 #include "baci_inpar_cut.H"
 
 namespace CORE::GEO

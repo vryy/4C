@@ -7,17 +7,16 @@
 
  *------------------------------------------------------------------------------------------------*/
 
-#include "baci_cut_position.H"
-#include "baci_cut_intersection.H"
 #include "baci_cut_facet.H"
-#include "baci_cut_point_impl.H"
+#include "baci_cut_intersection.H"
 #include "baci_cut_levelsetside.H"
 #include "baci_cut_options.H"
-
+#include "baci_cut_point_impl.H"
+#include "baci_cut_position.H"
 #include "baci_lib_globalproblem.H"
 
-#include <string>
 #include <stack>
+#include <string>
 
 
 /*----------------------------------------------------------------------------*

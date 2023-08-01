@@ -8,10 +8,11 @@ transform matrixes, vectors, ...
 
 *----------------------------------------------------------------------*/
 
+#include "baci_coupling_adapter.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-#include "baci_coupling_adapter.H"
 
 #define COUP_MANAGER_DEBUG_OUT
 

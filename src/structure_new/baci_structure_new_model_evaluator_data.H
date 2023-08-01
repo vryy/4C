@@ -11,19 +11,20 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_DATA_H
 
+#include "baci_contact_paramsinterface.H"  // base class of the ContactData class
+#include "baci_inpar_browniandyn.H"        // enums
+#include "baci_lib_discret.H"
+#include "baci_structure_new_elements_paramsinterface.H"  // base class of the Data class
+#include "baci_structure_new_enum_lists.H"
+#include "baci_structure_new_gauss_point_data_output_manager.H"
+#include "baci_structure_new_timint_basedatasdyn.H"  // base class of the Data class
 #include "baci_utils_exceptions.H"
+#include "baci_utils_pairedvector.H"
+
 #include <Epetra_MultiVector.h>
 #include <NOX_Abstract_Vector.H>
-#include <unordered_map>
-#include "baci_structure_new_gauss_point_data_output_manager.H"
-#include "baci_structure_new_elements_paramsinterface.H"  // base class of the Data class
-#include "baci_structure_new_timint_basedatasdyn.H"       // base class of the Data class
-#include "baci_structure_new_enum_lists.H"
-#include "baci_contact_paramsinterface.H"  // base class of the ContactData class
-#include "baci_lib_discret.H"
-#include "baci_inpar_browniandyn.H"  // enums
 
-#include "baci_utils_pairedvector.H"
+#include <unordered_map>
 
 
 // forward declarations

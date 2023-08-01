@@ -8,18 +8,20 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <iostream>
+#include "baci_linear_solver_amgnxn_vcycle.H"
 
+#include "baci_linear_solver_amgnxn_smoothers.H"
+#include "baci_utils_exceptions.H"
+
+#include <EpetraExt_RowMatrixOut.h>
+#include <MueLu_EpetraOperator.hpp>
+#include <MueLu_MLParameterListInterpreter_decl.hpp>
+#include <MueLu_ParameterListInterpreter.hpp>
 #include <Teuchos_PtrDecl.hpp>
 #include <Teuchos_XMLParameterListHelpers.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
-#include <MueLu_ParameterListInterpreter.hpp>
-#include <MueLu_EpetraOperator.hpp>
-#include <EpetraExt_RowMatrixOut.h>
-#include "baci_utils_exceptions.H"
-#include "baci_linear_solver_amgnxn_vcycle.H"
-#include "baci_linear_solver_amgnxn_smoothers.H"
+
+#include <iostream>
 
 
 /*------------------------------------------------------------------------------*/

@@ -7,9 +7,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mixture_constituent_elasthyper_damage.H"
-#include "baci_mat_par_bundle.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
+#include "baci_mat_par_bundle.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_isoneohooke.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"

@@ -9,15 +9,13 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_contact_interface.H"
 #include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
-
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
+#include "baci_contact_interface.H"
 #include "baci_coupling_adapter.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------*
  |  Assemble slave coordinates (xs)                 gitterle 10/09|

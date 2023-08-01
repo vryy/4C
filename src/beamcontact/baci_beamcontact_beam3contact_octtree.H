@@ -11,13 +11,13 @@
 #ifndef BACI_BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
 #define BACI_BEAMCONTACT_BEAM3CONTACT_OCTTREE_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
+#include "baci_beamcontact_beam3contactnew.H"
+#include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beamcontact_beam3contactnew.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 
 using namespace CONTACT;

@@ -9,39 +9,31 @@
 
 #include "baci_ssi_base.H"
 
+#include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_adapter_str_factory.H"
+#include "baci_adapter_str_ssiwrapper.H"
+#include "baci_adapter_str_structure_new.H"
+#include "baci_coupling_adapter.H"
+#include "baci_inpar_ssi.H"
+#include "baci_inpar_volmortar.H"
+#include "baci_io_control.H"
+#include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_inputreader.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_lib_utils_parallel.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_scatra_ele.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_timint_meshtying_strategy_s2i.H"
+#include "baci_scatra_utils.H"
 #include "baci_ssi_clonestrategy.H"
 #include "baci_ssi_coupling.H"
 #include "baci_ssi_partitioned.H"
 #include "baci_ssi_resulttest.H"
 #include "baci_ssi_str_model_evaluator_partitioned.H"
 #include "baci_ssi_utils.H"
-
-#include "baci_coupling_adapter.H"
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_adapter_str_factory.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_str_structure_new.H"
-
-#include "baci_inpar_volmortar.H"
-#include "baci_inpar_ssi.H"
-
-#include "baci_io_control.H"
-
-#include "baci_lib_inputreader.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_utils_parallel.H"
-#include "baci_lib_function_of_time.H"
-
-#include "baci_mat_par_bundle.H"
-
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-#include "baci_scatra_utils.H"
-
-#include "baci_scatra_ele.H"
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

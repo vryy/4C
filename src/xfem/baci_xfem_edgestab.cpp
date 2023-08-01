@@ -11,31 +11,24 @@ continuous interior penalty) scheme
 
 
 
-#include <Teuchos_TimeMonitor.hpp>
+#include "baci_xfem_edgestab.H"
 
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret_faces.H"
-
+#include "baci_cut_cutwizard.H"
 #include "baci_cut_elementhandle.H"
 #include "baci_cut_sidehandle.H"
 #include "baci_cut_volumecell.H"
-#include "baci_cut_cutwizard.H"
-
-
 #include "baci_fluid_ele.H"
-#include "baci_fluid_ele_intfaces_calc.H"
 #include "baci_fluid_ele_action.H"
-
+#include "baci_fluid_ele_intfaces_calc.H"
 #include "baci_inpar_fluid.H"
-
-// Needed for material check.
-#include "baci_xfem_utils.H"
-// Needed for safety check.
-#include "baci_mat_material.H"
+#include "baci_lib_assemblestrategy.H"
+#include "baci_lib_discret_faces.H"
 #include "baci_mat_list.H"
+#include "baci_mat_material.H"
 #include "baci_mat_newtonianfluid.H"
+#include "baci_xfem_utils.H"
 
-#include "baci_xfem_edgestab.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |  prepares edge based stabilization and ghost penaly in case of XFEM  |

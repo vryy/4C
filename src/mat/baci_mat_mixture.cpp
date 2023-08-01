@@ -6,12 +6,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include <memory>
-
 #include "baci_mat_mixture.H"
-#include "baci_mat_service.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_mat_service.H"
+
+#include <memory>
 
 // constructor of the parameters
 MAT::PAR::Mixture::Mixture(const Teuchos::RCP<MAT::PAR::Material>& matdata)

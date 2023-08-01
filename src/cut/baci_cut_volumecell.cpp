@@ -8,23 +8,23 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_point.H"
-#include "baci_cut_cycle.H"
 #include "baci_cut_volumecell.H"
+
 #include "baci_cut_boundarycell.H"
+#include "baci_cut_boundarycell_integration.H"
+#include "baci_cut_cycle.H"
+#include "baci_cut_direct_divergence.H"
 #include "baci_cut_integrationcell.H"
-#include "baci_cut_tetmesh.H"
+#include "baci_cut_kernel.H"
 #include "baci_cut_mesh.H"
 #include "baci_cut_options.H"
-#include "baci_cut_kernel.H"
+#include "baci_cut_point.H"
+#include "baci_cut_tetmesh.H"
 #include "baci_cut_triangulateFacet.H"
-#include "baci_cut_volume_integration.H"
-#include "baci_cut_boundarycell_integration.H"
-#include "baci_cut_direct_divergence.H"
 #include "baci_cut_utils.H"
+#include "baci_cut_volume_integration.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
 
 #include <algorithm>
 

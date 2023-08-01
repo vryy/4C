@@ -11,14 +11,15 @@
 #ifndef BACI_CUT_MEMORY_MANAGER_H
 #define BACI_CUT_MEMORY_MANAGER_H
 
-#include <cstddef>    // for size_T
-#include <stdexcept>  // for std_runtime_error
-#include <map>
-#include <string>
-#include <vector>
-#include <iostream>
-#include <unordered_map>
 #include "baci_cut_tolerance.H"  // for info whether debug or not
+
+#include <cstddef>  // for size_T
+#include <iostream>
+#include <map>
+#include <stdexcept>  // for std_runtime_error
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 namespace CORE::GEO
 {

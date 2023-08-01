@@ -13,8 +13,8 @@
 #define BACI_SCATRA_ELE_CALC_PORO_REAC_H
 
 #include "baci_scatra_ele_calc.H"
-#include "baci_scatra_ele_calc_poro.H"
 #include "baci_scatra_ele_calc_advanced_reaction.H"
+#include "baci_scatra_ele_calc_poro.H"
 
 namespace DRT
 {

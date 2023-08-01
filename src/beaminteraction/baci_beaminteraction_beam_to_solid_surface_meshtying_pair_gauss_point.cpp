@@ -9,13 +9,13 @@
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_gauss_point.H"
 
-#include "baci_beaminteraction_contact_params.H"
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "baci_beaminteraction_calc_utils.H"
-#include "baci_geometry_pair_line_to_surface.H"
+#include "baci_beaminteraction_contact_params.H"
+#include "baci_geometry_pair_element_faces.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_factory.H"
-#include "baci_geometry_pair_element_faces.H"
+#include "baci_geometry_pair_line_to_surface.H"
 
 #include <Epetra_FEVector.h>
 

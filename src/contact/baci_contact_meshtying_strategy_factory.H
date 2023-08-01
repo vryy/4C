@@ -10,7 +10,6 @@
 #define BACI_CONTACT_MESHTYING_STRATEGY_FACTORY_H
 
 #include "baci_inpar_contact.H"
-
 #include "baci_mortar_element.H"
 #include "baci_mortar_strategy_factory.H"
 

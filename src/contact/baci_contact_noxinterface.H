@@ -12,9 +12,9 @@
 #ifndef BACI_CONTACT_NOXINTERFACE_H
 #define BACI_CONTACT_NOXINTERFACE_H
 
-#include <vector>
-
 #include "baci_solver_nonlin_nox_constraint_interface_required.H"
+
+#include <vector>
 
 namespace CONTACT
 {

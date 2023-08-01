@@ -16,17 +16,16 @@
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 09/12 |
  *----------------------------------------------------------------------*/
-#include <list>
-
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_binstrategy_utils.H"
+#include "baci_linalg_fixedsizematrix.H"
 
-
-#include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_CrsGraph.h>
+#include <Epetra_MpiComm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <list>
 #include <vector>
 
 namespace DRT

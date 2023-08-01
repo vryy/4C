@@ -16,10 +16,10 @@ with different parameters in more than one fluid field is not yet supported.
 #ifndef BACI_FLUID_ELE_PARAMETER_TIMINT_H
 #define BACI_FLUID_ELE_PARAMETER_TIMINT_H
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "baci_inpar_fluid.H"
-
 #include "baci_utils_singleton_owner.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 namespace DRT
 {

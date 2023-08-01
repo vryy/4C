@@ -12,8 +12,9 @@
 #ifndef BACI_LOCA_CONTINUATION_NLN_GROUP_H
 #define BACI_LOCA_CONTINUATION_NLN_GROUP_H
 
-#include <LOCA_Epetra_Group.H>
 #include "baci_solver_nonlin_nox_group.H"
+
+#include <LOCA_Epetra_Group.H>
 
 // forward declaration
 namespace Teuchos

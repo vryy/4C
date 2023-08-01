@@ -7,12 +7,12 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_isoanisoexpo.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
-#include "baci_mat_par_material.H"
-#include "baci_mat_material.H"
-#include "baci_mat_service.H"
 #include "baci_lib_linedefinition.H"
+#include "baci_mat_material.H"
+#include "baci_mat_par_material.H"
+#include "baci_mat_service.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
 
 MAT::ELASTIC::PAR::IsoAnisoExpo::IsoAnisoExpo(const Teuchos::RCP<MAT::PAR::Material>& matdata)

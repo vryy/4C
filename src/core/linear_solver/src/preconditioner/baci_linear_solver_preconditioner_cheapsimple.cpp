@@ -8,33 +8,29 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <EpetraExt_OperatorOut.h>
+#include "baci_linear_solver_preconditioner_cheapsimple.H"
 
-#include <Ifpack.h>
-
-#include <ml_MultiLevelPreconditioner.h>
-
-#include <Xpetra_MultiVectorFactory.hpp>
-
-#include <MueLu_RAPFactory.hpp>
-#include <MueLu_TrilinosSmoother.hpp>
-#include <MueLu_CoalesceDropFactory.hpp>
-#include <MueLu_TentativePFactory.hpp>
-#include <MueLu_SaPFactory.hpp>
-#include <MueLu_VerbosityLevel.hpp>
-#include <MueLu_SmootherFactory.hpp>
-#include <MueLu_ParameterListInterpreter.hpp>
-#include <MueLu_AggregationExportFactory.hpp>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
-#include <MueLu_UseDefaultTypes.hpp>
-#include <MueLu_EpetraOperator.hpp>
-
-#include "baci_linear_solver_preconditioner_linalg_ana.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_downwindmatrix.H"
 #include "baci_linalg_multiply.H"
+#include "baci_linear_solver_preconditioner_linalg_ana.H"
 
-#include "baci_linear_solver_preconditioner_cheapsimple.H"
+#include <EpetraExt_OperatorOut.h>
+#include <Ifpack.h>
+#include <ml_MultiLevelPreconditioner.h>
+#include <MueLu_AggregationExportFactory.hpp>
+#include <MueLu_CoalesceDropFactory.hpp>
+#include <MueLu_EpetraOperator.hpp>
+#include <MueLu_MLParameterListInterpreter_decl.hpp>
+#include <MueLu_ParameterListInterpreter.hpp>
+#include <MueLu_RAPFactory.hpp>
+#include <MueLu_SaPFactory.hpp>
+#include <MueLu_SmootherFactory.hpp>
+#include <MueLu_TentativePFactory.hpp>
+#include <MueLu_TrilinosSmoother.hpp>
+#include <MueLu_UseDefaultTypes.hpp>
+#include <MueLu_VerbosityLevel.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
 
 #define SIMPLEC_DIAGONAL 1       // 1: row sums     0: just diagonal
 #define CHEAPSIMPLE_ALGORITHM 1  // 1: AMG          0: true solve

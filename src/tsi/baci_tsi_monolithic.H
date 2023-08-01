@@ -19,10 +19,10 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/10 |
  *----------------------------------------------------------------------*/
-#include "baci_tsi_algorithm.H"
-#include "baci_inpar_tsi.H"
 #include "baci_inpar_structure.H"
 #include "baci_inpar_thermo.H"
+#include "baci_inpar_tsi.H"
+#include "baci_tsi_algorithm.H"
 
 #include <Teuchos_Time.hpp>
 

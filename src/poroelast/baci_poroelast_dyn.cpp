@@ -9,12 +9,12 @@
 
 #include "baci_poroelast_dyn.H"
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_poroelast_base.H"
 #include "baci_poroelast_utils.H"
-#include "baci_poroelast_utils_setup.H"
 #include "baci_poroelast_utils_clonestrategy.H"
+#include "baci_poroelast_utils_setup.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 void poroelast_drt()

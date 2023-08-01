@@ -8,17 +8,17 @@
 /*-----------------------------------------------------------------------*/
 
 #include "baci_mortar_utils.H"
-#include "baci_utils_exceptions.H"
+
 #include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_multiply.H"
-
 #include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
+#include "baci_utils_exceptions.H"
 
 /*!
 \brief Sort vector in ascending order

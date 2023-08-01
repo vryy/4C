@@ -10,14 +10,12 @@
 
 #include "baci_fsi_nox_epsilon.H"
 
-#include <NOX_GlobalData.H>
 #include <NOX_Abstract_Group.H>
-
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Vector.H>
+#include <NOX_GlobalData.H>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 #include <vector>
 

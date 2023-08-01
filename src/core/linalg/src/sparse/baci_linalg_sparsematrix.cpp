@@ -6,16 +6,17 @@
 \level 0
 
 *----------------------------------------------------------------------*/
-#include <fstream>
-
 #include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
-#include <EpetraExt_Transpose_RowMatrix.h>
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+
 #include <EpetraExt_MatrixMatrix.h>
-#include <Teuchos_TimeMonitor.hpp>
+#include <EpetraExt_Transpose_RowMatrix.h>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <fstream>
 #include <iterator>
 #include <sstream>
 

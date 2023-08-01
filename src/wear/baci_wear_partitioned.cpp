@@ -14,57 +14,48 @@
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
 #include "baci_wear_partitioned.H"
-#include "baci_wear_utils.H"
 
-#include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_elementtype.H"
-#include "baci_lib_element.H"
-
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_wear.H"
-#include "baci_inpar_ale.H"
-
-#include "baci_w1.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_hex20.H"
-#include "baci_so3_hex27.H"
-#include "baci_so3_tet4.H"
-#include "baci_so3_tet10.H"
-
-#include "baci_contact_manager.H"
+#include "baci_adapter_ale_wear.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_ale_utils_mapextractor.H"
 #include "baci_contact_abstract_strategy.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
 #include "baci_contact_defines.H"
-#include "baci_contact_meshtying_manager.H"
-#include "baci_contact_wear_lagrange_strategy.H"
-#include "baci_contact_wear_interface.H"
-#include "baci_contact_integrator.H"
-#include "baci_contact_friction_node.H"
 #include "baci_contact_element.H"
-#include "baci_mortar_manager_base.H"
-
-#include "baci_structure_aux.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_SerialComm.h>
-
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linear_solver_method_linalg.H"
-
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_ale_utils_mapextractor.H"
-
+#include "baci_contact_friction_node.H"
+#include "baci_contact_integrator.H"
+#include "baci_contact_interface.H"
+#include "baci_contact_manager.H"
+#include "baci_contact_meshtying_manager.H"
+#include "baci_contact_node.H"
+#include "baci_contact_wear_interface.H"
+#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_volmortar.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_ale_wear.H"
-
 #include "baci_fs3i_biofilm_fsi_utils.H"
+#include "baci_inpar_ale.H"
+#include "baci_inpar_contact.H"
+#include "baci_inpar_validparameters.H"
+#include "baci_inpar_wear.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_element.H"
+#include "baci_lib_elementtype.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_mortar_manager_base.H"
+#include "baci_so3_hex20.H"
+#include "baci_so3_hex27.H"
+#include "baci_so3_hex8.H"
+#include "baci_so3_tet10.H"
+#include "baci_so3_tet4.H"
+#include "baci_structure_aux.H"
+#include "baci_w1.H"
+#include "baci_wear_utils.H"
+
+#include <Epetra_SerialComm.h>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                     farah 05/13 |

@@ -18,28 +18,29 @@ its parameters and conditions.
 /*----------------------------------------------------------------------*/
 
 #include "baci_pre_exodus.H"
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_CommandLineProcessor.hpp>
-#include <Teuchos_Time.hpp>
-#include <Teuchos_TimeMonitor.hpp>
+
+#include "baci_comm_utils.H"
+#include "baci_inpar_validconditions.H"
+#include "baci_inpar_validmaterials.H"
+#include "baci_inpar_validparameters.H"
+#include "baci_lib_conditiondefinition.H"
+#include "baci_lib_elementdefinition.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils_createdis.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_validmaterials.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_lib_conditiondefinition.H"
-#include "baci_lib_elementdefinition.H"
 #include "baci_module_registry_parobjectregister.H"
-#include "baci_comm_utils.H"
+#include "baci_pre_exodus_centerline.H"
+#include "baci_pre_exodus_readbc.H"
 #include "baci_pre_exodus_reader.H"
 #include "baci_pre_exodus_soshextrusion.H"
-#include "baci_pre_exodus_writedat.H"
-#include "baci_pre_exodus_readbc.H"
 #include "baci_pre_exodus_validate.H"
-#include "baci_pre_exodus_centerline.H"
+#include "baci_pre_exodus_writedat.H"
 
 #include <Epetra_MpiComm.h>
+#include <Teuchos_CommandLineProcessor.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

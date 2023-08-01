@@ -8,9 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_linalg_utils_sparse_algebra_math.H"
+
 #include "baci_utils_exceptions.H"
-#include <EpetraExt_Transpose_RowMatrix.h>
+
 #include <EpetraExt_MatrixMatrix.h>
+#include <EpetraExt_Transpose_RowMatrix.h>
 
 namespace CORE::LINALG
 {

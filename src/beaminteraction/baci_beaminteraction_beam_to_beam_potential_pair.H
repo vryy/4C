@@ -11,7 +11,6 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_POTENTIAL_PAIR_H
 
 #include "baci_beaminteraction_potential_pair.H"
-
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Sacado.hpp>

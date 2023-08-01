@@ -12,12 +12,13 @@
 /*---------------------------------------------------------------------*
  | headers                                                             |
  *---------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
+#include "baci_adapter_coupling_nonlin_mortar.H"
+#include "baci_utils_exceptions.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include "baci_utils_exceptions.H"
-#include "baci_adapter_coupling_nonlin_mortar.H"
+#include <Teuchos_RCP.hpp>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                                |

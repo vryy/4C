@@ -13,22 +13,21 @@
 
 
 #include "baci_structure_new_timint_loca_continuation.H"
+
+#include "baci_loca_continuation_nln_problem.H"
+#include "baci_solver_nonlin_nox_globaldata.H"
+#include "baci_structure_new_impl_generic.H"
+#include "baci_structure_new_nln_linearsystem_scaling.H"
 #include "baci_structure_new_nln_solver_utils.H"
 #include "baci_structure_new_timint_locainterface.H"
 #include "baci_structure_new_utils.H"
-#include "baci_structure_new_impl_generic.H"
 
-#include "baci_solver_nonlin_nox_globaldata.H"
-#include "baci_loca_continuation_nln_problem.H"
-
-#include <LOCA_MultiContinuation_AbstractGroup.H>
 #include <LOCA_Epetra_Factory.H>
-#include <LOCA_Parameter_Vector.H>
+#include <LOCA_MultiContinuation_AbstractGroup.H>
 #include <LOCA_MultiContinuation_ConstraintInterface.H>
-
-#include <NOX_Epetra_Vector.H>
+#include <LOCA_Parameter_Vector.H>
 #include <NOX_Epetra_LinearSystem.H>
-#include "baci_structure_new_nln_linearsystem_scaling.H"
+#include <NOX_Epetra_Vector.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

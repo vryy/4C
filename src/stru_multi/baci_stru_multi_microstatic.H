@@ -14,13 +14,13 @@
 
 
 
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_Time.hpp>
-
 #include "baci_inpar_structure.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_Time.hpp>
 
 // forward declarations
 

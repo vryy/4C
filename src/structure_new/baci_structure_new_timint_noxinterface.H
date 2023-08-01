@@ -14,11 +14,11 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_NOXINTERFACE_H
 #define BACI_STRUCTURE_NEW_TIMINT_NOXINTERFACE_H
 
-#include "baci_solver_nonlin_nox_interface_required.H"  // (1) base class: rhs, status tests and more
-#include "baci_solver_nonlin_nox_interface_jacobian.H"  // (2) base class: jacobian
-#include <NOX_Epetra_Interface_Preconditioner.H>        // (3) base class: preconditioner stuff
-
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_interface_jacobian.H"  // (2) base class: jacobian
+#include "baci_solver_nonlin_nox_interface_required.H"  // (1) base class: rhs, status tests and more
+
+#include <NOX_Epetra_Interface_Preconditioner.H>  // (3) base class: preconditioner stuff
 // forward declaration ...
 namespace NOX
 {

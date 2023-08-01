@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_lib_function.H"
-#include "baci_mat_newtonianfluid.H"
 #include "baci_mat_fluid_weakly_compressible.H"
+#include "baci_mat_newtonianfluid.H"
 #include "baci_mat_stvenantkirchhoff.H"
 
 #ifndef BACI_FLUID_FUNCTIONS_H

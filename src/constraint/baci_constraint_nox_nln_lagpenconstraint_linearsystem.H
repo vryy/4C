@@ -15,9 +15,9 @@
 #ifndef BACI_CONSTRAINT_NOX_NLN_LAGPENCONSTRAINT_LINEARSYSTEM_H
 #define BACI_CONSTRAINT_NOX_NLN_LAGPENCONSTRAINT_LINEARSYSTEM_H
 
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"
+#include "baci_solver_nonlin_nox_constraint_interface_required.H"
+#include "baci_solver_nonlin_nox_linearsystem.H"
 
 namespace NOX
 {

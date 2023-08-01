@@ -11,9 +11,8 @@
 
 #include "baci_mat_fluidporo_relpermeability_law.H"
 
-#include "baci_mat_par_bundle.H"
-
 #include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 MAT::PAR::FluidPoroRelPermeabilityLaw*

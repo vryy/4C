@@ -6,13 +6,17 @@
 */
 /*----------------------------------------------------------------------*/
 
+#include "baci_matelast_summand.H"
+
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_mat_par_bundle.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_anisoactivestress_evolution.H"
 #include "baci_matelast_coup13apow.H"
 #include "baci_matelast_coup1pow.H"
 #include "baci_matelast_coup2pow.H"
 #include "baci_matelast_coup3pow.H"
-#include "baci_matelast_coupSaintVenantKirchhoff.H"
 #include "baci_matelast_coupanisoexpo.H"
 #include "baci_matelast_coupanisoexposhear.H"
 #include "baci_matelast_coupanisoexpotwocoup.H"
@@ -25,6 +29,7 @@
 #include "baci_matelast_couplogneohooke.H"
 #include "baci_matelast_coupmooneyrivlin.H"
 #include "baci_matelast_coupneohooke.H"
+#include "baci_matelast_coupSaintVenantKirchhoff.H"
 #include "baci_matelast_coupsimopister.H"
 #include "baci_matelast_couptransverselyisotropic.H"
 #include "baci_matelast_coupvarga.H"
@@ -41,20 +46,15 @@
 #include "baci_matelast_isovolaaagasser.H"
 #include "baci_matelast_isoyeoh.H"
 #include "baci_matelast_remodelfiber.H"
-#include "baci_matelast_vologden.H"
-#include "baci_matelast_volpenalty.H"
-#include "baci_matelast_volpow.H"
-#include "baci_matelast_volsussmanbathe.H"
 #include "baci_matelast_visco_coupmyocard.H"
 #include "baci_matelast_visco_fract.H"
 #include "baci_matelast_visco_generalizedgenmax.H"
 #include "baci_matelast_visco_genmax.H"
 #include "baci_matelast_visco_isoratedep.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_matelast_summand.H"
+#include "baci_matelast_vologden.H"
+#include "baci_matelast_volpenalty.H"
+#include "baci_matelast_volpow.H"
+#include "baci_matelast_volsussmanbathe.H"
 
 Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
 {

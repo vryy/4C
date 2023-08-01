@@ -6,10 +6,12 @@
 \level 3
  *----------------------------------------------------------------------*/
 
-#include <vector>
 #include "baci_mat_structporo_reaction.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

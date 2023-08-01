@@ -11,10 +11,6 @@
 #ifndef BACI_FSI_NOX_LINEARSYSTEM_GCR_H
 #define BACI_FSI_NOX_LINEARSYSTEM_GCR_H
 
-#include <vector>
-
-#include <Teuchos_Time.hpp>
-
 #include <NOX_Common.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Required.H>
@@ -22,11 +18,11 @@
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <NOX_Utils.H>
-
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_Time.hpp>
+
+#include <vector>
 
 
 namespace NOX

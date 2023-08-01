@@ -19,6 +19,7 @@ in the Baci guide in the Convention chapter.
 
 *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+
 #include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------*

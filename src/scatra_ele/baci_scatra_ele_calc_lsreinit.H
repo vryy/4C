@@ -11,9 +11,9 @@
 #ifndef BACI_SCATRA_ELE_CALC_LSREINIT_H
 #define BACI_SCATRA_ELE_CALC_LSREINIT_H
 
-#include "baci_scatra_ele_calc.H"
-#include "baci_discretization_geometry_integrationcell.H"
 #include "baci_discretization_geometry_geo_utils.H"
+#include "baci_discretization_geometry_integrationcell.H"
+#include "baci_scatra_ele_calc.H"
 
 namespace DRT
 {

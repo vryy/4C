@@ -7,9 +7,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_LAPACK.hpp>
 #include "baci_linalg_utils_densematrix_determinant.H"
+
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_LAPACK.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

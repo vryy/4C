@@ -12,9 +12,9 @@
 #ifndef BACI_FSI_CONSTRMONOLITHIC_H
 #define BACI_FSI_CONSTRMONOLITHIC_H
 
+#include "baci_coupling_adapter.H"
 #include "baci_fsi_constr_overlapprec.H"
 #include "baci_fsi_monolithic.H"
-#include "baci_coupling_adapter.H"
 
 // forward declarations
 namespace UTILS

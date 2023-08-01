@@ -13,17 +13,16 @@
 
 
 #include "baci_fsi_dirichletneumannslideale.H"
-#include "baci_fsi_debugwriter.H"
-#include "baci_fsi_utils.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_mortar_interface.H"
-#include "baci_inpar_fsi.H"
+
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_mortar.H"
-#include "baci_lib_globalproblem.H"
-
+#include "baci_discretization_geometry_searchtree.H"
+#include "baci_fsi_debugwriter.H"
+#include "baci_fsi_utils.H"
 #include "baci_inpar_fsi.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mortar_interface.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

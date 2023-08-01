@@ -12,10 +12,12 @@ is just a "control instance".
 *----------------------------------------------------------------------*/
 
 
-#include <vector>
 #include "baci_mat_list_chemotaxis.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+#include <vector>
 
 
 /*----------------------------------------------------------------------*

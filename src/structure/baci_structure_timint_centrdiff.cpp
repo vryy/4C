@@ -11,12 +11,13 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_structure_timint_centrdiff.H"
+
+#include "baci_contact_meshtying_contact_bridge.H"
+#include "baci_io.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_mortar_manager_base.H"
 #include "baci_mortar_strategy_base.H"
-#include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_io.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */

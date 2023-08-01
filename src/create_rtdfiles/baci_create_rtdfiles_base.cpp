@@ -9,10 +9,12 @@
 /*----------------------------------------------------------------------*/
 
 #
-#include <iostream>
-#include <cstring>
-#include "baci_create_rtdfiles_wrapper.H"
 #include "baci_config_compile_settings.H"
+
+#include "baci_create_rtdfiles_wrapper.H"
+
+#include <cstring>
+#include <iostream>
 
 
 int main(int argc, char *argv[])

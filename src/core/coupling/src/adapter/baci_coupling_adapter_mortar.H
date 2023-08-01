@@ -11,11 +11,12 @@
 #ifndef BACI_COUPLING_ADAPTER_MORTAR_H
 #define BACI_COUPLING_ADAPTER_MORTAR_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Map.h>
-#include <Epetra_CrsMatrix.h>
-#include "baci_utils_exceptions.H"
 #include "baci_coupling_adapter_base.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace CORE::LINALG

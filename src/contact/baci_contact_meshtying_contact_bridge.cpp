@@ -9,16 +9,14 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_contact_meshtying_manager.H"
+
 #include "baci_contact_manager.H"
-
-#include "baci_lib_discret.H"
+#include "baci_contact_meshtying_manager.H"
 #include "baci_lib_condition.H"
-
+#include "baci_lib_discret.H"
 #include "baci_linalg_mapextractor.H"
-
-#include "baci_mortar_strategy_base.H"
 #include "baci_mortar_manager_base.H"
+#include "baci_mortar_strategy_base.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 06/14|

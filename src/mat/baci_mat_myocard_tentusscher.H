@@ -15,13 +15,13 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  cbert 08/13 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_material.H"
 #include "baci_lib_parobjectfactory.H"
-#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_serialdensematrix.H"
-#include "baci_mat_myocard_tools.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_mat_material.H"
 #include "baci_mat_myocard_general.H"
+#include "baci_mat_myocard_tools.H"
+#include "baci_mat_par_parameter.H"
 
 /*----------------------------------------------------------------------*/
 /// Myocard material according to [1]

@@ -31,18 +31,15 @@ References are
 #define BACI_FLUID_TURBULENCE_DYN_SMAG_H
 
 
+#include "baci_inpar_fluid.H"
+#include "baci_inpar_scatra.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
-
 #include <Epetra_Vector.h>
-
+#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include "baci_inpar_fluid.H"
-#include "baci_inpar_scatra.H"
 
 
 

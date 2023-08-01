@@ -6,19 +6,18 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_cut_meshintersection.H"
+#include "baci_cut_options.H"
+#include "baci_cut_side.H"
+#include "baci_cut_tetmeshintersection.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "cut_test_utils.H"
-
-#include "baci_cut_side.H"
-#include "baci_cut_meshintersection.H"
-#include "baci_cut_tetmeshintersection.H"
-#include "baci_cut_options.H"
-
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 void test_shadan6()
 {

@@ -5,24 +5,19 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#include "baci_ssti_monolithic.H"
 #include "baci_ssti_monolithic_assemble_strategy.H"
-#include "baci_ssti_utils.H"
 
-#include "baci_coupling_adapter_converter.H"
 #include "baci_adapter_str_ssiwrapper.H"
-
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_converter.H"
 #include "baci_io_control.H"
-
 #include "baci_lib_locsys.H"
-
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-
-#include "baci_ssi_utils.H"
-
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_coupling_adapter.H"
+#include "baci_scatra_timint_meshtying_strategy_s2i.H"
+#include "baci_ssi_utils.H"
+#include "baci_ssti_monolithic.H"
+#include "baci_ssti_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

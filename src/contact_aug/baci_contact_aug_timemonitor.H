@@ -10,12 +10,12 @@
 #ifndef BACI_CONTACT_AUG_TIMEMONITOR_H
 #define BACI_CONTACT_AUG_TIMEMONITOR_H
 
-#include <string>
-#include <sstream>
-#include <vector>
-#include <memory>
-
 #include <Epetra_Comm.h>
+
+#include <memory>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace CONTACT
 {

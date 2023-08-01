@@ -12,12 +12,12 @@
 #ifndef BACI_LIB_UTILS_LINEDEFINITION_H
 #define BACI_LIB_UTILS_LINEDEFINITION_H
 
-#include <memory>
-#include <string>
+#include "baci_utils_exceptions.H"
+
 #include <cstdlib>
 #include <istream>
-
-#include "baci_utils_exceptions.H"
+#include <memory>
+#include <string>
 
 
 namespace DRT

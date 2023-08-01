@@ -8,13 +8,15 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_facet.H"
 #include "baci_cut_triangulateFacet.H"
-#include "baci_cut_kernel.H"
-#include "baci_cut_side.H"
+
 #include "baci_cut_boundingbox.H"
-#include "baci_cut_position.H"
+#include "baci_cut_facet.H"
+#include "baci_cut_kernel.H"
 #include "baci_cut_output.H"
+#include "baci_cut_position.H"
+#include "baci_cut_side.H"
+
 #include <math.h>
 
 /*-----------------------------------------------------------------------------------------------------------*

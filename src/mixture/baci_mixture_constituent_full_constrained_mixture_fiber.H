@@ -8,13 +8,15 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_FULL_CONSTRAINED_MIXTURE_FIBER_H
 #define BACI_MIXTURE_CONSTITUENT_FULL_CONSTRAINED_MIXTURE_FIBER_H
 
-#include <Teuchos_RCP.hpp>
-#include <cmath>
+#include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_par_material.H"
 #include "baci_mixture_constituent.H"
 #include "baci_mixture_constituent_remodelfiber_material.H"
-#include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mixture_full_constrained_mixture_fiber.H"
+
+#include <Teuchos_RCP.hpp>
+
+#include <cmath>
 
 namespace MIXTURE
 {

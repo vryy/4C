@@ -12,7 +12,6 @@ transport
 
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-
 #include "baci_mat_soret.H"
 
 /*----------------------------------------------------------------------*

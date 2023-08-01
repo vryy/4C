@@ -13,6 +13,7 @@
 #define BACI_BEAMINTERACTION_PERIODIC_BOUNDINGBOX_H
 
 #include "baci_linalg_fixedsizematrix.H"
+
 #include <Teuchos_RCP.hpp>
 
 

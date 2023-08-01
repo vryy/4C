@@ -11,14 +11,13 @@
 #ifndef BACI_FSI_NOX_NEWTON_H
 #define BACI_FSI_NOX_NEWTON_H
 
-#include <vector>
+#include "baci_inpar_fsi.H"
 
 #include <NOX_Direction_Newton.H>
-
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
-#include "baci_inpar_fsi.H"
+#include <vector>
 
 namespace NOX
 {

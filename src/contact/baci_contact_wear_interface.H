@@ -9,9 +9,10 @@
 #ifndef BACI_CONTACT_WEAR_INTERFACE_H
 #define BACI_CONTACT_WEAR_INTERFACE_H
 
+#include "baci_contact_interface.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
-#include "baci_contact_interface.H"
+
 #include <Epetra_FEVector.h>
 
 namespace WEAR

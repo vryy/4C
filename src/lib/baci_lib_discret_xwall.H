@@ -16,11 +16,12 @@ of dofs per node on a fluid discretization for xwall
 #include "baci_lib_discret_faces.H"
 #include "baci_utils_exceptions.H"
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
-#include <string>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <string>
 
 namespace DRT
 {

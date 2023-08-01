@@ -13,14 +13,15 @@
 #define BACI_LIB_CONTAINER_H
 
 
-#include <string>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include "baci_linalg_serialdensematrix.H"
-
 #include "baci_lib_parobject.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <string>
 
 class Epetra_MultiVector;
 class Epetra_Vector;

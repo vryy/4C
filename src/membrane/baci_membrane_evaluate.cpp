@@ -8,24 +8,22 @@
 \brief Nonlinear Membrane Finite Element evaluation
 
 *----------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
-#include "baci_membrane.H"
-
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_lib_tensor_transformation.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_tensor_transformation.H"
 #include "baci_lib_utils.H"
-
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_material.H"
-#include "baci_mat_membrane_elasthyper.H"
 #include "baci_mat_membrane_active_strain.H"
-
+#include "baci_mat_membrane_elasthyper.H"
 #include "baci_mat_membrane_material_interfaces.H"
+#include "baci_membrane.H"
 #include "baci_membrane_service.H"
+#include "baci_structure_new_elements_paramsinterface.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 /*----------------------------------------------------------------------*

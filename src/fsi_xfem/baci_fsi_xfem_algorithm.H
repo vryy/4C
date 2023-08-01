@@ -14,8 +14,9 @@
 
 
 #include "baci_adapter_algorithmbase.H"
-#include <Epetra_Vector.h>
 #include "baci_adapter_field_wrapper.H"
+
+#include <Epetra_Vector.h>
 
 namespace DRT
 {

@@ -11,11 +11,11 @@
 #ifndef BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_H
 #define BACI_GEOMETRY_PAIR_LINE_TO_VOLUME_H
 
-#include <vector>
-
 #include "baci_geometry_pair.H"
 
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 
 // Forward declarations.

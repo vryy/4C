@@ -13,7 +13,6 @@
 
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
 #include "baci_utils_singleton_owner.H"
 
 namespace CORE::LINALG

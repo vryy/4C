@@ -14,13 +14,13 @@
 #ifndef BACI_XFEM_MULTI_FIELD_MAPEXTRACTOR_H
 #define BACI_XFEM_MULTI_FIELD_MAPEXTRACTOR_H
 
-#include <set>
-
 #include "baci_utils_exceptions.H"
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-
 #include "baci_xfem_enum_lists.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 // forward declarations
 class Epetra_Map;

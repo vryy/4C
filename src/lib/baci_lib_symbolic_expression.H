@@ -13,14 +13,14 @@
 #ifndef BACI_LIB_SYMBOLIC_EXPRESSION_H
 #define BACI_LIB_SYMBOLIC_EXPRESSION_H
 
-#include <map>
-#include <string>
-#include <memory>
-#include <numeric>
+#include "baci_utils_exceptions.H"
 
 #include <Sacado.hpp>
 
-#include "baci_utils_exceptions.H"
+#include <map>
+#include <memory>
+#include <numeric>
+#include <string>
 
 
 namespace DRT::UTILS

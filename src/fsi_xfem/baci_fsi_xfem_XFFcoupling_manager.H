@@ -10,8 +10,8 @@
 #ifndef BACI_FSI_XFEM_XFFCOUPLING_MANAGER_H
 #define BACI_FSI_XFEM_XFFCOUPLING_MANAGER_H
 
-#include "baci_fsi_xfem_coupling_manager.H"
 #include "baci_fsi_xfem_coupling_comm_manager.H"
+#include "baci_fsi_xfem_coupling_manager.H"
 
 // #define FREESURFFLOW
 

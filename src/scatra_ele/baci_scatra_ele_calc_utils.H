@@ -13,8 +13,8 @@
 
 
 #include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lib_element.H"
 #include "baci_inpar_scatra.H"
+#include "baci_lib_element.H"
 
 
 namespace SCATRA

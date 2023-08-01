@@ -8,14 +8,14 @@
 \level 2
 */
 /*------------------------------------------------------------------------------------------------*/
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_cut_levelsetside.H"
-#include "baci_cut_levelsetintersection.H"
-#include "baci_cut_meshintersection.H"
-
 #include "baci_cut_combintersection.H"
+
+#include "baci_cut_levelsetintersection.H"
+#include "baci_cut_levelsetside.H"
+#include "baci_cut_meshintersection.H"
 #include "baci_cut_tolerance.H"  // for EXTENDED_CUT_DEBUG_OUTPUT
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*-----------------------------------------------------------------------------------------*
  * constructur for Combined Intersection class (Levelset and Mesh intersection in one class)

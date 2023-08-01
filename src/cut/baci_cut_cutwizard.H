@@ -10,15 +10,14 @@ surface meshes
 #ifndef BACI_CUT_CUTWIZARD_H
 #define BACI_CUT_CUTWIZARD_H
 
-#include <Teuchos_RCP.hpp>
-
+#include "baci_cut_clnwrapper.H"
 #include "baci_inpar_cut.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include <Epetra_Vector.h>
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_cut_clnwrapper.H"
-#include "baci_linalg_fixedsizematrix.H"
+#include <Teuchos_RCP.hpp>
 
 
 namespace DRT

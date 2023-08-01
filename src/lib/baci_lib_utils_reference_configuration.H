@@ -13,8 +13,8 @@
 #define BACI_LIB_UTILS_REFERENCE_CONFIGURATION_H
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_lib_node.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 namespace DRT
 {

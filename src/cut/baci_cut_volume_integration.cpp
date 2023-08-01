@@ -9,16 +9,19 @@ equations
 
 *----------------------------------------------------------------------*/
 
-#include <fstream>
-#include <cmath>
-#include <algorithm>
 #include "baci_cut_volume_integration.H"
+
 #include "baci_cut_base_vol.H"
-#include "baci_cut_least_squares.H"
 #include "baci_cut_boundingbox.H"
-#include "baci_cut_options.H"
 #include "baci_cut_enum.H"
+#include "baci_cut_least_squares.H"
+#include "baci_cut_options.H"
+
 #include <Epetra_MultiVector.h>
+
+#include <algorithm>
+#include <cmath>
+#include <fstream>
 
 
 /*--------------------------------------------------------------------------*

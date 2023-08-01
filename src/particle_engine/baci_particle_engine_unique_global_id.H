@@ -17,8 +17,8 @@
 #include <Epetra_Comm.h>
 
 #include <map>
-#include <vector>
 #include <memory>
+#include <vector>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

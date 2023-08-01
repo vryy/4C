@@ -8,24 +8,19 @@
  */
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_boundary_calc.H"
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_parameter_boundary.H"
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
-
-
+#include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_lib_globalproblem.H"
-
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_list.H"
 #include "baci_mat_scatra_mat.H"
 #include "baci_mat_thermostvenantkirchhoff.H"
-
 #include "baci_nurbs_discret_nurbs_utils.H"
-
+#include "baci_scatra_ele_parameter_boundary.H"
+#include "baci_scatra_ele_parameter_std.H"
+#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_so3_utils.H"
-#include "baci_fluid_rotsym_periodicbc.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, int probdim>

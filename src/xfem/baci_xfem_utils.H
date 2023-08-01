@@ -12,8 +12,8 @@
 #ifndef BACI_XFEM_UTILS_H
 #define BACI_XFEM_UTILS_H
 
-#include "baci_lib_discret.H"
 #include "baci_cut_point.H"
+#include "baci_lib_discret.H"
 
 namespace XFEM
 {

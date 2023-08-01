@@ -9,7 +9,7 @@
 #ifndef BACI_LINALG_MLAPI_OPERATOR_H
 #define BACI_LINALG_MLAPI_OPERATOR_H
 
-// Trilinos includes
+// clang-format off
 #include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -35,6 +35,7 @@
 #include <MLAPI_Eig.h>
 
 #include "baci_utils_exceptions.H"
+// clang-format on
 
 
 namespace CORE::LINALG

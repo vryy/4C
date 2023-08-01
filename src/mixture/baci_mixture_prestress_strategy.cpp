@@ -9,15 +9,16 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_prestress_strategy.H"
+
+#include "baci_inpar_material.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_mat_par_material.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
+#include "baci_mat_service.H"
 #include "baci_mixture_prestress_strategy_constant.H"
 #include "baci_mixture_prestress_strategy_isocyl.H"
 #include "baci_mixture_prestress_strategy_iterative.H"
-#include "baci_mat_service.H"
 #include "baci_utils_exceptions.H"
-#include "baci_inpar_material.H"
 
 // Prestress stragegy factory generates the prestress strategy for a specific material id
 MIXTURE::PAR::PrestressStrategy* MIXTURE::PAR::PrestressStrategy::Factory(int matid)

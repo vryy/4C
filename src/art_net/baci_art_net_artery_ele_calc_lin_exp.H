@@ -14,9 +14,9 @@
 
 #include "baci_art_net_artery.H"
 #include "baci_art_net_artery_ele_action.H"
+#include "baci_art_net_artery_ele_calc.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"
-#include "baci_art_net_artery_ele_calc.H"
 
 
 namespace DRT

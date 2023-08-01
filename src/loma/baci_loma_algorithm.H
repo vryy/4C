@@ -12,9 +12,10 @@
 #ifndef BACI_LOMA_ALGORITHM_H
 #define BACI_LOMA_ALGORITHM_H
 
-#include <Epetra_Comm.h>
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_linalg_mapextractor.H"
+
+#include <Epetra_Comm.h>
 
 namespace LOMA
 {

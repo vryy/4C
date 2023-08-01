@@ -7,13 +7,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_so3_poro_p1.H"
-#include "baci_so3_poro_p1_eletypes.H"
-
 #include "baci_lib_globalproblem.H"
-
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
+#include "baci_so3_poro_p1.H"
+#include "baci_so3_poro_p1_eletypes.H"
 
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>

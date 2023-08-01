@@ -9,6 +9,7 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"  // class definition
+
 #include <iomanip>
 
 std::ostream& NOX::NLN::INNER::StatusTest::operator<<(std::ostream& os, StatusType type)

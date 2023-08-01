@@ -7,15 +7,13 @@
 #define BACI_SO3_TET4_H
 
 
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-
 #include "baci_mat_material.H"
-
-#include "baci_inpar_structure.H"
-
 #include "baci_so3_base.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 #define NUMNOD_SOTET4 4       ///< number of nodes

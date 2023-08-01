@@ -14,9 +14,10 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_inpar_material.H"
-#include "baci_mat_par_material.H"
-#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_mat_par_material.H"
+
 #include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*/

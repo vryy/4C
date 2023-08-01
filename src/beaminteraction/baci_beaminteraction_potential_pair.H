@@ -11,7 +11,6 @@
 #define BACI_BEAMINTERACTION_POTENTIAL_PAIR_H
 
 #include "baci_discretization_fem_general_utils_integration.H"
-
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>

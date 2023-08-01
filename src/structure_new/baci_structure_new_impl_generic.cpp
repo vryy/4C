@@ -10,16 +10,15 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_timint_implicit.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_data.H"
-
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-#include "baci_solver_nonlin_nox_group_prepostoperator.H"
 
 #include "baci_io_pstream.H"
+#include "baci_solver_nonlin_nox_aux.H"
+#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_group_prepostoperator.H"
+#include "baci_solver_nonlin_nox_solver_linesearchbased.H"
+#include "baci_structure_new_model_evaluator.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_timint_implicit.H"
 
 
 /*----------------------------------------------------------------------------*

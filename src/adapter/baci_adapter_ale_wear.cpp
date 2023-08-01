@@ -11,8 +11,9 @@
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
 #include "baci_adapter_ale_wear.H"
-#include "baci_utils_exceptions.H"
+
 #include "baci_ale_utils_mapextractor.H"
+#include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

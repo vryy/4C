@@ -12,15 +12,15 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_interface_required.H"
-#include "baci_solver_nonlin_nox_interface_jacobian.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
+
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_solver_nonlin_nox_group_prepostoperator.H"
+#include "baci_solver_nonlin_nox_interface_jacobian.H"
+#include "baci_solver_nonlin_nox_interface_required.H"
+#include "baci_solver_nonlin_nox_linearsystem.H"
 #include "baci_solver_nonlin_nox_solver_ptc.H"
 
 #include <NOX_StatusTest_NormF.H>
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

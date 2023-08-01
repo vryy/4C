@@ -8,17 +8,16 @@ growth laws.
  *----------------------------------------------------------------------*/
 
 
-#include <utility>
-
 #include "baci_mat_growth.H"
 
-#include "baci_mat_growth_law.H"
-#include "baci_mat_service.H"
-
 #include "baci_lib_globalproblem.H"
-#include "baci_mat_par_bundle.H"
 #include "baci_lib_utils_factory.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_mat_growth_law.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_service.H"
+
+#include <utility>
 
 /*----------------------------------------------------------------------------*/
 MAT::PAR::Growth::Growth(Teuchos::RCP<MAT::PAR::Material> matdata)

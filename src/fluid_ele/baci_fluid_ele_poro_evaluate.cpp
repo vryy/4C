@@ -10,13 +10,11 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_fluid_ele_poro.H"
 #include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_parameter_poro.H"
-
 #include "baci_fluid_ele_factory.H"
 #include "baci_fluid_ele_interface.H"
-
+#include "baci_fluid_ele_parameter_poro.H"
+#include "baci_fluid_ele_poro.H"
 #include "baci_lib_globalproblem.H"
 
 void DRT::ELEMENTS::FluidPoroEleType::PreEvaluate(DRT::Discretization& dis,

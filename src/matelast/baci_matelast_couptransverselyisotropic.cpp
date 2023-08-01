@@ -8,17 +8,14 @@ computations
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_couptransverselyisotropic.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
-#include "baci_mat_par_material.H"
-#include "baci_lib_linedefinition.H"
-
-#include "baci_structure_new_elements_paramsinterface.H"
-
-#include "baci_mat_service.H"
 #include "baci_io_pstream.H"
-
+#include "baci_lib_linedefinition.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_mat_par_material.H"
+#include "baci_mat_service.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 
 
 MAT::ELASTIC::PAR::CoupTransverselyIsotropic::CoupTransverselyIsotropic(

@@ -10,11 +10,13 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mixture_constituent_solidmaterial.H"
-#include <Teuchos_RCPDecl.hpp>
-#include "baci_mat_service.H"
+
 #include "baci_lib_globalproblem.H"
-#include "baci_mat_par_bundle.H"
 #include "baci_mat_mixture.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_service.H"
+
+#include <Teuchos_RCPDecl.hpp>
 
 // Constructor for the parameter class
 MIXTURE::PAR::MixtureConstituent_SolidMaterial::MixtureConstituent_SolidMaterial(

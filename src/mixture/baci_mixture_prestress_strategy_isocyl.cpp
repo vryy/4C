@@ -9,13 +9,14 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_prestress_strategy_isocyl.H"
+
+#include "baci_mat_anisotropy.H"
+#include "baci_mat_anisotropy_coordinate_system_provider.H"
 #include "baci_mat_par_bundle.H"
-#include "baci_mixture_constituent_elasthyper.H"
+#include "baci_mat_service.H"
 #include "baci_matelast_isoneohooke.H"
 #include "baci_matelast_volsussmanbathe.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_mat_service.H"
-#include "baci_mat_anisotropy_coordinate_system_provider.H"
+#include "baci_mixture_constituent_elasthyper.H"
 #include "baci_mixture_rule.H"
 #include "baci_mixture_rule_growthremodel.H"
 

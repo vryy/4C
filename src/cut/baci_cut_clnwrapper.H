@@ -10,13 +10,15 @@
 
 #ifndef BACI_CUT_CLNWRAPPER_H
 #define BACI_CUT_CLNWRAPPER_H
-#include <stddef.h>
-#include "baci_utils_exceptions.H"
-#include <unordered_map>
 #include "baci_cut_memory_manager.H"
-#include <sstream>
+#include "baci_utils_exceptions.H"
 
-// whether we want to use CLN at all or not
+#include <stddef.h>
+
+#include <sstream>
+#include <unordered_map>
+
+
 #define CLN_CALC
 #ifdef CLN_CALC
 #include <cln/cln.h>

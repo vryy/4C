@@ -10,11 +10,11 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_nln_solver_utils.H"
-#include "baci_structure_new_timint_base.H"
 
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_inpar_contact.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
 

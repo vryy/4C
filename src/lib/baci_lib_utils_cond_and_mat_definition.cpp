@@ -10,10 +10,11 @@
 /*---------------------------------------------------------------------*/
 
 
-#include <string>
+#include "baci_lib_utils_cond_and_mat_definition.H"
 
 #include "baci_utils_exceptions.H"
-#include "baci_lib_utils_cond_and_mat_definition.H"
+
+#include <string>
 
 // Convert a string to a number, i.e. to an int or a double
 // Perform the appropriate error checks

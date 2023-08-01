@@ -8,17 +8,17 @@
 */
 /*---------------------------------------------------------------------------*/
 
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_io_legacy_table_cpp.h"
 #include "baci_post_common.H"
 #include "baci_s8.H"
 #include "baci_so3_hex8.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
 
 #include <Epetra_SerialComm.h>
 #include <Teuchos_RCP.hpp>
-#include <vector>
 
-#include "baci_io_legacy_table_cpp.h"
+#include <vector>
 
 class Converter
 {

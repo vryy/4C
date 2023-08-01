@@ -10,12 +10,13 @@
 #ifndef BACI_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H
 #define BACI_LINALG_UTILS_SPARSE_ALGEBRA_PRINT_H
 
-#include <Epetra_Map.h>
+#include "baci_lib_exporter.H"
+
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
-#include <Epetra_Vector.h>
+#include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
-#include "baci_lib_exporter.H"
+#include <Epetra_Vector.h>
 
 // Forward declarations
 namespace CORE::LINALG

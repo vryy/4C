@@ -48,19 +48,18 @@
 /*----------------------------------------------------------------------*
  | Headers                                                   dano 11/11 |
  *----------------------------------------------------------------------*/
-#include <vector>
+#include "baci_mat_robinson.H"
+
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_mat_robinson.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
-
+#include "baci_so3_hex8.H"
 #include "baci_tsi_defines.H"
 
-// include this header needed for KinematicType
-#include "baci_so3_hex8.H"
+#include <vector>
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 11/11 |

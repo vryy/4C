@@ -10,6 +10,7 @@
 
 
 #include "baci_so3_base.H"
+
 #include "baci_mat_so3_material.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 

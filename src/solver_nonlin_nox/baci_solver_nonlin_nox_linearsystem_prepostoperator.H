@@ -11,8 +11,9 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H
 #define BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_PREPOSTOPERATOR_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"  // wrapped abstract class
+
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

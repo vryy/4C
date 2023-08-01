@@ -6,13 +6,13 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "baci_unittest_utils_assertions.h"
-#include "baci_particle_interaction_sph_kernel.H"
-#include "baci_particle_interaction_utils.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include "baci_inpar_validparameters.H"
+#include "baci_particle_interaction_sph_kernel.H"
+#include "baci_particle_interaction_utils.H"
+#include "baci_unittest_utils_assertions.h"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 namespace
 {

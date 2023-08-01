@@ -13,7 +13,6 @@
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
 #include "baci_inpar_structure.H"
-
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_globalproblem_enums.H"
 

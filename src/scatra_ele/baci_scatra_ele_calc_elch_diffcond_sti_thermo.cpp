@@ -9,8 +9,8 @@
 /*--------------------------------------------------------------------------*/
 #include "baci_scatra_ele_calc_elch_diffcond_sti_thermo.H"
 
-#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_parameter_elch.H"
+#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

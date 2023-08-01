@@ -19,14 +19,13 @@
 /*----------------------------------------------------------------------*
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-#include "baci_wear_algorithm.H"
-
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_coupling_adapter.H"
+#include "baci_wear_algorithm.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 11/13 |

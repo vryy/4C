@@ -14,12 +14,13 @@
 #ifndef BACI_LIB_DOMAINREADER_H
 #define BACI_LIB_DOMAINREADER_H
 
-#include <set>
-#include <memory>
+#include "baci_lib_inputreader.H"
+
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
 
-#include "baci_lib_inputreader.H"
+#include <memory>
+#include <set>
 
 namespace DRT
 {

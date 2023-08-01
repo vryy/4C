@@ -10,16 +10,15 @@
 
 #include "baci_binstrategy_utils.H"
 
-#include "baci_scatra_ele.H"
-#include "baci_fluid_ele.H"
-#include "baci_bele_bele3.H"
 #include "baci_beam3_base.H"
-#include "baci_rigidsphere.H"
-#include "baci_so3_base.H"
-#include "baci_rebalance_utils.H"
-
-#include "baci_lib_utils_parallel.H"
+#include "baci_bele_bele3.H"
+#include "baci_fluid_ele.H"
 #include "baci_lib_exporter.H"
+#include "baci_lib_utils_parallel.H"
+#include "baci_rebalance_utils.H"
+#include "baci_rigidsphere.H"
+#include "baci_scatra_ele.H"
+#include "baci_so3_base.H"
 
 namespace BINSTRATEGY
 {

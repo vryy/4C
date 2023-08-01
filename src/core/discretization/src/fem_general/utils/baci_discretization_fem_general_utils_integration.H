@@ -9,13 +9,13 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_INTEGRATION_H
 
-#include <string>
-#include <sstream>
-#include <iostream>
-#include <cstdlib>
-
-#include "baci_utils_exceptions.H"
 #include "baci_lib_element.H"
+#include "baci_utils_exceptions.H"
+
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace CORE::DRT::UTILS
 {

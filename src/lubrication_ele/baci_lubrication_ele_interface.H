@@ -11,11 +11,13 @@
 #ifndef BACI_LUBRICATION_ELE_INTERFACE_H
 #define BACI_LUBRICATION_ELE_INTERFACE_H
 
-#include <vector>
-#include <Teuchos_ParameterList.hpp>
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
 #include "baci_lib_element.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Teuchos_ParameterList.hpp>
+
+#include <vector>
 
 namespace DRT
 {

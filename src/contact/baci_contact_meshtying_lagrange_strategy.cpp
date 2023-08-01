@@ -8,23 +8,25 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_Time.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_SerialComm.h>
 #include "baci_contact_meshtying_lagrange_strategy.H"
+
 #include "baci_contact_meshtying_defines.H"
+#include "baci_inpar_contact.H"
+#include "baci_inpar_mortar.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"  // mesh initialization :-(
 #include "baci_mortar_defines.H"
 #include "baci_mortar_interface.H"
 #include "baci_mortar_node.H"
 #include "baci_mortar_utils.H"
-#include "baci_inpar_mortar.H"
-#include "baci_inpar_contact.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linear_solver_method_linalg.H"  // mesh initialization :-(
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <Epetra_SerialComm.h>
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|
  *----------------------------------------------------------------------*/

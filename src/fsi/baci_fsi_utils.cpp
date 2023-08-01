@@ -9,44 +9,42 @@
 
 /*----------------------------------------------------------------------------*/
 
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <functional>
-
 #include "baci_fsi_utils.H"
+
+#include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_fld_fluid_ale.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_mortar.H"
+#include "baci_discretization_geometry_searchtree.H"
+#include "baci_discretization_geometry_searchtree_service.H"
+#include "baci_fsi_debugwriter.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_lib_condition_utils.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_condition_utils.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_mortar_interface.H"
+#include "baci_so3_line.H"
+#include "baci_so3_surface.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_RowMatrixOut.h>
 #include <NOX.H>
 #include <NOX_Epetra.H>
-#include "baci_linalg_serialdensematrix.H"
 
-#include "baci_so3_surface.H"
-#include "baci_so3_line.H"
-
-#include "baci_fsi_debugwriter.H"
-#include "baci_discretization_geometry_searchtree.H"
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_adapter_fld_fluid_ale.H"
-#include "baci_coupling_adapter_mortar.H"
-#include "baci_mortar_interface.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_ale_fsi.H"
-#include "baci_coupling_adapter.H"
-
-#include "baci_io.H"
-#include "baci_io_control.H"
+#include <algorithm>
+#include <functional>
+#include <map>
+#include <set>
+#include <string>
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -9,29 +9,27 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 // Todo check for obsolete header inclusions
-#include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_function_of_time.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_fixedsizematrix.H"
+#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_spatial_discretization_utils.H"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
+#include "baci_beaminteraction_periodic_boundingbox.H"
 #include "baci_discretization_fem_general_largerotations.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_structure.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_exporter.H"
+#include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_basedatasdyn.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_beam3_kirchhoff.H"
-
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-#include "baci_beam3_spatial_discretization_utils.H"
 
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public) meier 01/16|

@@ -10,57 +10,48 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_beaminteraction_submodel_evaluator_beamcontact.H"
-#include "baci_beaminteraction_data.H"
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_beaminteraction_contact_runtime_vtk_output_params.H"
-#include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
-
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_discretization_geometric_search.H"
-#include "baci_discretization_geometric_search_params.H"
-
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_io_runtime_vtp_writer.H"
-
-#include "baci_structure_new_timint_basedataglobalstate.H"
-#include "baci_structure_new_timint_basedataio.H"
-
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_fixedsizematrix.H"
-
-#include "baci_inpar_beamcontact.H"
-
-#include "baci_binstrategy.H"
 
 #include "baci_beam3_base.H"
-#include "baci_rigidsphere.H"
-
-#include "baci_so3_base.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-#include <Epetra_FEVector.h>
-#include <NOX_Solver_Generic.H>
-
-#include "baci_beaminteraction_conditions.H"
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_surface_vtk_output_writer.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_writer.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
-#include "baci_inpar_geometry_pair.H"
+#include "baci_beaminteraction_calc_utils.H"
+#include "baci_beaminteraction_conditions.H"
+#include "baci_beaminteraction_contact_pair.H"
+#include "baci_beaminteraction_contact_params.H"
+#include "baci_beaminteraction_contact_runtime_vtk_output_params.H"
+#include "baci_beaminteraction_data.H"
+#include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
+#include "baci_binstrategy.H"
+#include "baci_discretization_geometric_search.H"
+#include "baci_discretization_geometric_search_params.H"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
+#include "baci_inpar_beamcontact.H"
+#include "baci_inpar_geometry_pair.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_io_pstream.H"
+#include "baci_io_runtime_vtp_writer.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_rigidsphere.H"
+#include "baci_so3_base.H"
+#include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_structure_new_timint_basedataio.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_FEVector.h>
+#include <NOX_Solver_Generic.H>
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------------*

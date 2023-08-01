@@ -10,18 +10,18 @@
  *------------------------------------------------------------------------------------------------*/
 
 
+#include "baci_io_control.H"
+#include "baci_io_pstream.H"
 #include "baci_levelset_algorithm.H"
 #include "baci_levelset_intersection_utils.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_calc_utils.H"
+#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_ele_calc_utils.H"
 
 
 /*----------------------------------------------------------------------*

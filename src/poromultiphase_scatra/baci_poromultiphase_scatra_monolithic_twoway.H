@@ -9,11 +9,11 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_MONOLITHIC_TWOWAY_H
 #define BACI_POROMULTIPHASE_SCATRA_MONOLITHIC_TWOWAY_H
 
-#include "baci_poromultiphase_scatra_monolithic.H"
-#include <Teuchos_Time.hpp>
-
-#include "baci_poromultiphase_scatra_utils.H"
 #include "baci_inpar_solver.H"
+#include "baci_poromultiphase_scatra_monolithic.H"
+#include "baci_poromultiphase_scatra_utils.H"
+
+#include <Teuchos_Time.hpp>
 
 // forward declarations
 namespace CORE::LINALG

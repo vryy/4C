@@ -10,66 +10,56 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_adapter_str_structure_new.H"
-#include "baci_adapter_str_timint_adaptive.H"
-#include "baci_adapter_str_fsi_timint_adaptive.H"
+
 #include "baci_adapter_str_constr_merged.H"
-#include "baci_adapter_str_wrapper.H"
-#include "baci_adapter_str_lung.H"
-#include "baci_adapter_str_redairway.H"
-#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_adapter_str_fbiwrapper.H"
+#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_adapter_str_fsi_timint_adaptive.H"
 #include "baci_adapter_str_fsiwrapper_immersed.H"
+#include "baci_adapter_str_lung.H"
+#include "baci_adapter_str_pasiwrapper.H"
+#include "baci_adapter_str_redairway.H"
+#include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_structalewrapper.H"
 #include "baci_adapter_str_timeloop.H"
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_str_pasiwrapper.H"
-
-#include "baci_structure_timada_create.H"
-
-#include "baci_utils_exceptions.H"
-
-#include "baci_structure_new_timint_factory.H"
-#include "baci_structure_new_solver_factory.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_model_evaluator.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_condition.H"
-#include "baci_lib_utils_parallel.H"
-
+#include "baci_adapter_str_timint_adaptive.H"
+#include "baci_adapter_str_wrapper.H"
+#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_reissner.H"
+#include "baci_comm_utils.H"
+#include "baci_inpar_beam_to_solid.H"
+#include "baci_inpar_beamcontact.H"
+#include "baci_inpar_beaminteraction.H"
+#include "baci_inpar_contact.H"
+#include "baci_inpar_fsi.H"
+#include "baci_inpar_poroelast.H"
+#include "baci_inpar_validparameters.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
-
-#include "baci_comm_utils.H"
-
+#include "baci_lib_condition.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parallel.H"
 #include "baci_mat_par_bundle.H"
-
-#include "baci_inpar_fsi.H"
-#include "baci_inpar_poroelast.H"
-#include "baci_inpar_beamcontact.H"
-#include "baci_inpar_beaminteraction.H"
-#include "baci_inpar_beam_to_solid.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_contact.H"
-
-#include "baci_so3_sh8p8.H"
-#include "baci_so3_plast_ssn_eletypes.H"
-#include "baci_so3_plast_ssn_sosh8.H"
-#include "baci_so3_plast_ssn_sosh18.H"
-#include "baci_so3_hex8fbar.H"
 #include "baci_s8.H"
-
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_kirchhoff.H"
-
+#include "baci_so3_hex8fbar.H"
+#include "baci_so3_plast_ssn_eletypes.H"
+#include "baci_so3_plast_ssn_sosh18.H"
+#include "baci_so3_plast_ssn_sosh8.H"
+#include "baci_so3_sh8p8.H"
 #include "baci_solver_nonlin_nox_group.H"
 #include "baci_solver_nonlin_nox_group_prepostoperator.H"
+#include "baci_structure_new_model_evaluator.H"
+#include "baci_structure_new_solver_factory.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_structure_new_timint_factory.H"
+#include "baci_structure_timada_create.H"
+#include "baci_utils_exceptions.H"
 
-#include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

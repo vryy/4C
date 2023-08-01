@@ -11,12 +11,10 @@
 #define BACI_SO3_SCATRA_H
 
 
-#include "baci_so3_scatra_eletypes.H"
-
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
-
 #include "baci_inpar_scatra.H"
+#include "baci_so3_scatra_eletypes.H"
 
 namespace DRT
 {

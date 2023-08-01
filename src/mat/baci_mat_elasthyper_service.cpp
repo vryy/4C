@@ -10,11 +10,12 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mat_elasthyper_service.H"
-#include "baci_mat_service.H"
+
+#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_mat_service.H"
 
 #include <Epetra_Vector.h>
-#include "baci_lib_voigt_notation.H"
 
 void MAT::ElastHyperEvaluate(const CORE::LINALG::Matrix<3, 3>& defgrd,
     const CORE::LINALG::Matrix<6, 1>& glstrain, Teuchos::ParameterList& params,

@@ -13,12 +13,12 @@
 #define BACI_ADAPTER_STR_STRUCTURE_H
 
 
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Operator.h>
-
-#include "baci_inpar_structure.H"
 #include "baci_adapter_field.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_elements_paramsinterface.H"
+
+#include <Epetra_Operator.h>
+#include <Teuchos_ParameterList.hpp>
 
 // forward declarations
 namespace DRT

@@ -17,12 +17,12 @@ attached parenchyma balloon
 #define BACI_ADAPTER_STR_LUNG_H
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
+#include "baci_adapter_str_fsiwrapper.H"
+
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 #include <set>
-
-#include "baci_adapter_str_fsiwrapper.H"
 
 
 // forward declarations

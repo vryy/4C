@@ -14,10 +14,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_particle_engine_container.H"
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
-
-#include "baci_particle_engine_container.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

@@ -16,8 +16,8 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef BACI_FLUID_ELE_PORO_H
 #define BACI_FLUID_ELE_PORO_H
 
-#include "baci_inpar_structure.H"
 #include "baci_fluid_ele.H"
+#include "baci_inpar_structure.H"
 
 namespace DRT
 {

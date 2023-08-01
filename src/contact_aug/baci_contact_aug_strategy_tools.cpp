@@ -8,16 +8,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_aug_strategy.H"
 #include "baci_contact_aug_interface.H"
-#include "baci_contact_paramsinterface.H"
-
+#include "baci_contact_aug_strategy.H"
 #include "baci_contact_node.H"
-
+#include "baci_contact_paramsinterface.H"
+#include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-#include "baci_linalg_matrixtransform.H"
 #include "baci_utils_singleton_owner.H"
 
 // #define CONTACTFD_DLMGAPLINMATRIX      /* flag for global FD-check of the weighted gap gradient

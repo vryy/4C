@@ -20,10 +20,10 @@
 /*----------------------------------------------------------------------*
  | headers                                         brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_membrane_material_interfaces.H"
-#include "baci_mat_so3_material.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_mat_membrane_material_interfaces.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
 /*----------------------------------------------------------------------*
  | active strain membrane material                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/

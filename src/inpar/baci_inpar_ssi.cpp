@@ -9,10 +9,11 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_ssi.H"
+
 #include "baci_inpar_s2i.H"
 #include "baci_inpar_scatra.H"
+#include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_sparseoperator.H"

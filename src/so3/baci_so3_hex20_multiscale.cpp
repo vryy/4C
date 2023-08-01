@@ -7,11 +7,11 @@
 *----------------------------------------------------------------------*/
 
 
-#include "baci_so3_hex20.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_comm_utils.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_micromaterial.H"
+#include "baci_so3_hex20.H"
 
 
 

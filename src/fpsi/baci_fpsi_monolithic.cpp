@@ -9,36 +9,24 @@
 
 /*----------------------------------------------------------------------*/
 // GENERAL includes
-#include <Teuchos_TimeMonitor.hpp>
-
-// FPSI includes
-#include "baci_fpsi_defines.H"
 #include "baci_fpsi_monolithic.H"
+
+#include "baci_adapter_fld_poro.H"
+#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_coupling_adapter.H"
+#include "baci_fpsi_defines.H"
 #include "baci_fpsi_utils.H"
-
-// POROELAST includes
-#include "baci_poroelast_monolithic.H"
-
-// CORE::LINALG includes
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_method_parameters.H"
+#include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-// lib includes
-#include "baci_lib_globalproblem.H"
-
-// adapter includes
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_adapter_fld_poro.H"
-
-// STRUCTURE includes
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_method_parameters.H"
+#include "baci_poroelast_monolithic.H"
 #include "baci_structure_aux.H"
 
-// OTHER includes
-#include "baci_io_control.H"
-#include "baci_coupling_adapter.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*/

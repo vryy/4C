@@ -17,15 +17,14 @@
 /*----------------------------------------------------------------------*
  | headers                                                  farah 12/13 |
  *----------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
-#include "baci_lib_element.H"
-
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_element.H"
 #include "baci_lib_utils.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_serialdensevector.H"
-
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_wear_defines.H"
+
+#include <Teuchos_RCP.hpp>
 /*----------------------------------------------------------------------*
  | forward declarations                                     farah 12/13 |
  *----------------------------------------------------------------------*/

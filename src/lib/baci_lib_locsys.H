@@ -12,10 +12,11 @@
 #ifndef BACI_LIB_LOCSYS_H
 #define BACI_LIB_LOCSYS_H
 
-#include <Teuchos_RCP.hpp>
-#include "baci_fluid_ele_action.H"
 #include "baci_ale_ale3.H"
+#include "baci_fluid_ele_action.H"
 #include "baci_lib_discret_interface.H"
+
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace CORE::LINALG

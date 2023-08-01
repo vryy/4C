@@ -11,12 +11,12 @@
 
 #include "baci_mortar_coupling3d_classes.H"
 
-#include <Teuchos_RCP.hpp>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Export.h>
+#include <Epetra_Import.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include <Epetra_Import.h>
-#include <Epetra_Export.h>
-#include <Epetra_CrsMatrix.h>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

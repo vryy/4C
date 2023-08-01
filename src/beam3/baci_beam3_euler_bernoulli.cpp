@@ -8,16 +8,15 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_beam3_euler_bernoulli.H"
 
 #include "baci_beaminteraction_periodic_boundingbox.H"
-
 #include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_linedefinition.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

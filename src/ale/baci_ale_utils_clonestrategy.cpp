@@ -10,16 +10,15 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_utils_clonestrategy.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_par_bundle.H"
 
-// we need to know all element types for the ale mesh creation
-#include "baci_fluid_ele.H"
 #include "baci_ale_ale2.H"
 #include "baci_ale_ale2_nurbs.H"
 #include "baci_ale_ale3.H"
 #include "baci_ale_ale3_nurbs.H"
+#include "baci_fluid_ele.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

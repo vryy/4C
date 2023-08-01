@@ -12,8 +12,8 @@
 #define BACI_CUT_BOUNDINGBOX_H
 
 #include "baci_cut_clnwrapper.H"
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_cut_tolerance.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 namespace CORE::GEO
 {

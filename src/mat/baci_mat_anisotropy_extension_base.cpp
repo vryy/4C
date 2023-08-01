@@ -10,8 +10,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_base.H"
+
+#include "baci_mat_anisotropy.H"
 
 void MAT::BaseAnisotropyExtension::SetAnisotropy(MAT::Anisotropy& anisotropy)
 {

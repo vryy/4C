@@ -9,13 +9,13 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_UTILS_H
 #define BACI_POROMULTIPHASE_SCATRA_UTILS_H
 
-#include <set>
-
 #include "baci_inpar_poromultiphase_scatra.H"
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 // forward declarations
 namespace CORE::LINALG

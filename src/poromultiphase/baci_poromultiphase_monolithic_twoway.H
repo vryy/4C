@@ -10,11 +10,11 @@
 #ifndef BACI_POROMULTIPHASE_MONOLITHIC_TWOWAY_H
 #define BACI_POROMULTIPHASE_MONOLITHIC_TWOWAY_H
 
-#include "baci_poromultiphase_monolithic.H"
-#include <Teuchos_Time.hpp>
-
-#include "baci_inpar_solver.H"
 #include "baci_inpar_poromultiphase.H"
+#include "baci_inpar_solver.H"
+#include "baci_poromultiphase_monolithic.H"
+
+#include <Teuchos_Time.hpp>
 
 // forward declarations
 namespace CORE::LINALG

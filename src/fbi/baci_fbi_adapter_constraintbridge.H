@@ -11,9 +11,11 @@ enforcement technique with a discretization approach for Fluid-beam interaction.
 #ifndef BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_H
 #define BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_linalg_fixedsizematrix.H"
+
 #include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
 #include <vector>
 
 // Forward declaration

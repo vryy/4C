@@ -9,12 +9,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_cut_position.H"
+#include "baci_fluid_ele_calc_xfem_coupling_impl.H"
 #include "baci_lib_utils.H"
 #include "baci_xfem_interface_utils.H"
-#include "baci_fluid_ele_calc_xfem_coupling_impl.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 namespace DRT
 {

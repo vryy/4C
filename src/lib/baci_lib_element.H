@@ -13,13 +13,13 @@
 #define BACI_LIB_ELEMENT_H
 
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "baci_lib_condition.H"
+#include "baci_lib_parobject.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
-#include "baci_lib_parobject.H"
-#include "baci_lib_condition.H"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace MAT

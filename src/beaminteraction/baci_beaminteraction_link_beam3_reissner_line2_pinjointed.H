@@ -11,8 +11,8 @@
 #ifndef BACI_BEAMINTERACTION_LINK_BEAM3_REISSNER_LINE2_PINJOINTED_H
 #define BACI_BEAMINTERACTION_LINK_BEAM3_REISSNER_LINE2_PINJOINTED_H
 
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_beaminteraction_link_pinjointed.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
 // forward declarations

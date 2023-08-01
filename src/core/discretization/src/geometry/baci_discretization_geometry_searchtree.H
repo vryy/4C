@@ -10,11 +10,12 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRY_SEARCHTREE_H
 #define BACI_DISCRETIZATION_GEOMETRY_SEARCHTREE_H
 
-#include <set>
-
-#include <Teuchos_RCP.hpp>
 #include "baci_discretization_geometry_searchtree_nearestobject.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 // forward declarations
 namespace DRT

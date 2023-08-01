@@ -14,6 +14,7 @@
 #define BACI_UTILS_FAD_H
 
 #include "baci_linalg_fixedsizematrix.H"
+
 #include <Sacado.hpp>
 
 namespace CORE::FADUTILS

@@ -10,41 +10,29 @@
 
 #include "baci_poroelast_base.H"
 
-// needed for PrintNewton
-#include <cstddef>
-
-#include "baci_poroelast_defines.H"
-#include "baci_poroelast_utils.H"
-
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_volmortar.H"
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_fld_poro.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-
-// new structural time integration
-#include "baci_adapter_str_structure_new.H"
 #include "baci_adapter_str_factory.H"
-
-// contact
-#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_adapter_str_structure_new.H"
 #include "baci_contact_meshtying_contact_bridge.H"
-
+#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_volmortar.H"
 #include "baci_io_control.H"
-
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_dofset_gidbased_wrapper.H"
 #include "baci_lib_globalproblem.H"
-
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linear_solver_method_linalg.H"
-
-// contact
 #include "baci_mortar_manager_base.H"
-
+#include "baci_poroelast_defines.H"
+#include "baci_poroelast_utils.H"
 #include "baci_structure_aux.H"
+
+#include <cstddef>
 
 
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,

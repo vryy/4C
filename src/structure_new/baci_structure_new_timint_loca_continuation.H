@@ -14,10 +14,9 @@
 #define BACI_STRUCTURE_NEW_TIMINT_LOCA_CONTINUATION_H
 
 
+#include "baci_loca_continuation_nln_stepper.H"      // enum
+#include "baci_solver_nonlin_nox_enum_lists.H"       // enum
 #include "baci_structure_new_timint_implicitbase.H"  // base class
-
-#include "baci_loca_continuation_nln_stepper.H"  // enum
-#include "baci_solver_nonlin_nox_enum_lists.H"   // enum
 
 // forward declaration
 namespace LOCA

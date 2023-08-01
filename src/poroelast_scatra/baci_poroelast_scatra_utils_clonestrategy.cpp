@@ -8,25 +8,21 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_poroelast_scatra_utils_clonestrategy.H"
-#include "baci_poroelast_utils_clonestrategy.H"
-#include "baci_poroelast_scatra_utils.H"
+
 #include "baci_adapter_structure_scatra_ele.H"
-
 #include "baci_lib_globalproblem.H"
-
-#include "baci_mat_par_bundle.H"
 #include "baci_mat_fluidporo.H"
+#include "baci_mat_par_bundle.H"
 #include "baci_mat_structporo.H"
-
-#include "baci_so3_nurbs27.H"
-#include "baci_so3_scatra.H"
-#include "baci_so3_poro_scatra.H"
-#include "baci_so3_poro_p1_scatra.H"
-
-#include "baci_w1_poro_scatra.H"
-#include "baci_w1_poro_p1_scatra.H"
-
+#include "baci_poroelast_scatra_utils.H"
+#include "baci_poroelast_utils_clonestrategy.H"
 #include "baci_scatra_ele.H"
+#include "baci_so3_nurbs27.H"
+#include "baci_so3_poro_p1_scatra.H"
+#include "baci_so3_poro_scatra.H"
+#include "baci_so3_scatra.H"
+#include "baci_w1_poro_p1_scatra.H"
+#include "baci_w1_poro_scatra.H"
 
 
 INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImplType(

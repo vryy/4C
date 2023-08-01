@@ -11,10 +11,10 @@
 #ifndef BACI_POROELAST_SCATRA_UTILS_CLONESTRATEGY_H
 #define BACI_POROELAST_SCATRA_UTILS_CLONESTRATEGY_H
 
+#include "baci_inpar_scatra.H"
 #include "baci_poroelast_utils_clonestrategy.H"
 
 #include <Teuchos_RCP.hpp>
-#include "baci_inpar_scatra.H"
 
 namespace DRT
 {

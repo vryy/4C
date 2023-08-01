@@ -11,6 +11,7 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "baci_cut_position.H"
+
 #include "baci_cut_boundingbox.H"
 #include "baci_lib_globalproblem.H"
 

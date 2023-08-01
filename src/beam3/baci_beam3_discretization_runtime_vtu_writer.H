@@ -13,11 +13,11 @@
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */
 
-#include <vector>
+#include "baci_discretization_fem_general_utils_integration.H"
 
 #include <Teuchos_RCP.hpp>
 
-#include "baci_discretization_fem_general_utils_integration.H"
+#include <vector>
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */

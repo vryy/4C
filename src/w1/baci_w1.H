@@ -13,23 +13,21 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_parobjectfactory.H"
-#include "baci_lib_node.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_inpar_structure.H"
-
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-
+#include "baci_lib_node.H"
+#include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_so3_base.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {

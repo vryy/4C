@@ -8,10 +8,11 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_surface.H"
-#include "baci_so3_line.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_lib_utils.H"
+
 #include "baci_lib_discret.H"
+#include "baci_lib_utils.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_so3_line.H"
 
 DRT::ELEMENTS::StructuralSurfaceType DRT::ELEMENTS::StructuralSurfaceType::instance_;
 

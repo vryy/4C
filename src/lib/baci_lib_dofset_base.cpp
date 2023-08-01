@@ -9,17 +9,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <iostream>
-#include <algorithm>
-#include <numeric>
-
 #include "baci_lib_dofset_base.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
 
 #include "baci_io_pstream.H"
-
+#include "baci_lib_discret.H"
+#include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
+
+#include <algorithm>
+#include <iostream>
+#include <numeric>
 
 
 // list of all dof sets

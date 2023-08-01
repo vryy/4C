@@ -11,11 +11,9 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_STRUCTURE_H
 
-#include "baci_structure_new_model_evaluator_generic.H"  // base class
-
+#include "baci_inpar_structure.H"                         // enumerators
 #include "baci_structure_new_elements_paramsinterface.H"  // interface to the element evaluation
-
-#include "baci_inpar_structure.H"  // enumerators
+#include "baci_structure_new_model_evaluator_generic.H"   // base class
 
 #include <Teuchos_RCP.hpp>
 

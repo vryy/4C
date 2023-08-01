@@ -11,11 +11,11 @@
 #ifndef BACI_CONTACT_AUG_STRATEGY_H
 #define BACI_CONTACT_AUG_STRATEGY_H
 
-#include "baci_contact_lagrange_strategy.H"
-#include "baci_contact_aug_utils.H"
 #include "baci_contact_aug_enum_lists.H"
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_contact_aug_timemonitor.H"
+#include "baci_contact_aug_utils.H"
+#include "baci_contact_lagrange_strategy.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_singleton_owner.H"
 
 // forward declaration

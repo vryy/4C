@@ -13,8 +13,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VTK_OUTPUT_PARAMS_H
 
 
-#include "baci_utils_exceptions.H"
 #include "baci_inpar_IO_runtime_vtk_output.H"
+#include "baci_utils_exceptions.H"
 
 
 namespace BEAMINTERACTION

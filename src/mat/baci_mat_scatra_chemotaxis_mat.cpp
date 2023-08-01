@@ -7,11 +7,13 @@ This file contains the base material for chemotactic scalars.
 
 *----------------------------------------------------------------------*/
 
-#include <vector>
 #include "baci_mat_scatra_chemotaxis_mat.H"
+
+#include "baci_comm_utils.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
-#include "baci_comm_utils.H"
+
+#include <vector>
 
 
 /*----------------------------------------------------------------------*/

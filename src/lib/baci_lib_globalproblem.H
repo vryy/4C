@@ -13,17 +13,17 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_H
 #define BACI_LIB_GLOBALPROBLEM_H
 
-#include <memory>
-#include <vector>
-
-#include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-
-#include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_function.H"
+#include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <memory>
+#include <vector>
 
 namespace IO
 {

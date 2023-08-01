@@ -8,6 +8,7 @@ invariant
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_coup1pow.H"
+
 #include "baci_mat_par_material.H"
 
 MAT::ELASTIC::PAR::Coup1Pow::Coup1Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)

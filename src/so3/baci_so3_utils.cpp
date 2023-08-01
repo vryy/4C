@@ -7,12 +7,14 @@
  *-----------------------------------------------------------------------*/
 
 #include "baci_so3_utils.H"
-#include <algorithm>
-#include "baci_linalg_utils_densematrix_svd.H"
-#include "baci_lib_element.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_fiber_node.H"
+#include "baci_lib_element.H"
+#include "baci_linalg_utils_densematrix_svd.H"
 #include "baci_so3_prestress.H"
+
+#include <algorithm>
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::UTILS::CalcR(const DRT::Element* ele, const std::vector<double>& disp,

@@ -9,9 +9,10 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_structure.H"
+
 #include "baci_inpar.H"
+#include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
 namespace INPAR

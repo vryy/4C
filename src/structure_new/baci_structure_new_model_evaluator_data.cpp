@@ -11,20 +11,18 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_implicit.H"
-#include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_nln_solver_utils.H"
-#include "baci_structure_new_nln_solver_nox.H"
-
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_statustest_normf.H"
-#include "baci_solver_nonlin_nox_statustest_normwrms.H"
-#include "baci_solver_nonlin_nox_statustest_normupdate.H"
 
 #include "baci_io.H"
 #include "baci_io_control.H"
-
 #include "baci_lib_data_collector.H"
+#include "baci_solver_nonlin_nox_aux.H"
+#include "baci_solver_nonlin_nox_statustest_normf.H"
+#include "baci_solver_nonlin_nox_statustest_normupdate.H"
+#include "baci_solver_nonlin_nox_statustest_normwrms.H"
+#include "baci_structure_new_impl_generic.H"
+#include "baci_structure_new_nln_solver_nox.H"
+#include "baci_structure_new_nln_solver_utils.H"
+#include "baci_structure_new_timint_implicit.H"
 
 #include <Epetra_Comm.h>
 

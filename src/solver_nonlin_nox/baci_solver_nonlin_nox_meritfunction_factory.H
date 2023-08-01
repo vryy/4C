@@ -13,8 +13,9 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_FACTORY_H
 #define BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_FACTORY_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_solver_nonlin_nox_globaldata.H"
+
+#include <Teuchos_RCP.hpp>
 
 // Forward declarations
 namespace Teuchos

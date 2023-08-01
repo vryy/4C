@@ -10,26 +10,23 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_fsi_nox_mpe.H"
-#include <NOX_GlobalData.H>
-#include <NOX_Abstract_Group.H>
 
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-
-#include <NOX_Epetra_Group.H>
-#include <NOX_Epetra_Vector.H>
-
-#include <vector>
+#include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <NOX_Abstract_Group.H>
+#include <NOX_Epetra_Group.H>
+#include <NOX_Epetra_Vector.H>
+#include <NOX_GlobalData.H>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
 
-#include <Epetra_Vector.h>
-
-#include "baci_lib_globalproblem.H"
-#include "baci_io_control.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
+#include <vector>
 
 NOX::FSI::MinimalPolynomial::MinimalPolynomial(
     const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)

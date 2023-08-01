@@ -14,9 +14,8 @@
 #define BACI_FLUID_TIMINT_PORO_GENALPHA_H
 
 
-#include "baci_fluid_timint_poro.H"
 #include "baci_fluid_timint_genalpha.H"
-
+#include "baci_fluid_timint_poro.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 

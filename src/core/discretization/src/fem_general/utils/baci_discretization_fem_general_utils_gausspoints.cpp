@@ -8,17 +8,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Intrepid_Cubature.hpp>
-#include <Intrepid_FieldContainer.hpp>
-#include <Intrepid_DefaultCubatureFactory.hpp>
+#include "baci_discretization_fem_general_utils_gausspoints.H"
 
+#include <Intrepid_Cubature.hpp>
+#include <Intrepid_DefaultCubatureFactory.hpp>
+#include <Intrepid_FieldContainer.hpp>
 #include <Shards_BasicTopologies.hpp>
-#include <Shards_CellTopologyTraits.hpp>
 #include <Shards_CellTopology.hpp>
+#include <Shards_CellTopologyTraits.hpp>
 
 #include <stdexcept>
-
-#include "baci_discretization_fem_general_utils_gausspoints.H"
 
 namespace CORE::DRT::UTILS
 {

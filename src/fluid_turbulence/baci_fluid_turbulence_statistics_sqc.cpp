@@ -9,9 +9,9 @@ turbulent flow past a square cylinder
 
 */
 /*----------------------------------------------------------------------*/
-#include <fstream>
-
 #include "baci_fluid_turbulence_statistics_sqc.H"
+
+#include <fstream>
 
 /*----------------------------------------------------------------------*/
 /*!

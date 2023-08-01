@@ -11,15 +11,12 @@
 #ifndef BACI_SCATRA_ELE_BOUNDARY_CALC_H
 #define BACI_SCATRA_ELE_BOUNDARY_CALC_H
 
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_fluid_ele.H"
+#include "baci_inpar_elch.H"
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_boundary_interface.H"
 #include "baci_scatra_ele_calc_utils.H"
-
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
-#include "baci_inpar_elch.H"
-
-#include "baci_fluid_ele.H"
 
 namespace FLD
 {

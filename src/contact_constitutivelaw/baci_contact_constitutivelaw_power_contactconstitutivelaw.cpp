@@ -12,11 +12,13 @@
 
 #include "baci_contact_constitutivelaw_power_contactconstitutivelaw.H"
 
-#include <vector>
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_lib_globalproblem.H"
+
 #include <math.h>
+
+#include <vector>
 
 
 /*----------------------------------------------------------------------*/

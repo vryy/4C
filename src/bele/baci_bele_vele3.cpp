@@ -9,10 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_bele_vele3.H"
+
 #include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::Vele3Type DRT::ELEMENTS::Vele3Type::instance_;
 

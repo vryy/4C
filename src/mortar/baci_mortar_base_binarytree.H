@@ -10,10 +10,11 @@
 #ifndef BACI_MORTAR_BASE_BINARYTREE_H
 #define BACI_MORTAR_BASE_BINARYTREE_H
 
-#include <vector>
-
 #include "baci_mortar_abstract_binarytree.H"
+
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 // forward declarations
 namespace DRT

@@ -11,13 +11,15 @@
 #ifndef BACI_ART_NET_ARTERY_ELE_INTERFACE_H
 #define BACI_ART_NET_ARTERY_ELE_INTERFACE_H
 
-#include <vector>
-#include <Teuchos_ParameterList.hpp>
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_lib_element.H"
 #include "baci_art_net_artery.H"
 #include "baci_art_net_artery_ele_action.H"
+#include "baci_lib_element.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Teuchos_ParameterList.hpp>
+
+#include <vector>
 
 namespace DRT
 {

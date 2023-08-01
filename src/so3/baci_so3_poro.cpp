@@ -12,14 +12,10 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
-
-#include "baci_so3_poro_eletypes.H"
-
-#include "baci_so3_surface.H"
-#include "baci_so3_line.H"
-
-// for ReadElement()
 #include "baci_mat_structporo.H"
+#include "baci_so3_line.H"
+#include "baci_so3_poro_eletypes.H"
+#include "baci_so3_surface.H"
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele, distype>::So3_Poro(int id, int owner)

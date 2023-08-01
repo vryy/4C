@@ -7,10 +7,11 @@
 */
 /*---------------------------------------------------------------------*/
 #include "baci_mortar_base_binarytree.H"
-#include "baci_utils_exceptions.H"
+
 #include "baci_lib_discret.H"
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
+#include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
  |  ctor BaseBinaryTree (public)                           schmidt 01/19|

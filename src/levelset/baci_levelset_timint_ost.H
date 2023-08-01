@@ -11,8 +11,8 @@
 #ifndef BACI_LEVELSET_TIMINT_OST_H
 #define BACI_LEVELSET_TIMINT_OST_H
 
-#include "baci_scatra_timint_ost.H"
 #include "baci_levelset_algorithm.H"
+#include "baci_scatra_timint_ost.H"
 
 
 namespace SCATRA

@@ -10,16 +10,17 @@
 #ifndef BACI_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H
 #define BACI_LINALG_UTILS_SPARSE_ALGEBRA_ASSEMBLE_H
 
-#include <Epetra_Map.h>
-#include <Epetra_CrsGraph.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Vector.h>
-#include <Epetra_MultiVector.h>
-#include <Teuchos_RCP.hpp>
 #include "baci_lib_exporter.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+
+#include <Epetra_CrsGraph.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Map.h>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINALG
 {

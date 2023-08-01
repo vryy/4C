@@ -12,14 +12,15 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_structure_timint_genalpha.H"
-#include "baci_structure_aux.H"
+
 #include "baci_io.H"
-#include "baci_lib_locsys.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_io_pstream.H"
-#include "baci_structure_new_utils.H"
+#include "baci_lib_locsys.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_structure_aux.H"
 #include "baci_structure_new_impl_genalpha.H"
+#include "baci_structure_new_utils.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::CalcCoeff()

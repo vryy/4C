@@ -10,10 +10,10 @@
 #ifndef BACI_BEAMINTERACTION_CONTACT_PAIR_H
 #define BACI_BEAMINTERACTION_CONTACT_PAIR_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declaration ...

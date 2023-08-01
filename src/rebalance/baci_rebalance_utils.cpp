@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_io_pstream.H"
-
 #include "baci_rebalance_utils.H"
+
+#include "baci_io_pstream.H"
 
 namespace REBALANCE::UTILS
 {

@@ -13,9 +13,10 @@
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_timint.H"
-#include "baci_thermo_aux.H"
 #include "baci_coupling_adapter_mortar.H"
+#include "baci_thermo_aux.H"
+#include "baci_thermo_timint.H"
+
 #include <Teuchos_Time.hpp>
 
 // forward declaration

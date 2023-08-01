@@ -11,12 +11,12 @@
 #ifndef BACI_FSI_STATUSTEST_H
 #define BACI_FSI_STATUSTEST_H
 
-#include <NOX_StatusTest_Generic.H>
-#include <NOX_Abstract_Group.H>
-#include <NOX_Utils.H>
-
-#include "baci_linalg_mapextractor.H"
 #include "baci_coupling_adapter.H"
+#include "baci_linalg_mapextractor.H"
+
+#include <NOX_Abstract_Group.H>
+#include <NOX_StatusTest_Generic.H>
+#include <NOX_Utils.H>
 
 // forward declarations
 namespace CORE::ADAPTER

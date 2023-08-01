@@ -5,15 +5,18 @@
 
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include <stdexcept>
+
 #include "baci_comm_utils.H"
-#include "baci_lib_utils.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_utils.H"
+
 #include <Epetra_Comm.h>
+#include <Epetra_CrsMatrix.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-#include <Epetra_CrsMatrix.h>
 #include <Teuchos_RCP.hpp>
+
+#include <stdexcept>
 
 namespace
 {

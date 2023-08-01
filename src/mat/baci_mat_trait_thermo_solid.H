@@ -5,8 +5,8 @@
 
 */
 
-#include "baci_mat_trait_thermo.H"
 #include "baci_mat_trait_solid.H"
+#include "baci_mat_trait_thermo.H"
 
 #ifndef BACI_MAT_TRAIT_THERMO_SOLID_H
 #define BACI_MAT_TRAIT_THERMO_SOLID_H

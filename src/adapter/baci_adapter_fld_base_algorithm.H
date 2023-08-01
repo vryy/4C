@@ -14,14 +14,13 @@
 #ifndef BACI_ADAPTER_FLD_BASE_ALGORITHM_H
 #define BACI_ADAPTER_FLD_BASE_ALGORITHM_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "baci_adapter_fld_fluid.H"
 
-#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-
-#include "baci_adapter_fld_fluid.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace ADAPTER
 {

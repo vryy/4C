@@ -11,8 +11,9 @@
 #define BACI_MAT_SERVICE_H
 
 
-#include <Teuchos_RCP.hpp>
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace CORE::LINALG

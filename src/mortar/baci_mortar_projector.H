@@ -9,11 +9,10 @@
 #ifndef BACI_MORTAR_PROJECTOR_H
 #define BACI_MORTAR_PROJECTOR_H
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_lib_element.H"
-#include "baci_utils_pairedvector.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
+#include "baci_lib_element.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_pairedvector.H"
 #include "baci_utils_singleton_owner.H"
 
 namespace MORTAR

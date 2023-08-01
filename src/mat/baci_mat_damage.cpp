@@ -35,9 +35,9 @@
  | headers                                                   dano 09/13 |
  *----------------------------------------------------------------------*/
 #include "baci_mat_damage.H"
-#include "baci_mat_par_bundle.H"
 
 #include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
 
 
 /*----------------------------------------------------------------------*

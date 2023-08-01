@@ -14,20 +14,19 @@
 /*----------------------------------------------------------------------*
  | headers                                             gravemeier 06/17 |
  *----------------------------------------------------------------------*/
-#include <fstream>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
-#include <Epetra_CrsGraph.h>
+#include "baci_inpar_elemag.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
-#include "baci_inpar_elemag.H"
+#include <Epetra_CrsGraph.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <fstream>
 
 /*----------------------------------------------------------------------*
  | forward declarations                                gravemeier 06/17 |

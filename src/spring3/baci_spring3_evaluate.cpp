@@ -7,19 +7,19 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_spring3.H"
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_mat_stvenantkirchhoff.H"
-#include "baci_inpar_structure.H"
+#include "baci_spring3.H"
+#include "baci_utils_exceptions.H"
+#include "baci_utils_fad.H"
 
 #include <Sacado.hpp>
-#include "baci_utils_fad.H"
 typedef Sacado::Fad::DFad<double> FAD;
 
 /*-----------------------------------------------------------------------------------------------------------*

@@ -11,12 +11,11 @@ MATLAB, PGFPlot or other tools.
 #ifndef BACI_CONTACT_AUG_PLOT_H
 #define BACI_CONTACT_AUG_PLOT_H
 
-#include <Teuchos_RCP.hpp>
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include <NOX_Observer.hpp>
-
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_fixedsizematrix.H"
+#include <Teuchos_RCP.hpp>
 
 class Epetra_Vector;
 class Epetra_Map;

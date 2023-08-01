@@ -10,8 +10,9 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 #include "baci_adapter_fld_fluid_ac_fsi.H"
-#include "baci_fluid_implicit_integration.H"
+
 #include "baci_fluid_impedancecondition.H"
+#include "baci_fluid_implicit_integration.H"
 
 /*======================================================================*/
 /* constructor */

@@ -11,8 +11,9 @@
 #ifndef BACI_SSI_MONOLITHIC_H
 #define BACI_SSI_MONOLITHIC_H
 
-#include <Teuchos_Time.hpp>
 #include "baci_ssi_base.H"
+
+#include <Teuchos_Time.hpp>
 
 // forward declarations
 namespace CONTACT

@@ -6,11 +6,12 @@
 \level 3
  *------------------------------------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <mpi.h>
+#include "baci_cut_meshintersection.H"
 
 #include "baci_cut_selfcut.H"
-#include "baci_cut_meshintersection.H"
+
+#include <mpi.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*-----------------------------------------------------------------------------------------*
  * add this background element if it falls within the bounding box of cut mesh

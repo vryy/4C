@@ -14,7 +14,6 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PARAMS_H
 
 #include "baci_inpar_beamcontact.H"
-
 #include "baci_utils_exceptions.H"
 
 namespace BEAMINTERACTION

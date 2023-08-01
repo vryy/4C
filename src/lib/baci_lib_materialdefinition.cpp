@@ -12,18 +12,17 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <iterator>
+#include "baci_lib_materialdefinition.H"
 
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_cond_and_mat_definition.H"
+#include "baci_mat_material.H"
+
+#include <iostream>
+#include <iterator>
 #include <string>
 #include <utility>
 #include <vector>
-#include <iostream>
-
-#include "baci_lib_materialdefinition.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_cond_and_mat_definition.H"
-
-#include "baci_mat_material.H"
 
 
 /*----------------------------------------------------------------------*

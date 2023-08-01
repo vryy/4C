@@ -3,30 +3,29 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
+#include "baci_contact_analytical.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_fiber_node.H"
 #include "baci_lib_element.H"
-#include "baci_so3_element_service.H"
-#include "baci_so3_tet10.H"
-#include "baci_lib_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_contact_analytical.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_so3_material.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_so3_utils.H"
-#include "baci_fiber_node.H"
-
+#include "baci_so3_element_service.H"
 #include "baci_so3_prestress.H"
-
+#include "baci_so3_tet10.H"
+#include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_gauss_point_data_output_manager.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |

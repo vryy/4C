@@ -8,11 +8,12 @@ coordinate system
 
  *------------------------------------------------------------------------------------------------*/
 #include "baci_cut_direct_divergence_refplane.H"
+
 #include "baci_cut_kernel.H"
-#include "baci_cut_side.H"
-#include "baci_cut_volumecell.H"
 #include "baci_cut_options.H"
 #include "baci_cut_output.H"
+#include "baci_cut_side.H"
+#include "baci_cut_volumecell.H"
 
 /*-----------------------------------------------------------------------------------*
  * Perform all the operations related to computing reference plane           sudhakar 06/15

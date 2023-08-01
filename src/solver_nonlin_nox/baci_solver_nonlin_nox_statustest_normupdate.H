@@ -15,13 +15,13 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_STATUSTEST_NORMUPDATE_H
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_NORMUPDATE_H
 
-#include <vector>
-
-#include <NOX_StatusTest_Generic.H>
+#include "baci_solver_nonlin_nox_enum_lists.H"
 
 #include <NOX_Abstract_Vector.H>
+#include <NOX_StatusTest_Generic.H>
 #include <NOX_Utils.H>
-#include "baci_solver_nonlin_nox_enum_lists.H"
+
+#include <vector>
 
 namespace NOX
 {

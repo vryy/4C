@@ -8,6 +8,7 @@
 */
 /*---------------------------------------------------------------------------*/
 #include "baci_s8_scatra.H"
+
 #include "baci_lib_linedefinition.H"
 
 DRT::ELEMENTS::Shell8ScatraType DRT::ELEMENTS::Shell8ScatraType::instance_;

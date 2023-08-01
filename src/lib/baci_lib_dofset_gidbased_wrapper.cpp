@@ -11,8 +11,8 @@
 
 #include "baci_lib_dofset_gidbased_wrapper.H"
 
-#include "baci_lib_dofset_proxy.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_dofset_proxy.H"
 
 
 /*----------------------------------------------------------------------*

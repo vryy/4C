@@ -12,10 +12,10 @@
 #ifndef BACI_CUT_COLOREDGRAPH_H
 #define BACI_CUT_COLOREDGRAPH_H
 
-#include <map>
-#include <list>
-
 #include "baci_cut_utils.H"
+
+#include <list>
+#include <map>
 
 namespace CORE::GEO
 {

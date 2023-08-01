@@ -10,9 +10,9 @@ transport problems
 #ifndef BACI_MAT_SCATRA_MULTISCALE_GP_H
 #define BACI_MAT_SCATRA_MULTISCALE_GP_H
 
-#include <vector>
-
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 // forward declarations
 class Epetra_Vector;

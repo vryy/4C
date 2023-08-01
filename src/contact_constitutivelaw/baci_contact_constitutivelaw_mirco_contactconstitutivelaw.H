@@ -9,9 +9,10 @@
 #ifndef BACI_CONTACT_CONSTITUTIVELAW_MIRCO_CONTACTCONSTITUTIVELAW_H
 #define BACI_CONTACT_CONSTITUTIVELAW_MIRCO_CONTACTCONSTITUTIVELAW_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace CONTACT
 {

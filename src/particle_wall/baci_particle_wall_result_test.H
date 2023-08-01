@@ -14,9 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_typedefs.H"
-
 #include "baci_lib_resulttest.H"
+#include "baci_particle_engine_typedefs.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

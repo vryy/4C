@@ -12,10 +12,10 @@
 
 
 
+#include "baci_linalg_fixedsizematrix.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-#include "baci_linalg_fixedsizematrix.H"
 
 // forward declarations
 

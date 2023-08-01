@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_tutorial_material.H"
 #include "baci_tutorial_ele.H"
+#include "baci_tutorial_material.H"
 
 
 TUTORIAL::MATERIAL::TutorialMat::TutorialMat(double young) : Young_(young) {}

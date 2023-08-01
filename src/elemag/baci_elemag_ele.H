@@ -15,14 +15,14 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef BACI_ELEMAG_ELE_H
 #define BACI_ELEMAG_ELE_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-
-#include "baci_lib_elementtype.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_lib_elementtype.H"
+
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 const bool trac_with_pml_elemag = false;
 

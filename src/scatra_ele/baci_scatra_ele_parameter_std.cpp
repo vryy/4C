@@ -18,8 +18,8 @@ coexist with this general class.
 */
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
 
+#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 

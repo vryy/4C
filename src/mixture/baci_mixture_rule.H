@@ -12,18 +12,19 @@
 #ifndef BACI_MIXTURE_RULE_H
 #define BACI_MIXTURE_RULE_H
 
-#include <memory>
-#include <unordered_map>
-
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_parameter.H"
+#include "baci_utils_exceptions.H"
+
 #include <Teuchos_ENull.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPDecl.hpp>
+
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_fixedsizematrix.H"
 
 // forward declarations
 namespace LINALG

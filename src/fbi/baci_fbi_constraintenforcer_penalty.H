@@ -10,9 +10,10 @@ fluid-beam interaction).
 #ifndef BACI_FBI_CONSTRAINTENFORCER_PENALTY_H
 #define BACI_FBI_CONSTRAINTENFORCER_PENALTY_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_fbi_constraintenforcer.H"
+
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 namespace ADAPTER
 {

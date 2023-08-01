@@ -7,10 +7,12 @@
 
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include <Epetra_SerialComm.h>
-#include "baci_so3_tet4.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_so3_tet4.H"
+
+#include <Epetra_SerialComm.h>
 
 namespace
 {

@@ -13,9 +13,8 @@
 #define BACI_FLUID_TIMINT_LOMA_GENALPHA_H
 
 
-#include "baci_fluid_timint_loma.H"
 #include "baci_fluid_timint_genalpha.H"
-
+#include "baci_fluid_timint_loma.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 

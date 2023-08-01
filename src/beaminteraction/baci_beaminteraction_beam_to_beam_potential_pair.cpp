@@ -10,26 +10,20 @@
 
 #include "baci_beaminteraction_beam_to_beam_potential_pair.H"
 
-#include "baci_beaminteraction_potential_params.H"
-#include "baci_beaminteraction_geometry_utils.H"
-
 #include "baci_beam3_base.H"
 #include "baci_beam3_spatial_discretization_utils.H"
-
-#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_beaminteraction_geometry_utils.H"
+#include "baci_beaminteraction_potential_params.H"
 #include "baci_discretization_fem_general_largerotations.H"
-
+#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_beampotential.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_function_of_time.H"
-
-#include "baci_utils_fad.H"
-
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_utils_exceptions.H"
+#include "baci_utils_fad.H"
 
 #include <Sacado.hpp>
 

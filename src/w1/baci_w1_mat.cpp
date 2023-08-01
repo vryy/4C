@@ -12,23 +12,21 @@
 
 /*----------------------------------------------------------------------*/
 // headers
-#include <Teuchos_SerialDenseSolver.hpp>
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_element.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_lib_element.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
-#include "baci_mat_stvenantkirchhoff.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_structporo.H"
-
+#include "baci_mat_stvenantkirchhoff.H"
 #include "baci_poroelast_utils.H"
-
+#include "baci_utils_exceptions.H"
 #include "baci_w1.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*/
 

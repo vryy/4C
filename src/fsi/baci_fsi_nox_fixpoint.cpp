@@ -9,8 +9,9 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_fsi_nox_fixpoint.H"
-#include <NOX_GlobalData.H>
+
 #include <NOX_Abstract_Group.H>
+#include <NOX_GlobalData.H>
 
 NOX::FSI::FixPoint::FixPoint(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params)
     : utils_(utils)

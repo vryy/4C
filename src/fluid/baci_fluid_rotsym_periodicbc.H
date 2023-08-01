@@ -13,11 +13,11 @@
 #ifndef BACI_FLUID_ROTSYM_PERIODICBC_H
 #define BACI_FLUID_ROTSYM_PERIODICBC_H
 
-#include <vector>
-
-#include "baci_fluid_rotsym_periodicbc_utils.H"
 #include "baci_fluid_ele.H"
+#include "baci_fluid_rotsym_periodicbc_utils.H"
 #include "baci_lib_element.H"
+
+#include <vector>
 
 namespace FLD
 {

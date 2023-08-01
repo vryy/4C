@@ -13,11 +13,11 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_AUX_H
 #define BACI_SOLVER_NONLIN_NOX_AUX_H
 
-#include <Teuchos_RCP.hpp>
-#include "baci_solver_nonlin_nox_statustest_factory.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_statustest_factory.H"
 
 #include <NOX_Abstract_Vector.H>
+#include <Teuchos_RCP.hpp>
 
 // forward declaration
 class Epetra_Vector;

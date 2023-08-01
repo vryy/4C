@@ -11,34 +11,29 @@
 
 
 #include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_factory.H"
-#include "baci_structure_new_model_evaluator_factory.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_integrator.H"
-#include "baci_structure_new_resulttest.H"
-#include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
-#include "baci_structure_new_timint_basedataio_runtime_vtp_output.H"
-#include "baci_structure_new_timint_basedataio_monitor_dbc.H"
-#include "baci_structure_new_enum_lists.H"
 
 #include "baci_beaminteraction_str_model_evaluator.H"
-
 #include "baci_comm_utils.H"
-
 #include "baci_inpar_contact.H"
-
-#include "baci_io_gmsh.H"
 #include "baci_io.H"
-#include "baci_io_pstream.H"
 #include "baci_io_control.H"
-
+#include "baci_io_gmsh.H"
+#include "baci_io_pstream.H"
 #include "baci_lib_globalproblem.H"
-
 #include "baci_linalg_blocksparsematrix.H"
+#include "baci_structure_new_dbc.H"
+#include "baci_structure_new_enum_lists.H"
+#include "baci_structure_new_factory.H"
+#include "baci_structure_new_integrator.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_model_evaluator_factory.H"
+#include "baci_structure_new_resulttest.H"
+#include "baci_structure_new_timint_basedataio_monitor_dbc.H"
+#include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
+#include "baci_structure_new_timint_basedataio_runtime_vtp_output.H"
 
-#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 

@@ -11,10 +11,9 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_surface_tension_recoilpressure_evaporation.H"
 
-#include "baci_particle_interaction_utils.H"
-
-#include "baci_particle_engine_interface.H"
 #include "baci_particle_engine_container.H"
+#include "baci_particle_engine_interface.H"
+#include "baci_particle_interaction_utils.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

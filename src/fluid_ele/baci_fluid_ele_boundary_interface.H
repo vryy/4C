@@ -12,10 +12,12 @@
 #ifndef BACI_FLUID_ELE_BOUNDARY_INTERFACE_H
 #define BACI_FLUID_ELE_BOUNDARY_INTERFACE_H
 
-#include <vector>
-#include <Teuchos_ParameterList.hpp>
-#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Teuchos_ParameterList.hpp>
+
+#include <vector>
 
 
 namespace DRT

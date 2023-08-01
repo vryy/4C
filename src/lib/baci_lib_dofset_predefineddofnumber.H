@@ -13,7 +13,6 @@
 #define BACI_LIB_DOFSET_PREDEFINEDDOFNUMBER_H
 
 #include "baci_lib_dofset.H"
-
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 namespace DRT

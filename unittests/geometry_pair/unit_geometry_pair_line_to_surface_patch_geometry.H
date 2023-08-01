@@ -12,14 +12,15 @@
 #define UNIT_GEOMETRY_PAIR_LINE_TO_SURFACE_PATCH_GEOMETRY_H
 
 
-#include <vector>
-#include <unordered_map>
-#include <Teuchos_RCP.hpp>
-
+#include "baci_geometry_pair_element_faces.H"
 #include "baci_lib_discret.H"
 #include "baci_so3_hex8.H"
 #include "baci_so3_surface.H"
-#include "baci_geometry_pair_element_faces.H"
+
+#include <Teuchos_RCP.hpp>
+
+#include <unordered_map>
+#include <vector>
 
 
 namespace

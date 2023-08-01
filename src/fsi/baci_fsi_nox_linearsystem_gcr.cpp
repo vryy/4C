@@ -8,20 +8,19 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <vector>
+#include "baci_fsi_nox_linearsystem_gcr.H"
+
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_fsi_nox_linearsystem_gcr.H"
+#include <vector>
 
 
 NOX::FSI::LinearSystemGCR::LinearSystemGCR(Teuchos::ParameterList& printParams,

@@ -15,10 +15,8 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "baci_adapter_algorithmbase.H"
-
-#include "baci_particle_engine_typedefs.H"
 #include "baci_particle_engine.H"
-
+#include "baci_particle_engine_typedefs.H"
 #include "baci_particle_wall.H"
 
 /*---------------------------------------------------------------------------*

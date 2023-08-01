@@ -7,35 +7,31 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include <Epetra_SerialComm.h>
 #include "baci_contact_abstract_strategy.H"
+
 #include "baci_contact_defines.H"
-#include "baci_contact_interface.H"
 #include "baci_contact_friction_node.H"
-#include "baci_contact_paramsinterface.H"
+#include "baci_contact_interface.H"
 #include "baci_contact_noxinterface.H"
+#include "baci_contact_paramsinterface.H"
 #include "baci_contact_utils_parallel.H"
-
-#include "baci_mortar_defines.H"
-#include "baci_mortar_utils.H"
-
 #include "baci_inpar_contact.H"
 #include "baci_inpar_parameterlist_utils.H"
-
-#include "baci_lib_discret.H"
-
 #include "baci_io.H"
 #include "baci_io_control.H"
-
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_lib_globalproblem.H"
-
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_utils.H"
 #include "baci_solver_nonlin_nox_group.H"
+
+#include <Epetra_SerialComm.h>
 
 
 /*----------------------------------------------------------------------*

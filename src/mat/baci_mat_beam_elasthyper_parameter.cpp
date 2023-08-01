@@ -8,8 +8,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "baci_mat_beam_elasthyper_parameter.H"
-#include "baci_mat_beam_elasthyper.H"
 
+#include "baci_mat_beam_elasthyper.H"
 #include "baci_mat_par_material.H"
 
 #include <Sacado.hpp>

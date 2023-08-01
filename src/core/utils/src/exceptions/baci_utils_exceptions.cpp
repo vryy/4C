@@ -11,14 +11,14 @@
 
 #include "baci_utils_exceptions.H"
 
-#include <stdexcept>
+#include <execinfo.h>
+#include <mpi.h>
+#include <stdio.h>
 #include <string.h>
+
 #include <iostream>
 #include <sstream>
-
-#include <mpi.h>
-#include <execinfo.h>
-#include <stdio.h>
+#include <stdexcept>
 
 
 static int latest_line = -1;

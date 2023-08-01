@@ -9,12 +9,12 @@
 #ifndef BACI_SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 #define BACI_SSI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
-
-#include "baci_linalg_sparseoperator.H"
 #include "baci_coupling_adapter.H"
+#include "baci_linalg_sparseoperator.H"
 #include "baci_ssi_utils.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 
 namespace CORE::LINALG
 {

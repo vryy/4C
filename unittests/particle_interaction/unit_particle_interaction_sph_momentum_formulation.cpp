@@ -4,11 +4,12 @@
 \level 3
 */
 /*---------------------------------------------------------------------------*/
-#include <cmath>
-
 #include <gtest/gtest.h>
-#include "baci_unittest_utils_assertions.h"
+
 #include "baci_particle_interaction_sph_momentum_formulation.H"
+#include "baci_unittest_utils_assertions.h"
+
+#include <cmath>
 
 
 namespace

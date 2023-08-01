@@ -13,9 +13,8 @@ Local electroneutrality is dismissed, which enables formation of Space-Charge-La
 #ifndef BACI_MAT_SCL_H
 #define BACI_MAT_SCL_H
 
-#include "baci_mat_elchsinglemat.H"
-
 #include "baci_lib_parobjectfactory.H"
+#include "baci_mat_elchsinglemat.H"
 
 namespace MAT
 {

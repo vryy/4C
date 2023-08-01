@@ -10,16 +10,15 @@
 #define BACI_CONSTRAINT_ELEMENT2_H
 
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Teuchos_SerialDenseMatrix.hpp>
-
-
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_node.H"
+#include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 namespace DRT

@@ -11,9 +11,8 @@
 
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
-#include "baci_lib_utils_reference_configuration.H"
 #include "baci_lib_discret.H"
-
+#include "baci_lib_utils_reference_configuration.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
 /*----------------------------------------------------------------------*

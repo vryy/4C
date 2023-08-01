@@ -10,10 +10,10 @@
 #ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_ARTERY_H
 
-#include "baci_scatra_timint_meshtying_strategy_base.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"
+#include "baci_scatra_timint_meshtying_strategy_base.H"
 
 // forward declaration
 namespace DRT

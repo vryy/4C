@@ -13,8 +13,8 @@
 #define BACI_LIB_UTILS_MATERIALS_H
 
 
-#include "baci_lib_node.H"
 #include "baci_lib_element.H"
+#include "baci_lib_node.H"
 
 #include <Teuchos_RCP.hpp>
 

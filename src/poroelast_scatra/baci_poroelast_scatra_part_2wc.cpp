@@ -9,15 +9,12 @@
 
 #include "baci_poroelast_scatra_part_2wc.H"
 
-#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_scatra_base_algorithm.H"
-
+#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_lib_globalproblem.H"
-
-#include "baci_scatra_timint_implicit.H"
-
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 08/13  |

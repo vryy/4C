@@ -9,17 +9,17 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_poromultiphase_scatra_artery_coupling_linebased.H"
+
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mat_cnst_1d_art.H"
+#include "baci_porofluidmultiphase_utils.H"
+#include "baci_poromultiphase_scatra_artery_coupling_defines.H"
+#include "baci_poromultiphase_scatra_artery_coupling_pair.H"
+
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
-
-#include "baci_porofluidmultiphase_utils.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_poromultiphase_scatra_artery_coupling_pair.H"
-#include "baci_poromultiphase_scatra_artery_coupling_defines.H"
-#include "baci_mat_cnst_1d_art.H"
-
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

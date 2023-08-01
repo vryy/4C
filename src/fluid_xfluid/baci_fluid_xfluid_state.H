@@ -11,16 +11,14 @@
 #ifndef BACI_FLUID_XFLUID_STATE_H
 #define BACI_FLUID_XFLUID_STATE_H
 
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-
-#include <Teuchos_RCP.hpp>
-
-#include "baci_utils_exceptions.H"
-
+#include "baci_inpar_cut.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_xfem.H"
-#include "baci_inpar_cut.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

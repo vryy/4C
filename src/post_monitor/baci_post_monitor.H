@@ -16,11 +16,12 @@
 #ifndef BACI_POST_MONITOR_H
 #define BACI_POST_MONITOR_H
 
-#include <string>
+#include "baci_lib_discret.H"
+#include "baci_post_common.H"
+
 #include <Teuchos_CommandLineProcessor.hpp>
 
-#include "baci_post_common.H"
-#include "baci_lib_discret.H"
+#include <string>
 
 
 /*----------------------------------------------------------------------*/

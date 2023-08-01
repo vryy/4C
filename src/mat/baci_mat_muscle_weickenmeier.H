@@ -11,11 +11,12 @@
 #define BACI_MAT_MUSCLE_WEICKENMEIER_H
 
 #include "baci_lib_parobjectfactory.H"
-#include "baci_mat_so3_material.H"
-#include "baci_mat_par_parameter.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_anisotropy_extension_provider.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
+
 #include <Teuchos_RCP.hpp>
 
 

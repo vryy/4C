@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_cut_intersection.H"
-#include "baci_cut_boundingbox.H"
-#include "baci_cut_side.H"
-#include "baci_cut_position.H"
-#include "baci_cut_utils.H"
 
+#include "baci_cut_boundingbox.H"
+#include "baci_cut_position.H"
+#include "baci_cut_side.H"
+#include "baci_cut_utils.H"
 #include "baci_lib_globalproblem.H"
 
 // whether to perform triangulation during intersection

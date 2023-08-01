@@ -16,14 +16,14 @@
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_BOUNDARY_INTEGRATION_H
 
 
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_discretization_geometry_position_array.H"
-#include "baci_lib_element_integration_select.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_element_integration_select.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 namespace CORE::DRT::UTILS
 {

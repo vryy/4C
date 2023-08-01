@@ -3,37 +3,37 @@
 \brief quadratic nonlinear tetrahedron
 \level 1
 *----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "baci_so3_tet4.H"
+#include "baci_contact_analytical.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_lib_utils.H"
+#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_mat_elasthyper.H"
-#include "baci_mat_stvenantkirchhoff.H"
+#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_constraintmixture.H"
-#include "baci_contact_analytical.H"
-#include "baci_lib_globalproblem.H"
-
-#include "baci_so3_prestress.H"
-
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_mat_thermoplastichyperelast.H"
+#include "baci_mat_elasthyper.H"
 #include "baci_mat_robinson.H"
+#include "baci_mat_stvenantkirchhoff.H"
+#include "baci_mat_thermoplastichyperelast.H"
+#include "baci_mat_thermostvenantkirchhoff.H"
+#include "baci_so3_prestress.H"
+#include "baci_so3_tet4.H"
 #include "baci_so3_utils.H"
+#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // #define PRINT_DEBUG
 #ifdef PRINT_DEBUG
-#include <string>
 #include <sstream>
+#include <string>
+
 #include <cstd::string>
 template <class T>
 void writeArray(const T& mat, std::string name = "unnamed")

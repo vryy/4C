@@ -13,10 +13,10 @@
 #define BACI_BEAMINTERACTION_UTILS_PARALLEL_PROCTOPROC_H
 
 
+#include <Teuchos_RCP.hpp>
+
 #include <map>
 #include <vector>
-
-#include <Teuchos_RCP.hpp>
 
 
 namespace DRT

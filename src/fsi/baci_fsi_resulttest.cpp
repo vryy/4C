@@ -8,20 +8,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <string>
 #include "baci_fsi_resulttest.H"
-#include "baci_fsi_monolithicstructuresplit.H"
-#include "baci_fsi_monolithicfluidsplit.H"
-#include "baci_fsi_mortarmonolithic_structuresplit.H"
-#include "baci_fsi_mortarmonolithic_fluidsplit.H"
-#include "baci_fsi_fluidfluidmonolithic_structuresplit_nonox.H"
+
+#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_adapter_str_fsiwrapper.H"
 #include "baci_fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
+#include "baci_fsi_fluidfluidmonolithic_structuresplit_nonox.H"
+#include "baci_fsi_monolithicfluidsplit.H"
+#include "baci_fsi_monolithicstructuresplit.H"
+#include "baci_fsi_mortarmonolithic_fluidsplit.H"
+#include "baci_fsi_mortarmonolithic_structuresplit.H"
 #include "baci_fsi_slidingmonolithic_fluidsplit.H"
 #include "baci_fsi_slidingmonolithic_structuresplit.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_lib_linedefinition.H"
+
+#include <string>
 
 
 /*----------------------------------------------------------------------*/

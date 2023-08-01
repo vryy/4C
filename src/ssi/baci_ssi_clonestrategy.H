@@ -10,8 +10,9 @@
 #ifndef BACI_SSI_CLONESTRATEGY_H
 #define BACI_SSI_CLONESTRATEGY_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_inpar_scatra.H"
+
+#include <Teuchos_RCP.hpp>
 
 // forward declaration
 namespace DRT

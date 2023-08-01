@@ -6,27 +6,26 @@
 
 */
 /*----------------------------------------------------------------------*/
+#include "baci_scatra_ele.H"
+
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_fluid_ele_nullspace.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_utils_exceptions.H"
-#include "baci_mat_list.H"
-#include "baci_mat_list_reactions.H"
-#include "baci_mat_list_chemotaxis.H"
-#include "baci_mat_scatra_chemotaxis_mat.H"
-#include "baci_mat_list_chemoreac.H"
-#include "baci_mat_scatra_reaction_mat.H"
-#include "baci_mat_elchmat.H"
-#include "baci_mat_myocard.H"
-#include "baci_mat_elasthyper.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-
-#include "baci_fluid_ele_nullspace.H"
-
+#include "baci_lib_utils_factory.H"
+#include "baci_mat_elasthyper.H"
+#include "baci_mat_elchmat.H"
+#include "baci_mat_list.H"
+#include "baci_mat_list_chemoreac.H"
+#include "baci_mat_list_chemotaxis.H"
+#include "baci_mat_list_reactions.H"
+#include "baci_mat_myocard.H"
+#include "baci_mat_scatra_chemotaxis_mat.H"
+#include "baci_mat_scatra_reaction_mat.H"
 #include "baci_scatra_ele_calc_utils.H"
-#include "baci_scatra_ele.H"
+#include "baci_utils_exceptions.H"
 
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;

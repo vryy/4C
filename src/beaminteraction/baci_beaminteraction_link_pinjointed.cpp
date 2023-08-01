@@ -8,23 +8,18 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_largerotations.H"
-
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_utils_exceptions.H"
-
-#include "baci_inpar_beaminteraction.H"
-
-#include <Teuchos_RCP.hpp>
+#include "baci_beaminteraction_link_pinjointed.H"
 
 #include "baci_beaminteraction_link.H"
-
-#include "baci_beaminteraction_link_pinjointed.H"
-#include "baci_beaminteraction_link_truss.H"
-
 #include "baci_beaminteraction_link_beam3_reissner_line2_pinjointed.H"
+#include "baci_beaminteraction_link_truss.H"
+#include "baci_discretization_fem_general_largerotations.H"
+#include "baci_inpar_beaminteraction.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 BEAMINTERACTION::BeamLinkPinJointedType BEAMINTERACTION::BeamLinkPinJointedType::instance_;

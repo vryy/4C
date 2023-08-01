@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mat_membrane_elasthyper_service.H"
+
 #include "baci_mat_elasthyper_service.H"
 
 namespace MAT

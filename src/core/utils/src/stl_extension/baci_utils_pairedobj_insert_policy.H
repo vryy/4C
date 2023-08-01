@@ -16,17 +16,17 @@
 
 // #define DEBUG_INSERT_POLICY
 
-#include <vector>
-#include <utility>
-#include <cstddef>
-#include <stdexcept>
 #include <algorithm>
-#include <ostream>
+#include <cstddef>
 #include <iomanip>
-#include <sstream>
-#include <map>
 #include <iostream>
 #include <limits>
+#include <map>
+#include <ostream>
+#include <sstream>
+#include <stdexcept>
+#include <utility>
+#include <vector>
 
 #if defined(DEBUG_INSERT_POLICY) || defined(DEBUG)
 #include "baci_utils_exceptions.H"

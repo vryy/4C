@@ -6,12 +6,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_options.H"
-#include "baci_cut_mesh.H"
 #include "baci_cut_element.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_options.H"
 #include "baci_cut_position.H"
-#include "cut_test_utils.H"
 #include "baci_cut_triangulateFacet.H"
+
+#include "cut_test_utils.H"
 
 CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh)
 {

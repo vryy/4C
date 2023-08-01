@@ -9,15 +9,14 @@ reactive scalars
 
 #include "baci_scatra_ele_calc_chemo_reac.H"
 
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_list.H"
 #include "baci_mat_list_chemoreac.H"
 #include "baci_mat_list_chemotaxis.H"
 #include "baci_mat_list_reactions.H"
 #include "baci_mat_scatra_mat.H"
-#include "baci_mat_list.H"
 #include "baci_utils_singleton_owner.H"
 
 

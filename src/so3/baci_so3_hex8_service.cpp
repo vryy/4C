@@ -7,9 +7,9 @@
 
 
 *----------------------------------------------------------------------*/
-#include "baci_so3_hex8.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_node.H"
+#include "baci_so3_hex8.H"
 
 
 void DRT::ELEMENTS::So_hex8::soh8_ElementCenterRefeCoords(

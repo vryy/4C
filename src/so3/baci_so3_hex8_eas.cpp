@@ -5,15 +5,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_so3_hex8.H"
-#include "baci_so3_sh8p8.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_so3_hex8.H"
+#include "baci_so3_sh8p8.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 
 /*----------------------------------------------------------------------*

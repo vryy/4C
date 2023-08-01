@@ -8,11 +8,12 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_art_net_explicitintegration.H"
 #include "baci_art_net_artery_resulttest.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_discret.H"
+
+#include "baci_art_net_explicitintegration.H"
 #include "baci_art_net_impl_stationary.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

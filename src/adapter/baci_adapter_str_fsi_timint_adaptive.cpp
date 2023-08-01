@@ -10,20 +10,17 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_adapter_str_fsi_timint_adaptive.H"
 
 #include "baci_inpar_structure.H"
-
 #include "baci_io_pstream.H"
-
 #include "baci_lib_globalproblem.H"
-
+#include "baci_structure_aux.H"
 #include "baci_structure_timada.H"
 #include "baci_structure_timint.H"
-#include "baci_structure_aux.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 /*======================================================================*/

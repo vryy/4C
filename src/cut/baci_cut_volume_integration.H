@@ -13,14 +13,14 @@ equations
 #ifndef BACI_CUT_VOLUME_INTEGRATION_H
 #define BACI_CUT_VOLUME_INTEGRATION_H
 
-#include <vector>
+#include "baci_cut_enum.H"
 #include "baci_cut_facet_integration.H"
 #include "baci_cut_volumecell.H"
-#include "baci_cut_enum.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+
+#include <vector>
 
 namespace CORE::GEO
 {

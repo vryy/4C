@@ -12,10 +12,9 @@
 #ifndef BACI_SCATRA_TIMINT_LOMA_GENALPHA_H
 #define BACI_SCATRA_TIMINT_LOMA_GENALPHA_H
 
-#include "baci_scatra_timint_loma.H"
-#include "baci_scatra_timint_genalpha.H"
-
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_scatra_timint_genalpha.H"
+#include "baci_scatra_timint_loma.H"
 
 
 namespace SCATRA

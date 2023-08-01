@@ -12,15 +12,11 @@
 
 #include "baci_beaminteraction_submodel_evaluator_factory.H"
 
-#include "baci_inpar_beaminteraction.H"
-
-// supported submodel evaluators
 #include "baci_beaminteraction_submodel_evaluator_beamcontact.H"
 #include "baci_beaminteraction_submodel_evaluator_crosslinking.H"
 #include "baci_beaminteraction_submodel_evaluator_potential.H"
 #include "baci_beaminteraction_submodel_evaluator_spherebeamlinking.H"
-
-// problem types
+#include "baci_inpar_beaminteraction.H"
 #include "baci_lib_globalproblem.H"
 
 /*----------------------------------------------------------------------------*

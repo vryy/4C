@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include <Teuchos_LAPACK.hpp>
-
 #include "baci_so3_hex8_determinant_analysis.H"
+
+#include <Teuchos_LAPACK.hpp>
 
 const double DRT::ELEMENTS::So_Hex8_Determinant_Analysis::bezier_points_[27][3] = {
     {0.0, 0.0, 0.0}, {1.0, 0.0, 0.0}, {1.0, 1.0, 0.0}, {0.0, 1.0, 0.0},  // 1 to 4

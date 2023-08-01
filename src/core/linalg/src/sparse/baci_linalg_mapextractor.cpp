@@ -9,12 +9,13 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_linalg_mapextractor.H"
+
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
 #include <Teuchos_getConst.hpp>
 
-#include <numeric>
 #include <cmath>
+#include <numeric>
 
 
 /*----------------------------------------------------------------------*/

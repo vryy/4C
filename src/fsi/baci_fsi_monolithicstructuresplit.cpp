@@ -10,39 +10,34 @@ with condensed structure interface displacements
 
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_LinearSystem_AztecOO.H>
-
 #include "baci_fsi_monolithicstructuresplit.H"
+
+#include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_fld_fluid.H"
+#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_adapter_str_structure.H"
+#include "baci_ale_utils_mapextractor.H"
+#include "baci_constraint_manager.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_converter.H"
+#include "baci_fluid_utils_mapextractor.H"
+#include "baci_fsi_debugwriter.H"
+#include "baci_fsi_nox_group.H"
 #include "baci_fsi_overlapprec.H"
 #include "baci_fsi_overlapprec_fsiamg.H"
 #include "baci_fsi_statustest.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_adapter_str_structure.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_fld_fluid.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-
-#include "baci_structure_aux.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_ale_fsi.H"
-
-#include "baci_fsi_nox_group.H"
-
-#include "baci_fsi_debugwriter.H"
-
-#include "baci_constraint_manager.H"
-
 #include "baci_io.H"
 #include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_structure_aux.H"
+
+#include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_LinearSystem_AztecOO.H>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

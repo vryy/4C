@@ -9,15 +9,14 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "baci_pasi_dyn.H"
+
+#include "baci_comm_utils.H"
+#include "baci_inpar_pasi.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_pasi_partitioned_onewaycoup.H"
 #include "baci_pasi_partitioned_twowaycoup.H"
 #include "baci_pasi_utils.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_comm_utils.H"
-
-#include "baci_inpar_pasi.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

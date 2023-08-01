@@ -6,11 +6,12 @@
 
 \level 2
  *------------------------------------------------------------------------------------------------*/
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_cut_side.H"
-#include "baci_cut_levelsetside.H"
 #include "baci_cut_levelsetintersection.H"
+
+#include "baci_cut_levelsetside.H"
+#include "baci_cut_side.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -11,19 +11,15 @@
  *----------------------------------------------------------------------*/
 #include "baci_adapter_coupling_ehl_mortar.H"
 
-#include "baci_contact_interface.H"
 #include "baci_contact_friction_node.H"
-
+#include "baci_contact_interface.H"
+#include "baci_contact_tsi_lagrange_strategy.H"
+#include "baci_io.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-#include "baci_lib_globalproblem.H"
-
-#include "baci_contact_tsi_lagrange_strategy.H"
-
-#include "baci_linalg_multiply.H"
-#include "baci_io.H"
 
 ADAPTER::CouplingEhlMortar::CouplingEhlMortar()
     : CouplingNonLinMortar(),

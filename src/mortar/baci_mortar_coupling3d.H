@@ -9,11 +9,13 @@
 #ifndef BACI_MORTAR_COUPLING3D_H
 #define BACI_MORTAR_COUPLING3D_H
 
-#include <vector>
-#include <Epetra_Comm.h>
-#include "baci_mortar_coupling3d_classes.H"
 #include "baci_inpar_mortar.H"
+#include "baci_mortar_coupling3d_classes.H"
 #include "baci_utils_pairedvector.H"
+
+#include <Epetra_Comm.h>
+
+#include <vector>
 
 // forward declarations
 namespace DRT

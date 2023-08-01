@@ -9,23 +9,18 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/12 |
  *----------------------------------------------------------------------*/
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_voigt_notation.H"
+#include "baci_mat_robinson.H"
+#include "baci_mat_thermoplastichyperelast.H"
+#include "baci_mat_thermoplasticlinelast.H"
+#include "baci_mat_thermostvenantkirchhoff.H"
+#include "baci_mat_trait_thermo_solid.H"
+#include "baci_nurbs_discret.H"
 #include "baci_so3_thermo.H"
 #include "baci_so3_thermo_fwd.hpp"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_nurbs_discret.H"
-
-#include "baci_lib_voigt_notation.H"
-
-// headers of thermo-materials
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_mat_thermoplasticlinelast.H"
-#include "baci_mat_thermoplastichyperelast.H"
-#include "baci_mat_robinson.H"
-
 #include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_mat_trait_thermo_solid.H"
 
 /*----------------------------------------------------------------------*
  | pre-evaluate the element (public)                         dano 08/12 |

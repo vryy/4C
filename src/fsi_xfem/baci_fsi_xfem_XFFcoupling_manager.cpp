@@ -8,13 +8,11 @@
 *----------------------------------------------------------------------*/
 #include "baci_fsi_xfem_XFFcoupling_manager.H"
 
-#include "baci_xfem_condition_manager.H"
 #include "baci_fluid_xfluid.H"
+#include "baci_lib_discret_xfem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-
-#include "baci_lib_discret_xfem.H"
+#include "baci_xfem_condition_manager.H"
 
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |

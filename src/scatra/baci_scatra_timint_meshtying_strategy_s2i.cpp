@@ -8,49 +8,40 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_coupling_adapter_mortar.H"
-
-#include "baci_fluid_utils.H"
-#include "baci_linalg_matrixtransform.H"
-
+#include "baci_coupling_volmortar_shape.H"
 #include "baci_discretization_geometry_position_array.H"
-
+#include "baci_fluid_utils.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_gid_vector.H"
-#include "baci_lib_utils_vector.H"
 #include "baci_lib_utils_parameter_list.H"
-
+#include "baci_lib_utils_vector.H"
+#include "baci_linalg_equilibrate.H"
+#include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_mat_electrode.H"
-
 #include "baci_mortar_coupling3d_classes.H"
 #include "baci_mortar_interface.H"
 #include "baci_mortar_projector.H"
 #include "baci_mortar_utils.H"
-
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_boundary_calc.H"
-#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_parameter_boundary.H"
-
-#include "baci_coupling_volmortar_shape.H"
-
-#include "baci_linalg_multiply.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_equilibrate.H"
+#include "baci_scatra_ele_parameter_timint.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

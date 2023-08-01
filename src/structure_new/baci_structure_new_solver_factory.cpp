@@ -12,23 +12,18 @@
 
 #include "baci_structure_new_solver_factory.H"
 
+#include "baci_beam3_euler_bernoulli.H"
 #include "baci_beaminteraction_calc_utils.H"
-
+#include "baci_inpar_cardiovascular0d.H"
+#include "baci_inpar_contact.H"
+#include "baci_inpar_structure.H"
+#include "baci_io_control.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-
 #include "baci_linalg_multiply.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_io_control.H"
-
-#include "baci_inpar_structure.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_cardiovascular0d.H"
-
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_so3_base.H"
-#include "baci_beam3_euler_bernoulli.H"
 
 #include <Teuchos_ParameterList.hpp>
 

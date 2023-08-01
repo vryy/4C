@@ -14,14 +14,15 @@
 #ifndef BACI_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_H
 #define BACI_STRUCTURE_NEW_ELEMENTS_PARAMSINTERFACE_H
 
-#include <unordered_map>
-#include "baci_structure_new_enum_lists.H"
-#include "baci_inpar_structure.H"               // enums
 #include "baci_inpar_browniandyn.H"             // enums
+#include "baci_inpar_structure.H"               // enums
 #include "baci_lib_elements_paramsinterface.H"  // base class
 #include "baci_solver_nonlin_nox_enum_lists.H"  // enums
+#include "baci_structure_new_enum_lists.H"
 
 #include <Epetra_MultiVector.h>
+
+#include <unordered_map>
 
 
 namespace CORE::GEO

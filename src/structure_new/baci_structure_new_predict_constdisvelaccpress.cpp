@@ -11,10 +11,11 @@
 
 
 #include "baci_structure_new_predict_constdisvelaccpress.H"
-#include "baci_structure_new_timint_base.H"
+
 #include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_predict_factory.H"
 #include "baci_structure_new_model_evaluator.H"
+#include "baci_structure_new_predict_factory.H"
+#include "baci_structure_new_timint_base.H"
 
 #include <Epetra_Vector.h>
 

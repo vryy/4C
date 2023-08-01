@@ -12,9 +12,10 @@ the Baci guide in the Convention chapter.
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_FEM_SHAPEFUNCTIONS_H
 
-#include <type_traits>
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_cut_clnwrapper.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+
+#include <type_traits>
 
 #define PY5TOL 1.0e-14
 

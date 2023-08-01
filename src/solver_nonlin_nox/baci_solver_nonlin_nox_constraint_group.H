@@ -14,9 +14,9 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_CONSTRAINT_GROUP_H
 #define BACI_SOLVER_NONLIN_NOX_CONSTRAINT_GROUP_H
 
-#include "baci_solver_nonlin_nox_group.H"
 #include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_group.H"
 #include "baci_utils_exceptions.H"
 
 // forward declaration

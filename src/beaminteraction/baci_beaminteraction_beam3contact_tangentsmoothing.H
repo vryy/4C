@@ -11,12 +11,12 @@
 #ifndef BACI_BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H
 #define BACI_BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H
 
+#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_linalg_fixedsizematrix.H"
+
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseMatrix.hpp>
-
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 namespace CONTACT
 {

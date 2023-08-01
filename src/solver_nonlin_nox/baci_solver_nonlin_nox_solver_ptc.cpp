@@ -12,31 +12,28 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_solver_ptc.H"  // class definition
-#include "baci_solver_nonlin_nox_linesearch_factory.H"
-#include "baci_solver_nonlin_nox_direction_factory.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_solver_nonlin_nox_statustest_normf.H"
-#include "baci_solver_nonlin_nox_group_prepostoperator.H"
-#include "baci_solver_nonlin_nox_linearsystem_prepostoperator.H"
-
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_utils_exceptions.H"
 
 #include "baci_discretization_geometry_intersection_math.H"
-
-#include <NOX_Solver_SolverUtils.H>
-#include <NOX_Direction_Generic.H>
-#include <NOX_StatusTest_Generic.H>
-#include <NOX_LineSearch_Generic.H>
-#include <NOX_Epetra_Vector.H>
-#include <NOX_GlobalData.H>
-#include <NOX_MeritFunction_Generic.H>
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_solver_nonlin_nox_aux.H"
+#include "baci_solver_nonlin_nox_direction_factory.H"
+#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_group_prepostoperator.H"
+#include "baci_solver_nonlin_nox_linearsystem.H"
+#include "baci_solver_nonlin_nox_linearsystem_prepostoperator.H"
+#include "baci_solver_nonlin_nox_linesearch_factory.H"
+#include "baci_solver_nonlin_nox_statustest_normf.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>
+#include <NOX_Direction_Generic.H>
+#include <NOX_Epetra_Vector.H>
+#include <NOX_GlobalData.H>
+#include <NOX_LineSearch_Generic.H>
+#include <NOX_MeritFunction_Generic.H>
+#include <NOX_Solver_SolverUtils.H>
+#include <NOX_StatusTest_Generic.H>
 
 
 /*----------------------------------------------------------------------------*

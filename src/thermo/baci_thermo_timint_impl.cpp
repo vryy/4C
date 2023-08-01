@@ -8,14 +8,15 @@
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include <sstream>
-
-#include "baci_thermo_timint.H"
 #include "baci_thermo_timint_impl.H"
-#include "baci_thermo_aux.H"
-#include "baci_thermo_ele_action.H"
+
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_io_pstream.H"
+#include "baci_thermo_aux.H"
+#include "baci_thermo_ele_action.H"
+#include "baci_thermo_timint.H"
+
+#include <sstream>
 
 /*----------------------------------------------------------------------*
  | constructor                                              bborn 08/09 |

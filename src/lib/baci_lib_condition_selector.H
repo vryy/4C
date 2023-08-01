@@ -12,13 +12,13 @@
 #ifndef BACI_LIB_CONDITION_SELECTOR_H
 #define BACI_LIB_CONDITION_SELECTOR_H
 
-#include <utility>
-#include <vector>
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
 #include <set>
 #include <string>
-
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Map.h>
+#include <utility>
+#include <vector>
 
 namespace CORE::LINALG
 {

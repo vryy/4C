@@ -8,9 +8,11 @@
 
 
 #include "baci_constraint_monitor.H"
-#include <iostream>
+
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*

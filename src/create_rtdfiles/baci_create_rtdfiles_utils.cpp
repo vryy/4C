@@ -9,12 +9,14 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_create_rtdfiles_utils.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_utils_reader.H"
-#include "baci_lib_utils_createdis.H"
+
 #include "baci_lib_linedefinition.H"
-#include <boost/format.hpp>
+#include "baci_lib_utils_createdis.H"
+#include "baci_lib_utils_reader.H"
+#include "baci_utils_exceptions.H"
+
 #include <boost/algorithm/string.hpp>
+#include <boost/format.hpp>
 
 
 namespace DRT

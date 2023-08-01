@@ -10,19 +10,15 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_timint.H"
 
+#include "baci_io.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_particle_algorithm_dirichlet_bc.H"
 #include "baci_particle_algorithm_temperature_bc.H"
-
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_enums.H"
-#include "baci_particle_engine_container_bundle.H"
 #include "baci_particle_engine_container.H"
-
+#include "baci_particle_engine_container_bundle.H"
+#include "baci_particle_engine_enums.H"
+#include "baci_particle_engine_interface.H"
 #include "baci_particle_rigidbody_interface.H"
-
-#include "baci_lib_globalproblem.H"
-
-#include "baci_io.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

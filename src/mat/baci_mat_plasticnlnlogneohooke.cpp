@@ -23,11 +23,11 @@
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "baci_mat_plasticnlnlogneohooke.H"
+
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
-
-#include "baci_linalg_utils_densematrix_eigen.H"
-#include "baci_lib_globalproblem.H"
 
 
 /*----------------------------------------------------------------------*

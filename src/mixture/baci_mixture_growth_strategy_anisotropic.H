@@ -8,8 +8,8 @@
 #ifndef BACI_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_H
 #define BACI_MIXTURE_GROWTH_STRATEGY_ANISOTROPIC_H
 
-#include "baci_mixture_growth_strategy.H"
 #include "baci_mat_anisotropy_extension_default.H"
+#include "baci_mixture_growth_strategy.H"
 
 namespace MIXTURE
 {

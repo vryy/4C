@@ -8,8 +8,9 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_timint_hdg.H"
 #include "baci_scatra_resulttest_hdg.H"
+
+#include "baci_scatra_timint_hdg.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                           hoermann 09/15 |

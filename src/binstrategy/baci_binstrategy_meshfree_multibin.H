@@ -11,11 +11,12 @@
 #ifndef BACI_BINSTRATEGY_MESHFREE_MULTIBIN_H
 #define BACI_BINSTRATEGY_MESHFREE_MULTIBIN_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include "baci_binstrategy_utils.H"
 #include "baci_binstrategy_meshfree_bin.H"
+#include "baci_binstrategy_utils.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {

@@ -8,14 +8,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <vector>
-#include <iterator>
 #include "baci_linalg_matrixtransform.H"
+
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_exporter.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_utils_exceptions.H"
+
+#include <iterator>
+#include <vector>
 
 
 

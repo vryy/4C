@@ -14,12 +14,12 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Teuchos_SerialDenseMatrix.hpp>
-
-#include "baci_lib_elementtype.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_elementtype.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

@@ -10,20 +10,18 @@
 #ifndef BACI_FSI_FREE_SURFACE_MONOLITHIC_H
 #define BACI_FSI_FREE_SURFACE_MONOLITHIC_H
 
-#include "baci_fsi_overlapprec.H"
-
-#include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_algorithmbase.H"
+#include "baci_adapter_fld_base_algorithm.H"
 #include "baci_ale.H"
 #include "baci_coupling_adapter.H"
+#include "baci_fsi_overlapprec.H"
 
 #include <NOX.H>
+#include <NOX_Direction_UserDefinedFactory.H>
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
-#include <NOX_Direction_UserDefinedFactory.H>
-
 #include <Teuchos_TimeMonitor.hpp>
 
 // debug flag to merge the MFSI block matrix to one sparse matrix

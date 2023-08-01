@@ -12,13 +12,12 @@ xfluid class and the cut-library
 #ifndef BACI_XFEM_COUPLING_FPI_MESH_H
 #define BACI_XFEM_COUPLING_FPI_MESH_H
 
-#include "baci_xfem_coupling_mesh.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
-
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_xfem_coupling_mesh.H"
 
 namespace CORE::GEO
 {

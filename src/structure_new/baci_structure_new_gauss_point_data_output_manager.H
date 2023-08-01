@@ -8,13 +8,14 @@
 #ifndef BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 #define BACI_STRUCTURE_NEW_GAUSS_POINT_DATA_OUTPUT_MANAGER_H
 
+#include "baci_inpar_structure.H"
+
+#include <Epetra_IntVector.h>
+#include <Teuchos_RCP.hpp>
+
 #include <memory>
 #include <unordered_map>
 #include <vector>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_IntVector.h>
-
-#include "baci_inpar_structure.H"
 
 // forward declarations
 class Epetra_MultiVector;

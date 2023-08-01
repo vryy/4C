@@ -7,10 +7,10 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_matelast_coupanisopow.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
-#include "baci_mat_par_material.H"
 #include "baci_lib_linedefinition.H"
+#include "baci_mat_par_material.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
 MAT::ELASTIC::PAR::CoupAnisoPow::CoupAnisoPow(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : ParameterAniso(matdata),

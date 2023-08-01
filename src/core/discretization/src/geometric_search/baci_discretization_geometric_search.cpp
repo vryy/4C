@@ -9,10 +9,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include <Epetra_MpiComm.h>
-
 #include "baci_io_pstream.H"
 
+#include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 #ifdef BACI_WITH_ARBORX

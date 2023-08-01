@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 #include "baci_immersed_problem_fsi_partitioned_immersed.H"
 
+#include "baci_adapter_str_fsiwrapper.H"
 #include "baci_fsi_debugwriter.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_adapter_str_fsiwrapper.H"
 
 
 FSI::PartitionedImmersed::PartitionedImmersed(const Epetra_Comm& comm) : Partitioned(comm)

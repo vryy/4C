@@ -13,20 +13,16 @@
 
 #include "baci_xfem_multi_field_mapextractor.H"
 
-#include "baci_xfem_xfield_field_coupling_dofset.H"
-#include "baci_xfem_xfield_field_coupling.H"
-
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_mapextractor.H"
-
-#include "baci_lib_discret_xfem.H"
-#include "baci_lib_parobject.H"
-#include "baci_lib_exporter.H"
-
-#include "baci_linalg_matrixtransform.H"
 #include "baci_coupling_adapter.H"
-
 #include "baci_coupling_adapter_converter.H"
+#include "baci_lib_discret_xfem.H"
+#include "baci_lib_exporter.H"
+#include "baci_lib_parobject.H"
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_xfem_xfield_field_coupling.H"
+#include "baci_xfem_xfield_field_coupling_dofset.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

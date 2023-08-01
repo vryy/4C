@@ -17,14 +17,14 @@
 /*---------------------------------------------------------------------*
  | headers                                                  ager 10/15 |
  *---------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
+#include "baci_adapter_coupling_nonlin_mortar.H"
+#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_coupling_adapter.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-
-#include "baci_contact_poro_lagrange_strategy.H"
-#include "baci_adapter_coupling_nonlin_mortar.H"
-#include "baci_coupling_adapter.H"
+#include <Teuchos_RCP.hpp>
 /*---------------------------------------------------------------------*
  | forward declarations                                     ager 10/15 |
  *---------------------------------------------------------------------*/

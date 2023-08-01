@@ -12,11 +12,11 @@
 #ifndef BACI_STRUCTURE_NEW_NLN_SOLVER_UTILS_H
 #define BACI_STRUCTURE_NEW_NLN_SOLVER_UTILS_H
 
-#include <set>
-
 #include "baci_inpar_structure.H"
-#include "baci_solver_nonlin_nox_statustest_factory.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_solver_nonlin_nox_statustest_factory.H"
+
+#include <set>
 
 // forward declaration
 namespace Teuchos

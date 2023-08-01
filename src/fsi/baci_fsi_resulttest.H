@@ -11,9 +11,10 @@
 #ifndef BACI_FSI_RESULTTEST_H
 #define BACI_FSI_RESULTTEST_H
 
+#include "baci_lib_resulttest.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-#include "baci_lib_resulttest.H"
 
 // forward declarations
 namespace DRT

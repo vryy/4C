@@ -15,8 +15,9 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include <Epetra_Comm.h>
-#include <vector>
+
 #include <memory>
+#include <vector>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

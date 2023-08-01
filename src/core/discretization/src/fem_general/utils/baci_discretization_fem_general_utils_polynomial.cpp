@@ -9,13 +9,14 @@
 
 
 #include "baci_discretization_fem_general_utils_polynomial.H"
+
 #include "baci_discretization_fem_general_utils_integration.H"
-#include <Intrepid_PointTools.hpp>
+#include "baci_utils_singleton_owner.H"
+
 #include <Intrepid_FieldContainer.hpp>
+#include <Intrepid_PointTools.hpp>
 #include <Intrepid_Types.hpp>
 #include <Shards_CellTopology.hpp>
-
-#include "baci_utils_singleton_owner.H"
 
 namespace
 {

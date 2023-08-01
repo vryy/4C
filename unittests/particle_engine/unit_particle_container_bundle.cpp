@@ -6,6 +6,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include "baci_particle_engine_container_bundle.H"
 
 

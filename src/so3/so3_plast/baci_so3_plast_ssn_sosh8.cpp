@@ -18,18 +18,19 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
 
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_so3_plast_ssn_sosh8.H"
-#include "baci_so3_plast_ssn.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_mat_plasticelasthyper.H"
 
-#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_mat_plasticelasthyper.H"
+#include "baci_so3_plast_ssn.H"
 #include "baci_so3_utils.H"
-#include "baci_lib_utils_parameter_list.H"
+#include "baci_structure_new_elements_paramsinterface.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  | build an instance of plast type                         seitz 05/14 |

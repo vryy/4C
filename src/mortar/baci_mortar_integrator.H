@@ -7,13 +7,12 @@
 #ifndef BACI_MORTAR_INTEGRATOR_H
 #define BACI_MORTAR_INTEGRATOR_H
 
-#include <Epetra_Comm.h>
-#include "baci_inpar_mortar.H"
-#include "baci_inpar_contact.H"
-
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
+#include "baci_inpar_contact.H"
+#include "baci_inpar_mortar.H"
 #include "baci_utils_singleton_owner.H"
+
+#include <Epetra_Comm.h>
 
 // forward declarations
 namespace CORE::LINALG

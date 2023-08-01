@@ -8,6 +8,7 @@
 *-----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include <Epetra_SerialComm.h>
 
 #ifdef BACI_WITH_ARBORX

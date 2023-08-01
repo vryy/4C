@@ -10,11 +10,11 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_BELOS_H
 #define BACI_LINEAR_SOLVER_METHOD_BELOS_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_linear_solver_method_krylov.H"
 #include "baci_linear_solver_preconditioner_type.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINEAR_SOLVER
 {

@@ -15,26 +15,20 @@
 
 // FPSI includes
 #include "baci_fpsi_utils.H"
-#include "baci_fpsi_monolithic_plain.H"
 
-// POROELAST includes
-#include "baci_poroelast_utils_setup.H"
-#include "baci_poroelast_utils_clonestrategy.H"
-
-#include "baci_poroelast_scatra_utils_setup.H"
-// FSI includes
-#include "baci_fsi_utils.H"
 #include "baci_ale_utils_clonestrategy.H"
-
-// INPAR includes
+#include "baci_fpsi_monolithic_plain.H"
+#include "baci_fsi_utils.H"
 #include "baci_inpar_fpsi.H"
-
-// lib includes
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_condition_selector.H"
-#include <Teuchos_RCP.hpp>
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_createdis.H"
 #include "baci_poroelast_scatra_utils_clonestrategy.H"
+#include "baci_poroelast_scatra_utils_setup.H"
+#include "baci_poroelast_utils_clonestrategy.H"
+#include "baci_poroelast_utils_setup.H"
+
+#include <Teuchos_RCP.hpp>
 
 Teuchos::RCP<FPSI::Utils> FPSI::Utils::instance_;
 

@@ -9,22 +9,20 @@
 */
 /*---------------------------------------------------------------------*/
 #include "baci_contact_constitutivelaw_interface.H"
+
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
+#include "baci_contact_defines.H"
+#include "baci_contact_element.H"
+#include "baci_contact_node.H"
+#include "baci_inpar_contact.H"
+#include "baci_inpar_mortar.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_node.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
-
-#include "baci_contact_node.H"
-#include "baci_contact_element.H"
-#include "baci_contact_defines.H"
-
-#include "baci_inpar_mortar.H"
-#include "baci_inpar_contact.H"
-
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                                       |

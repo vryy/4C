@@ -13,11 +13,11 @@
 #define BACI_LIB_NODE_H
 
 
-#include <Teuchos_RCP.hpp>
-
-#include "baci_lib_parobject.H"
 #include "baci_lib_condition.H"
+#include "baci_lib_parobject.H"
 #include "baci_lib_parobjectfactory.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 namespace DRT

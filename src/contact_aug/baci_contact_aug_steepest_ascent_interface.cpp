@@ -10,8 +10,8 @@
 
 
 #include "baci_contact_aug_steepest_ascent_interface.H"
-#include "baci_contact_node.H"
 
+#include "baci_contact_node.H"
 #include "baci_lib_discret.H"
 
 /*----------------------------------------------------------------------------*

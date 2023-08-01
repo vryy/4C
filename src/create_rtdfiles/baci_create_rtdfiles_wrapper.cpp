@@ -9,23 +9,24 @@
 \level 0
 */
 
+#include "baci_config_compile_settings.H"
+
 #include "baci_create_rtdfiles_wrapper.H"
-#include "baci_utils_exceptions.H"
-#include <iostream>
-#include "baci_lib_globalproblem.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_validcontactconstitutivelaw.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_inpar_validmaterials.H"
-#include "baci_lib_function.H"
-#include "baci_lib_elementdefinition.H"
 
 #include "baci_comm_utils.H"
-#include "baci_config_compile_settings.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_create_rtdfiles_utils.H"
-
 #include "baci_config_revision.H"
+#include "baci_create_rtdfiles_utils.H"
+#include "baci_inpar_validconditions.H"
+#include "baci_inpar_validcontactconstitutivelaw.H"
+#include "baci_inpar_validmaterials.H"
+#include "baci_inpar_validparameters.H"
+#include "baci_lib_elementdefinition.H"
+#include "baci_lib_function.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_utils_exceptions.H"
+
+#include <iostream>
 
 namespace DRT
 {

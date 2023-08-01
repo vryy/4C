@@ -13,14 +13,12 @@
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
-
-#include <Teuchos_TimeMonitor.hpp>
-
-#include <Isorropia_Exception.hpp>
 #include <Isorropia_Epetra.hpp>
 #include <Isorropia_EpetraCostDescriber.hpp>
 #include <Isorropia_EpetraPartitioner.hpp>
 #include <Isorropia_EpetraRedistributor.hpp>
+#include <Isorropia_Exception.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

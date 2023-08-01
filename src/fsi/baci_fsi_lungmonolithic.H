@@ -12,11 +12,11 @@
 #ifndef BACI_FSI_LUNGMONOLITHIC_H
 #define BACI_FSI_LUNGMONOLITHIC_H
 
-#include <fstream>
-
-#include "baci_inpar_fsi.H"
-#include "baci_fsi_monolithic.H"
 #include "baci_coupling_adapter.H"
+#include "baci_fsi_monolithic.H"
+#include "baci_inpar_fsi.H"
+
+#include <fstream>
 
 // forward declarations
 

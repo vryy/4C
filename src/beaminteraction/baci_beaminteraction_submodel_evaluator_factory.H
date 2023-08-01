@@ -13,9 +13,9 @@
 #define BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_FACTORY_H
 
 
-#include <Teuchos_RCP.hpp>
-
 #include "baci_beaminteraction_str_model_evaluator.H"  // typedef
+
+#include <Teuchos_RCP.hpp>
 
 namespace BEAMINTERACTION
 {

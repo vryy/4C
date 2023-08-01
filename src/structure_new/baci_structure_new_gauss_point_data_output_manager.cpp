@@ -6,16 +6,18 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_structure_new_gauss_point_data_output_manager.H"
-#include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
-#include <Epetra_IntVector.h>
-#include <Epetra_Map.h>
-#include <mpi.h>
-#include <Teuchos_RCPDecl.hpp>
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_comm_utils.H"
 #include "baci_lib_exporter.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_structure_new_model_evaluator.H"
+
+#include <Epetra_IntVector.h>
+#include <Epetra_Map.h>
+#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
+#include <mpi.h>
+#include <Teuchos_RCPDecl.hpp>
 
 STR::MODELEVALUATOR::GaussPointDataOutputManager::GaussPointDataOutputManager(
     INPAR::STR::GaussPointDataOutputType output_type)

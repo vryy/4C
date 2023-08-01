@@ -13,7 +13,6 @@
 #define BACI_TUTORIAL_ELE_CALC_H
 
 #include "baci_linalg_fixedsizematrix.H"
-
 #include "baci_utils_singleton_owner.H"
 
 namespace TUTORIAL

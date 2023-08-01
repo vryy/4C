@@ -8,23 +8,21 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_scatra_ele_hdg.H"
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_ele_factory.H"
-#include "baci_scatra_ele_interface.H"
+
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_inpar_scatra.H"
+#include "baci_lib_discret_faces.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_mat_list.H"
 #include "baci_mat_myocard.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-
-#include "baci_scatra_ele_hdg_intfaces_calc.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_ele_factory.H"
 #include "baci_scatra_ele_hdg_boundary_calc.H"
-
-#include "baci_lib_utils_factory.H"
-
-#include "baci_inpar_scatra.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_scatra_ele_hdg_intfaces_calc.H"
+#include "baci_scatra_ele_interface.H"
 
 
 // initialize static variable

@@ -9,14 +9,15 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mat_muscle_giantesio.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_voigt_notation.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
-#include "baci_mat_service.H"
-#include "baci_mat_par_bundle.H"
 #include "baci_linalg_four_tensor.H"
 #include "baci_mat_muscle_utils.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_service.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_utils_local_newton.H"
 
 

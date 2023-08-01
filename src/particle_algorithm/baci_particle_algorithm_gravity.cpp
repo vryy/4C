@@ -10,8 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_gravity.H"
 
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

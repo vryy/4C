@@ -7,23 +7,20 @@
 */
 /*-----------------------------------------------------------*/
 
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discsh3.H"
-#include "baci_lib_utils.H"
+#include "baci_inpar_browniandyn.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_utils.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_stvenantkirchhoff.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include "baci_utils_exceptions.H"
 
 #include <Sacado.hpp>
-
-#include "baci_inpar_browniandyn.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
 

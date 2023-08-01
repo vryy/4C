@@ -14,11 +14,10 @@
 
 #include "baci_adapter_fld_fluid.H"
 #include "baci_fluid_discretization_runtime_vtu_output_params.H"
-
 #include "baci_utils_exceptions.H"
 
-#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

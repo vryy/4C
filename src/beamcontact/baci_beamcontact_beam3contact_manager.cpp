@@ -9,32 +9,31 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_beamcontact_beam3contact_manager.H"
+
+#include "baci_beam3_base.H"
+#include "baci_beam3_euler_bernoulli.H"
+#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_reissner.H"
 #include "baci_beamcontact_beam3contact_octtree.H"
+#include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_contact_element.H"
+#include "baci_contact_node.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_beampotential.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_structure.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include <Teuchos_Time.hpp>
-
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_kirchhoff.H"
-#include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_rigidsphere.H"
-
-#include "baci_inpar_structure.H"
-#include "baci_contact_element.H"
-#include "baci_contact_node.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_rigidsphere.H"
+
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                      popp 04/10|

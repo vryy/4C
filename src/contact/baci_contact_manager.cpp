@@ -8,43 +8,41 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "baci_contact_manager.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-#include "baci_contact_element.H"
-#include "baci_contact_lagrange_strategy.H"
-#include "baci_contact_wear_lagrange_strategy.H"
-#include "baci_contact_poro_lagrange_strategy.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
-#include "baci_contact_wear_interface.H"
-#include "baci_contact_tsi_interface.H"
-#include "baci_contact_penalty_strategy.H"
-#include "baci_contact_nitsche_strategy.H"
-#include "baci_contact_nitsche_strategy_poro.H"
-#include "baci_contact_nitsche_strategy_fsi.H"
-#include "baci_contact_nitsche_strategy_fpi.H"
+
+#include "baci_contact_aug_interface.H"
+#include "baci_contact_aug_strategy.H"
 #include "baci_contact_defines.H"
+#include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
+#include "baci_contact_interface.H"
+#include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_nitsche_strategy.H"
+#include "baci_contact_nitsche_strategy_fpi.H"
+#include "baci_contact_nitsche_strategy_fsi.H"
+#include "baci_contact_nitsche_strategy_poro.H"
+#include "baci_contact_node.H"
+#include "baci_contact_penalty_strategy.H"
+#include "baci_contact_poro_lagrange_strategy.H"
 #include "baci_contact_strategy_factory.H"
+#include "baci_contact_tsi_interface.H"
+#include "baci_contact_tsi_lagrange_strategy.H"
 #include "baci_contact_utils.H"
 #include "baci_contact_utils_parallel.H"
-
-#include "baci_contact_aug_strategy.H"
-#include "baci_contact_aug_interface.H"
-
-#include "baci_mortar_defines.H"
-#include "baci_mortar_utils.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_lib_globalproblem.H"
-
+#include "baci_contact_wear_interface.H"
+#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
-#include "baci_inpar_wear.H"
 #include "baci_inpar_validparameters.H"
-
-#include "baci_io_control.H"
+#include "baci_inpar_wear.H"
 #include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_utils.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|

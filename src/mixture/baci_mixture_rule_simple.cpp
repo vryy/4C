@@ -9,14 +9,17 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_rule_simple.H"
-#include <Epetra_ConfigDefs.h>
-#include <Teuchos_RCP.hpp>
-#include <algorithm>
-#include "baci_utils_exceptions.H"
+
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_material.H"
 #include "baci_mixture_constituent.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_ConfigDefs.h>
+#include <Teuchos_RCP.hpp>
+
+#include <algorithm>
 #include <iosfwd>
-#include "baci_linalg_fixedsizematrix.H"
 
 MIXTURE::PAR::SimpleMixtureRule::SimpleMixtureRule(const Teuchos::RCP<MAT::PAR::Material>& matdata)
     : MixtureRule(matdata),

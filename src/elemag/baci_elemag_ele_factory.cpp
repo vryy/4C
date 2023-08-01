@@ -9,9 +9,10 @@
 /*--------------------------------------------------------------------------*/
 
 #include "baci_elemag_ele_factory.H"
-#include "baci_elemag_ele_interface.H"
-#include "baci_elemag_ele_calc.H"
+
 #include "baci_elemag_diff_ele_calc.H"
+#include "baci_elemag_ele_calc.H"
+#include "baci_elemag_ele_interface.H"
 
 /*--------------------------------------------------------------------------*
  |                                                (public) berardocco 02/18 |

@@ -11,6 +11,7 @@
 
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mixture_rule.H"
+
 #include <memory>
 
 namespace MIXTURE

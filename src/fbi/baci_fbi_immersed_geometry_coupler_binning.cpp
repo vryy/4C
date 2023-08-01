@@ -8,16 +8,18 @@ performed afterwards
 \level 3
 
 *----------------------------------------------------------------------*/
-#include <Teuchos_TimeMonitor.hpp>
 #include "baci_fbi_immersed_geometry_coupler_binning.H"
+
 #include "baci_binstrategy.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_inpar_fluid.H"
 #include "baci_lib_discret_faces.H"
-#include "baci_lib_node.H"
 #include "baci_lib_element.H"
+#include "baci_lib_node.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 /*----------------------------------------------------------------------*/
 
 FBI::FBIBinningGeometryCoupler::FBIBinningGeometryCoupler()

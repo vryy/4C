@@ -10,16 +10,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_globalproblem.H"
+#include "baci_two_phase_flow_algorithm.H"
 
-#include "baci_levelset_algorithm.H"
-#include "baci_levelset_timint_ost.H"
 #include "baci_fluid_timint_two_phase.H"
 #include "baci_fluid_timint_two_phase_genalpha.H"
 #include "baci_fluid_timint_two_phase_ost.H"
+#include "baci_levelset_algorithm.H"
+#include "baci_levelset_timint_ost.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_scatra_timint_ost.H"
-
-#include "baci_two_phase_flow_algorithm.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

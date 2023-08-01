@@ -13,6 +13,7 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"
+
 #include "baci_solver_nonlin_nox_group.H"
 
 #include <NOX_Solver_LineSearchBased.H>

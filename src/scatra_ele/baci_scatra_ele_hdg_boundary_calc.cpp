@@ -10,10 +10,11 @@
 
 
 #include "baci_scatra_ele_hdg_boundary_calc.H"
-#include "baci_scatra_ele_hdg.H"
+
 #include "baci_lib_node.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_scatra_ele_action.H"
+#include "baci_scatra_ele_hdg.H"
 
 
 /*----------------------------------------------------------------------*

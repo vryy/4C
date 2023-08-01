@@ -9,6 +9,7 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_direction_newton.H"
+
 #include "baci_solver_nonlin_nox_group.H"
 
 #include <NOX_GlobalData.H>

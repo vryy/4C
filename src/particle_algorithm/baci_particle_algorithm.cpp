@@ -10,37 +10,29 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm.H"
 
-#include "baci_particle_algorithm_utils.H"
-
-#include "baci_particle_algorithm_timint.H"
-#include "baci_particle_algorithm_input_generator.H"
-#include "baci_particle_algorithm_gravity.H"
-#include "baci_particle_algorithm_viscous_damping.H"
-#include "baci_particle_algorithm_initial_field.H"
-#include "baci_particle_algorithm_result_test.H"
-
-#include "baci_particle_interaction_base.H"
-#include "baci_particle_interaction_sph.H"
-#include "baci_particle_interaction_dem.H"
-
-#include "baci_particle_engine.H"
-#include "baci_particle_engine_communication_utils.H"
-#include "baci_particle_engine_object.H"
-#include "baci_particle_engine_container.H"
-
-#include "baci_particle_wall.H"
-#include "baci_particle_wall_result_test.H"
-
-#include "baci_particle_rigidbody.H"
-#include "baci_particle_rigidbody_result_test.H"
-
 #include "baci_inpar_particle.H"
-
-#include "baci_utils_exceptions.H"
-#include "baci_lib_resulttest.H"
-
 #include "baci_io.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_resulttest.H"
+#include "baci_particle_algorithm_gravity.H"
+#include "baci_particle_algorithm_initial_field.H"
+#include "baci_particle_algorithm_input_generator.H"
+#include "baci_particle_algorithm_result_test.H"
+#include "baci_particle_algorithm_timint.H"
+#include "baci_particle_algorithm_utils.H"
+#include "baci_particle_algorithm_viscous_damping.H"
+#include "baci_particle_engine.H"
+#include "baci_particle_engine_communication_utils.H"
+#include "baci_particle_engine_container.H"
+#include "baci_particle_engine_object.H"
+#include "baci_particle_interaction_base.H"
+#include "baci_particle_interaction_dem.H"
+#include "baci_particle_interaction_sph.H"
+#include "baci_particle_rigidbody.H"
+#include "baci_particle_rigidbody_result_test.H"
+#include "baci_particle_wall.H"
+#include "baci_particle_wall_result_test.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

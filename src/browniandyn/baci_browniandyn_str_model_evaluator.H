@@ -16,9 +16,10 @@
 #ifndef BACI_BROWNIANDYN_STR_MODEL_EVALUATOR_H
 #define BACI_BROWNIANDYN_STR_MODEL_EVALUATOR_H
 
-#include "baci_structure_new_model_evaluator_generic.H"  // base class
-#include <Teuchos_RCP.hpp>
 #include "baci_structure_new_elements_paramsinterface.H"  // interface to the element evaluation
+#include "baci_structure_new_model_evaluator_generic.H"   // base class
+
+#include <Teuchos_RCP.hpp>
 
 
 // forward declaration ...

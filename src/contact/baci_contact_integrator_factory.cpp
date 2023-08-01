@@ -10,17 +10,15 @@
 
 #include "baci_contact_integrator_factory.H"
 
-// supported contact integrators
+#include "baci_contact_aug_integrator.H"
 #include "baci_contact_ehl_integrator.H"
 #include "baci_contact_nitsche_integrator.H"
-#include "baci_contact_nitsche_integrator_fsi.H"
 #include "baci_contact_nitsche_integrator_fpi.H"
+#include "baci_contact_nitsche_integrator_fsi.H"
 #include "baci_contact_nitsche_integrator_poro.H"
 #include "baci_contact_nitsche_integrator_ssi.H"
 #include "baci_contact_nitsche_integrator_ssi_elch.H"
 #include "baci_contact_nitsche_integrator_tsi.H"
-
-#include "baci_contact_aug_integrator.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

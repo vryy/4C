@@ -11,13 +11,13 @@
 #ifndef BACI_CUT_INTERSECTION_H
 #define BACI_CUT_INTERSECTION_H
 
-#include "baci_cut_mesh.H"
-#include "baci_cut_kernel.H"
-#include "baci_cut_output.H"
-#include "baci_cut_node.H"
 #include "baci_cut_edge.H"
-#include "baci_cut_side.H"
+#include "baci_cut_kernel.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_node.H"
 #include "baci_cut_options.H"
+#include "baci_cut_output.H"
+#include "baci_cut_side.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

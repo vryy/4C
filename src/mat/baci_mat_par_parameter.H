@@ -14,10 +14,11 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
 #include "baci_inpar_material.H"
 #include "baci_utils_exceptions.H"
+
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */

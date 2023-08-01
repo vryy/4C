@@ -27,13 +27,13 @@ namespace DRT
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Map.h>
+#include "baci_coupling_adapter_base.H"
+
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>
-
-#include "baci_coupling_adapter_base.H"
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */

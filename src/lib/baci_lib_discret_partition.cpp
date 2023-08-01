@@ -9,13 +9,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <Epetra_FECrsGraph.h>
-
 #include "baci_lib_discret.H"
-#include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_dofset_pbc.H"
+#include "baci_lib_exporter.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_FECrsGraph.h>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

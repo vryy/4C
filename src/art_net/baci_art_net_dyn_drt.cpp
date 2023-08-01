@@ -11,24 +11,23 @@
 
 *----------------------------------------------------------------------*/
 
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
 #include "baci_art_net_dyn_drt.H"
-#include "baci_art_net_artery_resulttest.H"
+
 #include "baci_adapter_art_net.H"
+#include "baci_art_net_artery_resulttest.H"
 #include "baci_art_net_utils.H"
-
-#include "baci_lib_resulttest.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_io_control.H"
 #include "baci_inpar_validparameters.H"
-
+#include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_resulttest.H"
 #include "baci_lib_utils_createdis.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 
 /*----------------------------------------------------------------------*
  * Main control routine for arterial network including various solvers:

@@ -10,10 +10,11 @@ Here is everything related with writing a dat-file
  */
 /*----------------------------------------------------------------------*/
 #include "baci_pre_exodus_writedat.H"
-#include "baci_pre_exodus_reader.H"
-#include "baci_pre_exodus_soshextrusion.H"  // to calculate normal
+
 #include "baci_inpar_validconditions.H"
 #include "baci_lib_conditiondefinition.H"
+#include "baci_pre_exodus_reader.H"
+#include "baci_pre_exodus_soshextrusion.H"  // to calculate normal
 
 
 /*----------------------------------------------------------------------*/

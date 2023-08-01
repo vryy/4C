@@ -12,11 +12,13 @@
 #ifndef BACI_MAT_ANISOTROPY_H
 #define BACI_MAT_ANISOTROPY_H
 
-#include <optional>
-#include <Teuchos_RCPDecl.hpp>
-#include <Teuchos_ParameterList.hpp>
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_anisotropy_cylinder_coordinate_system_manager.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCPDecl.hpp>
+
+#include <optional>
 
 // forward declarations
 namespace DRT

@@ -7,8 +7,10 @@
 */
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include <Teuchos_RCP.hpp>
+
 #include "baci_lib_cubic_spline_interpolation.H"
+
+#include <Teuchos_RCP.hpp>
 
 namespace
 {

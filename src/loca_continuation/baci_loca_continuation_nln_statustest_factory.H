@@ -12,10 +12,9 @@
 #ifndef BACI_LOCA_CONTINUATION_NLN_STATUSTEST_FACTORY_H
 #define BACI_LOCA_CONTINUATION_NLN_STATUSTEST_FACTORY_H
 
-#include <Teuchos_RCP.hpp>
-
-#include <LOCA_StatusTest_Abstract.H>
 #include <LOCA_GlobalData.H>
+#include <LOCA_StatusTest_Abstract.H>
+#include <Teuchos_RCP.hpp>
 
 namespace Teuchos
 {

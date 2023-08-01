@@ -10,10 +10,10 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "baci_unittest_utils_assertions.h"
 
-#include "baci_matelast_isoogden.H"
 #include "baci_mat_par_material.H"
+#include "baci_matelast_isoogden.H"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {

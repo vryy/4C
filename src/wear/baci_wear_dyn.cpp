@@ -12,21 +12,18 @@
  |  headers                                                  mgit 04/11 |
  *----------------------------------------------------------------------*/
 #include "baci_wear_dyn.H"
-#include "baci_wear_partitioned.H"
-#include "baci_fsi_utils.H"
 
 #include "baci_ale_utils_clonestrategy.H"
-
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_condition_utils.H"
-
+#include "baci_fsi_utils.H"
 #include "baci_inpar_wear.H"
-
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
+#include "baci_wear_partitioned.H"
 
-#include <Teuchos_TimeMonitor.hpp>
 #include <Epetra_MpiComm.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  | entry point for structure ale in DRT                      mgit 04/11 |

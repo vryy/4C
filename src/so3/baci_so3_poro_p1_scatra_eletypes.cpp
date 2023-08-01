@@ -8,10 +8,10 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_so3_poro_p1_scatra.H"
 #include "baci_so3_poro_p1_scatra_eletypes.H"
 
 #include "baci_lib_linedefinition.H"
+#include "baci_so3_poro_p1_scatra.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                         schmidt 09/17 |

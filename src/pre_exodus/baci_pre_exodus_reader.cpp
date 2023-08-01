@@ -10,16 +10,17 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
-#include <fstream>
-
 #include "baci_pre_exodus_reader.H"
-#include <Epetra_SerialComm.h>
-#include <Teuchos_Time.hpp>
-#include <Teuchos_TimeMonitor.hpp>
+
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_pre_exodus_soshextrusion.H"  //for gmsh plot
 
+#include <Epetra_SerialComm.h>
 #include <exodusII.h>
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <fstream>
 
 
 /*----------------------------------------------------------------------*

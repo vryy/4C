@@ -21,9 +21,9 @@ EQSTRMAX 0.6444974  A 2.4816557 B  0.478626783 DENS 0.001
 #ifndef BACI_MAT_AAARAGHAVANVORP_DAMAGE_H
 #define BACI_MAT_AAARAGHAVANVORP_DAMAGE_H
 
+#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
-#include "baci_lib_parobjectfactory.H"
 
 namespace MAT
 {

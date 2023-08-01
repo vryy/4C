@@ -16,27 +16,26 @@
 #define SOLVER_NONLIN_NOX_SOLVER_NONLIN_NOX_PROBLEM_CPP
 
 #include "baci_solver_nonlin_nox_problem.H"  // class definition
-#include "baci_solver_nonlin_nox_globaldata.H"
+
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_solver_nonlin_nox_aux.H"
+#include "baci_solver_nonlin_nox_constraint_group.H"
 #include "baci_solver_nonlin_nox_constraint_interface_required.H"
+#include "baci_solver_nonlin_nox_globaldata.H"
+#include "baci_solver_nonlin_nox_inner_statustest_factory.H"
 #include "baci_solver_nonlin_nox_interface_jacobian.H"
 #include "baci_solver_nonlin_nox_linearsystem.H"
 #include "baci_solver_nonlin_nox_linearsystem_factory.H"
-#include "baci_solver_nonlin_nox_constraint_group.H"
-#include "baci_solver_nonlin_nox_inner_statustest_factory.H"
-#include "baci_solver_nonlin_nox_aux.H"
-
-#include <Teuchos_ParameterList.hpp>
 
 #include <Epetra_Operator.h>
-#include "baci_linear_solver_method_linalg.H"
-
-#include <NOX_Utils.H>
-#include <NOX_Epetra_Scaling.H>
-#include <NOX_Epetra_Vector.H>
-#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Epetra_Scaling.H>
+#include <NOX_Epetra_Vector.H>
 #include <NOX_StatusTest_Generic.H>
+#include <NOX_Utils.H>
+#include <Teuchos_ParameterList.hpp>
 
 
 /*----------------------------------------------------------------------------*

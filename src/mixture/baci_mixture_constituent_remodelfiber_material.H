@@ -9,8 +9,9 @@
 #define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_H
 
 
-#include <memory>
 #include "baci_mat_par_parameter.H"
+
+#include <memory>
 
 namespace MIXTURE
 {

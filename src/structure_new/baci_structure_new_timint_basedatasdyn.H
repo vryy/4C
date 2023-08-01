@@ -14,15 +14,13 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATASDYN_H
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATASDYN_H
 
-#include <set>
-
-#include "baci_utils_exceptions.H"
 #include "baci_inpar_structure.H"
-
-// include of nox nln enumerators
 #include "baci_solver_nonlin_nox_enum_lists.H"
-// include of enumerators of the nox abstract vector class
+#include "baci_utils_exceptions.H"
+
 #include <NOX_Abstract_Vector.H>
+
+#include <set>
 
 // forward declaration
 namespace Teuchos

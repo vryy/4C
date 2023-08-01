@@ -8,10 +8,11 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_linalg_downwindmatrix.H"
+
 #include "baci_linalg_utils_sparse_algebra_math.H"
-#include <Teuchos_Time.hpp>
 
 #include <ml_utils.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 03/08|

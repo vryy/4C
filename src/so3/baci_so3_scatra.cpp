@@ -11,12 +11,10 @@
 
 #include "baci_so3_scatra.H"
 
-#include "baci_lib_linedefinition.H"
-// needed for Gauss integration
-#include "baci_lib_element_integration_select.H"
-
-#include "baci_lib_globalproblem.H"
 #include "baci_inpar_ssi.H"
+#include "baci_lib_element_integration_select.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            vuong 03/12|

@@ -17,8 +17,6 @@
 #include <NOX_LineSearch_Generic.H>
 #include <NOX_LineSearch_UserDefinedFactory.H>
 #include <NOX_Utils.H>
-#include <NOX_Utils.H>
-
 #include <Teuchos_RCP.hpp>
 
 

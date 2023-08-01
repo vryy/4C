@@ -12,8 +12,9 @@
 #ifndef BACI_MAT_MUSCLE_UTILS_H
 #define BACI_MAT_MUSCLE_UTILS_H
 
-#include <vector>
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <vector>
 
 namespace MAT
 {

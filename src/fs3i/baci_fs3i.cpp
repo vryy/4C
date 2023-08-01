@@ -11,43 +11,34 @@
 *----------------------------------------------------------------------*/
 
 
-#include <Teuchos_TimeMonitor.hpp>
+#include "baci_fs3i.H"
 
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_adapter_structure_scatra_ele.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_converter.H"
+#include "baci_fluid_implicit_integration.H"
+#include "baci_fluid_result_test.H"
+#include "baci_fluid_utils.H"
 #include "baci_fsi_dyn.H"
 #include "baci_fsi_free_surface_monolithic.H"
 #include "baci_fsi_monolithicfluidsplit.H"
 #include "baci_fsi_monolithicstructuresplit.H"
-#include "baci_lib_condition_selector.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_fsi_utils.H"
-
+#include "baci_inpar_fs3i.H"
+#include "baci_inpar_validparameters.H"
 #include "baci_lib_condition_selector.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_fs3i.H"
-
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_structure_scatra_ele.H"
-
+#include "baci_lib_prestress_service.H"
+#include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_implicit.H"
-
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_utils.H"
-#include "baci_fluid_result_test.H"
-
 #include "baci_ssi_clonestrategy.H"
 
-#include "baci_fs3i.H"
-
-#include "baci_linalg_matrixtransform.H"
-
-#include "baci_lib_prestress_service.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

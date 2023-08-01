@@ -11,10 +11,7 @@
 #ifndef BACI_CUT_FIND_CYCLES_H
 #define BACI_CUT_FIND_CYCLES_H
 
-#include <fstream>
-
-#include <map>
-#include <string>
+#include "baci_cut_cycle.H"
 
 #include <boost/graph/adjacency_list.hpp>
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
@@ -25,7 +22,9 @@
 #include <boost/graph/graph_utility.hpp>
 #include <boost/graph/planar_face_traversal.hpp>
 
-#include "baci_cut_cycle.H"
+#include <fstream>
+#include <map>
+#include <string>
 
 namespace CORE::GEO
 {

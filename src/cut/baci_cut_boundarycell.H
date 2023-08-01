@@ -10,9 +10,8 @@
 #ifndef BACI_CUT_BOUNDARYCELL_H
 #define BACI_CUT_BOUNDARYCELL_H
 
-#include "baci_cut_tolerance.H"
 #include "baci_cut_kernel.H"
-
+#include "baci_cut_tolerance.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 

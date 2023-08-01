@@ -12,13 +12,13 @@
 #ifndef BACI_LIB_ELEMENTTYPE_H
 #define BACI_LIB_ELEMENTTYPE_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Epetra_Vector.h>
-
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_element.H"
+#include "baci_lib_parobjectfactory.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 // forward declarations
 namespace CORE::LINALG

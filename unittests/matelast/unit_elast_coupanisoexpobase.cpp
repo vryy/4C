@@ -11,15 +11,13 @@
 
 #include <gtest/gtest.h>
 
-#include <Teuchos_RCPDecl.hpp>
-
 #include "baci_lib_voigt_notation.H"
-
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_coupanisoexpo.H"
 
-#include "baci_linalg_fixedsizematrix.H"
+#include <Teuchos_RCPDecl.hpp>
 
 namespace
 {

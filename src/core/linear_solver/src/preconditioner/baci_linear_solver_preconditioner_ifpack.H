@@ -10,9 +10,9 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_IFPACK_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_IFPACK_H
 
-#include <Ifpack.h>
-
 #include "baci_linear_solver_preconditioner_type.H"
+
+#include <Ifpack.h>
 
 namespace CORE::LINEAR_SOLVER
 {
