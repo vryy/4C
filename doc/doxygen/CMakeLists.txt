@@ -1,6 +1,6 @@
 #
 # Build routine/test for doxygen documentation
-option(BUILD_DOXYGEN "Build doxygen documentation" ON)
+option(BUILD_DOXYGEN "Build doxygen documentation" OFF)
 if(BUILD_DOXYGEN)
 
   # add doc-specific cmake modules
@@ -20,14 +20,14 @@ if(BUILD_DOXYGEN)
   configure_file(${DOXYGEN_CONFIG_IN} ${DOXYGEN_CONFIG_OUT} @ONLY)
 
   add_custom_target(
-    documentation ALL
+    doxygen ALL
     COMMAND Doxygen::doxygen ${DOXYGEN_CONFIG_OUT}
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     VERBATIM
     COMMENT "Build doxygen"
     )
 
-  add_dependencies(documentation setup_mathjax)
+  add_dependencies(doxygen setup_mathjax)
 
   list(REMOVE_ITEM CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 endif()

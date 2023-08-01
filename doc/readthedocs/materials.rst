@@ -7,22 +7,27 @@ General information
 --------------------
 
 The definition of materials happens in the section ``-----MATERIALS``.
-A material model defines its constituive behavior, which may consist of several terms; however, there is always *one* material assigned to each element. 
-This material can be a material definition on its own, 
-or a collection of behaviours consisting of a number of material models
-to be defined subsequently. A single material model is in general defined by a single line of the form
+A material model defines its constitutive behavior, which may consist of several terms; 
+however, there is always *one* material assigned to each element. 
+This material can be an explicit material definition on its own, 
+or a collection of behaviours consisting of a number of material models to be defined subsequently. 
+The explicit definition of a material model is in general given by a single line of the form
 
 ::
 
    MAT <id> <materialname> <parameters...>
 
-One may also define a material by summation of several potentials. A collection of material behaviors, on the other hand, looks like this:
+One may also define a material by summation of several potentials. 
+
+A collection of material behaviors, on the other hand, looks like this:
 
 ::
 
    MAT <id> <collectionname> NUMMAT <nmaterials> MATIDS <id_1> ... <id_nmaterials> <possibly further parameters>
 
-Here, terms of the material behavior have to follow with their own number, which must correspond to ``<id_1> ... <id_nmaterials>``.
+Here, the terms of the ``<nmaterial>`` constitutive behaviors have to follow with their own number, 
+which must correspond to ``<id_1> ... <id_nmaterials>``.
+
 
 
 
@@ -31,6 +36,10 @@ Structural Material Models
 
 
 A material model in structural mechanics defines the connection between deformation (usually strain) and stress. 
+Many material models are available, including (hyper-)elastic, elasto-plastic, visco-elastic, visco-plastic, and even damage models. 
+If you wish to implement a new material model, this is of course also possible, it is an in-house code after all.
+You'll find more information on implementing material models in the :ref:`material section<materialdevelopment>` of the developer guide.
+
 
 
 Fluid Material Models
@@ -41,7 +50,7 @@ Fluid Material Models
 Other Material Models
 ---------------------
 
-Defining Material Models for Various Physics on a Single Discretization
+Coupling Material Models for Various Physics on a Single Discretization
 -----------------------------------------------------------------------
 
 One may use a single (multi-physics) element type for a multi-physics simulation with matching discretizations.
@@ -61,6 +70,9 @@ One can see it here in for a simple Thermo-Structure-Interaction problem:
    -------------------------------------------------STRUCTURE ELEMENTS
    1 SOLIDH8FBARTHERMO HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear
 
-The following discretizations can be coupled:
+
+.. ToDo::
+
+    Here we should have a list of the discretizations that can be coupled
 
 

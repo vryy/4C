@@ -74,7 +74,7 @@ Here, I'll give some hints, mainly for myself ;-)
   ::
 
      .. list-table::
-     header-rows: 1
+     :header-rows: 1
 
      * - Header 1
        - Header 2

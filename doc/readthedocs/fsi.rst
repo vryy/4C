@@ -1,3 +1,5 @@
+.. _fluid_structure_interaction:
+
 old_Fluid-Structure Interaction
 ===============================
 

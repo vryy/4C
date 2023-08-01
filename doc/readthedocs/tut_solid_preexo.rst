@@ -1,4 +1,6 @@
-3D Solid Tutorial with Cubit and *pre_exodus* 
+.. _3dsolidtutorial:
+
+3D Solid Tutorial with Cubit and *pre_exodus*
 =======================================================
 
 .. figure:: figures/tensilebar.jpg

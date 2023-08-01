@@ -1,6 +1,8 @@
-******************
+.. _analysisguide:
+
+==============
 Analysis Guide
-******************
+==============
 
 .. toctree::
    :maxdepth: 2

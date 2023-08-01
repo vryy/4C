@@ -1,6 +1,8 @@
-#################
+.. _developerguide:
+
+================
 Developer guide
-#################
+================
 
 .. note::
 
@@ -11,6 +13,7 @@ Developer guide
 .. toctree::
 
     bacisetup
+    materialdevelopment
     codedesign
 
 ..   code_commentation

@@ -1,3 +1,6 @@
+.. _WelcomeToBACI:
+
+===============
 Welcome to BACI
 ===============
 
@@ -22,28 +25,46 @@ some of these steps were XXL sized) until close to no original code
 remained.
 
 
-Overview
---------
+.. _items-to-be-added:
 
-The following Guide to ``BACI`` deals with
+List of items to be added
+--------------------------
 
-Part I — Tutorials
-   A number of tutotials are available, which also serve as framework tests during the gitlab CI.
+This list shall help the developers to find sections,
+where action is desperately needed to make this documentation a useful piece of work.
+Unfortunately, also this list is still under development, as all the rest of the site.
+Note that some basic information on the format of restructuredText can be found :ref:`here<writingdocumentation>`.
 
-Part II - The BACI Workflow
-   Explanations on the whole tool chain from model generation (pre processing) 
-   to results evaluation (post processing)
+The following list only contains a few parts and sections, which should be filled as soon as possible.
 
-Part III - Analysis guide
-   Theoretical background and detailed description on elements, data types, ...
+- Add some information to the tutorials, where content is missing
 
-Part IV - Developer guide
-   Contains useful information for developers, about adding Doxygen information, C++ basics, etc.
+  - :ref:`3dsolidtutorial`
+  - :ref:`multiphysicstutorial`
 
-Part V - Input Parameter Reference
-   Input parameter (including elements, materials, boundary conditions) with short description
+- In the analysis guide, which is the main part of the documentation where information about the procedures and features of the program are contained,
+  several sections do not contain all necessary information.
 
-Appendix
-   Setup Guide, some additional theory information, 
-   and a section about how to add information to the ReadTheDocs documentation.
-   Also, you'll find the index and the references therein.
+  - In the :ref:`Problem types<problemtypes>` section, all single field and multi field problems are mentioned,
+    but many of the subsections are incomplete or even empty. Actually, only very few information should be given here in the beginning,
+    but we definitely need the purpose of the problem type, the element types used and the degrees of freedom to be solved.
+
+  - The whole :ref:`Elements<elements>` section is lacking useful information.
+    At this point, we only have the materials that may be used with each element type listed.
+    Any ideas on useful information is highly appreciated.
+
+  - The complete :ref:`Boundary condition<boundaryconditions>` section is limited to basic types of conditions.
+    Writing information on more sophisticated ones is necessary.
+
+  - There is some general information on solid material models in the :ref:`Materials<materials>` section.
+    Information on other material models is needed.
+    In the more distant future it would also be good to have the underlying equations for some material models in this section.
+
+  - There are two sections that are directly taken from the ``global_report.pdf``:
+    :ref:`old_Fluid-structure Interaction<fluid_structure_interaction>` and :ref:`old_Free Surface Flow<free_surface_flow>`.
+    Somebody should check, which parts of these sections can still be used, ond which should be removed.
+
+- The :ref:`element shapes<elementshapes>` in the **reference section** are not taken from the BACI code yet.
+  Therefore, we need a well-founded information on each element shape (from LINE2 to NURBS27).
+  In a first step, the information on number of nodes and integration points is sufficient;
+  later on, the ordering of nodes and faces should be included in this section as well.
