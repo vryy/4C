@@ -12,9 +12,9 @@
 
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_elementtype.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include <Sacado.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 using FAD = Sacado::Fad::DFad<double>;
 
 namespace STR
@@ -32,7 +32,7 @@ namespace DRT
     class Truss3Type : public DRT::ElementType
     {
      public:
-      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       DRT::ParObject* Create(const std::vector<char>& data) override;

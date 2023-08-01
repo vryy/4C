@@ -14,10 +14,10 @@ of the usual Lagrangian polynomials for standard transport elements
 #define BACI_SCATRA_ELE_HDG_H
 
 #include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_scatra_ele.H"
 
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {
@@ -47,7 +47,7 @@ namespace DRT
 
       virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(
@@ -384,10 +384,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
         return nullspace;
       }
@@ -661,10 +661,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
         return nullspace;
       }

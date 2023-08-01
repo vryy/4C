@@ -39,7 +39,7 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       int Initialize(DRT::Discretization& dis) override;
@@ -72,7 +72,7 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       int Initialize(DRT::Discretization& dis) override;
@@ -105,7 +105,7 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       int Initialize(DRT::Discretization& dis) override;

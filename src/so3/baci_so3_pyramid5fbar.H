@@ -8,9 +8,8 @@
 #ifndef BACI_SO3_PYRAMID5FBAR_H
 #define BACI_SO3_PYRAMID5FBAR_H
 
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_so3_pyramid5.H"
-
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {
@@ -39,7 +38,7 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void SetupElementDefinition(

@@ -135,7 +135,7 @@ int CONTACT::B3TANGENTSMOOTHING::GetBoundaryNode(const int nnode)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double CONTACT::B3TANGENTSMOOTHING::GetEleLength(
-    const Teuchos::SerialDenseMatrix<int, double>& elepos, const int nright)
+    const CORE::LINALG::SerialDenseMatrix& elepos, const int nright)
 {
   double length = 0.0;
   for (int i = 0; i < 3; i++)
@@ -147,11 +147,10 @@ double CONTACT::B3TANGENTSMOOTHING::GetEleLength(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::SerialDenseMatrix<int, double> CONTACT::B3TANGENTSMOOTHING::GetNodalDerivatives(
-    const int node, const int nnode, const double length,
-    const DRT::Element::DiscretizationType distype)
+CORE::LINALG::SerialDenseMatrix CONTACT::B3TANGENTSMOOTHING::GetNodalDerivatives(const int node,
+    const int nnode, const double length, const DRT::Element::DiscretizationType distype)
 {
-  Teuchos::SerialDenseMatrix<int, double> deriv1(1, nnode);
+  CORE::LINALG::SerialDenseMatrix deriv1(1, nnode);
 
   if (node == nnode)
     CORE::DRT::UTILS::shape_function_1D_deriv1(deriv1, -1.0 + 2.0 / (nnode - 1), distype);

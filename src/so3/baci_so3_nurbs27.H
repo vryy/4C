@@ -24,7 +24,6 @@
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 /// Several parameters which are fixed for Solid nurbs27
 const int NUMNOD_SONURBS27 = 27;  ///< number of nodes
@@ -62,7 +61,7 @@ namespace DRT
         void NodalBlockInformation(
             DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-        Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+        CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
             DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
         void SetupElementDefinition(

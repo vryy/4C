@@ -668,7 +668,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(CORE::LINALG::SerialDenseMatrix
   {
     if (!force) dserror("Cannot compute stiffness matrix without computing internal force");
 
-    Teuchos::SerialDenseMatrix<int, double> kg(ndofinpatch, ndofinpatch, true);
+    CORE::LINALG::SerialDenseMatrix kg(ndofinpatch, ndofinpatch, true);
     for (int m = 0; m < ndofinpatch; ++m)
     {
       for (int n = 0; n < ndofinpatch; ++n)

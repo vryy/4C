@@ -21,12 +21,12 @@
 
 #include "baci_inpar_fluid.H"
 #include "baci_lib_discret.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace FLD
 {
@@ -115,7 +115,7 @@ namespace FLD
     //! vector for z-coordinates
     Teuchos::RCP<std::vector<double>> zcoordinates_;
     //! matrix for r-coordinates (columns are evaluation planes
-    Teuchos::SerialDenseMatrix<int, double> rcoordinates_;
+    CORE::LINALG::SerialDenseMatrix rcoordinates_;
 
     //! matrices for mean values along z-axis
     Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> zsumw_;

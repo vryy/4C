@@ -55,7 +55,7 @@ void DRT::ELEMENTS::Spring3Type::NodalBlockInformation(
   nv = 3;
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Spring3Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Spring3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);

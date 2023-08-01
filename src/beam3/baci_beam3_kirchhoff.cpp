@@ -21,12 +21,12 @@
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 /*------------------------------------------------------------------------------------------------*
@@ -77,10 +77,10 @@ void DRT::ELEMENTS::Beam3kType::NodalBlockInformation(
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3kType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3kType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Teuchos::SerialDenseMatrix<int, double> nullspace;
+  CORE::LINALG::SerialDenseMatrix nullspace;
   dserror("method ComputeNullSpace not implemented for element type beam3k!");
   return nullspace;
 }

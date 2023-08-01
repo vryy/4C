@@ -12,8 +12,7 @@ namespace DRT::ELEMENTS
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  Teuchos::SerialDenseMatrix<int, double> ComputeSolid3DNullSpace(
-      const DRT::Node& node, const double* x0)
+  CORE::LINALG::SerialDenseMatrix ComputeSolid3DNullSpace(const DRT::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:
 
@@ -30,7 +29,7 @@ namespace DRT::ELEMENTS
 
     const double* x = node.X();
 
-    Teuchos::SerialDenseMatrix<int, double> nullspace(3, 6);
+    CORE::LINALG::SerialDenseMatrix nullspace(3, 6);
     // x-modes
     nullspace(0, 0) = 1.0;
     nullspace(0, 1) = 0.0;
@@ -58,8 +57,7 @@ namespace DRT::ELEMENTS
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  Teuchos::SerialDenseMatrix<int, double> ComputeSolid2DNullSpace(
-      const DRT::Node& node, const double* x0)
+  CORE::LINALG::SerialDenseMatrix ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0)
   {
     /* the rigid body modes for structures are:
 
@@ -75,7 +73,7 @@ namespace DRT::ELEMENTS
 
     const double* x = node.X();
 
-    Teuchos::SerialDenseMatrix<int, double> nullspace(2, 3);
+    CORE::LINALG::SerialDenseMatrix nullspace(2, 3);
     // x-modes
     nullspace(0, 0) = 1.0;
     nullspace(0, 1) = 0.0;

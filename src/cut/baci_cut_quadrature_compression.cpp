@@ -12,10 +12,10 @@
 
 #include "baci_cut_element.H"
 #include "baci_cut_volumecell.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_LAPACK.hpp>
-#include <Teuchos_SerialDenseVector.hpp>
 #include <Teuchos_SerialQRDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
@@ -37,12 +37,12 @@ bool CORE::GEO::CUT::QuadratureCompression::PerformCompressionOfQuadrature(
 {
   const double t_start = Teuchos::Time::wallTime();
 
-  Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>> vander =
-      Teuchos::rcp(new Teuchos::SerialDenseMatrix<int, double>);
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, double>> x =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, double>);
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, double>> rhs =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, double>);
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> vander =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> x =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> rhs =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
 
   FormMatrixSystem(gin, vander, rhs);
 
@@ -58,9 +58,8 @@ bool CORE::GEO::CUT::QuadratureCompression::PerformCompressionOfQuadrature(
  * Compute the Vandermonde matrix and RHS of the matrix system sudhakar 08/15
  *---------------------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::QuadratureCompression::FormMatrixSystem(
-    CORE::DRT::UTILS::GaussPointsComposite& gin,
-    Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs)
+    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs)
 {
   mat->shape(gin.NumPoints(), 56);
 
@@ -218,16 +217,15 @@ void CORE::GEO::CUT::QuadratureCompression::FormMatrixSystem(
  *points by numerical linear algebra. SIAM J Numer Anal. 48:1984--1999, 2010.
  *-----------------------------------------------------------------------------------------------------------------*/
 bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
-    CORE::DRT::UTILS::GaussPointsComposite& gin,
-    Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol)
+    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
 {
   int ma = mat->numRows();
   int na = mat->numCols();
 
-  Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>> matTemp =
-      Teuchos::rcp(new Teuchos::SerialDenseMatrix<int, double>);
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> matTemp =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   matTemp->shape(ma, na);
 
   // copy this matrix to another
@@ -248,8 +246,8 @@ bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
   std::cout<<"]\n";*/
 
 
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, int>> work_temp =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, int>);
+  Teuchos::RCP<CORE::LINALG::IntSerialDenseVector> work_temp =
+      Teuchos::rcp(new CORE::LINALG::IntSerialDenseVector);
   work_temp->shape(na, 1);
 
   Teuchos::LAPACK<int, double> ll;
@@ -279,8 +277,8 @@ bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
     std::cout<<work[ii]<<" ";
   std::cout<<"\n";*/
 
-  Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>> sqrmat =
-      Teuchos::rcp(new Teuchos::SerialDenseMatrix<int, double>);
+  Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> sqrmat =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix);
   sqrmat->shape(na, na);
 
   for (int ptno = 0; ptno < na; ptno++)
@@ -317,8 +315,8 @@ bool CORE::GEO::CUT::QuadratureCompression::Compress_Leja_points(
  *-------------------------------------------------------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::DRT::UTILS::GaussPoints>
 CORE::GEO::CUT::QuadratureCompression::FormNewQuadratureRule(
-    CORE::DRT::UTILS::GaussPointsComposite& gin,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol, std::vector<int>& work, int& na)
+    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol,
+    std::vector<int>& work, int& na)
 {
   Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> cgp =
       Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints(0));
@@ -336,7 +334,7 @@ CORE::GEO::CUT::QuadratureCompression::FormNewQuadratureRule(
 }
 
 void CORE::GEO::CUT::QuadratureCompression::GetPivotalRows(
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, int>>& work_temp, std::vector<int>& work)
+    Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>& work_temp, std::vector<int>& work)
 {
   int na = (int)work.size();
   int index = 0;
@@ -385,9 +383,8 @@ int CORE::GEO::CUT::QuadratureCompression::GetCorrectIndex(
  *08/15 base functions (either Chebyshev or monomial) and print the maximum absolute error
  *--------------------------------------------------------------------------------------------------------------------*/
 void CORE::GEO::CUT::QuadratureCompression::ComputeAndPrintError(
-    CORE::DRT::UTILS::GaussPointsComposite& gin,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol, std::vector<int>& work, int& na)
+    CORE::DRT::UTILS::GaussPointsComposite& gin, Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na)
 {
   /*-------------------------------------------------------------------*/
   // solution check
@@ -529,9 +526,9 @@ void CORE::GEO::CUT::QuadratureCompression::ComputeAndPrintError(
 }
 
 void CORE::GEO::CUT::QuadratureCompression::Teuchos_GELS(
-    Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol)
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
 {
   mat->shape(3, 4);
   rhs->shape(3, 1);
@@ -565,8 +562,8 @@ void CORE::GEO::CUT::QuadratureCompression::Teuchos_GELS(
 
   int lwork = 2 * na + (na + 1) * 64;
 
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, double>> work =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, double>);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> work =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
   work->shape(na, 1);
 
   Teuchos::LAPACK<int, double> ll;
@@ -580,9 +577,9 @@ void CORE::GEO::CUT::QuadratureCompression::Teuchos_GELS(
 }
 
 void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_Teuchos(
-    Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol)
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
 {
   Teuchos::SerialQRDenseSolver<int, double> qr;
 
@@ -617,9 +614,9 @@ void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_Teuchos(
 }
 
 void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
-    Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-    Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol)
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol)
 {
   int ma = mat->numRows();
   int na = mat->numCols();
@@ -651,14 +648,14 @@ void CORE::GEO::CUT::QuadratureCompression::QR_decomposition_LAPACK(
   (*sol)(2) = 0.0;
   (*sol)(3) = 0.0;
 
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, int>> jpvt =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, int>);
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, double>> tau =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, double>);
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, double>> work =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, double>);
-  Teuchos::RCP<Teuchos::SerialDenseVector<int, double>> rwork =
-      Teuchos::rcp(new Teuchos::SerialDenseVector<int, double>);
+  Teuchos::RCP<CORE::LINALG::IntSerialDenseVector> jpvt =
+      Teuchos::rcp(new CORE::LINALG::IntSerialDenseVector);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> tau =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> work =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
+  Teuchos::RCP<CORE::LINALG::SerialDenseVector> rwork =
+      Teuchos::rcp(new CORE::LINALG::SerialDenseVector);
   jpvt->shape(na, 1);
   tau->shape(na, 1);
   work->shape(na, 1);

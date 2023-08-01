@@ -27,11 +27,11 @@
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_node.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_fad.H"
 
 #include <Sacado.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;
 
@@ -75,7 +75,7 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(

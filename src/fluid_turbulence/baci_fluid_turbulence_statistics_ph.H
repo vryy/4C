@@ -37,12 +37,12 @@ given on input.
 
 #include "baci_inpar_fluid.H"
 #include "baci_lib_discret.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 
 #include <Epetra_MpiComm.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 namespace FLD
@@ -137,10 +137,10 @@ namespace FLD
     Teuchos::RCP<std::vector<double>> x2coordinates_;
 
     //! coordinates of locations in x1- and x2-direction for statistical evaluation
-    Teuchos::SerialDenseMatrix<int, double> x1statlocations;
+    CORE::LINALG::SerialDenseMatrix x1statlocations;
 
     //! matrix for r-coordinates (columns are evaluation planes
-    Teuchos::SerialDenseMatrix<int, double> x2statlocations;
+    CORE::LINALG::SerialDenseMatrix x2statlocations;
 
     //! set coordinates of locations in x1-direction for statistical evaluation
     Teuchos::RCP<std::vector<double>> x1setstatlocations_;

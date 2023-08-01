@@ -11,8 +11,7 @@
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
-
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace CONTACT
 {
@@ -44,10 +43,7 @@ namespace CONTACT
       double GetTolerance() const { return tolerance_; };
       double GetMaxIteration() const { return maxIteration_; };
       bool GetWarmStartingFlag() const { return warmStartingFlag_; };
-      Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>> GetTopology() const
-      {
-        return topology_;
-      };
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> GetTopology() const { return topology_; };
       double GetCompositeYoungs() const { return compositeYoungs_; };
       double GetGridSize() const { return gridSize_; };
       double GetComplianceCorrection() const { return elasticComplianceCorrection_; };
@@ -74,7 +70,7 @@ namespace CONTACT
       double tolerance_;
       int maxIteration_;
       bool warmStartingFlag_;
-      Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>> topology_;
+      Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> topology_;
       double compositeYoungs_;
       double gridSize_;
       double elasticComplianceCorrection_;

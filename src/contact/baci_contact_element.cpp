@@ -34,10 +34,10 @@ void CONTACT::CoElementType::NodalBlockInformation(
 {
 }
 
-Teuchos::SerialDenseMatrix<int, double> CONTACT::CoElementType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix CONTACT::CoElementType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Teuchos::SerialDenseMatrix<int, double> nullspace;
+  CORE::LINALG::SerialDenseMatrix nullspace;
   dserror("method ComputeNullSpace not implemented!");
   return nullspace;
 }

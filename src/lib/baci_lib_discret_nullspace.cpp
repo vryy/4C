@@ -80,7 +80,7 @@ namespace DRT
           }
         }
 
-        Teuchos::SerialDenseMatrix<int, double> nodalNullspace =
+        CORE::LINALG::SerialDenseMatrix nodalNullspace =
             actnode->Elements()[0]->ElementType().ComputeNullSpace(
                 *actnode, x0.data(), localLength, dimns);
 

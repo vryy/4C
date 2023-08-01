@@ -55,7 +55,7 @@ void DRT::ELEMENTS::So_hex18Type::NodalBlockInformation(
   nv = 3;
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_hex18Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_hex18Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);

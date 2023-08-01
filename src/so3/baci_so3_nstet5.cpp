@@ -75,7 +75,7 @@ void DRT::ELEMENTS::NStet5Type::NodalBlockInformation(
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NStet5Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   // TODO: switch to correct data container!
@@ -152,7 +152,7 @@ Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::NStet5Type::ComputeNullSp
   if (!nstet) dserror("Cannot cast to NStet5");
   const double* x = nstet->MidX();
 
-  Teuchos::SerialDenseMatrix<int, double> nullspace(numdof, dimnsp);
+  CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;

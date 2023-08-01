@@ -9,7 +9,7 @@
 
 namespace FLD
 {
-  Teuchos::SerialDenseMatrix<int, double> ComputeFluidNullSpace(
+  CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
       const DRT::Node& node, const int numdof, const int dimnsp)
   {
     /* the rigid body modes for fluids are:
@@ -27,7 +27,7 @@ namespace FLD
 
     if (numdof > 10) dserror("Cannot define more than 10 degrees of freedom!");
 
-    Teuchos::SerialDenseMatrix<int, double> nullspace(numdof, dimnsp);
+    CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
     for (int i = 0; i < numdof; i++)
     {
       for (int j = 0; j < dimnsp; j++)

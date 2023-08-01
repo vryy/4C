@@ -61,7 +61,7 @@ void DRT::ELEMENTS::FluidType::NodalBlockInformation(
 }
 
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::FluidType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::FluidType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);
