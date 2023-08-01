@@ -19,9 +19,7 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      No
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCT NOX/Status Test
 XML File                            = rough_contact_solver.xml

@@ -8,15 +8,15 @@
 
 #include <iostream>
 
-#include "cut_kernel.H"
-#include "cut_position.H"
-#include "cut_output.H"
+#include "baci_cut_kernel.H"
+#include "baci_cut_position.H"
+#include "baci_cut_output.H"
 
-#include "cut_intersection.H"  // for IntersectionStatus
+#include "baci_cut_intersection.H"  // for IntersectionStatus
 
 void test_geometry_schleifend1()
 {
-  LINALG::Matrix<3, 3> tri3;
+  CORE::LINALG::Matrix<3, 3> tri3;
 
   // 38
   tri3(0, 0) = 0.90538448100000001872;
@@ -33,7 +33,7 @@ void test_geometry_schleifend1()
   tri3(1, 2) = 0.68831014649999999744;
   tri3(2, 2) = 0.46358564499999999065;
 
-  LINALG::Matrix<3, 2> line;
+  CORE::LINALG::Matrix<3, 2> line;
 
   // 28
   line(0, 0) = 0.91666668699999998005;
@@ -45,7 +45,7 @@ void test_geometry_schleifend1()
   line(1, 1) = 0.66678706244096386246;
   line(2, 1) = 0.49999999999999994449;
 
-  LINALG::Matrix<3, 1> xsi;
+  CORE::LINALG::Matrix<3, 1> xsi;
 
   // GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3,true> ci;
   CORE::GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3, true> ci(
@@ -80,12 +80,12 @@ void test_geometry_parallel1()
       1072273817,
   };
 
-  LINALG::Matrix<3, 3> tri3(reinterpret_cast<double*>(s));
-  LINALG::Matrix<3, 2> line(reinterpret_cast<double*>(l));
+  CORE::LINALG::Matrix<3, 3> tri3(reinterpret_cast<double*>(s));
+  CORE::LINALG::Matrix<3, 2> line(reinterpret_cast<double*>(l));
 
   std::cout << tri3 << line;
 
-  LINALG::Matrix<3, 1> xsi;
+  CORE::LINALG::Matrix<3, 1> xsi;
 
   // GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3,true> ci;
   CORE::GEO::CUT::KERNEL::ComputeIntersection<3, DRT::Element::line2, DRT::Element::tri3, true> ci(
@@ -112,8 +112,8 @@ void test_geometry_distance()
       0.061538461538461306, 0.29411764705882476};
   double xyz_data[] = {0.91044776119402959, 0.061538461538461306, 0.29411764705882476};
 
-  LINALG::Matrix<3, 3> xyze(xyze_data);
-  LINALG::Matrix<3, 1> xyz(xyz_data);
+  CORE::LINALG::Matrix<3, 3> xyze(xyze_data);
+  CORE::LINALG::Matrix<3, 1> xyz(xyz_data);
 
   CORE::GEO::CUT::PositionFactory::SpecifyGeneralDistFloattype(
       INPAR::CUT::floattype_cln);  // use cln
@@ -133,8 +133,8 @@ void test_geometry_distance2()
       -0.207634, -0.207472, 0.62274};
   double xyz_data[] = {-1.476, -0.737999, -0.207634};
 
-  LINALG::Matrix<3, 4> xyze;
-  LINALG::Matrix<3, 1> xyz(xyz_data);
+  CORE::LINALG::Matrix<3, 4> xyze;
+  CORE::LINALG::Matrix<3, 1> xyz(xyz_data);
 
   for (int i = 0; i < 3; ++i)
   {
@@ -163,8 +163,8 @@ void test_geometry_distance3()
       -0.8469286675746165, 0.8469286675746165};
   double xyz_data[] = {1.693857335149233, -0.1327438687864578, 0.8469286675746165};
 
-  LINALG::Matrix<3, 4> xyze;
-  LINALG::Matrix<3, 1> xyz(xyz_data);
+  CORE::LINALG::Matrix<3, 4> xyze;
+  CORE::LINALG::Matrix<3, 1> xyz(xyz_data);
 
   for (int i = 0; i < 3; ++i)
   {

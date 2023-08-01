@@ -5,10 +5,10 @@
 */
 /*---------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include "particle_interaction_dem_contact_normal.H"
-#include "particle_interaction_utils.H"
+#include "baci_particle_interaction_dem_contact_normal.H"
+#include "baci_particle_interaction_utils.H"
 
-#include "inpar_validparameters.H"
+#include "baci_inpar_validparameters.H"
 
 
 namespace

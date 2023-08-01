@@ -7,7 +7,6 @@ set(_porofluidmultiphase_dependencies
     inpar
     io
     lib
-    linalg
     mat
     porofluidmultiphase_ele
     poromultiphase_scatra

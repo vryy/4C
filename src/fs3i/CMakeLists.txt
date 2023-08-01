@@ -13,7 +13,6 @@ set(_fs3i_dependencies
     inpar
     io
     lib
-    linalg
     mat
     poroelast
     poroelast_scatra

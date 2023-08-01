@@ -10,17 +10,17 @@
 #include <gtest/gtest.h>
 #include <vector>
 
-#include "beam3_euler_bernoulli.H"
-#include "fbi_beam_to_fluid_meshtying_pair_gauss_point.H"
-#include "fbi_beam_to_fluid_meshtying_params.H"
-#include "fluid_ele.H"
-#include "geometry_pair_element_functions.H"
-#include "geometry_pair_line_to_volume_segmentation.H"
-#include "geometry_pair_line_to_3D_evaluation_data.H"
-#include "lib_globalproblem.H"
-#include "lib_element.H"
-#include "linalg_serialdensevector.H"
-#include "beaminteraction_contact_pair.H"
+#include "baci_beam3_euler_bernoulli.H"
+#include "baci_fbi_beam_to_fluid_meshtying_pair_gauss_point.H"
+#include "baci_fbi_beam_to_fluid_meshtying_params.H"
+#include "baci_fluid_ele.H"
+#include "baci_geometry_pair_element_functions.H"
+#include "baci_geometry_pair_line_to_volume_segmentation.H"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_element.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_beaminteraction_contact_pair.H"
 
 namespace
 {
@@ -47,14 +47,14 @@ namespace
      * \brief Set up the pair so it can be evaluated and compare the results.
      */
     template <typename beam_type, typename fluid_type>
-    void PerformGPTSPairUnitTest(const LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
+    void PerformGPTSPairUnitTest(const CORE::LINALG::Matrix<beam_type::n_dof_, 1, double>& q_beam,
         const std::vector<double>& beam_dofvec,
-        const LINALG::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
-        const std::vector<double>& fluid_dofvec, LINALG::SerialDenseVector results_fs,
-        LINALG::SerialDenseVector results_ff,
-        const LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
-        const LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
-        const LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
+        const CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double>& q_fluid,
+        const std::vector<double>& fluid_dofvec, CORE::LINALG::SerialDenseVector results_fs,
+        CORE::LINALG::SerialDenseVector results_ff,
+        const CORE::LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf,
+        const CORE::LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs,
+        const CORE::LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff)
     {
       // Create the mesh tying mortar pair.
       BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam_type, fluid_type> pair =
@@ -101,30 +101,30 @@ namespace
       const int beam_dofs = beam_type::n_dof_;
 
       // Evaluate the local matrices.
-      LINALG::SerialDenseMatrix local_kff;
-      LINALG::SerialDenseMatrix local_kfs;
-      LINALG::SerialDenseMatrix local_ksf;
-      LINALG::SerialDenseMatrix local_kss;
-      LINALG::SerialDenseVector local_fs;
-      LINALG::SerialDenseVector local_ff;
+      CORE::LINALG::SerialDenseMatrix local_kff;
+      CORE::LINALG::SerialDenseMatrix local_kfs;
+      CORE::LINALG::SerialDenseMatrix local_ksf;
+      CORE::LINALG::SerialDenseMatrix local_kss;
+      CORE::LINALG::SerialDenseVector local_fs;
+      CORE::LINALG::SerialDenseVector local_ff;
       pair.PreEvaluate();
       bool projects =
           pair.Evaluate(&local_fs, &local_ff, &local_kss, &local_ksf, &local_kfs, &local_kff);
 
       EXPECT_TRUE(projects);
-      EXPECT_EQ(local_kff.M(), fluid_dofs);
-      EXPECT_EQ(local_kff.N(), fluid_dofs);
-      EXPECT_EQ(local_kfs.M(), fluid_dofs);
-      EXPECT_EQ(local_kfs.N(), beam_dofs);
-      EXPECT_EQ(local_fs.Length(), beam_dofs);
+      EXPECT_EQ(local_kff.numRows(), fluid_dofs);
+      EXPECT_EQ(local_kff.numCols(), fluid_dofs);
+      EXPECT_EQ(local_kfs.numRows(), fluid_dofs);
+      EXPECT_EQ(local_kfs.numCols(), beam_dofs);
+      EXPECT_EQ(local_fs.length(), beam_dofs);
 
 
-      for (int i_row = 0; i_row < local_kff.M(); i_row++)
+      for (int i_row = 0; i_row < local_kff.numRows(); i_row++)
       {
         EXPECT_NEAR((local_kff)(i_row, i_row), results_kff(i_row, i_row), 1e-11)
             << " for i_row = " << i_row;
         EXPECT_NEAR(local_ff(i_row), results_ff(i_row), 1e-11) << " for i_row = " << i_row;
-        for (int i_col = 0; i_col < local_kfs.N(); i_col++)
+        for (int i_col = 0; i_col < local_kfs.numCols(); i_col++)
           EXPECT_NEAR((local_kfs)(i_row, i_col), local_ksf(i_col, i_row), 1e-11)
               << " for i_row = " << i_row << ", i_col = " << i_col;
       }
@@ -148,22 +148,22 @@ namespace
     typedef GEOMETRYPAIR::t_hex8 fluid_type;
 
     // Definition of variables for this test case.
-    LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
-    LINALG::Matrix<beam_type::n_dof_, 1, double> v_beam;
-    LINALG::Matrix<9, 1, double> q_beam_rot;
-    LINALG::Matrix<fluid_type::n_dof_, 1, double> q_fluid;
-    LINALG::Matrix<fluid_type::n_dof_, 1, double> v_fluid;
+    CORE::LINALG::Matrix<beam_type::n_dof_, 1, double> q_beam;
+    CORE::LINALG::Matrix<beam_type::n_dof_, 1, double> v_beam;
+    CORE::LINALG::Matrix<9, 1, double> q_beam_rot;
+    CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double> q_fluid;
+    CORE::LINALG::Matrix<fluid_type::n_dof_, 1, double> v_fluid;
     std::vector<double> beam_centerline_dofvec;
     std::vector<double> fluid_dofvec;
 
     // Matrices for the results.
-    LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff(true);
-    LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs(true);
-    LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
-    LINALG::SerialDenseVector results_fs(beam_type::n_dof_, true);
-    LINALG::SerialDenseVector results_ff(fluid_type::n_dof_, true);
-    results_fs.Zero();
-    results_ff.Zero();
+    CORE::LINALG::Matrix<fluid_type::n_dof_, fluid_type::n_dof_, double> results_kff(true);
+    CORE::LINALG::Matrix<fluid_type::n_dof_, beam_type::n_dof_, double> results_kfs(true);
+    CORE::LINALG::Matrix<beam_type::n_dof_, fluid_type::n_dof_, double> results_ksf(true);
+    CORE::LINALG::SerialDenseVector results_fs(beam_type::n_dof_, true);
+    CORE::LINALG::SerialDenseVector results_ff(fluid_type::n_dof_, true);
+    results_fs.putScalar(0.0);
+    results_ff.putScalar(0.0);
 
 
     // Define the geometry of the two elements.

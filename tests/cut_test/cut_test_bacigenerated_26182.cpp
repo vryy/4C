@@ -14,20 +14,20 @@
 
 #include "cut_test_utils.H"
 
-#include "cut_side.H"
-#include "cut_meshintersection.H"
-#include "cut_levelsetintersection.H"
-#include "cut_combintersection.H"
-#include "cut_tetmeshintersection.H"
-#include "cut_options.H"
-#include "cut_volumecell.H"
+#include "baci_cut_side.H"
+#include "baci_cut_meshintersection.H"
+#include "baci_cut_levelsetintersection.H"
+#include "baci_cut_combintersection.H"
+#include "baci_cut_tetmeshintersection.H"
+#include "baci_cut_options.H"
+#include "baci_cut_volumecell.H"
 
-#include "cut_sidehandle.H"
-#include "cut_triangulateFacet.H"
-#include "cut_utils.H"
-#include "cut_kernel.H"
+#include "baci_cut_sidehandle.H"
+#include "baci_cut_triangulateFacet.H"
+#include "baci_cut_utils.H"
+#include "baci_cut_kernel.H"
 
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 void test_bacigenerated_26182()
 {
@@ -35,7 +35,7 @@ void test_bacigenerated_26182()
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+  CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
   nids.clear();
   tri3_xyze(0, 0) = 0.04671595760969209;

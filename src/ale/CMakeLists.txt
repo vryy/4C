@@ -9,7 +9,6 @@ set(_ale_dependencies
     inpar
     io
     lib
-    linalg
     mat
     mortar
     nurbs_discret

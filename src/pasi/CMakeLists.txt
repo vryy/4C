@@ -7,7 +7,6 @@ set(_pasi_dependencies
     inpar
     io
     lib
-    linalg
     particle_algorithm
     particle_wall
     solver_nonlin_nox

@@ -8,11 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "lib_utils_reference_configuration.H"
-#include "so3_tet4.H"
-#include "so3_hex8.H"
-#include "contact_element.H"
-#include "unittest_utils_assertions.h"
+#include "baci_lib_utils_reference_configuration.H"
+#include "baci_so3_tet4.H"
+#include "baci_so3_hex8.H"
+#include "baci_contact_element.H"
+#include "baci_unittest_utils_assertions.h"
 
 #include <Epetra_SerialComm.h>
 
@@ -74,9 +74,9 @@ namespace
   {
     // get hex8 element and test it
     const DRT::Element* hex8ele = testdis_->gElement(0);
-    LINALG::Matrix<3, 1> xicenterhex8ele(true);
-    LINALG::Matrix<3, 1> hex8elecoords(true);
-    LINALG::Matrix<3, 1> hex8refsolution(true);
+    CORE::LINALG::Matrix<3, 1> xicenterhex8ele(true);
+    CORE::LINALG::Matrix<3, 1> hex8elecoords(true);
+    CORE::LINALG::Matrix<3, 1> hex8refsolution(true);
     hex8refsolution(0, 0) = 423.0 / 800.0;
     hex8refsolution(1, 0) = 281.0 / 800.0;
     hex8refsolution(2, 0) = 207.0 / 200.0;
@@ -87,9 +87,9 @@ namespace
 
     // get quad4 element and test it
     const DRT::Element* quad4ele = testdis_->gElement(1);
-    LINALG::Matrix<2, 1> xicenterquad4ele(true);
-    LINALG::Matrix<3, 1> quad4elecoords(true);
-    LINALG::Matrix<3, 1> quad4refsolution(true);
+    CORE::LINALG::Matrix<2, 1> xicenterquad4ele(true);
+    CORE::LINALG::Matrix<3, 1> quad4elecoords(true);
+    CORE::LINALG::Matrix<3, 1> quad4refsolution(true);
     quad4refsolution(0, 0) = 14.0 / 25.0;
     quad4refsolution(1, 0) = 111.0 / 200.0;
     quad4refsolution(2, 0) = 33.0 / 100.0;
@@ -100,9 +100,9 @@ namespace
 
     // get tet4 element stuff and test it
     const DRT::Element* tet4ele = testdis_->gElement(2);
-    LINALG::Matrix<3, 1> xicentertet4ele(true);
-    LINALG::Matrix<3, 1> tet4elecoords(true);
-    LINALG::Matrix<3, 1> tet4refsolution(true);
+    CORE::LINALG::Matrix<3, 1> xicentertet4ele(true);
+    CORE::LINALG::Matrix<3, 1> tet4elecoords(true);
+    CORE::LINALG::Matrix<3, 1> tet4refsolution(true);
     tet4refsolution(0, 0) = 61.0 / 40.0;
     tet4refsolution(1, 0) = -199.0 / 400.0;
     tet4refsolution(2, 0) = 9.0 / 16.0;
@@ -114,9 +114,9 @@ namespace
 
     // get tri3 element and test it
     const DRT::Element* tri3ele = testdis_->gElement(3);
-    LINALG::Matrix<2, 1> xicentertri3ele(true);
-    LINALG::Matrix<3, 1> tri3elecoords(true);
-    LINALG::Matrix<3, 1> tri3refsolution(true);
+    CORE::LINALG::Matrix<2, 1> xicentertri3ele(true);
+    CORE::LINALG::Matrix<3, 1> tri3elecoords(true);
+    CORE::LINALG::Matrix<3, 1> tri3refsolution(true);
     tri3refsolution(0, 0) = 23.0 / 15.0;
     tri3refsolution(1, 0) = -149.0 / 300.0;
     tri3refsolution(2, 0) = 1.0 / 12.0;
@@ -131,9 +131,9 @@ namespace
   {
     // get quad4 element and test it
     const DRT::Element* quad4ele = testdis_->gElement(1);
-    LINALG::Matrix<2, 1> xicenterquad4ele(true);
-    LINALG::Matrix<3, 1> quad4elecoords(true);
-    LINALG::Matrix<3, 1> quad4refsolution(true);
+    CORE::LINALG::Matrix<2, 1> xicenterquad4ele(true);
+    CORE::LINALG::Matrix<3, 1> quad4elecoords(true);
+    CORE::LINALG::Matrix<3, 1> quad4refsolution(true);
     quad4refsolution(0, 0) = -0.29138926578643;
     quad4refsolution(1, 0) = -0.40854577471087;
     quad4refsolution(2, 0) = 0.86497551742829;
@@ -144,9 +144,9 @@ namespace
 
     // get tri3 element and test it
     const DRT::Element* tri3ele = testdis_->gElement(3);
-    LINALG::Matrix<2, 1> xicentertri3ele(true);
-    LINALG::Matrix<3, 1> tri3elecoords(true);
-    LINALG::Matrix<3, 1> tri3refsolution(true);
+    CORE::LINALG::Matrix<2, 1> xicentertri3ele(true);
+    CORE::LINALG::Matrix<3, 1> tri3elecoords(true);
+    CORE::LINALG::Matrix<3, 1> tri3refsolution(true);
     tri3refsolution(0, 0) = -0.085623542490578;
     tri3refsolution(1, 0) = 0.048198682858935;
     tri3refsolution(2, 0) = -0.995161040205065;

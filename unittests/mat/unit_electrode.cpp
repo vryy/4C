@@ -8,10 +8,10 @@
 
 #include <gtest/gtest.h>
 
-#include "lib_globalproblem.H"
+#include "baci_lib_globalproblem.H"
 
-#include "mat_electrode.H"
-#include "mat_par_material.H"
+#include "baci_mat_electrode.H"
+#include "baci_mat_par_material.H"
 
 namespace
 {
@@ -482,19 +482,19 @@ namespace
     // test member function using sample concentration values for anode materials
     for (unsigned i = 0; i < concentrations_anode_redlichkister_.size(); ++i)
     {
-      EXPECT_NEAR(anode_redlichkister_->ComputeFirstDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(anode_redlichkister_->ComputeDOpenCircuitPotentialDConcentration(
                       concentrations_anode_redlichkister_[i], faraday_, frt_, detF_),
           results_anode_redlichkister[i], tolerances_anode_redlichkister[i]);
     }
     for (unsigned i = 0; i < concentrations_anode_taralov_.size(); ++i)
     {
-      EXPECT_NEAR(anode_taralov_->ComputeFirstDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(anode_taralov_->ComputeDOpenCircuitPotentialDConcentration(
                       concentrations_anode_taralov_[i], faraday_, frt_, detF_),
           results_anode_taralov[i], tolerances_anode_taralov[i]);
     }
     for (unsigned i = 0; i < concentrations_anode_polynomial_.size(); ++i)
     {
-      EXPECT_NEAR(anode_polynomial_->ComputeFirstDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(anode_polynomial_->ComputeDOpenCircuitPotentialDConcentration(
                       concentrations_anode_polynomial_[i], faraday_, frt_, detF_),
           results_anode_polynomial[i], tolerances_anode_polynomial[i]);
     }
@@ -516,25 +516,25 @@ namespace
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_csv_->ComputeFirstDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_csv_->ComputeDOpenCircuitPotentialDConcentration(
                       concentrations_cathode_csv_[i], faraday_, frt_, detF_),
           results_cathode_csv[i], tolerances_cathode_csv[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_redlichkister_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_redlichkister_->ComputeFirstDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_redlichkister_->ComputeDOpenCircuitPotentialDConcentration(
                       concentrations_cathode_redlichkister_[i], faraday_, frt_, detF_),
           results_cathode_redlichkister[i], tolerances_cathode_redlichkister[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_taralov_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_taralov_->ComputeFirstDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_taralov_->ComputeDOpenCircuitPotentialDConcentration(
                       concentrations_cathode_taralov_[i], faraday_, frt_, detF_),
           results_cathode_taralov[i], tolerances_cathode_taralov[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_polynomial_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_polynomial_->ComputeFirstDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_polynomial_->ComputeDOpenCircuitPotentialDConcentration(
                       concentrations_cathode_polynomial_[i], faraday_, frt_, detF_),
           results_cathode_polynomial[i], tolerances_cathode_polynomial[i]);
     }
@@ -556,25 +556,25 @@ namespace
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_csv_->ComputeFirstDerivOpenCircuitPotentialTemp(
+      EXPECT_NEAR(cathode_csv_->ComputeDOpenCircuitPotentialDTemperature(
                       concentrations_cathode_csv_[i], faraday_, gasconstant_),
           results_cathode_csv[i], tolerances_cathode_csv[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_redlichkister_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_redlichkister_->ComputeFirstDerivOpenCircuitPotentialTemp(
+      EXPECT_NEAR(cathode_redlichkister_->ComputeDOpenCircuitPotentialDTemperature(
                       concentrations_cathode_redlichkister_[i], faraday_, gasconstant_),
           results_cathode_redlichkister[i], tolerances_cathode_redlichkister[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_taralov_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_taralov_->ComputeFirstDerivOpenCircuitPotentialTemp(
+      EXPECT_NEAR(cathode_taralov_->ComputeDOpenCircuitPotentialDTemperature(
                       concentrations_cathode_taralov_[i], faraday_, gasconstant_),
           results_cathode_taralov[i], tolerances_cathode_taralov[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_polynomial_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_polynomial_->ComputeFirstDerivOpenCircuitPotentialTemp(
+      EXPECT_NEAR(cathode_polynomial_->ComputeDOpenCircuitPotentialDTemperature(
                       concentrations_cathode_polynomial_[i], faraday_, gasconstant_),
           results_cathode_polynomial[i], tolerances_cathode_polynomial[i]);
     }
@@ -595,19 +595,19 @@ namespace
     // test member function using sample concentration values for anode materials
     for (unsigned i = 0; i < concentrations_anode_redlichkister_.size(); ++i)
     {
-      EXPECT_NEAR(anode_redlichkister_->ComputeSecondDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(anode_redlichkister_->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
                       concentrations_anode_redlichkister_[i], faraday_, frt_, detF_),
           results_anode_redlichkister[i], tolerances_anode_redlichkister[i]);
     }
     for (unsigned i = 0; i < concentrations_anode_taralov_.size(); ++i)
     {
-      EXPECT_NEAR(anode_taralov_->ComputeSecondDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(anode_taralov_->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
                       concentrations_anode_taralov_[i], faraday_, frt_, detF_),
           results_anode_taralov[i], tolerances_anode_taralov[i]);
     }
     for (unsigned i = 0; i < concentrations_anode_polynomial_.size(); ++i)
     {
-      EXPECT_NEAR(anode_polynomial_->ComputeSecondDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(anode_polynomial_->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
                       concentrations_anode_polynomial_[i], faraday_, frt_, detF_),
           results_anode_polynomial[i], tolerances_anode_polynomial[i]);
     }
@@ -629,25 +629,25 @@ namespace
     // test member function using sample concentration values for cathode materials
     for (unsigned i = 0; i < concentrations_cathode_csv_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_csv_->ComputeSecondDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_csv_->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
                       concentrations_cathode_csv_[i], faraday_, frt_, detF_),
           results_cathode_csv[i], tolerances_cathode_csv[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_redlichkister_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_redlichkister_->ComputeSecondDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_redlichkister_->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
                       concentrations_cathode_redlichkister_[i], faraday_, frt_, detF_),
           results_cathode_redlichkister[i], tolerances_cathode_redlichkister[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_taralov_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_taralov_->ComputeSecondDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_taralov_->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
                       concentrations_cathode_taralov_[i], faraday_, frt_, detF_),
           results_cathode_taralov[i], tolerances_cathode_taralov[i]);
     }
     for (unsigned i = 0; i < concentrations_cathode_polynomial_.size(); ++i)
     {
-      EXPECT_NEAR(cathode_polynomial_->ComputeSecondDerivOpenCircuitPotentialConc(
+      EXPECT_NEAR(cathode_polynomial_->ComputeD2OpenCircuitPotentialDConcentrationDConcentration(
                       concentrations_cathode_polynomial_[i], faraday_, frt_, detF_),
           results_cathode_polynomial[i], tolerances_cathode_polynomial[i]);
     }

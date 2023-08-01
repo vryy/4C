@@ -188,9 +188,7 @@ SYMMETRICPRECOND                No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 --------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Structure_Interaction_Lung

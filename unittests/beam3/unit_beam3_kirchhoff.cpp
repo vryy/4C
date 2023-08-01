@@ -12,8 +12,8 @@
 #include <Epetra_SerialComm.h>
 #include <array>
 
-#include "lib_element.H"
-#include "beam3_kirchhoff.H"
+#include "baci_lib_element.H"
+#include "baci_beam3_kirchhoff.H"
 
 const double testTolerance = 1e-14;
 
@@ -42,15 +42,15 @@ namespace
 
       // setup internal beam element parameters
       // different data layout is necessary to call this method
-      LINALG::Matrix<3, 1> coord1(true);
+      CORE::LINALG::Matrix<3, 1> coord1(true);
       coord1(0) = xrefe[0];
       coord1(1) = xrefe[1];
       coord1(2) = xrefe[2];
-      LINALG::Matrix<3, 1> coord2(true);
+      CORE::LINALG::Matrix<3, 1> coord2(true);
       coord2(0) = xrefe[3];
       coord2(1) = xrefe[4];
       coord2(2) = xrefe[5];
-      std::vector<LINALG::Matrix<3, 1>> xrefe_setup{coord1, coord2};
+      std::vector<CORE::LINALG::Matrix<3, 1>> xrefe_setup{coord1, coord2};
 
       // setup internal beam element parameters
       std::vector<double> rotrefe(9);

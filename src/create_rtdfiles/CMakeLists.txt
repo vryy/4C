@@ -1,15 +1,15 @@
 set(OBJS_CREATERTD_MAIN
     # cmake-format: sortable
-    create_rtdfiles_base.cpp
+    baci_create_rtdfiles_base.cpp
     )
-set(OBJS_CREATERTD_LIB create_rtdfiles_wrapper.cpp create_rtdfiles_utils.cpp)
+set(OBJS_CREATERTD_LIB baci_create_rtdfiles_wrapper.cpp baci_create_rtdfiles_utils.cpp)
 baci_add_library(
   create_rtdfiles
   SOURCES
   ${OBJS_CREATERTD_LIB}
   HEADERS
-  create_rtdfiles_utils.H
-  create_rtdfiles_wrapper.H
+  baci_create_rtdfiles_utils.H
+  baci_create_rtdfiles_wrapper.H
   )
 
 baci_add_dependency(create_rtdfiles config lib)

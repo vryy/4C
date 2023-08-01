@@ -6,9 +6,9 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 #include <stdexcept>
-#include "comm_utils.H"
-#include "lib_utils.H"
-#include "io_pstream.H"
+#include "baci_comm_utils.H"
+#include "baci_lib_utils.H"
+#include "baci_io_pstream.H"
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>

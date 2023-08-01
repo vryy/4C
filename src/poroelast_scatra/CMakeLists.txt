@@ -8,7 +8,6 @@ set(_poroelast_scatra_dependencies
     inpar
     io
     lib
-    linalg
     mat
     poroelast
     scatra

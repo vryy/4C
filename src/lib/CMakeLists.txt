@@ -8,7 +8,6 @@ set(_lib_dependencies
     comm
     contact_constitutivelaw
     core
-    create_rtdfiles
     elemag
     fiber
     fluid
@@ -16,7 +15,6 @@ set(_lib_dependencies
     fluid_xfluid
     inpar
     io
-    linalg
     mat
     nurbs_discret
     particle_engine

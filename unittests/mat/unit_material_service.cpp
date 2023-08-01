@@ -8,17 +8,17 @@
 
 #include <gtest/gtest.h>
 
-#include "mat_service.H"
+#include "baci_mat_service.H"
 
-#include "linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix.H"
 
-#include "unittest_utils_assertions.h"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {
   TEST(MaterialServiceTest, TestInvariantsPrincipal)
   {
-    LINALG::Matrix<3, 3> sym_tensor(false);
+    CORE::LINALG::Matrix<3, 3> sym_tensor(false);
     sym_tensor(0, 0) = 1.1;
     sym_tensor(1, 1) = 1.2;
     sym_tensor(2, 2) = 1.3;
@@ -26,10 +26,10 @@ namespace
     sym_tensor(1, 2) = sym_tensor(2, 1) = 0.02;
     sym_tensor(0, 2) = sym_tensor(2, 0) = 0.03;
 
-    LINALG::Matrix<3, 1> prinv(false);
+    CORE::LINALG::Matrix<3, 1> prinv(false);
     MAT::InvariantsPrincipal(prinv, sym_tensor);
 
-    LINALG::Matrix<3, 1> prinv_reference(false);
+    CORE::LINALG::Matrix<3, 1> prinv_reference(false);
     prinv_reference(0) = 3.5999999999999996;
     prinv_reference(1) = 4.3085999999999984;
     prinv_reference(2) = 1.7143620000000002;
@@ -39,7 +39,7 @@ namespace
 
   TEST(MaterialServiceTest, TestAddDerivInvABInvBProduct)
   {
-    LINALG::Matrix<6, 1> A(false);
+    CORE::LINALG::Matrix<6, 1> A(false);
     A(0) = 0.5;
     A(1) = 0.3;
     A(2) = 0.6;
@@ -47,7 +47,7 @@ namespace
     A(4) = 0.4;
     A(5) = 0.9;
 
-    LINALG::Matrix<6, 1> InvABInvB(false);
+    CORE::LINALG::Matrix<6, 1> InvABInvB(false);
     InvABInvB(0) = 1.72;
     InvABInvB(1) = 1.65;
     InvABInvB(2) = 1.13;
@@ -55,13 +55,13 @@ namespace
     InvABInvB(4) = 1.46;
     InvABInvB(5) = 1.23;
 
-    LINALG::Matrix<6, 6> Result(true);
+    CORE::LINALG::Matrix<6, 6> Result(true);
     double scalar = 0.5;
 
     // result_ijkl = A_ik InvABInvB_jl +  A_il InvABInvB_jk + A_jk InvABInvB_il + A_jl InvABInvB_ik
     MAT::AddDerivInvABInvBProduct(scalar, A, InvABInvB, Result);
 
-    LINALG::Matrix<6, 6> Result_reference(false);
+    CORE::LINALG::Matrix<6, 6> Result_reference(false);
     Result_reference(0, 0) = -0.86;
     Result_reference(0, 1) = -0.254;
     Result_reference(0, 2) = -1.107;

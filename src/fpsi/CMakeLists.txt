@@ -12,7 +12,6 @@ set(_fpsi_dependencies
     inpar
     io
     lib
-    linalg
     poroelast
     poroelast_scatra
     structure

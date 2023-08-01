@@ -8,7 +8,6 @@ set(_thermo_dependencies
     inpar
     io
     lib
-    linalg
     mat
     nurbs_discret
     timestepping

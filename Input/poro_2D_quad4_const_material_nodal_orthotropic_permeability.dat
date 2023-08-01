@@ -76,13 +76,10 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 1.0e-6 DENSITY 1.0e3 TYPE Darcy PERMEABILITYFUNCTION Const_Material_Nodal_Orthotropy PERMEABILITY 1e-8
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_SE                       No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   Cauchy
 STRUCT_COUPLING_STRESS          No

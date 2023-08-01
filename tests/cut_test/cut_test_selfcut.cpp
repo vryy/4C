@@ -13,13 +13,13 @@
 
 #include "cut_test_utils.H"
 
-#include "cut_side.H"
-#include "cut_meshintersection.H"
-#include "cut_tetmeshintersection.H"
-#include "cut_options.H"
-#include "cut_volumecell.H"
+#include "baci_cut_side.H"
+#include "baci_cut_meshintersection.H"
+#include "baci_cut_tetmeshintersection.H"
+#include "baci_cut_options.H"
+#include "baci_cut_volumecell.H"
 
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 void test_hex8quad4selfcut20()
 {
@@ -30,7 +30,7 @@ void test_hex8quad4selfcut20()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -57,7 +57,7 @@ void test_hex8quad4selfcut20()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -83,7 +83,7 @@ void test_hex8quad4selfcut20()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -129,7 +129,7 @@ void test_hex8quad4selfcut21()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -156,7 +156,7 @@ void test_hex8quad4selfcut21()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.6;
@@ -182,7 +182,7 @@ void test_hex8quad4selfcut21()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -228,7 +228,7 @@ void test_hex8quad4selfcut22()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -255,7 +255,7 @@ void test_hex8quad4selfcut22()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -281,7 +281,7 @@ void test_hex8quad4selfcut22()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -327,7 +327,7 @@ void test_hex8quad4selfcut23()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -354,7 +354,7 @@ void test_hex8quad4selfcut23()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -380,7 +380,7 @@ void test_hex8quad4selfcut23()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -426,7 +426,7 @@ void test_hex8quad4selfcut24()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -453,7 +453,7 @@ void test_hex8quad4selfcut24()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -479,7 +479,7 @@ void test_hex8quad4selfcut24()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -525,7 +525,7 @@ void test_hex8quad4selfcut30()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -552,7 +552,7 @@ void test_hex8quad4selfcut30()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -579,7 +579,7 @@ void test_hex8quad4selfcut30()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -605,7 +605,7 @@ void test_hex8quad4selfcut30()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -651,7 +651,7 @@ void test_hex8quad4selfcut31()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -678,7 +678,7 @@ void test_hex8quad4selfcut31()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -705,7 +705,7 @@ void test_hex8quad4selfcut31()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -731,7 +731,7 @@ void test_hex8quad4selfcut31()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -777,7 +777,7 @@ void test_hex8quad4selfcut32()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -804,7 +804,7 @@ void test_hex8quad4selfcut32()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -831,7 +831,7 @@ void test_hex8quad4selfcut32()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -857,7 +857,7 @@ void test_hex8quad4selfcut32()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -903,7 +903,7 @@ void test_hex8quad4selfcut33()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -930,7 +930,7 @@ void test_hex8quad4selfcut33()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -957,7 +957,7 @@ void test_hex8quad4selfcut33()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -983,7 +983,7 @@ void test_hex8quad4selfcut33()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1029,7 +1029,7 @@ void test_hex8quad4selfcut34()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1056,7 +1056,7 @@ void test_hex8quad4selfcut34()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1083,7 +1083,7 @@ void test_hex8quad4selfcut34()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -1109,7 +1109,7 @@ void test_hex8quad4selfcut34()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1155,7 +1155,7 @@ void test_hex8quad4selfcut35()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1182,7 +1182,7 @@ void test_hex8quad4selfcut35()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -1209,7 +1209,7 @@ void test_hex8quad4selfcut35()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -1235,7 +1235,7 @@ void test_hex8quad4selfcut35()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1281,7 +1281,7 @@ void test_hex8quad4selfcut36()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1308,7 +1308,7 @@ void test_hex8quad4selfcut36()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -1335,7 +1335,7 @@ void test_hex8quad4selfcut36()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1361,7 +1361,7 @@ void test_hex8quad4selfcut36()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1407,7 +1407,7 @@ void test_hex8quad4selfcut37()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1434,7 +1434,7 @@ void test_hex8quad4selfcut37()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -1461,7 +1461,7 @@ void test_hex8quad4selfcut37()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1487,7 +1487,7 @@ void test_hex8quad4selfcut37()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1533,7 +1533,7 @@ void test_hex8quad4selfcut38()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1560,7 +1560,7 @@ void test_hex8quad4selfcut38()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -1587,7 +1587,7 @@ void test_hex8quad4selfcut38()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -1613,7 +1613,7 @@ void test_hex8quad4selfcut38()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1659,7 +1659,7 @@ void test_hex8quad4selfcut39()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1686,7 +1686,7 @@ void test_hex8quad4selfcut39()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.0;
@@ -1713,7 +1713,7 @@ void test_hex8quad4selfcut39()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.0;
@@ -1739,7 +1739,7 @@ void test_hex8quad4selfcut39()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1785,7 +1785,7 @@ void test_hex8quad4selfcut41()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1812,7 +1812,7 @@ void test_hex8quad4selfcut41()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -1839,7 +1839,7 @@ void test_hex8quad4selfcut41()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -1866,7 +1866,7 @@ void test_hex8quad4selfcut41()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -1892,7 +1892,7 @@ void test_hex8quad4selfcut41()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -1938,7 +1938,7 @@ void test_hex8quad4selfcut42()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -1965,7 +1965,7 @@ void test_hex8quad4selfcut42()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -1992,7 +1992,7 @@ void test_hex8quad4selfcut42()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2019,7 +2019,7 @@ void test_hex8quad4selfcut42()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2045,7 +2045,7 @@ void test_hex8quad4selfcut42()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -2105,7 +2105,7 @@ void test_hex8quad4selfcut43()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -2132,7 +2132,7 @@ void test_hex8quad4selfcut43()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -2159,7 +2159,7 @@ void test_hex8quad4selfcut43()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2186,7 +2186,7 @@ void test_hex8quad4selfcut43()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2212,7 +2212,7 @@ void test_hex8quad4selfcut43()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -2258,7 +2258,7 @@ void test_hex8quad4selfcut51()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -2285,7 +2285,7 @@ void test_hex8quad4selfcut51()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2312,7 +2312,7 @@ void test_hex8quad4selfcut51()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2339,7 +2339,7 @@ void test_hex8quad4selfcut51()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2366,7 +2366,7 @@ void test_hex8quad4selfcut51()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2392,7 +2392,7 @@ void test_hex8quad4selfcut51()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -2438,7 +2438,7 @@ void test_hex8quad4selfcut52()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -2465,7 +2465,7 @@ void test_hex8quad4selfcut52()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2492,7 +2492,7 @@ void test_hex8quad4selfcut52()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2519,7 +2519,7 @@ void test_hex8quad4selfcut52()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2546,7 +2546,7 @@ void test_hex8quad4selfcut52()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2572,7 +2572,7 @@ void test_hex8quad4selfcut52()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -2618,7 +2618,7 @@ void test_hex8quad4selfcut53()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -2645,7 +2645,7 @@ void test_hex8quad4selfcut53()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2672,7 +2672,7 @@ void test_hex8quad4selfcut53()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2699,7 +2699,7 @@ void test_hex8quad4selfcut53()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2726,7 +2726,7 @@ void test_hex8quad4selfcut53()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2752,7 +2752,7 @@ void test_hex8quad4selfcut53()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -2798,7 +2798,7 @@ void test_hex8quad4selfcut61()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -2825,7 +2825,7 @@ void test_hex8quad4selfcut61()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -2852,7 +2852,7 @@ void test_hex8quad4selfcut61()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -2879,7 +2879,7 @@ void test_hex8quad4selfcut61()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2906,7 +2906,7 @@ void test_hex8quad4selfcut61()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -2933,7 +2933,7 @@ void test_hex8quad4selfcut61()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -2959,7 +2959,7 @@ void test_hex8quad4selfcut61()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -3005,7 +3005,7 @@ void test_hex8quad4selfcut62()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -3032,7 +3032,7 @@ void test_hex8quad4selfcut62()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3059,7 +3059,7 @@ void test_hex8quad4selfcut62()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -3086,7 +3086,7 @@ void test_hex8quad4selfcut62()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -3113,7 +3113,7 @@ void test_hex8quad4selfcut62()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -3140,7 +3140,7 @@ void test_hex8quad4selfcut62()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3166,7 +3166,7 @@ void test_hex8quad4selfcut62()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -3212,7 +3212,7 @@ void test_hex8quad4selfcut63()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -3239,7 +3239,7 @@ void test_hex8quad4selfcut63()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3266,7 +3266,7 @@ void test_hex8quad4selfcut63()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -3293,7 +3293,7 @@ void test_hex8quad4selfcut63()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -3320,7 +3320,7 @@ void test_hex8quad4selfcut63()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3347,7 +3347,7 @@ void test_hex8quad4selfcut63()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -3373,7 +3373,7 @@ void test_hex8quad4selfcut63()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -3419,7 +3419,7 @@ void test_hex8quad4selfcut64()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -3446,7 +3446,7 @@ void test_hex8quad4selfcut64()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3473,7 +3473,7 @@ void test_hex8quad4selfcut64()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -3500,7 +3500,7 @@ void test_hex8quad4selfcut64()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -3527,7 +3527,7 @@ void test_hex8quad4selfcut64()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -3554,7 +3554,7 @@ void test_hex8quad4selfcut64()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3580,7 +3580,7 @@ void test_hex8quad4selfcut64()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -3626,7 +3626,7 @@ void test_hex8quad4selfcut65()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -3653,7 +3653,7 @@ void test_hex8quad4selfcut65()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3680,7 +3680,7 @@ void test_hex8quad4selfcut65()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -3707,7 +3707,7 @@ void test_hex8quad4selfcut65()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -3734,7 +3734,7 @@ void test_hex8quad4selfcut65()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -3761,7 +3761,7 @@ void test_hex8quad4selfcut65()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3787,7 +3787,7 @@ void test_hex8quad4selfcut65()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -3833,7 +3833,7 @@ void test_hex8quad4selfcut66()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -3860,7 +3860,7 @@ void test_hex8quad4selfcut66()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3887,7 +3887,7 @@ void test_hex8quad4selfcut66()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -3914,7 +3914,7 @@ void test_hex8quad4selfcut66()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -3941,7 +3941,7 @@ void test_hex8quad4selfcut66()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -3968,7 +3968,7 @@ void test_hex8quad4selfcut66()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -3994,7 +3994,7 @@ void test_hex8quad4selfcut66()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -4040,7 +4040,7 @@ void test_hex8quad4selfcut71()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -4067,7 +4067,7 @@ void test_hex8quad4selfcut71()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.3;
@@ -4094,7 +4094,7 @@ void test_hex8quad4selfcut71()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -4121,7 +4121,7 @@ void test_hex8quad4selfcut71()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.4;
@@ -4148,7 +4148,7 @@ void test_hex8quad4selfcut71()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.7;
@@ -4175,7 +4175,7 @@ void test_hex8quad4selfcut71()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.6;
@@ -4202,7 +4202,7 @@ void test_hex8quad4selfcut71()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -4228,7 +4228,7 @@ void test_hex8quad4selfcut71()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -4313,7 +4313,7 @@ void test_hex8quad4selfcut72()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -4340,7 +4340,7 @@ void test_hex8quad4selfcut72()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.3;
@@ -4367,7 +4367,7 @@ void test_hex8quad4selfcut72()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -4394,7 +4394,7 @@ void test_hex8quad4selfcut72()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.4;
@@ -4421,7 +4421,7 @@ void test_hex8quad4selfcut72()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.7;
@@ -4448,7 +4448,7 @@ void test_hex8quad4selfcut72()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.6;
@@ -4475,7 +4475,7 @@ void test_hex8quad4selfcut72()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -4501,7 +4501,7 @@ void test_hex8quad4selfcut72()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -4547,7 +4547,7 @@ void test_hex8quad4selfcut81()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -4574,7 +4574,7 @@ void test_hex8quad4selfcut81()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -4601,7 +4601,7 @@ void test_hex8quad4selfcut81()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -4628,7 +4628,7 @@ void test_hex8quad4selfcut81()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -4655,7 +4655,7 @@ void test_hex8quad4selfcut81()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.45;
@@ -4682,7 +4682,7 @@ void test_hex8quad4selfcut81()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.95;
@@ -4709,7 +4709,7 @@ void test_hex8quad4selfcut81()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.95;
@@ -4736,7 +4736,7 @@ void test_hex8quad4selfcut81()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -4762,7 +4762,7 @@ void test_hex8quad4selfcut81()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -4808,7 +4808,7 @@ void test_hex8quad4selfcut82()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -4835,7 +4835,7 @@ void test_hex8quad4selfcut82()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -4862,7 +4862,7 @@ void test_hex8quad4selfcut82()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -4889,7 +4889,7 @@ void test_hex8quad4selfcut82()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -4916,7 +4916,7 @@ void test_hex8quad4selfcut82()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.45;
@@ -4943,7 +4943,7 @@ void test_hex8quad4selfcut82()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.95;
@@ -4970,7 +4970,7 @@ void test_hex8quad4selfcut82()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.95;
@@ -4997,7 +4997,7 @@ void test_hex8quad4selfcut82()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -5023,7 +5023,7 @@ void test_hex8quad4selfcut82()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -5069,7 +5069,7 @@ void test_hex8quad4selfcut83()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -5096,7 +5096,7 @@ void test_hex8quad4selfcut83()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5123,7 +5123,7 @@ void test_hex8quad4selfcut83()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -5150,7 +5150,7 @@ void test_hex8quad4selfcut83()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5177,7 +5177,7 @@ void test_hex8quad4selfcut83()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5204,7 +5204,7 @@ void test_hex8quad4selfcut83()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5232,7 +5232,7 @@ void test_hex8quad4selfcut83()
 
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -5259,7 +5259,7 @@ void test_hex8quad4selfcut83()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5285,7 +5285,7 @@ void test_hex8quad4selfcut83()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -5331,7 +5331,7 @@ void test_hex8quad4selfcut84()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -5358,7 +5358,7 @@ void test_hex8quad4selfcut84()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5385,7 +5385,7 @@ void test_hex8quad4selfcut84()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -5412,7 +5412,7 @@ void test_hex8quad4selfcut84()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5439,7 +5439,7 @@ void test_hex8quad4selfcut84()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5466,7 +5466,7 @@ void test_hex8quad4selfcut84()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5494,7 +5494,7 @@ void test_hex8quad4selfcut84()
 
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -5521,7 +5521,7 @@ void test_hex8quad4selfcut84()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5547,7 +5547,7 @@ void test_hex8quad4selfcut84()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -5593,7 +5593,7 @@ void test_hex8quad4selfcut85()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -5620,7 +5620,7 @@ void test_hex8quad4selfcut85()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5647,7 +5647,7 @@ void test_hex8quad4selfcut85()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -5674,7 +5674,7 @@ void test_hex8quad4selfcut85()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5701,7 +5701,7 @@ void test_hex8quad4selfcut85()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5728,7 +5728,7 @@ void test_hex8quad4selfcut85()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5756,7 +5756,7 @@ void test_hex8quad4selfcut85()
 
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5783,7 +5783,7 @@ void test_hex8quad4selfcut85()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -5809,7 +5809,7 @@ void test_hex8quad4selfcut85()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -5855,7 +5855,7 @@ void test_hex8quad4selfcut86()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -5882,7 +5882,7 @@ void test_hex8quad4selfcut86()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -5909,7 +5909,7 @@ void test_hex8quad4selfcut86()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -5936,7 +5936,7 @@ void test_hex8quad4selfcut86()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5963,7 +5963,7 @@ void test_hex8quad4selfcut86()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -5990,7 +5990,7 @@ void test_hex8quad4selfcut86()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -6018,7 +6018,7 @@ void test_hex8quad4selfcut86()
 
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -6045,7 +6045,7 @@ void test_hex8quad4selfcut86()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -6071,7 +6071,7 @@ void test_hex8quad4selfcut86()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -6117,7 +6117,7 @@ void test_hex8quad4selfcut91()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -6144,7 +6144,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -6171,7 +6171,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -6198,7 +6198,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -6225,7 +6225,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.3;
@@ -6252,7 +6252,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.4;
@@ -6279,7 +6279,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.6;
@@ -6306,7 +6306,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.6;
@@ -6333,7 +6333,7 @@ void test_hex8quad4selfcut91()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -6359,7 +6359,7 @@ void test_hex8quad4selfcut91()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -6405,7 +6405,7 @@ void test_hex8quad4selfcut92()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.2;
     quad4_xyze(1, 0) = -0.2;
@@ -6432,7 +6432,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.2;
@@ -6459,7 +6459,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.5;
@@ -6486,7 +6486,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.8;
@@ -6513,7 +6513,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.3;
@@ -6540,7 +6540,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.4;
@@ -6567,7 +6567,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.6;
@@ -6594,7 +6594,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 0.6;
@@ -6621,7 +6621,7 @@ void test_hex8quad4selfcut92()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = -0.2;
     quad4_xyze(1, 0) = 1.2;
@@ -6647,7 +6647,7 @@ void test_hex8quad4selfcut92()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
   {
     hex8_xyze(0, 0) = 1.0;
     hex8_xyze(1, 0) = 1.0;
@@ -6697,7 +6697,7 @@ void test_hex8quad4alignedEdges()
   int sidecount = 0;
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.5;  // 0.8;
     quad4_xyze(1, 0) = -0.1;
@@ -6724,7 +6724,7 @@ void test_hex8quad4alignedEdges()
   }
 
   {
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     quad4_xyze(0, 0) = 0.5;
     quad4_xyze(1, 0) = 0.5;
@@ -6750,7 +6750,7 @@ void test_hex8quad4alignedEdges()
     intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
   }
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.0;
   hex8_xyze(1, 0) = 1.0;

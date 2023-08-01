@@ -6,11 +6,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include "cut_options.H"
-#include "cut_mesh.H"
-#include "cut_element.H"
+#include "baci_cut_options.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_element.H"
 #include "cut_test_utils.H"
-#include "cut_triangulateFacet.H"
+#include "baci_cut_triangulateFacet.H"
 
 void check4nodedInline(
     CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE::GEO::CUT::Side* s);
@@ -91,7 +91,7 @@ void checkTemporary2(
 CORE::GEO::CUT::Side* Create_quad4(
     CORE::GEO::CUT::Mesh& mesh, double x, double dx, double dz, bool reverse = false)
 {
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = x - dx;
   xyze(1, 0) = -0.5;

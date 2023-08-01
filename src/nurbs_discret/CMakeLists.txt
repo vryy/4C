@@ -5,6 +5,5 @@ set(_nurbs_discret_dependencies
     core
     io
     lib
-    linalg
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_nurbs_discret_dependencies})

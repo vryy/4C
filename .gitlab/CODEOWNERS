@@ -182,8 +182,6 @@ inpar/inpar_solver*        @baci/team_solvers
 inpar/inpar_validcontactconstitutivelaw*            @baci/team_contact
 inpar/inpar_validmaterials*                         @baci/team_material
 
-inv_analysis/              @baci/team_queens
-
 io/                        @baci/team_input @baci/team_output
 
 levelset/                  @baci/team_fluid

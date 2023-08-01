@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "cut_options.H"
-#include "cut_mesh.H"
-#include "cut_intersection.H"
-#include "cut_side.H"
+#include "baci_cut_options.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_intersection.H"
+#include "baci_cut_side.H"
 #include "cut_test_utils.H"
 
 void test_unit_intersection_touch()
@@ -22,7 +22,7 @@ void test_unit_intersection_touch()
     options.Init_for_Cuttests();  // use cln
     CORE::GEO::CUT::Mesh mesh(options, x);
 
-    Epetra_SerialDenseMatrix xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
     xyze(0, 0) = 0;
     xyze(1, 0) = 0;

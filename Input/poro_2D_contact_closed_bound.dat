@@ -22,13 +22,11 @@ SHAPEFCT                        Polynomial
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
 STRUCT_STRESS                   No
 STRUCT_COUPLING_STRESS          No
 STRUCT_STRAIN                   No
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
-FLUID_SOL                       Yes
 FILESTEPS                       1000
 STDOUTEVRY                      1
 WRITE_TO_SCREEN                 Yes

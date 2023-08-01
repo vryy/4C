@@ -28,7 +28,7 @@ using modern software design and is parallelized with MPI for distributed memory
 
 ### Set-up LRZ GitLab account
 
-1. Register an account on [LRZ GitLab](www.gitlab.lrz.de).
+1. Register an account on [LRZ GitLab](https://gitlab.lrz.de/).
 
     **Important:** Choose a recognizable user name. It is recommended to set it to: first letter of first name followed by last name, all lowercase, e.g., Max Mustermann -> mmustermann.
 
@@ -100,7 +100,7 @@ Our Wiki provides a [detailed setup guide for your local git configuration](http
 
 ### Set-up the Environment
 
-BACI heavily relies on the [Trilinos project](www.trilinos.org).
+BACI heavily relies on the [Trilinos project](https://trilinos.github.io).
 
 Some further third party libraries (TPLs) are mandatory, e.g.
 - ParMETIS (recommended version: 4.0.3)
@@ -115,7 +115,9 @@ and some are optional, e.g.
 - [MIRCO](https://github.com/imcs-compsim/MIRCO/)
 
 Often, a pre-compiled version of Trilinos and set of TPLs is available at your institute.
-Look into the build configuration files in ```buildconfig/``` or ask your colleagues for further information.
+Look into the CMake presets in `presets/` or ask your colleagues for further information.
+
+Some helper scripts to install these TPLs can be found in `dependencies/`.
 
 Additional information can be found [here](https://gitlab.lrz.de/baci/baci/-/wikis/External-dependencies).
 
@@ -155,7 +157,7 @@ A preset name needs to be passed to cmake via the command line argument `--prese
 
 More information about the cmake presets can be found [in the wiki](https://gitlab.lrz.de/baci/baci/-/wikis/CMake-Presets).
 
-**Note:** Make sure to use at least cmake 3.25. Install it in your path or use the ones provided on your institute's server.
+**Note:** Make sure to use at least CMake 3.25. Install it in your path or use the ones provided on your institute's server.
 
 #### Build
 

@@ -7,7 +7,6 @@ set(_spring3_dependencies
     core
     inpar
     lib
-    linalg
     mat
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_spring3_dependencies})

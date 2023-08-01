@@ -1,0 +1,8 @@
+# for readthedocs:
+pytest
+docutils==0.18.1
+sphinx==6.2.1
+sphinx-multibuild
+sphinx-rtd-theme
+myst-parser
+nbsphinx

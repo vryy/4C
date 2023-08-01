@@ -8,16 +8,16 @@
 
 #include <gtest/gtest.h>
 
-#include "mat_elasthyper_service.H"
-#include "mat_service.H"
-#include "mat_par_material.H"
+#include "baci_mat_elasthyper_service.H"
+#include "baci_mat_service.H"
+#include "baci_mat_par_material.H"
 
-#include "matelast_coupanisoexpo.H"
-#include "matelast_isoneohooke.H"
+#include "baci_matelast_coupanisoexpo.H"
+#include "baci_matelast_isoneohooke.H"
 
-#include "linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix.H"
 
-#include "unittest_utils_assertions.h"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {
@@ -31,20 +31,20 @@ namespace
       prinv_(2) = 1.05;
     }
 
-    LINALG::Matrix<3, 1> prinv_;
+    CORE::LINALG::Matrix<3, 1> prinv_;
   };
 
   TEST_F(ElastHyperServiceTest, TestCalculateGammaDelta)
   {
     // required inputs to test the method
     // first derivative of strain energy function w.r.t. principle invariants
-    LINALG::Matrix<3, 1> dPI;
+    CORE::LINALG::Matrix<3, 1> dPI;
     dPI(0) = 0.536;
     dPI(1) = 0.681;
     dPI(2) = 3.981;
 
     // second derivative of strain energy function w.r.t. principle invariants
-    LINALG::Matrix<6, 1> ddPII;
+    CORE::LINALG::Matrix<6, 1> ddPII;
     ddPII(0) = 0.153;
     ddPII(1) = 0.861;
     ddPII(2) = 2.964;
@@ -54,18 +54,18 @@ namespace
 
     // factors for stress calculation as in Holzapfel: Nonlinear Solid Mechanics, 2000:
     // p. 216 (6.32)
-    LINALG::Matrix<3, 1> gamma(true);
+    CORE::LINALG::Matrix<3, 1> gamma(true);
     // reference solutions
-    LINALG::Matrix<3, 1> gamma_ref;
+    CORE::LINALG::Matrix<3, 1> gamma_ref;
     gamma_ref(0) = 5.294200000000001;
     gamma_ref(1) = -1.362;
     gamma_ref(2) = 8.360099999999999;
 
     // factors for calculation of elasticity tensor as in Holzapfel: Nonlinear Solid Mechanics,
     // 2000: p. 261 (6.194)
-    LINALG::Matrix<8, 1> delta(true);
+    CORE::LINALG::Matrix<8, 1> delta(true);
     // reference solutions
-    LINALG::Matrix<8, 1> delta_ref;
+    CORE::LINALG::Matrix<8, 1> delta_ref;
     delta_ref(0) = 125.31604;
     delta_ref(1) = -25.0124;
     delta_ref(2) = 23.03238;
@@ -84,7 +84,7 @@ namespace
   TEST_F(ElastHyperServiceTest, TestEvaluateRightCauchyGreenStrainLikeVoigt)
   {
     // Green-Lagrange tensor in strain-like voigt notation as input
-    LINALG::Matrix<6, 1> E_VoigtStrain;
+    CORE::LINALG::Matrix<6, 1> E_VoigtStrain;
     E_VoigtStrain(0, 0) = 0.1;
     E_VoigtStrain(1, 0) = 0.2;
     E_VoigtStrain(2, 0) = 0.3;
@@ -92,9 +92,9 @@ namespace
     E_VoigtStrain(4, 0) = 0.02;
     E_VoigtStrain(5, 0) = 0.03;
 
-    LINALG::Matrix<6, 1> C_VoigtStrain(true);
+    CORE::LINALG::Matrix<6, 1> C_VoigtStrain(true);
     // set up reference solution for Cauchy-Green tensor in strain-like voigt notation
-    LINALG::Matrix<6, 1> C_VoigtStrain_ref(true);
+    CORE::LINALG::Matrix<6, 1> C_VoigtStrain_ref(true);
     C_VoigtStrain_ref(0) = 1.2;
     C_VoigtStrain_ref(1) = 1.4;
     C_VoigtStrain_ref(2) = 1.6;
@@ -129,17 +129,17 @@ namespace
     MAT::ElastHyperProperties(potsum, properties);
 
     // first derivative of strain energy function w.r.t. principle invariants
-    LINALG::Matrix<3, 1> dPI(true);
+    CORE::LINALG::Matrix<3, 1> dPI(true);
     // reference solutions
-    LINALG::Matrix<3, 1> dPI_ref;
+    CORE::LINALG::Matrix<3, 1> dPI_ref;
     dPI_ref(0) = 0.639514;
     dPI_ref(1) = 0.0;
     dPI_ref(2) = -0.629363;
 
     // second derivative of strain energy function w.r.t. principle invariants
-    LINALG::Matrix<6, 1> ddPII(true);
+    CORE::LINALG::Matrix<6, 1> ddPII(true);
     // reference solutions
-    LINALG::Matrix<6, 1> ddPII_ref;
+    CORE::LINALG::Matrix<6, 1> ddPII_ref;
     ddPII_ref(0) = 0.0;
     ddPII_ref(1) = 0.0;
     ddPII_ref(2) = 0.799191;

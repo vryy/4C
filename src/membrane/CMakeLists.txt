@@ -5,7 +5,6 @@ set(_membrane_dependencies
     core
     inpar
     lib
-    linalg
     mat
     structure_new
     thermo

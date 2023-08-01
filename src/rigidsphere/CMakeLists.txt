@@ -6,7 +6,6 @@ set(_rigidsphere_dependencies
     core
     inpar
     lib
-    linalg
     mat
     structure_new
     )

@@ -11,7 +11,6 @@ set(_wear_dependencies
     fsi
     inpar
     lib
-    linalg
     mortar
     nurbs_discret
     so3

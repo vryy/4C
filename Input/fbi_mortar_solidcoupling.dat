@@ -75,9 +75,7 @@ OUTPUT_BIN                            Yes
 STRUCT_ELE                            No
 STRUCT_DISP                           No
 STRUCT_STRESS                         No
-FLUID_SOL                             Yes
 FLUID_STRESS                          Yes
-FLUID_VIS                             Yes
 FILESTEPS                             1000
 -------------------------------------------------------------------FLUID DYNAMIC
 CALCERROR                             no

@@ -7,17 +7,18 @@
 *----------------------------------------------------------------------*/
 
 #include "cut_test_utils.H"
-#include "cut_mesh.H"
-#include "cut_element.H"
-#include "cut_volumecell.H"
-#include "cut_meshintersection.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_element.H"
+#include "baci_cut_volumecell.H"
+#include "baci_cut_meshintersection.H"
 
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 int numnode;
 int numele;
 
-CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_hex8(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(8);
@@ -30,7 +31,8 @@ CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDe
   return mesh.CreateHex8(numele++, nids);
 }
 
-CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_tet4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -43,7 +45,8 @@ CORE::GEO::CUT::Element* create_tet4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDe
   return mesh.CreateTet4(numele++, nids);
 }
 
-CORE::GEO::CUT::Element* create_wedge6(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_wedge6(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(6);
@@ -56,7 +59,8 @@ CORE::GEO::CUT::Element* create_wedge6(CORE::GEO::CUT::Mesh& mesh, Epetra_Serial
   return mesh.CreateWedge6(numele++, nids);
 }
 
-CORE::GEO::CUT::Element* create_pyramid5(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Element* create_pyramid5(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(5);
@@ -69,7 +73,8 @@ CORE::GEO::CUT::Element* create_pyramid5(CORE::GEO::CUT::Mesh& mesh, Epetra_Seri
   return mesh.CreatePyramid5(numele++, nids);
 }
 
-CORE::GEO::CUT::Side* create_quad4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze)
+CORE::GEO::CUT::Side* create_quad4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze)
 {
   std::vector<int> nids;
   nids.reserve(4);
@@ -82,7 +87,7 @@ CORE::GEO::CUT::Side* create_quad4(CORE::GEO::CUT::Mesh& mesh, Epetra_SerialDens
   return mesh.CreateQuad4Side(numele++, nids);
 }
 
-void create_hex8(Epetra_SerialDenseMatrix& xyze, double dx, double dy, double dz)
+void create_hex8(CORE::LINALG::SerialDenseMatrix& xyze, double dx, double dy, double dz)
 {
   xyze(0, 0) = 0;
   xyze(1, 0) = 0;
@@ -126,7 +131,7 @@ void create_hex8(Epetra_SerialDenseMatrix& xyze, double dx, double dy, double dz
 
 CORE::GEO::CUT::Element* create_hex8(CORE::GEO::CUT::Mesh& mesh, double dx, double dy, double dz)
 {
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
   create_hex8(xyze, dx, dy, dz);
   return create_hex8(mesh, xyze);
 }
@@ -372,73 +377,73 @@ SimpleWrapper::SimpleWrapper() : side_count_(0)
 
 SimpleWrapper::~SimpleWrapper() { delete mesh_; }
 
-void SimpleWrapper::CreateHex8(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateHex8(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElement(DRT::Element::hex8, xyze);
 }
 
-void SimpleWrapper::CreateTet4(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateTet4(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElement(DRT::Element::tet4, xyze);
 }
 
-void SimpleWrapper::CreatePyramid5(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreatePyramid5(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElement(DRT::Element::pyramid5, xyze);
 }
 
-void SimpleWrapper::CreateWedge6(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateWedge6(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElement(DRT::Element::wedge6, xyze);
 }
 
-void SimpleWrapper::CreateHex8Sides(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateHex8Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElementSides(DRT::Element::hex8, xyze);
 }
 
-void SimpleWrapper::CreateTet4Sides(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateTet4Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElementSides(DRT::Element::tet4, xyze);
 }
 
-void SimpleWrapper::CreatePyramid5Sides(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreatePyramid5Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElementSides(DRT::Element::pyramid5, xyze);
 }
 
-void SimpleWrapper::CreateWedge6Sides(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateWedge6Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateElementSides(DRT::Element::wedge6, xyze);
 }
 
-void SimpleWrapper::CreateTri3(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateTri3(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateSide(DRT::Element::tri3, xyze);
 }
 
-void SimpleWrapper::CreateQuad4(const Epetra_SerialDenseMatrix& xyze)
+void SimpleWrapper::CreateQuad4(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   CreateSide(DRT::Element::quad4, xyze);
 }
 
 void SimpleWrapper::CreateHex8(double dx, double dy, double dz)
 {
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
   create_hex8(xyze, dx, dy, dz);
   CreateHex8(xyze);
 }
 
 void SimpleWrapper::CreateHex8Sides(double dx, double dy, double dz)
 {
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
   create_hex8(xyze, dx, dy, dz);
   CreateHex8Sides(xyze);
 }
 
 void SimpleWrapper::CreateTet4Sides()
 {
-  Epetra_SerialDenseMatrix xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 4);
 
   xyze(0, 0) = 2;
   xyze(1, 0) = 0;
@@ -476,7 +481,7 @@ void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
       coord[1] = x * sqrt2 + y * sqrt2 + 0.5;
       coord[2] = 0.5;
 
-      GetId(LINALG::Matrix<3, 1>(coord, true), side_points_);
+      GetId(CORE::LINALG::Matrix<3, 1>(coord, true), side_points_);
     }
   }
 
@@ -491,10 +496,10 @@ void SimpleWrapper::CreateQuad4Mesh(int rows, int cols)
       nids.push_back(i + (j + 1) * (rows + 1) + 1);
       nids.push_back(i + (j + 1) * (rows + 1));
 
-      Epetra_SerialDenseMatrix xyze(3, 4);
+      CORE::LINALG::SerialDenseMatrix xyze(3, 4);
       for (int l = 0; l < 4; ++l)
       {
-        LINALG::Matrix<3, 1>& x = side_points_[nids[l]];
+        CORE::LINALG::Matrix<3, 1>& x = side_points_[nids[l]];
         std::copy(x.A(), x.A() + 3, &xyze(0, l));
       }
       CreateQuad4(xyze);
@@ -522,16 +527,16 @@ void SimpleWrapper::CutTest_Cut(bool include_inner, bool do_Cut_Positions_Dofset
 }
 
 void SimpleWrapper::CreateElement(
-    DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze)
+    DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   int& id = element_count_[distype];
   id += 1;
 
   std::vector<int> nids;
-  nids.reserve(xyze.N());
-  for (int i = 0; i < xyze.N(); ++i)
+  nids.reserve(xyze.numCols());
+  for (int i = 0; i < xyze.numCols(); ++i)
   {
-    LINALG::Matrix<3, 1> x(&xyze(0, i));
+    CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
     nids.push_back(GetId(x, element_points_));
   }
 
@@ -539,7 +544,7 @@ void SimpleWrapper::CreateElement(
 }
 
 void SimpleWrapper::CreateElementSides(
-    DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze)
+    DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   //   int & id = side_count_[distype];
   //   id += 1;
@@ -548,7 +553,7 @@ void SimpleWrapper::CreateElementSides(
   {
     case DRT::Element::hex8:
     {
-      Epetra_SerialDenseMatrix side_xyze(3, 4);
+      CORE::LINALG::SerialDenseMatrix side_xyze(3, 4);
       for (int i = 0; i < 6; ++i)
       {
         for (int j = 0; j < 4; ++j)
@@ -562,7 +567,7 @@ void SimpleWrapper::CreateElementSides(
     }
     case DRT::Element::tet4:
     {
-      Epetra_SerialDenseMatrix side_xyze(3, 3);
+      CORE::LINALG::SerialDenseMatrix side_xyze(3, 3);
       for (int i = 0; i < 4; ++i)
       {
         for (int j = 0; j < 3; ++j)
@@ -576,8 +581,8 @@ void SimpleWrapper::CreateElementSides(
     }
     case DRT::Element::pyramid5:
     {
-      Epetra_SerialDenseMatrix quad4_side_xyze(3, 4);
-      Epetra_SerialDenseMatrix tri3_side_xyze(3, 3);
+      CORE::LINALG::SerialDenseMatrix quad4_side_xyze(3, 4);
+      CORE::LINALG::SerialDenseMatrix tri3_side_xyze(3, 3);
       for (int i = 0; i < 4; ++i)
       {
         for (int j = 0; j < 3; ++j)
@@ -600,8 +605,8 @@ void SimpleWrapper::CreateElementSides(
     }
     case DRT::Element::wedge6:
     {
-      Epetra_SerialDenseMatrix quad4_side_xyze(3, 4);
-      Epetra_SerialDenseMatrix tri3_side_xyze(3, 3);
+      CORE::LINALG::SerialDenseMatrix quad4_side_xyze(3, 4);
+      CORE::LINALG::SerialDenseMatrix tri3_side_xyze(3, 3);
       for (int i = 0; i < 2; ++i)
       {
         for (int j = 0; j < 3; ++j)
@@ -628,29 +633,30 @@ void SimpleWrapper::CreateElementSides(
 }
 
 void SimpleWrapper::CreateSide(
-    DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze)
+    DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze)
 {
   // int & id = side_count_[distype];
   int& id = side_count_;
   id += 1;
 
   std::vector<int> nids;
-  nids.reserve(xyze.N());
-  for (int i = 0; i < xyze.N(); ++i)
+  nids.reserve(xyze.numCols());
+  for (int i = 0; i < xyze.numCols(); ++i)
   {
-    LINALG::Matrix<3, 1> x(&xyze(0, i));
+    CORE::LINALG::Matrix<3, 1> x(&xyze(0, i));
     nids.push_back(GetId(x, side_points_));
   }
 
   mesh_->AddCutSide(id, nids, xyze, distype);
 }
 
-int SimpleWrapper::GetId(const LINALG::Matrix<3, 1>& x, std::vector<LINALG::Matrix<3, 1>>& points)
+int SimpleWrapper::GetId(
+    const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points)
 {
   unsigned size = points.size();
   for (unsigned i = 0; i < size; ++i)
   {
-    LINALG::Matrix<3, 1> p = points[i];
+    CORE::LINALG::Matrix<3, 1> p = points[i];
     p.Update(-1, x, 1);
     if (p.Norm2() < 1e-13)
     {

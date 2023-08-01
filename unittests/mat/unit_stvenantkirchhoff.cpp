@@ -8,10 +8,10 @@
 
 #include <gtest/gtest.h>
 
-#include "mat_par_material.H"
-#include "mat_stvenantkirchhoff.H"
+#include "baci_mat_par_material.H"
+#include "baci_mat_stvenantkirchhoff.H"
 
-#include "unittest_utils_assertions.h"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {
@@ -64,42 +64,42 @@ namespace
   TEST_F(StVenantKirchhoffTest, TestEvaluateEpetraSerialDenseMatrix)
   {
     // Input strain
-    const Epetra_SerialDenseVector input_glstrain(Copy, input_glstrain_.data(), 6);
+    const CORE::LINALG::SerialDenseVector input_glstrain(Teuchos::Copy, input_glstrain_.data(), 6);
 
     // Resulting material stiffness matrix
-    Teuchos::RCP<Epetra_SerialDenseMatrix> result_cmat =
-        Teuchos::rcp(new Epetra_SerialDenseMatrix(6, 6));
+    Teuchos::RCP<CORE::LINALG::SerialDenseMatrix> result_cmat =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(6, 6));
 
     // Resulting stress
-    Teuchos::RCP<Epetra_SerialDenseVector> result_stress =
-        Teuchos::rcp(new Epetra_SerialDenseVector(6));
+    Teuchos::RCP<CORE::LINALG::SerialDenseVector> result_stress =
+        Teuchos::rcp(new CORE::LINALG::SerialDenseVector(6));
 
     // Call evaluate function with test strain
     stvenantkirchhoff_->Evaluate(&input_glstrain, result_cmat.get(), result_stress.get());
 
     // Test member function results using reference stress values
-    BACI_EXPECT_NEAR(result_stress->Values(), ref_stress_.data(), 1.0e-4);
+    BACI_EXPECT_ITERABLE_NEAR(result_stress->values(), ref_stress_.data(), 6, 1.0e-4);
   }
 
   TEST_F(StVenantKirchhoffTest, TestEvaluateLinalgMatrix)
   {
     // Resulting stress
-    LINALG::Matrix<6, 1> result_stress(true);
+    CORE::LINALG::Matrix<6, 1> result_stress(true);
 
     // Resulting material stiffness matrix
-    LINALG::Matrix<6, 6> result_cmat(true);
+    CORE::LINALG::Matrix<6, 6> result_cmat(true);
 
     // Input deformation gradient, which is not used here
-    LINALG::Matrix<3, 3> defgrad(true);
+    CORE::LINALG::Matrix<3, 3> defgrad(true);
 
     // ParameterList, also not used here
     Teuchos::ParameterList paras;
 
     // Input strain
-    const LINALG::Matrix<6, 1> input_strain(input_glstrain_.data(), false);
+    const CORE::LINALG::Matrix<6, 1> input_strain(input_glstrain_.data(), false);
 
     // Reference stress
-    const LINALG::Matrix<6, 1> ref_stress(ref_stress_.data(), false);
+    const CORE::LINALG::Matrix<6, 1> ref_stress(ref_stress_.data(), false);
 
     // Call evaluate function with test strain
     stvenantkirchhoff_->Evaluate(
@@ -115,7 +115,7 @@ namespace
     const double ref_strain_energy = 908.6538;
 
     // Input strain
-    const LINALG::Matrix<6, 1> test_glstrain(input_glstrain_.data(), false);
+    const CORE::LINALG::Matrix<6, 1> test_glstrain(input_glstrain_.data(), false);
 
     // result strain energy
     double result_psi;

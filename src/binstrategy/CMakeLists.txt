@@ -10,7 +10,6 @@ set(_binstrategy_dependencies
     inpar
     io
     lib
-    linalg
     mortar
     rebalance
     rigidsphere

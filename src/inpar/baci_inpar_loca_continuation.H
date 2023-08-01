@@ -1,0 +1,43 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief Input parameters for LOCA continuation
+
+
+\level 3
+
+ */
+/*----------------------------------------------------------------------*/
+
+/*
+ * inpar_loca_continuation.H
+ *
+ *  Created on: Nov 20, 2015
+ *      Author: hiermeier
+ */
+
+#ifndef BACI_INPAR_LOCA_CONTINUATION_H
+#define BACI_INPAR_LOCA_CONTINUATION_H
+
+#include <Teuchos_RCP.hpp>
+
+// forward declaration
+namespace Teuchos
+{
+  class ParameterList;
+}
+
+namespace INPAR
+{
+  namespace LOCA
+  {
+    //! Set valid loca continuation parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+    void SetValidPredictorParams(Teuchos::ParameterList& predictor);
+
+    void SetValidBorderedSolverMethod(Teuchos::ParameterList& list);
+  }  // namespace LOCA
+}  // namespace INPAR
+
+
+#endif  // INPAR_LOCA_CONTINUATION_H

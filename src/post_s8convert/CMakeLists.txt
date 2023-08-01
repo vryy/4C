@@ -1,6 +1,6 @@
 set(OBJS_POST_S8CONVERT
     # cmake-format: sortable
-    post_s8convert.cpp
+    baci_post_s8convert.cpp
     )
 
 add_executable(post_s8convert EXCLUDE_FROM_ALL ${OBJS_POST_S8CONVERT})

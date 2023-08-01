@@ -14,7 +14,6 @@ set(_module_registry_dependencies
     elemag
     fluid_ele
     immersed_problem
-    inv_analysis
     lubrication_ele
     mat
     membrane

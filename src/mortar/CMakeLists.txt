@@ -8,7 +8,6 @@ set(_mortar_dependencies
     inpar
     io
     lib
-    linalg
     mat
     nurbs_discret
     poroelast

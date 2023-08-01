@@ -1,0 +1,135 @@
+/*-----------------------------------------------------------*/
+/*! \file
+
+\brief time-dependent subgrid scale functionality
+
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef BACI_FLUID_ELE_TDS_H
+#define BACI_FLUID_ELE_TDS_H
+
+#include <Teuchos_RCP.hpp>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_lib_parobject.H"
+#include "baci_lib_parobjectfactory.H"
+
+
+namespace FLD
+{
+  class TDSEleDataType : public DRT::ParObjectType
+  {
+    // friend class ParObjectFactory;
+   public:
+    static TDSEleDataType& Instance() { return instance_; };
+
+    /// Create ParObject from packed data
+    virtual DRT::ParObject* Create(const std::vector<char>& data) { return NULL; }
+
+    /// internal name of this ParObjectType.
+    virtual std::string Name() const { return "TDSEleData"; }
+
+   private:
+    static TDSEleDataType instance_;
+  };
+
+
+
+  class TDSEleData : public DRT::ParObject
+  {
+   public:
+    /*!
+    \brief standard constructor
+    */
+    TDSEleData();
+
+    /*!
+    \brief Pack this class so it can be communicated
+
+    \ref Pack and \ref Unpack are used to communicate this class object
+
+    */
+    virtual void Pack(DRT::PackBuffer& data) const;
+
+    /*!
+    \brief Unpack data from a char vector into this class
+
+    \ref Pack and \ref Unpack are used to communicate this class object
+    */
+    virtual void Unpack(const std::vector<char>& data);
+
+    /*!
+    \brief Return unique ParObject id
+
+    every class implementing ParObject needs a unique id defined at the
+    top of this file.
+    */
+    virtual int UniqueParObjectId() const
+    {
+      return FLD::TDSEleDataType::Instance().UniqueParObjectId();
+    }
+
+    /*!
+    \brief Destructor
+    */
+    virtual ~TDSEleData();
+
+    //! @name Time-dependent subgrid scales
+    /*!
+    \brief Memory allocation for subgrid-scale arrays
+    */
+    void ActivateTDS(
+        int nquad, int nsd, double** saccn = NULL, double** sveln = NULL, double** svelnp = NULL);
+
+
+    /*!
+    \brief Nonlinear update for current subgrid-scale velocities according to the current
+           residual (reduced version for afgenalpha and one-step-theta)
+    */
+    void UpdateSvelnpInOneDirection(const double fac1, const double fac2, const double fac3,
+        const double resM, const double alphaF, const int dim, const int iquad, double& svelaf);
+
+    /*!
+    \brief Nonlinear update for current subgrid-scale velocities according to the current
+           residual (svelnp as additional return value)
+    */
+    void UpdateSvelnpInOneDirection(const double fac1, const double fac2, const double fac3,
+        const double resM, const double alphaF, const int dim, const int iquad, double& svelnp,
+        double& svelaf);
+
+    /*!
+     * \brief Perform time update of time-dependent subgrid scales
+     */
+    void Update(const double dt, const double gamma);
+
+    //@}
+
+    /*!
+    \brief Returns the subgrid velocity at time n (sveln_)
+    */
+    CORE::LINALG::SerialDenseMatrix Sveln() const { return sveln_; }
+
+    /*!
+    \brief Returns the subgrid velocity at time n+1 (svelnp_)
+    */
+    CORE::LINALG::SerialDenseMatrix Svelnp() const { return svelnp_; }
+
+   private:
+    //! matrices of subgrid-scale acceleration values at integration points of this element
+    CORE::LINALG::SerialDenseMatrix saccn_;
+
+    //! matrices of subgrid-scale velocity values, current iteration value, at integration points of
+    //! this element
+    CORE::LINALG::SerialDenseMatrix svelnp_;
+
+    //! matrices of subgrid-scale velocity values, last timestep, at integration points of this
+    //! element
+    CORE::LINALG::SerialDenseMatrix sveln_;
+  };
+
+}  // namespace FLD
+
+#endif

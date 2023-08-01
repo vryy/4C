@@ -9,10 +9,10 @@
 #include <gtest/gtest.h>
 #include <Epetra_SerialComm.h>
 #include <array>
-#include "lib_discret.H"
-#include "lib_element.H"
-#include "so3_hex8.H"
-#include "lib_globalproblem.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_element.H"
+#include "baci_so3_hex8.H"
+#include "baci_lib_globalproblem.H"
 
 namespace
 {
