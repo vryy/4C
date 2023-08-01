@@ -260,6 +260,7 @@ Find the following sections in ’default.head’ and edit as given:
    defining time-dependent inflow and lid movement
 
    ::
+
       -----FUNCT 2
 
    insert ``SYMBOLIC_FUNCTION_OF_SPACE_TIME 10*(y-1)*(1-cos(2*t*pi/5))`` 

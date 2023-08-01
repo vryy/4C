@@ -1,10 +1,12 @@
+.. _multiphysicstutorial:
+
 Multiphysics Tutorial on mechanical and scalar transport simulation
 ====================================================================
 
 The example is a multiphysics (solid - scalar transport) simulation.
 Below you'll find the structure, which we are talking about.
 
-.. figure:: tutorial_battery/battery-mesh.jpg
+.. figure:: figures/tutorial_battery.jpg
    :alt: Problem definition and geometrical setup
    :width: 500px
    :align: center

@@ -5,11 +5,7 @@ Introduction
 ------------
 
 As example, we consider a 2d driven cavity example as sketched in Fig.
-`1.1 <#tut_fsi_preexo_2d:1.1>`__. Hint: In case you want or need to
-see a sample solution for this tutorial you will find corresponding
-files in the BACI subfolder */tests/framework-tests/*! However, it is
-highly recommended to look at these files only in case you encounter
-severe problems while stepping through the tutorial.
+:ref:`1.1 <tut_fsi_preexo_2d:1.1>`.
 For further details and references we refer the reader to [Wall99]_
 
 .. figure:: figures/Angabeskizze.jpg
@@ -17,6 +13,13 @@ For further details and references we refer the reader to [Wall99]_
    :name: tut_fsi_preexo_2d:1.1
 
    The driven cavity example in 2d
+
+.. note::
+
+    In case you want or need to see a sample solution for this tutorial
+    you will find corresponding files in the BACI subfolder `<baci-source>/tests/framework-tests/*`!
+    However, it is highly recommended to look at these files only in case
+    you encounter severe problems while stepping through the tutorial.
 
 Creating the Geometry with Cubit
 --------------------------------
@@ -27,8 +30,8 @@ Python), therefore we provide a *Journal*-file containing the necessary
 geometry commands as well as mesh and definitions for elements and
 boundary conditions, respectively.
 
-You can find this jpurnal file within you BACI distribution. It is
-located in *baci/tests/framework-test/tutorial_fsi.jou*.
+You can find this journal file within you BACI distribution. It is
+located in `<baci-source>/tests/framework-test/tutorial_fsi.jou`.
 
 Within Cubit, open the Journal-Editor (*Tools*\ :math:`\to`\ *Journal
 Editor*), paste the text from the journal file and press *play*. For
@@ -93,17 +96,18 @@ To start the solver use the call
 
    ``./baci-release [inputdirectory]/your_example.dat [outputdirectory]/outputprefix``
 
-(in the BACI-directory). The results are then written to the result
-directory with the prefix you chose.
+(in the BACI-directory; of course, you may choose a different directory as well, if you take care for the path names).
+The results are then written to the result directory with the prefix you chose.
 
 The FSI problem with a partitioned solver
 -----------------------------------------
 
 Here, we create the BACI input file for the FSI problem, that is solved
-using partitioned scheme. For a monolithic scheme, see
-section\ `1.6 <#tut_fsi_preexo_2d:monolithic>`__.
+using a partitioned scheme, which means that the fluid and the solid problem are solved sequentially.
+For a monolithic scheme, see :ref:`the section below<tut_fsi_preexo_2d:monolithic>`.
 
-Edit ’default.head’ and ’default.bc’.
+After running the baci executable without boundary condition and header information,
+we have created the ’default.head’ and ’default.bc’ file` that we are now supposed to edit.
 
 *header-file*
 ~~~~~~~~~~~~~~~
@@ -375,9 +379,7 @@ before(!) you start a parallel BACI computation on a cluster, for
 example.
 
 Run the simulation by providing the created dat-file and an output file
-to BACI and postprocess the results (refer to
-`1.3.3 <#tut_fsi_preexo_2d:baci>`__ and
-`1.5 <#tut_fsi_preexo_2d:postprocess>`__).
+to BACI and postprocess the results.
 
 .. _`tut_fsi_preexo_2d:postprocess`:
 

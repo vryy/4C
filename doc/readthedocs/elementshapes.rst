@@ -8,7 +8,6 @@ Element shapes
 LINE2
 ~~~~~
 
-- Dimension: xD
 - Nodes: 2
 - Integration points: 0
 
@@ -17,7 +16,6 @@ LINE2
 LINE3
 ~~~~~
 
-- Dimension: xD
 - Nodes: 3
 - Integration points: 0
 
@@ -26,7 +24,6 @@ LINE3
 LINE4
 ~~~~~
 
-- Dimension: xD
 - Nodes: 4
 - Integration points: 0
 
@@ -35,7 +32,6 @@ LINE4
 LINE5
 ~~~~~
 
-- Dimension: xD
 - Nodes: 5
 - Integration points: 0
 
@@ -44,7 +40,6 @@ LINE5
 LINE6
 ~~~~~
 
-- Dimension: xD
 - Nodes: 6
 - Integration points: 0
 
@@ -53,7 +48,6 @@ LINE6
 HERM2LINE2
 ~~~~~~~~~~
 
-- Dimension: xD
 - Nodes: 2
 - Integration points: 0
 
@@ -62,7 +56,6 @@ HERM2LINE2
 HERM2LINE3
 ~~~~~~~~~~
 
-- Dimension: xD
 - Nodes: 3
 - Integration points: 0
 
@@ -71,7 +64,6 @@ HERM2LINE3
 HERM2LINE4
 ~~~~~~~~~~
 
-- Dimension: xD
 - Nodes: 4
 - Integration points: 0
 
@@ -80,7 +72,6 @@ HERM2LINE4
 HERM2LINE5
 ~~~~~~~~~~
 
-- Dimension: xD
 - Nodes: 5
 - Integration points: 0
 
@@ -89,7 +80,6 @@ HERM2LINE5
 TRI3
 ~~~~
 
-- Dimension: xD
 - Nodes: 3
 - Integration points: 0
 
@@ -98,7 +88,6 @@ TRI3
 POINT1
 ~~~~~~
 
-- Dimension: xD
 - Nodes: 1
 - Integration points: 0
 
@@ -107,7 +96,6 @@ POINT1
 TET4
 ~~~~
 
-- Dimension: xD
 - Nodes: 4
 - Integration points: 0
 
@@ -116,7 +104,6 @@ TET4
 QUAD4
 ~~~~~
 
-- Dimension: xD
 - Nodes: 4
 - Integration points: 0
 
@@ -125,7 +112,6 @@ QUAD4
 QUAD8
 ~~~~~
 
-- Dimension: xD
 - Nodes: 8
 - Integration points: 0
 
@@ -134,7 +120,6 @@ QUAD8
 QUAD9
 ~~~~~
 
-- Dimension: xD
 - Nodes: 9
 - Integration points: 0
 
@@ -143,7 +128,6 @@ QUAD9
 TRI6
 ~~~~
 
-- Dimension: xD
 - Nodes: 6
 - Integration points: 0
 
@@ -152,7 +136,6 @@ TRI6
 HEX18
 ~~~~~
 
-- Dimension: xD
 - Nodes: 18
 - Integration points: 0
 
@@ -161,7 +144,6 @@ HEX18
 HEX20
 ~~~~~
 
-- Dimension: xD
 - Nodes: 20
 - Integration points: 0
 
@@ -170,7 +152,6 @@ HEX20
 HEX27
 ~~~~~
 
-- Dimension: xD
 - Nodes: 27
 - Integration points: 0
 
@@ -179,7 +160,6 @@ HEX27
 NURBS27
 ~~~~~~~
 
-- Dimension: xD
 - Nodes: 27
 - Integration points: 0
 
@@ -188,7 +168,6 @@ NURBS27
 HEX8
 ~~~~
 
-- Dimension: xD
 - Nodes: 8
 - Integration points: 0
 
@@ -197,7 +176,6 @@ HEX8
 WEDGE6
 ~~~~~~
 
-- Dimension: xD
 - Nodes: 6
 - Integration points: 0
 
@@ -206,7 +184,6 @@ WEDGE6
 TET10
 ~~~~~
 
-- Dimension: xD
 - Nodes: 10
 - Integration points: 0
 
@@ -215,7 +192,6 @@ TET10
 PYRAMID5
 ~~~~~~~~
 
-- Dimension: xD
 - Nodes: 5
 - Integration points: 0
 
@@ -224,7 +200,6 @@ PYRAMID5
 NURBS4
 ~~~~~~
 
-- Dimension: xD
 - Nodes: 4
 - Integration points: 0
 
@@ -233,7 +208,6 @@ NURBS4
 NURBS9
 ~~~~~~
 
-- Dimension: xD
 - Nodes: 9
 - Integration points: 0
 
@@ -242,7 +216,6 @@ NURBS9
 NURBS8
 ~~~~~~
 
-- Dimension: xD
 - Nodes: 8
 - Integration points: 0
 
@@ -251,7 +224,6 @@ NURBS8
 WEDGE15
 ~~~~~~~
 
-- Dimension: xD
 - Nodes: 15
 - Integration points: 0
 
@@ -260,7 +232,6 @@ WEDGE15
 NURBS2
 ~~~~~~
 
-- Dimension: xD
 - Nodes: 2
 - Integration points: 0
 
@@ -269,7 +240,6 @@ NURBS2
 NURBS3
 ~~~~~~
 
-- Dimension: xD
 - Nodes: 3
 - Integration points: 0
 
