@@ -629,7 +629,7 @@ void ART::UTILS::ArtJunctionBc::Update_Result(
     CORE::LINALG::SerialDenseVector &xn, CORE::LINALG::SerialDenseVector &dx)
 {
 #if DEBUG
-  if (xn.Length() != dx.Length())
+  if (xn.length() != dx.length())
   {
     dserror("Both, the result and the result change, must have similar size");
   }
