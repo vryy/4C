@@ -8,22 +8,23 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <iostream>
+#include "baci_linear_solver_amgnxn_preconditioner.H"
 
-#include <Teuchos_PtrDecl.hpp>
-#include <Teuchos_Time.hpp>
-#include <Teuchos_XMLParameterListHelpers.hpp>
-#include <Xpetra_MultiVectorFactory.hpp>
-#include <MueLu_MLParameterListInterpreter_decl.hpp>
-#include <MueLu_ParameterListInterpreter.hpp>
-#include <EpetraExt_RowMatrixOut.h>
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_amgnxn_preconditioner.H"
 #include "baci_linear_solver_amgnxn_vcycle.H"
+#include "baci_utils_exceptions.H"
 
+#include <EpetraExt_RowMatrixOut.h>
+#include <MueLu_MLParameterListInterpreter_decl.hpp>
+#include <MueLu_ParameterListInterpreter.hpp>
+#include <Teuchos_PtrDecl.hpp>
+#include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_XMLParameterListHelpers.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
+
+#include <iostream>
 
 /*------------------------------------------------------------------------------*/
 /*------------------------------------------------------------------------------*/

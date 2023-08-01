@@ -11,30 +11,27 @@
  | Header                                                   farah 09/13 |
  *----------------------------------------------------------------------*/
 
-#include <Epetra_SerialComm.h>
-
 #include "baci_contact_wear_lagrange_strategy.H"
-#include "baci_contact_wear_interface.H"
 
-#include "baci_contact_lagrange_strategy.H"
-#include "baci_contact_interface.H"
 #include "baci_contact_defines.H"
-#include "baci_contact_integrator.H"
 #include "baci_contact_element.H"
-
 #include "baci_contact_friction_node.H"
-
-#include "baci_mortar_utils.H"
+#include "baci_contact_integrator.H"
+#include "baci_contact_interface.H"
+#include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_wear_interface.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
 #include "baci_io.H"
-
 #include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mortar_utils.H"
+
 #include <Epetra_FEVector.h>
+#include <Epetra_SerialComm.h>
 #include <Teuchos_Time.hpp>
 /*----------------------------------------------------------------------*
  | ctor (public)                                             farah 09/13|

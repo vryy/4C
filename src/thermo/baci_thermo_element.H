@@ -18,13 +18,12 @@ Pack, Unpack, NumDofPerNode etc.
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
-#include "baci_inpar_structure.H"
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 /*----------------------------------------------------------------------*/

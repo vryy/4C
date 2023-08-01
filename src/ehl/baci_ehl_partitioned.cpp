@@ -9,17 +9,14 @@
 /*--------------------------------------------------------------------------*/
 
 
-#include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_lib_globalproblem.H"
-
-#include "baci_adapter_str_wrapper.H"
-#include "baci_adapter_lubrication.H"
-#include "baci_adapter_coupling_ehl_mortar.H"
-
-#include "baci_lubrication_timint_implicit.H"
-
 #include "baci_ehl_partitioned.H"
+
+#include "baci_adapter_coupling_ehl_mortar.H"
+#include "baci_adapter_lubrication.H"
+#include "baci_adapter_str_wrapper.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_lubrication_timint_implicit.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              wirtz 12/15 |

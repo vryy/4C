@@ -17,22 +17,18 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
-#include "baci_tsi_utils.H"
-
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_globalproblem.H"
-
-#include "baci_thermo_element.H"
-#include "baci_thermo_ele_impl_utils.H"
-#include "baci_so3_thermo.H"
-#include "baci_so3_plast_ssn.H"
-
+#include "baci_coupling_volmortar_utils.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_dofset.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
-
-#include "baci_coupling_volmortar_utils.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_so3_plast_ssn.H"
+#include "baci_so3_thermo.H"
+#include "baci_thermo_ele_impl_utils.H"
+#include "baci_thermo_element.H"
+#include "baci_tsi_utils.H"
 
 /*----------------------------------------------------------------------*
  | remove flag thermo from condition                         dano 12/11 |

@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_mat_constraintmixture_history.H"
+
 #include "baci_utils_exceptions.H"
 
 MAT::ConstraintMixtureHistoryType MAT::ConstraintMixtureHistoryType::instance_;

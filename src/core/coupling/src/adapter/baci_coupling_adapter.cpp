@@ -9,15 +9,16 @@
 /*----------------------------------------------------------------------*/
 
 
-#include <algorithm>
-#include <numeric>
-
 #include "baci_coupling_adapter.H"
+
+#include "baci_lib_condition_utils.H"
 #include "baci_lib_matchingoctree.H"
 #include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_lib_condition_utils.H"
 
 #include <Epetra_IntVector.h>
+
+#include <algorithm>
+#include <numeric>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

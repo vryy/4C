@@ -14,6 +14,7 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Teuchos_RCP.hpp>
+
 #include <vector>
 
 namespace CONTACT

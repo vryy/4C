@@ -13,7 +13,6 @@ strategy without meshtying)
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_BASE_H
 
 #include "baci_scatra_timint_convcheck_strategies.H"
-
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>

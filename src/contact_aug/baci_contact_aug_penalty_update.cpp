@@ -10,19 +10,18 @@ parameter cn
 
 
 #include "baci_contact_aug_penalty_update.H"
+
+#include "baci_contact_aug_lagrange_multiplier_function.H"
 #include "baci_contact_aug_potential.H"
 #include "baci_contact_aug_steepest_ascent_strategy.H"
-#include "baci_contact_aug_lagrange_multiplier_function.H"
 #include "baci_contact_paramsinterface.H"
-
-#include "baci_structure_new_model_evaluator_contact.H"
-#include "baci_inpar_structure.H"
-
 #include "baci_inpar_contact.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_inpar_structure.H"
 #include "baci_io_pstream.H"
-#include "baci_linalg_multiply.H"
 #include "baci_lib_epetra_utils.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_structure_new_model_evaluator_contact.H"
 
 #include <Teuchos_ParameterList.hpp>
 

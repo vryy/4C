@@ -10,18 +10,18 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <ml_common.h>
-#include <ml_include.h>
-#include <ml_epetra_utils.h>
-#include <ml_epetra.h>
-#include <ml_epetra_operator.h>
-#include <ml_MultiLevelPreconditioner.h>
+#include "baci_linear_solver_preconditioner_ml.H"
 
 #include "baci_linalg_mlapi_operator.H"  // Michael's MLAPI based ML preconditioner
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
-#include "baci_linear_solver_preconditioner_ml.H"
+#include <ml_common.h>
+#include <ml_epetra.h>
+#include <ml_epetra_operator.h>
+#include <ml_epetra_utils.h>
+#include <ml_include.h>
+#include <ml_MultiLevelPreconditioner.h>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

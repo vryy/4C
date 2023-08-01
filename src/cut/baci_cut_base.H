@@ -11,12 +11,12 @@
 #ifndef BACI_CUT_BASE_H
 #define BACI_CUT_BASE_H
 
-#include <vector>
-#include <cmath>
-#include <iostream>
-
 #include "baci_cut_clnwrapper.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <cmath>
+#include <iostream>
+#include <vector>
 
 /*!
 \brief Returns the function that is to be integrated along the bounding lines of the irregular

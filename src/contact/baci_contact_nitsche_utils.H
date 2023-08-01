@@ -10,20 +10,18 @@
 #ifndef BACI_CONTACT_NITSCHE_UTILS_H
 #define BACI_CONTACT_NITSCHE_UTILS_H
 
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_FEVector.h>
-#include <Teuchos_RCP.hpp>
-#include <unordered_map>
-
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
 #include "baci_lib_utils_matrix_vector_enums.H"
-
-#include "baci_mortar_element.H"
-
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
+#include "baci_mortar_element.H"
+
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <unordered_map>
 
 namespace MORTAR
 {

@@ -10,10 +10,10 @@
 #define BACI_TSI_UTILS_H
 
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-
 #include "baci_coupling_volmortar_utils.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

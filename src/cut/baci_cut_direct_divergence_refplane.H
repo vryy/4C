@@ -10,8 +10,9 @@ coordinate system
 #ifndef BACI_CUT_DIRECT_DIVERGENCE_REFPLANE_H
 #define BACI_CUT_DIRECT_DIVERGENCE_REFPLANE_H
 
-#include <vector>
 #include "baci_cut_element.H"
+
+#include <vector>
 
 namespace CORE::GEO
 {

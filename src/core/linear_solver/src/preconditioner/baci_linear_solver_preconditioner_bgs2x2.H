@@ -10,15 +10,14 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_BGS2X2_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include "baci_utils_exceptions.H"
-#include "baci_linear_solver_preconditioner_linalg.H"
-#include "baci_linalg_mapextractor.H"
 #include "baci_linalg_blocksparsematrix.H"
-
+#include "baci_linalg_mapextractor.H"
+#include "baci_linear_solver_preconditioner_linalg.H"
 #include "baci_linear_solver_preconditioner_type.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINALG
 {

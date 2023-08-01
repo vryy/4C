@@ -6,10 +6,11 @@
 /*-----------------------------------------------------------------------*/
 
 #include "baci_contact_element.H"
-#include "baci_contact_node.H"
+
 #include "baci_contact_friction_node.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_contact_node.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 CONTACT::CoElementType CONTACT::CoElementType::instance_;
 

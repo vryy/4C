@@ -10,22 +10,18 @@
 
 #include "baci_beamcontact_str_model_evaluator_beaminteraction_old.H"
 
+#include "baci_beamcontact_beam3contact_manager.H"
+#include "baci_io.H"
+#include "baci_lib_discret.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_sparseoperator.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_base.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-
-#include "baci_utils_exceptions.H"
-#include "baci_lib_discret.H"
-
-#include "baci_io.H"
-
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_beamcontact_beam3contact_manager.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

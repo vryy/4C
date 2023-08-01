@@ -6,11 +6,11 @@
 #ifndef BACI_SO3_PLAST_SSN_ELETYPES_H
 #define BACI_SO3_PLAST_SSN_ELETYPES_H
 
-#include "baci_so3_tet4.H"
-#include "baci_so3_hex8.H"
 #include "baci_so3_hex18.H"
 #include "baci_so3_hex27.H"
+#include "baci_so3_hex8.H"
 #include "baci_so3_nurbs27.H"
+#include "baci_so3_tet4.H"
 
 namespace DRT
 {

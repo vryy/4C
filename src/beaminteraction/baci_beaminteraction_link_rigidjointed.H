@@ -10,10 +10,10 @@
 #ifndef BACI_BEAMINTERACTION_LINK_RIGIDJOINTED_H
 #define BACI_BEAMINTERACTION_LINK_RIGIDJOINTED_H
 
-#include "baci_linalg_fixedsizematrix.H"
+#include "baci_beaminteraction_link.H"
 #include "baci_lib_parobject.H"
 #include "baci_lib_parobjectfactory.H"
-#include "baci_beaminteraction_link.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 
 // forward declarations

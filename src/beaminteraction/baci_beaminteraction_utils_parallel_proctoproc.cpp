@@ -12,8 +12,8 @@
 #include "baci_beaminteraction_utils_parallel_proctoproc.H"
 
 #include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_exporter.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_MpiComm.h>
 

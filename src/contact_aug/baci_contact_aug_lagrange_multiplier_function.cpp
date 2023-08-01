@@ -8,23 +8,19 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_contact_aug_lagrange_multiplier_function.H"
-#include "baci_contact_aug_strategy.H"
+
 #include "baci_contact_aug_interface.H"
-
-#include "baci_mortar_matrix_transform.H"
-
+#include "baci_contact_aug_strategy.H"
 #include "baci_contact_paramsinterface.H"
-
-#include "baci_structure_new_model_evaluator_contact.H"
-
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_multiply.H"
-
 #include "baci_io_control.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_mortar_matrix_transform.H"
+#include "baci_structure_new_model_evaluator_contact.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

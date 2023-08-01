@@ -10,14 +10,13 @@
 #ifndef BACI_ADAPTER_FLD_FLUID_FSI_H
 #define BACI_ADAPTER_FLD_FLUID_FSI_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-
 #include "baci_adapter_fld_wrapper.H"
-
 #include "baci_inpar_fsi.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

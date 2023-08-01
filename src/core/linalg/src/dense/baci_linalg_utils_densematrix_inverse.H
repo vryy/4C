@@ -9,9 +9,10 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_INVERSE_H
 
-#include <cmath>
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_utils_densematrix_determinant.H"
+
+#include <cmath>
 
 namespace CORE::LINALG
 {

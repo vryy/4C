@@ -3,8 +3,9 @@
 \level 0
 */
 #include "baci_fluid_ele_nullspace.H"
-#include "baci_utils_exceptions.H"
+
 #include "baci_lib_node.H"
+#include "baci_utils_exceptions.H"
 
 namespace FLD
 {

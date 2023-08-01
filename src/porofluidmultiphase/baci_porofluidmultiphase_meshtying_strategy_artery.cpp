@@ -8,19 +8,18 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_porofluidmultiphase_meshtying_strategy_artery.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_adapter_art_net.H"
-#include "baci_inpar_bio.H"
 #include "baci_art_net_utils.H"
-#include "baci_poromultiphase_scatra_artery_coupling_base.H"
-#include "baci_poromultiphase_scatra_utils.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_porofluidmultiphase_utils.H"
-#include "baci_linalg_utils_sparse_algebra_print.H"
-
-
+#include "baci_inpar_bio.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_print.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_porofluidmultiphase_utils.H"
+#include "baci_poromultiphase_scatra_artery_coupling_base.H"
+#include "baci_poromultiphase_scatra_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

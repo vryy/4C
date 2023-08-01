@@ -8,22 +8,20 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_poromultiphase_scatra_artery_coupling_pair.H"
-#include "baci_poromultiphase_scatra_artery_coupling_defines.H"
-
-
-#include "baci_lib_elementtype.H"
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_get_functionofanything.H"
-#include "baci_mat_cnst_1d_art.H"
-#include "baci_utils_fad.H"
-#include "baci_porofluidmultiphase_ele_parameter.H"
-#include "baci_discretization_geometry_coordinate_system_utils.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_discretization_geometry_coordinate_system_utils.H"
 #include "baci_lib_element_integration_select.H"
+#include "baci_lib_elementtype.H"
+#include "baci_lib_get_functionofanything.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
+#include "baci_mat_cnst_1d_art.H"
+#include "baci_mat_fluidporo_multiphase.H"
+#include "baci_porofluidmultiphase_ele_parameter.H"
+#include "baci_poromultiphase_scatra_artery_coupling_defines.H"
+#include "baci_utils_fad.H"
 
 #include <Epetra_MultiVector.h>
 

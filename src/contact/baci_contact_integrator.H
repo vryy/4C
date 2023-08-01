@@ -11,8 +11,8 @@
 #ifndef BACI_CONTACT_INTEGRATOR_H
 #define BACI_CONTACT_INTEGRATOR_H
 
-#include "baci_mortar_integrator.H"
 #include "baci_inpar_wear.H"
+#include "baci_mortar_integrator.H"
 #include "baci_utils_pairedvector.H"
 
 // forward declarations

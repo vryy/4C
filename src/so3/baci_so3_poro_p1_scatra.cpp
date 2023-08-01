@@ -9,9 +9,9 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_so3_poro_p1_scatra.H"
-#include "baci_so3_poro_p1_scatra_eletypes.H"
 
 #include "baci_lib_linedefinition.H"
+#include "baci_so3_poro_p1_scatra_eletypes.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                         schmidt 09/17 |

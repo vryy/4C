@@ -12,8 +12,8 @@
 #ifndef BACI_LIB_PACK_BUFFER_H
 #define BACI_LIB_PACK_BUFFER_H
 
-#include <vector>
 #include <cstring>
+#include <vector>
 
 namespace DRT
 {

@@ -10,15 +10,15 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include <sstream>
-
+#include "baci_inpar_boolifyparameters.H"
+#include "baci_io_pstream.H"
+#include "baci_linalg_blocksparsematrix.H"
 #include "baci_structure_timint.H"
 #include "baci_structure_timint_impl.H"
 #include "baci_structure_timint_noxgroup.H"
 #include "baci_structure_timint_noxlinsys.H"
-#include "baci_inpar_boolifyparameters.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_io_pstream.H"
+
+#include <sstream>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

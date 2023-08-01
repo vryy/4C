@@ -11,10 +11,12 @@
 
 
 #include "baci_lib_linedefinition.H"
+
+#include "baci_lib_utils_linedefinition.H"
 #include "baci_utils_exceptions.H"
+
 #include <iterator>
 #include <utility>
-#include "baci_lib_utils_linedefinition.H"
 
 namespace DRT
 {

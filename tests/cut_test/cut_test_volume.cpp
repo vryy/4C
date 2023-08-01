@@ -6,15 +6,15 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_cut_mesh.H"
+#include "baci_cut_options.H"
+
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "cut_test_utils.H"
-
-#include "baci_cut_options.H"
-#include "baci_cut_mesh.H"
 
 void test_cut_volumes()
 {

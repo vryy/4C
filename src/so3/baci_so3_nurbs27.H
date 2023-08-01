@@ -11,25 +11,22 @@
 #define BACI_SO3_NURBS27_H
 
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_node.H"
-
+#include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_so3_base.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 //@=
 #include "baci_inpar_structure.H"
-
-#include "baci_mat_material.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_mat_material.H"
 
 /// Several parameters which are fixed for Solid nurbs27
 const int NUMNOD_SONURBS27 = 27;  ///< number of nodes

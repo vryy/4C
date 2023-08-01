@@ -9,32 +9,33 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_beamcontact_beam3contact_octtree.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_lib_globalproblem.H"
+
+#include "baci_beam3_base.H"
+#include "baci_beam3_euler_bernoulli.H"
+#include "baci_beam3_reissner.H"
+#include "baci_beamcontact_beam3contact_manager.H"
+#include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_rigidsphere.H"
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <Teuchos_Time.hpp>
 
-#include <iostream>
 #include <fstream>
-#include <string>
-#include <sstream>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <iomanip>
-#include <vector>
+#include <iostream>
 #include <map>
-#include <math.h>
-
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_euler_bernoulli.H"
-#include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_rigidsphere.H"
-#include "baci_beamcontact_beam3contact_manager.H"
+#include <sstream>
+#include <string>
+#include <vector>
 
 // #define OCTREEDEBUG
 

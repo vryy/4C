@@ -14,15 +14,15 @@
 #ifndef BACI_LIB_DOFSET_FIXED_SIZE_H
 #define BACI_LIB_DOFSET_FIXED_SIZE_H
 
-#include <vector>
-#include <map>
-
-#include <Epetra_IntVector.h>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-#include <Epetra_Map.h>
-
 #include "baci_lib_dofset.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_IntVector.h>
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
+#include <map>
+#include <vector>
 
 
 // forward declarations

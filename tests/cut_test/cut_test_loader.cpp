@@ -7,6 +7,7 @@
 *----------------------------------------------------------------------*/
 
 #include "cut_test_loader.H"
+
 #include "baci_linalg_serialdensematrix.H"
 
 void MeshLoader::GetCutNode(int nid, double x, double y, double z, double lsv)

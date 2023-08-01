@@ -10,17 +10,18 @@
 /*---------------------------------------------------------------------*/
 
 
-#include <algorithm>
-#include <numeric>
-#include <vector>
-#include <set>
-#include <map>
-#include <string>
-
 #include "baci_lib_utils_materials.H"
+
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <algorithm>
+#include <map>
+#include <numeric>
+#include <set>
+#include <string>
+#include <vector>
 
 /*----------------------------------------------------------------------*
  *  Update material configuration of discretization with

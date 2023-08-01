@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_lib_utils_discret.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_utils_discret.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

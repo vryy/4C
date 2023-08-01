@@ -11,10 +11,11 @@
 #ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_CONSTANT_H
 
-#include <NOX_LAPACK.H>
 #include "baci_linalg_fixedsizematrix.H"
-#include "baci_mixture_prestress_strategy.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
+#include "baci_mixture_prestress_strategy.H"
+
+#include <NOX_LAPACK.H>
 
 namespace MIXTURE
 {

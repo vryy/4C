@@ -7,18 +7,15 @@
 
 #include "baci_mat_viscoplastic_no_yield_surface.H"
 
-#include <vector>
-#include "baci_mat_service.H"
-#include "baci_mat_par_bundle.H"
-
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_voigt_notation.H"
-
+#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_service.H"
 #include "baci_so3_hex8.H"
-
 #include "baci_utils_fad.H"
 
-#include "baci_linalg_utils_densematrix_eigen.H"
+#include <vector>
 
 // struct definition
 struct MAT::PreCalculatedTerms

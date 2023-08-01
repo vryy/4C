@@ -9,17 +9,14 @@ elements
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_link.H"
 #include "baci_beaminteraction_link_beam3_reissner_line2_rigidjointed.H"
 
 #include "baci_beam3_reissner.H"
-
+#include "baci_beaminteraction_link.H"
 #include "baci_discretization_fem_general_largerotations.H"
-
-#include "baci_linalg_serialdensematrix.H"
-
-#include "baci_utils_exceptions.H"
 #include "baci_lib_utils_factory.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 

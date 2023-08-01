@@ -12,7 +12,6 @@
 #define BACI_CUT_BOUNDARYCELL_INTEGRATION_H
 
 #include "baci_cut_facet_integration.H"
-
 #include "baci_linalg_serialdensematrix.H"
 
 namespace CORE::GEO

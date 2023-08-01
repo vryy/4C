@@ -14,7 +14,6 @@
 
 #include "baci_fluid_ele_parameter.H"
 #include "baci_inpar_poroelast.H"
-
 #include "baci_utils_singleton_owner.H"
 
 namespace DRT

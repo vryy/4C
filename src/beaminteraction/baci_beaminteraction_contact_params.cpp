@@ -10,11 +10,12 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_beaminteraction_contact_params.H"
+
 #include "baci_beaminteraction_beam_to_beam_contact_params.H"
-#include "baci_beaminteraction_beam_to_sphere_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_surface_contact_params.H"
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
+#include "baci_beaminteraction_beam_to_sphere_contact_params.H"
 #include "baci_beaminteraction_contact_runtime_vtk_output_params.H"
 
 /*----------------------------------------------------------------------------*

@@ -13,10 +13,9 @@
 
 #include "baci_linalg_sparsematrix.H"
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include <stdio.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

@@ -9,11 +9,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_w1_poro_p1_eletypes.H"
-#include "baci_w1_poro_p1.H"
 
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_discret.H"
 #include "baci_fluid_ele_nullspace.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_w1_poro_p1.H"
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                                      |

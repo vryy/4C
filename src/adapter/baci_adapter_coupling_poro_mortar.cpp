@@ -16,17 +16,17 @@ and Johannes Kremheller, Originates from ADAPTER::CouplingNonLinMortar
  |  includes                                                  ager 10/15|
  *----------------------------------------------------------------------*/
 // lib
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 
 // contact
 #include "baci_contact_element.H"
-#include "baci_contact_node.H"
 #include "baci_contact_interface.H"
+#include "baci_contact_node.H"
 
 // nurbs
-#include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret.H"
+#include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
 
 // linalg

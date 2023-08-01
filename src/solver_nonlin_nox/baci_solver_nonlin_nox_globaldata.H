@@ -15,13 +15,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_GLOBALDATA_H
 #define BACI_SOLVER_NONLIN_NOX_GLOBALDATA_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-
+#include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"
+#include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
 
-#include "baci_solver_nonlin_nox_constraint_interface_required.H"
-#include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declaration
 namespace Teuchos

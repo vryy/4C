@@ -10,11 +10,12 @@
 #ifdef BACI_WITH_MIRCO
 
 #include <gtest/gtest.h>
-#include <omp.h>
 
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+#include <omp.h>
 
 namespace
 {

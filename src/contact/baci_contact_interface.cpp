@@ -7,40 +7,34 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_FEVector.h>
-#include <Teuchos_Time.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-#include "baci_contact_element.H"
-#include "baci_contact_integrator.H"
-#include "baci_contact_interpolator.H"
+
+#include "baci_binstrategy.H"
 #include "baci_contact_coupling2d.H"
 #include "baci_contact_coupling3d.H"
-#include "baci_contact_line_coupling.H"
+#include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
-
+#include "baci_contact_integrator.H"
+#include "baci_contact_interpolator.H"
+#include "baci_contact_line_coupling.H"
+#include "baci_contact_nitsche_utils.H"
+#include "baci_contact_node.H"
+#include "baci_contact_selfcontact_binarytree_unbiased.H"
+#include "baci_io.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_binarytree.H"
 #include "baci_mortar_defines.H"
 #include "baci_mortar_dofset.H"
 #include "baci_mortar_projector.H"
-
-#include "baci_binstrategy.H"
-
+#include "baci_rebalance.H"
 #include "baci_scatra_ele_parameter_boundary.H"
 
-#include "baci_rebalance.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-#include "baci_contact_nitsche_utils.H"
-
-#include "baci_io.H"
-
-#include "baci_contact_selfcontact_binarytree_unbiased.H"
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

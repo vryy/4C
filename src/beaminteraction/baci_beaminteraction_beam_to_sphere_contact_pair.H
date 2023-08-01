@@ -13,21 +13,19 @@
 #include "baci_beaminteraction_contact_pair.H"
 
 // Todo get rid of header inclusions
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
 #include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_condition.H"
+#include "baci_lib_element.H"
+#include "baci_lib_node.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_lib_node.H"
-#include "baci_lib_element.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_utils_fad.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declaration ...
 namespace CORE::LINALG

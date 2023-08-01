@@ -14,10 +14,10 @@ transport
 #ifndef BACI_SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_H
 #define BACI_SCATRA_TURBULENCE_HIT_INITIAL_SCALAR_FIELD_H
 
+#include "baci_inpar_scatra.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-#include "baci_inpar_scatra.H"
 
 // forward declarations
 namespace DRT

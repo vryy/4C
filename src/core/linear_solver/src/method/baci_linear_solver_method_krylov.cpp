@@ -8,36 +8,33 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_MultiVectorFactory.hpp>
-#include <Xpetra_MapFactory.hpp>
-#include <Xpetra_CrsMatrixWrap.hpp>
-
-#include <MueLu.hpp>
-#include <MueLu_FactoryBase.hpp>
-#include <MueLu_PermutationFactory.hpp>
-#include <MueLu_SmootherPrototype.hpp>
-#include <MueLu_SmootherFactory.hpp>
-#include <MueLu_HierarchyUtils.hpp>
-#include <MueLu_VerboseObject.hpp>
-#include <MueLu_UseDefaultTypes.hpp>
-
-#include <Epetra_Comm.h>
-#include <Epetra_Map.h>
-#include <Epetra_CrsMatrix.h>
-
-#include "baci_utils_exceptions.H"
-
 #include "baci_linear_solver_method_krylov.H"
-#include "baci_linear_solver_preconditioner_point.H"
+
+#include "baci_linear_solver_amgnxn_preconditioner.H"
 #include "baci_linear_solver_preconditioner_block.H"
-#include "baci_linear_solver_preconditioner_krylovprojection.H"
 #include "baci_linear_solver_preconditioner_ifpack.H"
+#include "baci_linear_solver_preconditioner_krylovprojection.H"
 #include "baci_linear_solver_preconditioner_ml.H"
 #include "baci_linear_solver_preconditioner_muelu.H"
-#include "baci_linear_solver_amgnxn_preconditioner.H"
+#include "baci_linear_solver_preconditioner_point.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_Map.h>
+#include <MueLu.hpp>
+#include <MueLu_FactoryBase.hpp>
+#include <MueLu_HierarchyUtils.hpp>
+#include <MueLu_PermutationFactory.hpp>
+#include <MueLu_SmootherFactory.hpp>
+#include <MueLu_SmootherPrototype.hpp>
+#include <MueLu_UseDefaultTypes.hpp>
+#include <MueLu_VerboseObject.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+#include <Xpetra_CrsMatrixWrap.hpp>
+#include <Xpetra_MapFactory.hpp>
+#include <Xpetra_Matrix.hpp>
+#include <Xpetra_MultiVectorFactory.hpp>
 
 using Map = Xpetra::Map<LocalOrdinal, GlobalOrdinal, Node>;
 using Matrix = Xpetra::Matrix<Scalar, LocalOrdinal, GlobalOrdinal, Node>;

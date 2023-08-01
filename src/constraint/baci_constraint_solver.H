@@ -7,13 +7,13 @@
 #ifndef BACI_CONSTRAINT_SOLVER_H
 #define BACI_CONSTRAINT_SOLVER_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
+#include "baci_inpar_structure.H"
+
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-
-#include "baci_inpar_structure.H"
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

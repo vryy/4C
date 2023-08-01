@@ -8,10 +8,8 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_mat_service.H"
-
 #include "baci_linalg_fixedsizematrix.H"
-
+#include "baci_mat_service.H"
 #include "baci_unittest_utils_assertions.h"
 
 namespace

@@ -8,14 +8,14 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_s8.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_function_of_time.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_s8.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_exceptions.H"
 
 extern "C"
 {

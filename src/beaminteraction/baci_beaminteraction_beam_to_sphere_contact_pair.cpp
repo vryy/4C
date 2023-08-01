@@ -10,25 +10,20 @@
 
 #include "baci_beaminteraction_beam_to_sphere_contact_pair.H"
 
-#include "baci_beaminteraction_beam3contact_utils.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-
 #include "baci_beam3_base.H"
-#include "baci_rigidsphere.H"
-
+#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam3contact_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-
+#include "baci_rigidsphere.H"
 #include "baci_utils_exceptions.H"
 
 // Todo check and get rid of outdated header inclusions
-#include "baci_inpar_beamcontact.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
-#include "baci_beaminteraction_contact_params.H"
 #include "baci_beaminteraction_beam_to_sphere_contact_params.H"
+#include "baci_beaminteraction_contact_params.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_inpar_beamcontact.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 
 
 

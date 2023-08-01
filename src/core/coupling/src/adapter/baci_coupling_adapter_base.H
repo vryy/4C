@@ -13,9 +13,9 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* definition of classes */

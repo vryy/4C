@@ -11,29 +11,27 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_linearsystem.H"
+
+#include "baci_lib_epetra_utils.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_solver_nonlin_nox_aux.H"
 #include "baci_solver_nonlin_nox_interface_jacobian.H"
 #include "baci_solver_nonlin_nox_interface_required.H"
 #include "baci_solver_nonlin_nox_linearsystem_prepostoperator.H"
 #include "baci_solver_nonlin_nox_solver_ptc.H"
-#include "baci_solver_nonlin_nox_aux.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_structure_new_nln_linearsystem_scaling.H"
 
-#include "baci_lib_epetra_utils.H"
+#include <Epetra_LinearProblem.h>
+#include <Epetra_Vector.h>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Epetra_Scaling.H>
+#include <Teuchos_LAPACK.hpp>
+#include <Teuchos_ParameterList.hpp>
 
 #include <unordered_map>
-
-#include <Epetra_Vector.h>
-#include <Epetra_LinearProblem.h>
-
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_LAPACK.hpp>
-
-#include <NOX_Epetra_Scaling.H>
-#include <NOX_Epetra_Interface_Preconditioner.H>
-#include "baci_structure_new_nln_linearsystem_scaling.H"
 
 
 /*----------------------------------------------------------------------*

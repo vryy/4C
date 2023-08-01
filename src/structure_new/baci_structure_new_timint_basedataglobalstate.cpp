@@ -10,31 +10,27 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_timint_basedataglobalstate.H"
-#include "baci_structure_new_timint_basedatasdyn.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_generic.H"
-#include "baci_structure_new_model_evaluator_meshtying.H"
 
+#include "baci_beam3_base.H"
+#include "baci_contact_meshtying_abstract_strategy.H"
+#include "baci_discretization_fem_general_largerotations.H"
+#include "baci_inpar_contact.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_discret.H"
-#include "baci_inpar_contact.H"
-#include "baci_beam3_base.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_structure_new_utils.H"
-#include "baci_contact_meshtying_abstract_strategy.H"
-
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_sparsematrix.H"
-
-
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_solver_nonlin_nox_group.H"
 #include "baci_solver_nonlin_nox_group_prepostoperator.H"
+#include "baci_structure_new_model_evaluator.H"
+#include "baci_structure_new_model_evaluator_generic.H"
+#include "baci_structure_new_model_evaluator_meshtying.H"
+#include "baci_structure_new_timint_basedatasdyn.H"
+#include "baci_structure_new_utils.H"
 
 #include <Epetra_Vector.h>
-
 #include <NOX_Epetra_Vector.H>
 
 

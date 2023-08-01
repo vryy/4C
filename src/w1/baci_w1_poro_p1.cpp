@@ -9,9 +9,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_w1_poro_p1.H"
-#include "baci_w1_poro_p1_eletypes.H"
 
 #include "baci_lib_utils_factory.H"
+#include "baci_w1_poro_p1_eletypes.H"
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_PoroP1<distype>::Wall1_PoroP1(int id, int owner)

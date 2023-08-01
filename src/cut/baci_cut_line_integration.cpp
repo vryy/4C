@@ -10,9 +10,10 @@ equations
 *----------------------------------------------------------------------*/
 
 #include "baci_cut_line_integration.H"
-#include "baci_cut_tolerance.H"
+
 #include "baci_cut_base.H"
 #include "baci_cut_base_boundarycell.H"
+#include "baci_cut_tolerance.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 
 #include <cmath>

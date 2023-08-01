@@ -8,28 +8,21 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#include <Epetra_Map.h>
-
 #include "baci_ssti_utils.H"
 
-#include "baci_ssti_monolithic.H"
-
 #include "baci_adapter_str_ssiwrapper.H"
-
 #include "baci_lib_globalproblem.H"
-
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
+#include "baci_scatra_ele.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
-
-#include "baci_ssi_utils.H"
-
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-
-#include "baci_mat_par_material.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_scatra_ele.H"
 #include "baci_so3_nurbs27.H"
+#include "baci_ssi_utils.H"
+#include "baci_ssti_monolithic.H"
+
+#include <Epetra_Map.h>
 
 
 

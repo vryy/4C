@@ -10,19 +10,21 @@
 /*---------------------------------------------------------------------*/
 
 
-#include <string>
-#include <iostream>
-
 #include "baci_loma_dyn.H"
-#include "baci_loma_algorithm.H"
+
 #include "baci_inpar_validparameters.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_utils_clonestrategy.H"
-#include "baci_scatra_ele.H"
-#include <Teuchos_TimeMonitor.hpp>
+#include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_loma_algorithm.H"
+#include "baci_scatra_ele.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_utils_clonestrategy.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <iostream>
+#include <string>
 
 
 /*----------------------------------------------------------------------*/

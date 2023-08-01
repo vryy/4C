@@ -8,8 +8,9 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_mortar_dofset.H"
-#include "baci_mortar_node.H"
+
 #include "baci_lib_discret.H"
+#include "baci_mortar_node.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|

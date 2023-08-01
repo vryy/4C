@@ -41,6 +41,7 @@ table. This table can be queried for those values quite easily.
 #define BACI_IO_LEGACY_TABLE_H
 
 #include "baci_io_legacy_types.h"
+
 #include <mpi.h> /* Be careful: this is the C mpi header */
 
 

@@ -12,11 +12,12 @@
 #ifndef BACI_FLUID_XWALL_H
 #define BACI_FLUID_XWALL_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 #include "baci_inpar_fluid.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

@@ -12,15 +12,15 @@
 #define BACI_RIGIDSPHERE_H
 
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
-#include "baci_lib_elementtype.H"
+#include "baci_beaminteraction_calc_utils.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_elementtype.H"
 
-#include "baci_beaminteraction_calc_utils.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 #include <unordered_map>
 

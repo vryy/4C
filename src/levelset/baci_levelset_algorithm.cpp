@@ -13,13 +13,11 @@
 
 #include "baci_levelset_algorithm.H"
 
-#include "baci_levelset_intersection_utils.H"
-
-#include "baci_scatra_resulttest.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_lib_globalproblem.H"
-
 #include "baci_io.H"
+#include "baci_levelset_intersection_utils.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_scatra_resulttest.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

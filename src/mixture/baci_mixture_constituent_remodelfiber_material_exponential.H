@@ -8,10 +8,12 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_H
 #define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_MATERIAL_EXPONENTIAL_H
 
-#include <Teuchos_RCP.hpp>
-#include <memory>
 #include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_constituent_remodelfiber_material.H"
+
+#include <Teuchos_RCP.hpp>
+
+#include <memory>
 
 // forward declarations
 namespace MAT::PAR

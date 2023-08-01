@@ -8,8 +8,9 @@
 #ifndef BACI_SO3_PYRAMID5FBAR_H
 #define BACI_SO3_PYRAMID5FBAR_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_so3_pyramid5.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {

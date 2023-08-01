@@ -8,13 +8,15 @@
 #ifndef BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_H
 #define BACI_MIXTURE_FULL_CONSTRAINED_MIXTURE_FIBER_H
 
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+
+#include <Sacado.hpp>
+
 #include <functional>
 #include <limits>
 #include <memory>
 #include <vector>
-#include <Sacado.hpp>
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 
 namespace DRT
 {

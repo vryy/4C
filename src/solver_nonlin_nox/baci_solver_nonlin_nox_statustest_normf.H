@@ -15,11 +15,11 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_STATUSTEST_NORMF_H
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_NORMF_H
 
-#include <vector>
+#include "baci_solver_nonlin_nox_enum_lists.H"
 
 #include <NOX_StatusTest_NormF.H>  // (derived) base class
 
-#include "baci_solver_nonlin_nox_enum_lists.H"
+#include <vector>
 
 namespace NOX
 {

@@ -12,8 +12,9 @@
 #ifndef BACI_BEAMINTERACTION_DATA_H
 #define BACI_BEAMINTERACTION_DATA_H
 
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_inpar_beaminteraction.H"
+#include "baci_linalg_fixedsizematrix.H"
+
 #include <map>
 #include <set>
 

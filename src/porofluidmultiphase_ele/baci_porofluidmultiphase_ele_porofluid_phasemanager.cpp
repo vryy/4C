@@ -6,21 +6,20 @@
 
  *----------------------------------------------------------------------*/
 
-#include <numeric>
-
 #include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
 
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
-#include "baci_porofluidmultiphase_ele_calc_utils.H"
-
-#include "baci_mat_scatra_mat_multiporo.H"
 #include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_fluidporo_singlephase.H"
-#include "baci_mat_structporo.H"
 #include "baci_mat_fluidporo_multiphase_reactions.H"
 #include "baci_mat_fluidporo_multiphase_singlereaction.H"
+#include "baci_mat_fluidporo_singlephase.H"
+#include "baci_mat_scatra_mat_multiporo.H"
+#include "baci_mat_structporo.H"
+#include "baci_porofluidmultiphase_ele_calc_utils.H"
+#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+#include <numeric>
 
 
 

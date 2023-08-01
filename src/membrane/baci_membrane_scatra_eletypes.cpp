@@ -8,10 +8,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_membrane_scatra.H"
 #include "baci_membrane_scatra_eletypes.H"
 
 #include "baci_lib_linedefinition.H"
+#include "baci_membrane_scatra.H"
 
 /*----------------------------------------------------------------------*
  |  TRI 3 Element                                          sfuchs 05/18 |

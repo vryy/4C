@@ -11,8 +11,9 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_GENERIC_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_GENERIC_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_inpar_structure.H"
+
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_Vector;

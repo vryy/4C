@@ -6,10 +6,10 @@
 \level 2
 */
 /*----------------------------------------------------------------------*/
+#include "baci_mat_soret.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
-
-#include "baci_mat_soret.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 06/15 |

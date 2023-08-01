@@ -16,9 +16,9 @@ of errors, turbulence statistics etc.)
 #ifndef BACI_FLUID_ELE_XWALL_H
 #define BACI_FLUID_ELE_XWALL_H
 
-#include <Teuchos_RCP.hpp>
-
 #include "baci_fluid_ele.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 namespace DRT

@@ -8,14 +8,13 @@
 *----------------------------------------------------------------------*/
 #include "baci_fsi_xfem_XFScoupling_manager.H"
 
-#include "baci_xfem_condition_manager.H"
-#include "baci_fluid_xfluid.H"
 #include "baci_adapter_str_structure.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
+#include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid.H"  //Todo: remove me finally
+#include "baci_io.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_xfem_condition_manager.H"
 
 /*-----------------------------------------------------------------------------------------*
 | Constructor                                                                 ager 06/2016 |

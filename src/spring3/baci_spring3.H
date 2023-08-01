@@ -10,17 +10,16 @@
 #ifndef BACI_SPRING3_H
 #define BACI_SPRING3_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_inpar_browniandyn.H"
+#include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
-#include "baci_lib_elementtype.H"
-#include "baci_discretization_fem_general_utils_integration.H"
+#include <Epetra_Vector.h>
 #include <Sacado.hpp>
-
-#include "baci_inpar_browniandyn.H"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
 namespace DRT

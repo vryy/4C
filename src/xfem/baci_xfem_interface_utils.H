@@ -12,10 +12,10 @@
 #define BACI_XFEM_INTERFACE_UTILS_H
 
 // forward declaration of enums not possible
+#include "baci_cut_utils.H"
 #include "baci_inpar_xfem.H"
 #include "baci_lib_element.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_cut_utils.H"
 
 // avoid forward declaration for templated class
 #include "baci_fluid_ele_calc_xfem_coupling.H"

@@ -7,12 +7,11 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_coupling_volmortar.H"
+#include "baci_coupling_volmortar_utils.H"
 
+#include "baci_coupling_volmortar.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-
-#include "baci_coupling_volmortar_utils.H"
 
 /*----------------------------------------------------------------------*
  |  assign material to discretization A                       vuong 09/14|

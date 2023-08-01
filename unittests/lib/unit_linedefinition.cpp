@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include "baci_lib_linedefinition.H"
 
 namespace

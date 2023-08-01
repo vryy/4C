@@ -11,9 +11,10 @@
 #ifndef BACI_FBI_CALC_UTILS_H
 #define BACI_FBI_CALC_UTILS_H
 
-#include <vector>
 #include <Epetra_FEVector.h>
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 namespace DRT
 {

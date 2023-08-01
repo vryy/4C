@@ -11,22 +11,18 @@
 /* headers */
 #include "baci_beam3_discretization_runtime_vtu_writer.H"
 
-#include "baci_io_runtime_vtu_writer.H"
-#include "baci_io_control.H"
-
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
-
-#include "baci_linalg_fixedsizematrix.H"
-
 #include "baci_beam3_base.H"
 #include "baci_beam3_reissner.H"
-
-#include "baci_beaminteraction_periodic_boundingbox.H"
 #include "baci_beaminteraction_calc_utils.H"
+#include "baci_beaminteraction_periodic_boundingbox.H"
+#include "baci_io_control.H"
 #include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_runtime_vtu_writer.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_element.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_exceptions.H"
 
 
 /*-----------------------------------------------------------------------------------------------*

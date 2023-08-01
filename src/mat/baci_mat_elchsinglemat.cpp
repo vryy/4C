@@ -7,11 +7,11 @@ electric potential as degrees of freedom
 \level 2
 */
 /*----------------------------------------------------------------------*/
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_function_of_time.H"
-#include "baci_mat_par_bundle.H"
-
 #include "baci_mat_elchsinglemat.H"
+
+#include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -9,20 +9,17 @@
 /*----------------------------------------------------------------------*/
 #include "baci_sti_dyn.H"
 
+#include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_scatra_resulttest_elch.H"
+#include "baci_scatra_timint_elch.H"
 #include "baci_sti_clonestrategy.H"
 #include "baci_sti_monolithic.H"
 #include "baci_sti_partitioned.H"
 #include "baci_sti_resulttest.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_lib_utils_createdis.H"
-
-#include "baci_scatra_resulttest_elch.H"
-#include "baci_scatra_timint_elch.H"
-
-#include "baci_adapter_scatra_base_algorithm.H"
 
 /*--------------------------------------------------------------------------------*
  | entry point for simulations of scalar-thermo interaction problems   fang 04/15 |

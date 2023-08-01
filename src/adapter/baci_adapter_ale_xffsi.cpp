@@ -14,8 +14,8 @@
 /* header inclusions */
 #include "baci_adapter_ale_xffsi.H"
 
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

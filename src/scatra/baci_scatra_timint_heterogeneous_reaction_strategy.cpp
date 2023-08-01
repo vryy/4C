@@ -14,18 +14,13 @@
 #include "baci_lib_dofset_merged_wrapper.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parameter_list.H"
-
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_utils_clonestrategy.H"
-
-#include "baci_scatra_ele_action.H"
-
-#include "baci_scatra_ele.H"
-
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linear_solver_method_linalg.H"
-
 #include "baci_rebalance_utils.H"
+#include "baci_scatra_ele.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_utils_clonestrategy.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               vuong 06/16 |

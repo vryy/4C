@@ -13,12 +13,11 @@
 #ifndef BACI_ELEMAG_DIFF_ELE_CALC_H
 #define BACI_ELEMAG_DIFF_ELE_CALC_H
 
-#include "baci_elemag_ele_interface.H"
-#include "baci_elemag_diff_ele.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_inpar_elemag.H"
 #include "baci_discretization_fem_general_utils_shapevalues_hdg.H"
-
+#include "baci_elemag_diff_ele.H"
+#include "baci_elemag_ele_interface.H"
+#include "baci_inpar_elemag.H"
 #include "baci_utils_singleton_owner.H"
 
 namespace DRT

@@ -14,17 +14,14 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_adapter_ale.H"
-
+#include "baci_ale_meshtying.H"
 #include "baci_inpar_ale.H"
 
-#include "baci_ale_meshtying.H"
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

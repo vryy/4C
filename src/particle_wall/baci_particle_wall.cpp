@@ -10,31 +10,24 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_wall.H"
 
-#include "baci_particle_wall_datastate.H"
-#include "baci_particle_wall_discretization_runtime_vtu_writer.H"
-
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_enums.H"
-#include "baci_particle_engine_container_bundle.H"
-#include "baci_particle_engine_container.H"
-
 #include "baci_binstrategy.H"
-
+#include "baci_discretization_geometry_searchtree_service.H"
 #include "baci_inpar_particle.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_lib_dofset_transparent.H"
-
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_dofset_transparent.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-#include "baci_discretization_geometry_searchtree_service.H"
+#include "baci_particle_engine_container.H"
+#include "baci_particle_engine_container_bundle.H"
+#include "baci_particle_engine_enums.H"
+#include "baci_particle_engine_interface.H"
+#include "baci_particle_wall_datastate.H"
+#include "baci_particle_wall_discretization_runtime_vtu_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

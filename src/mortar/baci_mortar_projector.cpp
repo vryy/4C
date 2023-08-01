@@ -8,20 +8,18 @@
 /*-----------------------------------------------------------------------*/
 
 #include "baci_mortar_projector.H"
-#include "baci_mortar_interface.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_calc_utils.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_mortar_calc_utils.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_element.H"
+#include "baci_mortar_interface.H"
+#include "baci_mortar_node.H"
 
 /*----------------------------------------------------------------------*
  |  impl. for aux.-plane based projection                    farah 01/14|

@@ -12,11 +12,13 @@
 #ifndef BACI_MIXTURE_RULE_SIMPLE_H
 #define BACI_MIXTURE_RULE_SIMPLE_H
 
-#include "baci_mixture_rule.H"
-#include <Teuchos_RCPDecl.hpp>
-#include <vector>
-#include <memory>
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_mixture_rule.H"
+
+#include <Teuchos_RCPDecl.hpp>
+
+#include <memory>
+#include <vector>
 
 // forward declarations
 namespace MAT

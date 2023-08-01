@@ -8,26 +8,28 @@
 
 */
 /*---------------------------------------------------------------------*/
-#include <Teuchos_StandardParameterEntryValidators.hpp>
 #include "baci_contact_integrator.H"
-#include "baci_contact_node.H"
-#include "baci_contact_element.H"
+
 #include "baci_contact_defines.H"
-#include "baci_contact_paramsinterface.H"
+#include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_projector.H"
-#include "baci_mortar_coupling3d_classes.H"
-#include "baci_mortar_calc_utils.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_contact_node.H"
+#include "baci_contact_paramsinterface.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_mortar_calc_utils.H"
+#include "baci_mortar_coupling3d_classes.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_projector.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // headers for poro contact integration
-#include "baci_mat_structporo.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
+#include "baci_mat_structporo.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            farah 10/13|

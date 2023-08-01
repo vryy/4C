@@ -11,13 +11,11 @@
 #include "baci_particle_interaction_runtime_writer.H"
 
 #include "baci_inpar_particle.H"
-
-#include "baci_lib_globalproblem.H"
-
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_io_runtime_vtp_writer.H"
 #include "baci_io_runtime_csv_writer.H"
+#include "baci_io_runtime_vtp_writer.H"
+#include "baci_lib_globalproblem.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

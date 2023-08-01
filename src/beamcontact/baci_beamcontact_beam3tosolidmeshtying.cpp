@@ -10,12 +10,12 @@ element
 *----------------------------------------------------------------------*/
 
 #include "baci_beamcontact_beam3tosolidmeshtying.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
 
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_kirchhoff.H"
 #include "baci_beam3_euler_bernoulli.H"
+#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_reissner.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam3contact_utils.H"
 
 
 /*----------------------------------------------------------------------*

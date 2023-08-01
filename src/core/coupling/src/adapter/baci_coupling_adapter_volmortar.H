@@ -13,12 +13,12 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/13 |
  *---------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
+#include "baci_coupling_adapter.H"
 #include "baci_linalg_fixedsizematrix.H"
 
-#include "baci_coupling_adapter.H"
+#include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/13 |

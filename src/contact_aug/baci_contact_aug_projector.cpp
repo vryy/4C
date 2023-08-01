@@ -8,10 +8,11 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_contact_aug_projector.H"
-#include "baci_mortar_element.H"
+
 #include "baci_contact_aug_element_utils.H"
 #include "baci_linalg_gauss.H"
 #include "baci_mortar_defines.H"
+#include "baci_mortar_element.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------------*

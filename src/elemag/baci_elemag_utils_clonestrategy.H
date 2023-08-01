@@ -15,9 +15,10 @@
 /*----------------------------------------------------------------------------*/
 /*header inclusions */
 #include <Teuchos_RCP.hpp>
-#include <vector>
+
 #include <map>
 #include <string>
+#include <vector>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

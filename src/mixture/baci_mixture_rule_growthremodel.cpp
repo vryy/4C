@@ -9,18 +9,21 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_rule_growthremodel.H"
-#include <Epetra_ConfigDefs.h>
-#include "baci_linalg_serialdensematrix.H"
-#include <cmath>
-#include <iosfwd>
+
 #include "baci_linalg_fixedsizematrix.H"
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-#include <algorithm>
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_mat_par_material.H"
 #include "baci_mixture_constituent.H"
 #include "baci_mixture_growth_strategy.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_ConfigDefs.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <algorithm>
+#include <cmath>
+#include <iosfwd>
 
 // forward declarations
 namespace DRT

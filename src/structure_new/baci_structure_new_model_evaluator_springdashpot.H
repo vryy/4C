@@ -13,8 +13,9 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_SPRINGDASHPOT_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_SPRINGDASHPOT_H
 
-#include "baci_structure_new_model_evaluator_generic.H"
 #include "baci_constraint_springdashpot.H"
+#include "baci_structure_new_model_evaluator_generic.H"
+
 #include <Teuchos_RCP.hpp>
 
 // forward declarations

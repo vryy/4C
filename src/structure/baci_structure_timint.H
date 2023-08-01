@@ -13,25 +13,26 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <string>
-#include <iostream>
-#include <fstream>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Epetra_RowMatrix.h>
-#include <Teuchos_Time.hpp>
-#include <NOX.H>
-#include <NOX_Epetra.H>
-#include <ml_common.h>
-#include <ml_include.h>
 #include "baci_adapter_str_structure.H"
 #include "baci_inpar_structure.H"
-#include "baci_timestepping_mstep.H"
 #include "baci_lib_elements_paramsinterface.H"
+#include "baci_timestepping_mstep.H"
+
+#include <Epetra_Operator.h>
+#include <Epetra_RowMatrix.h>
+#include <Epetra_Vector.h>
+#include <ml_common.h>
+#include <ml_include.h>
+#include <NOX.H>
+#include <NOX_Epetra.H>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_Time.hpp>
+
+#include <fstream>
+#include <iostream>
+#include <string>
 
 
 // forward declarations

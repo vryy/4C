@@ -10,13 +10,13 @@ thereby builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_xfem_coupling_base.H"
 
 #include "baci_lib_condition_utils.H"
-#include "baci_xfem_utils.H"
 #include "baci_xfem_interface_utils.H"
+#include "baci_xfem_utils.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 // Needed for Master Fluid
 #include "baci_mat_newtonianfluid.H"

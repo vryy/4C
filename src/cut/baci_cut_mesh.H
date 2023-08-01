@@ -10,19 +10,18 @@ mesh
 #ifndef BACI_CUT_MESH_H
 #define BACI_CUT_MESH_H
 
-#include <list>
+#include "baci_cut_boundingbox.H"
+#include "baci_cut_facet.H"
+#include "baci_inpar_cut.H"
 
 #include <Shards_BasicTopologies.hpp>
 #include <Shards_CellTopologyTraits.hpp>
 
-#include "baci_cut_boundingbox.H"
-#include "baci_cut_facet.H"
-
-#include "baci_inpar_cut.H"
+#include <list>
 
 #ifdef DEBUG
-#include "baci_cut_node.H"
 #include "baci_cut_edge.H"
+#include "baci_cut_node.H"
 #endif
 
 

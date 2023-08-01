@@ -9,56 +9,50 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <iostream>
-#include "baci_io_pstream.H"
-#include "baci_linalg_serialdensevector.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include "baci_linalg_serialdensevector.H"
-
 #include "baci_structure_timint.H"
-#include "baci_structure_timint_genalpha.H"
 
-#include "baci_structure_resulttest.H"
-
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_gmsh.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_micromaterial.H"
-
-#include "baci_lib_discret_faces.H"
-#include "baci_lib_locsys.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_beamcontact_beam3contact_manager.H"
+#include "baci_cardiovascular0d_manager.H"
 #include "baci_comm_utils.H"
-#include "baci_surfstress_manager.H"
-#include "baci_mortar_manager_base.H"
-#include "baci_mortar_strategy_base.H"
-#include "baci_mortar_utils.H"
-#include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_inpar_mortar.H"
-#include "baci_inpar_contact.H"
-#include "baci_inpar_beamcontact.H"
 #include "baci_constraint_manager.H"
 #include "baci_constraint_solver.H"
 #include "baci_constraint_springdashpot_manager.H"
-#include "baci_beamcontact_beam3contact_manager.H"
-#include "baci_cardiovascular0d_manager.H"
-#include "baci_stru_multi_microstatic.H"
-#include "baci_mor_pod.H"
-
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-#include "baci_so3_sh8p8.H"
-#include "baci_poroelast_utils.H"
-
-#include "baci_io_pstream.H"
+#include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_discsh3.H"
+#include "baci_inpar_beamcontact.H"
+#include "baci_inpar_contact.H"
+#include "baci_inpar_mortar.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_io_gmsh.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_discret_faces.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_locsys.H"
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_mat_micromaterial.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mor_pod.H"
+#include "baci_mortar_manager_base.H"
+#include "baci_mortar_strategy_base.H"
+#include "baci_mortar_utils.H"
+#include "baci_poroelast_utils.H"
+#include "baci_so3_sh8p8.H"
+#include "baci_stru_multi_microstatic.H"
+#include "baci_structure_resulttest.H"
+#include "baci_structure_timint_genalpha.H"
+#include "baci_surfstress_manager.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <iostream>
 
 /*----------------------------------------------------------------------*/
 /* print tea time logo */

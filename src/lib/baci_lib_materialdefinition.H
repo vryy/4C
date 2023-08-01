@@ -14,12 +14,12 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
-
 #include "baci_inpar_material.H"
-#include "baci_mat_par_material.H"
 #include "baci_lib_inputreader.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
+
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

@@ -12,13 +12,13 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Interface_Preconditioner.H>
+#include "baci_lib_discret.H"
+#include "baci_structure_timint.H"
+
 #include <NOX_Direction_UserDefinedFactory.H>
 #include <NOX_Epetra_Group.H>
-
-#include "baci_structure_timint.H"
-#include "baci_lib_discret.H"
+#include <NOX_Epetra_Interface_Jacobian.H>
+#include <NOX_Epetra_Interface_Preconditioner.H>
 
 // forward declarations
 namespace DRT

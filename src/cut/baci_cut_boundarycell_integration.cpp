@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_cut_boundarycell_integration.H"
-#include "baci_cut_least_squares.H"
-#include "baci_cut_base_vol.H"
 
+#include "baci_cut_base_vol.H"
+#include "baci_cut_least_squares.H"
 #include "baci_io_pstream.H"
 
 /*--------------------------------------------------------------------------------------------*

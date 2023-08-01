@@ -9,22 +9,20 @@
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
-#include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_beaminteraction_beam3contact_utils.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
-
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
+#include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_geometry_pair_line_to_volume.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_factory.H"
+#include "baci_geometry_pair_line_to_volume.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
 
 
 /**

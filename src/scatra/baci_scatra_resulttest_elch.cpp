@@ -8,8 +8,9 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_scatra_timint_elch.H"
 #include "baci_scatra_resulttest_elch.H"
+
+#include "baci_scatra_timint_elch.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 03/15 |

@@ -9,9 +9,11 @@
 #ifndef BACI_MORTAR_COUPLING2D_H
 #define BACI_MORTAR_COUPLING2D_H
 
-#include <vector>
-#include <Epetra_Comm.h>
 #include "baci_inpar_mortar.H"
+
+#include <Epetra_Comm.h>
+
+#include <vector>
 
 // forward declarations
 namespace DRT

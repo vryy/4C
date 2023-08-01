@@ -9,8 +9,9 @@
 
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_mor.H"
+
+#include "baci_inpar_validparameters.H"
 
 void INPAR::MOR::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

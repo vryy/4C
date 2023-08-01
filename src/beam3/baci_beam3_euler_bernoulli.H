@@ -35,9 +35,8 @@
 #define BACI_BEAM3_EULER_BERNOULLI_H
 
 
-#include "baci_lib_node.H"
-
 #include "baci_beam3_base.H"
+#include "baci_lib_node.H"
 
 // #define SIMPLECALC ;          // simplified residuum and stiffness calculation for the small
 //  tension case Default: Off

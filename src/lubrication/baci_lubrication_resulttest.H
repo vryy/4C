@@ -13,11 +13,11 @@
 #define BACI_LUBRICATION_RESULTTEST_H
 
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_MultiVector.h>
-
 #include "baci_lib_resulttest.H"
+
+#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

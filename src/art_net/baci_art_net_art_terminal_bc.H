@@ -10,12 +10,12 @@
 #ifndef BACI_ART_NET_ART_TERMINAL_BC_H
 #define BACI_ART_NET_ART_TERMINAL_BC_H
 
-#include <Epetra_MpiComm.h>
-
-#include <Teuchos_RCP.hpp>
+#include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_io.H"
+
+#include <Epetra_MpiComm.h>
+#include <Teuchos_RCP.hpp>
 
 
 

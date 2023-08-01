@@ -12,9 +12,9 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_MORTAR_MANAGER_H
 
 
-#include <Teuchos_RCP.hpp>
-
 #include "baci_inpar_beaminteraction.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 // Forward declarations.

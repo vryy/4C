@@ -9,9 +9,9 @@
 #ifndef BACI_MAT_FLUIDPORO_H
 #define BACI_MAT_FLUIDPORO_H
 
+#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
-#include "baci_lib_parobjectfactory.H"
 
 namespace MAT
 {

@@ -13,15 +13,13 @@
 #ifndef BACI_LUBRICATION_TIMINT_IMPLICIT_H
 #define BACI_LUBRICATION_TIMINT_IMPLICIT_H
 
-#include <Epetra_MultiVector.h>
-#include "baci_linalg_serialdensevector.H"
-#include <Epetra_Map.h>
-
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_inpar_lubrication.H"
-
 #include "baci_lib_discret.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_MultiVector.h>
+#include <Teuchos_ParameterList.hpp>
 
 /*==========================================================================*/
 // Style guide                                                    nis Mar12

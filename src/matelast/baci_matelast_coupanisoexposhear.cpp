@@ -7,10 +7,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_coupanisoexposhear.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
-#include "baci_mat_par_material.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_mat_par_material.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
 
 MAT::ELASTIC::CoupAnisoExpoShearAnisotropyExtension::CoupAnisoExpoShearAnisotropyExtension(

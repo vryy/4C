@@ -9,14 +9,13 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_LINALG_H
 #define BACI_LINEAR_SOLVER_METHOD_LINALG_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "baci_inpar_solver.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
-
-#include "baci_utils_exceptions.H"
-#include "baci_inpar_solver.H"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_LinearProblem;

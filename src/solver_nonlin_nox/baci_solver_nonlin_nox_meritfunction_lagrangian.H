@@ -14,14 +14,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H
 #define BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_LAGRANGIAN_H
 
-#include <NOX_MeritFunction_Generic.H>  // base class
-#include <NOX_LineSearch_Utils_Slope.H>
-
-#include <Teuchos_RCP.hpp>
-
 #include "baci_solver_nonlin_nox_enum_lists.H"
-
 #include "baci_utils_exceptions.H"
+
+#include <NOX_LineSearch_Utils_Slope.H>
+#include <NOX_MeritFunction_Generic.H>  // base class
+#include <Teuchos_RCP.hpp>
 
 
 // forward declaration

@@ -7,17 +7,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_timint_meshtying_strategy_base.H"
+#include "baci_scatra_timint_stat.H"
 
 #include "baci_io.H"
-
 #include "baci_lib_utils_parameter_list.H"
-
 #include "baci_scatra_ele_action.H"
+#include "baci_scatra_timint_meshtying_strategy_base.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_scatra_timint_stat.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                      gjb 08/08 |

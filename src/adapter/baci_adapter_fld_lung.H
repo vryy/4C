@@ -14,12 +14,12 @@ parenchyma balloon
 #ifndef BACI_ADAPTER_FLD_LUNG_H
 #define BACI_ADAPTER_FLD_LUNG_H
 
-#include <set>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_adapter_fld_fluid_fsi.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 
 // forward declarations

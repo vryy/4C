@@ -9,10 +9,11 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_cut_facetgraph.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_side.H"
+
 #include "baci_cut_facetgraph_simple.H"
+#include "baci_cut_mesh.H"
 #include "baci_cut_output.H"
+#include "baci_cut_side.H"
 
 
 /*----------------------------------------------------------------------------*

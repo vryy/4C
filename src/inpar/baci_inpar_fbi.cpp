@@ -12,9 +12,10 @@
 
 
 #include "baci_inpar_fbi.H"
+
+#include "baci_inpar_geometry_pair.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
-#include "baci_inpar_geometry_pair.H"
 
 void INPAR::FBI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

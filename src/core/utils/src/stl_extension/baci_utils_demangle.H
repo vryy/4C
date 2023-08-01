@@ -8,9 +8,10 @@
 #ifndef BACI_UTILS_DEMANGLE_H
 #define BACI_UTILS_DEMANGLE_H
 
-#include <string>
-#include <memory>
 #include <cxxabi.h>
+
+#include <memory>
+#include <string>
 
 namespace CORE::UTILS
 {

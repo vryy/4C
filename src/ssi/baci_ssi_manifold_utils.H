@@ -11,14 +11,16 @@
 #ifndef BACI_SSI_MANIFOLD_UTILS_H
 #define BACI_SSI_MANIFOLD_UTILS_H
 
+#include "baci_coupling_adapter.H"
+#include "baci_io_runtime_csv_writer.H"
+#include "baci_ssi_utils.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+
+#include <memory>
 #include <optional>
 #include <set>
-#include <memory>
-#include "baci_io_runtime_csv_writer.H"
-#include "baci_coupling_adapter.H"
-#include "baci_ssi_utils.H"
 
 namespace CORE::ADAPTER
 {

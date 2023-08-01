@@ -11,15 +11,14 @@
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_TYPE_H
 
 #include <Epetra_Comm.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
-#include <Epetra_LinearProblem.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_LinearProblem.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
-
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINEAR_SOLVER
 {

@@ -10,26 +10,23 @@
 
 #include "baci_fbi_beam_to_fluid_meshtying_pair_base.H"
 
-#include "baci_beaminteraction_contact_pair.H"
+#include "baci_beam3_euler_bernoulli.H"
+#include "baci_beam3_kirchhoff.H"
+#include "baci_beam3_reissner.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
-
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_kirchhoff.H"
-#include "baci_beam3_euler_bernoulli.H"
-
+#include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_geometry_pair_line_to_volume.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_factory.H"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.H"
+#include "baci_geometry_pair_line_to_volume.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 
 

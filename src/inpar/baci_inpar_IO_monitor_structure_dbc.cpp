@@ -9,9 +9,9 @@
 
 #include "baci_inpar_IO_monitor_structure_dbc.H"
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar.H"
 #include "baci_inpar_parameterlist_utils.H"
+#include "baci_inpar_validparameters.H"
 
 #include <Teuchos_ParameterList.hpp>
 

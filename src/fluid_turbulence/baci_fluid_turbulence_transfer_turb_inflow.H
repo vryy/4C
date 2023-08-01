@@ -15,8 +15,9 @@ to)
 
 #ifndef BACI_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
 #define BACI_FLUID_TURBULENCE_TRANSFER_TURB_INFLOW_H
-#include <Teuchos_RCP.hpp>
 #include "baci_linalg_utils_sparse_algebra_math.H"
+
+#include <Teuchos_RCP.hpp>
 
 /*
 

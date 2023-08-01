@@ -14,11 +14,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_lib_particlereader.H"
 
-#include "baci_particle_engine_enums.H"
-#include "baci_particle_engine_typedefs.H"
-#include "baci_particle_engine_object.H"
-
 #include "baci_io_pstream.H"
+#include "baci_particle_engine_enums.H"
+#include "baci_particle_engine_object.H"
+#include "baci_particle_engine_typedefs.H"
 
 #include <Teuchos_Time.hpp>
 

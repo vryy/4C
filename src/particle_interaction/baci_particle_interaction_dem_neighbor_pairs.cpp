@@ -10,18 +10,14 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_dem_neighbor_pairs.H"
 
-#include "baci_particle_interaction_utils.H"
-
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_container.H"
-
-#include "baci_particle_wall_interface.H"
-
-#include "baci_mat_particle_wall_dem.H"
-
-#include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_discretization_geometry_position_array.H"
 #include "baci_discretization_geometry_element_coordtrafo.H"
+#include "baci_discretization_geometry_position_array.H"
+#include "baci_discretization_geometry_searchtree_service.H"
+#include "baci_mat_particle_wall_dem.H"
+#include "baci_particle_engine_container.H"
+#include "baci_particle_engine_interface.H"
+#include "baci_particle_interaction_utils.H"
+#include "baci_particle_wall_interface.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

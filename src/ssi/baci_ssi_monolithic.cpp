@@ -8,6 +8,25 @@
 /*--------------------------------------------------------------------------*/
 #include "baci_ssi_monolithic.H"
 
+#include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_adapter_str_ssiwrapper.H"
+#include "baci_adapter_str_structure_new.H"
+#include "baci_contact_nitsche_strategy_ssi.H"
+#include "baci_inpar_ssi.H"
+#include "baci_io_control.H"
+#include "baci_lib_assemblestrategy.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_locsys.H"
+#include "baci_linalg_equilibrate.H"
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linalg_utils_sparse_algebra_print.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_scatra_timint_elch.H"
+#include "baci_scatra_timint_meshtying_strategy_s2i.H"
 #include "baci_ssi_coupling.H"
 #include "baci_ssi_manifold_utils.H"
 #include "baci_ssi_monolithic_assemble_strategy.H"
@@ -17,34 +36,7 @@
 #include "baci_ssi_monolithic_evaluate_OffDiag.H"
 #include "baci_ssi_monolithic_meshtying_strategy.H"
 #include "baci_ssi_utils.H"
-
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_str_structure_new.H"
-#include "baci_adapter_scatra_base_algorithm.H"
-
-#include "baci_contact_nitsche_strategy_ssi.H"
-
-#include "baci_inpar_ssi.H"
-
-#include "baci_io_control.H"
-
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_locsys.H"
-
-#include "baci_scatra_timint_elch.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-
 #include "baci_structure_new_model_evaluator_contact.H"
-
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_equilibrate.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_print.H"
 
 
 /*--------------------------------------------------------------------------*

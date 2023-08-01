@@ -16,16 +16,16 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
-#include "baci_tsi_dyn.H"
-#include "baci_tsi_algorithm.H"
-#include "baci_tsi_partitioned.H"
-#include "baci_tsi_monolithic.H"
-#include "baci_tsi_utils.H"
-#include "baci_inpar_tsi.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_adapter_thermo.H"
 #include "baci_adapter_str_structure.H"
+#include "baci_adapter_thermo.H"
+#include "baci_inpar_tsi.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_tsi_algorithm.H"
+#include "baci_tsi_dyn.H"
+#include "baci_tsi_monolithic.H"
+#include "baci_tsi_partitioned.H"
+#include "baci_tsi_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

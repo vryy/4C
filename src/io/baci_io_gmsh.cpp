@@ -10,15 +10,16 @@
 
 
 #include "baci_io_gmsh.H"
+
+#include "baci_discretization_geometry_intersection_service.H"
+#include "baci_discretization_geometry_position_array.H"
 #include "baci_io_control.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"  // CORE::LINALG::Export
 #include "baci_linalg_serialdensevector.H"
-#include "baci_discretization_geometry_intersection_service.H"
-#include "baci_discretization_geometry_position_array.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"  // CORE::LINALG::Export
 
 
 /*------------------------------------------------------------------------------------------------*

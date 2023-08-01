@@ -10,8 +10,8 @@ Definition of classes for the isochoric contribution of a Yeoh-type material
 #ifndef BACI_MATELAST_ISOYEOH_H
 #define BACI_MATELAST_ISOYEOH_H
 
-#include "baci_matelast_summand.H"
 #include "baci_mat_par_parameter.H"
+#include "baci_matelast_summand.H"
 
 namespace MAT
 {

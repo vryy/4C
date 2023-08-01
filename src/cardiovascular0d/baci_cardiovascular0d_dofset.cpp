@@ -10,8 +10,8 @@
 
 #include "baci_cardiovascular0d_dofset.H"
 
-#include <iostream>
 #include <algorithm>
+#include <iostream>
 #include <numeric>
 
 

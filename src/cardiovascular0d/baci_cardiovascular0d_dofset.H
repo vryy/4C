@@ -10,17 +10,16 @@
 #ifndef BACI_CARDIOVASCULAR0D_DOFSET_H
 #define BACI_CARDIOVASCULAR0D_DOFSET_H
 
-#include <vector>
-#include <list>
-
-#include <Epetra_IntVector.h>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Map.h>
-
+#include "baci_lib_discret.H"
+#include "baci_lib_dofset.H"
 #include "baci_mor_pod.H"
 
-#include "baci_lib_dofset.H"
-#include "baci_lib_discret.H"
+#include <Epetra_IntVector.h>
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
+#include <list>
+#include <vector>
 
 namespace UTILS
 {

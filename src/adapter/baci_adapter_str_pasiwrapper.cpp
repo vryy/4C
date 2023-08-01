@@ -14,9 +14,8 @@
  *----------------------------------------------------------------------*/
 #include "baci_adapter_str_pasiwrapper.H"
 
-#include "baci_structure_aux.H"
-
 #include "baci_lib_discret.H"
+#include "baci_structure_aux.H"
 
 /*----------------------------------------------------------------------*
  | definitions                                                          |

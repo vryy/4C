@@ -6,22 +6,23 @@
 /*----------------------------------------------------------------------*/
 
 
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-#include <ctime>
-#include <Epetra_MpiComm.h>
-#include <iostream>
-#include <pwd.h>
-#include <utility>
-#include <unistd.h>
-#include <vector>
-
-#include "baci_inpar_problemtype.H"
-
-#include "baci_config_revision.H"
 #include "baci_config_compile_settings.H"
 
+#include "baci_io_control.H"
+
+#include "baci_config_revision.H"
+#include "baci_inpar_problemtype.H"
 #include "baci_io_legacy_table_cpp.h"  // access to legacy parser module
+#include "baci_io_pstream.H"
+
+#include <Epetra_MpiComm.h>
+#include <pwd.h>
+#include <unistd.h>
+
+#include <ctime>
+#include <iostream>
+#include <utility>
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

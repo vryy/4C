@@ -16,11 +16,11 @@
 
 #include <NOX_Common.H>
 #include <NOX_StatusTest_Generic.H>
-
 #include <Teuchos_ParameterList.hpp>
 
 // All the different supported line searches
 #include "baci_solver_nonlin_nox_linesearch_backtrack.H"
+
 #include <NOX_LineSearch_FullStep.H>
 
 /*----------------------------------------------------------------------------*

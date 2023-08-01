@@ -11,11 +11,11 @@
 /*----------------------------------------------------------------------------*/
 /* headers */
 #include "baci_coupling_adapter_converter.H"
+
 #include "baci_coupling_adapter.H"
 
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
-
 #include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------------*/

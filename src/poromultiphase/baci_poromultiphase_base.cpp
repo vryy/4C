@@ -8,23 +8,18 @@
 
 #include "baci_poromultiphase_base.H"
 
+#include "baci_adapter_porofluidmultiphase_wrapper.H"
+#include "baci_inpar_porofluidmultiphase.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_porofluidmultiphase_utils.H"
 
-#include "baci_inpar_porofluidmultiphase.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-
-#include "baci_adapter_porofluidmultiphase_wrapper.H"
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
-
 // new structural time integration
-#include "baci_adapter_str_structure_new.H"
 #include "baci_adapter_str_factory.H"
-
-#include "baci_io_control.H"
+#include "baci_adapter_str_structure_new.H"
 #include "baci_io.H"
+#include "baci_io_control.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                              vuong 08/16  |

@@ -10,17 +10,15 @@
 
 #include "baci_fbi_beam_to_fluid_meshtying_vtk_output_writer.H"
 
-#include "baci_fbi_constraintenforcer.H"
-#include "baci_fbi_adapter_constraintbridge_penalty.H"
-#include "baci_fbi_beam_to_fluid_meshtying_params.H"
-
 #include "baci_adapter_str_fsiwrapper.H"
-
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
+#include "baci_beaminteraction_contact_pair.H"
+#include "baci_fbi_adapter_constraintbridge_penalty.H"
+#include "baci_fbi_beam_to_fluid_meshtying_params.H"
+#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_params.H"
+#include "baci_fbi_constraintenforcer.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 

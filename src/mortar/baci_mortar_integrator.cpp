@@ -9,21 +9,19 @@ of two MortarElements in 1D and 2D
 /*----------------------------------------------------------------------*/
 
 #include "baci_mortar_integrator.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_projector.H"
-#include "baci_mortar_coupling3d_classes.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_calc_utils.H"
-#include "baci_mortar_shape_utils.H"
 
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
-
-#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
-
+#include "baci_mortar_calc_utils.H"
+#include "baci_mortar_coupling3d_classes.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_element.H"
+#include "baci_mortar_node.H"
+#include "baci_mortar_projector.H"
+#include "baci_mortar_shape_utils.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

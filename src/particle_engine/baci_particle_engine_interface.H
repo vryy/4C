@@ -14,9 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_container_bundle.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_particle_engine_container_bundle.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>

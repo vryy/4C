@@ -10,8 +10,8 @@
 #ifndef BACI_LUBRICATION_ELE_CALC_UTILS_H
 #define BACI_LUBRICATION_ELE_CALC_UTILS_H
 
-#include "baci_lib_element.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_element.H"
 
 namespace LUBRICATION
 {

@@ -10,14 +10,13 @@
 #ifndef BACI_LINALG_SPARSEMATRIX_H
 #define BACI_LINALG_SPARSEMATRIX_H
 
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_sparsematrixbase.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FECrsMatrix.h>
-#include <Epetra_Comm.h>
-
-
-#include "baci_linalg_sparsematrixbase.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_utils_exceptions.H"
 
 
 namespace CORE::LINALG

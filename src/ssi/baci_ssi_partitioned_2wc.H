@@ -10,8 +10,8 @@
 #ifndef BACI_SSI_PARTITIONED_2WC_H
 #define BACI_SSI_PARTITIONED_2WC_H
 
-#include "baci_ssi_partitioned.H"
 #include "baci_inpar_ssi.H"
+#include "baci_ssi_partitioned.H"
 
 namespace SSI
 {

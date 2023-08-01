@@ -10,12 +10,11 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_adapter_str_loca.H"
+
 #include "baci_adapter_str_loca_wrapper.H"
-
-#include "baci_structure_new_timint_base.H"
-
-#include "baci_utils_exceptions.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
 

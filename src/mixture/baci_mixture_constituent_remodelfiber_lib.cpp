@@ -6,12 +6,13 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mixture_constituent_remodelfiber_lib.H"
-#include "baci_mixture_constituent_remodelfiber_material.H"
-#include "baci_mixture_constituent_remodelfiber_material_exponential.H"
-#include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+#include "baci_mixture_constituent_remodelfiber_material.H"
+#include "baci_mixture_constituent_remodelfiber_material_exponential.H"
+#include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
 
 [[nodiscard]] const MIXTURE::PAR::RemodelFiberMaterial<double>* MIXTURE::PAR::FiberMaterialFactory(
     int matid)

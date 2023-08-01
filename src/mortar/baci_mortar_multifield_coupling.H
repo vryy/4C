@@ -12,8 +12,8 @@
 #ifndef BACI_MORTAR_MULTIFIELD_COUPLING_H
 #define BACI_MORTAR_MULTIFIELD_COUPLING_H
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declaration
 namespace CORE::LINALG

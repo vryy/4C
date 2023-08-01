@@ -15,12 +15,12 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 09/14 |
  *---------------------------------------------------------------------*/
-#include "baci_utils_pairedvector.H"
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "baci_inpar_wear.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
+#include "baci_inpar_wear.H"
+#include "baci_utils_pairedvector.H"
 #include "baci_utils_singleton_owner.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 09/14 |

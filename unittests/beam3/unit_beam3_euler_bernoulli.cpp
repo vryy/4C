@@ -9,12 +9,13 @@
 
 #include <gtest/gtest.h>
 
-#include <Epetra_SerialComm.h>
-#include <array>
-
-#include "baci_unittest_utils_assertions.h"
-#include "baci_lib_element.H"
 #include "baci_beam3_euler_bernoulli.H"
+#include "baci_lib_element.H"
+#include "baci_unittest_utils_assertions.h"
+
+#include <Epetra_SerialComm.h>
+
+#include <array>
 
 const double testTolerance = 1e-14;
 

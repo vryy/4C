@@ -13,14 +13,13 @@
 #ifndef BACI_FSI_ALGORITHM_H
 #define BACI_FSI_ALGORITHM_H
 
-#include <Epetra_Comm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include "baci_adapter_fld_fluid_ale.H"
 #include "baci_adapter_algorithmbase.H"
+#include "baci_adapter_fld_fluid_ale.H"
 #include "baci_coupling_adapter.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

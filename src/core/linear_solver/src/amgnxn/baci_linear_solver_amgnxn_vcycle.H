@@ -13,18 +13,18 @@
 // Trilinos includes
 #include <Epetra_MultiVector.h>
 #include <Epetra_Operator.h>
-#include <Teuchos_RCP.hpp>
 #include <MueLu.hpp>
-#include <MueLu_Level.hpp>
 #include <MueLu_BaseClass.hpp>
-#include <MueLu_Utilities.hpp>
+#include <MueLu_Level.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
+#include <MueLu_Utilities.hpp>
+#include <Teuchos_RCP.hpp>
 
 // Baci includes
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_blocksparsematrix.H"
-#include "baci_linear_solver_preconditioner_type.H"
 #include "baci_linear_solver_amgnxn_smoothers.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_type.H"
 
 
 namespace CORE::LINEAR_SOLVER::AMGNXN

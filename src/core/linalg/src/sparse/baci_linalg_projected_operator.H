@@ -10,8 +10,8 @@
 #ifndef BACI_LINALG_PROJECTED_OPERATOR_H
 #define BACI_LINALG_PROJECTED_OPERATOR_H
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Operator.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_MultiVector;

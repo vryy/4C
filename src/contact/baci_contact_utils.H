@@ -11,10 +11,10 @@
 #ifndef BACI_CONTACT_UTILS_H
 #define BACI_CONTACT_UTILS_H
 
+#include <Teuchos_RCP.hpp>
+
 #include <set>
 #include <vector>
-
-#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

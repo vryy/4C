@@ -10,8 +10,9 @@
 /*-----------------------------------------------------------*/
 
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_binningstrategy.H"
+
+#include "baci_inpar_validparameters.H"
 
 
 

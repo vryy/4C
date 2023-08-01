@@ -8,17 +8,19 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <algorithm>
-#include <Teuchos_TimeMonitor.hpp>
-#include <utility>
-
 #include "baci_lib_discret.H"
+
+#include "baci_lib_dofset_pbc.H"
+#include "baci_lib_dofset_proxy.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_lib_dofset_proxy.H"
-#include "baci_lib_dofset_pbc.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <algorithm>
+#include <utility>
 
 
 /*----------------------------------------------------------------------*

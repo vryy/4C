@@ -13,11 +13,10 @@ bridge between the xfluid class and the cut-library
 #ifndef BACI_XFEM_COUPLING_LEVELSET_H
 #define BACI_XFEM_COUPLING_LEVELSET_H
 
-#include "baci_xfem_coupling_base.H"
+#include "baci_cut_point.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_twophase.H"
-#include "baci_cut_point.H"
-
+#include "baci_xfem_coupling_base.H"
 #include "baci_xfem_utils.H"
 
 namespace CORE::GEO

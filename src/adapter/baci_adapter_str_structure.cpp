@@ -10,44 +10,39 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_adapter_str_structure.H"
-#include "baci_adapter_str_timint_adaptive.H"
-#include "baci_adapter_str_fsi_timint_adaptive.H"
+
 #include "baci_adapter_str_constr_merged.H"
-#include "baci_adapter_str_wrapper.H"
+#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_adapter_str_fsi_timint_adaptive.H"
+#include "baci_adapter_str_fsiwrapper_immersed.H"
 #include "baci_adapter_str_lung.H"
 #include "baci_adapter_str_redairway.H"
 #include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_adapter_str_fsiwrapper_immersed.H"
 #include "baci_adapter_str_timeloop.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
+#include "baci_adapter_str_timint_adaptive.H"
+#include "baci_adapter_str_wrapper.H"
 #include "baci_comm_utils.H"
-
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_poroelast.H"
 #include "baci_inpar_structure.H"
-
+#include "baci_inpar_validparameters.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_mat_par_bundle.H"
 #include "baci_structure_timada_create.H"
 #include "baci_structure_timint_create.H"
 #include "baci_structure_timint_impl.H"
 
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-
-#include "baci_linear_solver_method_linalg.H"
-
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

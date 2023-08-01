@@ -7,16 +7,16 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_mortar_interface.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_dofset.H"
-#include "baci_mortar_integrator.H"
-#include "baci_mortar_defines.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_io_control.H"
 #include "baci_io_gmsh.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_io_control.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_dofset.H"
+#include "baci_mortar_element.H"
+#include "baci_mortar_integrator.H"
+#include "baci_mortar_interface.H"
+#include "baci_mortar_node.H"
 
 /*----------------------------------------------------------------------*
  |  Visualize mortar stuff with gmsh                          popp 08/08|

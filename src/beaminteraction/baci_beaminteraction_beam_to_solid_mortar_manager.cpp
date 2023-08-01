@@ -9,20 +9,19 @@
 
 #include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
 
+#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
+#include "baci_beaminteraction_beam_to_solid_utils.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
+#include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_surface_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
-
 #include "baci_geometry_pair.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 #include <Epetra_FEVector.h>
 

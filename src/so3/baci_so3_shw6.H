@@ -8,8 +8,9 @@
 #ifndef BACI_SO3_SHW6_H
 #define BACI_SO3_SHW6_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_so3_weg6.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {

@@ -11,17 +11,15 @@
 #ifndef BACI_FSI_MONOLITHIC_H
 #define BACI_FSI_MONOLITHIC_H
 
-#include <NOX.H>
-#include <NOX_Epetra.H>
-
-#include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_algorithmbase.H"
-
+#include "baci_adapter_fld_base_algorithm.H"
+#include "baci_coupling_adapter.H"
 #include "baci_fsi_monolithicinterface.H"
+#include "baci_inpar_fsi.H"
 #include "baci_linalg_mapextractor.H"
 
-#include "baci_inpar_fsi.H"
-#include "baci_coupling_adapter.H"
+#include <NOX.H>
+#include <NOX_Epetra.H>
 
 // forward declarations
 namespace ADAPTER

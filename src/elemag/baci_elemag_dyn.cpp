@@ -8,31 +8,32 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <iostream>
+#include "baci_elemag_dyn.H"
+
+#include "baci_comm_utils.H"
+#include "baci_elemag_ele.H"
+#include "baci_elemag_timeint.H"
+#include "baci_inpar_elemag.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_lib_discret_hdg.H"
+#include "baci_lib_dofset_independent.H"
+#include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linear_solver_method_linalg.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "baci_elemag_dyn.H"
-#include "baci_elemag_timeint.H"
-#include "baci_elemag_ele.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_inpar_elemag.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_dofset_independent.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_comm_utils.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
+#include <iostream>
 
 // Clone discreization
-#include "baci_lib_utils_createdis.H"
 #include "baci_elemag_utils_clonestrategy.H"
+#include "baci_lib_utils_createdis.H"
 
 // Scatra init
-#include "baci_inpar_scatra.H"
 #include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_inpar_scatra.H"
 #include "baci_scatra_timint_stat.H"
 #include "baci_scatra_timint_stat_hdg.H"
 

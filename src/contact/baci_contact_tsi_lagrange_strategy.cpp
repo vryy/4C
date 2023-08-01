@@ -8,27 +8,26 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <Epetra_SerialComm.h>
 #include "baci_contact_tsi_lagrange_strategy.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_tsi_interface.H"
+
 #include "baci_contact_defines.H"
 #include "baci_contact_friction_node.H"
-#include "baci_mortar_utils.H"
-#include "baci_inpar_contact.H"
-#include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_multiply.H"
-#include "baci_inpar_thermo.H"
+#include "baci_contact_interface.H"
+#include "baci_contact_tsi_interface.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
-
-#include "baci_contact_tsi_interface.H"
-
-#include "baci_linalg_sparsematrix.H"
+#include "baci_inpar_contact.H"
+#include "baci_inpar_thermo.H"
+#include "baci_io.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mortar_utils.H"
+
+#include <Epetra_SerialComm.h>
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                             seitz 08/15|

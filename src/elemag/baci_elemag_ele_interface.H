@@ -11,14 +11,13 @@
 #ifndef BACI_ELEMAG_ELE_INTERFACE_H
 #define BACI_ELEMAG_ELE_INTERFACE_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-
-
 #include "baci_cut_utils.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace MAT
 {

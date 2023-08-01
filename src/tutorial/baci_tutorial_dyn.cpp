@@ -10,13 +10,12 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_tutorial_dyn.H"
-#include "baci_tutorial_inpar.H"
-
-#include "baci_tutorial_nln_truss.H"
-#include "baci_tutorial_fixedpoint_scheme.H"
-#include "baci_tutorial_struct_ale_coupling.H"
 
 #include "baci_lib_globalproblem.H"
+#include "baci_tutorial_fixedpoint_scheme.H"
+#include "baci_tutorial_inpar.H"
+#include "baci_tutorial_nln_truss.H"
+#include "baci_tutorial_struct_ale_coupling.H"
 
 
 void tutorial_drt()

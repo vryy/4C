@@ -12,18 +12,17 @@
 #ifndef BACI_LIB_UTILS_H
 #define BACI_LIB_UTILS_H
 
-#include <signal.h>
-#include <random>
-#include <stdio.h>
-
-#include <Teuchos_RCP.hpp>
+#include "baci_inpar_scatra.H"
+#include "baci_lib_element.H"
+#include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 
-#include "baci_lib_node.H"
-#include "baci_lib_element.H"
+#include <signal.h>
+#include <stdio.h>
+#include <Teuchos_RCP.hpp>
 
-#include "baci_inpar_scatra.H"
+#include <random>
 
 // forward declarations
 namespace CORE::LINALG

@@ -14,11 +14,10 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_enums.H"
-#include "baci_particle_engine_typedefs.H"
-
 #include "baci_lib_parobject.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_particle_engine_enums.H"
+#include "baci_particle_engine_typedefs.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

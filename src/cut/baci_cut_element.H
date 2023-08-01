@@ -12,9 +12,8 @@
 #define BACI_CUT_ELEMENT_H
 
 #include "baci_cut_integrationcell.H"
-#include "baci_cut_utils.H"
 #include "baci_cut_node.H"
-
+#include "baci_cut_utils.H"
 #include "baci_inpar_cut.H"
 
 namespace CORE::GEO

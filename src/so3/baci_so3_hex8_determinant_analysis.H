@@ -12,6 +12,7 @@
 #define BACI_SO3_HEX8_DETERMINANT_ANALYSIS_H
 
 #include "baci_so3_hex8.H"
+
 #include <functional>
 #include <list>
 

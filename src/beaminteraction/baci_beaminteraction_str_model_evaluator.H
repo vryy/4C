@@ -12,11 +12,11 @@
 #ifndef BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_H
 #define BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_H
 
-#include "baci_structure_new_model_evaluator_generic.H"  // base class
+#include "baci_coupling_adapter.H"
 #include "baci_inpar_beaminteraction.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_structure_new_enum_lists.H"
-#include "baci_coupling_adapter.H"
+#include "baci_structure_new_model_evaluator_generic.H"  // base class
 
 
 // forward declaration ...

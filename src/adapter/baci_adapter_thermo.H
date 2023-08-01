@@ -19,13 +19,13 @@
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
+#include "baci_inpar_thermo.H"
+
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
-
-#include "baci_inpar_thermo.H"
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 /*----------------------------------------------------------------------*

@@ -11,13 +11,12 @@
 
 
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
+
 #include "baci_beaminteraction_calc_utils.H"
-
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_utils_exceptions.H"
-
 #include "baci_beaminteraction_crosslinker_handler.H"
+#include "baci_beaminteraction_periodic_boundingbox.H"
+#include "baci_beaminteraction_str_model_evaluator_datastate.H"
+#include "baci_utils_exceptions.H"
 
 
 

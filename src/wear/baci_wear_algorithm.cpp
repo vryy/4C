@@ -14,29 +14,25 @@
  | headers                                                  farah 11/13 |
  *----------------------------------------------------------------------*/
 #include "baci_wear_algorithm.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_mortar_manager_base.H"
 
 #include "baci_adapter_ale.H"
 #include "baci_adapter_ale_wear.H"
-
-#include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_contact_wear_lagrange_strategy.H"
-#include "baci_contact_wear_interface.H"
-#include "baci_contact_friction_node.H"
-#include "baci_contact_element.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_adapter_str_structure.H"
 #include "baci_contact_aug_interface.H"
+#include "baci_contact_element.H"
+#include "baci_contact_friction_node.H"
+#include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_contact_strategy_factory.H"
 #include "baci_contact_utils.H"
-
-#include "baci_adapter_str_structure.H"
-#include "baci_adapter_str_fsiwrapper.H"
-
-#include "baci_inpar_wear.H"
+#include "baci_contact_wear_interface.H"
+#include "baci_contact_wear_lagrange_strategy.H"
 #include "baci_inpar_ale.H"
-
-#include "baci_nurbs_discret_control_point.H"
+#include "baci_inpar_wear.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mortar_manager_base.H"
 #include "baci_nurbs_discret.H"
+#include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
 
 

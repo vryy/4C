@@ -6,15 +6,18 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mixture_remodelfiber.H"
+
+#include "baci_lib_parobject.H"
+#include "baci_mixture_constituent_remodelfiber_material.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
 #include "baci_mixture_remodelfiber-internal.H"
+#include "baci_utils_fad.H"
+
+#include <Sacado.hpp>
+
 #include <algorithm>
 #include <memory>
-#include "baci_mixture_constituent_remodelfiber_material.H"
-#include "baci_lib_parobject.H"
-#include <Sacado.hpp>
 #include <type_traits>
-#include "baci_utils_fad.H"
 
 // anonymous namespace for helper functions and classes
 namespace

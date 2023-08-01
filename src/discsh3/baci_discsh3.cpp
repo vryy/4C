@@ -7,14 +7,14 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_discsh3.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_globalproblem.H"
 
-#include "baci_so3_nullspace.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_so3_nullspace.H"
+#include "baci_utils_exceptions.H"
 
 
 DRT::ELEMENTS::DiscSh3Type DRT::ELEMENTS::DiscSh3Type::instance_;

@@ -15,9 +15,10 @@
 #define BACI_DISCRETIZATION_GEOMETRY_INTERSECTION_MATH_H
 
 
-#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensevector.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 
 namespace CORE::GEO

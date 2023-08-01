@@ -10,13 +10,13 @@
 
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_utils.H"
 
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_beam_to_solid_surface_vtk_output_params.H"
+#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_geometry_pair_element_faces.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 
 /**

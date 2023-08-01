@@ -11,10 +11,10 @@
 #ifndef BACI_CUT_TETMESH_H
 #define BACI_CUT_TETMESH_H
 
-#include <queue>
-
 #include "baci_cut_facet.H"
 #include "baci_cut_side.H"
+
+#include <queue>
 
 #ifdef DEBUGCUTLIBRARY
 #define TETMESH_GMSH_DEBUG_OUTPUT

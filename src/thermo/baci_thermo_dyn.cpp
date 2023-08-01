@@ -13,10 +13,10 @@
 /*----------------------------------------------------------------------*
  | headers                                                   gjb 01/08 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_dyn.H"
+#include "baci_adapter_thermo.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_adapter_thermo.H"
+#include "baci_thermo_dyn.H"
 #include "baci_thermo_resulttest.H"
 
 /*----------------------------------------------------------------------*

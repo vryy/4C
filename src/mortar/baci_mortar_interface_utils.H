@@ -9,8 +9,8 @@
 #ifndef BACI_MORTAR_INTERFACE_UTILS_H
 #define BACI_MORTAR_INTERFACE_UTILS_H
 
-#include <vector>
 #include <string>
+#include <vector>
 
 namespace MORTAR
 {

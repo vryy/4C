@@ -9,12 +9,12 @@
 #ifndef BACI_MATELAST_REMODELFIBER_H
 #define BACI_MATELAST_REMODELFIBER_H
 
-#include <utility>
-
-#include "baci_matelast_summand.H"
+#include "baci_mat_par_parameter.H"
 #include "baci_matelast_coupanisoexpo.H"
 #include "baci_matelast_coupanisoexpoactive.H"
-#include "baci_mat_par_parameter.H"
+#include "baci_matelast_summand.H"
+
+#include <utility>
 
 namespace MAT
 {

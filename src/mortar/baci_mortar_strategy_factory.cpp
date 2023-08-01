@@ -8,21 +8,16 @@
 /*---------------------------------------------------------------------*/
 #include "baci_mortar_strategy_factory.H"
 
-#include "baci_mortar_element.H"
-#include "baci_mortar_interface.H"
-
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-
 #include "baci_lib_globalproblem.H"
-
+#include "baci_linalg_serialdensevector.H"
+#include "baci_mortar_element.H"
+#include "baci_mortar_interface.H"
+#include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_control_point.H"
 #include "baci_nurbs_discret_knotvector.H"
-#include "baci_nurbs_discret.H"
-
 #include "baci_structure_new_timint_basedataglobalstate.H"
-
-#include "baci_linalg_serialdensevector.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

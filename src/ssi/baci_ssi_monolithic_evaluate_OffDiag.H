@@ -10,8 +10,8 @@
 #ifndef BACI_SSI_MONOLITHIC_EVALUATE_OFFDIAG_H
 #define BACI_SSI_MONOLITHIC_EVALUATE_OFFDIAG_H
 
-#include <Teuchos_ParameterList.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 
 namespace ADAPTER
 {

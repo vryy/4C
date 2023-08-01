@@ -14,11 +14,9 @@
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |
  *----------------------------------------------------------------------*/
-#include "baci_poroelast_scatra_base.H"
-
 #include "baci_inpar_poroscatra.H"
-
 #include "baci_linalg_mapextractor.H"
+#include "baci_poroelast_scatra_base.H"
 
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_Time.hpp>

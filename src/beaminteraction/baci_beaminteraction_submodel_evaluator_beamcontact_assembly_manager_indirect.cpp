@@ -13,11 +13,10 @@ coupling matrices M and D first.
 
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 
-#include "baci_beaminteraction_contact_pair.H"
-#include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
+#include "baci_beaminteraction_calc_utils.H"
+#include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
-
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_linalg_serialdensematrix.H"

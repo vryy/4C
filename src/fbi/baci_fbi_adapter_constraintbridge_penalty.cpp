@@ -8,14 +8,16 @@ approach for Fluid-beam interaction.
 
 *----------------------------------------------------------------------*/
 #include "baci_fbi_adapter_constraintbridge_penalty.H"
-#include "baci_fbi_partitioned_penaltycoupling_assembly_manager_direct.H"
-#include "baci_fbi_partitioned_penaltycoupling_assembly_manager_indirect.H"
+
+#include "baci_beaminteraction_contact_pair.H"
 #include "baci_fbi_beam_to_fluid_assembly_manager_factory.H"
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_beaminteraction_contact_pair.H"
+#include "baci_fbi_partitioned_penaltycoupling_assembly_manager_direct.H"
+#include "baci_fbi_partitioned_penaltycoupling_assembly_manager_indirect.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_sparseoperator.H"
+
 #include <Epetra_FEVector.h>
 
 void ADAPTER::FBIConstraintBridgePenalty::Setup(const Epetra_Map* beam_map,

@@ -13,10 +13,11 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_H
 #define BACI_SOLVER_NONLIN_NOX_LINEARSYSTEM_H
 
-#include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_Interface_Required.H>
-#include <Teuchos_Time.hpp>
 #include "baci_solver_nonlin_nox_enum_lists.H"
+
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Epetra_LinearSystem.H>
+#include <Teuchos_Time.hpp>
 // Forward declaration
 class Epetra_Vector;
 class Epetra_RowMatrix;

@@ -9,15 +9,15 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_inner_statustest_volume_change.H"
+
 #include "baci_solver_nonlin_nox_group.H"
 #include "baci_solver_nonlin_nox_inner_statustest_interface_required.H"
-
 #include "baci_utils_exceptions.H"
 
-#include <NOX_Utils.H>
-#include <NOX_Solver_Generic.H>
-#include <Epetra_Vector.h>
 #include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <NOX_Solver_Generic.H>
+#include <NOX_Utils.H>
 
 
 /*----------------------------------------------------------------------------*

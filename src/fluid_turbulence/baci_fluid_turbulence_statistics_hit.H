@@ -12,9 +12,10 @@
 #ifndef BACI_FLUID_TURBULENCE_STATISTICS_HIT_H
 #define BACI_FLUID_TURBULENCE_STATISTICS_HIT_H
 
+#include "baci_linalg_utils_sparse_algebra_create.H"
+
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-#include "baci_linalg_utils_sparse_algebra_create.H"
 
 // forward declarations
 namespace DRT

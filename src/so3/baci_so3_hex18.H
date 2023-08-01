@@ -8,14 +8,13 @@
 #ifndef BACI_SO3_HEX18_H
 #define BACI_SO3_HEX18_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_inpar_structure.H"
-
+#include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
-#include "baci_mat_material.H"
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 // Several parameters which are fixed for Solid Hex18
 const int NUMNOD_SOH18 = 18;         ///< number of nodes

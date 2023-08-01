@@ -9,9 +9,9 @@
 /*--------------------------------------------------------------------------*/
 
 
-#include "baci_inpar_validparameters.H"
-
 #include "baci_inpar_lubrication.H"
+
+#include "baci_inpar_validparameters.H"
 
 void INPAR::LUBRICATION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

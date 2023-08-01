@@ -11,9 +11,10 @@
 #ifndef BACI_LIB_CUBIC_SPLINE_INTERPOLATION_H
 #define BACI_LIB_CUBIC_SPLINE_INTERPOLATION_H
 
-#include <vector>
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 

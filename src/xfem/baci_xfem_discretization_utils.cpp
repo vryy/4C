@@ -10,19 +10,16 @@
 
 #include "baci_xfem_discretization_utils.H"
 
+#include "baci_io_gmsh.H"
+#include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_faces.H"
 #include "baci_lib_discret_xfem.H"
-
+#include "baci_lib_dofset_fixed_size.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
-#include "baci_lib_condition_utils.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_rebalance.H"
 #include "baci_rebalance_utils.H"
-#include "baci_lib_dofset_fixed_size.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-
-#include "baci_io_gmsh.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

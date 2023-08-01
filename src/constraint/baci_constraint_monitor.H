@@ -7,9 +7,9 @@
 #ifndef BACI_CONSTRAINT_MONITOR_H
 #define BACI_CONSTRAINT_MONITOR_H
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

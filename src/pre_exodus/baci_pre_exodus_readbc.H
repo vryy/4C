@@ -12,12 +12,14 @@ Here is everything related with reading a bc file
 #ifndef BACI_PRE_EXODUS_READBC_H
 #define BACI_PRE_EXODUS_READBC_H
 
-#include <string>
-#include <iostream>
-#include <vector>
-#include <Teuchos_RCP.hpp>
-#include "baci_utils_exceptions.H"
 #include "baci_pre_exodus_reader.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
+
+#include <iostream>
+#include <string>
+#include <vector>
 
 
 

@@ -8,25 +8,25 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beamcontact_beam3contact.H"
 #include "baci_beamcontact_beam3contactvariables.H"
+
+#include "baci_beam3_euler_bernoulli.H"
+#include "baci_beam3_reissner.H"
+#include "baci_beamcontact_beam3contact.H"
+#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
 #include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_globalproblem.H"
-
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_structure_timint_impl.H"
-#include "baci_beam3_reissner.H"
-#include "baci_beam3_euler_bernoulli.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/14|

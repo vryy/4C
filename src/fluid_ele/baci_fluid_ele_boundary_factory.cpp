@@ -10,9 +10,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_fluid_ele_boundary_factory.H"
-#include "baci_fluid_ele_boundary_interface.H"
-#include "baci_fluid_ele_boundary_calc_std.H"
+
 #include "baci_fluid_ele_boundary_calc_poro.H"
+#include "baci_fluid_ele_boundary_calc_std.H"
+#include "baci_fluid_ele_boundary_interface.H"
 #include "baci_fluid_ele_calc.H"
 
 /*--------------------------------------------------------------------------*

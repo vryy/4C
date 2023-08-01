@@ -14,9 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_typedefs.H"
-
 #include "baci_inpar_parameterlist_utils.H"
+#include "baci_particle_engine_typedefs.H"
 
 #include <map>
 

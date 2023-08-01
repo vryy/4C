@@ -12,8 +12,8 @@ subsides
 #ifndef BACI_CUT_SIDEHANDLE_H
 #define BACI_CUT_SIDEHANDLE_H
 
-#include "baci_cut_side.H"
 #include "baci_cut_boundarycell.H"
+#include "baci_cut_side.H"
 
 namespace CORE::GEO
 {

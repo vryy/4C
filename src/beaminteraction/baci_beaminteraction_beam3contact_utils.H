@@ -10,16 +10,16 @@
 #ifndef BACI_BEAMINTERACTION_BEAM3CONTACT_UTILS_H
 #define BACI_BEAMINTERACTION_BEAM3CONTACT_UTILS_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
+#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_discretization_fem_general_largerotations.H"
+#include "baci_lib_discret.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include <Sacado.hpp>
 
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_lib_discret.H"
-#include "baci_discretization_fem_general_largerotations.H"
+#include <Epetra_Vector.h>
+#include <Sacado.hpp>
+#include <Teuchos_RCP.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;
 

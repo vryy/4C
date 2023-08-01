@@ -8,8 +8,10 @@
 
 
 #include "baci_fiber_utils.H"
-#include "baci_fiber_node.H"
+
 #include "baci_fiber_nodal_fiber_holder.H"
+#include "baci_fiber_node.H"
+
 #include <cmath>
 
 template <DRT::Element::DiscretizationType distype>

@@ -11,14 +11,14 @@
 #ifndef BACI_CARDIOVASCULAR0D_MANAGER_H
 #define BACI_CARDIOVASCULAR0D_MANAGER_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Epetra_RowMatrix.h>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_inpar_cardiovascular0d.H"
 #include "baci_inpar_structure.H"
+
+#include <Epetra_Operator.h>
+#include <Epetra_RowMatrix.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace IO

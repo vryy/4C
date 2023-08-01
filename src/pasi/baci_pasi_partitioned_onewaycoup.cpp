@@ -11,9 +11,8 @@
 #include "baci_pasi_partitioned_onewaycoup.H"
 
 #include "baci_particle_algorithm.H"
-
-#include "baci_particle_wall_interface.H"
 #include "baci_particle_wall_datastate.H"
+#include "baci_particle_wall_interface.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

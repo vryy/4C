@@ -9,27 +9,25 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_tet10.H"
-#include "baci_so3_element_service.H"
-#include "baci_so3_surface.H"
-#include "baci_so3_line.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_so3_nullspace.H"
+
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_prestress_service.H"
 #include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_mat_so3_material.H"
-
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
-#include "baci_so3_prestress.H"
+#include "baci_fiber_nodal_fiber_holder.H"
 #include "baci_fiber_node.H"
 #include "baci_fiber_utils.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_prestress_service.H"
+#include "baci_lib_utils_factory.H"
+#include "baci_mat_so3_material.H"
+#include "baci_so3_element_service.H"
+#include "baci_so3_line.H"
+#include "baci_so3_nullspace.H"
+#include "baci_so3_prestress.H"
+#include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
-#include "baci_fiber_nodal_fiber_holder.H"
+#include "baci_utils_exceptions.H"
 // remove later
 
 

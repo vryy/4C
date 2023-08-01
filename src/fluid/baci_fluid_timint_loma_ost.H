@@ -15,7 +15,6 @@
 
 #include "baci_fluid_timint_loma.H"
 #include "baci_fluid_timint_ost.H"
-
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 

@@ -8,10 +8,10 @@
 
 
 #include "baci_geometry_pair_line_to_volume.H"
+
+#include "baci_geometry_pair_constants.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_utility_classes.H"
-#include "baci_geometry_pair_constants.H"
-
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_utils_exceptions.H"
 

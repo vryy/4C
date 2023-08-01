@@ -14,9 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_engine_typedefs.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_particle_engine_typedefs.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>

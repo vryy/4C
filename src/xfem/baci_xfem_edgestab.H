@@ -13,12 +13,12 @@ continuous interior penalty) scheme
 #define BACI_XFEM_EDGESTAB_H
 
 
-#include <vector>
-#include <Teuchos_RCP.hpp>
-
 #include "baci_inpar_xfem.H"
 
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 
 namespace DRT

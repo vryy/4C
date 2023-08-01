@@ -9,13 +9,12 @@
 
 #include "baci_art_net_utils.H"
 
-#include "baci_art_net_impl_stationary.H"
-#include "baci_art_net_explicitintegration.H"
-
-#include "baci_lib_utils_createdis.H"
 #include "baci_art_net_artery.H"
-#include "baci_scatra_ele.H"
+#include "baci_art_net_explicitintegration.H"
+#include "baci_art_net_impl_stationary.H"
+#include "baci_lib_utils_createdis.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_scatra_ele.H"
 
 /*----------------------------------------------------------------------*
  | create algorithm                                                      |

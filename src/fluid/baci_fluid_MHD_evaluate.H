@@ -14,8 +14,8 @@
 #define BACI_FLUID_MHD_EVALUATE_H
 
 #include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

@@ -11,11 +11,12 @@
 #ifndef BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H
 #define BACI_BEAMINTERACTION_SUBMODEL_EVALUATOR_CROSSLINKING_H
 
+#include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_inpar_beaminteraction.H"
 #include "baci_linalg_fixedsizematrix.H"
+
 #include <Epetra_MpiComm.h>
-#include "baci_beaminteraction_submodel_evaluator_generic.H"
 
 
 // forward declaration

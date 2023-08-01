@@ -8,13 +8,12 @@
 #ifndef BACI_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H
 #define BACI_MAT_VISCOPLASTIC_NO_YIELD_SURFACE_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
+#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
 
-#include "baci_lib_parobjectfactory.H"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace MAT
 {

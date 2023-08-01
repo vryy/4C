@@ -12,12 +12,12 @@
 #ifndef BACI_LIB_LINEDEFINITION_H
 #define BACI_LIB_LINEDEFINITION_H
 
+#include "baci_lib_inputreader.H"
+
 #include <iostream>
 #include <string>
 #include <utility>
 #include <vector>
-
-#include "baci_lib_inputreader.H"
 
 namespace DRT
 {

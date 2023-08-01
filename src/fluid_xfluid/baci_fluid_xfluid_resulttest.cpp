@@ -8,7 +8,7 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include <string>
+#include "baci_fluid_xfluid_resulttest.H"
 
 #include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid.H"
@@ -16,7 +16,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 
-#include "baci_fluid_xfluid_resulttest.H"
+#include <string>
 
 
 FLD::XFluidResultTest::XFluidResultTest(const FLD::XFluid& xfluid)

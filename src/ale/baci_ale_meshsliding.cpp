@@ -8,20 +8,17 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_adapter_coupling_nonlin_mortar.H"
+#include "baci_ale_meshsliding.H"
 
+#include "baci_adapter_coupling_nonlin_mortar.H"
 #include "baci_contact_interface.H"
 #include "baci_contact_node.H"
-
 #include "baci_lib_discret.H"
-
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_ale_meshsliding.H"
 
 ALE::Meshsliding::Meshsliding(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
     int msht, int nsd, const UTILS::MapExtractor* surfacesplitter)

@@ -11,9 +11,9 @@
 #define BACI_CONTACT_AUG_UTILS_H
 
 #include "baci_inpar_contact.H"
-#include <ext/mt_allocator.h>
-
 #include "baci_utils_pairedmatrix.H"
+
+#include <ext/mt_allocator.h>
 
 // #define INSERT_AND_SORT
 #define QUICK_INSERT

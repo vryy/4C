@@ -11,8 +11,8 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H
 #define BACI_POROMULTIPHASE_SCATRA_ARTERY_COUPLING_LINEBASED_H
 
-#include "baci_poromultiphase_scatra_artery_coupling_nonconforming.H"
 #include "baci_inpar_bio.H"
+#include "baci_poromultiphase_scatra_artery_coupling_nonconforming.H"
 
 // forward declaration
 class Epetra_IntVector;

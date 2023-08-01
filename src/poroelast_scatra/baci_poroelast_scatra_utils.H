@@ -10,14 +10,14 @@
 #ifndef BACI_POROELAST_SCATRA_UTILS_H
 #define BACI_POROELAST_SCATRA_UTILS_H
 
-#include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include "baci_inpar_poroelast.H"
-
 #include "baci_coupling_volmortar_utils.H"
+#include "baci_inpar_poroelast.H"
 #include "baci_lib_element.H"
 #include "baci_poroelast_utils.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 namespace DRT
 {
   class Element;

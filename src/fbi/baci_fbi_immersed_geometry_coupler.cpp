@@ -7,22 +7,23 @@ The current implementation does not scale at all!
 \level 3
 
 *----------------------------------------------------------------------*/
-#include <Teuchos_Time.hpp>
 #include "baci_fbi_immersed_geometry_coupler.H"
+
 #include "baci_binstrategy.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_discretization_geometry_searchtree.H"
 #include "baci_discretization_geometry_searchtree_service.H"
-#include "baci_discretization_geometry_searchtree.H"
 #include "baci_inpar_fluid.H"
 #include "baci_lib_discret_faces.H"
-#include "baci_lib_node.H"
 #include "baci_lib_element.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_node.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_parallel.H"
-#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+
+#include <Teuchos_Time.hpp>
 /*----------------------------------------------------------------------*/
 
 FBI::FBIGeometryCoupler::FBIGeometryCoupler()

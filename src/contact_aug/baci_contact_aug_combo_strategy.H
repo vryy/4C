@@ -11,8 +11,8 @@
 #ifndef BACI_CONTACT_AUG_COMBO_STRATEGY_H
 #define BACI_CONTACT_AUG_COMBO_STRATEGY_H
 
-#include "baci_contact_aug_utils.H"
 #include "baci_contact_abstract_strategy.H"
+#include "baci_contact_aug_utils.H"
 
 // #define DEBUG_COMBO_STRATEGY
 

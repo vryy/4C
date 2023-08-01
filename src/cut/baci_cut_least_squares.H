@@ -11,11 +11,13 @@
 #ifndef BACI_CUT_LEAST_SQUARES_H
 #define BACI_CUT_LEAST_SQUARES_H
 
-#include <vector>
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
+
+#include <vector>
 namespace CORE::GEO
 {
   namespace CUT

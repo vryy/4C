@@ -15,8 +15,8 @@
 #define BACI_SOLVER_NONLIN_NOX_SOLVER_PTC_H
 
 
-#include "baci_solver_nonlin_nox_solver_linesearchbased.H"  // base class of NOX::NLN::Solver::PseudoTransient
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"  // base class of NOX::NLN::LinSystem::PrePostOp::PseudoTransient
+#include "baci_solver_nonlin_nox_solver_linesearchbased.H"  // base class of NOX::NLN::Solver::PseudoTransient
 
 #include <NOX_Abstract_Vector.H>
 

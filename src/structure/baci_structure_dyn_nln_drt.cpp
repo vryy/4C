@@ -7,28 +7,28 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-#include <vector>
+#include "baci_structure_dyn_nln_drt.H"
+
+#include "baci_adapter_str_factory.H"
+#include "baci_adapter_str_structure.H"
+#include "baci_adapter_str_structure_new.H"
+#include "baci_comm_utils.H"
+#include "baci_inpar_structure.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_structure_resulttest.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "baci_adapter_str_factory.H"
-#include "baci_adapter_str_structure_new.H"
-#include "baci_adapter_str_structure.H"
-#include "baci_structure_dyn_nln_drt.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_comm_utils.H"
-#include "baci_inpar_structure.H"
-#include "baci_structure_resulttest.H"
-
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linear_solver_method_linalg.H"
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
+#include <vector>
 
 // periodic boundary conditions
 #include "baci_lib_periodicbc.H"

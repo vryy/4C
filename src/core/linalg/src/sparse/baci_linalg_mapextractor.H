@@ -9,16 +9,16 @@
 #ifndef BACI_LINALG_MAPEXTRACTOR_H
 #define BACI_LINALG_MAPEXTRACTOR_H
 
+#include <Epetra_Import.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <algorithm>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
-#include <algorithm>
-
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Import.h>
-#include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 
 namespace CORE::LINALG
 {

@@ -11,12 +11,12 @@
 #ifndef BACI_CUT_SIDE_H
 #define BACI_CUT_SIDE_H
 
-#include <Shards_BasicTopologies.hpp>
-#include <Shards_CellTopologyTraits.hpp>
-
 #include "baci_cut_edge.H"
 #include "baci_cut_element.H"
 #include "baci_cut_tolerance.H"
+
+#include <Shards_BasicTopologies.hpp>
+#include <Shards_CellTopologyTraits.hpp>
 
 namespace CORE::GEO
 {

@@ -12,11 +12,11 @@
 
 #include "baci_inpar_beam_to_solid.H"
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_beaminteraction.H"
 #include "baci_inpar_geometry_pair.H"
-#include "baci_utils_exceptions.H"
+#include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
+#include "baci_utils_exceptions.H"
 
 
 /**

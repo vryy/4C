@@ -8,11 +8,10 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_contact_nitsche_integrator_ssi.H"
-#include "baci_contact_nitsche_utils.H"
 
+#include "baci_contact_nitsche_utils.H"
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_timint.H"
-
 #include "baci_so3_base.H"
 #include "baci_so3_scatra.H"
 

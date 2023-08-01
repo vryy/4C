@@ -11,11 +11,11 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_solver_factory.H"
+
 #include "baci_solver_nonlin_nox_globaldata.H"
 
 #include <NOX_Solver_Factory.H>
 #include <NOX_Solver_Generic.H>
-
 #include <Teuchos_ParameterList.hpp>
 
 // Header files for different supported nonlinear solvers

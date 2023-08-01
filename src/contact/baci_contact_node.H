@@ -10,8 +10,9 @@
 #ifndef BACI_CONTACT_NODE_H
 #define BACI_CONTACT_NODE_H
 
-#include "baci_mortar_node.H"
 #include "baci_contact_aug_utils.H"
+#include "baci_mortar_node.H"
+
 #include <unordered_map>
 
 namespace CONTACT

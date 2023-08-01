@@ -7,18 +7,17 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_hex18.H"
-#include "baci_so3_surface.H"
-#include "baci_so3_line.H"
-#include "baci_so3_utils.H"
 
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
+#include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
+#include "baci_so3_surface.H"
+#include "baci_so3_utils.H"
 
 DRT::ELEMENTS::So_hex18Type DRT::ELEMENTS::So_hex18Type::instance_;
 

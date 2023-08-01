@@ -14,14 +14,14 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_H
 #define BACI_SOLVER_NONLIN_NOX_INTERFACE_REQUIRED_H
 
-#include <set>
-#include <vector>
-
 #include "baci_solver_nonlin_nox_enum_lists.H"
 #include "baci_utils_exceptions.H"
 
 #include <NOX_Epetra_Interface_Required.H>  // base class
 #include <NOX_Epetra_Vector.H>
+
+#include <set>
+#include <vector>
 
 namespace NOX
 {

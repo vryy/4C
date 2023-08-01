@@ -23,8 +23,8 @@
 #include "baci_poroelast_base.H"
 
 // ALE includes
-#include "baci_ale.H"
 #include "baci_adapter_ale_fpsi.H"
+#include "baci_ale.H"
 
 // ADAPTER includes
 #include "baci_adapter_fld_fluid_fpsi.H"
@@ -33,8 +33,8 @@
 #include "baci_linalg_mapextractor.H"
 
 // INPAR includes
-#include "baci_inpar_fpsi.H"
 #include "baci_coupling_adapter.H"
+#include "baci_inpar_fpsi.H"
 
 // Teuchos utils
 #include <Teuchos_Time.hpp>

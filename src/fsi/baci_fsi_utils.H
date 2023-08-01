@@ -12,20 +12,20 @@
 #ifndef BACI_FSI_UTILS_H
 #define BACI_FSI_UTILS_H
 
-#include <set>
-#include <string>
+#include "baci_coupling_adapter_mortar.H"
+#include "baci_inpar_fsi.H"
+#include "baci_lib_discret.H"
+
+#include <NOX_Abstract_Group.H>
+#include <NOX_Abstract_Vector.H>
+#include <NOX_Epetra_Interface_Required.H>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
 #include <functional>
 #include <iostream>
-
-#include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Abstract_Vector.H>
-#include <NOX_Abstract_Group.H>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include "baci_lib_discret.H"
-#include "baci_inpar_fsi.H"
-#include "baci_coupling_adapter_mortar.H"
+#include <set>
+#include <string>
 
 // forward declarations
 namespace ADAPTER

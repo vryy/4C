@@ -5,12 +5,12 @@
 */
 /*-----------------------------------------------------------------------------------------------*/
 
-#include <algorithm>
-#include <fstream>
-
 #include "baci_io_csv_reader.H"
 
 #include "baci_utils_exceptions.H"
+
+#include <algorithm>
+#include <fstream>
 
 /*-----------------------------------------------------------------------------------------------*/
 std::vector<std::vector<double>> IO::ReadCsv(const int number_of_columns, std::istream& csv_stream)

@@ -12,11 +12,12 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-#include "baci_mortar_coupling3d_classes.H"
 #include "baci_cut_utils.H"
 #include "baci_inpar_volmortar.H"
+#include "baci_mortar_coupling3d_classes.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 01/14 |

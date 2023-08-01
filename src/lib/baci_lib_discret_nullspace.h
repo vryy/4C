@@ -6,8 +6,8 @@
 #ifndef BACI_LIB_DISCRET_NULLSPACE_H
 #define BACI_LIB_DISCRET_NULLSPACE_H
 
-#include <Teuchos_RCPDecl.hpp>
 #include <Epetra_MultiVector.h>
+#include <Teuchos_RCPDecl.hpp>
 
 namespace DRT
 {

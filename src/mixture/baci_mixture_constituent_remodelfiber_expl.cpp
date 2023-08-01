@@ -5,22 +5,23 @@ equations
 \level 3
 */
 /*----------------------------------------------------------------------*/
-#include <algorithm>
-#include <memory>
-#include <cstdlib>
-
-#include "baci_mixture_constituent.H"
 #include "baci_mixture_constituent_remodelfiber_expl.H"
-#include "baci_lib_voigt_notation.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_voigt_notation.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_mixture_constituent.H"
+#include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_constituent_remodelfiber_material_exponential.H"
 #include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
-#include "baci_mixture_constituent_remodelfiber_lib.H"
 #include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+
+#include <algorithm>
+#include <cstdlib>
+#include <memory>
 
 // anonymous namespace for helper classes and functions
 namespace

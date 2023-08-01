@@ -11,9 +11,9 @@
 #ifndef BACI_SCATRA_UTILS_CLONESTRATEGY_H
 #define BACI_SCATRA_UTILS_CLONESTRATEGY_H
 
-#include <vector>
-
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 
 namespace DRT

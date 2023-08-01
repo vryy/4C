@@ -11,25 +11,24 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_linearsystem_factory.H"
-#include "baci_solver_nonlin_nox_globaldata.H"
 
-#include "baci_utils_exceptions.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_sparseoperator.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_solver_nonlin_nox_globaldata.H"
+#include "baci_utils_exceptions.H"
 
-#include <Teuchos_ParameterList.hpp>
-
-#include <NOX_Epetra_Vector.H>
-#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Scaling.H>
+#include <NOX_Epetra_Vector.H>
+#include <Teuchos_ParameterList.hpp>
 
 //// header files for different linearSystems
-#include "baci_contact_aug_nox_nln_contact_linearsystem.H"
-#include "baci_contact_nox_nln_meshtying_linearsystem.H"
 #include "baci_cardiovascular0d_nox_nln_linearsystem.H"
 #include "baci_constraint_nox_nln_lagpenconstraint_linearsystem.H"
+#include "baci_contact_aug_nox_nln_contact_linearsystem.H"
+#include "baci_contact_nox_nln_meshtying_linearsystem.H"
 #include "baci_structure_new_nox_nln_str_linearsystem.H"
 
 /*----------------------------------------------------------------------------*

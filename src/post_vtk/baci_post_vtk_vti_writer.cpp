@@ -10,15 +10,15 @@
 
 #include "baci_post_vtk_vti_writer.H"
 
-#include <sstream>
-
-#include <Epetra_Vector.h>
-
 #include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_post_common.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Vector.h>
+
+#include <sstream>
 
 #ifdef TOL_N
 #undef TOL_N

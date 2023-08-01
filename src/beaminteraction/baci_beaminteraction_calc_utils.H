@@ -10,10 +10,11 @@
 #ifndef BACI_BEAMINTERACTION_CALC_UTILS_H
 #define BACI_BEAMINTERACTION_CALC_UTILS_H
 
-#include <Teuchos_RCP.hpp>
+#include "baci_inpar_beaminteraction.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_mapextractor.H"
-#include "baci_inpar_beaminteraction.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 // forward declaration

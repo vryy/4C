@@ -8,13 +8,12 @@
 */
 /*------------------------------------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_lib_discret.H"
+#include "baci_cut_parentintersection.H"
 
 #include "baci_cut_volumecell.H"
+#include "baci_lib_discret.H"
 
-#include "baci_cut_parentintersection.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*------------------------------------------------------------------------------------------------*
  * Create nodal dofset sets within the parallel cut framework

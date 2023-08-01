@@ -10,9 +10,9 @@ problems
 #ifndef BACI_MAT_SCATRA_MULTISCALE_H
 #define BACI_MAT_SCATRA_MULTISCALE_H
 
-#include <vector>
-
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 namespace MAT
 {

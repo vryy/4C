@@ -11,9 +11,10 @@
 #ifndef BACI_CUT_TRIANGULATEFACET_H
 #define BACI_CUT_TRIANGULATEFACET_H
 
+#include "baci_cut_side.H"
+
 #include <list>
 #include <vector>
-#include "baci_cut_side.H"
 namespace CORE::GEO
 {
   namespace CUT

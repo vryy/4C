@@ -12,11 +12,11 @@
 #define BACI_GEOMETRY_PAIR_LINE_TO_SURFACE_H
 
 
-#include <vector>
-
 #include "baci_geometry_pair.H"
 
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 
 // Forward declarations.

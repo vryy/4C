@@ -14,14 +14,14 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
-
-#include "baci_lib_container.H"
-#include "baci_utils_exceptions.H"
 #include "baci_inpar_material.H"
+#include "baci_lib_container.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*/
 /* foward declarations */

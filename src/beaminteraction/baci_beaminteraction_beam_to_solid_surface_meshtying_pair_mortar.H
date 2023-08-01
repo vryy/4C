@@ -13,9 +13,8 @@
 
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_mortar_base.H"
-#include "baci_lib_discret.H"
-
 #include "baci_geometry_pair_scalar_types.H"
+#include "baci_lib_discret.H"
 
 
 // Forward declaration.

@@ -12,15 +12,15 @@
 
 #include "baci_structure_new_timint_factory.H"
 
-#include "baci_lib_globalproblem.H"
 #include "baci_inpar_structure.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 // supported time integrator
-#include "baci_structure_new_timint_implicit.H"
 #include "baci_structure_new_timint_explicit.H"
+#include "baci_structure_new_timint_implicit.H"
 #include "baci_structure_new_timint_loca_continuation.H"
 
 // supported data containers

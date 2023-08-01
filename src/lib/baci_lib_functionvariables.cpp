@@ -9,10 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Sacado.hpp>
-#include <utility>
 #include "baci_lib_functionvariables.H"
+
 #include "baci_lib_symbolic_expression.H"
+
+#include <Sacado.hpp>
+
+#include <utility>
 
 
 DRT::UTILS::FunctionVariable::FunctionVariable(std::string name) : name_(std::move(name)) {}

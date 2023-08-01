@@ -10,27 +10,27 @@
 // Baci
 #include "baci_linear_solver_preconditioner_muelu.H"
 
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_utils_exceptions.H"
 
 // Teuchos
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ArrayRCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // MueLu
-#include <MueLu_RAPFactory.hpp>
+#include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_CoalesceDropFactory.hpp>
-#include <MueLu_TentativePFactory.hpp>
-#include <MueLu_SaPFactory.hpp>
-#include <MueLu_VerbosityLevel.hpp>
-#include <MueLu_SmootherFactory.hpp>
+#include <MueLu_CreateXpetraPreconditioner.hpp>
+#include <MueLu_EpetraOperator.hpp>
 #include <MueLu_MLParameterListInterpreter_decl.hpp>
 #include <MueLu_ParameterListInterpreter.hpp>
-#include <MueLu_AggregationExportFactory.hpp>
-#include <MueLu_EpetraOperator.hpp>
+#include <MueLu_RAPFactory.hpp>
+#include <MueLu_SaPFactory.hpp>
+#include <MueLu_SmootherFactory.hpp>
+#include <MueLu_TentativePFactory.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-#include <MueLu_CreateXpetraPreconditioner.hpp>
+#include <MueLu_VerbosityLevel.hpp>
 
 // EpetraExt
 #include <EpetraExt_BlockMapOut.h>
@@ -42,10 +42,10 @@
 #include <Xpetra_EpetraMap.hpp>
 #include <Xpetra_EpetraMultiVector.hpp>
 #include <Xpetra_IO.hpp>
-#include <Xpetra_MatrixUtils.hpp>
 #include <Xpetra_Map.hpp>
 #include <Xpetra_MapExtractor.hpp>
 #include <Xpetra_MapExtractorFactory.hpp>
+#include <Xpetra_MatrixUtils.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
 #include <Xpetra_StridedMap.hpp>
 

@@ -18,11 +18,13 @@ MAT 3 MAT_Raghavan_Damage BULK 0.120755 ALPHA 0.068632  BETA 5.799445 EQSTRMIN 0
 
 *----------------------------------------------------------------------*/
 
-#include <vector>
 #include "baci_mat_aaaraghavanvorp_damage.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
+
+#include <vector>
 
 /*----------------------------------------------------------------------*
  |                                                                      |

@@ -10,10 +10,9 @@
 
 #include "baci_linalg_utils_densematrix_eigen.H"
 
-#include "baci_unittest_utils_assertions.h"
-
-#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {

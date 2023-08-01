@@ -8,10 +8,9 @@
 \brief Nonlinear Membrane Finite Element line evaluation
 
 *----------------------------------------------------------------------*/
-#include "baci_membrane.H"
-
-#include "baci_lib_globalproblem.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_membrane.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
 

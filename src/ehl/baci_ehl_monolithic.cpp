@@ -15,45 +15,35 @@
  *----------------------------------------------------------------------*/
 #include "baci_ehl_monolithic.H"
 
-#include "baci_lubrication_timint_implicit.H"
-
-#include "baci_lubrication_ele_action.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-
+#include "baci_adapter_coupling_ehl_mortar.H"
 #include "baci_adapter_lubrication.H"
 #include "baci_adapter_str_structure.H"
+#include "baci_contact_element.H"
+#include "baci_contact_interface.H"
+#include "baci_contact_node.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_converter.H"
+#include "baci_inpar_solver.H"
+#include "baci_io_control.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_locsys.H"
-
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_converter.H"
-#include "baci_adapter_coupling_ehl_mortar.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-
-#include "baci_contact_element.H"
-
-#include "baci_mortar_node.H"
-#include "baci_mortar_coupling3d_classes.H"
-
 #include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_matrixtransform.H"
-
-#include "baci_inpar_solver.H"
-
-#include "baci_io_control.H"
-
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_lubrication_ele_action.H"
+#include "baci_lubrication_timint_implicit.H"
 #include "baci_mat_lubrication_mat.H"
-#include "baci_coupling_adapter.H"
+#include "baci_mortar_coupling3d_classes.H"
+#include "baci_mortar_node.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is

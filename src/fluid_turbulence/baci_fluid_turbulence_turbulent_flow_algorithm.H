@@ -13,7 +13,6 @@
 #define BACI_FLUID_TURBULENCE_TURBULENT_FLOW_ALGORITHM_H
 
 #include "baci_adapter_fld_base_algorithm.H"
-
 #include "baci_fluid_result_test.H"
 
 

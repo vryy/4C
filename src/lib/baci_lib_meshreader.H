@@ -11,14 +11,13 @@
 #ifndef BACI_LIB_MESHREADER_H
 #define BACI_LIB_MESHREADER_H
 
-#include <Epetra_CrsGraph.h>
-
-#include "baci_lib_inputreader.H"
-#include "baci_lib_elementreader.H"
+#include "baci_inpar.H"
 #include "baci_lib_domainreader.H"
+#include "baci_lib_elementreader.H"
+#include "baci_lib_inputreader.H"
 #include "baci_lib_nodereader.H"
 
-#include "baci_inpar.H"
+#include <Epetra_CrsGraph.h>
 
 namespace DRT::INPUT
 {

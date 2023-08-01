@@ -13,7 +13,6 @@ Pack, Unpack, NumDofPerNode etc.
 #define BACI_SCATRA_ELE_H
 
 #include "baci_inpar_scatra.H"
-
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_parobjectfactory.H"

@@ -72,14 +72,15 @@ for gas exchange in the human lungs", J Theor biol (2006)
 #ifndef BACI_CARDIOVASCULAR0D_RESPIRATORY_SYSPULPERIPHCIRCULATION_H
 #define BACI_CARDIOVASCULAR0D_RESPIRATORY_SYSPULPERIPHCIRCULATION_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
-#include <Epetra_RowMatrix.h>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_FECrsMatrix.h>
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_cardiovascular0d.H"
+
+#include <Epetra_FECrsMatrix.h>
+#include <Epetra_Operator.h>
+#include <Epetra_RowMatrix.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 // class which is inherited from
 #include "baci_cardiovascular0d.H"
 

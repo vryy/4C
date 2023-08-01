@@ -11,7 +11,6 @@
 #include "baci_particle_interaction_sph_density_correction.H"
 
 #include "baci_inpar_particle.H"
-
 #include "baci_utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*

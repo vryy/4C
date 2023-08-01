@@ -11,8 +11,9 @@
 #ifndef BACI_CONTACT_AUG_POTENTIAL_H
 #define BACI_CONTACT_AUG_POTENTIAL_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
 
 class Epetra_Vector;
 

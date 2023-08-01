@@ -10,13 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_heatloss_evaporation.H"
 
-#include "baci_particle_interaction_material_handler.H"
-
-#include "baci_particle_interaction_utils.H"
-
-#include "baci_particle_engine_interface.H"
 #include "baci_particle_engine_container.H"
-
+#include "baci_particle_engine_interface.H"
+#include "baci_particle_interaction_material_handler.H"
+#include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_TimeMonitor.hpp>

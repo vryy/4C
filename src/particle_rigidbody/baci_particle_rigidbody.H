@@ -14,12 +14,12 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_rigidbody_interface.H"
-
 #include "baci_particle_engine_typedefs.H"
+#include "baci_particle_rigidbody_interface.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
+
 #include <unordered_map>
 
 /*---------------------------------------------------------------------------*

@@ -10,9 +10,8 @@
 #ifndef BACI_S8_SCATRA_H
 #define BACI_S8_SCATRA_H
 
-#include "baci_s8.H"
-
 #include "baci_inpar_scatra.H"
+#include "baci_s8.H"
 
 namespace DRT
 {

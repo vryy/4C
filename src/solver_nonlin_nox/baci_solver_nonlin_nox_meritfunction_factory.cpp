@@ -12,10 +12,9 @@
 
 #include "baci_solver_nonlin_nox_meritfunction_factory.H"
 
+#include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-
-#include <NOX_Utils.H>
 
 // All the different merit functions
 #include "baci_solver_nonlin_nox_meritfunction_lagrangian.H"

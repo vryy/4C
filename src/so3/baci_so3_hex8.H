@@ -11,19 +11,16 @@
 #ifndef BACI_SO3_HEX8_H
 #define BACI_SO3_HEX8_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include "baci_lib_element.H"
-#include "baci_lib_elementtype.H"
-#include "baci_inpar_structure.H"
-#include "baci_mat_material.H"
-
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_inpar_structure.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_element.H"
 #include "baci_lib_element_integration_select.H"
-
-
+#include "baci_lib_elementtype.H"
+#include "baci_mat_material.H"
 #include "baci_so3_base.H"
 
-#include "baci_lib_discret.H"
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace STR
 {

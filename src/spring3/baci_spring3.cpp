@@ -8,13 +8,14 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_spring3.H"
+
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_reissner.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_discretization_fem_general_largerotations.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_so3_nullspace.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::Spring3Type DRT::ELEMENTS::Spring3Type::instance_;
 

@@ -12,10 +12,10 @@
 #ifndef BACI_NURBS_DISCRET_H
 #define BACI_NURBS_DISCRET_H
 
-#include "baci_lib_utils_discret.H"
 #include "baci_lib_discret.H"
-#include "baci_nurbs_discret_knotvector.H"
+#include "baci_lib_utils_discret.H"
 #include "baci_nurbs_discret_control_point.H"
+#include "baci_nurbs_discret_knotvector.H"
 
 // forward declarations
 namespace CORE::LINALG

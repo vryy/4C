@@ -10,12 +10,11 @@
 #ifndef BACI_POST_COMMON_WRITER_BASE_H
 #define BACI_POST_COMMON_WRITER_BASE_H
 
-#include <vector>
-
 #include "baci_post_common_filter_base.H"
 
-#include <string>
 #include <fstream>
+#include <string>
+#include <vector>
 
 class PostField;
 class Epetra_MultiVector;

@@ -11,11 +11,11 @@
 #ifndef BACI_CONSTRAINT_SPRINGDASHPOT_MANAGER_H
 #define BACI_CONSTRAINT_SPRINGDASHPOT_MANAGER_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

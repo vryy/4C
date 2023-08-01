@@ -13,11 +13,10 @@
 #define BACI_LIB_PERIODICBC_H
 
 #include <Epetra_IntVector.h>
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
-
-#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 // forward declarations
 namespace DRT

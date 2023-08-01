@@ -9,9 +9,8 @@
 #ifndef BACI_TRUSS3_SCATRA_H
 #define BACI_TRUSS3_SCATRA_H
 
-#include "baci_truss3.H"
-
 #include "baci_inpar_scatra.H"
+#include "baci_truss3.H"
 
 namespace DRT
 {

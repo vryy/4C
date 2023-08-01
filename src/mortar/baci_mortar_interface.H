@@ -9,18 +9,18 @@
 #ifndef BACI_MORTAR_INTERFACE_H
 #define BACI_MORTAR_INTERFACE_H
 
-#include <set>
+#include "baci_inpar_mortar.H"
+#include "baci_mortar_paramsinterface.H"
+#include "baci_utils_exceptions.H"
+#include "baci_utils_pairedvector.H"
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
-#include "baci_inpar_mortar.H"
-#include "baci_utils_exceptions.H"
-#include "baci_utils_pairedvector.H"
-#include "baci_mortar_paramsinterface.H"
+#include <set>
 
 // forward declarations
 namespace BINSTRATEGY

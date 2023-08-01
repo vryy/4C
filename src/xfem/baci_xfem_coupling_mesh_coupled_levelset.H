@@ -13,8 +13,8 @@
 #define BACI_XFEM_COUPLING_MESH_COUPLED_LEVELSET_H
 
 #include "baci_xfem_coupling_base.H"
-#include "baci_xfem_coupling_mesh.H"
 #include "baci_xfem_coupling_levelset.H"
+#include "baci_xfem_coupling_mesh.H"
 #include "baci_xfem_interface_utils.H"
 
 namespace XFEM

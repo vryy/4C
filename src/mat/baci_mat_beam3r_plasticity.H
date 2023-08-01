@@ -11,14 +11,12 @@ function)
 #ifndef BACI_MAT_BEAM3R_PLASTICITY_H
 #define BACI_MAT_BEAM3R_PLASTICITY_H
 
-#include "baci_mat_material.H"
 #include "baci_inpar_material.H"
-#include "baci_mat_beam_elasthyper_parameter.H"
-#include "baci_mat_beam_elasthyper.H"
-
 #include "baci_lib_parobjectfactory.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_mat_beam_elasthyper.H"
+#include "baci_mat_beam_elasthyper_parameter.H"
+#include "baci_mat_material.H"
 
 #include <Teuchos_RCP.hpp>
 

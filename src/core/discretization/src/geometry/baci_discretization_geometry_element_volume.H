@@ -12,9 +12,9 @@
 #define BACI_DISCRETIZATION_GEOMETRY_ELEMENT_VOLUME_H
 
 
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_cut_kernel.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
 
 namespace CORE::GEO
 {

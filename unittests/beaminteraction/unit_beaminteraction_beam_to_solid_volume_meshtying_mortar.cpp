@@ -10,13 +10,13 @@
 #include <gtest/gtest.h>
 
 #include "baci_beam3_reissner.H"
-#include "baci_so3_hex8.H"
-#include "baci_so3_hex27.H"
-#include "baci_geometry_pair_element.H"
-#include "baci_geometry_pair_line_to_volume_segmentation.H"
-#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_mortar.H"
+#include "baci_geometry_pair_element.H"
+#include "baci_geometry_pair_line_to_3D_evaluation_data.H"
+#include "baci_geometry_pair_line_to_volume_segmentation.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_so3_hex27.H"
+#include "baci_so3_hex8.H"
 
 
 

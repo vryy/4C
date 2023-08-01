@@ -7,13 +7,14 @@
 
  */
 
+#include "baci_discretization_geometry_searchtree_service.H"
+
 #include "baci_discretization_geometry_element_coordtrafo.H"
 #include "baci_discretization_geometry_element_normals.H"
 #include "baci_discretization_geometry_intersection_interfacepoint.H"
-#include "baci_discretization_geometry_intersection_service_templates.H"
 #include "baci_discretization_geometry_intersection_service.H"
+#include "baci_discretization_geometry_intersection_service_templates.H"
 #include "baci_discretization_geometry_position_array.H"
-#include "baci_discretization_geometry_searchtree_service.H"
 #include "baci_discretization_geometry_searchtree_nearestobject.H"
 #include "baci_lib_discret.H"
 

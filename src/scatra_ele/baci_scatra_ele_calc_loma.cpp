@@ -9,31 +9,26 @@
 /*--------------------------------------------------------------------------*/
 
 #include "baci_scatra_ele_calc_loma.H"
+
+#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "baci_discretization_geometry_position_array.H"
+#include "baci_inpar_fluid.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_utils.H"
+#include "baci_mat_arrhenius_pv.H"
+#include "baci_mat_arrhenius_spec.H"
+#include "baci_mat_arrhenius_temp.H"
+#include "baci_mat_ferech_pv.H"
+#include "baci_mat_mixfrac.H"
+#include "baci_mat_sutherland.H"
+#include "baci_mat_tempdepwater.H"
+#include "baci_mat_thermostvenantkirchhoff.H"
+#include "baci_mat_yoghurt.H"
+#include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_parameter_turbulence.H"
-
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-
-#include "baci_discretization_geometry_position_array.H"
-
-#include "baci_inpar_fluid.H"
-
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-
-#include "baci_mat_mixfrac.H"
-#include "baci_mat_sutherland.H"
-#include "baci_mat_tempdepwater.H"
-#include "baci_mat_arrhenius_spec.H"
-#include "baci_mat_arrhenius_temp.H"
-#include "baci_mat_arrhenius_pv.H"
-#include "baci_mat_ferech_pv.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_mat_yoghurt.H"
-
-#include "baci_nurbs_discret_nurbs_utils.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

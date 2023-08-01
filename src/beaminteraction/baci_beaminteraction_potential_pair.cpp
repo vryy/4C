@@ -10,17 +10,15 @@
 
 #include "baci_beaminteraction_potential_pair.H"
 
+#include "baci_beam3_base.H"
+#include "baci_beaminteraction_beam_to_beam_potential_pair.H"
+#include "baci_beaminteraction_beam_to_sphere_potential_pair.H"
+#include "baci_beaminteraction_potential_params.H"
 #include "baci_lib_element.H"
-
+#include "baci_rigidsphere.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
-#include "baci_beaminteraction_potential_params.H"
-#include "baci_beaminteraction_beam_to_beam_potential_pair.H"
-#include "baci_beaminteraction_beam_to_sphere_potential_pair.H"
-
-#include "baci_beam3_base.H"
-#include "baci_rigidsphere.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

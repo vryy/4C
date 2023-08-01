@@ -11,9 +11,10 @@
 #ifndef BACI_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_H
 #define BACI_STRUCTURE_NEW_NLN_LINEARSYSTEM_SCALING_H
 
-#include <NOX_Epetra_Scaling.H>
-#include <Epetra_Map.h>
 #include "baci_inpar_structure.H"
+
+#include <Epetra_Map.h>
+#include <NOX_Epetra_Scaling.H>
 
 // forward declarations
 namespace STR

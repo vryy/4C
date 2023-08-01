@@ -29,9 +29,9 @@ SIGMAX 3.9E-03 EPSNULL 2.8E-04
 #define BACI_MAT_ACTIVEFIBER_H
 
 
-#include "baci_mat_so3_material.H"
-#include "baci_mat_par_parameter.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
 
 #define numbgp 10
 #define twice 20

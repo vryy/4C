@@ -7,12 +7,15 @@
 
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include <Epetra_SerialComm.h>
-#include <array>
+
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-#include "baci_so3_hex8.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_so3_hex8.H"
+
+#include <Epetra_SerialComm.h>
+
+#include <array>
 
 namespace
 {

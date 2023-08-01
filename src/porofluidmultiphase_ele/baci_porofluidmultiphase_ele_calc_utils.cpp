@@ -10,9 +10,9 @@
 #include "baci_porofluidmultiphase_ele_calc_utils.H"
 
 #include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_fluidporo_singlephase.H"
 #include "baci_mat_fluidporo_multiphase_reactions.H"
 #include "baci_mat_fluidporo_multiphase_singlereaction.H"
+#include "baci_mat_fluidporo_singlephase.H"
 
 /*-----------------------------------------------------------------------------------------*
  * get the single phase material from the element multiphase reaction material   vuong 08/16 |

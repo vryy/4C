@@ -7,11 +7,11 @@
 *----------------------------------------------------------------------*/
 
 #include "cut_test_utils.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_element.H"
-#include "baci_cut_volumecell.H"
-#include "baci_cut_meshintersection.H"
 
+#include "baci_cut_element.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_meshintersection.H"
+#include "baci_cut_volumecell.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 int numnode;

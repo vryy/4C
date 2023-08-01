@@ -16,24 +16,18 @@ structures.
 
 #include "baci_fs3i_ac_fsi.H"
 
-#include "baci_io_control.H"
-#include "baci_io.H"
-
+#include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_fld_fluid_ac_fsi.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_fsi_monolithic.H"
 #include "baci_inpar_fs3i.H"
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_scatra.H"
-
-#include "baci_lib_globalproblem.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
 #include "baci_lib_discret.H"
-
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_fld_fluid_ac_fsi.H"
-#include "baci_adapter_ale_fsi.H"
-
-#include "baci_fsi_monolithic.H"
-
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_implicit.H"
 

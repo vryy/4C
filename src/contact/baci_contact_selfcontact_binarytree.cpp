@@ -9,8 +9,9 @@
 /*-----------------------------------------------------------------------*/
 
 #include "baci_contact_selfcontact_binarytree.H"
-#include "baci_contact_node.H"
+
 #include "baci_contact_element.H"
+#include "baci_contact_node.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"

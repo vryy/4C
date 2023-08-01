@@ -9,20 +9,16 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include "baci_levelset_algorithm.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_lib_globalproblem.H"
+#include "baci_fluid_xfluid_levelset_coupling_algorithm.H"
 
 #include "baci_fluid_utils_mapextractor.H"  //needed?
 #include "baci_fluid_xfluid.H"
-
+#include "baci_levelset_algorithm.H"
 #include "baci_lib_discret_xfem.H"
-
+#include "baci_lib_globalproblem.H"
 #include "baci_mat_newtonianfluid.H"
 
-#include "baci_fluid_xfluid_levelset_coupling_algorithm.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*/

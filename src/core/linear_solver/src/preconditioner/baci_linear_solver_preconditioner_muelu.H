@@ -10,14 +10,12 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_MUELU_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_MUELU_H
 
-#include <Xpetra_MultiVector.hpp>
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linear_solver_preconditioner_type.H"
 
 #include <MueLu_Hierarchy.hpp>
 #include <MueLu_UseDefaultTypes.hpp>
-
-#include "baci_linalg_blocksparsematrix.H"
-
-#include "baci_linear_solver_preconditioner_type.H"
+#include <Xpetra_MultiVector.hpp>
 
 namespace CORE::LINEAR_SOLVER
 {

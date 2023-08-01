@@ -12,8 +12,8 @@
 #ifndef BACI_LIB_UTILS_VECTOR_H
 #define BACI_LIB_UTILS_VECTOR_H
 
-#include <vector>
 #include <algorithm>
+#include <vector>
 
 namespace DRT
 {

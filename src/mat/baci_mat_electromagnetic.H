@@ -14,11 +14,11 @@
 #ifndef BACI_MAT_ELECTROMAGNETIC_H
 #define BACI_MAT_ELECTROMAGNETIC_H
 
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_material.H"
 #include "baci_lib_parobjectfactory.H"
-#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_mat_material.H"
+#include "baci_mat_par_parameter.H"
 
 
 namespace MAT

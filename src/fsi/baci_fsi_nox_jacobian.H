@@ -12,16 +12,14 @@
 #define BACI_FSI_NOX_JACOBIAN_H
 
 #include <Epetra_Comm.h>
-#include <Epetra_Operator.h>
 #include <Epetra_Import.h>
-
+#include <Epetra_Operator.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Common.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-
 #include <Teuchos_RCP.hpp>
 
 // Forward Declarations

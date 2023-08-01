@@ -9,20 +9,18 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_contact_nitsche_strategy.H"
+
 #include "baci_contact_interface.H"
 #include "baci_contact_nitsche_utils.H"
 #include "baci_contact_paramsinterface.H"
-
-#include <Epetra_FEVector.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Operator.h>
-
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_so3_plast_ssn.H"
 
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
+#include <Epetra_Operator.h>
 
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |

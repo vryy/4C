@@ -18,8 +18,9 @@
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>
-#include <unordered_map>
+
 #include <memory>
+#include <unordered_map>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

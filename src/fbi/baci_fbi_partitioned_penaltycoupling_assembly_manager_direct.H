@@ -14,8 +14,9 @@ be directly assembled into the global matrices.
 #ifndef BACI_FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_DIRECT_H
 #define BACI_FBI_PARTITIONED_PENALTYCOUPLING_ASSEMBLY_MANAGER_DIRECT_H
 
-#include <Epetra_FEVector.h>
 #include "baci_fbi_partitioned_penaltycoupling_assembly_manager.H"
+
+#include <Epetra_FEVector.h>
 
 namespace FBI
 {

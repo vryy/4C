@@ -10,11 +10,11 @@
 #ifndef BACI_TRUSS3_H
 #define BACI_TRUSS3_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include "baci_lib_elementtype.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_elementtype.H"
 
 #include <Sacado.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 using FAD = Sacado::Fad::DFad<double>;
 
 namespace STR

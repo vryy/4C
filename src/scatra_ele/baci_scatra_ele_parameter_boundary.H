@@ -10,9 +10,10 @@
 #ifndef BACI_SCATRA_ELE_PARAMETER_BOUNDARY_H
 #define BACI_SCATRA_ELE_PARAMETER_BOUNDARY_H
 
-#include "baci_scatra_ele_parameter_base.H"
-#include "baci_lib_condition.H"
 #include "baci_inpar_s2i.H"
+#include "baci_lib_condition.H"
+#include "baci_scatra_ele_parameter_base.H"
+
 #include <vector>
 
 namespace DRT

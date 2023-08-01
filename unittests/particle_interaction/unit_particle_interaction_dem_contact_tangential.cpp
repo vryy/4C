@@ -6,11 +6,11 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "baci_unittest_utils_assertions.h"
-#include "baci_particle_interaction_dem_contact_tangential.H"
-#include "baci_particle_interaction_utils.H"
 
 #include "baci_inpar_validparameters.H"
+#include "baci_particle_interaction_dem_contact_tangential.H"
+#include "baci_particle_interaction_utils.H"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {

@@ -9,28 +9,25 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_structure_new_model_evaluator_contact.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_impl_generic.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_utils.H"
 
+#include "baci_contact_aug_plot.H"
+#include "baci_contact_aug_strategy.H"
+#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_contact_strategy_factory.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_lib_globalproblem.H"
-
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-#include "baci_solver_nonlin_nox_group_prepostoperator.H"
 #include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_group_prepostoperator.H"
 #include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-
-#include "baci_contact_poro_lagrange_strategy.H"
-#include "baci_contact_strategy_factory.H"
-#include "baci_contact_aug_strategy.H"
-#include "baci_contact_aug_plot.H"
+#include "baci_structure_new_dbc.H"
+#include "baci_structure_new_impl_generic.H"
+#include "baci_structure_new_model_evaluator.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_structure_new_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

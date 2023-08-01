@@ -9,11 +9,12 @@
 #ifndef BACI_CONTACT_MESHTYING_CONTACT_BRIDGE_H
 #define BACI_CONTACT_MESHTYING_CONTACT_BRIDGE_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include "baci_inpar_contact.H"
-#include <Epetra_Comm.h>
 #include "baci_utils_exceptions.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

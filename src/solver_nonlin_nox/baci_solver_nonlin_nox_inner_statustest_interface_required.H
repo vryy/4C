@@ -11,8 +11,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_INTERFACE_REQUIRED_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_INTERFACE_REQUIRED_H
 
-#include <NOX_StatusTest_Generic.H>
 #include <NOX_Abstract_Group.H>
+#include <NOX_StatusTest_Generic.H>
 
 // forward declaration
 namespace NOX

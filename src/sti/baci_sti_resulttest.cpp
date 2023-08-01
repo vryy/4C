@@ -9,11 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "baci_sti_resulttest.H"
 
-#include "baci_sti_monolithic.H"
-
 #include "baci_lib_linedefinition.H"
-
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_sti_monolithic.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 01/17 |

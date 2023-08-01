@@ -13,12 +13,12 @@
 #define BACI_LIB_CONDITION_H
 
 
-#include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
-
 #include "baci_lib_container.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_utils_exceptions.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_RCP.hpp>
 
 
 namespace DRT

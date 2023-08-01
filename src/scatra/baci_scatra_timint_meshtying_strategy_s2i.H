@@ -10,14 +10,12 @@
 #ifndef BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_H
 
-#include "baci_scatra_timint_meshtying_strategy_base.H"
-
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
-#include "baci_inpar_s2i.H"
-#include "baci_inpar_scatra.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_mortar.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_inpar_s2i.H"
+#include "baci_inpar_scatra.H"
+#include "baci_scatra_timint_meshtying_strategy_base.H"
 
 #include <Epetra_FEVector.h>
 #include <Epetra_IntVector.h>

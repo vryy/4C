@@ -8,20 +8,19 @@
 
 *----------------------------------------------------------------------*/
 
-#include <iostream>
-#include <iterator>
-
-#include <cmath>
-
 #include "baci_cut_pointgraph.H"
-#include "baci_cut_side.H"
+
 #include "baci_cut_mesh.H"
 #include "baci_cut_output.H"
+#include "baci_cut_pointgraph_simple.H"
+#include "baci_cut_side.H"
 
 #include <boost/graph/boyer_myrvold_planar_test.hpp>
 #include <boost/graph/graphviz.hpp>
 
-#include "baci_cut_pointgraph_simple.H"
+#include <cmath>
+#include <iostream>
+#include <iterator>
 
 
 #define DEBUG_POINTGRAPH false

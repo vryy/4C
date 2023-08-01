@@ -8,13 +8,15 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_H
 #define BACI_MIXTURE_CONSTITUENT_REMODELFIBER_IMPL_H
 
-#include <Teuchos_RCPDecl.hpp>
-#include <cmath>
+#include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_par_material.H"
 #include "baci_mixture_constituent.H"
 #include "baci_mixture_constituent_remodelfiber_material.H"
-#include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mixture_remodelfiber.H"
+
+#include <Teuchos_RCPDecl.hpp>
+
+#include <cmath>
 
 namespace MIXTURE
 {

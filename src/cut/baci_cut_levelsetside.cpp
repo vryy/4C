@@ -10,10 +10,10 @@ levelset
 *----------------------------------------------------------------------*/
 
 #include "baci_cut_levelsetside.H"
-#include "baci_cut_mesh.H"
-#include "baci_cut_element.H"
-#include "baci_cut_pointgraph.H"
 
+#include "baci_cut_element.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_pointgraph.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 
 /*----------------------------------------------------------------------------*

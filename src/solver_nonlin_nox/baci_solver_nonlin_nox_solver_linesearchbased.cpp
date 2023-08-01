@@ -9,25 +9,25 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_solver_linesearchbased.H"  // class definition
-#include "baci_solver_nonlin_nox_inner_statustest_generic.H"
-#include "baci_solver_nonlin_nox_linesearch_factory.H"
+
+#include "baci_solver_nonlin_nox_aux.H"
 #include "baci_solver_nonlin_nox_direction_factory.H"
 #include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_aux.H"
+#include "baci_solver_nonlin_nox_inner_statustest_generic.H"
+#include "baci_solver_nonlin_nox_linesearch_factory.H"
 
 // templated status tests
+#include "baci_solver_nonlin_nox_statustest_activeset.H"
 #include "baci_solver_nonlin_nox_statustest_normf.H"
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"
 #include "baci_solver_nonlin_nox_statustest_normwrms.H"
-#include "baci_solver_nonlin_nox_statustest_activeset.H"
 
-#include <NOX_Solver_SolverUtils.H>
+#include <NOX_Abstract_Group.H>
 #include <NOX_Direction_Factory.H>
 #include <NOX_Direction_Generic.H>
 #include <NOX_LineSearch_Generic.H>
+#include <NOX_Solver_SolverUtils.H>
 #include <NOX_Utils.H>
-#include <NOX_Abstract_Group.H>
-
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 

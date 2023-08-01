@@ -9,11 +9,12 @@ Nonlinear viscosity according to a modified power law
 /*----------------------------------------------------------------------*/
 
 
-#include <vector>
-
 #include "baci_mat_modpowerlaw.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

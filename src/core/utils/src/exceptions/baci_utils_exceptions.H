@@ -14,11 +14,11 @@
 
 #ifdef __cplusplus
 
-#include <cstdlib>
-#include <cstdio>
 #include <cstdarg>
-#include <string>
+#include <cstdio>
+#include <cstdlib>
 #include <stdexcept>
+#include <string>
 
 
 extern "C" [[noreturn]] void cpp_dserror_func(
@@ -72,9 +72,9 @@ void run_time_error_latest(const std::string file, const std::string func, const
 
 #else
 
-#include <stdlib.h>
-#include <stdio.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 void cpp_dsassert_func(const char* file, const int line, const int test, const char* string);
 void cpp_dserror_func(const char* string, ...);

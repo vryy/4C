@@ -7,9 +7,10 @@
 #ifndef BACI_FSI_DEBUGWRITER_H
 #define BACI_FSI_DEBUGWRITER_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include "baci_coupling_adapter.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 namespace ADAPTER
 {

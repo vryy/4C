@@ -9,17 +9,16 @@
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_gauss_point.H"
 
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_beaminteraction_contact_params.H"
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_geometry_pair_line_to_volume.H"
 #include "baci_beam3_reissner.H"
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
+#include "baci_beaminteraction_beam_to_solid_utils.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_params.H"
+#include "baci_beaminteraction_contact_params.H"
+#include "baci_geometry_pair_element_functions.H"
+#include "baci_geometry_pair_line_to_volume.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
 
 #include <Epetra_FEVector.h>
 

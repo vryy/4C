@@ -18,11 +18,11 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 
 
+#include "baci_lib_parobjectfactory.H"
+#include "baci_mat_anisotropy.H"
+#include "baci_mat_elasthyper_service.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
-#include "baci_lib_parobjectfactory.H"
-#include "baci_mat_elasthyper_service.H"
-#include "baci_mat_anisotropy.H"
 
 // forward declaration due to avoid header definition
 namespace MAT

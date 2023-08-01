@@ -9,18 +9,17 @@
 #ifndef BACI_ADAPTER_FLD_FLUID_H
 #define BACI_ADAPTER_FLD_FLUID_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include <Epetra_Operator.h>
-#include <Epetra_CrsGraph.h>
-
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_poroelast.H"
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_CrsGraph.h>
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace CORE::LINALG

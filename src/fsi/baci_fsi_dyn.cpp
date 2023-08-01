@@ -9,81 +9,69 @@
 
 /*----------------------------------------------------------------------*/
 
-#include <string>
-#include <vector>
-#include <set>
-#include <functional>
-
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_fsi_dyn.H"
+
+#include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_adapter_fld_fluid_xfsi.H"
+#include "baci_adapter_fld_moving_boundary.H"
+#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_adapter_str_poro_wrapper.H"
+#include "baci_adapter_str_structure.H"
+#include "baci_ale_utils_clonestrategy.H"
+#include "baci_binstrategy.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_mortar.H"
+#include "baci_fluid_xfluid.H"
+#include "baci_fluid_xfluid_fluid.H"
+#include "baci_fsi_constrmonolithic_fluidsplit.H"
+#include "baci_fsi_constrmonolithic_structuresplit.H"
+#include "baci_fsi_dirichletneumann_disp.H"
 #include "baci_fsi_dirichletneumann_factory.H"
-#include "baci_fsi_dirichletneumann_disp.H"
-#include "baci_fsi_dirichletneumannslideale.H"
-#include "baci_fsi_dirichletneumann_disp.H"
 #include "baci_fsi_dirichletneumann_vel.H"
 #include "baci_fsi_dirichletneumann_volcoupl.H"
-#include "baci_fsi_monolithicfluidsplit.H"
-#include "baci_fsi_monolithicstructuresplit.H"
+#include "baci_fsi_dirichletneumannslideale.H"
+#include "baci_fsi_fluid_ale.H"
+#include "baci_fsi_fluidfluidmonolithic_fluidsplit.H"
+#include "baci_fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
+#include "baci_fsi_fluidfluidmonolithic_structuresplit.H"
+#include "baci_fsi_fluidfluidmonolithic_structuresplit_nonox.H"
+#include "baci_fsi_free_surface_monolithic.H"
 #include "baci_fsi_lungmonolithic.H"
 #include "baci_fsi_lungmonolithic_fluidsplit.H"
 #include "baci_fsi_lungmonolithic_structuresplit.H"
-#include "baci_fsi_constrmonolithic_fluidsplit.H"
-#include "baci_fsi_constrmonolithic_structuresplit.H"
+#include "baci_fsi_monolithicfluidsplit.H"
+#include "baci_fsi_monolithicstructuresplit.H"
 #include "baci_fsi_mortarmonolithic_fluidsplit.H"
 #include "baci_fsi_mortarmonolithic_structuresplit.H"
-#include "baci_fsi_fluidfluidmonolithic_structuresplit_nonox.H"
-#include "baci_fsi_fluidfluidmonolithic_fluidsplit_nonox.H"
-#include "baci_fsi_fluidfluidmonolithic_structuresplit.H"
-#include "baci_fsi_fluidfluidmonolithic_fluidsplit.H"
+#include "baci_fsi_resulttest.H"
 #include "baci_fsi_slidingmonolithic_fluidsplit.H"
 #include "baci_fsi_slidingmonolithic_structuresplit.H"
 #include "baci_fsi_structureale.H"
-#include "baci_fsi_fluid_ale.H"
 #include "baci_fsi_utils.H"
-#include "baci_fsi_resulttest.H"
-
 #include "baci_fsi_xfem_fluid.H"
 #include "baci_fsi_xfem_monolithic.H"
-
-#include "baci_fsi_free_surface_monolithic.H"
-
-#include "baci_fluid_xfluid.H"
-#include "baci_fluid_xfluid_fluid.H"
-
-#include "baci_ale_utils_clonestrategy.H"
-
-#include "baci_inpar_fsi.H"
 #include "baci_inpar_fbi.H"
-#include "baci_lib_resulttest.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_parallel.H"
-
-#include "baci_lib_condition_utils.H"
+#include "baci_inpar_fsi.H"
 #include "baci_lib_condition_selector.H"
-
-#include "baci_lib_dofset_fixed_size.H"
-
-#include "baci_adapter_str_structure.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_coupling_adapter.H"
-#include "baci_coupling_adapter_mortar.H"
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_fld_moving_boundary.H"
-#include "baci_adapter_fld_fluid_xfsi.H"
-#include "baci_adapter_ale_fsi.H"
-
+#include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
-
-#include "baci_binstrategy.H"
-
-#include "baci_adapter_str_poro_wrapper.H"
+#include "baci_lib_dofset_fixed_size.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_resulttest.H"
 #include "baci_lib_utils_createdis.H"
+#include "baci_lib_utils_parallel.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_poroelast_utils_clonestrategy.H"
 #include "baci_poroelast_utils_setup.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <functional>
+#include <set>
+#include <string>
+#include <vector>
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/

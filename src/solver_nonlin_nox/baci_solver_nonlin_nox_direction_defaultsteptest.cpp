@@ -9,14 +9,14 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_direction_defaultsteptest.H"
-#include "baci_solver_nonlin_nox_group.H"
 
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_solver_nonlin_nox_group.H"
+#include "baci_utils_exceptions.H"
 
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
 #include <Epetra_Comm.h>
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 #include <NOX_Utils.H>
 
 /*----------------------------------------------------------------------------*

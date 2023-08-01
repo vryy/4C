@@ -12,8 +12,9 @@
 #ifndef BACI_LOCA_CONTINUATION_NLN_INTERFACE_REQUIRED_H
 #define BACI_LOCA_CONTINUATION_NLN_INTERFACE_REQUIRED_H
 
-#include <LOCA_Epetra_Interface_Required.H>
 #include "baci_solver_nonlin_nox_interface_required.H"
+
+#include <LOCA_Epetra_Interface_Required.H>
 
 namespace LOCA
 {

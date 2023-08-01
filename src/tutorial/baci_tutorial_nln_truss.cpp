@@ -9,14 +9,14 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_tutorial_utils.H"
 #include "baci_tutorial_nln_truss.H"
-#include "baci_tutorial_ele_calc.H"
-#include "baci_tutorial_ele.H"
-#include "baci_tutorial_material.H"
 
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_tutorial_ele.H"
+#include "baci_tutorial_ele_calc.H"
+#include "baci_tutorial_material.H"
+#include "baci_tutorial_utils.H"
 
 
 /// ctor

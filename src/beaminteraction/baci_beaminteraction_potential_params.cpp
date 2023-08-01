@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "baci_beaminteraction_potential_params.H"
-#include "baci_beaminteraction_potential_runtime_vtk_output_params.H"
 
+#include "baci_beaminteraction_potential_runtime_vtk_output_params.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 

@@ -23,20 +23,21 @@ For a detailed description see:
 /*----------------------------------------------------------------------------*/
 
 #include "baci_mat_constraintmixture.H"
-#include "baci_mat_constraintmixture_history.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
-#include "baci_lib_linedefinition.H"
+
 #include "baci_comm_utils.H"
-#include "baci_io_gmsh.H"     // for debug plotting with gmsh
-#include "baci_io_control.H"  // for debug plotting with gmsh
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"  // for debug plotting with gmsh
 #include "baci_discretization_fem_general_utils_integration.H"  // for debug plotting with gmsh
-#include "baci_lib_utils.H"                                     // for debug plotting with gmsh
 #include "baci_inpar_structure.H"                               // for pstime
+#include "baci_io_control.H"                                    // for debug plotting with gmsh
+#include "baci_io_gmsh.H"                                       // for debug plotting with gmsh
 #include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_lib_prestress_service.H"
+#include "baci_lib_utils.H"  // for debug plotting with gmsh
+#include "baci_mat_constraintmixture_history.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_service.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |

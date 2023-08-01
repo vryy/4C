@@ -14,9 +14,9 @@
 #ifndef BACI_TUTORIAL_ELE_H
 #define BACI_TUTORIAL_ELE_H
 
-#include <Teuchos_RCP.hpp>
-
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 namespace TUTORIAL

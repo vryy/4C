@@ -8,24 +8,21 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_cut_facetgraph.H"
+#include "baci_cut_integrationcellcreator.H"
 #include "baci_cut_intersection.H"
+#include "baci_cut_options.H"
+#include "baci_cut_output.H"
 #include "baci_cut_position.H"
 #include "baci_cut_tetmesh.H"
-#include "baci_cut_options.H"
-#include "baci_cut_integrationcellcreator.H"
-#include "baci_cut_facetgraph.H"
-#include "baci_cut_output.H"
-
+#include "baci_discretization_geometry_element_volume.H"
+#include "baci_inpar_cut.H"
 #include "baci_lib_globalproblem.H"
 
-#include "baci_discretization_geometry_element_volume.H"
-
-#include "baci_inpar_cut.H"
-
-#include <string>
-#include <stack>
-
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <stack>
+#include <string>
 
 /*--------------------------------------------------------------------*
  * struct for comparison of position of sides using ray-tracing techniques

@@ -10,8 +10,8 @@
 
 #include "baci_xfem_dofset_transparent_independent.H"
 
-#include "baci_cut_node.H"
 #include "baci_cut_cutwizard.H"
+#include "baci_cut_node.H"
 
 
 XFEM::XFEMTransparentIndependentDofSet::XFEMTransparentIndependentDofSet(

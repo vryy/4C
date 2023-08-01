@@ -12,9 +12,9 @@ Thomas Kloeppel
 #ifndef BACI_CONSTRAINT_H
 #define BACI_CONSTRAINT_H
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

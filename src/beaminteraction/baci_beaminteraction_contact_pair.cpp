@@ -10,23 +10,19 @@
 
 #include "baci_beaminteraction_contact_pair.H"
 
+#include "baci_beam3_base.H"
+#include "baci_beaminteraction_beam_to_beam_contact_pair.H"
+#include "baci_beaminteraction_beam_to_beam_contact_params.H"
+#include "baci_beaminteraction_beam_to_sphere_contact_pair.H"
+#include "baci_beaminteraction_conditions.H"
+#include "baci_beaminteraction_contact_params.H"
+#include "baci_geometry_pair.H"
 #include "baci_lib_element.H"
+#include "baci_rigidsphere.H"
+#include "baci_so3_base.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
-
-#include "baci_beaminteraction_beam_to_beam_contact_pair.H"
-#include "baci_beaminteraction_conditions.H"
-#include "baci_beaminteraction_beam_to_sphere_contact_pair.H"
-
-#include "baci_beam3_base.H"
-#include "baci_rigidsphere.H"
-#include "baci_so3_base.H"
-#include "baci_beaminteraction_beam_to_beam_contact_params.H"
-
-#include "baci_beaminteraction_contact_params.H"
-
-#include "baci_geometry_pair.H"
 
 
 /*----------------------------------------------------------------------------*

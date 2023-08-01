@@ -10,11 +10,13 @@ species
 */
 /*----------------------------------------------------------------------------*/
 
-#include <vector>
 #include "baci_mat_newman.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+#include <vector>
 
 // TODO: math.H was included automatically
 

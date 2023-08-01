@@ -9,9 +9,10 @@
 #ifndef BACI_UTILS_LOCAL_NEWTON_H
 #define BACI_UTILS_LOCAL_NEWTON_H
 
-#include <functional>
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_fad.H"
+
+#include <functional>
 
 namespace CORE::UTILS
 {

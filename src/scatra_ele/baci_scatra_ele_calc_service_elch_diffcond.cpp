@@ -7,17 +7,15 @@
 
 */
 /*--------------------------------------------------------------------------*/
+#include "baci_lib_discret.H"
+#include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_elchmat.H"
+#include "baci_mat_elchphase.H"
 #include "baci_scatra_ele_calc_elch_diffcond.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch_diffcond.H"
-
-#include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_function_of_time.H"
-
-#include "baci_mat_elchmat.H"
-#include "baci_mat_elchphase.H"
 
 
 /*-----------------------------------------------------------------------*

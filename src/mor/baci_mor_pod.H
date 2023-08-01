@@ -11,11 +11,11 @@
 #ifndef BACI_MOR_POD_H
 #define BACI_MOR_POD_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

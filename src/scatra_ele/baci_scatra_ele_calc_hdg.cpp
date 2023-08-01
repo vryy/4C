@@ -9,22 +9,20 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_scatra_ele_calc_hdg.H"
+
+#include "baci_discretization_fem_general_utils_boundary_integration.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_discretization_geometry_position_array.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_elementtype.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_list.H"
+#include "baci_mat_scatra_mat.H"
+#include "baci_scatra_ele_action.H"
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_action.H"
-
-#include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_elementtype.H"
-#include "baci_discretization_geometry_position_array.H"
-
-#include "baci_mat_scatra_mat.H"
-#include "baci_mat_list.H"
-
-#include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>

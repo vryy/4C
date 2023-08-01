@@ -11,14 +11,14 @@
 #ifndef BACI_LIB_PAROBJECTFACTORY_H
 #define BACI_LIB_PAROBJECTFACTORY_H
 
-#include <vector>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
 #include <map>
 #include <set>
 #include <string>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
+#include <vector>
 
 
 namespace CORE::LINALG

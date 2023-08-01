@@ -8,11 +8,10 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include <fstream>
-
 #include "baci_io_csv_reader.H"
-
 #include "baci_unittest_utils_assertions.h"
+
+#include <fstream>
 
 namespace
 {

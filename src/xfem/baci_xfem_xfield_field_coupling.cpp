@@ -13,8 +13,8 @@
 
 #include "baci_xfem_xfield_field_coupling.H"
 
-#include "baci_lib_exporter.H"
 #include "baci_coupling_adapter.H"
+#include "baci_lib_exporter.H"
 
 #include <Epetra_Export.h>
 

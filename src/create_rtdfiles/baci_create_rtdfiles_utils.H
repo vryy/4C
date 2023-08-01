@@ -10,15 +10,17 @@
 
 #ifndef BACI_CREATE_RTDFILES_UTILS_H
 #define BACI_CREATE_RTDFILES_UTILS_H
-#include <string>
-#include <iostream>
-#include <vector>
-#include <map>
-#include "baci_lib_materialdefinition.H"
-#include "baci_lib_conditiondefinition.H"
-#include "baci_inpar_validparameters.H"
 #include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
+#include "baci_inpar_validparameters.H"
+#include "baci_lib_conditiondefinition.H"
+#include "baci_lib_materialdefinition.H"
+
 #include <Teuchos_RCP.hpp>
+
+#include <iostream>
+#include <map>
+#include <string>
+#include <vector>
 
 namespace DRT
 {

@@ -9,9 +9,10 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_scatra_ele_calc_artery.H"
+
+#include "baci_mat_scatra_mat.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
-#include "baci_mat_scatra_mat.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

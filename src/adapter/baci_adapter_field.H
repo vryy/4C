@@ -23,10 +23,9 @@ functions there exist also for fields.
 #define BACI_ADAPTER_FIELD_H
 
 // includes
-#include <Teuchos_RCP.hpp>
-
-#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations:
 namespace DRT

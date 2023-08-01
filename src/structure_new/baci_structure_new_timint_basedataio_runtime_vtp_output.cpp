@@ -10,11 +10,9 @@
 
 #include "baci_structure_new_timint_basedataio_runtime_vtp_output.H"
 
-#include "baci_utils_exceptions.H"
-
-#include "baci_inpar_parameterlist_utils.H"
-
 #include "baci_beam3_discretization_runtime_vtu_output_params.H"
+#include "baci_inpar_parameterlist_utils.H"
+#include "baci_utils_exceptions.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

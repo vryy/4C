@@ -14,13 +14,14 @@ thereby builds the bridge between the xfluid class and the cut-library
 #define BACI_XFEM_COUPLING_BASE_H
 
 
-#include <vector>
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 //
 #include "baci_inpar_xfem.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 

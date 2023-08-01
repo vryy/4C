@@ -13,6 +13,7 @@
 #define BACI_XFEM_XFIELD_STATE_H
 
 #include "baci_utils_exceptions.H"
+
 #include <Teuchos_RCP.hpp>
 
 class Epetra_Map;

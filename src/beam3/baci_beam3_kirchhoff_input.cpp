@@ -9,13 +9,10 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "baci_beam3_kirchhoff.H"
-
+#include "baci_discretization_fem_general_largerotations.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_parameter.H"
-
-#include "baci_lib_linedefinition.H"
-
-#include "baci_discretization_fem_general_largerotations.H"
 
 
 /*------------------------------------------------------------------------------------------------*

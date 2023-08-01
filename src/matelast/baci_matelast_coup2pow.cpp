@@ -8,6 +8,7 @@ Cauchy-Green invariant
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_coup2pow.H"
+
 #include "baci_mat_par_material.H"
 
 MAT::ELASTIC::PAR::Coup2Pow::Coup2Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)

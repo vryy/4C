@@ -10,20 +10,20 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <sstream>
-
-#include "baci_structure_timint.H"
 #include "baci_structure_timint_expl.H"
 
 #include "baci_cardiovascular0d_manager.H"
-#include "baci_structure_aux.H"
 #include "baci_constraint_manager.H"
 #include "baci_constraint_springdashpot_manager.H"
-#include "baci_mortar_manager_base.H"
-#include "baci_mortar_strategy_base.H"
 #include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_inpar_contact.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_mortar_manager_base.H"
+#include "baci_mortar_strategy_base.H"
+#include "baci_structure_aux.H"
+#include "baci_structure_timint.H"
+
+#include <sstream>
 
 /*----------------------------------------------------------------------*/
 /* constructor */

@@ -10,12 +10,11 @@
 #ifndef BACI_FSI_MONOLITHIC_NONOX_H
 #define BACI_FSI_MONOLITHIC_NONOX_H
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_fsi_monolithic.H"
-
 #include "baci_inpar_fsi.H"
 #include "baci_inpar_xfem.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 namespace ADAPTER
 {

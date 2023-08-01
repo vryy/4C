@@ -10,9 +10,10 @@
 #ifndef BACI_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H
 #define BACI_CONTACT_AUG_CONTACT_INTEGRATOR_UTILS_H
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_contact_aug_utils.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_linalg_fixedsizematrix.H"
+
 #include <unordered_map>
 
 namespace MORTAR

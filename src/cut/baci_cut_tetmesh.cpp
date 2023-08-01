@@ -8,12 +8,13 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <stack>
-
 #include "baci_cut_tetmesh.H"
-#include "baci_cut_tetmeshintersection.H"
+
 #include "baci_cut_levelsetside.H"
+#include "baci_cut_tetmeshintersection.H"
 #include "baci_cut_volumecell.H"
+
+#include <stack>
 
 extern "C"
 {

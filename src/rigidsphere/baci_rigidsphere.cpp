@@ -8,21 +8,23 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_rigidsphere.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_linalg_fixedsizematrix.H"
+
+#include "baci_beaminteraction_link_pinjointed.H"
 #include "baci_discretization_fem_general_largerotations.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_lib_utils_factory.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_browniandyn.H"
+#include "baci_inpar_validparameters.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_beaminteraction_link_pinjointed.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 DRT::ELEMENTS::RigidsphereType DRT::ELEMENTS::RigidsphereType::instance_;

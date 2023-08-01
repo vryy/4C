@@ -10,17 +10,15 @@
 #define BACI_POROELAST_BASE_H
 
 
-#include <utility>
-
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_field.H"
-
-#include "baci_utils_exceptions.H"
-#include "baci_poroelast_utils.H"
-
-#include "baci_linalg_mapextractor.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_volmortar.H"
+#include "baci_linalg_mapextractor.H"
+#include "baci_poroelast_utils.H"
+#include "baci_utils_exceptions.H"
+
+#include <utility>
 
 namespace DRT
 {

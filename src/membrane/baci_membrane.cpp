@@ -11,8 +11,8 @@
 #include "baci_membrane.H"
 
 #include "baci_lib_utils_factory.H"
-#include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_mat_so3_material.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Membrane_line2Type::Create(const int id, const int owner)

@@ -8,51 +8,46 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_contact_element.H"
 #include "baci_contact_strategy_factory.H"
-#include "baci_contact_utils.H"
-#include "baci_contact_friction_node.H"
 
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_wear.H"
+#include "baci_contact_element.H"
+#include "baci_contact_friction_node.H"
+#include "baci_contact_utils.H"
 #include "baci_inpar_s2i.H"
 #include "baci_inpar_ssi.H"
-
+#include "baci_inpar_validparameters.H"
+#include "baci_inpar_wear.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
-
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_scatra_timint_meshtying_strategy_s2i.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 #include "baci_structure_new_utils.H"
-
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 // supported strategies and interfaces
 // -- standard strategies and interfaces
-#include "baci_contact_wear_interface.H"
-#include "baci_contact_tsi_interface.H"
+#include "baci_contact_aug_combo_strategy.H"
+#include "baci_contact_aug_interface.H"
+#include "baci_contact_aug_lagrange_interface.H"
+#include "baci_contact_aug_lagrange_strategy.H"
+#include "baci_contact_aug_steepest_ascent_interface.H"
+#include "baci_contact_aug_steepest_ascent_strategy.H"
+#include "baci_contact_constitutivelaw_interface.H"
+#include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_nitsche_strategy.H"
 #include "baci_contact_nitsche_strategy_ssi.H"
 #include "baci_contact_nitsche_strategy_ssi_elch.H"
 #include "baci_contact_nitsche_strategy_tsi.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
-#include "baci_contact_lagrange_strategy.H"
-#include "baci_contact_nitsche_strategy.H"
-#include "baci_contact_penalty_strategy.H"
-#include "baci_contact_wear_lagrange_strategy.H"
-#include "baci_contact_aug_interface.H"
-#include "baci_contact_aug_steepest_ascent_interface.H"
-#include "baci_contact_aug_steepest_ascent_strategy.H"
-#include "baci_contact_aug_lagrange_strategy.H"
-#include "baci_contact_aug_lagrange_interface.H"
-#include "baci_contact_aug_combo_strategy.H"
-#include "baci_contact_constitutivelaw_interface.H"
 #include "baci_contact_paramsinterface.H"
+#include "baci_contact_penalty_strategy.H"
+#include "baci_contact_tsi_interface.H"
+#include "baci_contact_tsi_lagrange_strategy.H"
+#include "baci_contact_wear_interface.H"
+#include "baci_contact_wear_lagrange_strategy.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -10,11 +10,12 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_structure_timint_ost.H"
-#include "baci_structure_aux.H"
+
 #include "baci_io.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_structure_aux.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::VerifyCoeff()

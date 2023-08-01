@@ -13,11 +13,12 @@ is handed to a c++ object mesh.
 #ifndef BACI_PRE_EXODUS_READER_H
 #define BACI_PRE_EXODUS_READER_H
 
-#include <string>
-#include <iostream>
-#include <vector>
-#include "baci_utils_exceptions.H"
 #include "baci_lib_element.H"
+#include "baci_utils_exceptions.H"
+
+#include <iostream>
+#include <string>
+#include <vector>
 
 namespace EXODUS
 {

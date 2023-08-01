@@ -13,26 +13,23 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_globaldata.H"  // class definition
-#include "baci_solver_nonlin_nox_meritfunction_factory.H"
-#include "baci_solver_nonlin_nox_solver_prepostop_generic.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
+
+#include "baci_inpar_boolifyparameters.H"
+#include "baci_inpar_structure.H"
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_solver_nonlin_nox_aux.H"
 #include "baci_solver_nonlin_nox_direction_factory.H"
+#include "baci_solver_nonlin_nox_linearsystem.H"
+#include "baci_solver_nonlin_nox_meritfunction_factory.H"
+#include "baci_solver_nonlin_nox_solver_prepostop_generic.H"
+#include "baci_utils_exceptions.H"
 
-#include <NOX_Utils.H>
-#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
-
-#include "baci_linear_solver_method_linalg.H"
-
-#include "baci_inpar_structure.H"
-
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Utils.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_XMLParameterListCoreHelpers.hpp>
-
-#include "baci_utils_exceptions.H"
-#include "baci_inpar_boolifyparameters.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

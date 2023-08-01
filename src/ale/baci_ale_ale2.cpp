@@ -10,13 +10,13 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale2.H"
+
 #include "baci_ale_ale2_nurbs.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_linedefinition.H"
-
+#include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 

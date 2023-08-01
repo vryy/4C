@@ -10,11 +10,11 @@
 #ifndef BACI_CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
 #define BACI_CONTACT_MESHTYING_ABSTRACT_STRATEGY_H
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-#include "baci_mortar_strategy_base.H"
 #include "baci_inpar_mortar.H"
 #include "baci_lib_utils_matrix_vector_enums.H"
+#include "baci_mortar_strategy_base.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 // forward declarations

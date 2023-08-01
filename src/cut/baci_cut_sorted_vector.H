@@ -33,13 +33,13 @@
 #ifndef BACI_CUT_SORTED_VECTOR_H
 #define BACI_CUT_SORTED_VECTOR_H
 
+#include <boost/operators.hpp>
+
 #include <algorithm>
-#include <vector>
-#include <utility>
 #include <functional>
 #include <stdexcept>
-
-#include <boost/operators.hpp>
+#include <utility>
+#include <vector>
 
 namespace CORE::GEO
 {

@@ -16,8 +16,9 @@ Pack, Unpack, NumDofPerNode etc.
 #ifndef BACI_ELEMAG_DIFF_ELE_H
 #define BACI_ELEMAG_DIFF_ELE_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_elemag_ele.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {

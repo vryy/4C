@@ -12,10 +12,11 @@
 #ifndef BACI_LIB_DOFSET_INTERFACE_H
 #define BACI_LIB_DOFSET_INTERFACE_H
 
-#include <vector>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 namespace DRT
 {

@@ -11,17 +11,15 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_direction_modified_newton.H"
-#include "baci_solver_nonlin_nox_group.H"
-#include "baci_solver_nonlin_nox_direction_defaultsteptest.H"
 
+#include "baci_solver_nonlin_nox_direction_defaultsteptest.H"
+#include "baci_solver_nonlin_nox_group.H"
 #include "baci_utils_exceptions.H"
 
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 #include <NOX_GlobalData.H>
 #include <NOX_Solver_Generic.H>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------------*

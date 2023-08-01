@@ -9,19 +9,16 @@
 
 #include "baci_poroelast_monolithicstructuresplit.H"
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_adapter_fld_poro.H"
+#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_coupling_adapter_converter.H"
-
 #include "baci_fluid_utils_mapextractor.H"
-
-#include "baci_structure_aux.H"
-
+#include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_matrixtransform.H"
+#include "baci_structure_aux.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 POROELAST::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,

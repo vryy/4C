@@ -12,9 +12,10 @@
 
 
 
-#include <Teuchos_RCP.hpp>
-#include "baci_lib_parobject.H"
 #include "baci_inpar_material.H"
+#include "baci_lib_parobject.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 /// MAT: materials

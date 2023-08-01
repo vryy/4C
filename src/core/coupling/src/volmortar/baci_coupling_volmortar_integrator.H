@@ -17,9 +17,9 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 01/14 |
  *---------------------------------------------------------------------*/
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_cut_utils.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_volmortar.H"
 
 /*---------------------------------------------------------------------*

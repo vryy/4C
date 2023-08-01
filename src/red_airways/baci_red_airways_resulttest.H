@@ -12,12 +12,12 @@
 #ifndef BACI_RED_AIRWAYS_RESULTTEST_H
 #define BACI_RED_AIRWAYS_RESULTTEST_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_MultiVector.h>
-
 #include "baci_lib_resulttest.H"
 #include "baci_red_airways_implicitintegration.H"
+
+#include <Epetra_MultiVector.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

@@ -12,8 +12,9 @@
 
 #include "baci_contact_integrator.H"
 #include "baci_utils_pairedvector.H"
-#include <Epetra_FEVector.h>
+
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
 
 // forward declarations
 namespace CORE::LINALG

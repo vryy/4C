@@ -10,9 +10,8 @@
 #ifndef BACI_SCATRA_TIMINT_OST_H
 #define BACI_SCATRA_TIMINT_OST_H
 
-#include "baci_scatra_timint_implicit.H"
-
 #include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_scatra_timint_implicit.H"
 
 namespace SCATRA
 {

@@ -10,10 +10,10 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_GAUSS_POINT_POSTPROCESS_H
 
-#include <Epetra_MultiVector.h>
+#include "baci_lib_element.H"
 #include "baci_linalg_serialdensematrix.H"
 
-#include "baci_lib_element.H"
+#include <Epetra_MultiVector.h>
 
 namespace DRT
 {

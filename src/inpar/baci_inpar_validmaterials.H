@@ -17,12 +17,12 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <vector>
-#include <string>
-#include <iostream>
-
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
+
+#include <iostream>
+#include <string>
+#include <vector>
 
 
 namespace DRT

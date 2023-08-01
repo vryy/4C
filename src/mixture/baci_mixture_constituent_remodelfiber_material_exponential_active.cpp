@@ -7,10 +7,13 @@
 
 
 #include "baci_mixture_constituent_remodelfiber_material_exponential_active.H"
-#include <memory>
+
 #include "baci_mat_par_bundle.H"
 #include "baci_mixture_constituent_remodelfiber_lib.H"
+
 #include <Sacado.hpp>
+
+#include <memory>
 
 template <typename T>
 MIXTURE::PAR::RemodelFiberMaterialExponentialActive<T>::RemodelFiberMaterialExponentialActive(

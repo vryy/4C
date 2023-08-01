@@ -12,9 +12,9 @@
 #ifndef BACI_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H
 #define BACI_FLUID_ELE_CALC_XFEM_COUPLING_IMPL_H
 
+#include "baci_fluid_ele_calc_xfem_coupling.H"
 #include "baci_inpar_xfem.H"
 #include "baci_lib_element.H"
-#include "baci_fluid_ele_calc_xfem_coupling.H"
 
 //   qnuP - option SHOULD BE ON!
 //     projects the given velocity into normal direction in case there

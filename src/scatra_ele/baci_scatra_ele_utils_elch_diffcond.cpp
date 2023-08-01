@@ -8,13 +8,13 @@
  */
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_utils_elch_diffcond.H"
-#include "baci_scatra_ele_calc_elch_diffcond.H"
-#include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
 
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
 #include "baci_mat_newman.H"
 #include "baci_mat_newman_multiscale.H"
+#include "baci_scatra_ele_calc_elch_diffcond.H"
+#include "baci_scatra_ele_calc_elch_diffcond_multiscale.H"
 #include "baci_utils_singleton_owner.H"
 
 

@@ -17,8 +17,8 @@
  *----------------------------------------------------------------------*/
 #include "baci_ehl_base.H"
 #include "baci_inpar_ehl.H"
-#include "baci_inpar_structure.H"
 #include "baci_inpar_lubrication.H"
+#include "baci_inpar_structure.H"
 
 #include <Epetra_FEVector.h>
 #include <Teuchos_Time.hpp>

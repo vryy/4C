@@ -9,9 +9,9 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_contact_aug_potential.H"
-#include "baci_contact_aug_strategy.H"
-#include "baci_contact_aug_interface.H"
 
+#include "baci_contact_aug_interface.H"
+#include "baci_contact_aug_strategy.H"
 #include "baci_io_pstream.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 

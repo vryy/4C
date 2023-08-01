@@ -9,14 +9,14 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_cut_integrationcellcreator.H"
-#include "baci_cut_position.H"
+
+#include "baci_cut_boundarycell.H"
 #include "baci_cut_integrationcell.H"
 #include "baci_cut_mesh.H"
-#include "baci_cut_boundarycell.H"
-#include "baci_cut_side.H"
 #include "baci_cut_options.H"
-
 #include "baci_cut_pointgraph_simple.H"
+#include "baci_cut_position.H"
+#include "baci_cut_side.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -9,6 +9,7 @@ St. Venant-Kirchhoff material
 /*----------------------------------------------------------------------*/
 
 #include "baci_mat_stvenantkirchhoff.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 

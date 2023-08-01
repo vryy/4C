@@ -8,21 +8,19 @@
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
-#include <iostream>
-#include <Teuchos_TimeMonitor.hpp>
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
 #include "baci_thermo_timint.H"
-#include "baci_thermo_resulttest.H"
-
-#include "baci_thermo_ele_action.H"
-
-#include "baci_io_control.H"
-
-#include "baci_timestepping_mstep.H"
 
 #include "baci_contact_nitsche_strategy_tsi.H"
+#include "baci_io_control.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_thermo_ele_action.H"
+#include "baci_thermo_resulttest.H"
+#include "baci_timestepping_mstep.H"
+
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <iostream>
 
 /*----------------------------------------------------------------------*
  | print thermal time logo                                   dano 08/09 |

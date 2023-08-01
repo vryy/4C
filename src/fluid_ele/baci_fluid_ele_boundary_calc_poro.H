@@ -13,7 +13,6 @@
 #define BACI_FLUID_ELE_BOUNDARY_CALC_PORO_H
 
 #include "baci_fluid_ele_boundary_calc.H"
-
 #include "baci_utils_singleton_owner.H"
 
 namespace DRT

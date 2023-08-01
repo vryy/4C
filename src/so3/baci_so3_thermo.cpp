@@ -10,8 +10,8 @@
  *----------------------------------------------------------------------*/
 #include "baci_so3_thermo.H"
 
-#include "baci_lib_linedefinition.H"
 #include "baci_discretization_fem_general_utils_shapefunctions_service.H"
+#include "baci_lib_linedefinition.H"
 
 
 /*----------------------------------------------------------------------*

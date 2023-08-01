@@ -10,17 +10,16 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_inner_statustest_upperbound.H"
-#include "baci_solver_nonlin_nox_linesearch_generic.H"
-#include "baci_solver_nonlin_nox_group.H"
 
-#include <NOX_Utils.H>
+#include "baci_solver_nonlin_nox_group.H"
+#include "baci_solver_nonlin_nox_linesearch_generic.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Vector.h>
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Solver_Generic.H>
-#include <Epetra_Vector.h>
-
-
-#include "baci_utils_exceptions.H"
+#include <NOX_Utils.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

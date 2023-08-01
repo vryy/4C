@@ -10,19 +10,19 @@ transport
 
 *----------------------------------------------------------------------*/
 
-#include <complex>
 #include <math.h>
+
+#include <complex>
 
 #ifdef BACI_WITH_FFTW
 #include <fftw3.h>
 #endif
 
-#include "baci_scatra_turbulence_hit_initial_scalar_field.H"
-
-#include "baci_scatra_timint_implicit.H"
 #include "baci_lib_exporter.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_turbulence_hit_initial_scalar_field.H"
 
 namespace SCATRA
 {

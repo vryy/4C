@@ -10,10 +10,11 @@
 #define BACI_ADAPTER_POROFLUIDMULTIPHASE_H
 
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
 #include "baci_linalg_utils_sparse_algebra_math.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

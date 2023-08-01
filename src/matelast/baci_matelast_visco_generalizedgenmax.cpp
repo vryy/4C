@@ -7,9 +7,9 @@
 /*----------------------------------------------------------------------*/
 #include "baci_matelast_visco_generalizedgenmax.H"
 
-#include "baci_mat_par_material.H"
-#include "baci_mat_par_bundle.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
 
 MAT::ELASTIC::PAR::GeneralizedGenMax::GeneralizedGenMax(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)

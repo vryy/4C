@@ -13,22 +13,22 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 // FPSI includes
-#include "baci_fpsi_monolithic_plain.H"
 #include "baci_fpsi_monolithic.H"
+#include "baci_fpsi_monolithic_plain.H"
 #include "baci_fpsi_utils.H"
 
 // POROELAST includes
-#include "baci_poroelast_base.H"
 #include "baci_adapter_fld_poro.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
+#include "baci_poroelast_base.H"
 #include "baci_poroelast_monolithic.H"
 
 // FSI includes
 #include "baci_fsi_debugwriter.H"
-#include "baci_fsi_statustest.H"
-#include "baci_fsi_overlapprec_fsiamg.H"
 #include "baci_fsi_monolithic_linearsystem.H"
+#include "baci_fsi_overlapprec_fsiamg.H"
+#include "baci_fsi_statustest.H"
 #include "baci_lib_globalproblem.H"
 
 // FLUID includes
@@ -41,19 +41,19 @@
 #include "baci_ale_utils_mapextractor.H"
 
 // CORE::LINALG includes
+#include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_matrixtransform.H"
 
 // IO includes
 #include "baci_io.H"
 #include "baci_io_control.H"
 
 // OTHERS
+#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_constraint_manager.H"
 #include "baci_lib_assemblestrategy.H"
-#include "baci_adapter_str_fpsiwrapper.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -10,12 +10,9 @@
 #include "baci_scatra_timint_meshtying_strategy_fluid.H"
 
 #include "baci_fluid_meshtying.H"
-
 #include "baci_lib_globalproblem.H"
-
-#include "baci_scatra_timint_implicit.H"
-
 #include "baci_linalg_sparseoperator.H"
+#include "baci_scatra_timint_implicit.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

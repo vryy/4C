@@ -10,13 +10,12 @@
 #ifndef BACI_SSTI_UTILS_H
 #define BACI_SSTI_UTILS_H
 
-#include <Epetra_Comm.h>
-#include <Teuchos_ParameterList.hpp>
-
+#include "baci_coupling_adapter.H"
 #include "baci_ssi_clonestrategy.H"
 #include "baci_sti_clonestrategy.H"
 
-#include "baci_coupling_adapter.H"
+#include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
 
 namespace ADAPTER
 {

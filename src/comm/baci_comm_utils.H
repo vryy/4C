@@ -21,12 +21,12 @@
 /*----------------------------------------------------------------------*
  | headers                                                  ghamm 01/12 |
  *----------------------------------------------------------------------*/
-#include <Teuchos_DefaultMpiComm.hpp>
+#include "baci_lib_globalproblem_enums.H"
+#include "baci_utils_exceptions.H"
+
 #include <Epetra_MpiComm.h>
 #include <Epetra_MultiVector.h>
-
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem_enums.H"
+#include <Teuchos_DefaultMpiComm.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                          ghamm 01/12 |

@@ -12,12 +12,12 @@
 #define BACI_POROELAST_UTILS_SETUP_H
 
 
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_createdis.H"
 #include "baci_lib_dofset_gidbased_wrapper.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_poroelast_utils_setup.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_createdis.H"
 #include "baci_poroelast_utils.H"
+#include "baci_poroelast_utils_setup.H"
 
 namespace POROELAST
 {

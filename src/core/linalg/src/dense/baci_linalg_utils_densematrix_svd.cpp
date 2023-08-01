@@ -7,10 +7,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_ScalarTraits.hpp>
-
 #include "baci_linalg_utils_densematrix_svd.H"
+
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_ScalarTraits.hpp>
 
 void CORE::LINALG::SVD(const CORE::LINALG::SerialDenseMatrix::Base& A,
     CORE::LINALG::SerialDenseMatrix& Q, CORE::LINALG::SerialDenseMatrix& S,

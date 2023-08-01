@@ -10,12 +10,11 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_rigidbody_affiliation_pairs.H"
 
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_communication_utils.H"
-
 #include "baci_io.H"
 #include "baci_lib_pack_buffer.H"
 #include "baci_lib_parobject.H"
+#include "baci_particle_engine_communication_utils.H"
+#include "baci_particle_engine_interface.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

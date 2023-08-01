@@ -8,24 +8,21 @@
 
 */
 /*-----------------------------------------------------------*/
-#include <set>
-
 #include "baci_loca_continuation_nln_problem.H"
-#include "baci_loca_continuation_nln_statustest_factory.H"
-#include "baci_loca_continuation_nln_interface_required.H"
+
 #include "baci_loca_continuation_nln_group.H"
-
+#include "baci_loca_continuation_nln_interface_required.H"
+#include "baci_loca_continuation_nln_statustest_factory.H"
 #include "baci_solver_nonlin_nox_globaldata.H"
-
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>
-
 #include <LOCA_GlobalData.H>
-#include <LOCA_Parameter_Vector.H>
 #include <LOCA_Parameter_SublistParser.H>
-
+#include <LOCA_Parameter_Vector.H>
 #include <Teuchos_ParameterList.hpp>
+
+#include <set>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

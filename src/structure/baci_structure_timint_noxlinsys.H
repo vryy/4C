@@ -15,24 +15,21 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <vector>
-
-#include <Teuchos_Time.hpp>
-
+#include <NOX.H>
 #include <NOX_Common.H>
 #include <NOX_Epetra_Group.H>
 #include <NOX_Epetra_Interface_Jacobian.H>
-#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Interface_Preconditioner.H>
+#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_LinearSystem.H>
 #include <NOX_Epetra_Scaling.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Utils.H>
-#include <NOX.H>
-
-#include <Teuchos_ParameterList.hpp>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
+#include <Teuchos_Time.hpp>
+
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */

@@ -9,6 +9,7 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_inpar_rebalance.H"
+
 #include "baci_inpar_parameterlist_utils.H"
 
 void INPAR::REBALANCE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

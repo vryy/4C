@@ -15,6 +15,7 @@
 
 
 #include "baci_discretization_geometry_intersection_math.H"
+
 #include "baci_linalg_serialdensematrix.H"
 
 

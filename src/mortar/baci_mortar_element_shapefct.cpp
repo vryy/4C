@@ -7,13 +7,13 @@
 */
 /*-----------------------------------------------------------------------*/
 
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_mortar_defines.H"
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
-#include "baci_mortar_defines.H"
 #include "baci_mortar_shape_utils.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
 
 // nurbs specific
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"

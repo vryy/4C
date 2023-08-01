@@ -11,11 +11,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_COMBO_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_COMBO_H
 
-#include <set>
-
-#include <Teuchos_RCP.hpp>
-#include <NOX_StatusTest_Combo.H>
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"
+
+#include <NOX_StatusTest_Combo.H>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 namespace NOX
 {

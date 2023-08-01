@@ -8,9 +8,10 @@
 #ifndef BACI_SO3_ELEMENT_SERVICE_H
 #define BACI_SO3_ELEMENT_SERVICE_H
 
-#include <Epetra_MultiVector.h>
-#include <Epetra_IntVector.h>
 #include "baci_so3_base.H"
+
+#include <Epetra_IntVector.h>
+#include <Epetra_MultiVector.h>
 
 namespace DRT
 {

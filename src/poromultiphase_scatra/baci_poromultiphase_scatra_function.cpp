@@ -8,10 +8,12 @@
     *----------------------------------------------------------------------*/
 
 #include "baci_poromultiphase_scatra_function.H"
+
+#include "baci_lib_linedefinition.H"
 #include "baci_poromultiphase_scatra_utils.H"
 #include "baci_utils_fad.H"
+
 #include <Teuchos_RCP.hpp>
-#include "baci_lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

@@ -33,12 +33,12 @@ output.
 #define BACI_FLUID_TURBULENCE_STATISTICS_CCY_H
 
 
-#include <Epetra_MpiComm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
 #include "baci_linalg_serialdensematrix.H"
+
+#include <Epetra_MpiComm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 

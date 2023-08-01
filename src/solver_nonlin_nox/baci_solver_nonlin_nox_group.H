@@ -16,13 +16,13 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include <set>
+#include "baci_linalg_serialdensevector.H"
+#include "baci_solver_nonlin_nox_statustest_normupdate.H"
 
 #include <NOX_Epetra_Group.H>  // base class
 #include <NOX_StatusTest_NormF.H>
 
-#include "baci_solver_nonlin_nox_statustest_normupdate.H"
-#include "baci_linalg_serialdensevector.H"
+#include <set>
 
 // forward declarations
 class Epetra_BlockMap;

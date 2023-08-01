@@ -12,10 +12,12 @@
 #ifndef BACI_MAT_ANISOTROPY_UTILS_H
 #define BACI_MAT_ANISOTROPY_UTILS_H
 
-#include <string>
-#include <Teuchos_RCPDecl.hpp>
 #include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Teuchos_RCPDecl.hpp>
+
+#include <string>
 
 // forward declaration
 namespace DRT

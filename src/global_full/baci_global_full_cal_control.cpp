@@ -8,8 +8,6 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_lib_globalproblem.H"
-
 #include "baci_ale_dyn.H"
 #include "baci_art_net_dyn_drt.H"
 #include "baci_ehl_dyn.H"
@@ -21,15 +19,16 @@
 #include "baci_fsi_dyn.H"
 #include "baci_immersed_problem_dyn.H"
 #include "baci_levelset_dyn.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_loma_dyn.H"
 #include "baci_lubrication_dyn.H"
 #include "baci_particle_algorithm_sim.H"
 #include "baci_pasi_dyn.H"
 #include "baci_poroelast_dyn.H"
 #include "baci_poroelast_scatra_dyn.H"
+#include "baci_porofluidmultiphase_dyn.H"
 #include "baci_poromultiphase_dyn.H"
 #include "baci_poromultiphase_scatra_dyn.H"
-#include "baci_porofluidmultiphase_dyn.H"
 #include "baci_red_airways_dyn_drt.H"
 #include "baci_scatra_cardiac_monodomain_dyn.H"
 #include "baci_scatra_dyn.H"
@@ -40,9 +39,9 @@
 #include "baci_structure_dyn_nln_drt.H"
 #include "baci_thermo_dyn.H"
 #include "baci_tsi_dyn.H"
+#include "baci_tutorial_dyn.H"
 #include "baci_two_phase_flow_dyn.H"
 #include "baci_wear_dyn.H"
-#include "baci_tutorial_dyn.H"
 
 /*----------------------------------------------------------------------*
  |  routine to control execution phase                   m.gee 6/01     |

@@ -11,8 +11,8 @@
 #ifndef BACI_LIB_GRIDGENERATOR_H
 #define BACI_LIB_GRIDGENERATOR_H
 
-#include <string>
 #include <array>
+#include <string>
 
 namespace DRT
 {

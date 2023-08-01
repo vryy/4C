@@ -10,10 +10,11 @@
 #ifndef BACI_CONTACT_TSI_LAGRANGE_STRATEGY_H
 #define BACI_CONTACT_TSI_LAGRANGE_STRATEGY_H
 
-#include "baci_contact_lagrange_strategy.H"
-#include "baci_utils_exceptions.H"
 #include "baci_contact_defines.H"
+#include "baci_contact_lagrange_strategy.H"
 #include "baci_coupling_adapter.H"
+#include "baci_utils_exceptions.H"
+
 #include <Epetra_Operator.h>
 
 // forward declarations

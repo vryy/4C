@@ -9,34 +9,25 @@
 
 #include "baci_poroelast_utils.H"
 
-
-
-#include "baci_poroelast_base.H"
-
-#include "baci_poroelast_partitioned.H"
-#include "baci_poroelast_monolithic.H"
-#include "baci_poroelast_monolithicstructuresplit.H"
-#include "baci_poroelast_monolithicfluidsplit.H"
-#include "baci_poroelast_monolithicsplit_nopenetration.H"
-#include "baci_poroelast_monolithicmeshtying.H"
-#include "baci_poroelast_utils_clonestrategy.H"
-
-
+#include "baci_fluid_ele_poro.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_faces.H"
-
-#include "baci_so3_poro_eletypes.H"
-#include "baci_so3_poro_p1_eletypes.H"
-
-#include "baci_w1_poro_eletypes.H"
-#include "baci_w1_poro_p1_eletypes.H"
-
-#include "baci_fluid_ele_poro.H"
-#include "baci_mat_fluidporo.H"
-#include "baci_mat_structporo.H"
-
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_mat_fluidporo.H"
+#include "baci_mat_structporo.H"
+#include "baci_poroelast_base.H"
+#include "baci_poroelast_monolithic.H"
+#include "baci_poroelast_monolithicfluidsplit.H"
+#include "baci_poroelast_monolithicmeshtying.H"
+#include "baci_poroelast_monolithicsplit_nopenetration.H"
+#include "baci_poroelast_monolithicstructuresplit.H"
+#include "baci_poroelast_partitioned.H"
+#include "baci_poroelast_utils_clonestrategy.H"
+#include "baci_so3_poro_eletypes.H"
+#include "baci_so3_poro_p1_eletypes.H"
+#include "baci_w1_poro_eletypes.H"
+#include "baci_w1_poro_p1_eletypes.H"
 
 bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {

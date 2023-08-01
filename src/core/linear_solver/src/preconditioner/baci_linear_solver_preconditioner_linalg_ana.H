@@ -10,9 +10,9 @@
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_LINALG_ANA_H
 
 // Trilinos includes
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_utils_exceptions.H"
 
 #define DEBUGGING_ANA 0  // turn on to get debugging printouts
 

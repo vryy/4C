@@ -13,14 +13,13 @@
 #ifndef BACI_LIB_DOFSET_GIDBASED_WRAPPER_H
 #define BACI_LIB_DOFSET_GIDBASED_WRAPPER_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Map.h>
-
+#include "baci_lib_discret.H"
 #include "baci_lib_dofset_base.H"
-
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
-#include "baci_lib_discret.H"
+
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

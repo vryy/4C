@@ -17,9 +17,10 @@
 #define BACI_FS3I_PARTITIONED_H
 
 
+#include "baci_coupling_adapter_volmortar.H"
 #include "baci_fs3i.H"
 #include "baci_inpar_fs3i.H"
-#include "baci_coupling_adapter_volmortar.H"
+
 #include <Teuchos_ParameterList.hpp>
 
 

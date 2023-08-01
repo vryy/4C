@@ -10,9 +10,8 @@
 #ifndef BACI_SCATRA_ELE_UTILS_ELCH_DIFFCOND_H
 #define BACI_SCATRA_ELE_UTILS_ELCH_DIFFCOND_H
 
-#include "baci_scatra_ele_utils_elch_electrode.H"
-
 #include "baci_inpar_elch.H"
+#include "baci_scatra_ele_utils_elch_electrode.H"
 
 namespace DRT
 {

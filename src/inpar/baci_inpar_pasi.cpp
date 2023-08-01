@@ -11,8 +11,9 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "baci_inpar_pasi.H"
-#include "baci_inpar_validparameters.H"
+
 #include "baci_inpar_parameterlist_utils.H"
+#include "baci_inpar_validparameters.H"
 
 /*---------------------------------------------------------------------------*
  | set valid parameters for pasi                                             |

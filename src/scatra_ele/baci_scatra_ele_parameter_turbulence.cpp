@@ -15,8 +15,8 @@ general static parameters required for scalar transport element evaluation.
 */
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_parameter_turbulence.H"
-#include "baci_scatra_ele_parameter_timint.H"
 
+#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 

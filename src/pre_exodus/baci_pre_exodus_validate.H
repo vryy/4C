@@ -13,10 +13,12 @@ Validate a given BACI input file (after all preprocessing steps)
 #ifndef BACI_PRE_EXODUS_VALIDATE_H
 #define BACI_PRE_EXODUS_VALIDATE_H
 
-#include <string>
-#include <Teuchos_RCP.hpp>
-#include "baci_linalg_serialdensematrix.H"
 #include "baci_lib_element.H"
+#include "baci_linalg_serialdensematrix.H"
+
+#include <Teuchos_RCP.hpp>
+
+#include <string>
 
 
 namespace EXODUS

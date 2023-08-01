@@ -9,8 +9,8 @@ parts of the Elasthyper-Toolbox.
 #ifndef BACI_MATELAST_ISOTESTMATERIAL_H
 #define BACI_MATELAST_ISOTESTMATERIAL_H
 
-#include "baci_matelast_summand.H"
 #include "baci_mat_par_parameter.H"
+#include "baci_matelast_summand.H"
 
 namespace MAT
 {

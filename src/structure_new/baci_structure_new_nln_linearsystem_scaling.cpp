@@ -11,17 +11,18 @@
 
 #include "baci_structure_new_nln_linearsystem_scaling.H"
 
-#include <iostream>
-#include <Epetra_LinearProblem.h>
-#include <Epetra_CrsMatrix.h>
-
+#include "baci_inpar_structure.H"
 #include "baci_lib_discret_interface.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
-#include "baci_inpar_structure.H"
-#include "baci_structure_new_timint_basedatasdyn.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
+#include "baci_structure_new_timint_basedatasdyn.H"
+
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_LinearProblem.h>
+
+#include <iostream>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

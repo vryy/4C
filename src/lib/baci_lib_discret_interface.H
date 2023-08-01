@@ -12,11 +12,12 @@
 #ifndef BACI_LIB_DISCRET_INTERFACE_H
 #define BACI_LIB_DISCRET_INTERFACE_H
 
-#include <vector>
-
 #include "baci_utils_exceptions.H"
-#include <Teuchos_RCP.hpp>
+
 #include <Epetra_IntVector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 // forward declarations ...
 class Epetra_Map;

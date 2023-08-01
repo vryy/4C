@@ -12,17 +12,13 @@
 
 #include "baci_poroelast_monolithicmeshtying.H"
 
-#include "baci_lib_globalproblem.H"
-
-#include "baci_coupling_adapter.H"
 #include "baci_adapter_coupling_poro_mortar.H"
-
-#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_adapter_fld_poro.H"
-
-#include "baci_structure_aux.H"
-
+#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_coupling_adapter.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_structure_aux.H"
 
 POROELAST::MonolithicMeshtying::MonolithicMeshtying(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams,

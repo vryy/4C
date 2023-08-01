@@ -5,9 +5,12 @@
 
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include <stdexcept>
-#include <Epetra_SerialComm.h>
+
 #include "baci_io_pstream.H"
+
+#include <Epetra_SerialComm.h>
+
+#include <stdexcept>
 
 namespace
 {

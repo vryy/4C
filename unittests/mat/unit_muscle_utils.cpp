@@ -6,6 +6,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include "baci_mat_muscle_utils.H"
 #include "baci_unittest_utils_assertions.h"
 

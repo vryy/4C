@@ -10,11 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_wall_result_test.H"
 
-#include "baci_particle_wall_interface.H"
-#include "baci_particle_wall_datastate.H"
-
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_particle_wall_datastate.H"
+#include "baci_particle_wall_interface.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

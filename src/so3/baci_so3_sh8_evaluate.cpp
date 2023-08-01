@@ -6,27 +6,28 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_so3_sh8.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_io_gmsh.H"
+#include "baci_lib_condition.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_exporter.H"
+#include "baci_lib_prestress_service.H"
+#include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_io_gmsh.H"
-#include "baci_mat_visconeohooke.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_mat_aaaraghavanvorp_damage.H"
+#include "baci_mat_elasthyper.H"
+#include "baci_mat_micromaterial.H"
 #include "baci_mat_viscoanisotropic.H"
 #include "baci_mat_viscoelasthyper.H"
-#include "baci_mat_elasthyper.H"
-#include "baci_mat_aaaraghavanvorp_damage.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_lib_condition.H"
+#include "baci_mat_visconeohooke.H"
+#include "baci_so3_sh8.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_enum_lists.H"
-#include "baci_lib_prestress_service.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 
 /*----------------------------------------------------------------------*

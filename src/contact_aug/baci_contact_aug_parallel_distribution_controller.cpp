@@ -8,9 +8,9 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_contact_aug_parallel_distribution_controller.H"
+
 #include "baci_contact_aug_strategy.H"
 #include "baci_contact_paramsinterface.H"
-
 #include "baci_io_pstream.H"
 
 /*----------------------------------------------------------------------------*

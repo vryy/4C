@@ -10,18 +10,14 @@
 
 
 #include "baci_contact_aug_combo_strategy.H"
-#include "baci_contact_aug_strategy.H"
 #include "baci_contact_aug_interface.H"
-
+#include "baci_contact_aug_strategy.H"
 #include "baci_contact_paramsinterface.H"
 #include "baci_contact_strategy_factory.H"
-
 #include "baci_io_pstream.H"
-
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
 #include "baci_structure_new_model_evaluator_contact.H"
 
 

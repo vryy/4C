@@ -11,11 +11,10 @@
 #ifndef BACI_CONTACT_NITSCHE_STRATEGY_FPI_H
 #define BACI_CONTACT_NITSCHE_STRATEGY_FPI_H
 
-#include <utility>
-
 #include "baci_contact_nitsche_strategy_poro.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <utility>
 
 namespace CONTACT
 {

@@ -12,8 +12,9 @@ interaction.
 
 #include "baci_utils_exceptions.H"
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
 #include <vector>
 
 namespace ADAPTER

@@ -11,8 +11,9 @@ file as well as a quick access wrapper for those parameters
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 
-#include <Teuchos_RCP.hpp>
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 CONTACT::CONSTITUTIVELAW::Parameter::Parameter(

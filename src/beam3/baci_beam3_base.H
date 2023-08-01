@@ -11,21 +11,19 @@
 #ifndef BACI_BEAM3_BASE_H
 #define BACI_BEAM3_BASE_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
-
-#include "baci_lib_elementtype.H"
-#include "baci_lib_discret.H"
-#include "baci_inpar_structure.H"
-#include "baci_inpar_beaminteraction.H"
-#include "baci_lib_element.H"
-
+#include "baci_beam3_spatial_discretization_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
-
-#include "baci_beam3_spatial_discretization_utils.H"
+#include "baci_inpar_beaminteraction.H"
+#include "baci_inpar_structure.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_element.H"
+#include "baci_lib_elementtype.H"
 #include "baci_utils_local_newton.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 
 // forward declaration ...

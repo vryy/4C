@@ -8,14 +8,13 @@
 #define BACI_SO3_HEX27_H
 
 
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_inpar_structure.H"
-
 #include "baci_mat_material.H"
-
 #include "baci_so3_base.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 /// Several parameters which are fixed for Solid Hex27
 const int NUMNOD_SOH27 = 27;  ///< number of nodes

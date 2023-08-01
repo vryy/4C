@@ -9,11 +9,10 @@
 */
 /*---------------------------------------------------------------------*/
 #include "baci_contact_nitsche_integrator_fpi.H"
-#include "baci_contact_nitsche_integrator_fsi.H"
 
 #include "baci_contact_element.H"
+#include "baci_contact_nitsche_integrator_fsi.H"
 #include "baci_contact_node.H"
-
 #include "baci_xfem_xfluid_contact_communicator.H"
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

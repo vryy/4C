@@ -10,10 +10,11 @@
 
 
 #include "baci_fsi_dirichletneumann.H"
+
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_fsi_debugwriter.H"
-#include "baci_lib_globalproblem.H"  // todo remove as soon as possible, only needed for dserror
 #include "baci_io_control.H"         // todo remove as soon as possible, only needed for dserror
+#include "baci_lib_globalproblem.H"  // todo remove as soon as possible, only needed for dserror
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

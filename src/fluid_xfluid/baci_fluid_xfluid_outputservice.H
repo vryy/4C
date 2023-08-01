@@ -13,12 +13,11 @@
 
 
 /*! header inclusions */
-#include <Epetra_Vector.h>
-
-#include "baci_inpar_xfem.H"
 #include "baci_inpar_cut.H"
-
+#include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Epetra_Vector.h>
 
 // forward declarations
 namespace DRT

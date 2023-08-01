@@ -10,10 +10,11 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_structure_timint_create.H"
+#include "baci_adapter_str_timint_adaptive.H"
+
 #include "baci_structure_timada.H"
 #include "baci_structure_timint.H"
-#include "baci_adapter_str_timint_adaptive.H"
+#include "baci_structure_timint_create.H"
 
 
 /*======================================================================*/

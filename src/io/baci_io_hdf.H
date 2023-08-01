@@ -28,17 +28,16 @@
 #error Unsupported hdf5 version
 #endif
 
-#include <string>
-#include <sstream>
-#include <vector>
-#include <algorithm>
-
-#include <Teuchos_RCP.hpp>
-
-#include <Epetra_MpiComm.h>
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
+#include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <algorithm>
+#include <sstream>
+#include <string>
+#include <vector>
 
 namespace IO
 {

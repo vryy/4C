@@ -9,9 +9,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_action.H"
+#include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_calc_no_physics.H"
 
 /*----------------------------------------------------------------------*

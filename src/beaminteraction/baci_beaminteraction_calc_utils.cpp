@@ -8,28 +8,23 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_beaminteraction_calc_utils.H"
-#include "baci_beaminteraction_link.H"
-#include "baci_beaminteraction_periodic_boundingbox.H"
-#include "baci_beaminteraction_crosslinking_params.H"
-#include "baci_beaminteraction_spherebeamlinking_params.H"
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_binstrategy.H"
 
 #include "baci_beam3_base.H"
+#include "baci_beaminteraction_crosslinking_params.H"
+#include "baci_beaminteraction_link.H"
+#include "baci_beaminteraction_periodic_boundingbox.H"
+#include "baci_beaminteraction_spherebeamlinking_params.H"
+#include "baci_binstrategy.H"
+#include "baci_discretization_geometry_intersection_math.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_rigidsphere.H"
 #include "baci_so3_base.H"
-
-#include "baci_discretization_geometry_intersection_math.H"
-
-#include "baci_lib_globalproblem.H"
-
-#include "baci_io_pstream.H"
 
 #include <Epetra_FEVector.h>
 

@@ -11,8 +11,8 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_FACTORY_H
 
-#include <Teuchos_RCP.hpp>
 #include <NOX_Direction_UserDefinedFactory.H>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace Teuchos

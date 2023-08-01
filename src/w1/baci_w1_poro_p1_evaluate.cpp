@@ -9,15 +9,12 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_w1_poro_p1.H"
-#include "baci_w1_poro_p1_eletypes.H"
-
 #include "baci_lib_discret.H"
-
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
-
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_w1_poro_p1.H"
+#include "baci_w1_poro_p1_eletypes.H"
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_PoroP1<distype>::ComputePorosityAndLinearization(

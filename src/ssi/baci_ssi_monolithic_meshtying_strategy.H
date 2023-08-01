@@ -9,10 +9,11 @@
 #ifndef BACI_SSI_MONOLITHIC_MESHTYING_STRATEGY_H
 #define BACI_SSI_MONOLITHIC_MESHTYING_STRATEGY_H
 
-#include <Teuchos_RCPDecl.hpp>
-#include <vector>
-
 #include "baci_linalg_sparseoperator.H"
+
+#include <Teuchos_RCPDecl.hpp>
+
+#include <vector>
 
 namespace CORE::LINALG
 {

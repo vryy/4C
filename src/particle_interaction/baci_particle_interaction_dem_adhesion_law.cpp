@@ -10,10 +10,8 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_dem_adhesion_law.H"
 
-#include "baci_particle_interaction_utils.H"
-
 #include "baci_inpar_particle.H"
-
+#include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*

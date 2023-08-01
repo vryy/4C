@@ -10,11 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_base.H"
 
+#include "baci_particle_engine_container.H"
+#include "baci_particle_engine_interface.H"
 #include "baci_particle_interaction_material_handler.H"
 #include "baci_particle_interaction_runtime_writer.H"
-
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_container.H"
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

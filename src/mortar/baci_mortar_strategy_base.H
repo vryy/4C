@@ -9,16 +9,16 @@
 #ifndef BACI_MORTAR_STRATEGY_BASE_H
 #define BACI_MORTAR_STRATEGY_BASE_H
 
+#include "baci_inpar_contact.H"     // for the INPAR::CONTACT enums
+#include "baci_mortar_interface.H"  // for the enum state type
 #include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"  // interface specifications
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 #include <Epetra_Vector.h>
-
-#include "baci_mortar_interface.H"  // for the enum state type
-#include "baci_inpar_contact.H"     // for the INPAR::CONTACT enums
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

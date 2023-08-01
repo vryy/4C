@@ -7,10 +7,11 @@ utils_std_cxx20_ranges.H
 \level 0
 */
 
-#include <list>
 #include <gtest/gtest.h>
 
 #include "baci_utils_std_cxx20_ranges.H"
+
+#include <list>
 
 namespace
 {

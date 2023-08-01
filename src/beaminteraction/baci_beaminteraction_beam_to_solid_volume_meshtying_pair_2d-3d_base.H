@@ -12,9 +12,8 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_PAIR_2D_3D_BASE_H
 
 
-#include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
-
 #include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
+#include "baci_beaminteraction_beam_to_solid_volume_meshtying_pair_base.H"
 
 // Forward declaration.
 namespace GEOMETRYPAIR

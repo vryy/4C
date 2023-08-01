@@ -10,9 +10,9 @@
 
 #include "baci_inpar_IO_runtime_vtk_output_structure_beams.H"
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar.H"
 #include "baci_inpar_parameterlist_utils.H"
+#include "baci_inpar_validparameters.H"
 
 #include <Teuchos_ParameterList.hpp>
 

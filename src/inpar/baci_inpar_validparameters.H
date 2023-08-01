@@ -12,12 +12,12 @@
 #ifndef BACI_INPAR_VALIDPARAMETERS_H
 #define BACI_INPAR_VALIDPARAMETERS_H
 
-#include <string>
-#include <iostream>
-
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <iostream>
+#include <string>
 
 namespace IO
 {

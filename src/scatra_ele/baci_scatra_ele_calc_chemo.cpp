@@ -8,16 +8,14 @@
 
 #include "baci_scatra_ele_calc_chemo.H"
 
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
-
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_list.H"
 #include "baci_mat_list_chemotaxis.H"
 #include "baci_mat_scatra_mat.H"
-#include "baci_mat_list.H"
+#include "baci_scatra_ele_parameter_std.H"
+#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_utils_singleton_owner.H"
 
 //! note for chemotaxis in BACI:

@@ -13,19 +13,22 @@ GROWTHTYPE 1 LOCTIMEINT 1 MEMBRANE 0
 */
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <cmath>
-#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_mat_growthremodel_elasthyper.H"
-#include "baci_matelast_summand.H"
-#include "baci_matelast_remodelfiber.H"
-#include "baci_lib_linedefinition.H"
+
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_voigt_notation.H"
+#include "baci_mat_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_isoneohooke.H"
+#include "baci_matelast_remodelfiber.H"
+#include "baci_matelast_summand.H"
 #include "baci_matelast_volsussmanbathe.H"
-#include "baci_mat_elasthyper_service.H"
-#include "baci_lib_voigt_notation.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
+
+#include <cmath>
 
 
 /*----------------------------------------------------------------------*/

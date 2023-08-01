@@ -14,10 +14,9 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
-
-#include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_Comm.h>
 #include <Teuchos_ParameterList.hpp>

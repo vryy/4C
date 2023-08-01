@@ -12,9 +12,10 @@
 #ifndef BACI_MAT_ELASTHYPER_SERVICE_H
 #define BACI_MAT_ELASTHYPER_SERVICE_H
 
-#include <NOX.H>
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_matelast_summand.H"
+
+#include <NOX.H>
 namespace MAT
 {
   // Forward declaration

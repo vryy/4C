@@ -10,10 +10,9 @@
 #ifndef BACI_STI_MONOLITHIC_H
 #define BACI_STI_MONOLITHIC_H
 
-#include "baci_sti_algorithm.H"
-
-#include "baci_inpar_sti.H"
 #include "baci_coupling_adapter.H"
+#include "baci_inpar_sti.H"
+#include "baci_sti_algorithm.H"
 
 // forward declarations
 class Epetra_Map;

@@ -13,14 +13,13 @@
 
 
 #include "baci_structure_new_timint_implicitbase.H"
+
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_sparsematrix.H"
 #include "baci_structure_new_integrator.H"
 
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_blocksparsematrix.H"
-
-#include <NOX_Epetra_Vector.H>
 #include <NOX_Abstract_Group.H>
-
+#include <NOX_Epetra_Vector.H>
 #include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------------*

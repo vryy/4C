@@ -8,25 +8,23 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_scatra_dyn.H"
 
+#include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
-
-#include "baci_scatra_timint_implicit.H"
-
+#include "baci_scatra_algorithm.H"
 #include "baci_scatra_ele.H"
+#include "baci_scatra_resulttest.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_utils_clonestrategy.H"
 
-#include <iostream>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
-#include "baci_scatra_algorithm.H"
-#include "baci_scatra_resulttest.H"
-#include "baci_scatra_utils_clonestrategy.H"
-#include "baci_scatra_dyn.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*

@@ -11,15 +11,17 @@ performed afterwards
 #ifndef BACI_FBI_IMMERSED_GEOMETRY_COUPLER_BINNING_H
 #define BACI_FBI_IMMERSED_GEOMETRY_COUPLER_BINNING_H
 
-#include "baci_linalg_fixedsizematrix.H"
-#include <Teuchos_RCP.hpp>
-#include <map>
-#include <vector>
-#include <set>
-#include <Epetra_Vector.h>
-#include <Epetra_Map.h>
-#include "baci_fbi_immersed_geometry_coupler.H"
 #include "baci_binstrategy.H"
+#include "baci_fbi_immersed_geometry_coupler.H"
+#include "baci_linalg_fixedsizematrix.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <map>
+#include <set>
+#include <vector>
 
 namespace BINSTRATEGY
 {

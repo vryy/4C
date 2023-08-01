@@ -9,9 +9,9 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_poro_eletypes.H"
-#include "baci_so3_poro.H"
 
 #include "baci_lib_linedefinition.H"
+#include "baci_so3_poro.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                       |

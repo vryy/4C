@@ -14,9 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_interaction_base.H"
-
 #include "baci_inpar_particle.H"
+#include "baci_particle_interaction_base.H"
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |

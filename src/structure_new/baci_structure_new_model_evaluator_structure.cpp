@@ -10,41 +10,37 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_model_evaluator_structure.H"
-#include "baci_structure_new_gauss_point_data_output_manager.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_implicit.H"
-#include "baci_structure_new_predict_generic.H"
-#include "baci_structure_new_utils.H"
-#include "baci_structure_new_integrator.H"
+
+#include "baci_beam3_base.H"
+#include "baci_beam3_discretization_runtime_vtu_output_params.H"
+#include "baci_beam3_discretization_runtime_vtu_writer.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "baci_io.H"
+#include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_prestress_service.H"
+#include "baci_lib_utils_discret.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_sparseoperator.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_dbc.H"
+#include "baci_structure_new_discretization_runtime_vtu_output_params.H"
+#include "baci_structure_new_gauss_point_data_output_manager.H"
+#include "baci_structure_new_integrator.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_predict_generic.H"
 #include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
+#include "baci_structure_new_timint_implicit.H"
+#include "baci_structure_new_utils.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
-
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_utils_exceptions.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_discret.H"
-
-#include "baci_io.H"
-#include "baci_io_pstream.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
-
-#include "baci_structure_new_discretization_runtime_vtu_output_params.H"
-#include "baci_beam3_base.H"
-#include "baci_beam3_discretization_runtime_vtu_writer.H"
-#include "baci_beam3_discretization_runtime_vtu_output_params.H"
-
-#include "baci_lib_prestress_service.H"
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

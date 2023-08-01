@@ -10,9 +10,10 @@
 #define BACI_POROFLUIDMULTIPHASE_ELE_H
 
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {
