@@ -10,8 +10,9 @@
 #ifndef BACI_CARDIOVASCULAR0D_RESULTTEST_H
 #define BACI_CARDIOVASCULAR0D_RESULTTEST_H
 
-#include <Epetra_Vector.h>
 #include "baci_lib_resulttest.H"
+
+#include <Epetra_Vector.h>
 
 
 // forward declarations

@@ -13,9 +13,9 @@
 #define BACI_LIB_DOFSET_TRANSPARENT_H
 
 
-#include "baci_lib_exporter.H"
-#include "baci_lib_dofset.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_dofset.H"
+#include "baci_lib_exporter.H"
 
 
 namespace DRT

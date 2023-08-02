@@ -7,12 +7,13 @@
 
 *----------------------------------------------------------------------*/
 
-#include <utility>
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
 #include "baci_comm_utils.H"
-#include "baci_lib_inputreader.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_inputreader.H"
+
+#include <utility>
 
 void SetupParallelOutput(
     std::string& outputfile_kenner, Teuchos::RCP<Epetra_Comm> lcomm, int group);

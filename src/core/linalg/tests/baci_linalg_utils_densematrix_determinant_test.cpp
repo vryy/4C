@@ -8,8 +8,9 @@
 *----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
-#include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_utils_densematrix_determinant.H"
+
+#include "baci_linalg_serialdensematrix.H"
 
 /*
  * \note The values for the matrix used in tests below are generated with Mathematica:

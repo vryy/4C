@@ -8,12 +8,11 @@
 #ifndef BACI_INPAR_PROBLEMTYPE_H
 #define BACI_INPAR_PROBLEMTYPE_H
 
-#include <string>
-#include <map>
-
 #include "baci_inpar_parameterlist_utils.H"
-
 #include "baci_lib_globalproblem_enums.H"
+
+#include <map>
+#include <string>
 
 namespace INPAR
 {

@@ -8,30 +8,23 @@
 
 #include "baci_ssti_monolithic.H"
 
+#include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_adapter_str_ssiwrapper.H"
+#include "baci_adapter_str_structure_new.H"
+#include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_equilibrate.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_timint_meshtying_strategy_s2i.H"
+#include "baci_ssi_monolithic_evaluate_OffDiag.H"
+#include "baci_ssi_utils.H"
 #include "baci_ssti_algorithm.H"
 #include "baci_ssti_monolithic_assemble_strategy.H"
 #include "baci_ssti_monolithic_evaluate_OffDiag.H"
 #include "baci_ssti_utils.H"
-
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_str_structure_new.H"
-#include "baci_adapter_scatra_base_algorithm.H"
-
-#include "baci_io_control.H"
-
-#include "baci_lib_globalproblem.H"
-
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-
-#include "baci_ssi_monolithic_evaluate_OffDiag.H"
-#include "baci_ssi_utils.H"
-
 #include "baci_sti_monolithic_evaluate_OffDiag.H"
-
-#include "baci_linalg_equilibrate.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linear_solver_method_linalg.H"
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

@@ -11,6 +11,7 @@
 
 
 #include "baci_adapter_str_structalewrapper.H"
+
 #include "baci_adapter_str_structure_new.H"
 
 

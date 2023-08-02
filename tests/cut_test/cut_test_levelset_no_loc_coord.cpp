@@ -10,24 +10,22 @@
 // Sheared elements needs to be tested separately
 // m.w. 05.2015
 
-#include "baci_cut_options.H"
-#include "baci_cut_mesh.H"
 #include "baci_cut_element.H"
 #include "baci_cut_levelsetintersection.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_options.H"
 
 // Added
-#include "baci_cut_volumecell.H"
+#include "baci_cut_combintersection.H"
 #include "baci_cut_facet.H"
 #include "baci_cut_integrationcell.H"
-#include "baci_cut_utils.H"
 #include "baci_cut_sorted_vector.H"
-#include "baci_cut_combintersection.H"
-
-
-
-#include "cut_test_utils.H"
+#include "baci_cut_utils.H"
+#include "baci_cut_volumecell.H"
 
 #include <iterator>
+
+#include "cut_test_utils.H"
 
 #define PRECISION24
 // #define GMSH_OUTPUT_LSNOLOC_CUT_TEST

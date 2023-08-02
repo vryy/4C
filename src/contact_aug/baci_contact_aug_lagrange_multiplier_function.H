@@ -10,11 +10,11 @@
 #ifndef BACI_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H
 #define BACI_CONTACT_AUG_LAGRANGE_MULTIPLIER_FUNCTION_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_contact_aug_utils.H"
-
 #include "baci_inpar_solver.H"
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_MultiVector;

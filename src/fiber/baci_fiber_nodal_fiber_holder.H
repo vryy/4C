@@ -12,10 +12,11 @@
 #ifndef BACI_FIBER_NODAL_FIBER_HOLDER_H
 #define BACI_FIBER_NODAL_FIBER_HOLDER_H
 
-#include <vector>
-#include <unordered_map>
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_fiber_node.H"
+#include "baci_linalg_fixedsizematrix.H"
+
+#include <unordered_map>
+#include <vector>
 
 namespace DRT
 {

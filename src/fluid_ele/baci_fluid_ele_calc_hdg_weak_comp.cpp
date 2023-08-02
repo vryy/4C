@@ -8,14 +8,13 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_fluid_ele_calc_hdg_weak_comp.H"
+
+#include "baci_fluid_ele_action.H"
 #include "baci_fluid_ele_calc.H"
 #include "baci_fluid_ele_parameter_std.H"
 #include "baci_fluid_ele_parameter_timint.H"
-#include "baci_fluid_ele_action.H"
-
-#include "baci_lib_globalproblem.H"
-
 #include "baci_fluid_functions.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_mat_fluid_weakly_compressible.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>

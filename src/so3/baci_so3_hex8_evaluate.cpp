@@ -8,54 +8,47 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Epetra_MultiVector.h>
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_linalg_serialdensematrix.H"
+#include "baci_contact_analytical.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
-#include "baci_so3_element_service.H"
-#include "baci_so3_hex8.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_fluid_ele_parameter_timint.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_elements.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_voigt_notation.H"
-#include "baci_lib_prestress_service.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_mat_so3_material.H"
+#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_mat_constraintmixture.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_growthremodel_elasthyper.H"
-#include "baci_mat_constraintmixture.H"
-#include "baci_mat_thermostvenantkirchhoff.H"
-#include "baci_mat_thermoplastichyperelast.H"
 #include "baci_mat_robinson.H"
 #include "baci_mat_service.H"
-
-#include "baci_structure_new_gauss_point_data_output_manager.H"
-
-#include "baci_contact_analytical.H"
-#include "baci_lib_globalproblem.H"
-
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <impl/Kokkos_Traits.hpp>
-
+#include "baci_mat_so3_material.H"
+#include "baci_mat_thermoplastichyperelast.H"
+#include "baci_mat_thermostvenantkirchhoff.H"
+#include "baci_so3_defines.H"
+#include "baci_so3_element_service.H"
+#include "baci_so3_hex8.H"
+#include "baci_so3_hex8_determinant_analysis.H"
 #include "baci_so3_prestress.H"
-
-#include "baci_fluid_ele_parameter_timint.H"
+#include "baci_so3_utils.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_enum_lists.H"
+#include "baci_structure_new_gauss_point_data_output_manager.H"
 #include "baci_structure_new_model_evaluator_data.H"
+#include "baci_utils_exceptions.H"
 
-#include "baci_so3_defines.H"
-#include "baci_so3_hex8_determinant_analysis.H"
-
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_so3_utils.H"
+#include <Epetra_MultiVector.h>
+#include <impl/Kokkos_Traits.hpp>
+#include <Teuchos_SerialDenseSolver.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 

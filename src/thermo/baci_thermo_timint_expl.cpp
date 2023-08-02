@@ -10,11 +10,12 @@
 /*----------------------------------------------------------------------*
  | headers                                                   dano 01/12 |
  *----------------------------------------------------------------------*/
-#include <sstream>
-
-#include "baci_thermo_timint.H"
 #include "baci_thermo_timint_expl.H"
+
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_thermo_timint.H"
+
+#include <sstream>
 
 
 /*----------------------------------------------------------------------*

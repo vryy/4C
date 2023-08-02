@@ -12,13 +12,11 @@
 #ifndef BACI_FLUID_ELE_CALC_XFEM_H
 #define BACI_FLUID_ELE_CALC_XFEM_H
 
-#include "baci_lib_utils.H"
-
 #include "baci_fluid_ele_calc.H"
 #include "baci_fluid_ele_calc_xfem_coupling.H"
-#include "baci_xfem_condition_manager.H"
-
+#include "baci_lib_utils.H"
 #include "baci_utils_singleton_owner.H"
+#include "baci_xfem_condition_manager.H"
 
 namespace XFEM
 {

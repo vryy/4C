@@ -13,12 +13,14 @@
 #define BACI_XFEM_XFLUID_CONTACT_COMMUNICATOR_H
 
 
-#include <vector>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <set>
 #include "baci_inpar_xfem.H"
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
+#include <vector>
 
 // #define WRITE_GMSH
 

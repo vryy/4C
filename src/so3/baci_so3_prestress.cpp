@@ -8,6 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_prestress.H"
+
 #include "baci_utils_exceptions.H"
 
 

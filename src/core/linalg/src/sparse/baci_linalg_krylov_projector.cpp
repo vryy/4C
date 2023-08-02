@@ -10,18 +10,20 @@
 *---------------------------------------------------------------------------*/
 
 #include "baci_linalg_krylov_projector.H"
+
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_densematrix_communication.H"
-#include <Teuchos_SerialDenseSolver.hpp>
-#include <Epetra_MultiVector.h>
-#include <Epetra_Vector.h>
-#include <Epetra_Operator.h>
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_utils_exceptions.H"
+
 #include <Epetra_Import.h>
 #include <Epetra_Map.h>
-#include "baci_utils_exceptions.H"
+#include <Epetra_MultiVector.h>
+#include <Epetra_Operator.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /* ====================================================================
     public

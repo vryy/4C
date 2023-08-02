@@ -10,11 +10,11 @@
 /*---------------------------------------------------------------------*/
 
 
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_implicit.H"
-#include "baci_structure_new_integrator.H"
-#include "baci_structure_new_nln_solver_nox.H"
 #include "baci_inpar_contact.H"
+#include "baci_structure_new_integrator.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_nln_solver_nox.H"
+#include "baci_structure_new_timint_implicit.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

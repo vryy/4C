@@ -10,8 +10,10 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_mat_muscle_utils.H"
-#include "baci_utils_exceptions.H"
+
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_exceptions.H"
+
 #include <cmath>
 #include <functional>
 

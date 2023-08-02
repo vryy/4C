@@ -10,12 +10,12 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_POLYNOMIAL_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_POLYNOMIAL_H
 
-#include <numeric>
-#include <utility>
-
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
+
+#include <numeric>
+#include <utility>
 
 namespace CORE::DRT::UTILS
 {

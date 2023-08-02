@@ -11,13 +11,14 @@ analysis for supporting processors
 /*---------------------------------------------------------------------*/
 
 #include "baci_stru_multi_microstatic_npsupport.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_comm_utils.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_lib_container.H"
 #include "baci_lib_exporter.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_mat_micromaterial.H"
 
 #include <hdf5.h>
 

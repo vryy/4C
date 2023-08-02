@@ -7,10 +7,10 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_constraint_element2.H"
-#include "baci_lib_utils.H"
 #include "baci_lib_exporter.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 
 
 /*----------------------------------------------------------------------*

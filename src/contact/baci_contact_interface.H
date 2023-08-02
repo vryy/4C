@@ -10,11 +10,11 @@
 #ifndef BACI_CONTACT_INTERFACE_H
 #define BACI_CONTACT_INTERFACE_H
 
+#include "baci_coupling_adapter.H"
 #include "baci_inpar_contact.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_mortar_interface.H"
 #include "baci_mortar_strategy_base.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_coupling_adapter.H"
 
 // forward declarations
 class Epetra_FEVector;

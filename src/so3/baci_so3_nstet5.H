@@ -10,9 +10,9 @@
 #define BACI_SO3_NSTET5_H
 
 
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_inpar_structure.H"
 
 // #define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
 #define ALPHA_NSTET5 0.1  ///< stabilization parameter for vol-dev split stabilization & Puso-tet

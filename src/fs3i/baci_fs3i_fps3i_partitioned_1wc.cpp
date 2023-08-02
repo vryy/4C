@@ -9,34 +9,34 @@
 
 
 *----------------------------------------------------------------------*/
-#include <Teuchos_TimeMonitor.hpp>
+#include "baci_fs3i_fps3i_partitioned_1wc.H"
+
+#include "baci_adapter_fld_poro.H"
+#include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_coupling_adapter.H"
+#include "baci_fluid_implicit_integration.H"
+#include "baci_fluid_result_test.H"
+#include "baci_fluid_utils.H"
+#include "baci_fpsi_monolithic.H"
+#include "baci_fpsi_monolithic_plain.H"
+#include "baci_fpsi_utils.H"
+#include "baci_fsi_monolithic.H"
 #include "baci_inpar_scatra.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_io_control.H"
-#include "baci_coupling_adapter.H"
-#include "baci_adapter_str_fpsiwrapper.H"
-#include "baci_adapter_fld_poro.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_condition_selector.H"
-#include "baci_fsi_monolithic.H"
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_poroelast_monolithic.H"
 #include "baci_scatra_algorithm.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_scatra_utils_clonestrategy.H"
-#include "baci_fpsi_utils.H"
-#include "baci_fpsi_monolithic.H"
-#include "baci_fpsi_monolithic_plain.H"
-#include "baci_poroelast_monolithic.H"
-#include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_utils.H"
-#include "baci_fluid_result_test.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linear_solver_method_linalg.H"
 
-#include "baci_fs3i_fps3i_partitioned_1wc.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |  Constructor                                           hemmler 07/14 |

@@ -10,23 +10,18 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_dem.H"
 
+#include "baci_io_runtime_csv_writer.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_particle_engine_container.H"
+#include "baci_particle_engine_interface.H"
+#include "baci_particle_interaction_dem_adhesion.H"
+#include "baci_particle_interaction_dem_contact.H"
+#include "baci_particle_interaction_dem_history_pairs.H"
+#include "baci_particle_interaction_dem_neighbor_pairs.H"
 #include "baci_particle_interaction_material_handler.H"
 #include "baci_particle_interaction_runtime_writer.H"
 #include "baci_particle_interaction_utils.H"
-
-#include "baci_particle_interaction_dem_neighbor_pairs.H"
-#include "baci_particle_interaction_dem_history_pairs.H"
-#include "baci_particle_interaction_dem_contact.H"
-#include "baci_particle_interaction_dem_adhesion.H"
-
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_container.H"
-
 #include "baci_particle_wall_interface.H"
-
-#include "baci_lib_globalproblem.H"
-
-#include "baci_io_runtime_csv_writer.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

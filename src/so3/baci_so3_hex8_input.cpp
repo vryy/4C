@@ -6,10 +6,10 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_hex8.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_mat_robinson.H"
 #include "baci_mat_so3_material.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_so3_hex8.H"
 
 
 /*----------------------------------------------------------------------*/

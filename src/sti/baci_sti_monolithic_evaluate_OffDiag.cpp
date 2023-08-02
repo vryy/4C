@@ -7,28 +7,22 @@
  */
 /*----------------------------------------------------------------------*/
 
-#include <utility>
-
 #include "baci_sti_monolithic_evaluate_OffDiag.H"
-
-#include "baci_scatra_ele_action.H"
-#include "baci_scatra_timint_implicit.H"
-
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_sparseoperator.H"
-
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_parameter_list.H"
-
-#include "baci_scatra_timint_meshtying_strategy_s2i.H"
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
 
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
-
+#include "baci_lib_assemblestrategy.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_utils_parameter_list.H"
+#include "baci_linalg_mapextractor.H"
 #include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_sparseoperator.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_scatra_timint_meshtying_strategy_s2i.H"
+
+#include <utility>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

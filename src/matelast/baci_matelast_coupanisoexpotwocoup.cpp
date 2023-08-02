@@ -9,9 +9,9 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 
 #include "baci_matelast_coupanisoexpotwocoup.H"
 
+#include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
-#include "baci_mat_anisotropy_extension.H"
 
 
 MAT::ELASTIC::PAR::CoupAnisoExpoTwoCoup::CoupAnisoExpoTwoCoup(

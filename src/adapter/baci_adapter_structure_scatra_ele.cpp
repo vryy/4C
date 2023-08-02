@@ -10,8 +10,8 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_adapter_structure_scatra_ele.H"
-#include "baci_lib_element.H"
 
+#include "baci_lib_element.H"
 #include "baci_membrane_scatra.H"
 #include "baci_s8_scatra.H"
 #include "baci_so3_scatra.H"

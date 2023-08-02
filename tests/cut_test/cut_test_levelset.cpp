@@ -6,13 +6,14 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_cut_options.H"
-#include "baci_cut_mesh.H"
 #include "baci_cut_element.H"
 #include "baci_cut_levelsetintersection.H"
-#include "cut_test_utils.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_options.H"
 
 #include <iterator>
+
+#include "cut_test_utils.H"
 
 void test_ls_hex8_florian1()
 {

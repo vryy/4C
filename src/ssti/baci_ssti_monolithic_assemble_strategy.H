@@ -8,16 +8,14 @@
 #ifndef BACI_SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 #define BACI_SSTI_MONOLITHIC_ASSEMBLE_STRATEGY_H
 
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
-
-#include "baci_ssti_utils.H"
-#include "baci_ssti_monolithic.H"
-
 #include "baci_coupling_adapter.H"
-
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_ssi_utils.H"
+#include "baci_ssti_monolithic.H"
+#include "baci_ssti_utils.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 
 namespace CORE::LINALG
 {

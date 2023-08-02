@@ -8,10 +8,10 @@
 */
 /*---------------------------------------------------------------------------*/
 
-#include "baci_w1_poro_scatra.H"
 #include "baci_w1_poro_scatra_eletypes.H"
 
 #include "baci_lib_linedefinition.H"
+#include "baci_w1_poro_scatra.H"
 
 /*----------------------------------------------------------------------*
  |  QUAD 4 Element                                        schmidt 09/17 |

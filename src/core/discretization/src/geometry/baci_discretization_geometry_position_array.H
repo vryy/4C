@@ -10,8 +10,8 @@
 #define BACI_DISCRETIZATION_GEOMETRY_POSITION_ARRAY_H
 
 
-#include "baci_lib_node.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
 
 

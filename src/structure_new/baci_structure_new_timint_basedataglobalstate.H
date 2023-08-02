@@ -13,17 +13,14 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 #define BACI_STRUCTURE_NEW_TIMINT_BASEDATAGLOBALSTATE_H
 
-#include "baci_utils_exceptions.H"
 #include "baci_inpar_structure.H"
-
 #include "baci_lib_utils_matrix_vector_enums.H"
-
-#include "baci_linalg_sparseoperator.H"
 #include "baci_linalg_mapextractor.H"
-#include "baci_timestepping_mstep.H"
-
+#include "baci_linalg_sparseoperator.H"
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
 #include "baci_solver_nonlin_nox_enum_lists.H"
+#include "baci_timestepping_mstep.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
 

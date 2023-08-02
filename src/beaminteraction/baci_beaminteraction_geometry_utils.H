@@ -11,9 +11,8 @@
 #ifndef BACI_BEAMINTERACTION_GEOMETRY_UTILS_H
 #define BACI_BEAMINTERACTION_GEOMETRY_UTILS_H
 
-#include "baci_linalg_fixedsizematrix.H"
-
 #include "baci_lib_element.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 
 namespace BEAMINTERACTION

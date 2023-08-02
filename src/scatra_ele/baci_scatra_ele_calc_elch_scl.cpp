@@ -9,16 +9,13 @@
 /*--------------------------------------------------------------------------*/
 #include "baci_scatra_ele_calc_elch_scl.H"
 
-#include "baci_utils_singleton_owner.H"
-
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-
 #include "baci_mat_material.H"
-
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch_scl.H"
+#include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

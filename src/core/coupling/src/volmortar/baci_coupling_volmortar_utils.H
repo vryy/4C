@@ -11,8 +11,9 @@
 #ifndef BACI_COUPLING_VOLMORTAR_UTILS_H
 #define BACI_COUPLING_VOLMORTAR_UTILS_H
 
-#include <vector>
 #include <Teuchos_RCPDecl.hpp>
+
+#include <vector>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    vuong 09/14 |

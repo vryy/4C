@@ -10,13 +10,14 @@ attached parenchyma balloon
 *----------------------------------------------------------------------*/
 
 #include "baci_adapter_str_lung.H"
+
 #include "baci_io.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_structure_aux.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_structure_aux.H"
 
 /*======================================================================*/
 /* constructor */

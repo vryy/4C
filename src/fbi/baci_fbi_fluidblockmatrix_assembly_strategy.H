@@ -13,12 +13,13 @@
 #ifndef BACI_FBI_FLUIDBLOCKMATRIX_ASSEMBLY_STRATEGY_H
 #define BACI_FBI_FLUIDBLOCKMATRIX_ASSEMBLY_STRATEGY_H
 
-#include <vector>
-
-#include "baci_utils_exceptions.H"
-#include <Teuchos_RCP.hpp>
-#include <Epetra_FEVector.h>
 #include "baci_fbi_fluid_assembly_strategy.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_FEVector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 
 namespace FBI

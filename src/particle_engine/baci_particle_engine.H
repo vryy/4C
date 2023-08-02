@@ -17,8 +17,8 @@
 #include "baci_particle_engine_interface.H"
 
 #include <Epetra_Comm.h>
-#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
 /*---------------------------------------------------------------------------*

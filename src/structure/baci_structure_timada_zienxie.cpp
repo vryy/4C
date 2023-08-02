@@ -11,13 +11,14 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <iostream>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_structure_timada_zienxie.H"
+
 #include "baci_structure_timint.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <iostream>
 
 /*----------------------------------------------------------------------*/
 /* Constructor */

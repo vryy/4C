@@ -8,15 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fsi_dirichletneumann.H"
 #include "baci_fsi_dirichletneumann_factory.H"
+
+#include "baci_fsi_dirichletneumann.H"
 #include "baci_fsi_dirichletneumann_disp.H"
 #include "baci_fsi_dirichletneumann_vel.H"
 #include "baci_fsi_dirichletneumann_volcoupl.H"
 #include "baci_fsi_dirichletneumannslideale.H"
-#include "baci_lib_globalproblem.H"
-
 #include "baci_inpar_fsi.H"
+#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

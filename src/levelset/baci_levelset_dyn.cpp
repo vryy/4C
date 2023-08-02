@@ -6,18 +6,21 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_levelset_dyn.H"
-#include "baci_levelset_algorithm.H"
-#include "baci_inpar_scatra.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_adapter_scatra_base_algorithm.H"
-#include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <iostream>
+#include "baci_inpar_scatra.H"
+#include "baci_levelset_algorithm.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_lib_globalproblem.H"
+
+#include <Epetra_MpiComm.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*

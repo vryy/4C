@@ -14,9 +14,8 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
-#include "baci_particle_wall_interface.H"
-
 #include "baci_particle_engine_typedefs.H"
+#include "baci_particle_wall_interface.H"
 
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>

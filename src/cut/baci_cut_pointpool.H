@@ -12,12 +12,12 @@ created
 #ifndef BACI_CUT_POINTPOOL_H
 #define BACI_CUT_POINTPOOL_H
 
-#include <set>
+#include "baci_cut_boundingbox.H"
+#include "baci_cut_point.H"
 
 #include <Teuchos_RCP.hpp>
 
-#include "baci_cut_boundingbox.H"
-#include "baci_cut_point.H"
+#include <set>
 
 namespace CORE::GEO
 {

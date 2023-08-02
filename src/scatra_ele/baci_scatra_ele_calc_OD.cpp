@@ -10,13 +10,11 @@
 
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
-
-#include "baci_scatra_ele_parameter_std.H"
-#include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_action.H"
-
 #include "baci_scatra_ele_calc.H"
+#include "baci_scatra_ele_parameter_std.H"
+#include "baci_scatra_ele_parameter_timint.H"
 
 
 /*----------------------------------------------------------------------*

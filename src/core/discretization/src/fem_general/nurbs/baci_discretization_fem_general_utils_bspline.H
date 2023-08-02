@@ -11,12 +11,12 @@
 #ifndef BACI_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_H
 #define BACI_DISCRETIZATION_FEM_GENERAL_UTILS_BSPLINE_H
 
+#include "baci_linalg_serialdensevector.H"
+
+#include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
-#include <fstream>
-
-#include "baci_linalg_serialdensevector.H"
 
 
 namespace CORE::DRT::NURBS::UTILS

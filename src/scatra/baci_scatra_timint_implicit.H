@@ -24,20 +24,17 @@
 #ifndef BACI_SCATRA_TIMINT_IMPLICIT_H
 #define BACI_SCATRA_TIMINT_IMPLICIT_H
 
-#include <optional>
-#include <set>
-
 #include "baci_adapter_scatra_wrapper.H"
-
-#include <Epetra_MultiVector.h>
-#include "baci_linalg_serialdensevector.H"
-
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_scatra.H"
+#include "baci_io_runtime_csv_writer.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Epetra_MultiVector.h>
 
 #include <memory>
-
-#include "baci_io_runtime_csv_writer.H"
+#include <optional>
+#include <set>
 
 
 /*==========================================================================*/

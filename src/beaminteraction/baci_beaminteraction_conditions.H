@@ -13,13 +13,13 @@
 
 
 #include "baci_inpar_beaminteraction.H"
-
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
 
 #include <map>
 #include <set>
 #include <vector>
-#include <Teuchos_RCP.hpp>
 
 
 // Forward declarations.

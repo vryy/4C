@@ -9,22 +9,20 @@
 /*----------------------------------------------------------------------*/
 
 
-#include <Teuchos_TimeMonitor.hpp>
+#include "baci_cut_elementhandle.H"
 
 #include "baci_cut_boundarycell.H"
 #include "baci_cut_integrationcell.H"
-#include "baci_cut_position.H"
-#include "baci_cut_point.H"
-#include "baci_cut_node.H"
-#include "baci_cut_volumecell.H"
 #include "baci_cut_mesh.H"
-#include "baci_cut_tolerance.H"
+#include "baci_cut_node.H"
+#include "baci_cut_point.H"
+#include "baci_cut_position.H"
 #include "baci_cut_quadrature_compression.H"
-
-
+#include "baci_cut_tolerance.H"
+#include "baci_cut_volumecell.H"
 #include "baci_inpar_xfem.H"
 
-#include "baci_cut_elementhandle.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 #include <fstream>
 

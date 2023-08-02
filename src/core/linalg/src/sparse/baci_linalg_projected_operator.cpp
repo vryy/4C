@@ -9,9 +9,11 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_linalg_projected_operator.H"
-#include <Epetra_MultiVector.h>
+
 #include "baci_linalg_krylov_projector.H"
 #include "baci_utils_exceptions.H"
+
+#include <Epetra_MultiVector.h>
 
 /* --------------------------------------------------------------------
                           Constructor

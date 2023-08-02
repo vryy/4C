@@ -8,9 +8,9 @@
  */
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_utils_elch_electrode.H"
-#include "baci_scatra_ele_calc_elch_electrode.H"
 
 #include "baci_mat_electrode.H"
+#include "baci_scatra_ele_calc_elch_electrode.H"
 #include "baci_utils_singleton_owner.H"
 
 

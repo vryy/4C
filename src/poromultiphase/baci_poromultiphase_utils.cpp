@@ -8,22 +8,18 @@
 
 #include "baci_poromultiphase_utils.H"
 
-#include "baci_lib_dofset_predefineddofnumber.H"
-#include "baci_poromultiphase_utils_clonestrategy.H"
-
 #include "baci_adapter_poromultiphase.H"
-
-#include "baci_poromultiphase_partitioned.H"
-#include "baci_poromultiphase_partitioned_twoway.H"
-#include "baci_poromultiphase_monolithic.H"
-#include "baci_poromultiphase_monolithic_twoway.H"
-
+#include "baci_inpar_bio.H"
+#include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_poroelast_utils.H"
 #include "baci_porofluidmultiphase_ele.H"
 #include "baci_porofluidmultiphase_utils.H"
-#include "baci_poroelast_utils.H"
-#include "baci_inpar_bio.H"
-
-#include "baci_lib_utils_createdis.H"
+#include "baci_poromultiphase_monolithic.H"
+#include "baci_poromultiphase_monolithic_twoway.H"
+#include "baci_poromultiphase_partitioned.H"
+#include "baci_poromultiphase_partitioned_twoway.H"
+#include "baci_poromultiphase_utils_clonestrategy.H"
 
 /*----------------------------------------------------------------------*
  | setup discretizations and dofsets                         vuong 08/16 |

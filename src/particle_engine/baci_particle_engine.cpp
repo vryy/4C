@@ -10,26 +10,20 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine.H"
 
+#include "baci_binstrategy.H"
+#include "baci_inpar_particle.H"
+#include "baci_io.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_utils_factory.H"
+#include "baci_particle_algorithm_utils.H"
 #include "baci_particle_engine_communication_utils.H"
-
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_container_bundle.H"
 #include "baci_particle_engine_object.H"
-#include "baci_particle_engine_unique_global_id.H"
 #include "baci_particle_engine_runtime_vtp_writer.H"
-
-#include "baci_particle_algorithm_utils.H"
-
-#include "baci_binstrategy.H"
-
-#include "baci_inpar_particle.H"
-
+#include "baci_particle_engine_unique_global_id.H"
 #include "baci_utils_exceptions.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-
-#include "baci_io.H"
-#include "baci_io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

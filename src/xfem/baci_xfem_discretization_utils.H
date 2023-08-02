@@ -11,11 +11,12 @@
 #ifndef BACI_XFEM_DISCRETIZATION_UTILS_H
 #define BACI_XFEM_DISCRETIZATION_UTILS_H
 
-#include <vector>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_linalg_fixedsizematrix.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 class Epetra_Comm;
 namespace DRT

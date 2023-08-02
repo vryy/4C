@@ -10,7 +10,9 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_lib_container.H"
+
 #include "baci_utils_exceptions.H"
+
 #include <Epetra_Vector.h>
 
 

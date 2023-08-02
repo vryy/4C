@@ -12,9 +12,9 @@
 #define BACI_POROELAST_SCATRA_BASE_H
 
 #include "baci_adapter_algorithmbase.H"
-#include "baci_scatra_algorithm.H"
-#include "baci_poroelast_base.H"
 #include "baci_coupling_adapter_volmortar.H"
+#include "baci_poroelast_base.H"
+#include "baci_scatra_algorithm.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                  |

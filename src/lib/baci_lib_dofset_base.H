@@ -12,9 +12,9 @@
 #ifndef BACI_LIB_DOFSET_BASE_H
 #define BACI_LIB_DOFSET_BASE_H
 
-#include <list>
-
 #include "baci_lib_dofset_interface.H"
+
+#include <list>
 
 namespace DRT
 {

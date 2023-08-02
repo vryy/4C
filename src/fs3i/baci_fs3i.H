@@ -15,10 +15,11 @@
 #define BACI_FS3I_H
 
 
-#include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include "baci_coupling_adapter.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

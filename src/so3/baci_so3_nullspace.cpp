@@ -4,6 +4,7 @@
 */
 
 #include "baci_so3_nullspace.H"
+
 #include "baci_lib_node.H"
 
 namespace DRT::ELEMENTS

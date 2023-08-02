@@ -14,12 +14,12 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_H
 #define BACI_SOLVER_NONLIN_NOX_STATUSTEST_ACTIVESET_H
 
-#include <deque>
+#include "baci_solver_nonlin_nox_enum_lists.H"
 
 #include <NOX_StatusTest_Generic.H>  // base class
-
 #include <Teuchos_RCP.hpp>
-#include "baci_solver_nonlin_nox_enum_lists.H"
+
+#include <deque>
 
 // forward declarations
 class Epetra_Map;

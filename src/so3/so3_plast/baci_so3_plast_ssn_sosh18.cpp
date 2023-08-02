@@ -6,17 +6,17 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_so3_plast_ssn_sosh18.H"
+
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_mat_plasticelasthyper.H"
+#include "baci_so3_hex18.H"
 #include "baci_so3_plast_ssn_eletypes.H"
 #include "baci_so3_sh18.H"
-#include "baci_so3_hex18.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_structure_new_elements_paramsinterface.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_so3_utils.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 
 
 /*----------------------------------------------------------------------*

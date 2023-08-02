@@ -9,17 +9,16 @@
 #ifndef BACI_ART_NET_ARTERY_H
 #define BACI_ART_NET_ARTERY_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-
-
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_fluid_ele_nullspace.H"
+#include "baci_inpar_bio.H"
 #include "baci_lib_element.H"
-#include "baci_lib_parobjectfactory.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_inpar_bio.H"
-#include "baci_fluid_ele_nullspace.H"
+#include "baci_lib_parobjectfactory.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 struct _MATERIAL;

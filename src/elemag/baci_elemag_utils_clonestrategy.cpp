@@ -10,16 +10,14 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_elemag_utils_clonestrategy.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_par_bundle.H"
 
-// we need to know all element types for the scatra mesh creation
 #include "baci_elemag_ele.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_globalproblem_enums.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
 #include "baci_scatra_ele.H"
 #include "baci_scatra_ele_hdg.H"
-
-#include "baci_lib_globalproblem_enums.H"
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

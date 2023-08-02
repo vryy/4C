@@ -12,10 +12,10 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_structure_timada.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*/
 /* belongs to structure namespace */

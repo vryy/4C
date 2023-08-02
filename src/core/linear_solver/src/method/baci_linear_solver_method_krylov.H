@@ -10,21 +10,18 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_KRYLOV_H
 #define BACI_LINEAR_SOLVER_METHOD_KRYLOV_H
 
-#include "baci_utils_exceptions.H"
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <Xpetra_Matrix.hpp>
-#include <Xpetra_MapFactory.hpp>
-
-#include <MueLu_PermutationFactory_fwd.hpp>
-#include <MueLu_FactoryBase_fwd.hpp>
-#include <MueLu_Level_fwd.hpp>
-#include <MueLu_UseDefaultTypes.hpp>
-
 #include "baci_linear_solver_method.H"
 #include "baci_linear_solver_preconditioner_type.H"
+#include "baci_utils_exceptions.H"
+
+#include <MueLu_FactoryBase_fwd.hpp>
+#include <MueLu_Level_fwd.hpp>
+#include <MueLu_PermutationFactory_fwd.hpp>
+#include <MueLu_UseDefaultTypes.hpp>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Xpetra_MapFactory.hpp>
+#include <Xpetra_Matrix.hpp>
 
 namespace CORE::LINEAR_SOLVER
 {

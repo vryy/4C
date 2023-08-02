@@ -6,11 +6,11 @@
 
 *----------------------------------------------------------------------*/
 
-#include <iostream>
-#include <algorithm>
-#include <numeric>
-
 #include "baci_constraint_dofset.H"
+
+#include <algorithm>
+#include <iostream>
+#include <numeric>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|

@@ -11,13 +11,12 @@
 #define BACI_ALE_MESHTYING_H
 
 
-#include "baci_inpar_ale.H"
-
-#include "baci_linalg_mapextractor.H"
 #include "baci_coupling_adapter_mortar.H"
+#include "baci_inpar_ale.H"
+#include "baci_linalg_mapextractor.H"
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

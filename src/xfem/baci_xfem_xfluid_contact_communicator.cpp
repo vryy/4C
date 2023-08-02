@@ -8,35 +8,28 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_cut_cutwizard.H"
-#include "baci_cut_sidehandle.H"
-#include "baci_cut_facet.H"
-#include "baci_cut_volumecell.H"
-#include "baci_cut_elementhandle.H"
-#include "baci_cut_position.H"
-#include "baci_cut_output.H"
-#include "baci_cut_element.H"
-#include "baci_cut_boundingbox.H"
-
-#include "baci_so3_surface.H"
-#include "baci_so3_hex8.H"
-
-#include "baci_fluid_ele.H"
-
-#include "baci_mat_newtonianfluid.H"
-
-#include "baci_lib_utils.H"
-
-#include "baci_xfem_condition_manager.H"
-
 #include "baci_xfem_xfluid_contact_communicator.H"
 
 #include "baci_contact_element.H"
-#include "baci_contact_node.H"
-#include "baci_contact_nitsche_strategy_fsi.H"
 #include "baci_contact_nitsche_strategy_fpi.H"
-
+#include "baci_contact_nitsche_strategy_fsi.H"
+#include "baci_contact_node.H"
+#include "baci_cut_boundingbox.H"
+#include "baci_cut_cutwizard.H"
+#include "baci_cut_element.H"
+#include "baci_cut_elementhandle.H"
+#include "baci_cut_facet.H"
+#include "baci_cut_output.H"
+#include "baci_cut_position.H"
+#include "baci_cut_sidehandle.H"
+#include "baci_cut_volumecell.H"
+#include "baci_fluid_ele.H"
+#include "baci_lib_utils.H"
+#include "baci_mat_newtonianfluid.H"
 #include "baci_mortar_element.H"
+#include "baci_so3_hex8.H"
+#include "baci_so3_surface.H"
+#include "baci_xfem_condition_manager.H"
 
 void XFEM::XFluid_Contact_Comm::InitializeFluidState(Teuchos::RCP<CORE::GEO::CutWizard> cutwizard,
     Teuchos::RCP<DRT::Discretization> fluiddis,

@@ -11,8 +11,8 @@
 #ifndef BACI_SCATRA_TIMINT_BDF2_H
 #define BACI_SCATRA_TIMINT_BDF2_H
 
-#include "baci_scatra_timint_implicit.H"
 #include "baci_linalg_sparsematrix.H"
+#include "baci_scatra_timint_implicit.H"
 
 namespace SCATRA
 {

@@ -12,12 +12,9 @@
 
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
-
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
-
 #include "baci_so3_hex8.H"
 #include "baci_so3_poro.H"
-
 #include "baci_xfem_xfluid_contact_communicator.H"
 
 /*----------------------------------------------------------------------*

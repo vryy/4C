@@ -10,20 +10,20 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_loca_continuation_nln_stepper.H"
-#include "baci_utils_exceptions.H"
 
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"
 #include "baci_solver_nonlin_nox_solver_factory.H"
+#include "baci_utils_exceptions.H"
 
-#include <LOCA_MultiContinuation_AbstractStrategy.H>
-#include <LOCA_MultiContinuation_AbstractGroup.H>
-#include <LOCA_MultiContinuation_ExtendedGroup.H>
-#include <LOCA_GlobalData.H>
-#include <LOCA_Factory.H>
 #include <LOCA_Eigensolver_AbstractStrategy.H>
-#include <LOCA_SaveEigenData_AbstractStrategy.H>
 #include <LOCA_ErrorCheck.H>
+#include <LOCA_Factory.H>
+#include <LOCA_GlobalData.H>
+#include <LOCA_MultiContinuation_AbstractGroup.H>
+#include <LOCA_MultiContinuation_AbstractStrategy.H>
+#include <LOCA_MultiContinuation_ExtendedGroup.H>
 #include <LOCA_Parameter_SublistParser.H>
+#include <LOCA_SaveEigenData_AbstractStrategy.H>
 
 
 /*----------------------------------------------------------------------------*

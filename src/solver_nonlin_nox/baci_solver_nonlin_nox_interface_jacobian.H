@@ -14,11 +14,11 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_H
 #define BACI_SOLVER_NONLIN_NOX_INTERFACE_JACOBIAN_H
 
+#include "baci_solver_nonlin_nox_enum_lists.H"
+
 #include <NOX_Epetra_Interface_Jacobian.H>  // base class
 #include <NOX_Epetra_Interface_Required.H>
 #include <Teuchos_RCPDecl.hpp>
-
-#include "baci_solver_nonlin_nox_enum_lists.H"
 
 // forward declaration
 namespace CORE::LINALG

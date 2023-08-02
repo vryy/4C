@@ -14,34 +14,29 @@
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "baci_tsi_algorithm.H"
-#include "baci_tsi_defines.H"
-#include "baci_tsi_utils.H"
-#include "baci_adapter_str_structure_new.H"
+
 #include "baci_adapter_str_factory.H"
+#include "baci_adapter_str_structure_new.H"
 #include "baci_adapter_str_wrapper.H"
-#include "baci_coupling_adapter_mortar.H"
-#include "baci_inpar_tsi.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_io.H"
-
 #include "baci_adapter_thermo.H"
-#include "baci_lib_discret.H"
-
-// for coupling of nonmatching meshes
+#include "baci_contact_lagrange_strategy.H"
+#include "baci_contact_meshtying_contact_bridge.H"
+#include "baci_contact_nitsche_strategy_tsi.H"
+#include "baci_contact_strategy_factory.H"
+#include "baci_contact_tsi_lagrange_strategy.H"
+#include "baci_coupling_adapter.H"
+#include "baci_coupling_adapter_mortar.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_coupling_volmortar_utils.H"
-
-// contact
-#include "baci_contact_lagrange_strategy.H"
-#include "baci_contact_tsi_lagrange_strategy.H"
-#include "baci_contact_nitsche_strategy_tsi.H"
-#include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_contact_strategy_factory.H"
-
+#include "baci_inpar_tsi.H"
+#include "baci_io.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mortar_multifield_coupling.H"
 #include "baci_structure_new_model_evaluator_contact.H"
 #include "baci_structure_new_model_evaluator_structure.H"
-#include "baci_mortar_multifield_coupling.H"
-#include "baci_coupling_adapter.H"
+#include "baci_tsi_defines.H"
+#include "baci_tsi_utils.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries

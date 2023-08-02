@@ -10,11 +10,13 @@
 #ifndef BACI_SSI_UTILS_H
 #define BACI_SSI_UTILS_H
 
+#include "baci_coupling_adapter.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+
 #include <set>
-#include "baci_coupling_adapter.H"
 
 namespace CORE::ADAPTER
 {

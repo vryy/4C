@@ -9,33 +9,28 @@ xfluid class and the cut-library
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_xfem_coupling_fpi_mesh.H"
-
-#include "baci_xfem_utils.H"
-#include "baci_xfem_interface_utils.H"
-#include "baci_xfem_discretization_utils.H"
-
-#include "baci_lib_utils_parallel.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_dofset_transparent_independent.H"
 
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_ele_parameter_xfem.H"
-
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_io_gmsh.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_dofset_transparent_independent.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_lib_utils_parallel.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_io.H"
-#include "baci_io_gmsh.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-
-#include "baci_poroelast_utils.H"
-#include "baci_mat_structporo.H"
 #include "baci_mat_fluidporo.H"
+#include "baci_mat_structporo.H"
+#include "baci_poroelast_utils.H"
+#include "baci_xfem_discretization_utils.H"
+#include "baci_xfem_interface_utils.H"
+#include "baci_xfem_utils.H"
 #include "baci_xfem_xfluid_contact_communicator.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 //! constructor
 XFEM::MeshCouplingFPI::MeshCouplingFPI(

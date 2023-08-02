@@ -14,18 +14,16 @@
 
 /*----------------------------------------------------------------------------*/
 /* header inclusions */
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-#include <Teuchos_SerialDenseMatrix.hpp>
-
-#include "baci_lib_elementtype.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-
+#include "baci_lib_elementtype.H"
 #include "baci_utils_singleton_owner.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 const int NUMDIM_ALE3 = 3;  ///< number of dimensions
 const int NODDOF_ALE3 = 3;  ///< number of dofs per node

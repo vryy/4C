@@ -15,11 +15,12 @@ MAT 0   MAT_ElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 /*----------------------------------------------------------------------*/
 
 #include "baci_mat_elasthyper.H"
+
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_voigt_notation.H"
+#include "baci_mat_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
-#include "baci_mat_elasthyper_service.H"
-#include "baci_lib_voigt_notation.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

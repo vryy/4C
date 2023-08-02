@@ -12,10 +12,11 @@ See the header file for a detailed description.
  | headers                                                              |
  *----------------------------------------------------------------------*/
 #include "baci_mat_crystal_plasticity.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_service.H"
+
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_service.H"
 
 /*----------------------------------------------------------------------*
  | constructor (public)                                      			|

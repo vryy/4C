@@ -5,7 +5,9 @@
 */
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
+
 #include "baci_lib_utils_gid_vector.H"
+
 #include <Epetra_MpiComm.h>
 
 

@@ -159,10 +159,10 @@ TWINBYTWIN		- (optional) vector containing NUMTWINSETS
 /*----------------------------------------------------------------------*
  | headers                                                  			|
  *----------------------------------------------------------------------*/
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_so3_material.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
 
 /*----------------------------------------------------------------------*
  | class definitions                                           			|

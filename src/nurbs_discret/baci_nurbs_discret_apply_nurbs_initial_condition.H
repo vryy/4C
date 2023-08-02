@@ -21,8 +21,8 @@ the function value as well)
 #define BACI_NURBS_DISCRET_APPLY_NURBS_INITIAL_CONDITION_H
 
 #include <Epetra_Vector.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace DRT

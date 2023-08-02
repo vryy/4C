@@ -15,7 +15,6 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "baci_adapter_algorithmbase.H"
-
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>

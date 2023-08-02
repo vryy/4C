@@ -17,9 +17,8 @@ general static parameters required for scalar transport element evaluation.
 #ifndef BACI_SCATRA_ELE_PARAMETER_LSREINIT_H
 #define BACI_SCATRA_ELE_PARAMETER_LSREINIT_H
 
-#include "baci_scatra_ele_parameter_base.H"
-
 #include "baci_inpar_levelset.H"
+#include "baci_scatra_ele_parameter_base.H"
 #include "baci_utils_exceptions.H"
 
 namespace DRT

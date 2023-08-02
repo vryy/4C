@@ -16,7 +16,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
-
 #include "baci_poroelast_scatra_utils.H"
 #include "baci_poroelast_scatra_utils_clonestrategy.H"
 #include "baci_poroelast_utils_setup.H"

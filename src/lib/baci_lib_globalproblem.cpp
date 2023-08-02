@@ -9,47 +9,47 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <chrono>
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_ParameterListExceptions.hpp>
-
-#include <Teuchos_Time.hpp>
-#include <Epetra_Comm.h>
-
-#include "baci_lib_conditiondefinition.H"
-#include "baci_lib_dofset_independent.H"
-#include "baci_lib_materialdefinition.H"
-#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_inputreader.H"
+
+#include "baci_comm_utils.H"
+#include "baci_contact_constitutivelaw_bundle.H"
+#include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
+#include "baci_inpar_problemtype.H"
+#include "baci_inpar_validconditions.H"
+#include "baci_inpar_validcontactconstitutivelaw.H"
+#include "baci_inpar_validmaterials.H"
+#include "baci_inpar_validparameters.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_lib_conditiondefinition.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_discret_faces.H"
+#include "baci_lib_discret_hdg.H"
+#include "baci_lib_discret_xfem.H"
+#include "baci_lib_discret_xwall.H"
+#include "baci_lib_dofset_independent.H"
 #include "baci_lib_elementreader.H"
+#include "baci_lib_function.H"
+#include "baci_lib_inputreader.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_materialdefinition.H"
 #include "baci_lib_meshreader.H"
 #include "baci_lib_nodereader.H"
 #include "baci_lib_particlereader.H"
 #include "baci_lib_utils_createdis.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_discret_faces.H"
-#include "baci_lib_discret_xwall.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_discret_xfem.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
-#include "baci_contact_constitutivelaw_bundle.H"
-#include "baci_inpar_validconditions.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_validmaterials.H"
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
 #include "baci_mat_micromaterial.H"
 #include "baci_mat_newman_multiscale.H"
 #include "baci_mat_scatra_mat_multiscale.H"
 #include "baci_rebalance.H"
-#include "baci_comm_utils.H"
-#include "baci_inpar_validcontactconstitutivelaw.H"
-#include "baci_inpar_problemtype.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_ParameterListExceptions.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_Time.hpp>
+
+#include <chrono>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

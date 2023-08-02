@@ -13,11 +13,13 @@
 #define BACI_LIB_UTILS_GID_VECTOR_H
 
 #include "baci_utils_exceptions.H"
+
 #include <Epetra_Comm.h>
-#include <map>
 #include <Teuchos_RCPDecl.hpp>
-#include <vector>
+
+#include <map>
 #include <set>
+#include <vector>
 
 namespace DRT
 {

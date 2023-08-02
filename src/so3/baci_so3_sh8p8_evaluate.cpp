@@ -10,28 +10,29 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_so3_sh8p8.H"
+#include "baci_io_gmsh.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_lib_utils.H"
 #include "baci_lib_voigt_notation.H"
-#include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_io_gmsh.H"
-#include "baci_mat_service.H"
-#include "baci_mat_stvenantkirchhoff.H"
+#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_aaaneohooke.H"
 #include "baci_mat_aaaraghavanvorp_damage.H"
-#include "baci_mat_visconeohooke.H"
-#include "baci_mat_viscoanisotropic.H"
-#include "baci_mat_viscoelasthyper.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_micromaterial.H"
+#include "baci_mat_service.H"
+#include "baci_mat_stvenantkirchhoff.H"
+#include "baci_mat_viscoanisotropic.H"
+#include "baci_mat_viscoelasthyper.H"
+#include "baci_mat_visconeohooke.H"
+#include "baci_so3_sh8p8.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 using VoigtMapping = ::UTILS::VOIGT::IndexMappings;
 

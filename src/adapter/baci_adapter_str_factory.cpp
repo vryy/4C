@@ -10,6 +10,7 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_adapter_str_factory.H"
+
 #include "baci_utils_exceptions.H"
 
 // supported structural adapters

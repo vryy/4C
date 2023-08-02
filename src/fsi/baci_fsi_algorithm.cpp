@@ -10,14 +10,15 @@
 
 
 #include "baci_fsi_algorithm.H"
-#include "baci_fsi_str_model_evaluator_partitioned.H"
-#include "baci_coupling_adapter.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_inpar_validparameters.H"
+
+#include "baci_adapter_str_factory.H"
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_adapter_str_structure_new.H"
-#include "baci_adapter_str_factory.H"
+#include "baci_coupling_adapter.H"
+#include "baci_fsi_str_model_evaluator_partitioned.H"
+#include "baci_inpar_validparameters.H"
 #include "baci_io.H"
+#include "baci_lib_globalproblem.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 

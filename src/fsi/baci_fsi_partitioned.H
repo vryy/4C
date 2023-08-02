@@ -13,13 +13,13 @@
 #ifndef BACI_FSI_PARTITIONED_H
 #define BACI_FSI_PARTITIONED_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "baci_coupling_adapter_mortar.H"
+#include "baci_fsi_algorithm.H"
+#include "baci_io.H"
 
 #include <AztecOO.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
-#include <Epetra_Vector.h>
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Map.h>
 #include <Epetra_RowMatrix.h>
@@ -28,10 +28,8 @@
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
-
-#include "baci_fsi_algorithm.H"
-#include "baci_io.H"
-#include "baci_coupling_adapter_mortar.H"
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace ADAPTER

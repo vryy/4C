@@ -7,9 +7,9 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_coupanisoexpo.H"
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
 #include "baci_mat_par_material.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
 
 
 MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension::CoupAnisoExpoAnisotropyExtension(

@@ -9,9 +9,8 @@
 *----------------------------------------------------------------------*/
 #include "baci_scatra_timint_meshtying_strategy_std_elch.H"
 
-#include "baci_scatra_utils_splitstrategy.H"
-
 #include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_scatra_utils_splitstrategy.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

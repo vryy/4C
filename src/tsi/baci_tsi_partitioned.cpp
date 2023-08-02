@@ -12,20 +12,19 @@
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "baci_tsi_partitioned.H"
+
+#include "baci_adapter_str_structure.H"
+#include "baci_adapter_thermo.H"
+#include "baci_contact_abstract_strategy.H"
+#include "baci_contact_meshtying_contact_bridge.H"
+#include "baci_inpar_structure.H"
+#include "baci_inpar_tsi.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_mortar_manager_base.H"
 #include "baci_tsi_defines.H"
 #include "baci_tsi_utils.H"
-#include "baci_inpar_tsi.H"
-#include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_adapter_thermo.H"
-#include "baci_adapter_str_structure.H"
-
-// contact
-#include "baci_contact_abstract_strategy.H"
-#include "baci_mortar_manager_base.H"
-#include "baci_contact_meshtying_contact_bridge.H"
 
 //! Note: The order of calling the two BasePartitioned-constructors is
 //! important here! In here control file entries are written. And these entries

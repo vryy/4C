@@ -12,9 +12,7 @@
 #include "baci_io_runtime_vtp_writer.H"
 
 #include "baci_io_vtp_writer.H"
-
 #include "baci_utils_exceptions.H"
-
 
 #include <iomanip>
 #include <sstream>

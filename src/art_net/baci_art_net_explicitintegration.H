@@ -16,25 +16,22 @@
 #ifndef BACI_ART_NET_EXPLICITINTEGRATION_H
 #define BACI_ART_NET_EXPLICITINTEGRATION_H
 
-#include <Epetra_MpiComm.h>
-
-
-#include <Teuchos_RCP.hpp>
-#include "baci_lib_discret.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_io.H"
-#include "baci_lib_function.H"
 #include "baci_art_net_art_junction.H"
 #include "baci_art_net_art_write_gnuplot.H"
-
-#include <Epetra_Vector.h>
-
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
-
 #include "baci_art_net_timint.H"
+#include "baci_io.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_function.H"
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_sparsematrix.H"
+
+#include <Epetra_MpiComm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 
 namespace ART
 {

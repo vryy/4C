@@ -13,9 +13,8 @@
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
-#include "baci_mat_par_parameter.H"
-
 #include "baci_lib_parobjectfactory.H"
+#include "baci_mat_par_parameter.H"
 #include "baci_mat_thermo.H"
 
 /*----------------------------------------------------------------------*

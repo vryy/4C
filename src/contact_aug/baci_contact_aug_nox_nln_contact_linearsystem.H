@@ -10,9 +10,9 @@
 #ifndef BACI_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_H
 #define BACI_CONTACT_AUG_NOX_NLN_CONTACT_LINEARSYSTEM_H
 
-#include "baci_solver_nonlin_nox_linearsystem.H"
-#include "baci_solver_nonlin_nox_constraint_interface_required.H"
 #include "baci_solver_nonlin_nox_constraint_interface_preconditioner.H"
+#include "baci_solver_nonlin_nox_constraint_interface_required.H"
+#include "baci_solver_nonlin_nox_linearsystem.H"
 
 // forward declaration
 namespace MORTAR

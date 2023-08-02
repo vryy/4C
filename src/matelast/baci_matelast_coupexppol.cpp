@@ -7,8 +7,9 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_coupexppol.H"
-#include "baci_mat_par_material.H"
+
 #include "baci_lib_globalproblem.H"
+#include "baci_mat_par_material.H"
 
 
 MAT::ELASTIC::PAR::CoupExpPol::CoupExpPol(const Teuchos::RCP<MAT::PAR::Material>& matdata)

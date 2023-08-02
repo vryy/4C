@@ -19,16 +19,15 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_H
 #define BACI_SOLVER_NONLIN_NOX_INNER_STATUSTEST_FILTER_H
 
-#include <set>
-#include <vector>
-
+#include "baci_linalg_serialdensevector.H"
+#include "baci_solver_nonlin_nox_enum_lists.H"
 #include "baci_solver_nonlin_nox_inner_statustest_generic.H"
 #include "baci_solver_nonlin_nox_meritfunction_infeasibility.H"
-#include "baci_solver_nonlin_nox_enum_lists.H"
-
-#include "baci_linalg_serialdensevector.H"
 
 #include <Teuchos_RCP.hpp>
+
+#include <set>
+#include <vector>
 
 namespace NOX
 {

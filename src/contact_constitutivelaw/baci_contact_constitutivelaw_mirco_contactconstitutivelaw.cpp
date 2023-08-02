@@ -8,14 +8,17 @@
 #ifdef BACI_WITH_MIRCO
 
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
-#include <vector>
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_SerialDenseVector.hpp>
+
 #include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
+
 #include <mirco_evaluate.h>
 #include <mirco_topology.h>
 #include <mirco_topologyutilities.h>
-#include "baci_mat_par_bundle.H"
+#include <Teuchos_SerialDenseMatrix.hpp>
+#include <Teuchos_SerialDenseVector.hpp>
+
+#include <vector>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

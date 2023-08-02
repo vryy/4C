@@ -6,10 +6,9 @@
 \level 0
 */
 /*----------------------------------------------------------------------*/
-#include <fstream>
+#include "baci_linalg_utils_sparse_algebra_print.H"
 
 #include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_print.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_MultiVector.h>
@@ -17,10 +16,12 @@
 #include <MueLu_UseDefaultTypes.hpp>
 #include <Xpetra_CrsMatrix.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
-#include <Xpetra_IO.hpp>
 #include <Xpetra_EpetraMultiVector.hpp>
+#include <Xpetra_IO.hpp>
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVector.hpp>
+
+#include <fstream>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

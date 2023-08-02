@@ -8,10 +8,10 @@
 #ifndef BACI_IO_CONTROL_H
 #define BACI_IO_CONTROL_H
 
+#include <Epetra_Comm.h>
+
 #include <fstream>
 #include <string>
-
-#include <Epetra_Comm.h>
 
 extern "C"
 {

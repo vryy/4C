@@ -12,10 +12,11 @@
 #ifndef BACI_FLUID_ELE_TDS_H
 #define BACI_FLUID_ELE_TDS_H
 
-#include <Teuchos_RCP.hpp>
-#include "baci_linalg_serialdensematrix.H"
 #include "baci_lib_parobject.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensematrix.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 namespace FLD

@@ -23,14 +23,12 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #ifndef BACI_FLUID_ELE_CALC_INTFACES_STAB_H
 #define BACI_FLUID_ELE_CALC_INTFACES_STAB_H
 
+#include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_fluid_ele.H"
+#include "baci_fluid_ele_parameter_intface.H"
 #include "baci_fluid_ele_parameter_std.H"
 #include "baci_fluid_ele_parameter_timint.H"
-#include "baci_fluid_ele_parameter_intface.H"
-
 #include "baci_lib_utils.H"
-#include "baci_discretization_fem_general_utils_gausspoints.H"
-
 #include "baci_utils_singleton_owner.H"
 
 namespace DRT

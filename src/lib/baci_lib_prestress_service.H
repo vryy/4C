@@ -10,9 +10,10 @@
 #ifndef BACI_LIB_PRESTRESS_SERVICE_H
 #define BACI_LIB_PRESTRESS_SERVICE_H
 
-#include <Teuchos_ParameterList.hpp>
-#include "baci_lib_globalproblem.H"
 #include "baci_inpar_structure.H"
+#include "baci_lib_globalproblem.H"
+
+#include <Teuchos_ParameterList.hpp>
 
 namespace UTILS
 {

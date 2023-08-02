@@ -11,6 +11,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_adapter_str_timeloop.H"
+
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
 

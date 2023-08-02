@@ -6,14 +6,16 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
 #include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
-#include "baci_linalg_serialdensevector.H"
+
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_node.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 namespace
 {

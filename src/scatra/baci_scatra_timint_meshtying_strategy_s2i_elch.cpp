@@ -10,31 +10,25 @@
 #include "baci_scatra_timint_meshtying_strategy_s2i_elch.H"
 
 #include "baci_coupling_adapter.H"
-
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
-
+#include "baci_lib_utils_vector.H"
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_sparseoperator.H"
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_mat_electrode.H"
 #include "baci_mat_soret.H"
-
 #include "baci_mortar_element.H"
-
 #include "baci_scatra_ele_boundary_calc_elch_electrode.H"
 #include "baci_scatra_ele_boundary_calc_elch_electrode_sti_thermo.H"
 #include "baci_scatra_ele_boundary_calc_elch_electrode_utils.H"
 #include "baci_scatra_ele_boundary_calc_sti_electrode.H"
+#include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_elch.H"
 #include "baci_scatra_ele_parameter_timint.H"
-#include "baci_scatra_ele_parameter_boundary.H"
-
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_utils_singleton_owner.H"
-
-#include "baci_lib_utils_gid_vector.H"
-#include "baci_lib_utils_vector.H"
 
 /*----------------------------------------------------------------------*
  | constructor                                               fang 12/14 |

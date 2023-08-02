@@ -13,7 +13,6 @@
 
 
 #include "baci_geometry_pair_constants.H"
-
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"

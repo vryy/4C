@@ -4,6 +4,7 @@
 */
 
 #include "baci_lib_voigt_notation.H"
+
 #include <Sacado.hpp>
 
 using NotationType = UTILS::VOIGT::NotationType;

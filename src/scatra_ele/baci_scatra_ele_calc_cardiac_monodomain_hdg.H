@@ -12,11 +12,9 @@
 #define BACI_SCATRA_ELE_CALC_CARDIAC_MONODOMAIN_HDG_H
 
 
+#include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_scatra_ele_calc_hdg.H"
 #include "baci_scatra_ele_hdg.H"
-
-
-#include "baci_discretization_fem_general_utils_polynomial.H"
 
 namespace DRT
 {

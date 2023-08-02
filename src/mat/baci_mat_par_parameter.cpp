@@ -11,17 +11,16 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
 #include "baci_mat_par_parameter.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_par_bundle.H"
-
-#include "baci_matelast_aniso_structuraltensor_strategy.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
 
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
+
+#include <Teuchos_RCP.hpp>
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::Parameter::Parameter(Teuchos::RCP<const MAT::PAR::Material> matdata)

@@ -11,11 +11,9 @@
 #ifndef BACI_SCATRA_ELE_FACTORY_H
 #define BACI_SCATRA_ELE_FACTORY_H
 
-#include "baci_scatra_ele_interface.H"
-
 #include "baci_inpar_scatra.H"
-
 #include "baci_lib_element.H"
+#include "baci_scatra_ele_interface.H"
 
 namespace DRT
 {

@@ -11,23 +11,19 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_aux.H"
-#include "baci_solver_nonlin_nox_statustest_combo.H"
-#include "baci_solver_nonlin_nox_linearsystem.H"
 
-// templated status test
+#include "baci_inpar_boolifyparameters.H"
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_solver_nonlin_nox_linearsystem.H"
+#include "baci_solver_nonlin_nox_statustest_activeset.H"
+#include "baci_solver_nonlin_nox_statustest_combo.H"
 #include "baci_solver_nonlin_nox_statustest_normf.H"
 #include "baci_solver_nonlin_nox_statustest_normupdate.H"
 #include "baci_solver_nonlin_nox_statustest_normwrms.H"
-#include "baci_solver_nonlin_nox_statustest_activeset.H"
-
-#include "baci_linalg_blocksparsematrix.H"
 
 #include <Epetra_Vector.h>
-
 #include <NOX_Abstract_ImplicitWeighting.H>
 #include <NOX_Observer_Vector.hpp>
-
-#include "baci_inpar_boolifyparameters.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

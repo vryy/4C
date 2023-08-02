@@ -7,6 +7,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_line.H"
+
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
 

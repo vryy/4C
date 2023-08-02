@@ -10,21 +10,19 @@
 
 #include "baci_beam3_reissner.H"
 
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
 #include "baci_beam3_spatial_discretization_utils.H"
-
-// Todo @grill: check for obsolete header inclusions
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
+#include "baci_beaminteraction_periodic_boundingbox.H"
+#include "baci_discretization_fem_general_largerotations.H"
+#include "baci_inpar_structure.H"
 #include "baci_inpar_validparameters.H"
-#include "baci_so3_nullspace.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_inpar_structure.H"
-#include "baci_beaminteraction_periodic_boundingbox.H"
+#include "baci_so3_nullspace.H"
+#include "baci_utils_exceptions.H"
 
 /*------------------------------------------------------------------------------------------------*
  *------------------------------------------------------------------------------------------------*/

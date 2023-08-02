@@ -8,44 +8,40 @@
 /*-----------------------------------------------------------------------*/
 
 #include "baci_mortar_interface.H"
-#include "baci_mortar_interface_utils.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_element.H"
-#include "baci_mortar_integrator.H"
-#include "baci_mortar_coupling2d.H"
-#include "baci_mortar_coupling3d.H"
-#include "baci_mortar_coupling3d_classes.H"
-#include "baci_mortar_dofset.H"
-#include "baci_mortar_binarytree.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_utils.H"
 
+#include "baci_binstrategy.H"
+#include "baci_contact_interpolator.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
+#include "baci_lib_utils_parallel.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-#include "baci_io.H"
-#include "baci_io_control.H"
-
+#include "baci_mortar_binarytree.H"
+#include "baci_mortar_coupling2d.H"
+#include "baci_mortar_coupling3d.H"
+#include "baci_mortar_coupling3d_classes.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_dofset.H"
+#include "baci_mortar_element.H"
+#include "baci_mortar_integrator.H"
+#include "baci_mortar_interface_utils.H"
+#include "baci_mortar_node.H"
+#include "baci_mortar_utils.H"
+#include "baci_nurbs_discret.H"
+#include "baci_poroelast_utils.H"
 #include "baci_rebalance.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_parallel.H"
 
 #include <Epetra_Map.h>
+#include <Epetra_SerialComm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_Time.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
 #include <utility>
-#include <Teuchos_Time.hpp>
-#include <Epetra_SerialComm.h>
-
-#include "baci_binstrategy.H"
-#include "baci_nurbs_discret.H"
-#include "baci_poroelast_utils.H"
-
-#include "baci_contact_interpolator.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

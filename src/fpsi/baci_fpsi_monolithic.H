@@ -13,30 +13,17 @@
 #define BACI_FPSI_MONOLITHIC_H
 
 // FPSI includes
+#include "baci_adapter_ale_fpsi.H"
+#include "baci_adapter_fld_fluid_fpsi.H"
+#include "baci_ale.H"
+#include "baci_coupling_adapter.H"
 #include "baci_fpsi.H"
 #include "baci_fpsi_coupling.H"
-
-// FSI includes
 #include "baci_fsi_monolithic.H"
-
-// POROELAST includes
+#include "baci_inpar_fpsi.H"
+#include "baci_linalg_mapextractor.H"
 #include "baci_poroelast_base.H"
 
-// ALE includes
-#include "baci_ale.H"
-#include "baci_adapter_ale_fpsi.H"
-
-// ADAPTER includes
-#include "baci_adapter_fld_fluid_fpsi.H"
-
-// CORE::LINALG includes
-#include "baci_linalg_mapextractor.H"
-
-// INPAR includes
-#include "baci_inpar_fpsi.H"
-#include "baci_coupling_adapter.H"
-
-// Teuchos utils
 #include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*

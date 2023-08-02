@@ -9,41 +9,33 @@ between the xfluid class and the cut-library
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_xfem_coupling_mesh.H"
 
-#include "baci_xfem_utils.H"
-#include "baci_xfem_interface_utils.H"
-#include "baci_xfem_discretization_utils.H"
-#include "baci_xfem_xfluid_contact_communicator.H"
-
-#include "baci_lib_utils_parallel.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_dofset_transparent_independent.H"
-
-#include "baci_fluid_ele_action.H"
-#include "baci_fluid_ele_parameter_xfem.H"
 #include "baci_fluid_ele.H"
+#include "baci_fluid_ele_action.H"
 #include "baci_fluid_ele_boundary_parent_calc.H"
-
+#include "baci_fluid_ele_parameter_xfem.H"
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_io_gmsh.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_dofset_transparent_independent.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_lib_utils_parallel.H"
+#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-
-#include "baci_io.H"
-#include "baci_io_gmsh.H"
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-
-// Needed for Slave Solid XFSI --> should go to xfem_coulpling_mesh_fsi
+#include "baci_mat_elasthyper.H"
+#include "baci_mat_newtonianfluid.H"
 #include "baci_so3_hex8.H"
 #include "baci_so3_surface.H"
-#include "baci_mat_elasthyper.H"
+#include "baci_xfem_discretization_utils.H"
+#include "baci_xfem_interface_utils.H"
+#include "baci_xfem_utils.H"
+#include "baci_xfem_xfluid_contact_communicator.H"
 
-// Needed for Slave Fluid XFF --> should go to xfem_coulpling_mesh_ff
-#include "baci_mat_newtonianfluid.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

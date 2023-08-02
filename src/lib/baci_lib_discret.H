@@ -11,20 +11,20 @@
 #ifndef BACI_LIB_DISCRET_H
 #define BACI_LIB_DISCRET_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-#include <Epetra_MpiComm.h>
-#include <Epetra_Map.h>
-#include <Epetra_Vector.h>
-#include <Epetra_CrsGraph.h>
-
 #include "baci_lib_discret_interface.H"
-#include "baci_lib_element.H"
-#include "baci_lib_node.H"
 #include "baci_lib_dofset_interface.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_element.H"
 #include "baci_lib_globalproblem_enums.H"
+#include "baci_lib_node.H"
+#include "baci_utils_exceptions.H"
 #include "baci_utils_std_cxx20_ranges.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_CrsGraph.h>
+#include <Epetra_Map.h>
+#include <Epetra_MpiComm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 namespace COMM_UTILS

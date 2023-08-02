@@ -9,26 +9,22 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_xfem_mesh_projector.H"
-#include "baci_xfem_discretization_utils.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_lib_discret_xfem.H"
-#include "baci_lib_exporter.H"
-#include "baci_lib_utils.H"
-
-#include "baci_io_gmsh.H"
-#include "baci_io_pstream.H"
 
 #include "baci_cut_boundingbox.H"
 #include "baci_cut_position.H"
-
 #include "baci_discretization_geometry_searchtree.H"
 #include "baci_discretization_geometry_searchtree_service.H"
+#include "baci_io_gmsh.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_discret_xfem.H"
+#include "baci_lib_exporter.H"
+#include "baci_lib_utils.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_xfem_discretization_utils.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourcedis,
     Teuchos::RCP<const DRT::Discretization> targetdis, const Teuchos::ParameterList& params,

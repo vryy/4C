@@ -12,14 +12,13 @@
 
 #include "baci_contact_constitutivelaw_contactconstitutivelaw.H"
 
-#include "baci_lib_globalproblem.H"
 #include "baci_contact_constitutivelaw_brokenrational_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_bundle.H"
-
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 #include "baci_contact_constitutivelaw_cubic_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_linear_contactconstitutivelaw.H"
 #include "baci_contact_constitutivelaw_power_contactconstitutivelaw.H"
+#include "baci_lib_globalproblem.H"
 #ifdef BACI_WITH_MIRCO
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
 #endif

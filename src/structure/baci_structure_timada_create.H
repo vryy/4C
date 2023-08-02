@@ -13,8 +13,8 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 /*----------------------------------------------------------------------*/

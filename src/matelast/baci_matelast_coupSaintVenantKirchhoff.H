@@ -9,8 +9,8 @@
 #ifndef BACI_MATELAST_COUPSAINTVENANTKIRCHHOFF_H
 #define BACI_MATELAST_COUPSAINTVENANTKIRCHHOFF_H
 
-#include "baci_matelast_summand.H"
 #include "baci_mat_par_parameter.H"
+#include "baci_matelast_summand.H"
 
 namespace MAT
 {

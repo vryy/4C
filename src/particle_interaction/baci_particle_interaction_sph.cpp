@@ -10,30 +10,26 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph.H"
 
+#include "baci_io_pstream.H"
+#include "baci_particle_engine_container.H"
+#include "baci_particle_engine_interface.H"
 #include "baci_particle_interaction_material_handler.H"
-#include "baci_particle_interaction_utils.H"
-
-#include "baci_particle_interaction_sph_kernel.H"
+#include "baci_particle_interaction_sph_boundary_particle.H"
+#include "baci_particle_interaction_sph_density.H"
 #include "baci_particle_interaction_sph_equationofstate.H"
 #include "baci_particle_interaction_sph_equationofstate_bundle.H"
-#include "baci_particle_interaction_sph_neighbor_pairs.H"
-#include "baci_particle_interaction_sph_density.H"
-#include "baci_particle_interaction_sph_pressure.H"
-#include "baci_particle_interaction_sph_temperature.H"
+#include "baci_particle_interaction_sph_kernel.H"
 #include "baci_particle_interaction_sph_momentum.H"
-#include "baci_particle_interaction_sph_surface_tension.H"
-#include "baci_particle_interaction_sph_boundary_particle.H"
+#include "baci_particle_interaction_sph_neighbor_pairs.H"
 #include "baci_particle_interaction_sph_open_boundary.H"
-#include "baci_particle_interaction_sph_virtual_wall_particle.H"
 #include "baci_particle_interaction_sph_phase_change.H"
+#include "baci_particle_interaction_sph_pressure.H"
 #include "baci_particle_interaction_sph_rigid_particle_contact.H"
-
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_container.H"
-
+#include "baci_particle_interaction_sph_surface_tension.H"
+#include "baci_particle_interaction_sph_temperature.H"
+#include "baci_particle_interaction_sph_virtual_wall_particle.H"
+#include "baci_particle_interaction_utils.H"
 #include "baci_particle_wall_interface.H"
-
-#include "baci_io_pstream.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

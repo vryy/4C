@@ -12,15 +12,16 @@
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_H
 
-#include <functional>
-#include <utility>
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_pack_buffer.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_anisotropy.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_pack_buffer.H"
 #include "baci_mat_anisotropy_extension_base.H"
 #include "baci_mat_anisotropy_fiber_provider.H"
+#include "baci_utils_exceptions.H"
+
+#include <functional>
+#include <utility>
 
 namespace MAT
 {

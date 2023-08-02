@@ -8,11 +8,10 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_contact_node.H"
-#include "baci_contact_element.H"
-#include "baci_contact_defines.H"
 
 #include "baci_contact_aug_contact_integrator_utils.H"
-
+#include "baci_contact_defines.H"
+#include "baci_contact_element.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_utils_exceptions.H"
 

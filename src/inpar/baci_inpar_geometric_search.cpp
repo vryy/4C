@@ -8,8 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_geometric_search.H"
+
+#include "baci_inpar_validparameters.H"
 
 void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 {

@@ -13,13 +13,15 @@
 
 
 #include "baci_cut_kernel.H"
+
 #include "baci_cut_point.H"
 #include "baci_cut_position.H"
 #include "baci_io_pstream.H"
-#include <iostream>
-#include <unordered_map>
 
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <iostream>
+#include <unordered_map>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

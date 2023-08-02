@@ -8,12 +8,11 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_so3_poro_p1.H"
-#include "baci_so3_poro_p1_eletypes.H"
-
-#include "baci_so3_surface.H"
-#include "baci_so3_line.H"
 
 #include "baci_lib_utils_factory.H"
+#include "baci_so3_line.H"
+#include "baci_so3_poro_p1_eletypes.H"
+#include "baci_so3_surface.H"
 
 template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::So3_Poro_P1(int id, int owner)

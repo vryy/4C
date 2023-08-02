@@ -15,13 +15,14 @@
 /*---------------------------------------------------------------------*
  | headers                                                 farah 10/14 |
  *---------------------------------------------------------------------*/
-#include <Teuchos_RCP.hpp>
+#include "baci_coupling_adapter_mortar.H"
+#include "baci_utils_exceptions.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
-#include "baci_utils_exceptions.H"
-#include "baci_coupling_adapter_mortar.H"
+#include <Teuchos_RCP.hpp>
 
 /*---------------------------------------------------------------------*
  | forward declarations                                    farah 10/14 |

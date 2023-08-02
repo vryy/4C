@@ -11,8 +11,9 @@
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include <NOX_Epetra_Group.H>
 #include "baci_structure_timint_impl.H"
+
+#include <NOX_Epetra_Group.H>
 
 /*----------------------------------------------------------------------------*/
 /* forward declarations */

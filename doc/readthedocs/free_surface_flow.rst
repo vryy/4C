@@ -1,3 +1,5 @@
+.. _free_surface_flow:
+
 old_Free Surface Flow
 =====================
 

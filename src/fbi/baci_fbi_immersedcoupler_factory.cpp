@@ -10,9 +10,9 @@
 
 
 #include "baci_fbi_immersedcoupler_factory.H"
+
 #include "baci_fbi_immersed_geometry_coupler.H"
 #include "baci_fbi_immersed_geometry_coupler_binning.H"
-
 #include "baci_inpar_fbi.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>

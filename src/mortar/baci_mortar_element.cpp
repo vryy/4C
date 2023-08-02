@@ -8,17 +8,15 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mortar_element.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_calc_utils.H"
-
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
 
 #include "baci_contact_nitsche_utils.H"
-
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_mat_material.H"
-
+#include "baci_mortar_calc_utils.H"
+#include "baci_mortar_node.H"
 #include "baci_so3_surface.H"
+
 #include <Teuchos_RCP.hpp>
 
 

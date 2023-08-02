@@ -13,15 +13,15 @@
 #ifndef BACI_LIB_ASSEMBLESTRATEGY_H
 #define BACI_LIB_ASSEMBLESTRATEGY_H
 
-#include <vector>
-
-#include <Teuchos_RCP.hpp>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 
 #include <Epetra_CrsGraph.h>
 #include <Epetra_MultiVector.h>
 #include <Epetra_Vector.h>
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 namespace CORE::LINALG
 {

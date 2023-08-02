@@ -11,27 +11,22 @@ algorithms
 
 #include "baci_ehl_base.H"
 
-#include "baci_ehl_partitioned.H"
-#include "baci_ehl_utils.H"
-
-#include "baci_adapter_str_wrapper.H"
-#include "baci_adapter_lubrication.H"
-#include "baci_coupling_adapter.H"
 #include "baci_adapter_coupling_ehl_mortar.H"
+#include "baci_adapter_lubrication.H"
+#include "baci_adapter_str_wrapper.H"
 #include "baci_contact_interface.H"
 #include "baci_contact_node.H"
-#include "baci_lib_dofset_predefineddofnumber.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lubrication_timint_implicit.H"
-#include "baci_mat_lubrication_mat.H"
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_lib_matchingoctree.H"
-
+#include "baci_coupling_adapter.H"
+#include "baci_ehl_partitioned.H"
+#include "baci_ehl_utils.H"
 #include "baci_io.H"
 #include "baci_io_gmsh.H"
+#include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_matchingoctree.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_lubrication_timint_implicit.H"
+#include "baci_mat_lubrication_mat.H"
 
 #include <Epetra_MultiVector.h>
 

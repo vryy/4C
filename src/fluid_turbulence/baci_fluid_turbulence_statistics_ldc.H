@@ -37,13 +37,13 @@ output.
 #ifndef BACI_FLUID_TURBULENCE_STATISTICS_LDC_H
 #define BACI_FLUID_TURBULENCE_STATISTICS_LDC_H
 
-#include <Epetra_MpiComm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "baci_inpar_fluid.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_inpar_fluid.H"
+
+#include <Epetra_MpiComm.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace IO
 {

@@ -11,8 +11,8 @@
 
 #include "baci_adapter_fld_fluid_fluid_fsi.H"
 
-#include "baci_fluid_xfluid_fluid.H"
 #include "baci_fluid_utils_mapextractor.H"
+#include "baci_fluid_xfluid_fluid.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

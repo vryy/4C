@@ -12,10 +12,10 @@
 #ifndef BACI_FLUID_TURBULENCE_HIT_INITIAL_FIELD_H
 #define BACI_FLUID_TURBULENCE_HIT_INITIAL_FIELD_H
 
+#include "baci_inpar_fluid.H"
+
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-
-#include "baci_inpar_fluid.H"
 
 // forward declarations
 namespace DRT

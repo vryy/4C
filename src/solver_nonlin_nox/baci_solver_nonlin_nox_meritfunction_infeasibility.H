@@ -14,9 +14,9 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_INFEASIBILITY_H
 #define BACI_SOLVER_NONLIN_NOX_MERITFUNCTION_INFEASIBILITY_H
 
-#include <map>
-
 #include <NOX_MeritFunction_Generic.H>
+
+#include <map>
 
 namespace Teuchos
 {

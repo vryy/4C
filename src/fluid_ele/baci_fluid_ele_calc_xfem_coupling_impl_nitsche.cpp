@@ -10,11 +10,11 @@
 /*----------------------------------------------------------------------*/
 
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_fluid_ele_calc_xfem_coupling.H"
 #include "baci_fluid_ele_calc_xfem_coupling_impl.H"
 #include "baci_fluid_ele_parameter_xfem.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 namespace DRT
 {

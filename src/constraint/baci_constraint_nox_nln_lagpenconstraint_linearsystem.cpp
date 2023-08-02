@@ -14,13 +14,12 @@
 
 #include "baci_constraint_nox_nln_lagpenconstraint_linearsystem.H"
 
+#include "baci_linalg_sparseoperator.H"
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_solver_nonlin_nox_interface_jacobian.H"
 #include "baci_solver_nonlin_nox_interface_required.H"
 
 #include <Teuchos_ParameterList.hpp>
-
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_sparseoperator.H"
 
 
 /*----------------------------------------------------------------------*

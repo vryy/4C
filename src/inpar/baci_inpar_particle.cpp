@@ -12,9 +12,9 @@
  | headers                                                    sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 #include "baci_inpar_particle.H"
-#include "baci_inpar_validparameters.H"
-#include "baci_inpar_parameterlist_utils.H"
 
+#include "baci_inpar_parameterlist_utils.H"
+#include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
 /*---------------------------------------------------------------------------*

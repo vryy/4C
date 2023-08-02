@@ -13,11 +13,11 @@
 
 #include "baci_post_vtk_writer.H"
 
-#include <string>
-#include <map>
-#include <vector>
-
 #include <Teuchos_RCP.hpp>
+
+#include <map>
+#include <string>
+#include <vector>
 
 
 // forward declarations

@@ -15,9 +15,8 @@ correct implementation is still missing.
 #ifndef BACI_ELEMAG_ELE_BOUNDARY_CALC_H
 #define BACI_ELEMAG_ELE_BOUNDARY_CALC_H
 
-#include "baci_lib_element.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-
+#include "baci_lib_element.H"
 #include "baci_utils_singleton_owner.H"
 
 namespace DRT

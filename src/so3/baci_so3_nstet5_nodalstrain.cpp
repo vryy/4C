@@ -8,25 +8,23 @@
 
 *----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include <Teuchos_SerialDenseSolver.hpp>
-#include <Epetra_FECrsMatrix.h>
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
-#include "baci_utils_exceptions.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-
-#include "baci_mat_service.H"
-#include "baci_mat_micromaterial.H"
-#include "baci_mat_stvenantkirchhoff.H"
 #include "baci_mat_aaaneohooke.H"
 #include "baci_mat_elasthyper.H"
-
+#include "baci_mat_micromaterial.H"
+#include "baci_mat_service.H"
+#include "baci_mat_stvenantkirchhoff.H"
 #include "baci_so3_nstet5.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_FECrsMatrix.h>
+#include <Teuchos_SerialDenseSolver.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                             gee 03/12|

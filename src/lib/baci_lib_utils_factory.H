@@ -12,8 +12,8 @@
 #ifndef BACI_LIB_UTILS_FACTORY_H
 #define BACI_LIB_UTILS_FACTORY_H
 
-#include "baci_lib_discret.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_discret.H"
 
 namespace DRT
 {

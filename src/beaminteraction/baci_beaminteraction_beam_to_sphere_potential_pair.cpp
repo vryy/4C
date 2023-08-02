@@ -10,30 +10,25 @@
 
 #include "baci_beaminteraction_beam_to_sphere_potential_pair.H"
 
-#include "baci_beaminteraction_potential_params.H"
-
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_function_of_time.H"
-
-// Todo get rid of outdated header inclusions
+#include "baci_beam3_base.H"
+#include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_potential_params.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beampotential.H"
 #include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
-#include "baci_beam3_base.H"
 #include "baci_rigidsphere.H"
+#include "baci_utils_exceptions.H"
 #include "baci_utils_fad.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "baci_beaminteraction_beam3contact_defines.H"
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/

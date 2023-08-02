@@ -10,11 +10,11 @@
 #ifndef BACI_STI_MONOLITHIC_EVALUATE_OFFDIAG_H
 #define BACI_STI_MONOLITHIC_EVALUATE_OFFDIAG_H
 
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
-
 #include "baci_adapter_scatra_base_algorithm.H"
 #include "baci_inpar_s2i.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 
 namespace ADAPTER
 {

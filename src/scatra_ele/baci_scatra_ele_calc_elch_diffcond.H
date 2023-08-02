@@ -10,8 +10,8 @@
 #ifndef BACI_SCATRA_ELE_CALC_ELCH_DIFFCOND_H
 #define BACI_SCATRA_ELE_CALC_ELCH_DIFFCOND_H
 
-#include "baci_scatra_ele_parameter_elch_diffcond.H"
 #include "baci_scatra_ele_calc_elch_electrode.H"
+#include "baci_scatra_ele_parameter_elch_diffcond.H"
 
 namespace DRT
 {

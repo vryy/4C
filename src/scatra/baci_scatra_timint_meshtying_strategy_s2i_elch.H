@@ -11,7 +11,6 @@
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_S2I_ELCH_H
 
 #include "baci_scatra_timint_elch.H"
-
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 
 namespace SCATRA

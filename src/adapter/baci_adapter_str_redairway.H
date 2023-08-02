@@ -16,10 +16,10 @@
 #define BACI_ADAPTER_STR_REDAIRWAY_H
 /*----------------------------------------------------------------------*/
 /* headers */
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-
 #include "baci_adapter_str_wrapper.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 
 namespace DRT

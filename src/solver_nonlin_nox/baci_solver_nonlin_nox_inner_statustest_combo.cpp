@@ -9,6 +9,7 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_inner_statustest_combo.H"
+
 #include <NOX_Utils.H>
 
 // tolerated unconverged states

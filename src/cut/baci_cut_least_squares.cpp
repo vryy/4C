@@ -9,8 +9,9 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_cut_least_squares.H"
-#include <iostream>
+
 #include <cmath>
+#include <iostream>
 
 // solve the rectangular system with linear least squares
 CORE::LINALG::SerialDenseVector CORE::GEO::CUT::LeastSquares::linear_least_square()

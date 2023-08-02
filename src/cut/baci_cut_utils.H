@@ -11,15 +11,14 @@
 #ifndef BACI_CUT_UTILS_H
 #define BACI_CUT_UTILS_H
 
+#include "baci_discretization_fem_general_utils_boundary_integration.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+
+#include <cstring>
 #include <iostream>
 #include <iterator>
 #include <set>
-#include <cstring>
-
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
 
 
 // #define CUT_DUMPCREATION    // dump object creation to generate test case

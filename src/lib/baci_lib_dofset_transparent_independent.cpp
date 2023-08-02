@@ -11,8 +11,8 @@
 
 
 #include "baci_lib_dofset_transparent_independent.H"
-#include "baci_lib_dofset.H"
 
+#include "baci_lib_dofset.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 

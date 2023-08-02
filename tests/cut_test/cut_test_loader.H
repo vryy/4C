@@ -9,10 +9,10 @@
 #ifndef CUT_TEST_LOADER_H
 #define CUT_TEST_LOADER_H
 
+#include "baci_cut_meshintersection.H"
+
 #include <map>
 #include <vector>
-
-#include "baci_cut_meshintersection.H"
 
 class MeshLoader
 {

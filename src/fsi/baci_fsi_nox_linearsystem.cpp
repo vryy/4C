@@ -8,21 +8,22 @@
 
 /*----------------------------------------------------------------------*/
 
-#include <vector>
+#include "baci_fsi_nox_linearsystem.H"
+
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linear_solver_method_linalg.H"
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Operator.h>
 #include <Epetra_RowMatrix.h>
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
 #include <Epetra_VbrMatrix.h>
 #include <Epetra_Vector.h>
 
-#include "baci_fsi_nox_linearsystem.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_blocksparsematrix.H"
+#include <vector>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

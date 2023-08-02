@@ -9,11 +9,11 @@ within isothermal electrodes
 */
 /*--------------------------------------------------------------------------*/
 #include "baci_scatra_ele_calc_elch_electrode.H"
+
+#include "baci_mat_material.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
 #include "baci_scatra_ele_utils_elch_electrode.H"
-
-#include "baci_mat_material.H"
 #include "baci_utils_singleton_owner.H"
 
 

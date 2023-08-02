@@ -9,22 +9,19 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_contact_aug_steepest_ascent_strategy.H"
-#include "baci_contact_aug_steepest_ascent_interface.H"
-#include "baci_contact_aug_potential.H"
+
 #include "baci_contact_aug_lagrange_multiplier_function.H"
 #include "baci_contact_aug_penalty_update.H"
-
+#include "baci_contact_aug_potential.H"
+#include "baci_contact_aug_steepest_ascent_interface.H"
 #include "baci_contact_paramsinterface.H"
-
-#include "baci_mortar_utils.H"
-#include "baci_mortar_matrix_transform.H"
-
 #include "baci_inpar_structure.H"
-
 #include "baci_io_pstream.H"
+#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_lib_epetra_utils.H"
+#include "baci_mortar_matrix_transform.H"
+#include "baci_mortar_utils.H"
 
 // #define LAGRANGE_FUNC
 

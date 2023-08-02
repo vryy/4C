@@ -9,10 +9,10 @@
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_sim.H"
-#include "baci_particle_algorithm.H"
 
-#include "baci_lib_globalproblem.H"
 #include "baci_comm_utils.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_particle_algorithm.H"
 
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>

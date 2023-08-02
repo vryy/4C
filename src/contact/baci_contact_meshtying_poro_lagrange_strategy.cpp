@@ -10,11 +10,13 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include <Epetra_SerialComm.h>
 #include "baci_contact_meshtying_poro_lagrange_strategy.H"
+
 #include "baci_inpar_contact.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <Epetra_SerialComm.h>
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                      h.Willmann    2015|

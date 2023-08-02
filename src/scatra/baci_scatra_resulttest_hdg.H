@@ -11,8 +11,8 @@
 #ifndef BACI_SCATRA_RESULTTEST_HDG_H
 #define BACI_SCATRA_RESULTTEST_HDG_H
 
-#include "baci_scatra_resulttest.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_scatra_resulttest.H"
 
 namespace SCATRA
 {

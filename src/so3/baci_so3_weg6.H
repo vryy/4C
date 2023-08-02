@@ -8,16 +8,15 @@
 #ifndef BACI_SO3_WEG6_H
 #define BACI_SO3_WEG6_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-#include "baci_linalg_fixedsizematrix.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_material.H"
-#include "baci_inpar_structure.H"
-
 #include "baci_so3_base.H"
+
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 // Several parameters which are fixed for Solid Wedge6
 const int NUMNOD_WEG6 = 6;   ///< number of nodes

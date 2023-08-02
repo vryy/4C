@@ -12,8 +12,9 @@
 #ifndef BACI_STRUCTURE_NEW_DBC_H
 #define BACI_STRUCTURE_NEW_DBC_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_solver_nonlin_nox_abstract_prepostoperator.H"
+
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_Map;

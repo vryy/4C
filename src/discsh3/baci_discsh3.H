@@ -11,22 +11,20 @@
 #define BACI_DISCSH3_H
 
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-
-#include "baci_lib_element.H"
-#include "baci_lib_elementtype.H"
-#include "baci_lib_parobjectfactory.H"
-#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
-#include "baci_linalg_serialdensevector.H"
-#include "baci_lib_node.H"
+#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_faces.H"
+#include "baci_lib_element.H"
+#include "baci_lib_elementtype.H"
+#include "baci_lib_node.H"
+#include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensevector.H"
 
+#include <Epetra_Vector.h>
 #include <Sacado.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 typedef Sacado::Fad::DFad<double> FAD;
 
 

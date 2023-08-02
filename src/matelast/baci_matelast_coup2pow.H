@@ -10,8 +10,8 @@ Cauchy-Green invariant
 #ifndef BACI_MATELAST_COUP2POW_H
 #define BACI_MATELAST_COUP2POW_H
 
-#include "baci_matelast_summand.H"
 #include "baci_mat_par_parameter.H"
+#include "baci_matelast_summand.H"
 
 namespace MAT
 {

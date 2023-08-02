@@ -10,12 +10,12 @@
 #define BACI_MAT_GROWTHREMODEL_ELASTHYPER_H
 
 
-#include "baci_linalg_FADmatrix_utils.H"
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_membrane_material_interfaces.H"
-#include "baci_mat_so3_material.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_FADmatrix_utils.H"
 #include "baci_mat_anisotropy.H"
+#include "baci_mat_membrane_material_interfaces.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
 
 // forward declaration due to avoid header definition
 namespace MAT

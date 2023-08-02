@@ -9,11 +9,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_bele_bele2.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_linedefinition.H"
 
+#include "baci_lib_discret.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_so3_nullspace.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::Bele2Type DRT::ELEMENTS::Bele2Type::instance_;
 

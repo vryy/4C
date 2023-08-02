@@ -12,10 +12,12 @@
 #ifndef BACI_LIB_MATCHINGOCTREE_H
 #define BACI_LIB_MATCHINGOCTREE_H
 
-#include <Teuchos_RCP.hpp>
 #include "baci_linalg_serialdensematrix.H"
-#include <vector>
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 namespace DRT
 {

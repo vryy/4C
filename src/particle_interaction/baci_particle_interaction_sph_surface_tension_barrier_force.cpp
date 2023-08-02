@@ -10,13 +10,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_surface_tension_barrier_force.H"
 
-#include "baci_particle_interaction_sph_neighbor_pairs.H"
-
-#include "baci_particle_interaction_utils.H"
-
-#include "baci_particle_engine_interface.H"
 #include "baci_particle_engine_container.H"
-
+#include "baci_particle_engine_interface.H"
+#include "baci_particle_interaction_sph_neighbor_pairs.H"
+#include "baci_particle_interaction_utils.H"
 #include "baci_utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*

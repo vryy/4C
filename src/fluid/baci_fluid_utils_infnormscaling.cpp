@@ -10,13 +10,15 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_fluid_utils_infnormscaling.H"
-#include <stdio.h>
-#include <Epetra_Comm.h>
-#include <Teuchos_ParameterList.hpp>
-#include "baci_linalg_sparsematrix.H"
+
+#include "baci_inpar_fluid.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_mapextractor.H"
-#include "baci_inpar_fluid.H"
+#include "baci_linalg_sparsematrix.H"
+
+#include <Epetra_Comm.h>
+#include <stdio.h>
+#include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

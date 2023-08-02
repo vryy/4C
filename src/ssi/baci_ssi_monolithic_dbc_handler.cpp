@@ -9,19 +9,15 @@
 
 #include "baci_ssi_monolithic_dbc_handler.H"
 
-#include "baci_ssi_monolithic.H"
-#include "baci_ssi_utils.H"
-
 #include "baci_adapter_str_ssiwrapper.H"
-
 #include "baci_lib_locsys.H"
-
-#include "baci_scatra_timint_implicit.H"
-
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_scatra_timint_implicit.H"
+#include "baci_ssi_monolithic.H"
+#include "baci_ssi_utils.H"
 
 /*-------------------------------------------------------------------------*
  *-------------------------------------------------------------------------*/

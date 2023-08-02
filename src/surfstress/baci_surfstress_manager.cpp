@@ -10,19 +10,20 @@
 /*---------------------------------------------------------------------*/
 
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
 #include "baci_surfstress_manager.H"
-#include "baci_lib_discret.H"
+
+#include "baci_inpar_structure.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_lib_utils_createdis.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*-------------------------------------------------------------------*
  |  ctor (public)                                            lw 12/07|

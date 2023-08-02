@@ -8,6 +8,7 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include "baci_utils_local_newton.H"
 
 namespace

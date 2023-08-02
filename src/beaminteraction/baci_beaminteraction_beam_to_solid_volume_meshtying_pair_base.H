@@ -13,7 +13,6 @@
 
 
 #include "baci_beaminteraction_beam_to_solid_pair_base.H"
-
 #include "baci_geometry_pair_scalar_types.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"

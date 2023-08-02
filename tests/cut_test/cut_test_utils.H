@@ -8,13 +8,12 @@
 #ifndef CUT_TEST_UTILS_H
 #define CUT_TEST_UTILS_H
 
-#include <vector>
-#include <map>
-
 #include "baci_lib_element.H"
-
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
+
+#include <map>
+#include <vector>
 
 namespace CORE::GEO
 {

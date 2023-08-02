@@ -8,12 +8,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_ssi_monolithic_contact_strategy.H"
-#include "baci_ssi_monolithic.H"
-#include "baci_ssi_utils.H"
 
 #include "baci_contact_nitsche_strategy_ssi.H"
-
 #include "baci_linalg_blocksparsematrix.H"
+#include "baci_ssi_monolithic.H"
+#include "baci_ssi_utils.H"
 
 
 /*-------------------------------------------------------------------------*

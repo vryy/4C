@@ -12,15 +12,15 @@
 #ifndef BACI_LIB_CONDITIONDEFINITION_H
 #define BACI_LIB_CONDITIONDEFINITION_H
 
-#include <string>
-#include <vector>
-#include <iostream>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_Array.hpp>
-
 #include "baci_lib_condition.H"
 #include "baci_lib_inputreader.H"
+
+#include <Teuchos_Array.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <iostream>
+#include <string>
+#include <vector>
 
 
 namespace DRT

@@ -10,24 +10,19 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_rigidbody.H"
 
-#include "baci_particle_rigidbody_datastate.H"
-#include "baci_particle_rigidbody_runtime_vtp_writer.H"
-#include "baci_particle_rigidbody_affiliation_pairs.H"
-#include "baci_particle_rigidbody_utils.H"
-
-#include "baci_particle_interaction_utils.H"
-
-#include "baci_particle_engine_interface.H"
-#include "baci_particle_engine_communication_utils.H"
-#include "baci_particle_engine_unique_global_id.H"
-
 #include "baci_inpar_particle.H"
-
-#include "baci_lib_pack_buffer.H"
-#include "baci_lib_parobject.H"
-
 #include "baci_io.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_pack_buffer.H"
+#include "baci_lib_parobject.H"
+#include "baci_particle_engine_communication_utils.H"
+#include "baci_particle_engine_interface.H"
+#include "baci_particle_engine_unique_global_id.H"
+#include "baci_particle_interaction_utils.H"
+#include "baci_particle_rigidbody_affiliation_pairs.H"
+#include "baci_particle_rigidbody_datastate.H"
+#include "baci_particle_rigidbody_runtime_vtp_writer.H"
+#include "baci_particle_rigidbody_utils.H"
 
 #include <Teuchos_TimeMonitor.hpp>
 

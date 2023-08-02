@@ -7,11 +7,11 @@
 #ifndef BACI_SCATRA_TIMINT_LOMA_H
 #define BACI_SCATRA_TIMINT_LOMA_H
 
-#include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_scatra_timint_implicit.H"
+
+#include <Epetra_MpiComm.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 namespace SCATRA

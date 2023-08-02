@@ -10,9 +10,9 @@
 #ifndef BACI_CONTACT_COUPLING3D_H
 #define BACI_CONTACT_COUPLING3D_H
 
-#include "baci_mortar_coupling3d.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
+#include "baci_mortar_coupling3d.H"
 
 namespace CONTACT
 {

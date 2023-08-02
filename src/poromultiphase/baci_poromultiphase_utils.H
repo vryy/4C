@@ -9,12 +9,12 @@
 #ifndef BACI_POROMULTIPHASE_UTILS_H
 #define BACI_POROMULTIPHASE_UTILS_H
 
-#include <set>
-
 #include "baci_inpar_poromultiphase.H"
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 namespace DRT
 {

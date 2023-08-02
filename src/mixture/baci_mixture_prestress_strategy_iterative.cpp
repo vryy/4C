@@ -8,14 +8,15 @@
 */
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_prestress_strategy_iterative.H"
+
+#include "baci_linalg_utils_densematrix_svd.H"
+#include "baci_mat_anisotropy.H"
 #include "baci_mat_par_bundle.H"
-#include "baci_mixture_constituent_elasthyper.H"
+#include "baci_mat_service.H"
 #include "baci_matelast_isoneohooke.H"
 #include "baci_matelast_volsussmanbathe.H"
-#include "baci_mat_anisotropy.H"
-#include "baci_mat_service.H"
+#include "baci_mixture_constituent_elasthyper.H"
 #include "baci_mixture_rule.H"
-#include "baci_linalg_utils_densematrix_svd.H"
 
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)

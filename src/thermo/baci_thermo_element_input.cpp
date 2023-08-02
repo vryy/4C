@@ -7,9 +7,9 @@
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
-#include "baci_thermo_element.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_thermo_element.H"
 
 
 /*----------------------------------------------------------------------*

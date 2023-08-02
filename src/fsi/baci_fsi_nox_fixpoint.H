@@ -12,10 +12,10 @@
 #define BACI_FSI_NOX_FIXPOINT_H
 
 #include <NOX_Direction_Generic.H>  // base class
-#include <NOX_Utils.H>
-#include <NOX_GlobalData.H>
-#include <Teuchos_RCP.hpp>
 #include <NOX_Direction_UserDefinedFactory.H>
+#include <NOX_GlobalData.H>
+#include <NOX_Utils.H>
+#include <Teuchos_RCP.hpp>
 
 namespace NOX
 {

@@ -9,15 +9,15 @@
 */
 /*---------------------------------------------------------------------*/
 #include "baci_contact_aug_integrator.H"
+
 #include "baci_contact_aug_contact_integrator_utils.H"
 #include "baci_contact_aug_element_utils.H"
-
-#include "baci_contact_node.H"
 #include "baci_contact_element.H"
+#include "baci_contact_node.H"
 #include "baci_contact_paramsinterface.H"
-#include "baci_mortar_coupling3d_classes.H"
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_mortar_coupling3d_classes.H"
 
 #include <Epetra_Map.h>
 #include <Teuchos_TimeMonitor.hpp>

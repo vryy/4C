@@ -14,8 +14,8 @@
 #ifndef BACI_TUTORIAL_NLN_TRUSS_H
 #define BACI_TUTORIAL_NLN_TRUSS_H
 
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 //////////////////////////////////////////////////////
 ///  DEFINE THE NUMBER OF ELEMENTS

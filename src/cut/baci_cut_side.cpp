@@ -6,21 +6,20 @@
 
  *----------------------------------------------------------------------*/
 
-#include "baci_cut_clnwrapper.H"
 #include "baci_cut_side.H"
-#include "baci_cut_position.H"
-#include "baci_cut_intersection.H"
+
+#include "baci_cut_clnwrapper.H"
 #include "baci_cut_facet.H"
+#include "baci_cut_intersection.H"
+#include "baci_cut_levelsetside.H"
 #include "baci_cut_point_impl.H"
 #include "baci_cut_pointgraph.H"
-#include "baci_cut_levelsetside.H"
-
+#include "baci_cut_position.H"
 #include "baci_lib_globalproblem.H"
 
-
-#include <string>
-#include <stack>
 #include <list>
+#include <stack>
+#include <string>
 
 // #define DEBUG_PARALLEL_CUT_SURFACE
 

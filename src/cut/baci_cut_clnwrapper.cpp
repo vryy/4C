@@ -8,9 +8,11 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_cut_clnwrapper.H"
-#include <iomanip>
+
 #include "baci_cut_tolerance.H"
+
 #include <cmath>
+#include <iomanip>
 #ifdef CLN_CALC
 #include <cln/malloc.h>
 #endif

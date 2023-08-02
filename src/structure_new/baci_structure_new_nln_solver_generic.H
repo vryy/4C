@@ -12,9 +12,10 @@
 #ifndef BACI_STRUCTURE_NEW_NLN_SOLVER_GENERIC_H
 #define BACI_STRUCTURE_NEW_NLN_SOLVER_GENERIC_H
 
-#include <Teuchos_RCP.hpp>
-#include "baci_utils_exceptions.H"
 #include "baci_inpar_structure.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_RCP.hpp>
 
 // forward declaration
 namespace NOX

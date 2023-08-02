@@ -9,13 +9,14 @@
 #ifndef BACI_MORTAR_ELEMENT_H
 #define BACI_MORTAR_ELEMENT_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_inpar_mortar.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-#include "baci_inpar_mortar.H"
-#include "baci_utils_pairedvector.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mortar_node.H"
+#include "baci_utils_pairedvector.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 // forward declarations
 namespace CORE::LINALG

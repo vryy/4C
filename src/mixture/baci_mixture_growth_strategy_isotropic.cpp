@@ -7,6 +7,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mixture_growth_strategy_isotropic.H"
+
 #include "baci_mixture_growth_strategy.H"
 
 MIXTURE::PAR::IsotropicGrowthStrategy::IsotropicGrowthStrategy(

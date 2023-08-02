@@ -7,8 +7,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include "baci_utils_exceptions.H"
 #include "baci_scatra_ele_parameter_boundary.H"
+
+#include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

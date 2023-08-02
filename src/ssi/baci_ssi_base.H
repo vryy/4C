@@ -12,8 +12,9 @@
 
 #include "baci_adapter_algorithmbase.H"
 #include "baci_lib_discret.H"
-#include <Epetra_Vector.h>
 #include "baci_ssi_str_model_evaluator_base.H"
+
+#include <Epetra_Vector.h>
 
 // forward declarations
 namespace ADAPTER

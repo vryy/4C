@@ -11,9 +11,10 @@ approach for Fluid-beam interaction.
 #ifndef BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H
 #define BACI_FBI_ADAPTER_CONSTRAINTBRIDGE_PENALTY_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_FEVector.h>
 #include "baci_fbi_adapter_constraintbridge.H"
+
+#include <Epetra_FEVector.h>
+#include <Teuchos_RCP.hpp>
 
 namespace BEAMINTERACTION
 {

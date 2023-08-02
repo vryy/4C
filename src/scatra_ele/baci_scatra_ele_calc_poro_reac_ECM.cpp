@@ -9,17 +9,16 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_scatra_ele_calc_poro_reac_ECM.H"
-#include "baci_scatra_ele_parameter_std.H"
 
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
-
-#include "baci_mat_structporo.H"
-#include "baci_mat_structporo_reaction_ecm.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_mat_list_reactions.H"
 #include "baci_mat_scatra_mat.H"
 #include "baci_mat_scatra_mat_poro_ecm.H"
-#include "baci_mat_list_reactions.H"
+#include "baci_mat_structporo.H"
+#include "baci_mat_structporo_reaction_ecm.H"
+#include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_singleton_owner.H"
 
 

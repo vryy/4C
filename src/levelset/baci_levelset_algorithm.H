@@ -11,17 +11,15 @@
 #ifndef BACI_LEVELSET_ALGORITHM_H
 #define BACI_LEVELSET_ALGORITHM_H
 
-#include <Epetra_MpiComm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include "baci_scatra_timint_implicit.H"
-#include "baci_inpar_levelset.H"
 #include "baci_discretization_geometry_geo_utils.H"
-
+#include "baci_inpar_levelset.H"
 #include "baci_lib_discret.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_scatra_timint_implicit.H"
+
+#include <Epetra_MpiComm.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 #define USE_PHIN_FOR_VEL  // TODO
 

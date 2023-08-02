@@ -10,15 +10,16 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mixture_rule.H"
+
+#include "baci_inpar_material.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_mat_par_material.H"
+#include "baci_lib_parobject.H"
 #include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
+#include "baci_mat_par_parameter.H"
 #include "baci_mat_service.H"
 #include "baci_mixture_rule_growthremodel.H"
 #include "baci_mixture_rule_simple.H"
-#include "baci_inpar_material.H"
-#include "baci_lib_parobject.H"
-#include "baci_mat_par_parameter.H"
 #include "baci_utils_exceptions.H"
 
 // forward declarations

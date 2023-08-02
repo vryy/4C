@@ -6,9 +6,9 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_thermo_eletypes.H"
-#include "baci_so3_thermo.H"
 
 #include "baci_lib_linedefinition.H"
+#include "baci_so3_thermo.H"
 
 /*----------------------------------------------------------------------------*
  *  HEX8 element

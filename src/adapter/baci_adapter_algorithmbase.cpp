@@ -8,16 +8,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <iostream>
-
-#include "baci_inpar_validparameters.H"
-#include "baci_lib_globalproblem.H"
-
-#include "baci_io_pstream.H"
-
 #include "baci_adapter_algorithmbase.H"
 
+#include "baci_inpar_validparameters.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
+
+#include <iostream>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

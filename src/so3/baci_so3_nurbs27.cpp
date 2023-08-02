@@ -8,18 +8,17 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_line.H"
-#include "baci_so3_surface.H"
 #include "baci_so3_nurbs27.H"
+
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
+#include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
-
+#include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::NURBS::So_nurbs27Type DRT::ELEMENTS::NURBS::So_nurbs27Type::instance_;
 

@@ -9,17 +9,16 @@
 
 #include "baci_beaminteraction_beam_to_beam_point_coupling_pair.H"
 
+#include "baci_beam3_reissner.H"
+#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
+#include "baci_beaminteraction_beam_to_solid_utils.H"
+#include "baci_beaminteraction_calc_utils.H"
+#include "baci_geometry_pair_element_functions.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
 
-#include "baci_beaminteraction_beam_to_solid_utils.H"
-#include "baci_geometry_pair_element_functions.H"
-#include "baci_beam3_triad_interpolation_local_rotation_vectors.H"
-#include "baci_beam3_reissner.H"
-
 #include <Epetra_FEVector.h>
-#include "baci_beaminteraction_calc_utils.H"
 
 
 /**

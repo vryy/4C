@@ -9,9 +9,10 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_w1_nurbs.H"
+
+#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
-#include "baci_lib_linedefinition.H"
 
 DRT::ELEMENTS::NURBS::Wall1NurbsType DRT::ELEMENTS::NURBS::Wall1NurbsType::instance_;
 

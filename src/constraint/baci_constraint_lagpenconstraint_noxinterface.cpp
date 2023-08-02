@@ -14,12 +14,11 @@
 
 #include "baci_constraint_lagpenconstraint_noxinterface.H"
 
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_solver_nonlin_nox_aux.H"
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
-
-#include <NOX_Epetra_Vector.H>
 #include <Epetra_Vector.h>
+#include <NOX_Epetra_Vector.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

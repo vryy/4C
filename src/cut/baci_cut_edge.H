@@ -10,11 +10,10 @@
 #ifndef BACI_CUT_EDGE_H
 #define BACI_CUT_EDGE_H
 
-#include "baci_inpar_cut.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-
 #include "baci_cut_node.H"
 #include "baci_cut_tolerance.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_inpar_cut.H"
 
 namespace CORE::GEO
 {

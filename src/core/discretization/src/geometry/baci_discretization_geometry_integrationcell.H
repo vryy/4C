@@ -14,8 +14,8 @@
 #define BACI_DISCRETIZATION_GEOMETRY_INTEGRATIONCELL_H
 
 
-#include "baci_lib_element.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
 
 namespace CORE::GEO
 {

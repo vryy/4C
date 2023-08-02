@@ -11,21 +11,21 @@ Kloeppel
 *----------------------------------------------------------------------*/
 
 
-#include <iostream>
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_io.H"
-
 #include "baci_constraint_manager.H"
+
 #include "baci_constraint.H"
-#include "baci_constraint_penalty.H"
+#include "baci_constraint_dofset.H"
 #include "baci_constraint_monitor.H"
 #include "baci_constraint_multipointconstraint2.H"
 #include "baci_constraint_multipointconstraint3.H"
 #include "baci_constraint_multipointconstraint3penalty.H"
-#include "baci_constraint_dofset.H"
+#include "baci_constraint_penalty.H"
+#include "baci_io.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*

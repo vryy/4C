@@ -10,26 +10,19 @@
 
 #include "baci_poroelast_scatra_base.H"
 
-#include <Teuchos_RCP.hpp>
-
-#include "baci_poroelast_scatra_utils.H"
-#include "baci_poroelast_base.H"
-
-
-#include "baci_lib_utils_createdis.H"
-
-#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_scatra_base_algorithm.H"
-
-// for coupling of nonmatching meshes
+#include "baci_adapter_str_fpsiwrapper.H"
 #include "baci_coupling_adapter_volmortar.H"
 #include "baci_coupling_volmortar_utils.H"
-
-#include "baci_scatra_timint_implicit.H"
 #include "baci_inpar_scatra.H"
-
 #include "baci_lib_dofset_gidbased_wrapper.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_poroelast_base.H"
+#include "baci_poroelast_scatra_utils.H"
+#include "baci_scatra_timint_implicit.H"
+
+#include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*
  |                                                         vuong 05/13  |

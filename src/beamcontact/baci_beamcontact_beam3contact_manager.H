@@ -11,26 +11,25 @@
 #ifndef BACI_BEAMCONTACT_BEAM3CONTACT_MANAGER_H
 #define BACI_BEAMCONTACT_BEAM3CONTACT_MANAGER_H
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_RCP.hpp>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Comm.h>
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
-
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_beamcontact_beam3contactnew.H"
 #include "baci_beamcontact_beam3contact.H"
+#include "baci_beamcontact_beam3contactnew.H"
+#include "baci_beamcontact_beam3tobeampotential.H"
 #include "baci_beamcontact_beam3tosolidcontact.H"
 #include "baci_beamcontact_beam3tosolidmeshtying.H"
 #include "baci_beamcontact_beam3tospherecontact.H"
-#include "baci_beamcontact_beam3tobeampotential.H"
 #include "baci_beamcontact_beam3tospherepotential.H"
+#include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
 #include "baci_io.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 // forward declarations
 namespace CORE::LINALG

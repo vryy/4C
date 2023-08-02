@@ -51,7 +51,6 @@ templates_path = ["_templates"]
 # This pattern also affects html_static_path and html_extra_path.
 source_suffix = [".rst", ".md"]
 exclude_patterns = []
-html_static_path = ["_static"]
 
 rst_prolog = """
 .. |break| raw:: html
@@ -67,10 +66,11 @@ rst_prolog = """
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
+# Default is sphinx-rtd-theme (set in var BACI_SPHINX_THEME)
+# can be overridden by setting the variable explicitly if desired,
+# e.g. 'classic', 'alabaster', etc.
 #
-# html_theme = 'classic'
-html_theme = "@SPHINX_THEME@"
-# html_theme = 'alabaster'
+html_theme = "@BACI_SPHINX_THEME@"
 
 html_theme_options = {
     "collapse_navigation": False,
@@ -82,7 +82,8 @@ html_theme_options = {
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["_static"]
+# Since up to now, we don't have these, it's not needed. Uncomment if necessary.
+# html_static_path = ["_static"]
 #
 # for finding headers as internal link targets, we have to set the variable myst_heading_anchors
 myst_heading_anchors = 4

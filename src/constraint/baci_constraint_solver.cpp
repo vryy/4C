@@ -7,16 +7,18 @@
 *----------------------------------------------------------------------*/
 
 
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <stdio.h>
-#include <iostream>
-
 #include "baci_constraint_solver.H"
+
 #include "baci_lib_globalproblem.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
+
+#include <stdio.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <iostream>
 
 
 /*----------------------------------------------------------------------*

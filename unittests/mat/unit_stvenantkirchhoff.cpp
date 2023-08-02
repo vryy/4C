@@ -10,7 +10,6 @@
 
 #include "baci_mat_par_material.H"
 #include "baci_mat_stvenantkirchhoff.H"
-
 #include "baci_unittest_utils_assertions.h"
 
 namespace

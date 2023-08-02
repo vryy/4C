@@ -8,16 +8,17 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_contact_aug_contact_integrator_utils.H"
-#include "baci_contact_aug_utils.H"
-#include "baci_contact_aug_projector.H"
+
 #include "baci_contact_aug_element_utils.H"
-#include "baci_mortar_element.H"
-#include "baci_contact_node.H"
+#include "baci_contact_aug_integrator_policy.H"
+#include "baci_contact_aug_projector.H"
+#include "baci_contact_aug_utils.H"
 #include "baci_contact_integrator.H"
+#include "baci_contact_node.H"
+#include "baci_io_pstream.H"
+#include "baci_mortar_element.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-#include "baci_contact_aug_integrator_policy.H"
-#include "baci_io_pstream.H"
 
 // #define DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
 

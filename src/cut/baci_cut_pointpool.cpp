@@ -10,6 +10,7 @@ created
 *----------------------------------------------------------------------*/
 
 #include "baci_cut_pointpool.H"
+
 #include "baci_cut_output.H"
 #include "baci_lib_globalproblem.H"
 

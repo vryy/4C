@@ -7,14 +7,11 @@
  *------------------------------------------------------------------------------------------------*/
 #include "baci_ssi_partitioned.H"
 
-#include "baci_ssi_str_model_evaluator_partitioned.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-
-#include "baci_adapter_str_structure_new.H"
 #include "baci_adapter_scatra_base_algorithm.H"
-
+#include "baci_adapter_str_structure_new.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_scatra_timint_implicit.H"
+#include "baci_ssi_str_model_evaluator_partitioned.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

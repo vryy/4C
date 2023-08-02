@@ -13,8 +13,8 @@
 
 #include "baci_cut_facet.H"
 #include "baci_cut_mesh.H"
-#include "baci_cut_side.H"
 #include "baci_cut_pointgraph_simple.H"
+#include "baci_cut_side.H"
 
 
 /*----------------------------------------------------------------------------*

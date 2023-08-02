@@ -9,15 +9,16 @@
 
 /*----------------------------------------------------------------------*/
 /* headers */
-#include "baci_so3_sh8p8.H"
+#include "baci_io_control.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
 #include "baci_lib_voigt_notation.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_io_control.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_so3_sh8p8.H"
+#include "baci_utils_exceptions.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 using VoigtMapping = ::UTILS::VOIGT::IndexMappings;

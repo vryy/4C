@@ -8,6 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_discretization_fem_general_utils_bspline.H"
+
 #include "baci_utils_exceptions.H"
 
 //--------------------------------------------------

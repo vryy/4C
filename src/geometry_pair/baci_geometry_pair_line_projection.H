@@ -12,8 +12,8 @@
 #define BACI_GEOMETRY_PAIR_LINE_PROJECTION_H
 
 
-#include <vector>
 #include <set>
+#include <vector>
 
 
 // Forward declarations.

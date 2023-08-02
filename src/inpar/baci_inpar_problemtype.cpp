@@ -9,7 +9,6 @@
 #include "baci_inpar_problemtype.H"
 
 #include "baci_inpar_validparameters.H"
-
 #include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------*/

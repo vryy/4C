@@ -10,45 +10,39 @@ with condensed fluid interface velocities
 
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
+#include "baci_fsi_mortarmonolithic_fluidsplit.H"
 
-#include <NOX_Epetra_LinearSystem.H>
-#include <NOX_Epetra_LinearSystem_AztecOO.H>
-
+#include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_ale_utils_mapextractor.H"
+#include "baci_constraint_manager.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_coupling_adapter_mortar.H"
-#include "baci_adapter_str_fsiwrapper.H"
-
-#include "baci_fsi_mortarmonolithic_fluidsplit.H"
+#include "baci_fluid_utils_mapextractor.H"
 #include "baci_fsi_debugwriter.H"
-#include "baci_fsi_statustest.H"
 #include "baci_fsi_overlapprec.H"
 #include "baci_fsi_overlapprec_fsiamg.H"
+#include "baci_fsi_statustest.H"
 #include "baci_fsi_utils.H"
-
-#include "baci_lib_globalproblem.H"
 #include "baci_inpar_validparameters.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_structure_aux.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_ale_utils_mapextractor.H"
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_ale_fsi.H"
-
-#include "baci_constraint_manager.H"
-
 #include "baci_io.H"
 #include "baci_io_control.H"
-
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
+#include "baci_linalg_matrixtransform.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_structure_aux.H"
 
 #include <math.h>
-#include "baci_linalg_matrixtransform.H"
+#include <NOX_Epetra_LinearSystem.H>
+#include <NOX_Epetra_LinearSystem_AztecOO.H>
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------------*/

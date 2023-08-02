@@ -13,7 +13,6 @@
 
 
 #include "baci_geometry_pair_element_functions.H"
-
 #include "baci_lib_element.H"
 
 #include <unordered_map>

@@ -8,47 +8,36 @@
 
 */
 #include "baci_poroelast_monolithic.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
-// needed for PrintNewton
-#include <sstream>
 
-#include "baci_poroelast_defines.H"
-
-// adapters
-#include "baci_coupling_adapter_volmortar.H"
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_str_fpsiwrapper.H"
-
-// contact
-#include "baci_contact_poro_lagrange_strategy.H"
-#include "baci_contact_meshtying_poro_lagrange_strategy.H"
 #include "baci_contact_meshtying_contact_bridge.H"
+#include "baci_contact_meshtying_poro_lagrange_strategy.H"
 #include "baci_contact_nitsche_strategy_poro.H"
-
+#include "baci_contact_poro_lagrange_strategy.H"
+#include "baci_coupling_adapter_volmortar.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_utils_mapextractor.H"
-
-// include this header for coupling stiffness terms
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_condition_utils.H"
-
-#include "baci_io_control.H"
 #include "baci_inpar_solver.H"
-
-#include "baci_structure_aux.H"
-
-#include "baci_mortar_manager_base.H"
-
+#include "baci_io_control.H"
+#include "baci_lib_assemblestrategy.H"
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_elements_paramsminimal.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_mortar_manager_base.H"
+#include "baci_poroelast_defines.H"
+#include "baci_structure_aux.H"
 
-#include "baci_lib_elements_paramsminimal.H"
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
+#include <sstream>
 
 
 

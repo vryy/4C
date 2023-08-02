@@ -13,7 +13,6 @@
 
 
 #include "baci_beaminteraction_contact_pair.H"
-
 #include "baci_geometry_pair_utility_classes.H"
 
 

@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_lib_dofset_transparent.H"
+
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 DRT::TransparentDofSet::TransparentDofSet(

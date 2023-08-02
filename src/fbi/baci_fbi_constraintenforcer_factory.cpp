@@ -10,12 +10,12 @@
 
 
 #include "baci_fbi_constraintenforcer_factory.H"
-#include "baci_fbi_constraintenforcer_penalty.H"
+
 #include "baci_fbi_adapter_constraintbridge.H"
 #include "baci_fbi_adapter_constraintbridge_penalty.H"
+#include "baci_fbi_constraintenforcer_penalty.H"
 #include "baci_fbi_immersed_geometry_coupler.H"
 #include "baci_fbi_immersedcoupler_factory.H"
-
 #include "baci_inpar_fbi.H"
 #include "baci_inpar_fsi.H"
 

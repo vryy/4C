@@ -9,17 +9,17 @@
 #ifndef BACI_LINALG_FIXEDSIZEMATRIX_H
 #define BACI_LINALG_FIXEDSIZEMATRIX_H
 
-#include <Teuchos_LAPACK.hpp>
-#include <Teuchos_BLAS.hpp>
-
-#include <cstring>
-#include <vector>
-#include <cmath>
-#include <ostream>
-#include <iostream>
-
-#include "baci_utils_exceptions.H"
 #include "baci_linalg_serialdensematrix.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_BLAS.hpp>
+#include <Teuchos_LAPACK.hpp>
+
+#include <cmath>
+#include <cstring>
+#include <iostream>
+#include <ostream>
+#include <vector>
 
 // Attention: In the case a CORE::LINALG::Matrix is created with float_type ClnWrapper,
 // include the header "/cut/cut_clnwrapper.H" before this header is processed.

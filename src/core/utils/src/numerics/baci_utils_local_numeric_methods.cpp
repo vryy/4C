@@ -9,8 +9,9 @@
 
 #include "baci_utils_local_numeric_methods.H"
 
-#include <cmath>
 #include "baci_utils_exceptions.H"
+
+#include <cmath>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

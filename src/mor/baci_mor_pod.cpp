@@ -10,21 +10,21 @@
 
 #include "baci_mor_pod.H"
 
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <stdio.h>
-#include <iostream>
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_multiply.H"
-
 #include "baci_adapter_str_structure.H"
 #include "baci_io.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_condition.H"
 #include "baci_io_control.H"
+#include "baci_lib_condition.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linear_solver_method_linalg.H"
+
+#include <stdio.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+
+#include <iostream>
 
 /*----------------------------------------------------------------------*
  | constructor                                            pfaller Oct17 |

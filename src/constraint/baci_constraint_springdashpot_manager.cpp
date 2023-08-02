@@ -8,15 +8,16 @@
 
 *----------------------------------------------------------------------*/
 
-#include <iostream>
-#include "baci_io_pstream.H"  // has to go before io.H
-#include "baci_io.H"
-
 #include "baci_constraint_springdashpot_manager.H"
-#include "baci_lib_discret.H"
-#include "baci_inpar_structure.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_constraint_springdashpot.H"
+#include "baci_inpar_structure.H"
+#include "baci_io.H"
+#include "baci_io_pstream.H"  // has to go before io.H
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+
+#include <iostream>
 
 UTILS::SpringDashpotManager::SpringDashpotManager(Teuchos::RCP<DRT::Discretization> dis)
     : actdisc_(dis), havespringdashpot_(false)

@@ -9,14 +9,14 @@
 
 
 #include "baci_cut_quadrature_compression.H"
-#include "baci_cut_volumecell.H"
-#include "baci_cut_element.H"
 
+#include "baci_cut_element.H"
+#include "baci_cut_volumecell.H"
 #include "baci_utils_exceptions.H"
 
-#include <Teuchos_SerialQRDenseSolver.hpp>
-#include <Teuchos_SerialDenseVector.hpp>
 #include <Teuchos_LAPACK.hpp>
+#include <Teuchos_SerialDenseVector.hpp>
+#include <Teuchos_SerialQRDenseSolver.hpp>
 #include <Teuchos_TimeMonitor.hpp>
 
 // Use Chebyshev polynomials to form Vandermonde matrix.

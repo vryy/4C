@@ -8,12 +8,14 @@
 
 *----------------------------------------------------------------------*/
 #include "baci_cut_memory_manager.H"
-#include <algorithm>
-#include <cstdlib>    // for malloc
-#include <stdexcept>  // for std_runtime_error
-#include <iostream>
-#include <iomanip>  // for std::setw
+
 #include "baci_utils_exceptions.H"
+
+#include <algorithm>
+#include <cstdlib>  // for malloc
+#include <iomanip>  // for std::setw
+#include <iostream>
+#include <stdexcept>  // for std_runtime_error
 #include <unordered_map>
 
 

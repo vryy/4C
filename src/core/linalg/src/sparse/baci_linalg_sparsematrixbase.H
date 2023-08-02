@@ -8,11 +8,11 @@
 #ifndef BACI_LINALG_SPARSEMATRIXBASE_H
 #define BACI_LINALG_SPARSEMATRIXBASE_H
 
+#include "baci_linalg_sparseoperator.H"
+
+#include <Epetra_Comm.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FECrsMatrix.h>
-#include <Epetra_Comm.h>
-
-#include "baci_linalg_sparseoperator.H"
 
 namespace CORE::LINALG
 {

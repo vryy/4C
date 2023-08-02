@@ -10,9 +10,9 @@
 #ifndef BACI_STI_CLONESTRATEGY_H
 #define BACI_STI_CLONESTRATEGY_H
 
-#include <vector>
-
 #include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 // forward declaration
 namespace DRT

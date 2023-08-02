@@ -12,8 +12,8 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_MEMBRANE_H
 #define BACI_MIXTURE_CONSTITUENT_ELASTHYPER_ELASTIN_MEMBRANE_H
 
-#include "baci_mixture_constituent_elasthyperbase.H"
 #include "baci_mat_anisotropy_extension.H"
+#include "baci_mixture_constituent_elasthyperbase.H"
 #include "baci_mixture_elastin_membrane_prestress_strategy.H"
 
 namespace MAT

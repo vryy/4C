@@ -13,8 +13,8 @@
 #ifndef BACI_STRUCTURE_NEW_TIMINT_LOCAINTERFACE_H
 #define BACI_STRUCTURE_NEW_TIMINT_LOCAINTERFACE_H
 
-#include "baci_structure_new_timint_noxinterface.H"
 #include "baci_loca_continuation_nln_interface_required.H"
+#include "baci_structure_new_timint_noxinterface.H"
 
 namespace STR
 {

@@ -8,6 +8,7 @@ determinant
 /*----------------------------------------------------------------------*/
 
 #include "baci_matelast_coup3pow.H"
+
 #include "baci_mat_par_material.H"
 
 MAT::ELASTIC::PAR::Coup3Pow::Coup3Pow(const Teuchos::RCP<MAT::PAR::Material>& matdata)

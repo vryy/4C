@@ -15,17 +15,16 @@
 #define BACI_CUT_KERNEL_H
 
 #include "baci_cut_clnwrapper.H"
-#include "baci_cut_tolerance.H"
-#include "baci_cut_utils.H"
 #include "baci_cut_enum.H"
 #include "baci_cut_memory_manager.H"
-#include <unordered_map>
-
+#include "baci_cut_tolerance.H"
+#include "baci_cut_utils.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_linalg_gauss_templates.H"
 
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include <unordered_map>
 
-// activate debug intersection output in cut_kernel
+
 // #define DEBUG_CUTKERNEL_OUTPUT
 
 

@@ -9,8 +9,9 @@
 #ifndef BACI_SO3_HEX8P1J1_H
 #define BACI_SO3_HEX8P1J1_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_so3_hex8.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 // forward declarations

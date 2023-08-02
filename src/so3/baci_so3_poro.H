@@ -10,8 +10,8 @@
 #ifndef BACI_SO3_PORO_H
 #define BACI_SO3_PORO_H
 
-#include "baci_inpar_structure.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_inpar_structure.H"
 
 namespace MAT
 {

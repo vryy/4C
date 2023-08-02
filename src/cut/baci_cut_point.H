@@ -11,17 +11,15 @@
 #ifndef BACI_CUT_POINT_H
 #define BACI_CUT_POINT_H
 
-#include <fstream>
-
-#include <map>
+#include "baci_cut_clnwrapper.H"
+#include "baci_cut_tolerance.H"
+#include "baci_cut_utils.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 #include <Teuchos_RCP.hpp>
 
-#include "baci_cut_clnwrapper.H"
-#include "baci_linalg_fixedsizematrix.H"
-
-#include "baci_cut_utils.H"
-#include "baci_cut_tolerance.H"
+#include <fstream>
+#include <map>
 
 namespace CORE::GEO
 {

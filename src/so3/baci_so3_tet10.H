@@ -7,17 +7,15 @@
 #define BACI_SO3_TET10_H
 
 
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_parobjectfactory.H"
-
 #include "baci_mat_material.H"
-#include "baci_inpar_structure.H"
-
 #include "baci_so3_base.H"
 
-#include "baci_discretization_fem_general_utils_integration.H"
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 // gee: note that these are also defined in so_integrator.H
 #define NUMNOD_SOTET10 10       ///< number of nodes

@@ -9,22 +9,19 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 #include "baci_beam3_euler_bernoulli.H"
-
 #include "baci_beam3_spatial_discretization_utils.H"
-
-#include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_utils.H"
-#include "baci_lib_function_of_time.H"
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_discretization_fem_general_largerotations.H"
+#include "baci_inpar_browniandyn.H"
 #include "baci_inpar_structure.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_function_of_time.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_exceptions.H"
 
 #include <Sacado.hpp>
-
-#include "baci_inpar_browniandyn.H"
 
 using FAD = Sacado::Fad::DFad<double>;
 

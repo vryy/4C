@@ -13,6 +13,7 @@
 #define BACI_STRUCTURE_NEW_NLN_SOLVER_NOX_H
 
 #include "baci_structure_new_nln_solver_generic.H"  // base class
+
 #include <NOX_StatusTest_Generic.H>
 
 namespace NOX

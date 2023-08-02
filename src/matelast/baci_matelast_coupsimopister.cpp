@@ -5,10 +5,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <limits>
-
 #include "baci_matelast_coupsimopister.H"
+
 #include "baci_mat_par_material.H"
+
+#include <limits>
 
 
 MAT::ELASTIC::PAR::CoupSimoPister::CoupSimoPister(const Teuchos::RCP<MAT::PAR::Material>& matdata)

@@ -10,32 +10,26 @@
 
 #include "baci_poroelast_monolithicsplit_nopenetration.H"
 
-#include <Teuchos_TimeMonitor.hpp>
-
+#include "baci_adapter_coupling_nonlin_mortar.H"
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_str_fpsiwrapper.H"
+#include "baci_contact_interface.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
-#include "baci_adapter_coupling_nonlin_mortar.H"
-
-#include "baci_contact_interface.H"
-
-#include "baci_fluid_utils_mapextractor.H"
 #include "baci_fluid_ele_action.H"
-
+#include "baci_fluid_utils_mapextractor.H"
 #include "baci_io.H"
-
-#include "baci_structure_aux.H"
-
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-
+#include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_multiply.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_matrixtransform.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_structure_aux.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 POROELAST::MonolithicSplitNoPenetration::MonolithicSplitNoPenetration(const Epetra_Comm& comm,

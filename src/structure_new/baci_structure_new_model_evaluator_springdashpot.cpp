@@ -10,26 +10,22 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_model_evaluator_springdashpot.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_utils.H"
-
-#include <Epetra_Vector.h>
-#include <Teuchos_ParameterList.hpp>
 
 #include "baci_inpar_structure.H"
-
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-
-#include "baci_utils_exceptions.H"
+#include "baci_io.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
-
-#include "baci_io.H"
-
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_sparseoperator.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_structure_new_utils.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -20,10 +20,10 @@ MAT 0   MAT_ViscoElastHyper   NUMMAT 2 MATIDS 1 2 DENS 0
 
 
 
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_so3_material.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_mat_elasthyper.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
 
 // forward declaration due to avoid header definition
 namespace MAT

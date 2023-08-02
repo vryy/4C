@@ -9,10 +9,10 @@ according to Holzapfel and Ogden, "Constitutive modelling of passive myocardium"
 #ifndef BACI_MATELAST_COUPANISOEXPOTWOCOUP_H
 #define BACI_MATELAST_COUPANISOEXPOTWOCOUP_H
 
-#include "baci_matelast_summand.H"
-#include "baci_mat_par_parameter.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_matelast_summand.H"
 
 namespace MAT
 {

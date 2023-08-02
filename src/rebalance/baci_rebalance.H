@@ -11,15 +11,14 @@
 #ifndef BACI_REBALANCE_H
 #define BACI_REBALANCE_H
 
+#include "baci_inpar_rebalance.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_CrsGraph.h>
-#include <Epetra_MultiVector.h>
 #include <Epetra_Map.h>
-
+#include <Epetra_MultiVector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-
-#include "baci_inpar_rebalance.H"
 
 namespace DRT
 {

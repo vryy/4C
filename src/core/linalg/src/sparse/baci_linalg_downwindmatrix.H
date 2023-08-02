@@ -10,17 +10,17 @@
 #define BACI_LINALG_DOWNWINDMATRIX_H
 
 // Trilinos includes
+#include "baci_linalg_mapextractor.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_utils_exceptions.H"
+
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_IntVector.h>
 #include <EpetraExt_Reindex_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem.h>
 #include <EpetraExt_Reindex_MultiVector.h>
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_IntVector.h>
-
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_mapextractor.H"
-#include "baci_linalg_sparsematrix.H"
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINALG
 {

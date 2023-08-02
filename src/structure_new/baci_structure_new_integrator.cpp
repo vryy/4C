@@ -10,23 +10,20 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_integrator.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_epetra_utils.H"
 
 #include "baci_io_pstream.H"
-
+#include "baci_lib_epetra_utils.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_solver_nonlin_nox_aux.H"
 #include "baci_structure_new_dbc.H"
-#include "baci_structure_new_timint_base.H"
-#include "baci_structure_new_timint_noxinterface.H"
 #include "baci_structure_new_model_evaluator.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_model_evaluator_structure.H"
 #include "baci_structure_new_monitor_dbc.H"
 #include "baci_structure_new_nox_nln_str_linearsystem.H"
-
-#include "baci_solver_nonlin_nox_aux.H"
-
-#include "baci_linalg_sparsematrix.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_structure_new_timint_noxinterface.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 

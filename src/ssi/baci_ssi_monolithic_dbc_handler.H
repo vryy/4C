@@ -9,9 +9,9 @@
 #ifndef BACI_SSI_MONOLITHIC_DBC_HANDLER_H
 #define BACI_SSI_MONOLITHIC_DBC_HANDLER_H
 
-#include <Teuchos_RCPDecl.hpp>
-
 #include "baci_linalg_sparseoperator.H"
+
+#include <Teuchos_RCPDecl.hpp>
 
 namespace ADAPTER
 {

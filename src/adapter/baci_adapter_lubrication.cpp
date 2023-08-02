@@ -10,16 +10,12 @@
 
 #include "baci_adapter_lubrication.H"
 
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-
-#include "baci_io_control.H"
 #include "baci_io.H"
-
+#include "baci_io_control.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linear_solver_method_linalg.H"
-
 #include "baci_lubrication_resulttest.H"
-
 #include "baci_lubrication_timint_stat.H"
 
 /*----------------------------------------------------------------------*/

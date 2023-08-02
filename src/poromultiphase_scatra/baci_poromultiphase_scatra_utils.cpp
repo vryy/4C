@@ -8,27 +8,21 @@
 
 #include "baci_poromultiphase_scatra_utils.H"
 
-#include "baci_poromultiphase_scatra_partitioned_twoway.H"
-#include "baci_poromultiphase_scatra_monolithic_twoway.H"
-
-#include "baci_poromultiphase_scatra_artery_coupling_nodebased.H"
-#include "baci_poromultiphase_scatra_artery_coupling_linebased.H"
-#include "baci_poromultiphase_scatra_artery_coupling_surfbased.H"
-#include "baci_poromultiphase_scatra_artery_coupling_nodetopoint.H"
-
-#include "baci_poromultiphase_utils.H"
 #include "baci_art_net_utils.H"
-
-#include "baci_poroelast_utils.H"
-
-#include "baci_poroelast_utils_clonestrategy.H"
-#include "baci_scatra_ele.H"
-
-#include "baci_lib_utils_createdis.H"
-
 #include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_lib_utils_createdis.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_poroelast_scatra_utils_clonestrategy.H"
+#include "baci_poroelast_utils.H"
+#include "baci_poroelast_utils_clonestrategy.H"
+#include "baci_poromultiphase_scatra_artery_coupling_linebased.H"
+#include "baci_poromultiphase_scatra_artery_coupling_nodebased.H"
+#include "baci_poromultiphase_scatra_artery_coupling_nodetopoint.H"
+#include "baci_poromultiphase_scatra_artery_coupling_surfbased.H"
+#include "baci_poromultiphase_scatra_monolithic_twoway.H"
+#include "baci_poromultiphase_scatra_partitioned_twoway.H"
+#include "baci_poromultiphase_utils.H"
+#include "baci_scatra_ele.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

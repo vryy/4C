@@ -9,28 +9,22 @@
 
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_ParameterList.hpp>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_fsi_monolithic.H"
-
-#include "baci_inpar_fsi.H"
-
-#include "baci_lib_globalproblem.H"
-#include "baci_timestepping_mstep.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-
 #include "baci_adapter_ale_fsi.H"
 #include "baci_adapter_fld_fluid_fsi.H"
 #include "baci_adapter_str_fsi_timint_adaptive.H"
-
+#include "baci_fluid_utils_mapextractor.H"
+#include "baci_fsi_monolithic.H"
+#include "baci_inpar_fsi.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
-
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_structure_aux.H"
-#include "baci_fluid_utils_mapextractor.H"
+#include "baci_timestepping_mstep.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

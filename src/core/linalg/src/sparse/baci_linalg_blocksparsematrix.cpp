@@ -9,11 +9,12 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_linalg_blocksparsematrix.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_densematrix_communication.H"
 
-#include <EpetraExt_Transpose_RowMatrix.h>
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+
 #include <EpetraExt_MatrixMatrix.h>
+#include <EpetraExt_Transpose_RowMatrix.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 

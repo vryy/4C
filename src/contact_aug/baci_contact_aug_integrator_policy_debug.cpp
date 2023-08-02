@@ -7,9 +7,9 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_mortar_element.H"
-#include "baci_contact_node.H"
 #include "baci_contact_aug_integrator_policy.H"
+#include "baci_contact_node.H"
+#include "baci_mortar_element.H"
 
 // #define DD_NON_UNIT_NORMAL
 // #define DD_JACOBIAN

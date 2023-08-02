@@ -15,11 +15,12 @@ factor \f$\vartheta\f$ and its derivative wrt. \f$\frac{\partial \vartheta}{\par
 #ifndef BACI_MAT_GROWTH_LAW_H
 #define BACI_MAT_GROWTH_LAW_H
 
-#include <Teuchos_ParameterList.hpp>
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_inpar_material.H"
-#include "baci_mat_par_material.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_material.H"
+#include "baci_mat_par_material.H"
+
+#include <Teuchos_ParameterList.hpp>
 
 /* forward declarations */
 namespace MAT

@@ -13,13 +13,11 @@ algorithms
 
 
 #include "baci_adapter_algorithmbase.H"
+#include "baci_coupling_adapter.H"
+#include "baci_inpar_ehl.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 
 #include <Epetra_Vector.h>
-
-#include "baci_inpar_ehl.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_coupling_adapter.H"
 
 // forward declarations
 namespace ADAPTER

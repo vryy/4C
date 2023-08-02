@@ -4,22 +4,20 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#include <sstream>
-
 #include "baci_fsi_debugwriter.H"
-#include "baci_coupling_adapter.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_fld_fluid_fsi.H"
+
 #include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_coupling_adapter.H"
 #include "baci_fsi_monolithic.H"
-
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_discret.H"
-
-#include "baci_io_control.H"
 #include "baci_io.H"
-
+#include "baci_io_control.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_createdis.H"
+
+#include <sstream>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

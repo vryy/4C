@@ -11,9 +11,8 @@
 #ifndef BACI_FSI_OVERLAPPREC_H
 #define BACI_FSI_OVERLAPPREC_H
 
-#include "baci_linalg_blocksparsematrix.H"
-
 #include "baci_inpar_fsi.H"
+#include "baci_linalg_blocksparsematrix.H"
 
 
 // debug flag to merge the MFSI block matrix to one sparse matrix

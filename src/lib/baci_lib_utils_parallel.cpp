@@ -13,17 +13,15 @@
 #include "baci_lib_utils_parallel.H"
 
 #include "baci_binstrategy.H"
-#include "baci_lib_utils_createdis.H"
-#include "baci_lib_node.H"
 #include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_densematrix_communication.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_lib_matchingoctree.H"
-
+#include "baci_lib_node.H"
+#include "baci_lib_utils_createdis.H"
+#include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_rebalance_utils.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_IntVector.h>
 

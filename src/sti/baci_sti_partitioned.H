@@ -10,9 +10,8 @@
 #ifndef BACI_STI_PARTITIONED_H
 #define BACI_STI_PARTITIONED_H
 
-#include "baci_sti_algorithm.H"
-
 #include "baci_inpar_sti.H"
+#include "baci_sti_algorithm.H"
 
 namespace STI
 {

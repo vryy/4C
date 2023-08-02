@@ -17,9 +17,8 @@
 #include <Amesos_Superludist.h>
 #endif
 
-#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linalg_krylov_projector.H"
-
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_linear_solver_method_direct.H"
 
 //----------------------------------------------------------------------------------

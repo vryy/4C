@@ -12,11 +12,11 @@
 #ifndef BACI_FLUID_UTILS_H
 #define BACI_FLUID_UTILS_H
 
-#include <Epetra_MpiComm.h>
-
+#include "baci_inpar_fluid.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_blocksparsematrix.H"
-#include "baci_inpar_fluid.H"
+
+#include <Epetra_MpiComm.h>
 #include <Teuchos_TimeMonitor.hpp>
 
 // forward declarations

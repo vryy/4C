@@ -10,10 +10,10 @@
 #ifndef BACI_BEAMINTERACTION_LINK_H
 #define BACI_BEAMINTERACTION_LINK_H
 
-#include "baci_linalg_fixedsizematrix.H"
+#include "baci_inpar_beaminteraction.H"
 #include "baci_lib_parobject.H"
 #include "baci_lib_parobjectfactory.H"
-#include "baci_inpar_beaminteraction.H"
+#include "baci_linalg_fixedsizematrix.H"
 
 // forward declarations
 namespace DRT

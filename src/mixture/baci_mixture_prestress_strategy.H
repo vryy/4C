@@ -12,14 +12,16 @@
 #ifndef BACI_MIXTURE_PRESTRESS_STRATEGY_H
 #define BACI_MIXTURE_PRESTRESS_STRATEGY_H
 
-#include "baci_mat_par_parameter.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_utils_exceptions.H"
+
 #include <Teuchos_ENull.hpp>
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_RCPDecl.hpp>
-#include <utility>
-#include "baci_utils_exceptions.H"
+
 #include <memory>
+#include <utility>
 
 namespace MAT
 {

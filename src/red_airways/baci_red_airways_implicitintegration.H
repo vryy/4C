@@ -13,24 +13,23 @@
 #ifndef BACI_RED_AIRWAYS_IMPLICITINTEGRATION_H
 #define BACI_RED_AIRWAYS_IMPLICITINTEGRATION_H
 
-#include <Epetra_MpiComm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
+#include "baci_io.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_function.H"
+#include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_io.H"
-#include "baci_lib_function.H"
 
+#include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
-
-#include <ctime>
-#include <cstdlib>
-#include <iostream>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_TimeMonitor.hpp>
+
+#include <cstdlib>
+#include <ctime>
+#include <iostream>
 
 // forward declarations
 namespace DRT

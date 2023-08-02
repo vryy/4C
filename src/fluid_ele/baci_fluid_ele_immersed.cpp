@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_fluid_ele_immersed.H"
+
 #include "baci_lib_linedefinition.H"
 
 DRT::ELEMENTS::FluidTypeImmersed DRT::ELEMENTS::FluidTypeImmersed::instance_;

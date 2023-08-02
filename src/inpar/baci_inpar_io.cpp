@@ -9,12 +9,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_inpar_validparameters.H"
 #include "baci_inpar_io.H"
 
 #include "baci_inpar_structure.H"
 #include "baci_inpar_thermo.H"
-
+#include "baci_inpar_validparameters.H"
 #include "baci_io_pstream.H"
 
 void INPAR::IO::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

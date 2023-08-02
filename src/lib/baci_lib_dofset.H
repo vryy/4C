@@ -12,18 +12,18 @@
 #ifndef BACI_LIB_DOFSET_H
 #define BACI_LIB_DOFSET_H
 
-#include <vector>
-#include <list>
-
-#include <Epetra_IntVector.h>
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Comm.h>
-#include <Epetra_Map.h>
-
 #include "baci_lib_dofset_base.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_element.H"
 #include "baci_lib_node.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_IntVector.h>
+#include <Epetra_Map.h>
+#include <Teuchos_RCP.hpp>
+
+#include <list>
+#include <vector>
 
 namespace DRT
 {

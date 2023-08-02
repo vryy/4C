@@ -10,31 +10,29 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale.H"
+
 #include "baci_ale_meshsliding.H"
 #include "baci_ale_resulttest.H"
 #include "baci_ale_utils_mapextractor.H"
-
-// further includes for AleBaseAlgorithm:
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_locsys.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_sparseoperator.H"
-#include "baci_linalg_sparsematrix.H"
-#include "baci_linalg_blocksparsematrix.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_linear_solver_preconditioner_linalg.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
 #include "baci_inpar_ale.H"
 #include "baci_inpar_fsi.H"
-#include "baci_lib_periodicbc.H"
-
+#include "baci_io.H"
+#include "baci_io_control.H"
 #include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_locsys.H"
+#include "baci_lib_periodicbc.H"
+#include "baci_linalg_blocksparsematrix.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_sparseoperator.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_linalg.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 #define SCALING_INFNORM true
 

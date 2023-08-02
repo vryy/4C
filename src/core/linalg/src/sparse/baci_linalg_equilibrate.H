@@ -10,8 +10,8 @@
 #ifndef BACI_LINALG_EQUILIBRATE_H
 #define BACI_LINALG_EQUILIBRATE_H
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_CrsMatrix.h>
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINALG
 {

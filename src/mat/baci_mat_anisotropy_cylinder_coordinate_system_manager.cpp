@@ -10,11 +10,12 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mat_anisotropy_cylinder_coordinate_system_manager.H"
-#include "baci_lib_parobject.H"
-#include "baci_utils_exceptions.H"
+
 #include "baci_lib_linedefinition.H"
-#include "baci_mat_anisotropy_utils.H"
+#include "baci_lib_parobject.H"
 #include "baci_mat_anisotropy.H"
+#include "baci_mat_anisotropy_utils.H"
+#include "baci_utils_exceptions.H"
 
 MAT::CylinderCoordinateSystemManager::CylinderCoordinateSystemManager() = default;
 

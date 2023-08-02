@@ -9,15 +9,15 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_solver_nonlin_nox_inner_statustest_armijo.H"  // class definition
-#include "baci_solver_nonlin_nox_linesearch_generic.H"
 
-#include <NOX_Utils.H>
-#include <NOX_MeritFunction_Generic.H>
+#include "baci_solver_nonlin_nox_linesearch_generic.H"
+#include "baci_utils_exceptions.H"
+
+#include <Epetra_Vector.h>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Epetra_Vector.H>
-#include <Epetra_Vector.h>
-
-#include "baci_utils_exceptions.H"
+#include <NOX_MeritFunction_Generic.H>
+#include <NOX_Utils.H>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

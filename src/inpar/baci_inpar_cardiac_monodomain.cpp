@@ -9,7 +9,6 @@
 #include "baci_inpar_cardiac_monodomain.H"
 
 #include "baci_inpar_validparameters.H"
-
 #include "baci_lib_conditiondefinition.H"
 
 void INPAR::EP::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)

@@ -12,11 +12,11 @@
 #define BACI_GEOMETRY_PAIR_UTILITY_FUNCTIONS_H
 
 
-#include <string>
-
 #include "baci_geometry_pair_utility_classes.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_fad.H"
+
+#include <string>
 
 
 // Forward declarations.

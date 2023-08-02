@@ -8,7 +8,9 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include "baci_utils_local_numeric_methods.H"
+
 #include "baci_unittest_utils_assertions.h"
 
 namespace

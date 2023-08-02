@@ -43,20 +43,19 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 
 
 // Todo @grill: get rid of header in header inclusions
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Epetra_Vector.h>
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_serialdensevector.H"
+#include "baci_beam3_base.H"
+#include "baci_discretization_fem_general_largerotations.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-#include "baci_discretization_fem_general_largerotations.H"
-#include <Sacado.hpp>
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_utils_fad.H"
 
-#include "baci_beam3_base.H"
-
+#include <Epetra_Vector.h>
+#include <Sacado.hpp>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_SerialDenseMatrix.hpp>
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;
 

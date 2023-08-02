@@ -14,16 +14,14 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_inpar_parameterlist_utils.H"
+#include "baci_mat_particle_base.H"
+#include "baci_mat_particle_dem.H"
+#include "baci_mat_particle_sph_boundary.H"
+#include "baci_mat_particle_sph_fluid.H"
+#include "baci_mat_particle_thermo.H"
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
-
-#include "baci_mat_particle_base.H"
-#include "baci_mat_particle_thermo.H"
-#include "baci_mat_particle_sph_fluid.H"
-#include "baci_mat_particle_sph_boundary.H"
-#include "baci_mat_particle_dem.H"
-
-#include "baci_inpar_parameterlist_utils.H"
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |

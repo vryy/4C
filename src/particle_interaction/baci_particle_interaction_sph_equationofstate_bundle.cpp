@@ -10,11 +10,9 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_interaction_sph_equationofstate_bundle.H"
 
-#include "baci_particle_interaction_sph_equationofstate.H"
-#include "baci_particle_interaction_material_handler.H"
-
 #include "baci_inpar_particle.H"
-
+#include "baci_particle_interaction_material_handler.H"
+#include "baci_particle_interaction_sph_equationofstate.H"
 #include "baci_utils_exceptions.H"
 
 /*---------------------------------------------------------------------------*

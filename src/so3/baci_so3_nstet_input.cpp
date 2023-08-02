@@ -7,9 +7,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_nstet.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_mat_elasthyper.H"
+#include "baci_so3_nstet.H"
 
 
 /*----------------------------------------------------------------------*/

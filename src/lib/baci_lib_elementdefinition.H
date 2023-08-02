@@ -14,14 +14,14 @@
 #ifndef BACI_LIB_ELEMENTDEFINITION_H
 #define BACI_LIB_ELEMENTDEFINITION_H
 
+#include "baci_lib_linedefinition.H"
+
+#include <Teuchos_RCP.hpp>
+
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
-
-#include <Teuchos_RCP.hpp>
-
-#include "baci_lib_linedefinition.H"
 
 namespace DRT
 {

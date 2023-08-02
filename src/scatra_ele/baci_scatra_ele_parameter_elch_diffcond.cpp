@@ -15,16 +15,16 @@ additional static parameters required for scalar transport element evaluation.
 */
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_parameter_elch_diffcond.H"
-#include "baci_scatra_ele_parameter_std.H"
-
-#include <map>
-#include <Teuchos_ParameterList.hpp>
 
 #include "baci_inpar_elch.H"
 #include "baci_inpar_parameterlist_utils.H"
-
+#include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_exceptions.H"
 #include "baci_utils_singleton_owner.H"
+
+#include <Teuchos_ParameterList.hpp>
+
+#include <map>
 
 /*----------------------------------------------------------------------*
  | singleton access method                                   fang 02/15 |

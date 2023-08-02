@@ -7,13 +7,14 @@
 */
 /*----------------------------------------------------------------------*/
 // #ifdef DISCSH3_H
-#include <Teuchos_TimeMonitor.hpp>
 #include "baci_discsh3.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 

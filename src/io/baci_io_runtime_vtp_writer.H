@@ -13,12 +13,12 @@
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */
 
+#include <stdint.h>
 #include <Teuchos_RCP.hpp>
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
-#include <stdint.h>
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */

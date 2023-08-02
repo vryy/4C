@@ -10,13 +10,11 @@
 #ifndef BACI_LINEAR_SOLVER_PRECONDITIONER_CHEAPSIMPLE_H
 #define BACI_LINEAR_SOLVER_PRECONDITIONER_CHEAPSIMPLE_H
 
-#include "baci_linear_solver_preconditioner_type.H"
-
-#include "baci_linear_solver_preconditioner_linalg_ana.H"
 #include "baci_linalg_blocksparsematrix.H"
-#include "baci_linear_solver_method_linalg.H"
 #include "baci_linalg_mapextractor.H"
-
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_linear_solver_preconditioner_linalg_ana.H"
+#include "baci_linear_solver_preconditioner_type.H"
 #include "baci_utils_exceptions.H"
 
 namespace CORE::LINEAR_SOLVER

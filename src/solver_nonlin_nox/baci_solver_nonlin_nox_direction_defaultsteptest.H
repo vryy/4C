@@ -11,10 +11,10 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_DIRECTION_DEFAULTSTEPTEST_H
 #define BACI_SOLVER_NONLIN_NOX_DIRECTION_DEFAULTSTEPTEST_H
 
-#include <set>
-
-#include <Teuchos_RCP.hpp>
 #include <NOX_Abstract_Group.H>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 class Epetra_Vector;
 namespace NOX

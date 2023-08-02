@@ -7,14 +7,13 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_elemag_ele_action.H"
 #include "baci_elemag_ele_intfaces_calc.H"
 
+#include "baci_elemag_ele_action.H"
+#include "baci_lib_discret_faces.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
-#include "baci_lib_discret_faces.H"
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

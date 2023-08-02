@@ -12,10 +12,10 @@ with condensed structure interface displacements
 #ifndef BACI_FSI_MORTARMONOLITHIC_STRUCTURESPLIT_H
 #define BACI_FSI_MORTARMONOLITHIC_STRUCTURESPLIT_H
 
-#include "baci_fsi_monolithic.H"
-#include "baci_inpar_fsi.H"
 #include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_mortar.H"
+#include "baci_fsi_monolithic.H"
+#include "baci_inpar_fsi.H"
 
 // forward declarations
 namespace ADAPTER

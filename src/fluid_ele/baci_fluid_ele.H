@@ -20,12 +20,11 @@ of errors, turbulence statistics etc.).
 #ifndef BACI_FLUID_ELE_H
 #define BACI_FLUID_ELE_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-
-
-#include "baci_lib_elementtype.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_elementtype.H"
+
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 // forward declarations

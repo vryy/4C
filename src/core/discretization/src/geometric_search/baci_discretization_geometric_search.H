@@ -12,11 +12,10 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_H
 
-#include <vector>
-
+#include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_io_pstream.H"
 
-#include "baci_discretization_geometric_search_bounding_volume.H"
+#include <vector>
 
 namespace CORE::GEOMETRICSEARCH
 {

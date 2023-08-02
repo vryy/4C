@@ -12,13 +12,12 @@
 #define BACI_FSI_MONOLITHIC_LINEARSYSTEM_H
 
 
+#include <AztecOO_StatusTestCombo.h>
+#include <AztecOO_StatusTestMaxIters.h>
+#include <AztecOO_StatusTestResNorm.h>
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-
-#include <AztecOO_StatusTestResNorm.h>
-#include <AztecOO_StatusTestCombo.h>
-#include <AztecOO_StatusTestMaxIters.h>
 
 
 namespace FSI

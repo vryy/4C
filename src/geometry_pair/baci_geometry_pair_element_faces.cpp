@@ -10,8 +10,8 @@
 
 #include "baci_geometry_pair_element_faces.H"
 
-#include "baci_geometry_pair_scalar_types.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_geometry_pair_scalar_types.H"
 #include "baci_inpar_geometry_pair.H"
 
 

@@ -10,10 +10,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_fluid_turbulence_turbulent_flow_algorithm.H"
-#include "baci_fluid_discret_extractor.H"
 
+#include "baci_fluid_discret_extractor.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_utils_exceptions.H"
+
 #include <Teuchos_TimeMonitor.hpp>
 
 

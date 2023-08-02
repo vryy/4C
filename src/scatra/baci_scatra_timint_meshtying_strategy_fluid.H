@@ -11,7 +11,6 @@
 #define BACI_SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_H
 
 #include "baci_inpar_fluid.H"
-
 #include "baci_scatra_timint_meshtying_strategy_base.H"
 
 // forward declaration

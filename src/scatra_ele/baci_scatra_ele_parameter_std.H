@@ -20,10 +20,9 @@ coexist with this general class.
 #ifndef BACI_SCATRA_ELE_PARAMETER_STD_H
 #define BACI_SCATRA_ELE_PARAMETER_STD_H
 
-#include "baci_scatra_ele_parameter_base.H"
-
-#include "baci_inpar_scatra.H"
 #include "baci_inpar_cardiac_monodomain.H"
+#include "baci_inpar_scatra.H"
+#include "baci_scatra_ele_parameter_base.H"
 
 namespace DRT
 {

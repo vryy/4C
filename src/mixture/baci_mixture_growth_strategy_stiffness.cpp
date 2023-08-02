@@ -7,10 +7,11 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_mixture_growth_strategy_stiffness.H"
-#include "baci_mixture_growth_strategy.H"
-#include "baci_mat_service.H"
+
 #include "baci_lib_voigt_notation.H"
 #include "baci_mat_par_material.H"
+#include "baci_mat_service.H"
+#include "baci_mixture_growth_strategy.H"
 
 MIXTURE::PAR::StiffnessGrowthStrategy::StiffnessGrowthStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)

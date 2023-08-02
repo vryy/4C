@@ -14,7 +14,6 @@
 
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_inpar_beam_to_solid.H"
-
 #include "baci_utils_exceptions.H"
 
 

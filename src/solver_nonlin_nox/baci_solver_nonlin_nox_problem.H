@@ -15,12 +15,11 @@
 #ifndef BACI_SOLVER_NONLIN_NOX_PROBLEM_H
 #define BACI_SOLVER_NONLIN_NOX_PROBLEM_H
 
-#include <Teuchos_RCP.hpp>
-
 #include "baci_solver_nonlin_nox_enum_lists.H"
 #include "baci_utils_exceptions.H"
 
 #include <NOX_StatusTest_Generic.H>
+#include <Teuchos_RCP.hpp>
 
 // forward declaration
 namespace Teuchos

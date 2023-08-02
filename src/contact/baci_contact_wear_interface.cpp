@@ -10,24 +10,23 @@
 /*----------------------------------------------------------------------*
  | Header                                                    farah 09/13|
  *----------------------------------------------------------------------*/
-#include "baci_contact_defines.H"
 #include "baci_contact_wear_interface.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
+
+#include "baci_contact_defines.H"
 #include "baci_contact_element.H"
 #include "baci_contact_friction_node.H"
-
-#include "baci_mortar_dofset.H"
-#include "baci_mortar_node.H"
-#include "baci_mortar_element.H"
-
+#include "baci_contact_interface.H"
+#include "baci_contact_node.H"
+#include "baci_inpar_mortar.H"
 #include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mortar_dofset.H"
+#include "baci_mortar_element.H"
+#include "baci_mortar_node.H"
 
-#include "baci_inpar_mortar.H"
 #include <Epetra_FEVector.h>
 
 /*----------------------------------------------------------------------*

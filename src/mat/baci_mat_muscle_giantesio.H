@@ -11,15 +11,16 @@
 #define BACI_MAT_MUSCLE_GIANTESIO_H
 
 #include "baci_lib_parobjectfactory.H"
-#include "baci_mat_so3_material.H"
-#include "baci_mat_par_parameter.H"
+#include "baci_linalg_four_tensor.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"
 #include "baci_mat_anisotropy_extension_provider.H"
-#include "baci_linalg_four_tensor.H"
-#include <Teuchos_RCP.hpp>
 #include "baci_mat_muscle_utils.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
 #include "baci_utils_local_numeric_methods.H"
+
+#include <Teuchos_RCP.hpp>
 
 namespace MAT
 {

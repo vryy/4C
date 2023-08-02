@@ -19,10 +19,10 @@ parameters or totally different strain energy function).
 
 
 
-#include "baci_mat_par_parameter.H"
-#include "baci_mat_par_material.H"
-#include "baci_mat_so3_material.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_mat_par_material.H"
+#include "baci_mat_par_parameter.H"
+#include "baci_mat_so3_material.H"
 
 // forward declaration due to avoid header definition
 namespace MAT

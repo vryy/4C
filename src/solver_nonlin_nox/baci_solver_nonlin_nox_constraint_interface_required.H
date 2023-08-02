@@ -19,8 +19,8 @@
 #include "baci_solver_nonlin_nox_enum_lists.H"
 #include "baci_utils_exceptions.H"
 
-#include <NOX_StatusTest_Generic.H>
 #include <NOX_Abstract_Vector.H>
+#include <NOX_StatusTest_Generic.H>
 
 
 // forward declaration...

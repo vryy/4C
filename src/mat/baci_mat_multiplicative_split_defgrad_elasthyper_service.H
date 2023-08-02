@@ -12,10 +12,10 @@ gradient.
 
 #ifndef BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
 #define BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_lib_voigt_notation.H"
-#include "baci_mat_service.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_elasthyper_service.H"
+#include "baci_mat_service.H"
 
 namespace MAT
 {

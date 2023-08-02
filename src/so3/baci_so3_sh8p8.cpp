@@ -10,12 +10,13 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_so3_sh8p8.H"
+
 #include "baci_lib_discret.H"
-#include "baci_so3_nullspace.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_so3_nullspace.H"
 #include "baci_so3_utils.H"
+#include "baci_utils_exceptions.H"
 
 
 DRT::ELEMENTS::So_sh8p8Type DRT::ELEMENTS::So_sh8p8Type::instance_;

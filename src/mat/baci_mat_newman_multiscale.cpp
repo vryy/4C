@@ -9,7 +9,6 @@
 #include "baci_mat_newman_multiscale.H"
 
 #include "baci_lib_globalproblem.H"
-
 #include "baci_mat_par_bundle.H"
 
 /*--------------------------------------------------------------------*

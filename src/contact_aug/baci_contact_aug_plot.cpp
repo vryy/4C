@@ -12,30 +12,26 @@ MATLAB, PGFPlot or other tools.
 /*----------------------------------------------------------------------------*/
 
 #include "baci_contact_aug_plot.H"
+
 #include "baci_contact_aug_strategy.H"
-
-#include "baci_utils_exceptions.H"
 #include "baci_inpar_contact.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
+#include "baci_io_every_iteration_writer.H"
+#include "baci_io_pstream.H"
 #include "baci_lib_discret_interface.H"
 #include "baci_lib_element.H"
-#include "baci_lib_node.H"
 #include "baci_lib_epetra_utils.H"
-
+#include "baci_lib_node.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_solver_nonlin_nox_aux.H"
 #include "baci_solver_nonlin_nox_constraint_group.H"
 #include "baci_solver_nonlin_nox_solver_linesearchbased.H"
-
 #include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_utils_exceptions.H"
 
-#include "baci_io_every_iteration_writer.H"
-#include "baci_io_pstream.H"
-
-#include <Teuchos_ParameterList.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

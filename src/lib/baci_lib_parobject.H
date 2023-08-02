@@ -12,17 +12,18 @@
 #ifndef BACI_LIB_PAROBJECT_H
 #define BACI_LIB_PAROBJECT_H
 
-#include <vector>
-#include <map>
-#include <unordered_map>
-#include <set>
-#include <type_traits>
-#include <string>
+#include "baci_lib_pack_buffer.H"
+#include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_lib_pack_buffer.H"
 #include "baci_utils_pairedmatrix.H"
+
+#include <map>
+#include <set>
+#include <string>
+#include <type_traits>
+#include <unordered_map>
+#include <vector>
 
 namespace DRT
 {

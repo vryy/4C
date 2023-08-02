@@ -10,22 +10,23 @@
 
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_writer.H"
 
-#include "baci_beaminteraction_contact_pair.H"
+#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
 #include "baci_beaminteraction_beam_to_solid_volume_meshtying_vtk_output_params.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
-#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_utils.H"
-#include "baci_beaminteraction_submodel_evaluator_beamcontact.H"
-#include "baci_beaminteraction_beam_to_solid_mortar_manager.H"
+#include "baci_beaminteraction_beam_to_solid_vtu_output_writer_visualization.H"
 #include "baci_beaminteraction_calc_utils.H"
+#include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_str_model_evaluator_datastate.H"
+#include "baci_beaminteraction_submodel_evaluator_beamcontact.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
-#include "baci_structure_new_timint_basedataglobalstate.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_structure_new_timint_basedataglobalstate.H"
 
 #include <Epetra_FEVector.h>
+
 #include <unordered_set>
 
 

@@ -12,8 +12,8 @@
 #define BACI_CUT_PARENTINTERSECTION_H
 
 #include "baci_cut_meshhandle.H"
-#include "baci_cut_pointpool.H"
 #include "baci_cut_options.H"
+#include "baci_cut_pointpool.H"
 
 
 namespace DRT

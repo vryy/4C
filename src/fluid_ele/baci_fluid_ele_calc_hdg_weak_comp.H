@@ -11,11 +11,10 @@
 #define BACI_FLUID_ELE_CALC_HDG_WEAK_COMP_H
 
 
-#include "baci_fluid_ele_interface.H"
-#include "baci_fluid_ele_hdg_weak_comp.H"
-#include "baci_inpar_fluid.H"
 #include "baci_discretization_fem_general_utils_shapevalues_hdg.H"
-
+#include "baci_fluid_ele_hdg_weak_comp.H"
+#include "baci_fluid_ele_interface.H"
+#include "baci_inpar_fluid.H"
 #include "baci_utils_singleton_owner.H"
 
 namespace DRT

@@ -13,7 +13,7 @@
 #define BACI_STRUCTURE_NEW_IMPL_STATICS_H
 
 #include "baci_structure_new_impl_generic.H"
-// necessary due to enum usage
+
 #include <NOX_Abstract_Vector.H>
 
 namespace STR

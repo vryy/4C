@@ -12,11 +12,12 @@
 #ifndef BACI_STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H
 #define BACI_STRUCTURE_NEW_MODEL_EVALUATOR_FACTORY_H
 
-#include <set>
-
-#include <Teuchos_RCP.hpp>
 #include "baci_inpar_structure.H"
 #include "baci_structure_new_model_evaluator.H"  // typedef
+
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 namespace STR
 {

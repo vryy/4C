@@ -14,15 +14,9 @@ Fluid-Poro-Coupling Matrixes!
 
 // ALE includes
 #include "baci_ale_utils_mapextractor.H"
-
-// ADAPTER includes
 #include "baci_coupling_adapter.H"
-
-// CORE::LINALG includes
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
-// FLUID includes
 #include "baci_fluid_utils_mapextractor.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
 // forward declarations
 namespace CORE::LINALG

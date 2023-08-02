@@ -17,9 +17,9 @@
 #ifndef BACI_LIB_DOFSET_INDEPENDENT_H
 #define BACI_LIB_DOFSET_INDEPENDENT_H
 
-#include <Teuchos_RCP.hpp>
-
 #include "baci_lib_dofset.H"
+
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

@@ -9,24 +9,22 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_weg6.H"
-#include "baci_so3_surface.H"
-#include "baci_so3_line.H"
+
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils_factory.H"
-#include "baci_so3_nullspace.H"
-#include "baci_utils_exceptions.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_mat_so3_material.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_lib_prestress_service.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_lib_utils_factory.H"
+#include "baci_mat_so3_material.H"
+#include "baci_so3_line.H"
+#include "baci_so3_nullspace.H"
+#include "baci_so3_prestress.H"
+#include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-
-// prestress object
-#include "baci_so3_prestress.H"
 
 DRT::ELEMENTS::So_weg6Type DRT::ELEMENTS::So_weg6Type::instance_;
 

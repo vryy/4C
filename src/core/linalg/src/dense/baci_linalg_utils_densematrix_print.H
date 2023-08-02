@@ -10,9 +10,9 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_PRINT_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_PRINT_H
 
-#include <string>
-
 #include "baci_linalg_serialdensematrix.H"
+
+#include <string>
 
 namespace CORE::LINALG
 {

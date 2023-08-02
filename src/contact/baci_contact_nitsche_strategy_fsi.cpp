@@ -14,9 +14,7 @@
 #include "baci_contact_element.H"
 #include "baci_contact_interface.H"
 #include "baci_contact_nitsche_integrator_fsi.H"
-
 #include "baci_lib_discret.H"
-
 #include "baci_mortar_projector.H"
 
 void CONTACT::CoNitscheStrategyFsi::ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,

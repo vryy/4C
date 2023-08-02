@@ -13,7 +13,6 @@
 
 
 #include "baci_cut_element.H"
-
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 
 

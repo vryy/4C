@@ -11,22 +11,16 @@
 
 #include "baci_lubrication_ele_calc.H"
 
-#include "baci_discretization_geometry_position_array.H"
-
-#include "baci_lib_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_globalproblem.H"
-
 #include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_lubrication_ele_parameter.H"
-
+#include "baci_discretization_geometry_position_array.H"
 #include "baci_inpar_lubrication.H"
-
-#include "baci_lubrication_ele_calc_utils.H"
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
 #include "baci_lubrication_ele_action.H"
-
-
+#include "baci_lubrication_ele_calc_utils.H"
+#include "baci_lubrication_ele_parameter.H"
 #include "baci_mat_lubrication_mat.H"
 #include "baci_utils_singleton_owner.H"
 

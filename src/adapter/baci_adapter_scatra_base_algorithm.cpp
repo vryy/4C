@@ -10,43 +10,30 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_discret.H"
-#include "baci_io_control.H"
-#include "baci_io.H"
-#include "baci_linear_solver_method_linalg.H"
+
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_ssti.H"
 #include "baci_inpar_sti.H"
-
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-
-// general time integration schemes
-#include "baci_scatra_timint_stat.H"
-#include "baci_scatra_timint_ost.H"
-#include "baci_scatra_timint_bdf2.H"
-#include "baci_scatra_timint_genalpha.H"
-
-// HDG time integration schemes
-#include "baci_scatra_timint_cardiac_monodomain_scheme_hdg.H"
-#include "baci_scatra_timint_stat_hdg.H"
-#include "baci_scatra_resulttest_hdg.H"
-
-// loma specific files
-#include "baci_scatra_timint_loma_genalpha.H"
-
-// elch specific files
-#include "baci_scatra_timint_elch_scheme.H"
-
-// level set specific files
+#include "baci_io.H"
+#include "baci_io_control.H"
 #include "baci_levelset_timint_ost.H"
 #include "baci_levelset_timint_stat.H"
-
-// cardiac monodomain specific files
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_scatra_resulttest_hdg.H"
+#include "baci_scatra_timint_bdf2.H"
 #include "baci_scatra_timint_cardiac_monodomain_scheme.H"
-
-// poro multiphase files
+#include "baci_scatra_timint_cardiac_monodomain_scheme_hdg.H"
+#include "baci_scatra_timint_elch_scheme.H"
+#include "baci_scatra_timint_genalpha.H"
+#include "baci_scatra_timint_loma_genalpha.H"
+#include "baci_scatra_timint_ost.H"
 #include "baci_scatra_timint_poromulti.H"
+#include "baci_scatra_timint_stat.H"
+#include "baci_scatra_timint_stat_hdg.H"
+
+#include <Teuchos_StandardParameterEntryValidators.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

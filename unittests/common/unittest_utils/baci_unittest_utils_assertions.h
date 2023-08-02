@@ -7,10 +7,13 @@
 #define BACI_UNITTEST_UTILS_ASSERTIONS_H
 
 #include <gtest/gtest.h>
+
 #include <gmock/gmock.h>
-#include <Teuchos_SerialDenseMatrix.hpp>
+
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 #include <type_traits>
 

@@ -20,9 +20,9 @@ CABLUM 1.98e-3
 #ifndef BACI_MAT_AAAGASSER_H
 #define BACI_MAT_AAAGASSER_H
 
+#include "baci_lib_parobjectfactory.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
-#include "baci_lib_parobjectfactory.H"
 
 namespace MAT
 {

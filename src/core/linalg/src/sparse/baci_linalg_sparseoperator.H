@@ -10,12 +10,13 @@
 #ifndef BACI_LINALG_SPARSEOPERATOR_H
 #define BACI_LINALG_SPARSEOPERATOR_H
 
-#include <vector>
-
-#include <Epetra_Operator.h>
-#include <Epetra_Map.h>
-#include <Teuchos_RCP.hpp>
 #include "baci_linalg_serialdensematrix.H"
+
+#include <Epetra_Map.h>
+#include <Epetra_Operator.h>
+#include <Teuchos_RCP.hpp>
+
+#include <vector>
 
 // forward declaration
 class Epetra_Vector;

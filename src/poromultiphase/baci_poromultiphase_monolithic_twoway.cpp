@@ -8,14 +8,16 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_poromultiphase_monolithic_twoway.H"
-#include <Teuchos_TimeMonitor.hpp>
 
+#include "baci_adapter_art_net.H"
 #include "baci_adapter_porofluidmultiphase_wrapper.H"
 #include "baci_adapter_str_wrapper.H"
-#include "baci_adapter_art_net.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_io_control.H"
 #include "baci_inpar_solver.H"
+#include "baci_io_control.H"
+#include "baci_lib_assemblestrategy.H"
+#include "baci_lib_elements_paramsminimal.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_locsys.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -23,13 +25,9 @@
 #include "baci_linalg_utils_sparse_algebra_print.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_method_parameters.H"
-#include "baci_lib_locsys.H"
-
-
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_elements_paramsminimal.H"
-
 #include "baci_poromultiphase_utils.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*

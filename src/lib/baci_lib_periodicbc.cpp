@@ -17,14 +17,15 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_lib_periodicbc.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_matchingoctree.H"
-#include "baci_lib_dofset_pbc.H"
-#include "baci_linalg_utils_densematrix_communication.H"
+
 #include "baci_comm_utils.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_dofset_pbc.H"
+#include "baci_lib_matchingoctree.H"
+#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_rebalance.H"
 #include "baci_linalg_utils_sparse_algebra_print.H"
+#include "baci_rebalance.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

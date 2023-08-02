@@ -8,36 +8,32 @@
  */
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_StandardParameterEntryValidators.hpp>
-#include <Teuchos_Time.hpp>
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_adapter_ale.H"
+
 #include "baci_adapter_ale_fluid.H"
 #include "baci_adapter_ale_fpsi.H"
-#include "baci_adapter_ale_fsi_msht.H"
 #include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_ale_fsi_msht.H"
 #include "baci_adapter_ale_wear.H"
 #include "baci_adapter_ale_xffsi.H"
 #include "baci_ale.H"
-
-#include "baci_inpar_validparameters.H"
+#include "baci_inpar_ale.H"
+#include "baci_inpar_fpsi.H"
+#include "baci_inpar_fsi.H"
 #include "baci_inpar_parameterlist_utils.H"
-
+#include "baci_inpar_validparameters.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
-
 #include "baci_lib_globalproblem.H"
-
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_lib_periodicbc.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_linear_solver_method_linalg.H"
 
-#include "baci_inpar_ale.H"
-#include "baci_inpar_fsi.H"
-#include "baci_inpar_fpsi.H"
-#include "baci_lib_periodicbc.H"
+#include <Teuchos_StandardParameterEntryValidators.hpp>
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

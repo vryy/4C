@@ -7,6 +7,7 @@ interactions
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include "baci_particle_interaction_sph_equationofstate.H"
 
 namespace

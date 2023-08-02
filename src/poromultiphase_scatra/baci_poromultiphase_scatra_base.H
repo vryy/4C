@@ -9,15 +9,15 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_BASE_H
 #define BACI_POROMULTIPHASE_SCATRA_BASE_H
 
-#include <set>
-
 #include "baci_adapter_algorithmbase.H"
-#include "baci_porofluidmultiphase_utils.H"
 #include "baci_inpar_poromultiphase_scatra.H"
+#include "baci_porofluidmultiphase_utils.H"
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 #include <Teuchos_Time.hpp>
+
+#include <set>
 
 // forward declarations
 namespace ADAPTER

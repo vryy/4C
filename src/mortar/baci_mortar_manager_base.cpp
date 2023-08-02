@@ -7,8 +7,9 @@
 */
 /*---------------------------------------------------------------------*/
 
-#include <Epetra_SerialComm.h>
 #include "baci_mortar_manager_base.H"
+
+#include <Epetra_SerialComm.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 01/10|

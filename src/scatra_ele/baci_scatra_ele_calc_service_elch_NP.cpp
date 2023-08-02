@@ -7,12 +7,11 @@
 
 */
 /*--------------------------------------------------------------------------*/
-#include "baci_scatra_ele_calc_elch_NP.H"
+#include "baci_mat_material.H"
 #include "baci_scatra_ele.H"
+#include "baci_scatra_ele_calc_elch_NP.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
-
-#include "baci_mat_material.H"
 
 /*----------------------------------------------------------------------------------------------------------*
  | validity check with respect to input parameters, degrees of freedom, number of scalars etc. fang

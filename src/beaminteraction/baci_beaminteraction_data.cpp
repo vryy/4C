@@ -11,10 +11,10 @@
 
 #include "baci_beaminteraction_data.H"
 
-#include "baci_utils_exceptions.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_pack_buffer.H"
 #include "baci_lib_parobject.H"
-#include "baci_lib_globalproblem.H"
+#include "baci_utils_exceptions.H"
 
 
 /*----------------------------------------------------------------------------*

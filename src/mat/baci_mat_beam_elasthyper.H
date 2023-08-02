@@ -12,13 +12,12 @@ function)
 #define BACI_MAT_BEAM_ELASTHYPER_H
 
 #include "baci_inpar_material.H"
-
 #include "baci_lib_parobjectfactory.H"
-
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_mat_beam_templated_material_generic.H"
 
 #include <Teuchos_RCP.hpp>
-#include "baci_mat_beam_templated_material_generic.H"
+
 #include <typeinfo>
 
 

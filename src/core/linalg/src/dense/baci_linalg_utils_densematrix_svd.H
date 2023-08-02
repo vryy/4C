@@ -10,9 +10,10 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_SVD_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_SVD_H
 
-#include "baci_linalg_serialdensematrix.H"
-#include <Teuchos_LAPACK.hpp>
 #include "baci_lib_exporter.H"
+#include "baci_linalg_serialdensematrix.H"
+
+#include <Teuchos_LAPACK.hpp>
 
 namespace CORE::LINALG
 {

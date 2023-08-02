@@ -7,15 +7,14 @@
  *-----------------------------------------------------------------------*/
 
 #include "baci_mat_structporo.H"
-#include "baci_mat_poro_law.H"
-
-#include <vector>
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_factory.H"  // for function Factory in Unpack
-
 #include "baci_mat_par_bundle.H"
+#include "baci_mat_poro_law.H"
 #include "baci_mat_so3_material.H"
+
+#include <vector>
 
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata)
     : Parameter(matdata),

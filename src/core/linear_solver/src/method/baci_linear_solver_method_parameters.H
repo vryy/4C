@@ -10,8 +10,8 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_PARAMETERS_H
 #define BACI_LINEAR_SOLVER_METHOD_PARAMETERS_H
 
-#include <Teuchos_ParameterListAcceptor.hpp>
 #include <Epetra_Map.h>
+#include <Teuchos_ParameterListAcceptor.hpp>
 
 namespace DRT
 {

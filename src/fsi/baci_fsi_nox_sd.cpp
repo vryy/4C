@@ -11,23 +11,21 @@
 
 #include "baci_fsi_nox_sd.H"
 
-#include <NOX_Epetra_Interface_Required.H>
-#include <NOX_Common.H>
-#include <NOX_Abstract_Vector.H>
-#include <NOX_Abstract_Group.H>
-#include <NOX_Epetra_Vector.H>
-#include <NOX_Epetra_Group.H>
-#include <NOX_Solver_Generic.H>
-#include <Teuchos_ParameterList.hpp>
-#include <NOX_Utils.H>
-#include <NOX_GlobalData.H>
-
-#include <Epetra_Vector.h>
-#include <Epetra_Comm.h>
-#include <NOX_Epetra_Vector.H>
-
-#include "baci_lib_globalproblem.H"
 #include "baci_io_control.H"
+#include "baci_lib_globalproblem.H"
+
+#include <Epetra_Comm.h>
+#include <Epetra_Vector.h>
+#include <NOX_Abstract_Group.H>
+#include <NOX_Abstract_Vector.H>
+#include <NOX_Common.H>
+#include <NOX_Epetra_Group.H>
+#include <NOX_Epetra_Interface_Required.H>
+#include <NOX_Epetra_Vector.H>
+#include <NOX_GlobalData.H>
+#include <NOX_Solver_Generic.H>
+#include <NOX_Utils.H>
+#include <Teuchos_ParameterList.hpp>
 
 
 NOX::FSI::SDRelaxation::SDRelaxation(

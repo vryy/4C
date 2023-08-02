@@ -7,10 +7,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <limits>
-
 #include "baci_matelast_coupneohooke.H"
+
 #include "baci_mat_par_material.H"
+
+#include <limits>
 
 
 MAT::ELASTIC::PAR::CoupNeoHooke::CoupNeoHooke(const Teuchos::RCP<MAT::PAR::Material>& matdata)

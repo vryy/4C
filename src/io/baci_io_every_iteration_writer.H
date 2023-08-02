@@ -11,6 +11,7 @@
 #define BACI_IO_EVERY_ITERATION_WRITER_H
 
 #include "baci_utils_exceptions.H"
+
 #include <Teuchos_RCP.hpp>
 
 namespace Teuchos

@@ -11,16 +11,15 @@
 #ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_CONDITION_H
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_CONDITION_H
 
-#include <set>
-
 #include "baci_beaminteraction_conditions.H"
-
 #include "baci_lib_element.H"
 #include "baci_utils_exceptions.H"
 
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 #include <unordered_map>
 #include <vector>
-#include <Teuchos_RCP.hpp>
 
 
 namespace BEAMINTERACTION

@@ -7,8 +7,9 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_linalg_fortran_definitions.h"
 #include "baci_linalg_utils_densematrix_eigen.H"
+
+#include "baci_linalg_fortran_definitions.h"
 #include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------*

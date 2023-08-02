@@ -9,13 +9,12 @@
 /*----------------------------------------------------------------------*/
 #include "baci_scatra_ele_boundary_calc_elch_diffcond.H"
 
-#include "baci_scatra_ele_calc_elch_diffcond.H"
-#include "baci_scatra_ele_parameter_boundary.H"
-
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
 #include "baci_mat_ion.H"
 #include "baci_mat_newman.H"
+#include "baci_scatra_ele_calc_elch_diffcond.H"
+#include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_utils_singleton_owner.H"
 
 /*----------------------------------------------------------------------*

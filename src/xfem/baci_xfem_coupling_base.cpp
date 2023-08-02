@@ -10,20 +10,15 @@ thereby builds the bridge between the xfluid class and the cut-library
 /*----------------------------------------------------------------------*/
 
 
-#include <Teuchos_TimeMonitor.hpp>
-
 #include "baci_xfem_coupling_base.H"
 
-#include "baci_lib_condition_utils.H"
-#include "baci_xfem_utils.H"
-#include "baci_xfem_interface_utils.H"
-
-// Needed for Master Fluid
-#include "baci_mat_newtonianfluid.H"
-
-// finally this parameter list should go and all interface relevant parameters should be stored in
-// the condition mangager or coupling objects
 #include "baci_fluid_ele_parameter_xfem.H"
+#include "baci_lib_condition_utils.H"
+#include "baci_mat_newtonianfluid.H"
+#include "baci_xfem_interface_utils.H"
+#include "baci_xfem_utils.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 INPAR::XFEM::EleCouplingCondType XFEM::CondType_stringToEnum(const std::string& condname)
 {

@@ -22,61 +22,55 @@
 
 #undef WRITEOUTSTATISTICS
 
-#include <iostream>
-#include <fstream>
-#include <string>
 #include "baci_fluid_implicit_integration.H"
-#include "baci_fluid_utils.H"
-#include "baci_fluid_result_test.H"
-#include "baci_fluid_turbulence_dyn_smag.H"
-#include "baci_fluid_turbulence_dyn_vreman.H"
-#include "baci_fluid_turbulence_boxfilter.H"
-#include "baci_fluid_turbulence_statistic_manager.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_fluid_meshtying.H"
-#include "baci_fluid_xwall.H"
-#include "baci_fluid_MHD_evaluate.H"
-#include "baci_fluid_turbulence_hit_initial_field.H"
-#include "baci_fluid_turbulence_hit_forcing.H"
-#include "baci_fluid_turbulence_transfer_turb_inflow.H"
-#include "baci_fluid_utils_infnormscaling.H"
-#include "baci_fluid_ele.H"
-#include "baci_linalg_krylov_projector.H"
-#include "baci_linear_solver_method_linalg.H"
-#include "baci_io.H"
-#include "baci_io_discretization_runtime_vtu_writer.H"
-#include "baci_lib_condition_utils.H"
-#include "baci_lib_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_locsys.H"
+
 #include "baci_comm_utils.H"
 #include "baci_coupling_adapter_mortar.H"
-#include "baci_nurbs_discret_apply_nurbs_initial_condition.H"
-#include "baci_mat_par_bundle.H"
-#include "baci_mat_newtonianfluid.H"
+#include "baci_discretization_geometry_position_array.H"
+#include "baci_fluid_DbcHDG.h"
+#include "baci_fluid_ele.H"
+#include "baci_fluid_ele_intfaces_calc.H"
 #include "baci_fluid_impedancecondition.H"
+#include "baci_fluid_meshtying.H"
+#include "baci_fluid_MHD_evaluate.H"
+#include "baci_fluid_result_test.H"
+#include "baci_fluid_turbulence_boxfilter.H"
+#include "baci_fluid_turbulence_dyn_smag.H"
+#include "baci_fluid_turbulence_dyn_vreman.H"
+#include "baci_fluid_turbulence_hit_forcing.H"
+#include "baci_fluid_turbulence_hit_initial_field.H"
+#include "baci_fluid_turbulence_statistic_manager.H"
+#include "baci_fluid_turbulence_transfer_turb_inflow.H"
+#include "baci_fluid_utils.H"
+#include "baci_fluid_utils_infnormscaling.H"
+#include "baci_fluid_utils_mapextractor.H"
+#include "baci_fluid_xwall.H"
 #include "baci_inpar_xfem.H"  //for enums only
-
-// print error file for function EvaluateErrorComparedToAnalyticalSol()
+#include "baci_io.H"
 #include "baci_io_control.H"
-
-// for AVM3 solver:
-#include <MLAPI_Workspace.h>
-#include <MLAPI_Aggregation.h>
-
+#include "baci_io_discretization_runtime_vtu_writer.H"
 #include "baci_io_gmsh.H"
+#include "baci_lib_assemblestrategy.H"
+#include "baci_lib_condition_utils.H"
+#include "baci_lib_discret_faces.H"
+#include "baci_lib_discret_hdg.H"
+#include "baci_lib_function.H"  //Todo: ager check if this header can be removed after NavierSlip is removed from BACI
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_locsys.H"
+#include "baci_lib_utils_discret.H"
+#include "baci_linalg_krylov_projector.H"
+#include "baci_linear_solver_method_linalg.H"
+#include "baci_mat_newtonianfluid.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_nurbs_discret_apply_nurbs_initial_condition.H"
+
+#include <MLAPI_Aggregation.h>
+#include <MLAPI_Workspace.h>
 
 #include <cmath>
-
-// allows for dealing with edged-based stabilization
-#include "baci_lib_discret_faces.H"
-
-#include "baci_discretization_geometry_position_array.H"
-#include "baci_fluid_ele_intfaces_calc.H"
-#include "baci_lib_utils_discret.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_fluid_DbcHDG.h"
+#include <fstream>
+#include <iostream>
+#include <string>
 
 
 /*----------------------------------------------------------------------*

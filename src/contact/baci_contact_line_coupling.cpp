@@ -13,23 +13,20 @@
  |  header                                                   farah 07/16|
  *----------------------------------------------------------------------*/
 #include "baci_contact_line_coupling.H"
-#include "baci_contact_node.H"
-#include "baci_contact_element.H"
+
 #include "baci_contact_defines.H"
+#include "baci_contact_element.H"
+#include "baci_contact_friction_node.H"
 #include "baci_contact_integrator.H"
 #include "baci_contact_integrator_factory.H"
-#include "baci_contact_friction_node.H"
-
+#include "baci_contact_node.H"
+#include "baci_inpar_contact.H"
+#include "baci_lib_discret.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mortar_defines.H"
 #include "baci_mortar_projector.H"
-
-#include "baci_inpar_contact.H"
-
-#include "baci_lib_discret.H"
-
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
-#include "baci_linalg_utils_densematrix_inverse.H"
 
 
 /*----------------------------------------------------------------------*

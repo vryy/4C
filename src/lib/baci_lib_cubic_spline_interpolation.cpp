@@ -8,11 +8,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_SerialDenseSolver.hpp>
-#include <utility>
-
 #include "baci_lib_cubic_spline_interpolation.H"
+
 #include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
+
+#include <utility>
 
 /*----------------------------------------------------------------------*/
 DRT::UTILS::CubicSplineInterpolation::CubicSplineInterpolation(

@@ -9,17 +9,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_ele_calc_xwall.H"
-
 #include "baci_fluid_ele.H"
+#include "baci_fluid_ele_calc_xwall.H"
 #include "baci_fluid_ele_parameter_std.H"
 #include "baci_fluid_ele_parameter_timint.H"
-
-#include "baci_mat_newtonianfluid.H"
-
 #include "baci_lib_condition_utils.H"
-
 #include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_mat_newtonianfluid.H"
 
 
 /*-----------------------------------------------------------------------------*

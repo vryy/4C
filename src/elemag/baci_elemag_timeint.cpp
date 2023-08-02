@@ -9,17 +9,18 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_elemag_timeint.H"
+
 #include "baci_elemag_ele_action.H"
 #include "baci_elemag_resulttest.H"
-#include "baci_lib_resulttest.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
+#include "baci_lib_discret_hdg.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_resulttest.H"
+#include "baci_linalg_equilibrate.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_equilibrate.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_mat_electromagnetic.H"
 

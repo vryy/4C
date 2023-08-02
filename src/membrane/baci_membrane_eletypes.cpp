@@ -8,11 +8,10 @@
 \brief Nonlinear Membrane Finite Element Type
 
 *----------------------------------------------------------------------*/
-#include "baci_membrane.H"
 #include "baci_membrane_eletypes.H"
 
 #include "baci_lib_linedefinition.H"
-
+#include "baci_membrane.H"
 #include "baci_so3_nullspace.H"
 
 /*----------------------------------------------------------------------*

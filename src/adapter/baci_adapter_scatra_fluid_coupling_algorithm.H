@@ -17,8 +17,8 @@
 #include "baci_adapter_algorithmbase.H"
 #include "baci_adapter_fld_base_algorithm.H"
 #include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_inpar_scatra.H"
 #include "baci_coupling_adapter_volmortar.H"
+#include "baci_inpar_scatra.H"
 
 namespace ADAPTER
 {

@@ -16,10 +16,10 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_engine_enums.H"
 #include "baci_particle_engine_typedefs.H"
-
 #include "baci_particle_interaction_dem_history_pair_struct.H"
 
 #include <Epetra_Comm.h>
+
 #include <unordered_map>
 
 /*---------------------------------------------------------------------------*

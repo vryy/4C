@@ -8,17 +8,14 @@
 /*--------------------------------------------------------------------------*/
 
 #include "baci_elemag_ele_calc.H"
-#include "baci_elemag_ele_action.H"
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
-
 #include "baci_discretization_geometry_position_array.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-
+#include "baci_elemag_ele_action.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_elementtype.H"
-
+#include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_electromagnetic.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>

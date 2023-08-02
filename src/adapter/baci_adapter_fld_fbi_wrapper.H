@@ -10,10 +10,10 @@
 #ifndef BACI_ADAPTER_FLD_FBI_WRAPPER_H
 #define BACI_ADAPTER_FLD_FBI_WRAPPER_H
 
-#include <Teuchos_RCP.hpp>
-
 #include "baci_adapter_fld_fluid_fsi.H"
 #include "baci_fluid_meshtying.H"
+
+#include <Teuchos_RCP.hpp>
 
 namespace CORE::LINALG
 {

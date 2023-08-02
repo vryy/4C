@@ -9,10 +9,11 @@
 #ifndef BACI_MORTAR_BINARYTREE_H
 #define BACI_MORTAR_BINARYTREE_H
 
+#include "baci_inpar_mortar.H"
+#include "baci_mortar_base_binarytree.H"
+
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include "baci_mortar_base_binarytree.H"
-#include "baci_inpar_mortar.H"
 
 // forward declarations
 namespace DRT

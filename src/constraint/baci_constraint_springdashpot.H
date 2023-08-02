@@ -11,10 +11,10 @@
 #ifndef BACI_CONSTRAINT_SPRINGDASHPOT_H
 #define BACI_CONSTRAINT_SPRINGDASHPOT_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
 #include "baci_utils_pairedvector.H"
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 class Epetra_Vector;

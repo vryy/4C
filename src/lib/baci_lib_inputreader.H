@@ -13,17 +13,17 @@
 #ifndef BACI_LIB_INPUTREADER_H
 #define BACI_LIB_INPUTREADER_H
 
+#include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
+
+#include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <map>
 #include <set>
-#include <list>
 #include <string>
-#include <algorithm>
-
-#include <Epetra_Comm.h>
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
 
 namespace DRT
 {

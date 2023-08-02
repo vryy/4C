@@ -14,9 +14,9 @@
 #ifndef BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_DATASTATE_H
 #define BACI_BEAMINTERACTION_STR_MODEL_EVALUATOR_DATASTATE_H
 
-#include <set>
-
 #include "baci_timestepping_mstep.H"
+
+#include <set>
 
 // forward declaration
 class Epetra_FEVector;

@@ -11,22 +11,20 @@
 #define BACI_SCATRA_ELE_CALC_MULTIPORO_REAC_H
 
 
-#include "baci_scatra_ele_calc_poro_reac.H"
-#include "baci_mat_fluidporo_multiphase.H"
-#include "baci_mat_fluidporo_singlephase.H"
-#include "baci_mat_fluidporo_multiphase_reactions.H"
-#include "baci_mat_scatra_mat_multiporo.H"
-#include "baci_porofluidmultiphase_ele_calc_utils.H"
-
-#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
-#include "baci_porofluidmultiphase_ele_action.H"
-#include "baci_porofluidmultiphase_ele_calc.H"
-#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
-#include "baci_porofluidmultiphase_ele_porofluid_evaluator.H"
-#include "baci_porofluidmultiphase_ele_parameter.H"
-
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
+#include "baci_mat_fluidporo_multiphase.H"
+#include "baci_mat_fluidporo_multiphase_reactions.H"
+#include "baci_mat_fluidporo_singlephase.H"
+#include "baci_mat_scatra_mat_multiporo.H"
+#include "baci_porofluidmultiphase_ele_action.H"
+#include "baci_porofluidmultiphase_ele_calc.H"
+#include "baci_porofluidmultiphase_ele_calc_utils.H"
+#include "baci_porofluidmultiphase_ele_parameter.H"
+#include "baci_porofluidmultiphase_ele_porofluid_evaluator.H"
+#include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
+#include "baci_porofluidmultiphase_ele_porofluid_variablemanager.H"
+#include "baci_scatra_ele_calc_poro_reac.H"
 
 // forward declarations
 namespace MAT

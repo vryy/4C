@@ -11,16 +11,16 @@
 /*-----------------------------------------------------------*/
 
 #include "baci_structure_new_impl_genalpha_liegroup.H"
-#include "baci_structure_new_dbc.H"
-#include "baci_structure_new_utils.H"
-#include "baci_structure_new_model_evaluator.H"
-#include "baci_structure_new_model_evaluator_data.H"
-#include "baci_structure_new_timint_base.H"
 
-#include "baci_utils_exceptions.H"
 #include "baci_io.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_structure_new_dbc.H"
+#include "baci_structure_new_model_evaluator.H"
+#include "baci_structure_new_model_evaluator_data.H"
+#include "baci_structure_new_timint_base.H"
+#include "baci_structure_new_utils.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>
 

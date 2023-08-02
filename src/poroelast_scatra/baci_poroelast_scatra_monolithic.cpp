@@ -10,30 +10,23 @@
 
 #include "baci_poroelast_scatra_monolithic.H"
 
-#include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_poroelast_base.H"
-#include "baci_poroelast_scatra_utils.H"
-
-
 #include "baci_adapter_fld_poro.H"
 #include "baci_adapter_str_fpsiwrapper.H"
-
 #include "baci_fluid_ele_action.H"
-
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_ele_action.H"
-
 #include "baci_io_control.H"
-
-#include "baci_lib_globalproblem.H"
 #include "baci_lib_assemblestrategy.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
-
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linear_solver_method_linalg.H"
+#include "baci_poroelast_base.H"
+#include "baci_poroelast_scatra_utils.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_timint_implicit.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 
 /*----------------------------------------------------------------------*

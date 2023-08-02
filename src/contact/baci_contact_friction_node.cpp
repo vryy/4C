@@ -6,8 +6,9 @@
 /*-----------------------------------------------------------------------*/
 
 #include "baci_contact_friction_node.H"
-#include "baci_contact_element.H"
+
 #include "baci_contact_defines.H"
+#include "baci_contact_element.H"
 #include "baci_utils_exceptions.H"
 
 CONTACT::FriNodeType CONTACT::FriNodeType::instance_;

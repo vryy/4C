@@ -11,11 +11,10 @@
 
 
 #include "baci_adapter_scatra_interface.H"
-
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-
 #include "baci_scatra_timint_meshtying_strategy_base.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

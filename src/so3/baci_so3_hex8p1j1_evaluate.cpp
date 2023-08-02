@@ -7,15 +7,15 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_so3_hex8p1j1.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_utils.H"
 #include "baci_lib_exporter.H"
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_so3_material.H"
+#include "baci_so3_hex8p1j1.H"
+#include "baci_utils_exceptions.H"
 
 #include <Epetra_SerialComm.h>
 

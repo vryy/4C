@@ -10,8 +10,9 @@
 #ifndef BACI_MEMBRANE_ELETYPES_H
 #define BACI_MEMBRANE_ELETYPES_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include "baci_lib_elementtype.H"
+
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 namespace DRT

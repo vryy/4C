@@ -11,9 +11,10 @@
 #ifndef BACI_GLOBAL_FULL_INP_CONTROL_H
 #define BACI_GLOBAL_FULL_INP_CONTROL_H
 
-#include <string>
 #include <Epetra_Comm.h>
 #include <Teuchos_RCP.hpp>
+
+#include <string>
 
 //> general input routine for baci
 void ntainp_ccadiscret(std::string& inputfile_name,  //!< input file name

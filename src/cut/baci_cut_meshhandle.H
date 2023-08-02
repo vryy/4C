@@ -10,9 +10,9 @@
 #ifndef BACI_CUT_MESHHANDLE_H
 #define BACI_CUT_MESHHANDLE_H
 
+#include "baci_cut_elementhandle.H"
 #include "baci_cut_mesh.H"
 #include "baci_cut_sidehandle.H"
-#include "baci_cut_elementhandle.H"
 
 namespace CORE::GEO
 {

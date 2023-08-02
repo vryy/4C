@@ -8,49 +8,42 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_Time.hpp>
-#include <Teuchos_RCP.hpp>
-#include <NOX_Epetra_Interface_Preconditioner.H>
-#include <NOX_Direction_UserDefinedFactory.H>
-
 #include "baci_fsi_monolithic.H"
+
+#include "baci_adapter_ale.H"
+#include "baci_adapter_ale_fsi.H"
+#include "baci_adapter_fld_fluid_fsi.H"
+#include "baci_adapter_str_fsi_timint_adaptive.H"
+#include "baci_adapter_str_fsiwrapper.H"
+#include "baci_ale_utils_mapextractor.H"
+#include "baci_constraint_manager.H"
+#include "baci_coupling_adapter.H"
+#include "baci_fluid_utils_mapextractor.H"
 #include "baci_fsi_debugwriter.H"
 #include "baci_fsi_nox_group.H"
-#include "baci_fsi_nox_newton.H"
 #include "baci_fsi_nox_linearsystem.H"
+#include "baci_fsi_nox_newton.H"
+#include "baci_fsi_overlapprec.H"
+#include "baci_fsi_overlapprec_fsiamg.H"
+#include "baci_fsi_overlapprec_hybrid.H"
 #include "baci_fsi_statustest.H"
-
-#include "baci_lib_globalproblem.H"
+#include "baci_io_control.H"
+#include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_adapter_ale_fsi.H"
-
-#include "baci_coupling_adapter.H"
-#include "baci_adapter_fld_fluid_fsi.H"
-#include "baci_adapter_ale.H"
-#include "baci_adapter_str_fsiwrapper.H"
-#include "baci_adapter_str_fsi_timint_adaptive.H"
-
-#include "baci_constraint_manager.H"
-
-#include "baci_io_control.H"
-#include "baci_io_pstream.H"
-
-#include "baci_structure_aux.H"
-#include "baci_fluid_utils_mapextractor.H"
-#include "baci_ale_utils_mapextractor.H"
-
-#include "baci_fsi_overlapprec.H"
-#include "baci_fsi_overlapprec_fsiamg.H"
-#include "baci_fsi_overlapprec_hybrid.H"
-
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_method_parameters.H"
+#include "baci_structure_aux.H"
+
+#include <NOX_Direction_UserDefinedFactory.H>
+#include <NOX_Epetra_Interface_Preconditioner.H>
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*/
 /* Note: The order of calling the three BaseAlgorithm-constructors is

@@ -13,14 +13,11 @@
 #include "baci_contact_nitsche_utils.H"
 #include "baci_contact_node.H"
 #include "baci_contact_paramsinterface.H"
+#include "baci_discretization_fem_general_utils_boundary_integration.H"
+#include "baci_mat_elasthyper.H"
+#include "baci_so3_base.H"
 
 #include <Epetra_FEVector.h>
-
-#include "baci_discretization_fem_general_utils_boundary_integration.H"
-
-#include "baci_mat_elasthyper.H"
-
-#include "baci_so3_base.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

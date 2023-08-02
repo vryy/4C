@@ -12,7 +12,6 @@
 
 #include <NOX_GlobalData.H>
 #include <NOX_Utils.H>
-
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*/

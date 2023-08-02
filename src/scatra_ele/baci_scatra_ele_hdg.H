@@ -13,12 +13,11 @@ of the usual Lagrangian polynomials for standard transport elements
 #ifndef BACI_SCATRA_ELE_HDG_H
 #define BACI_SCATRA_ELE_HDG_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_RCP.hpp>
-
-
-#include "baci_scatra_ele.H"
 #include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_scatra_ele.H"
+
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace DRT
 {

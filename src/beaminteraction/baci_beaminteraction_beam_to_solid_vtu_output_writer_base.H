@@ -13,9 +13,10 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_BASE_H
 
 
-#include <string>
-#include <map>
 #include <Teuchos_RCP.hpp>
+
+#include <map>
+#include <string>
 
 
 // Forward declarations.

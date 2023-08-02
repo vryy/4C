@@ -12,16 +12,17 @@
 #ifndef BACI_LIB_EXPORTER_H
 #define BACI_LIB_EXPORTER_H
 
-#include <vector>
-#include <map>
-#include <set>
-#include <Epetra_Map.h>
+#include "baci_lib_parobject.H"
+#include "baci_lib_utils_factory.H"
+
 #include <Epetra_Comm.h>
+#include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 #include <Teuchos_RCP.hpp>
 
-#include "baci_lib_utils_factory.H"
-#include "baci_lib_parobject.H"
+#include <map>
+#include <set>
+#include <vector>
 
 
 namespace DRT

@@ -10,14 +10,15 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_truss3cl.H"
-#include "baci_lib_discret.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_globalproblem.H"
+
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_validparameters.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_so3_nullspace.H"
-#include "baci_lib_linedefinition.H"
-#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_utils_exceptions.H"
 
 DRT::ELEMENTS::Truss3CLType DRT::ELEMENTS::Truss3CLType::instance_;
 

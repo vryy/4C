@@ -10,15 +10,16 @@
 #ifndef BACI_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
 #define BACI_LINALG_UTILS_DENSEMATRIX_COMMUNICATION_H
 
+#include "baci_lib_exporter.H"
+#include "baci_linalg_blocksparsematrix.H"
+
 #include <Epetra_Comm.h>
-#include <Epetra_Map.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
 #include <Epetra_Import.h>
+#include <Epetra_Map.h>
 #include <Teuchos_RCP.hpp>
-#include "baci_lib_exporter.H"
-#include "baci_linalg_blocksparsematrix.H"
 
 namespace CORE::LINALG
 {

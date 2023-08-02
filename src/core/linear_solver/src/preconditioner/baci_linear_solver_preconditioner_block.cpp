@@ -8,14 +8,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Xpetra_MultiVectorFactory.hpp>
-
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-
 #include "baci_linear_solver_preconditioner_block.H"
+
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_linear_solver_preconditioner_bgs2x2.H"       // Lena's BGS implementation
 #include "baci_linear_solver_preconditioner_cheapsimple.H"  // Tobias' CheapSIMPLE
+#include "baci_utils_exceptions.H"
+
+#include <Xpetra_MultiVectorFactory.hpp>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

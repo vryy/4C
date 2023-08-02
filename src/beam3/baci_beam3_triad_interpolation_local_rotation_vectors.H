@@ -12,9 +12,7 @@
 #define BACI_BEAM3_TRIAD_INTERPOLATION_LOCAL_ROTATION_VECTORS_H
 
 #include "baci_beam3_triad_interpolation.H"
-
 #include "baci_lib_element.H"
-
 #include "baci_linalg_fixedsizematrix.H"
 
 namespace LARGEROTATIONS

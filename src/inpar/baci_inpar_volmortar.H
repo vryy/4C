@@ -14,8 +14,8 @@
 
 
 /*----------------------------------------------------------------------*/
-#include <Teuchos_RCPDecl.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCPDecl.hpp>
 
 namespace INPAR
 {

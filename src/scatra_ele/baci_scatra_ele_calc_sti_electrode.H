@@ -10,13 +10,11 @@
 #ifndef BACI_SCATRA_ELE_CALC_STI_ELECTRODE_H
 #define BACI_SCATRA_ELE_CALC_STI_ELECTRODE_H
 
+#include "baci_inpar_elch.H"
+#include "baci_mat_electrode.H"
 #include "baci_scatra_ele_calc.H"
 #include "baci_scatra_ele_calc_elch_electrode.H"
 #include "baci_scatra_ele_sti_elch.H"
-
-#include "baci_inpar_elch.H"
-
-#include "baci_mat_electrode.H"
 
 namespace DRT
 {

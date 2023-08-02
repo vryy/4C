@@ -10,23 +10,20 @@
 /*----------------------------------------------------------------------*
  | headers                                                  seitz 07/13 |
  *----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_so3_plast_ssn.H"
-
-#include "baci_so3_ssn_plast_fwd.hpp"
-
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_mat_fourieriso.H"
 #include "baci_mat_plasticelasthyper.H"
 #include "baci_mat_service.H"
+#include "baci_nurbs_discret.H"
+#include "baci_so3_element_service.H"
+#include "baci_so3_plast_ssn.H"
+#include "baci_so3_ssn_plast_fwd.hpp"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_structure_new_gauss_point_data_output_manager.H"
-#include "baci_nurbs_discret.H"
 
-#include "baci_mat_fourieriso.H"
-#include "baci_so3_element_service.H"
-
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include <Teuchos_SerialDenseSolver.hpp>
 
 using VoigtMapping = UTILS::VOIGT::IndexMappings;
 

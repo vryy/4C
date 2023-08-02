@@ -9,11 +9,9 @@
 /*----------------------------------------------------------------------*/
 #include "baci_sti_partitioned.H"
 
-#include "baci_scatra_timint_implicit.H"
-
-#include "baci_linalg_utils_sparse_algebra_create.H"
-
 #include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_scatra_timint_implicit.H"
 
 /*--------------------------------------------------------------------------------*
  | constructor                                                         fang 09/17 |

@@ -9,14 +9,13 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_so3_sh18.H"
-#include "baci_so3_surface.H"
-#include "baci_so3_line.H"
-#include "baci_lib_utils_factory.H"
+
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
-
+#include "baci_so3_line.H"
 #include "baci_so3_nullspace.H"
-
+#include "baci_so3_surface.H"
 #include "baci_so3_utils.H"
 
 DRT::ELEMENTS::So_sh18Type DRT::ELEMENTS::So_sh18Type::instance_;

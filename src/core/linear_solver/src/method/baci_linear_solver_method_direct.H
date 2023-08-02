@@ -10,12 +10,11 @@
 #ifndef BACI_LINEAR_SOLVER_METHOD_DIRECT_H
 #define BACI_LINEAR_SOLVER_METHOD_DIRECT_H
 
-#include <Amesos_BaseSolver.h>
+#include "baci_linear_solver_method.H"
 
+#include <Amesos_BaseSolver.h>
 #include <Epetra_CrsMatrix.h>
 #include <EpetraExt_Reindex_LinearProblem2.h>
-
-#include "baci_linear_solver_method.H"
 
 namespace CORE::LINEAR_SOLVER
 {

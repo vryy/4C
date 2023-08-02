@@ -13,7 +13,6 @@
 
 
 #include "baci_beaminteraction_beam_to_solid_surface_meshtying_pair_base.H"
-
 #include "baci_geometry_pair_scalar_types.H"
 
 

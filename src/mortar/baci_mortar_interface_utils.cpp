@@ -6,12 +6,12 @@
 
 */
 /*-----------------------------------------------------------------------*/
+#include "baci_mortar_interface_utils.H"
+
 #include <algorithm>
 #include <numeric>
 #include <sstream>
 #include <vector>
-
-#include "baci_mortar_interface_utils.H"
 
 void MORTAR::INTERFACEUTILS::ComputeParallelDistributionStatistics(
     const std::vector<int>& quantityAcrossAllRanks, int& minOverAllRanks, int& maxOverAllRanks,

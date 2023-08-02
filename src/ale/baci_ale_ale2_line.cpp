@@ -10,7 +10,6 @@
 
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale2.H"
-
 #include "baci_lib_discret.H"
 #include "baci_utils_exceptions.H"
 

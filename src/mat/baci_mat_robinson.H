@@ -26,14 +26,14 @@
 #define BACI_MAT_ROBINSON_H
 
 
+#include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
-#include "baci_lib_parobjectfactory.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_linalg_serialdensematrix.H"
 
-#include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 namespace MAT

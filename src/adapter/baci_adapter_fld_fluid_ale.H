@@ -22,14 +22,13 @@ namespace ADAPTER
 
 /*----------------------------------------------------------------------------*/
 /* headers */
-#include <Epetra_Comm.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include "baci_adapter_fld_moving_boundary.H"
 #include "baci_adapter_fld_base_algorithm.H"
+#include "baci_adapter_fld_moving_boundary.H"
 #include "baci_coupling_adapter.H"
+
+#include <Epetra_Comm.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 
 namespace FSI

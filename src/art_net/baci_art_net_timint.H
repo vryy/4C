@@ -10,12 +10,12 @@
 #ifndef BACI_ART_NET_TIMINT_H
 #define BACI_ART_NET_TIMINT_H
 
+#include "baci_adapter_art_net.H"
+#include "baci_inpar_bio.H"
+#include "baci_lib_discret.H"
+
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_adapter_art_net.H"
-#include "baci_lib_discret.H"
-#include "baci_inpar_bio.H"
 
 
 /*==========================================================================*/

@@ -12,14 +12,13 @@
 #ifndef BACI_XFEM_MESH_PROJECTOR_H
 #define BACI_XFEM_MESH_PROJECTOR_H
 
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
-
-#include <Epetra_Vector.h>
-#include <Epetra_MpiComm.h>
-
-#include "baci_linalg_fixedsizematrix.H"
 #include "baci_lib_elementtype.H"
+#include "baci_linalg_fixedsizematrix.H"
+
+#include <Epetra_MpiComm.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCP.hpp>
 
 namespace DRT
 {

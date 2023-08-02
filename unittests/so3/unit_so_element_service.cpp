@@ -7,9 +7,11 @@
 
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include <vector>
+
 #include "baci_lib_element.H"
 #include "baci_so3_element_service.H"
+
+#include <vector>
 
 namespace
 {

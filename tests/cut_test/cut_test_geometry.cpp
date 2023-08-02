@@ -6,13 +6,12 @@
 
 *----------------------------------------------------------------------*/
 
-#include <iostream>
-
-#include "baci_cut_kernel.H"
-#include "baci_cut_position.H"
-#include "baci_cut_output.H"
-
 #include "baci_cut_intersection.H"  // for IntersectionStatus
+#include "baci_cut_kernel.H"
+#include "baci_cut_output.H"
+#include "baci_cut_position.H"
+
+#include <iostream>
 
 void test_geometry_schleifend1()
 {

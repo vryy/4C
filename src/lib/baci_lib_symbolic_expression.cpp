@@ -12,19 +12,19 @@
 /*---------------------------------------------------------------------*/
 
 
-#include <map>
-#include <cmath>
-#include <string>
-#include <cstring>
-#include <memory>
-#include <utility>
-#include <set>
+#include "baci_lib_symbolic_expression.H"
 
+#include "baci_utils_exceptions.H"
 
 #include <Sacado.hpp>
 
-#include "baci_utils_exceptions.H"
-#include "baci_lib_symbolic_expression.H"
+#include <cmath>
+#include <cstring>
+#include <map>
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
 
 namespace
 {

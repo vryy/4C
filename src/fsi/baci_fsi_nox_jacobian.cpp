@@ -10,17 +10,17 @@
 
 #include "baci_fsi_nox_jacobian.H"
 
-#include <iostream>
-
 #include <Epetra_Comm.h>
 #include <Epetra_Map.h>
-#include <Epetra_Vector.h>
 #include <Epetra_RowMatrix.h>
+#include <Epetra_Vector.h>
 #include <NOX_Abstract_Group.H>
+#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_Vector.H>
 #include <NOX_Epetra_VectorSpace.H>
-#include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Utils.H>
+
+#include <iostream>
 
 
 NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,

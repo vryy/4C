@@ -12,11 +12,11 @@
 #define BACI_SCATRA_ELE_CALC_HDG_H
 
 
-#include "baci_scatra_ele_interface.H"
-#include "baci_scatra_ele_hdg.H"
-#include "baci_scatra_ele_calc.H"
-#include "baci_inpar_scatra.H"
 #include "baci_discretization_fem_general_utils_shapevalues_hdg.H"
+#include "baci_inpar_scatra.H"
+#include "baci_scatra_ele_calc.H"
+#include "baci_scatra_ele_hdg.H"
+#include "baci_scatra_ele_interface.H"
 
 
 

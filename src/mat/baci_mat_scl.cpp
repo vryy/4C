@@ -8,11 +8,13 @@ species
 
 */
 /*----------------------------------------------------------------------------*/
-#include <vector>
 #include "baci_mat_scl.H"
-#include "baci_lib_globalproblem.H"
+
 #include "baci_lib_function_of_scalar.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
+
+#include <vector>
 
 
 /*----------------------------------------------------------------------*/

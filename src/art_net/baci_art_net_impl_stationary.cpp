@@ -9,20 +9,22 @@
 
 
 #include "baci_art_net_impl_stationary.H"
+
+#include "baci_adapter_scatra_base_algorithm.H"
 #include "baci_art_net_artery_ele_action.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_print.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linear_solver_method_linalg.H"
+#include "baci_art_net_artery_resulttest.H"
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_art_net_artery_resulttest.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_adapter_scatra_base_algorithm.H"
-#include "baci_scatra_timint_implicit.H"
-#include "baci_scatra_resulttest.H"
+#include "baci_linalg_utils_sparse_algebra_assemble.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_linalg_utils_sparse_algebra_print.H"
+#include "baci_linear_solver_method_linalg.H"
 #include "baci_mat_cnst_1d_art.H"
+#include "baci_scatra_resulttest.H"
+#include "baci_scatra_timint_implicit.H"
+
 #include <Epetra_Vector.h>
 
 

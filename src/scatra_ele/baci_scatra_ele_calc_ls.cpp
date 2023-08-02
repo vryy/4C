@@ -8,6 +8,7 @@
 */
 /*--------------------------------------------------------------------------*/
 #include "baci_scatra_ele_calc_ls.H"
+
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_utils_singleton_owner.H"
 

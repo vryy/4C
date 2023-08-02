@@ -9,9 +9,10 @@
 #define BACI_SO3_SH8P8_EAS_H
 
 /*----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_so3_sh8p8.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_so3_sh8p8.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

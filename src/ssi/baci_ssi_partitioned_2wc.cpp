@@ -8,14 +8,14 @@
  *------------------------------------------------------------------------------------------------*/
 
 #include "baci_ssi_partitioned_2wc.H"
+
+#include "baci_adapter_scatra_base_algorithm.H"
+#include "baci_adapter_str_ssiwrapper.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
-
-#include "baci_adapter_str_ssiwrapper.H"
-#include "baci_adapter_scatra_base_algorithm.H"
-
 #include "baci_scatra_ele.H"
 #include "baci_scatra_timint_implicit.H"
+
 #include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*

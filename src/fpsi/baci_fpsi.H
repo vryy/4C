@@ -8,8 +8,9 @@
 #ifndef BACI_FPSI_H
 #define BACI_FPSI_H
 
-#include <Epetra_Comm.h>
 #include "baci_adapter_algorithmbase.H"
+
+#include <Epetra_Comm.h>
 
 namespace FPSI
 {

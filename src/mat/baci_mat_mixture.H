@@ -11,13 +11,13 @@
 #define BACI_MAT_MIXTURE_H
 
 
-#include "baci_mat_par_parameter.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_mat_anisotropy.H"
+#include "baci_mat_par_parameter.H"
 #include "baci_mat_so3_material.H"
+#include "baci_matelast_summand.H"
 #include "baci_mixture_constituent.H"
 #include "baci_mixture_rule.H"
-#include "baci_matelast_summand.H"
-#include "baci_mat_anisotropy.H"
 
 namespace MAT
 {

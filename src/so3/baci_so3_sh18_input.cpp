@@ -5,9 +5,9 @@
 
 *----------------------------------------------------------------------*/
 
-#include "baci_so3_sh18.H"
-#include "baci_mat_so3_material.H"
 #include "baci_lib_linedefinition.H"
+#include "baci_mat_so3_material.H"
+#include "baci_so3_sh18.H"
 
 
 /*----------------------------------------------------------------------*/

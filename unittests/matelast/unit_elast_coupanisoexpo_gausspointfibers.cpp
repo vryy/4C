@@ -12,16 +12,16 @@
 
 
 #include <gtest/gtest.h>
-#include "baci_unittest_utils_assertions.h"
 
-#include <Teuchos_RCPDecl.hpp>
-#include <boost/mpl/protect.hpp>
-
+#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
-#include "baci_matelast_coupanisoexpo.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_matelast_coupanisoexpo.H"
+#include "baci_unittest_utils_assertions.h"
+
+#include <boost/mpl/protect.hpp>
+#include <Teuchos_RCPDecl.hpp>
 
 
 

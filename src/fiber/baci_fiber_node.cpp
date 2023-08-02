@@ -6,10 +6,11 @@
 \level 2
 *----------------------------------------------------------------------*/
 
-#include <utility>
-
 #include "baci_fiber_node.H"
+
 #include "baci_fiber_nodal_fiber_holder.H"
+
+#include <utility>
 
 DRT::FIBER::FiberNodeType DRT::FIBER::FiberNodeType::instance_;
 

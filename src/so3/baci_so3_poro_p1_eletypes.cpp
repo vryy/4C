@@ -8,10 +8,10 @@
  *----------------------------------------------------------------------*/
 
 #include "baci_so3_poro_p1_eletypes.H"
-#include "baci_so3_poro_p1.H"
 
-#include "baci_lib_linedefinition.H"
 #include "baci_fluid_ele_nullspace.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_so3_poro_p1.H"
 
 /*----------------------------------------------------------------------*
  |  HEX 8 Element                                                       |

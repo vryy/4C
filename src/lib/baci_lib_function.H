@@ -12,17 +12,18 @@
 #define BACI_LIB_FUNCTION_H
 
 
-#include <iostream>
-#include <vector>
-#include <complex>
+#include "baci_discretization_fem_general_utils_polynomial.H"
+#include "baci_lib_function_manager.H"
+#include "baci_lib_functionvariables.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_utils_exceptions.H"
+
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
 
-#include "baci_linalg_fixedsizematrix.H"
-#include "baci_utils_exceptions.H"
-#include "baci_lib_functionvariables.H"
-#include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_lib_function_manager.H"
+#include <complex>
+#include <iostream>
+#include <vector>
 
 
 namespace DRT

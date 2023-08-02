@@ -13,9 +13,8 @@
 #define BACI_FLUID_TIMINT_TWO_PHASE_GENALPHA_H
 
 
-#include "baci_fluid_timint_two_phase.H"
 #include "baci_fluid_timint_genalpha.H"
-
+#include "baci_fluid_timint_two_phase.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 
 

@@ -12,8 +12,9 @@
 #ifndef BACI_BEAMINTERACTION_SPHEREBEAMLINKING_PARAMS_H
 #define BACI_BEAMINTERACTION_SPHEREBEAMLINKING_PARAMS_H
 
-#include "baci_utils_exceptions.H"
 #include "baci_inpar_beaminteraction.H"
+#include "baci_utils_exceptions.H"
+
 #include <Teuchos_RCP.hpp>
 
 

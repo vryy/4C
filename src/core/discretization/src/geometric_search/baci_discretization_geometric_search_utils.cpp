@@ -8,9 +8,9 @@
 */
 /*-----------------------------------------------------------*/
 
-#include "baci_io_pstream.H"
-
 #include "baci_discretization_geometric_search_utils.H"
+
+#include "baci_io_pstream.H"
 
 namespace CORE::GEOMETRICSEARCH
 {

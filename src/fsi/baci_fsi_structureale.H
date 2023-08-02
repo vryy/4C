@@ -14,11 +14,11 @@
 #ifndef BACI_FSI_STRUCTUREALE_H
 #define BACI_FSI_STRUCTUREALE_H
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
-
-#include "baci_fsi_algorithm.H"
 #include "baci_coupling_adapter_mortar.H"
+#include "baci_fsi_algorithm.H"
+
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 // forward declarations
 

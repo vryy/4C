@@ -22,8 +22,9 @@ CORRLENGTH 5.0
 *----------------------------------------------------------------------*/
 
 #include "baci_mat_aaaneohooke_stopro.H"
-#include "baci_mat_par_bundle.H"
+
 #include "baci_lib_globalproblem.H"
+#include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
 

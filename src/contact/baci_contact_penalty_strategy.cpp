@@ -10,25 +10,26 @@
 /*---------------------------------------------------------------------*/
 
 #include "baci_contact_penalty_strategy.H"
-#include "baci_contact_interface.H"
-#include "baci_contact_node.H"
-#include "baci_contact_element.H"
-#include "baci_contact_defines.H"
-#include "baci_inpar_contact.H"
-#include "baci_mortar_defines.H"
-#include "baci_mortar_utils.H"
-#include "baci_linalg_multiply.H"
-#include "baci_linalg_utils_sparse_algebra_create.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
-#include "baci_linalg_sparsematrix.H"
-#include <Epetra_FEVector.h>
-#include <Epetra_CrsMatrix.h>
-#include <Epetra_Operator.h>
 
 #include "baci_contact_constitutivelaw_cubic_contactconstitutivelaw.H"
-#include "baci_lib_utils.H"
+#include "baci_contact_defines.H"
+#include "baci_contact_element.H"
+#include "baci_contact_interface.H"
+#include "baci_contact_node.H"
 #include "baci_contact_paramsinterface.H"
+#include "baci_inpar_contact.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
+#include "baci_linalg_multiply.H"
+#include "baci_linalg_sparsematrix.H"
+#include "baci_linalg_utils_sparse_algebra_create.H"
+#include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_mortar_defines.H"
+#include "baci_mortar_utils.H"
+
+#include <Epetra_CrsMatrix.h>
+#include <Epetra_FEVector.h>
+#include <Epetra_Operator.h>
 
 /*----------------------------------------------------------------------*
  | ctor (public)                                              popp 05/09|

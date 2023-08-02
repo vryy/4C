@@ -8,27 +8,23 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <Teuchos_TimeMonitor.hpp>
-#include <Teuchos_RCP.hpp>
-
-#include <fstream>
+#include "baci_fluid_ele_calc_xfem.H"
 
 #include "baci_cut_boundarycell.H"
 #include "baci_cut_position.H"
 #include "baci_cut_volumecell.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-
 #include "baci_fluid_ele.H"
 #include "baci_fluid_ele_parameter_xfem.H"
-#include "baci_fluid_ele_calc_xfem.H"
-
+#include "baci_fluid_functions.H"
+#include "baci_lib_condition_utils.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
 
-#include "baci_fluid_functions.H"
+#include <Teuchos_RCP.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
-#include "baci_lib_condition_utils.H"
+#include <fstream>
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcXFEM<distype>* DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance(

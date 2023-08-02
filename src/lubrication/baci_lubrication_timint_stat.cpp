@@ -9,15 +9,13 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "baci_io.H"
+#include "baci_lubrication_timint_stat.H"
 
+#include "baci_io.H"
+#include "baci_lib_discret.H"
 #include "baci_lubrication_ele_action.H"
 
 #include <Teuchos_TimeMonitor.hpp>
-
-#include "baci_lib_discret.H"
-
-#include "baci_lubrication_timint_stat.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                    wirtz 11/15 |

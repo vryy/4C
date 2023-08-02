@@ -12,9 +12,10 @@
 #ifndef BACI_STRUCTURE_NEW_RESULTTEST_H
 #define BACI_STRUCTURE_NEW_RESULTTEST_H
 
-#include <Epetra_Vector.h>
 #include "baci_lib_resulttest.H"
 #include "baci_utils_exceptions.H"
+
+#include <Epetra_Vector.h>
 
 
 // forward declarations

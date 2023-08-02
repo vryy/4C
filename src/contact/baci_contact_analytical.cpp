@@ -7,10 +7,12 @@
 */
 /*-----------------------------------------------------------------------*/
 
-#include <math.h>
 #include "baci_contact_analytical.H"
+
 #include "baci_inpar_contact.H"
 #include "baci_lib_globalproblem.H"
+
+#include <math.h>
 
 
 /*----------------------------------------------------------------------*

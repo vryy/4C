@@ -8,8 +8,8 @@
 #ifndef BACI_RED_AIRWAYS_EVALUATION_DATA_H
 #define BACI_RED_AIRWAYS_EVALUATION_DATA_H
 
-#include <Teuchos_RCPDecl.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCPDecl.hpp>
 
 namespace DRT::REDAIRWAYS
 {

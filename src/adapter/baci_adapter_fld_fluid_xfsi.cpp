@@ -12,19 +12,20 @@
 #include "baci_adapter_fld_fluid_xfsi.H"
 
 #include "baci_adapter_fld_fluid.H"
+#include "baci_fluid_utils_mapextractor.H"
 #include "baci_fluid_xfluid.H"
 #include "baci_fluid_xfluid_fluid.H"
-#include "baci_fluid_utils_mapextractor.H"
 #include "baci_lib_discret_xfem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_xfem_condition_manager.H"
 
-#include <Teuchos_RCP.hpp>
-#include <Epetra_Vector.h>
 #include <Epetra_Map.h>
-#include <vector>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
 #include <set>
+#include <vector>
 /*======================================================================*/
 /* constructor */
 ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP<Fluid> fluid,  // the XFluid object

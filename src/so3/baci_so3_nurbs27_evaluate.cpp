@@ -6,26 +6,25 @@
 \level 2
 
 *----------------------------------------------------------------------*/
-#include <Teuchos_SerialDenseSolver.hpp>
-#include "baci_so3_nurbs27.H"
-#include "baci_lib_discret.H"
-#include "baci_nurbs_discret.H"
-#include "baci_lib_utils.H"
-#include "baci_utils_exceptions.H"
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_linalg_serialdensevector.H"
-#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
-#include "baci_mat_so3_material.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_elements_paramsinterface.H"
-#include "baci_so3_utils.H"
-
-#include "baci_lib_element_vtk_cell_type_register.H"
+#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_element_vtk_cell_type_register.H"
+#include "baci_lib_elements_paramsinterface.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_mat_so3_material.H"
+#include "baci_nurbs_discret.H"
 #include "baci_nurbs_discret_nurbs_utils.H"
+#include "baci_so3_nurbs27.H"
+#include "baci_so3_utils.H"
+#include "baci_utils_exceptions.H"
+
+#include <Teuchos_SerialDenseSolver.hpp>
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |

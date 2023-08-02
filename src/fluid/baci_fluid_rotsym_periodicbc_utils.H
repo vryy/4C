@@ -14,8 +14,8 @@
 #define BACI_FLUID_ROTSYM_PERIODICBC_UTILS_H
 
 
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
 
 
 // forward declarations

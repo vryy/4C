@@ -8,16 +8,14 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_discretization_fem_general_largerotations.H"
+#include "baci_beaminteraction_link.H"
 
+#include "baci_discretization_fem_general_largerotations.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
-
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
-
-#include "baci_beaminteraction_link.H"
 
 BEAMINTERACTION::BeamLinkType BEAMINTERACTION::BeamLinkType::instance_;
 

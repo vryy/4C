@@ -9,11 +9,12 @@
 /*----------------------------------------------------------------------------*/
 
 #include "baci_beaminteraction_beam3contact_utils.H"
-#include "baci_beam3_reissner.H"
+
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_kirchhoff.H"
-#include "baci_rigidsphere.H"
+#include "baci_beam3_reissner.H"
 #include "baci_beamcontact_beam3contact_manager.H"
+#include "baci_rigidsphere.H"
 #include "baci_utils_fad.H"
 
 /*----------------------------------------------------------------------*

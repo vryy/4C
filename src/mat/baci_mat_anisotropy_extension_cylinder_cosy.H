@@ -13,8 +13,9 @@ materials with @MAT::Anisotropy
 #ifndef BACI_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
 #define BACI_MAT_ANISOTROPY_EXTENSION_CYLINDER_COSY_H
 
-#include <Teuchos_RCPDecl.hpp>
 #include "baci_mat_anisotropy_extension_base.H"
+
+#include <Teuchos_RCPDecl.hpp>
 
 // forward declarations
 namespace DRT

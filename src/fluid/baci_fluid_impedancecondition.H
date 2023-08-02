@@ -12,10 +12,10 @@
 #ifndef BACI_FLUID_IMPEDANCECONDITION_H
 #define BACI_FLUID_IMPEDANCECONDITION_H
 
-#include <set>
-
-#include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
+#include <Teuchos_RCP.hpp>
+
+#include <set>
 
 
 // forward declarations

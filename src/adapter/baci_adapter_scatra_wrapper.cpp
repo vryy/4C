@@ -7,9 +7,10 @@
 
 
 #include "baci_adapter_scatra_wrapper.H"
+
+#include "baci_linalg_sparseoperator.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_utils_exceptions.H"
-#include "baci_linalg_sparseoperator.H"
 
 
 /*----------------------------------------------------------------------------*

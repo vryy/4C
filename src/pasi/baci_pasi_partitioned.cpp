@@ -10,25 +10,20 @@
  *---------------------------------------------------------------------------*/
 #include "baci_pasi_partitioned.H"
 
-#include "baci_adapter_str_structure_new.H"
 #include "baci_adapter_str_factory.H"
 #include "baci_adapter_str_pasiwrapper.H"
-
-#include "baci_particle_algorithm.H"
-
-#include "baci_particle_wall_interface.H"
-#include "baci_particle_wall_datastate.H"
-
-#include "baci_lib_globalproblem.H"
+#include "baci_adapter_str_structure_new.H"
 #include "baci_lib_discret.H"
-
-#include "baci_structure_aux.H"
-
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_particle_algorithm.H"
+#include "baci_particle_wall_datastate.H"
+#include "baci_particle_wall_interface.H"
+#include "baci_structure_aux.H"
 
-#include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_RCPStdSharedPtrConversions.hpp>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |

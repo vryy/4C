@@ -8,25 +8,22 @@
 /*----------------------------------------------------------------------*/
 
 #include "baci_scatra_timint_hdg.H"
-#include "baci_lib_discret_hdg.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_lib_utils_parameter_list.H"
-#include "baci_lib_assemblestrategy.H"
-#include "baci_lib_dofset.H"
-
-#include "baci_scatra_ele_hdg.H"
-#include "baci_scatra_ele_action.H"
-
-#include "baci_linalg_utils_sparse_algebra_math.H"
-#include "baci_io.H"
-#include "baci_io_control.H"
-
-#include <Teuchos_TimeMonitor.hpp>
-#include "baci_lib_dofset_predefineddofnumber.H"
 
 #include "baci_binstrategy.H"
-
+#include "baci_io.H"
+#include "baci_io_control.H"
+#include "baci_lib_assemblestrategy.H"
+#include "baci_lib_discret_hdg.H"
+#include "baci_lib_dofset.H"
+#include "baci_lib_dofset_predefineddofnumber.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_utils_parameter_list.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+#include "baci_scatra_ele_action.H"
+#include "baci_scatra_ele_hdg.H"
 #include "baci_scatra_resulttest_hdg.H"
+
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
  |  Constructor (public)                                 hoermann 09/15 |

@@ -12,13 +12,10 @@
 #ifndef BACI_FLUID_ELE_CALC_LOMA_H
 #define BACI_FLUID_ELE_CALC_LOMA_H
 
-#include "baci_fluid_ele_interface.H"
 #include "baci_fluid_ele_calc.H"
-
-#include "baci_utils_singleton_owner.H"
-
-// includes gauss points
+#include "baci_fluid_ele_interface.H"
 #include "baci_lib_utils.H"
+#include "baci_utils_singleton_owner.H"
 
 namespace DRT
 {
