@@ -44,6 +44,7 @@
 #include "baci_fsi_monolithicfluidsplit.H"
 #include "baci_fsi_monolithicstructuresplit.H"
 #include "baci_fsi_mortarmonolithic_fluidsplit.H"
+#include "baci_fsi_mortarmonolithic_fluidsplit_sp.H"
 #include "baci_fsi_mortarmonolithic_structuresplit.H"
 #include "baci_fsi_resulttest.H"
 #include "baci_fsi_slidingmonolithic_fluidsplit.H"
@@ -72,6 +73,7 @@
 #include <set>
 #include <string>
 #include <vector>
+
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on Ale in DRT
 /*----------------------------------------------------------------------*/
@@ -527,6 +529,7 @@ void fsi_ale_drt()
     case fsi_iter_constr_monolithicstructuresplit:
     case fsi_iter_mortar_monolithicstructuresplit:
     case fsi_iter_mortar_monolithicfluidsplit:
+    case fsi_iter_mortar_monolithicfluidsplit_saddlepoint:
     case fsi_iter_fluidfluid_monolithicfluidsplit:
     case fsi_iter_fluidfluid_monolithicstructuresplit:
     case fsi_iter_sliding_monolithicfluidsplit:
@@ -572,6 +575,10 @@ void fsi_ale_drt()
       else if (coupling == fsi_iter_mortar_monolithicfluidsplit)
       {
         fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplit(comm, fsidyn));
+      }
+      else if (coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
+      {
+        fsi = Teuchos::rcp(new FSI::MortarMonolithicFluidSplitSaddlePoint(comm, fsidyn));
       }
       else if (coupling == fsi_iter_fluidfluid_monolithicfluidsplit)
       {

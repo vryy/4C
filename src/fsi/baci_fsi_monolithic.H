@@ -265,7 +265,7 @@ namespace FSI
   };
 
 
-  /// base class of all monolithic FSI algorithms
+  /// base class of all monolithic FSI algorithms with NOX as nonlinear solver
   /*!
 
     Monolithic FSI is a Netwon solver on a block matrix with field blocks.
@@ -458,9 +458,9 @@ namespace FSI
      */
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& sx, Teuchos::RCP<const Epetra_Vector>& fx,
-        Teuchos::RCP<const Epetra_Vector>& ax) = 0;
+        Teuchos::RCP<const Epetra_Vector>& ax){};
 
-    /*! \brief Put three field vectors together to a monolithic vector
+    /*! \brief Put all field vectors together to a monolithic vector
      *
      *  Slave vectors are only allowed to contain inner DOFs. Only master vector
      *  is allowed to contain interface DOFs. All vectors are put together.
@@ -548,8 +548,8 @@ namespace FSI
     //! OtherMap()  = DOFs without Dirichlet boundary condition
     Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps_;
 
-    /// Extract initial guess from fields
-    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
+    //! Create initial guess for monolithic solution vector from data of the single fields
+    virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> initial_guess);
 
     //! @name FSI time adaptivity
     //@{

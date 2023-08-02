@@ -25,8 +25,8 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
       "Fluid Structure Interaction\n"
       "FSI solver with various coupling methods");
 
-  Teuchos::Tuple<std::string, 25> name;
-  Teuchos::Tuple<int, 25> label;
+  Teuchos::Tuple<std::string, 26> name;
+  Teuchos::Tuple<int, 26> label;
 
   name[0] = "basic_sequ_stagg";
   label[0] = fsi_basic_sequ_stagg;
@@ -78,6 +78,8 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
   label[23] = fsi_iter_sliding_monolithicfluidsplit;
   name[24] = "iter_sliding_monolithicstructuresplit";
   label[24] = fsi_iter_sliding_monolithicstructuresplit;
+  name[25] = "iter_mortar_monolithicfluidsplit_saddlepoint";
+  label[25] = fsi_iter_mortar_monolithicfluidsplit_saddlepoint;
 
 
   setStringToIntegralParameter<int>("COUPALGO", "iter_stagg_AITKEN_rel_param",

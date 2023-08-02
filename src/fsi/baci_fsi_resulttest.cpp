@@ -17,14 +17,15 @@
 #include "baci_fsi_monolithicfluidsplit.H"
 #include "baci_fsi_monolithicstructuresplit.H"
 #include "baci_fsi_mortarmonolithic_fluidsplit.H"
+#include "baci_fsi_mortarmonolithic_fluidsplit_sp.H"
 #include "baci_fsi_mortarmonolithic_structuresplit.H"
 #include "baci_fsi_slidingmonolithic_fluidsplit.H"
 #include "baci_fsi_slidingmonolithic_structuresplit.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_linedefinition.H"
+#include "baci_fluid_utils_mapextractor.H"
 
 #include <string>
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -73,6 +74,22 @@ FSI::FSIResultTest::FSIResultTest(
       // Lagrange multipliers live on the slave field
       slavedisc_ = fsiobject->FluidField()->Discretization();
       fsilambda_ = fsiobject->lambda_;
+
+      break;
+    }
+    case fsi_iter_mortar_monolithicfluidsplit_saddlepoint:
+    {
+      const Teuchos::RCP<FSI::MortarMonolithicFluidSplitSaddlePoint>& fsiobject =
+          Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicFluidSplitSaddlePoint>(fsi);
+
+      if (fsiobject == Teuchos::null)
+        dserror("Cast to FSI::MortarMonolithicFluidSplitSaddlePoint failed.");
+
+      // Lagrange multipliers live on the slave field
+      slavedisc_ = fsiobject->FluidField()->Discretization();
+      auto copy = Teuchos::rcp(new Epetra_Vector(*fsiobject->lag_mult_));
+      copy->ReplaceMap(*fsiobject->FluidField()->Interface()->FSICondMap());
+      fsilambda_ = copy;
 
       break;
     }

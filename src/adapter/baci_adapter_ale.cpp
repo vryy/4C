@@ -177,7 +177,8 @@ void ADAPTER::AleBaseAlgorithm::SetupAle(
           coupling == fsi_iter_lung_monolithicfluidsplit or
           coupling == fsi_iter_lung_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
-          coupling == fsi_iter_mortar_monolithicfluidsplit)
+          coupling == fsi_iter_mortar_monolithicfluidsplit or
+          coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint)
       {
         ale_ = Teuchos::rcp(new ADAPTER::AleFsiWrapper(ale));
       }

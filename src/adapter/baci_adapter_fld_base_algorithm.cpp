@@ -645,6 +645,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           coupling == fsi_iter_constr_monolithicfluidsplit or
           coupling == fsi_iter_mortar_monolithicstructuresplit or
           coupling == fsi_iter_mortar_monolithicfluidsplit or
+          coupling == fsi_iter_mortar_monolithicfluidsplit_saddlepoint or
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit or
           coupling == fsi_iter_fluidfluid_monolithicfluidsplit or
           coupling == fsi_iter_fluidfluid_monolithicstructuresplit_nonox or
