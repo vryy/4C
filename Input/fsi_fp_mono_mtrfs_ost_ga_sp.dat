@@ -2,7 +2,7 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:                            iter_mortar_monolithicfluidsplit
+FSI: iter_mortar_monolithicfluidsplit_saddlepoint
 Fluid: One_Step_Theta with steady_state
 Structure: GenAlpha with TangDis
 ==> comparison to analytical solution

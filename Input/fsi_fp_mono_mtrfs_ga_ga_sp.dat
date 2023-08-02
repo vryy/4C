@@ -3,7 +3,7 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:                            iter_mortar_monolithicfluidsplit
+FSI: iter_mortar_monolithicfluidsplit_saddlepoint
 Fluid: Np_Gen_Alpha with steady_state
 Structure: GenAlpha with ConstDisVelAcc
 ==> comparison to analytical solution
@@ -40,7 +40,7 @@ RESTARTEVRY                     2
 SECONDORDER                     no
 SLIDEALEPROJ                    None
 TIMESTEP                        0.1
-RESULTSEVRY                     1
+RESULTSEVRY                           1
 -----------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06

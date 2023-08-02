@@ -28,7 +28,7 @@ namespace CORE::LINALG
 {
   class BlockSparseMatrixBase;
   class MatrixColTransform;
-}  // namespace LINALG
+}  // namespace CORE::LINALG
 
 namespace FSI
 {
@@ -222,7 +222,10 @@ namespace FSI
     /// Coupling of structure and fluid at the interface
     Teuchos::RCP<CORE::ADAPTER::CouplingMortar> coupling_solid_fluid_mortar_;
 
+    /// Helper variable for the transformation of aleunknowns onto the slave side
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> ale_inner_interf_transform_;
+
+    /// Helper variable for the transformation of fluid unknowns onto the slave side
     Teuchos::RCP<CORE::LINALG::MatrixColTransform> fluid_mesh_inner_inner_transform_;
 
     ///@}

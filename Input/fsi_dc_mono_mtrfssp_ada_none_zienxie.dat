@@ -2,7 +2,7 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic Mortar FSI: 2D Driven cavity with flexible bottom
-FSI:                            iter_mortar_monolithicfluidsplit
+FSI:                            iter_mortar_monolithicfluidsplit_saddlepoint
 Fluid:                          One_Step_Theta
 Structure:                      GenAlpha
 ----------------------------------------------------------------PROBLEM SIZE
