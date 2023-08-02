@@ -15,6 +15,7 @@
 #include "baci_solver_nonlin_nox_globaldata.H"
 #include "baci_solver_nonlin_nox_solver_linesearchbased.H"
 #include "baci_solver_nonlin_nox_solver_ptc.H"
+#include "baci_solver_nonlin_nox_solver_singlestep.H"
 
 #include <NOX_Solver_Factory.H>
 #include <NOX_Solver_Generic.H>
@@ -43,11 +44,19 @@ Teuchos::RCP<NOX::Solver::Generic> NOX::NLN::Solver::Factory::BuildSolver(
   std::string method = params->get<std::string>("Nonlinear Solver", "Line Search Based");
 
   if ((method == "Newton") or (method == "Line Search Based"))
+  {
     solver =
         Teuchos::rcp(new NOX::NLN::Solver::LineSearchBased(grp, outerTests, innerTests, params));
+  }
   else if (method == "Pseudo Transient")
+  {
     solver =
         Teuchos::rcp(new NOX::NLN::Solver::PseudoTransient(grp, outerTests, innerTests, params));
+  }
+  else if (method == "Single Step")
+  {
+    solver = Teuchos::rcp(new NOX::NLN::Solver::SingleStep(grp, innerTests, params));
+  }
   else if (not nlnGlobalData->GetIsConstrained())
   {
     // unconstrained problems are able to call the standard nox factory

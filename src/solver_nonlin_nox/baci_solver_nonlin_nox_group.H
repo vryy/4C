@@ -126,6 +126,9 @@ namespace NOX
       NOX::Abstract::Group::ReturnType setJacobianOperator(
           const Teuchos::RCP<const Epetra_Operator> jacOperator);
 
+      //! set the solution vector to zero
+      void resetX();
+
       //! set flag whether update of x vector should be skipped (because it has already be done in
       //! preComputeX)
       void setSkipUpdateX(bool skipUpdateX);
@@ -279,6 +282,12 @@ namespace NOX
 
       /// reset is valid Newton member
       inline void resetIsValidNewton() { isValidNewton = false; };
+
+      /// allow to set isValidNewton manually
+      inline void setIsValidNewton(const bool value) { isValidNewton = value; };
+
+      /// allow to set isValidRHS manually
+      inline void setIsValidRHS(const bool value) { isValidRHS = value; };
 
      protected:
       //! resets the isValid flags to false
