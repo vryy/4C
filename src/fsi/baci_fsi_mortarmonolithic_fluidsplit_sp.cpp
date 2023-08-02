@@ -825,8 +825,10 @@ void FSI::MortarMonolithicFluidSplitSaddlePoint::SetupSystemMatrix(
 
   // get single field block matrices
   const Teuchos::RCP<CORE::LINALG::SparseMatrix> solidblock = StructureField()->SystemMatrix();
-  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> fluidblock = FluidField()->BlockSystemMatrix();
-  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> aleblock = AleField()->BlockSystemMatrix();
+  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> fluidblock =
+      FluidField()->BlockSystemMatrix();
+  const Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> aleblock =
+      AleField()->BlockSystemMatrix();
 
   // extract submatrices
   const CORE::LINALG::SparseMatrix& fluid_inner_inner = fluidblock->Matrix(0, 0);
