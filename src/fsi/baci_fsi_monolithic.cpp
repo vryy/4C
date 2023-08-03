@@ -1034,12 +1034,12 @@ void FSI::Monolithic::SetupRHS(Epetra_Vector& f, bool firstcall)
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
+void FSI::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> initial_guess)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::InitialGuess");
 
-  CombineFieldVectors(*ig, StructureField()->InitialGuess(), FluidField()->InitialGuess(),
-      AleField()->InitialGuess(), true);
+  CombineFieldVectors(*initial_guess, StructureField()->InitialGuess(),
+      FluidField()->InitialGuess(), AleField()->InitialGuess(), true);
 }
 
 /*----------------------------------------------------------------------------*/

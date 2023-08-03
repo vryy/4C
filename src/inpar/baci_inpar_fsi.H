@@ -62,7 +62,8 @@ typedef enum _FSI_COUPLING
   fsi_iter_fluidfluid_monolithicstructuresplit_nonox,
   fsi_iter_fluidfluid_monolithicfluidsplit_nonox,
   fsi_iter_sliding_monolithicfluidsplit,
-  fsi_iter_sliding_monolithicstructuresplit
+  fsi_iter_sliding_monolithicstructuresplit,
+  fsi_iter_mortar_monolithicfluidsplit_saddlepoint
 } FSI_COUPLING;
 
 namespace INPAR
