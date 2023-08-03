@@ -49,7 +49,7 @@ FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(
   INPAR::FSI::LinearBlockSolver innerstrategy =
       DRT::INPUT::IntegralValue<INPAR::FSI::LinearBlockSolver>(fsimono, "INNERPREC");
 
-  if (innerstrategy != INPAR::FSI::FSIAMG && innerstrategy != INPAR::FSI::PreconditionedKrylov)
+  if (innerstrategy != INPAR::FSI::PreconditionedKrylov)
     dserror("Type of INNERPREC parameter not recognized by this class");
 
   // create 'mulitplicative' part of hybrid preconditioner

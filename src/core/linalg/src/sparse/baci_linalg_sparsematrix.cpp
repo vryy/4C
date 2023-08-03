@@ -810,7 +810,12 @@ void CORE::LINALG::SparseMatrix::Complete(
 
   if (sysmat_->Filled() and not enforce_complete) return;
 
-  int err = sysmat_->FillComplete(domainmap, rangemap, true);
+  int err = 1;
+  if (enforce_complete and sysmat_->Filled())
+    err = sysmat_->ExpertStaticFillComplete(domainmap, rangemap);
+  else
+    err = sysmat_->FillComplete(domainmap, rangemap, true);
+
   if (err) dserror("Epetra_CrsMatrix::FillComplete(domain,range) returned err=%d", err);
 
   // keep mask for further use

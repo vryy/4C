@@ -1154,7 +1154,6 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::SlidingMonolithicFluidSplit::Create
   switch (linearsolverstrategy_)
   {
     case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::FSIAMG:
     case INPAR::FSI::HybridSchwarz:  // ToDo (noll) Do we need a separate case for HybridSchwarz?
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));

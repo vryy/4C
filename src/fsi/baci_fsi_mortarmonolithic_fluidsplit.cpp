@@ -819,11 +819,12 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(s->RowMap(), 81, false));
 
   lfgi->Add(*fgi, false, scale, 0.0);
-  lfgi->Complete(fgi->DomainMap(), s->RangeMap(), true);
+  lfgi->Complete(fgi->DomainMap(), s->RangeMap());
 
   if (stcalgo == INPAR::STR::stc_currsym)
     lfgi = CORE::LINALG::MLMultiply(*stcmat, true, *lfgi, false, true, true, true);
 
+  mat.Matrix(0, 1).UnComplete();
   mat.Matrix(0, 1).Add(*lfgi, false, (1. - stiparam) / (1. - ftiparam), 0.0);
 
   // ---------Addressing contribution to block (3,2)
@@ -833,16 +834,18 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(fig->RowMap(), 81, false));
 
   lfig->Add(*fig, false, timescale, 0.0);
-  lfig->Complete(s->DomainMap(), fig->RangeMap(), true);
+  lfig->Complete(s->DomainMap(), fig->RangeMap());
 
   if (stcalgo != INPAR::STR::stc_none)
   {
     lfig = CORE::LINALG::MLMultiply(*lfig, false, *stcmat, false, false, false, true);
   }
 
+  mat.Matrix(1, 0).UnComplete();
   mat.Matrix(1, 0).Add(*lfig, false, 1., 0.0);
 
   // ---------Addressing contribution to block (3,3)
+  mat.Matrix(1, 1).UnComplete();
   mat.Matrix(1, 1).Add(fii, false, 1., 0.0);
   Teuchos::RCP<CORE::LINALG::SparseMatrix> eye =
       CORE::LINALG::Eye(*FluidField()->Interface()->FSICondMap());
@@ -860,7 +863,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
   laig = Teuchos::rcp(new CORE::LINALG::SparseMatrix(llaig->RowMap(), 81, false));
 
   laig->Add(*llaig, false, 1.0, 0.0);
-  laig->Complete(s->DomainMap(), llaig->RangeMap(), true);
+  laig->Complete(s->DomainMap(), llaig->RangeMap());
 
   if (stcalgo != INPAR::STR::stc_none)
   {
@@ -891,7 +894,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
     Teuchos::RCP<CORE::LINALG::SparseMatrix> lfmgg =
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(fmgg->RowMap(), 81, false));
     lfmgg->Add(*fmgg, false, 1.0, 0.0);
-    lfmgg->Complete(s->DomainMap(), fmgg->RangeMap(), true);
+    lfmgg->Complete(s->DomainMap(), fmgg->RangeMap());
 
     s->Add(*lfmgg, false, scale * (1. - stiparam) / (1. - ftiparam), 1.0);
 
@@ -902,7 +905,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
         Teuchos::rcp(new CORE::LINALG::SparseMatrix(fmig->RowMap(), 81, false));
 
     lfmig->Add(*fmig, false, 1.0, 0.0);
-    lfmig->Complete(s->DomainMap(), fmig->RangeMap(), true);
+    lfmig->Complete(s->DomainMap(), fmig->RangeMap());
 
     if (stcalgo != INPAR::STR::stc_none)
     {
@@ -928,7 +931,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
     lfmgi = Teuchos::rcp(new CORE::LINALG::SparseMatrix(s->RowMap(), 81, false));
 
     lfmgi->Add(*llfmgi, false, scale, 0.0);
-    lfmgi->Complete(aii.DomainMap(), s->RangeMap(), true);
+    lfmgi->Complete(aii.DomainMap(), s->RangeMap());
 
     if (stcalgo == INPAR::STR::stc_currsym)
       lfmgi = CORE::LINALG::MLMultiply(*stcmat, true, *lfmgi, false, true, true, false);
@@ -948,7 +951,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSpars
   mat.Assign(0, 0, CORE::LINALG::View, *s);
 
   // done. make sure all blocks are filled.
-  mat.Complete(true);
+  mat.Complete();
 
   // Finally, take care of Dirichlet boundary conditions
   mat.ApplyDirichlet(*(dbcmaps_->CondMap()), true);

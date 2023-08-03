@@ -65,8 +65,7 @@ FSI::OverlappingBlockMatrixFSIAMG::OverlappingBlockMatrixFSIAMG(
       verbosity_(verbosity),
       hybridPrec_(hybridPrec)
 {
-  if (strategy_ != INPAR::FSI::FSIAMG && strategy_ != INPAR::FSI::PreconditionedKrylov &&
-      strategy_ != INPAR::FSI::LinalgSolver)
+  if (strategy_ != INPAR::FSI::PreconditionedKrylov && strategy_ != INPAR::FSI::LinalgSolver)
     dserror("Type of LINEARBLOCKSOLVER parameter not recognized by this class");
 }
 
@@ -125,9 +124,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (smlclass) sisml_ = true;
   if (fmlclass) fisml_ = true;
   if (amlclass) aisml_ = true;
-  bool candofsiamg = (SisAMG() && FisAMG() && AisAMG());
-  if (strategy_ == INPAR::FSI::FSIAMG && !candofsiamg)
-    dserror("All field solvers have to be configured as AMG to do FSIAMG");
 
   // get copy of ML parameter list
   if (SisAMG()) sparams_ = structuresolver_->Params().sublist("ML Parameters");
@@ -164,35 +160,15 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     anlevel_ = aml->ML_num_actual_levels;
   else
     anlevel_ = 1;
-  if (strategy_ == INPAR::FSI::FSIAMG)
-  {
-    // min of number of grids over fields
-    minnlevel_ = std::min(snlevel_, fnlevel_);
-    minnlevel_ = std::min(minnlevel_, anlevel_);
-    // max of number of grids over fields
-    maxnlevel_ = std::max(snlevel_, fnlevel_);
-    maxnlevel_ = std::max(maxnlevel_, anlevel_);
-  }
-  else
-  {
-    minnlevel_ = 1;
-    maxnlevel_ = 1;
-  }
+
+  minnlevel_ = 1;
+  maxnlevel_ = 1;
 
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
   {
     printf("       -----------------------------------------------------------------------\n");
     switch (strategy_)
     {
-      case INPAR::FSI::FSIAMG:
-      {
-        printf(
-            "       Setting up AMG(BGS): snlevel %d fnlevel %d anlevel %d minnlevel %d maxnlevel "
-            "%d\n",
-            snlevel_, fnlevel_, anlevel_, minnlevel_, maxnlevel_);
-        fflush(stdout);
-        break;
-      }
       case INPAR::FSI::PreconditionedKrylov:
       {
         printf(
@@ -208,39 +184,18 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
 
   // check whether we have enough iteration and damping factors
-  if (strategy_ == INPAR::FSI::FSIAMG)
-  {
-    if ((int)pciter_.size() < maxnlevel_ || (int)pcomega_.size() < maxnlevel_)
-      dserror("You need at least %d values of PCITER and PCOMEGA in input file", maxnlevel_);
-    if ((int)siterations_.size() < maxnlevel_ || (int)somega_.size() < maxnlevel_)
-      dserror("You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file",
-          maxnlevel_);
-    if ((int)fiterations_.size() < maxnlevel_ || (int)fomega_.size() < maxnlevel_)
-      dserror(
-          "You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file", maxnlevel_);
-    if ((int)aiterations_.size() < maxnlevel_ || (int)aomega_.size() < maxnlevel_)
-      dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file", maxnlevel_);
-    if ((int)blocksmoother_.size() < maxnlevel_)
-      dserror("You need at least %d values of BLOCKSMOOTHER in input file", maxnlevel_);
-    if ((int)schuromega_.size() < maxnlevel_)
-      dserror("You need at least %d values of SCHUROMEGA in input file", maxnlevel_);
-  }
-  else
-  {
-    if ((int)pciter_.size() < 3 || (int)pcomega_.size() < 3)
-      dserror("You need at least 3 values of PCITER and PCOMEGA in input file");
-    if ((int)siterations_.size() < snlevel_ || (int)somega_.size() < snlevel_)
-      dserror(
-          "You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file", snlevel_);
-    if ((int)fiterations_.size() < fnlevel_ || (int)fomega_.size() < fnlevel_)
-      dserror(
-          "You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file", fnlevel_);
-    if ((int)aiterations_.size() < anlevel_ || (int)aomega_.size() < anlevel_)
-      dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file", anlevel_);
-    if ((int)blocksmoother_.size() < 1)
-      dserror("You need at least 1 value of BLOCKSMOOTHER in input file");
-    if (blocksmoother_[0] == "Schur") dserror("Schur(AMG) not implemented");
-  }
+  if ((int)pciter_.size() < 3 || (int)pcomega_.size() < 3)
+    dserror("You need at least 3 values of PCITER and PCOMEGA in input file");
+  if ((int)siterations_.size() < snlevel_ || (int)somega_.size() < snlevel_)
+    dserror(
+        "You need at least %d values of STRUCTPCITER and STRUCTPCOMEGA in input file", snlevel_);
+  if ((int)fiterations_.size() < fnlevel_ || (int)fomega_.size() < fnlevel_)
+    dserror("You need at least %d values of FLUIDPCITER and FLUIDPCOMEGA in input file", fnlevel_);
+  if ((int)aiterations_.size() < anlevel_ || (int)aomega_.size() < anlevel_)
+    dserror("You need at least %d values of ALEPCITER and ALEPCOMEGA in input file", anlevel_);
+  if ((int)blocksmoother_.size() < 1)
+    dserror("You need at least 1 value of BLOCKSMOOTHER in input file");
+  if (blocksmoother_[0] == "Schur") dserror("Schur(AMG) not implemented");
 
   Ass_.resize(std::max(maxnlevel_, snlevel_));
   Pss_.resize(std::max(maxnlevel_, snlevel_) - 1);
@@ -500,9 +455,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     AAF_[0] = Aaf_;
   }
 
-  //==================== explicit FSI off-diagonal blocks on coarse levels
-  if (strategy_ == INPAR::FSI::FSIAMG) RAPoffdiagonals();
-
   //================set up MLAPI smoothers for structure, fluid, ale on each level
   Teuchos::RCP<MLAPI::InverseOperator> S;
   Teuchos::RCP<MLAPI::LoadBalanceInverseOperator> lbS;
@@ -677,12 +629,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   // in case we do FSIAMG now switch the minnlevel to maxnlevel since
   // we have set up dummy coarser then coarse grids for the smaller hierarchies
   minnlevel_ = maxnlevel_;
-  if (strategy_ == INPAR::FSI::FSIAMG)
-  {
-    snlevel_ = maxnlevel_;
-    anlevel_ = maxnlevel_;
-    fnlevel_ = maxnlevel_;
-  }
 
   //-------------------------------------------------------------- timing
   if (!myrank && verbosity_ == INPAR::FSI::verbosity_full)
@@ -1319,87 +1265,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   // run FSIAMG
   switch (strategy_)
   {
-    case INPAR::FSI::FSIAMG:
-    {
-      int myrank = X.Comm().MyPID();
-      std::vector<int> Vsweeps(minnlevel_, 1);
-      std::vector<double> Vdamps(minnlevel_, 1.0);
-      std::vector<int> blocksweeps[3];
-      std::vector<double> blockdamps[3];
-      for (int i = 0; i < 3; ++i)
-      {
-        blocksweeps[i].resize(minnlevel_, 1);
-        blockdamps[i].resize(minnlevel_, 1.0);
-      }
-      for (int i = 0; i < minnlevel_; ++i)
-      {
-        Vsweeps[i] = pciter_[i];
-        Vdamps[i] = pcomega_[i];
-        blocksweeps[0][i] = siterations_[i];
-        blockdamps[0][i] = somega_[i];
-        blocksweeps[1][i] = fiterations_[i];
-        blockdamps[1][i] = fomega_[i];
-        blocksweeps[2][i] = aiterations_[i];
-        blockdamps[2][i] = aomega_[i];
-      }
-
-
-      AnalyzeBest shierachy(snlevel_);
-      for (int i = 0; i < snlevel_; ++i)
-      {
-        shierachy.S()[i] = Sss_[i];
-        shierachy.Type()[i] = "s";
-        shierachy.Damp()[i] = 1.0;
-        shierachy.Sweeps()[i] = 1;
-      }
-      for (int i = minnlevel_; i < snlevel_; ++i)
-      {
-        shierachy.Damp()[i] = somega_[i];
-        shierachy.Sweeps()[i] = siterations_[i];
-      }
-
-      AnalyzeBest fhierachy(fnlevel_);
-      for (int i = 0; i < fnlevel_; ++i)
-      {
-        fhierachy.S()[i] = Sff_[i];
-        fhierachy.Type()[i] = "f";
-        fhierachy.Damp()[i] = 1.0;
-        fhierachy.Sweeps()[i] = 1;
-      }
-      for (int i = minnlevel_; i < fnlevel_; ++i)
-      {
-        fhierachy.Damp()[i] = fomega_[i];
-        fhierachy.Sweeps()[i] = fiterations_[i];
-      }
-
-      AnalyzeBest ahierachy(anlevel_);
-      for (int i = 0; i < anlevel_; ++i)
-      {
-        ahierachy.S()[i] = Saa_[i];
-        ahierachy.Type()[i] = "a";
-        ahierachy.Damp()[i] = 1.0;
-        ahierachy.Sweeps()[i] = 1;
-      }
-      for (int i = minnlevel_; i < anlevel_; ++i)
-      {
-        ahierachy.Damp()[i] = aomega_[i];
-        ahierachy.Sweeps()[i] = aiterations_[i];
-      }
-
-      mlsy = 0.0;
-      mlfy = 0.0;
-      mlay = 0.0;
-      Richardson_BlockV(myrank, 1, 1.0, Vsweeps, Vdamps, blocksweeps, blockdamps, blocksmoother_,
-          shierachy, fhierachy, ahierachy, mlsy, mlfy, mlay, mlsx, mlfx, mlax, Ass_,
-          const_cast<std::vector<MLAPI::Operator>&>(Pss_),
-          const_cast<std::vector<MLAPI::Operator>&>(Rss_), Aff_,
-          const_cast<std::vector<MLAPI::Operator>&>(Pff_),
-          const_cast<std::vector<MLAPI::Operator>&>(Rff_), Aaa_,
-          const_cast<std::vector<MLAPI::Operator>&>(Paa_),
-          const_cast<std::vector<MLAPI::Operator>&>(Raa_), ASF_, AFS_, AFA_, AAF_, true, false,
-          true);
-      break;
-    }
     case INPAR::FSI::PreconditionedKrylov:
     {
       int myrank = X.Comm().MyPID();
@@ -1543,41 +1408,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::Vcycle(const int level, const int nlevel
  *----------------------------------------------------------------------*/
 const char* FSI::OverlappingBlockMatrixFSIAMG::Label() const
 {
-  if (strategy_ == INPAR::FSI::FSIAMG)
-  {
-    std::string blocksmooth = blocksmoother_[0];
-    bool equal = true;
-    for (int i = 0; i < (int)blocksmoother_.size(); ++i)
-      if (blocksmooth == blocksmoother_[i])
-        continue;
-      else
-      {
-        equal = false;
-        break;
-      }
-    if (blocksmooth == "Schur" && equal)
-    {
-      if (structuresplit_)
-        return " structuresplit AMG(Schur) / FSIAMG";
-      else
-        return " fluidsplit AMG(Schur) / FSIAMG";
-    }
-    else if (blocksmooth == "BGS" && equal)
-    {
-      if (structuresplit_)
-        return "structuresplit AMG(BGS) / FSIAMG";
-      else
-        return "fluidsplit AMG(BGS) / FSIAMG";
-    }
-    else
-    {
-      if (structuresplit_)
-        return "structuresplit AMG(BGS/Schur) / FSIAMG";
-      else
-        return "fluidsplit AMG(BGS/Schur) / FSIAMG";
-    }
-    return "FSIAMG";
-  }
   if (strategy_ == INPAR::FSI::PreconditionedKrylov)
   {
     if (structuresplit_)

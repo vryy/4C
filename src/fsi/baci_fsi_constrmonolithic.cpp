@@ -332,9 +332,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSyste
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, *lsParams,
           Teuchos::rcp(iJac, false), J, Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
-    case INPAR::FSI::FSIAMG:
     default:
-      dserror("Chosen FSI does not work with FSIAMG due to additional constraints!");
+      dserror("Unsupported type of monolithic solver/preconditioner!");
       break;
   }
 
@@ -542,9 +541,8 @@ void FSI::ConstrMonolithic::CreateSystemMatrix(bool structuresplit)
           DRT::Problem::Instance()->ErrorFile()->Handle()));
 
       break;
-    case INPAR::FSI::FSIAMG:
     default:
-      dserror("Unsupported type of monolithic solver! Only Preconditioned Krylov supported!");
+      dserror("Unsupported type of monolithic solver/preconditioner!");
       break;
   }
 }

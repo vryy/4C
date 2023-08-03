@@ -1197,7 +1197,6 @@ void FSI::BlockMonolithic::CreateSystemMatrix(
   switch (linearsolverstrategy)
   {
     case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::FSIAMG:
     {
       mat = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(Extractor(), *StructureField(),
           *FluidField(), *AleField(), structuresplit,
@@ -1257,7 +1256,6 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::BlockMonolithic::CreateLinearSystem
   switch (linearsolverstrategy)
   {
     case INPAR::FSI::PreconditionedKrylov:
-    case INPAR::FSI::FSIAMG:
     case INPAR::FSI::HybridSchwarz:
     {
       linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams, lsParams,

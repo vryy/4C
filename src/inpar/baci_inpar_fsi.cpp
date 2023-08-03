@@ -236,8 +236,8 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("INNERPREC", "PreconditionedKrylov",
       "Inner preconditioner used in a hybrid Schwarz setting.",
-      tuple<std::string>("PreconditionedKrylov", "FSIAMG"),
-      tuple<int>(INPAR::FSI::PreconditionedKrylov, INPAR::FSI::FSIAMG), &fsimono);
+      tuple<std::string>("PreconditionedKrylov"), tuple<int>(INPAR::FSI::PreconditionedKrylov),
+      &fsimono);
 
   IntParameter("ITEMAX", 100, "Maximum allowed number of nonlinear iterations", &fsimono);
 
@@ -247,9 +247,9 @@ void INPAR::FSI::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
   setStringToIntegralParameter<int>("LINEARBLOCKSOLVER", "PreconditionedKrylov",
       "Linear block preconditioner for block system in monolithic FSI.",
-      tuple<std::string>("PreconditionedKrylov", "FSIAMG", "HybridSchwarz", "LinalgSolver"),
-      tuple<int>(INPAR::FSI::PreconditionedKrylov, INPAR::FSI::FSIAMG, INPAR::FSI::HybridSchwarz,
-          INPAR::FSI::LinalgSolver),
+      tuple<std::string>("PreconditionedKrylov", "HybridSchwarz", "LinalgSolver"),
+      tuple<int>(
+          INPAR::FSI::PreconditionedKrylov, INPAR::FSI::HybridSchwarz, INPAR::FSI::LinalgSolver),
       &fsimono);
 
   IntParameter("LINEAR_SOLVER", -1,

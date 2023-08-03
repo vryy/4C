@@ -611,9 +611,8 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::LungMonolithic::CreateLinearSystem(
           FSI::MonolithicLinearSystem(printParams, *lsParams, Teuchos::rcp(iJac, false), J,
               Teuchos::rcp(iPrec, false), M, noxSoln));
       break;
-    case INPAR::FSI::FSIAMG:
     default:
-      dserror("unsupported linear block solver strategy: fsiamg");
+      dserror("Unsupported type of monolithic solver/preconditioner!");
       break;
   }
 
@@ -970,7 +969,6 @@ void FSI::LungMonolithic::CreateSystemMatrix(bool structuresplit)
               pcomega[0], pciter[0], spcomega[0], spciter[0], fpcomega[0], fpciter[0], apcomega[0],
               apciter[0], DRT::Problem::Instance()->ErrorFile()->Handle()));
       break;
-    case INPAR::FSI::FSIAMG:
     default:
       dserror("Unsupported type of monolithic solver");
       break;

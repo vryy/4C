@@ -540,8 +540,6 @@ FSI::MonolithicFS::MonolithicFS(const Epetra_Comm& comm, const Teuchos::Paramete
   // create block system matrix
   switch (linearsolverstrategy_)
   {
-      // FSIAMG not supported
-
     case INPAR::FSI::PreconditionedKrylov:
       systemmatrix_ =
           Teuchos::rcp(new OverlappingBlockMatrixFS(Extractor(), *FluidField(), *AleField(), true,
