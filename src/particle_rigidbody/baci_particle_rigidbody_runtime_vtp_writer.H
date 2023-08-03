@@ -14,20 +14,19 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_io_visualization_manager.H"
+
 #include <Epetra_Comm.h>
 
 #include <memory>
-#include <vector>
 
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-class RuntimeVtpWriter;
-
 namespace IO
 {
   class DiscretizationReader;
-}
+}  // namespace IO
 
 namespace PARTICLERIGIDBODY
 {
@@ -71,15 +70,6 @@ namespace PARTICLERIGIDBODY
     void Init(const std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate);
 
     /*!
-     * \brief setup rigid body runtime vtp writer
-     *
-     * \author Sebastian Fuchs \date 09/2020
-     *
-     * \param[in] write_binary_output flag for output in binary format
-     */
-    void Setup(bool write_binary_output);
-
-    /*!
      * \brief read restart of runtime vtp writer
      *
      * \author Sebastian Fuchs \date 09/2020
@@ -87,16 +77,6 @@ namespace PARTICLERIGIDBODY
      * \param[in] reader discretization reader
      */
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
-    /*!
-     * \brief reset current simulation time and time step number
-     *
-     * \author Sebastian Fuchs \date 09/2020
-     *
-     * \param[in] time     output time
-     * \param[in] timestep output step
-     */
-    void ResetTimeAndTimeStep(double time, unsigned int timestep);
 
     /*!
      * \brief set positions and states of rigid bodies
@@ -110,18 +90,9 @@ namespace PARTICLERIGIDBODY
     void SetRigidBodyPositionsAndStates(const std::vector<int>& ownedrigidbodies);
 
     /*!
-     * \brief write all required vtp files to filesystem
-     *
-     * \author Sebastian Fuchs \date 09/2020
+     * \brief Write the visualization files to disk
      */
-    void WriteFiles();
-
-    /*!
-     * \brief write a vtp collection file to filesystem
-     *
-     * \author Sebastian Fuchs \date 09/2020
-     */
-    void WriteCollectionFileOfAllWrittenFiles();
+    void WriteToDisk(const double time, const unsigned int timestep_number);
 
    private:
     //! communicator
@@ -130,14 +101,11 @@ namespace PARTICLERIGIDBODY
     //! setup time of runtime vtp writer
     double setuptime_;
 
-    //! field name
-    const std::string fieldname_;
-
     //! rigid body data state container
     std::shared_ptr<PARTICLERIGIDBODY::RigidBodyDataState> rigidbodydatastate_;
 
-    //! vtp writer object
-    std::shared_ptr<RuntimeVtpWriter> runtime_vtpwriter_;
+    //! visualization manager
+    std::shared_ptr<IO::VisualizationManager> visualization_manager_;
   };
 
 }  // namespace PARTICLERIGIDBODY

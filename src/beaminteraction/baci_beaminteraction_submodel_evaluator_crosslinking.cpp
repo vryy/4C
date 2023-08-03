@@ -26,7 +26,6 @@
 #include "baci_io.H"
 #include "baci_io_discretization_runtime_vtp_writer.H"
 #include "baci_io_pstream.H"
-#include "baci_io_runtime_vtp_writer.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -1124,16 +1123,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::InitOutputRuntimeVtpStruc
 {
   CheckInit();
 
-  vtp_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtpWriter());
-
-  // Todo: we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
-
-  // initialize the writer object
-  vtp_writer_ptr_->Initialize(BinDiscretPtr(), BinDiscretPtr()->Name(),
-      num_timesteps_in_simulation_upper_bound, GState().GetTimeN(),
-      GInOutput().GetRuntimeVtpOutputParams()->WriteBinaryOutput());
+  vtp_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtpWriter(
+      BinDiscretPtr(), GInOutput().GetRuntimeVtpOutputParams()->GetVisualizationParameters()));
 }
 
 /*----------------------------------------------------------------------------*
@@ -1147,9 +1138,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
 
   // initialize the writer object
   vtp_writer_ptr_->SetGeometryFromParticleDiscretization();
-
-  // reset time and time step of the writer object
-  vtp_writer_ptr_->ResetTimeAndTimeStep(GState().GetTimeN(), GState().GetStepN());
 
   // append all desired node and dof output data to the writer object's storage
   DRT::Discretization const& bindis = BinDiscret();
@@ -1167,7 +1155,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
   // append displacement vector if desired
   // append displacement if desired
   //   if ( GInOutput().GetRuntimeVtpOutputParams()->OutputDisplacementState() )
-  //     vtp_writer_ptr_->AppendDofBasedResultDataVector( dis, 3, "displacement" );
+  //     vtp_writer_ptr_-->AppendDofBasedResultDataVector( dis, 3, "displacement" );
 
   // append owner if desired
   if (GInOutput().GetRuntimeVtpOutputParams()->OutputOwner())
@@ -1185,13 +1173,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
   if (GInOutput().GetRuntimeVtpOutputParams()->OutputLinkingForce())
     vtp_writer_ptr_->AppendDofBasedResultDataVector(force, 3, "force");
 
-  // finalize everything and write all required VTU files to file system
-  vtp_writer_ptr_->WriteFiles();
-
-  // write collection files
-  vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles(BinDiscretPtr()->Name());
-
-
+  // finalize everything and write all required files to file system
+  vtp_writer_ptr_->WriteToDisk(GState().GetTimeN(), GState().GetStepN());
 
   // ************** BEGIN RUNTIME VTP OUTPUT *** OPTION 2: DIRECTLY *********
   // this section is just to get the idea and needs some minor modifications (indicated by Fixme)

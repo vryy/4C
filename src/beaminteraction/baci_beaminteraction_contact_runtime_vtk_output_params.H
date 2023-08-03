@@ -12,7 +12,7 @@
 #define BACI_BEAMINTERACTION_CONTACT_RUNTIME_VTK_OUTPUT_PARAMS_H
 
 #include "baci_inpar_beamcontact.H"
-
+#include "baci_io_visualization_parameters.H"
 
 namespace BEAMINTERACTION
 {
@@ -31,12 +31,12 @@ namespace BEAMINTERACTION
     //! setup member variables
     void Setup();
 
-
-    /// whether to write numeric output data binary-encoded or in ascii format
-    bool WriteBinaryOutput() const
+    /**
+     * \brief Return the container holding the general output parameters
+     */
+    const IO::VisualizationParameters& GetVisualizationParameters() const
     {
-      ThrowErrorIfNotInitAndSetup();
-      return (output_data_format_ == INPAR::BEAMCONTACT::binary);
+      return visualization_parameters_;
     }
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -87,8 +87,8 @@ namespace BEAMINTERACTION
 
     bool issetup_;
 
-    /// data format for numeric output data
-    INPAR::BEAMCONTACT::OutputDataFormat output_data_format_;
+    //! General visualization parameters
+    IO::VisualizationParameters visualization_parameters_;
 
     /// output interval regarding steps: write output every INTERVAL_STEPS steps
     int output_interval_steps_;

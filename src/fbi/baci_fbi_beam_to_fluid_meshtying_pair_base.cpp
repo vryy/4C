@@ -185,8 +185,10 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     CORE::LINALG::Matrix<3, 1, scalar_type> force_integration_point;
 
     // Get the visualization vectors.
-    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
-    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
+    auto& visualization_data = visualization->GetVisualizationDataMutable();
+    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
+    std::vector<double>& displacement =
+        visualization_data.GetPointDataMutable<double>("displacement");
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)
@@ -218,8 +220,10 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairBase<beam, fluid>::GetPairVisualiz
     CORE::LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
-    std::vector<double>& point_coordinates = visualization->GetMutablePointCoordinateVector();
-    std::vector<double>& displacement = visualization->GetMutablePointDataVector("displacement");
+    auto& visualization_data = visualization->GetVisualizationDataMutable();
+    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
+    std::vector<double>& displacement =
+        visualization_data.GetPointDataMutable<double>("displacement");
 
     // Loop over the segments on the beam.
     for (const auto& segment : this->line_to_3D_segments_)

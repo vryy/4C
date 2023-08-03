@@ -22,6 +22,7 @@
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_direct.H"
 #include "baci_beaminteraction_submodel_evaluator_beamcontact_assembly_manager_indirect.H"
 #include "baci_geometry_pair_line_to_surface_evaluation_data.H"
+#include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 
@@ -80,14 +81,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces", "btssc-nodal-forces");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("force_beam", 3);
-      visualization_writer->AddPointDataVector("force_solid", 3);
-      visualization_writer->AddFieldDataVector("sum_coupling_force_beam");
-      visualization_writer->AddFieldDataVector("sum_coupling_moment_beam");
-      visualization_writer->AddFieldDataVector("sum_coupling_force_solid");
-      visualization_writer->AddFieldDataVector("sum_coupling_moment_solid");
-      if (write_unique_ids) visualization_writer->AddPointDataVector("uid_0_node_id", 1);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("force_beam", 3);
+      visualization_data.RegisterPointData<double>("force_solid", 3);
+      visualization_data.RegisterFieldData<double>("sum_coupling_force_beam");
+      visualization_data.RegisterFieldData<double>("sum_coupling_moment_beam");
+      visualization_data.RegisterFieldData<double>("sum_coupling_force_solid");
+      visualization_data.RegisterFieldData<double>("sum_coupling_moment_solid");
+      if (write_unique_ids) visualization_data.RegisterPointData<double>("uid_0_node_id", 1);
     }
 
     if (output_params_ptr_->GetAveragedNormalsOutputFlag())
@@ -95,23 +97,25 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "averaged-normals", "btssc-averaged-normals");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("normal_averaged", 3);
-      visualization_writer->AddPointDataVector("normal_element", 3);
-      visualization_writer->AddPointDataVector("coupling_id", 1);
-      if (write_unique_ids) visualization_writer->AddPointDataVector("uid_0_face_id", 1);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("normal_averaged", 3);
+      visualization_data.RegisterPointData<double>("normal_element", 3);
+      visualization_data.RegisterPointData<double>("coupling_id", 1);
+      if (write_unique_ids) visualization_data.RegisterPointData<double>("uid_0_face_id", 1);
     }
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("mortar", "btssc-mortar");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("lambda", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -120,14 +124,15 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "mortar-continuous", "btssc-mortar-continuous");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("lambda", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
-        visualization_writer->AddCellDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddCellDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterCellData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterCellData<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -136,12 +141,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "integration-points", "btssc-integration-points");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("projection_direction", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("projection_direction", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -149,12 +155,13 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btssc-segmentation");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("projection_direction", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("projection_direction", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
       }
     }
   }
@@ -173,11 +180,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntime(
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the next
   // step.
-  int i_step = beam_contact->GState().GetStepN();
-  double time = beam_contact->GState().GetTimeN();
-  if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
-
-  WriteOutputBeamToSolidSurface(beam_contact, i_step, time);
+  auto [output_time, output_step] =
+      IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
+          beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
+  WriteOutputBeamToSolidSurface(beam_contact, output_step, output_time);
 }
 
 /**
@@ -190,12 +196,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputRuntimeItera
 
   if (output_params_ptr_->GetOutputEveryIteration())
   {
-    // Get the time step and time for the output file. If output is desired at every iteration, the
-    // values are padded.
-    int i_step = 10000 * beam_contact->GState().GetStepN() + i_iteration;
-    double time = beam_contact->GState().GetTimeN() + 1e-8 * i_iteration;
-
-    WriteOutputBeamToSolidSurface(beam_contact, i_step, time);
+    auto [output_time, output_step] =
+        IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
+            beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
+    WriteOutputBeamToSolidSurface(beam_contact, output_step, output_time);
   }
 }
 
@@ -329,10 +333,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
 
         // Add to the vtk output writer.
+        auto& visualization_data = nodal_force_visualization->GetVisualizationDataMutable();
         std::vector<double>& field_data_beam_force =
-            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_force_beam");
+            visualization_data.GetFieldDataMutable<double>("sum_coupling_force_beam");
         std::vector<double>& field_data_beam_moment =
-            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_moment_beam");
+            visualization_data.GetFieldDataMutable<double>("sum_coupling_moment_beam");
         field_data_beam_force.clear();
         field_data_beam_force.resize(3);
         field_data_beam_moment.clear();
@@ -343,9 +348,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
           field_data_beam_moment[i_dim] = beam_resultant_global(i_dim, 1);
         }
         std::vector<double>& field_data_solid_force =
-            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_force_solid");
+            visualization_data.GetFieldDataMutable<double>("sum_coupling_force_solid");
         std::vector<double>& field_data_solid_moment =
-            nodal_force_visualization->GetMutableFieldDataVector("sum_coupling_moment_solid");
+            visualization_data.GetFieldDataMutable<double>("sum_coupling_moment_solid");
         field_data_solid_force.clear();
         field_data_solid_force.resize(3);
         field_data_solid_moment.clear();

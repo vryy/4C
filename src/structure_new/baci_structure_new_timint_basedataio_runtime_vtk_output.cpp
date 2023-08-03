@@ -12,9 +12,9 @@
 
 #include "baci_beam3_discretization_runtime_vtu_output_params.H"
 #include "baci_inpar_parameterlist_utils.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_structure_new_discretization_runtime_vtu_output_params.H"
 #include "baci_utils_exceptions.H"
-
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -24,16 +24,18 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
   // We have to call Setup() after Init()
   issetup_ = false;
 
-  // initialize the parameter values
-  output_data_format_ = DRT::INPUT::IntegralValue<INPAR::IO_RUNTIME_VTK::OutputDataFormat>(
-      IO_vtk_structure_paramslist, "OUTPUT_DATA_FORMAT");
+  // Set general output parameters
+  visualization_parameters_ = IO::VisualizationParametersFactory(
+      DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"));
 
+  // initialize the parameter values
   output_interval_steps_ = IO_vtk_structure_paramslist.get<int>("INTERVAL_STEPS");
   output_step_offset_ = IO_vtk_structure_paramslist.get<int>("STEP_OFFSET");
-
   output_every_iteration_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtk_structure_paramslist, "EVERY_ITERATION");
 
+  // Overwrite non default values in the visualization parameters
+  visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   // check for output of structure discretization which is to be handled by an own writer object
   output_structure_ = (bool)DRT::INPUT::IntegralValue<int>(

@@ -78,7 +78,6 @@ E 1 - COUPLING_ID 1
 E 1 - COUPLING_ID 1
 ---------------------------------------------BEAM CONTACT/RUNTIME VTK OUTPUT
 VTK_OUTPUT_BEAM_CONTACT         yes
-OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
 EVERY_ITERATION                 yes
 CONTACT_FORCES                  yes

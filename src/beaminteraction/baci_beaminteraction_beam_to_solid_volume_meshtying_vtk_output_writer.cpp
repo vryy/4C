@@ -81,22 +81,24 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces", "btsvc-nodal-forces");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("force_beam", 3);
-      visualization_writer->AddPointDataVector("force_solid", 3);
-      if (write_unique_ids) visualization_writer->AddPointDataVector("uid_0_node_id", 1);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("force_beam", 3);
+      visualization_data.RegisterPointData<double>("force_solid", 3);
+      if (write_unique_ids) visualization_data.RegisterPointData<double>("uid_0_node_id", 1);
     }
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("mortar", "btsvc-mortar");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("lambda", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -105,14 +107,15 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "mortar-continuous", "btsvc-mortar-continuous");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("lambda", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
-        visualization_writer->AddCellDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddCellDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterCellData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterCellData<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -121,12 +124,13 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "integration-points", "btsvc-integration-points");
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("force", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("force", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
       }
     }
 
@@ -134,11 +138,12 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btsvc-segmentation");
-      visualization_writer->AddPointDataVector("displacement", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
       if (write_unique_ids)
       {
-        visualization_writer->AddPointDataVector("uid_0_pair_beam_id", 1);
-        visualization_writer->AddPointDataVector("uid_1_pair_solid_id", 1);
+        visualization_data.RegisterPointData<double>("uid_0_pair_beam_id", 1);
+        visualization_data.RegisterPointData<double>("uid_1_pair_solid_id", 1);
       }
     }
   }
@@ -157,11 +162,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
   // Get the time step and time for the output file. If output is desired at every iteration, the
   // values are padded. The runtime output is written when the time step is already set to the
   // next step.
-  int i_step = beam_contact->GState().GetStepN();
-  double time = beam_contact->GState().GetTimeN();
-  if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
-
-  WriteOutputBeamToSolidVolumeMeshTying(beam_contact, i_step, time);
+  auto [output_time, output_step] =
+      IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
+          beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN());
+  WriteOutputBeamToSolidVolumeMeshTying(beam_contact, output_step, output_time);
 }
 
 /**
@@ -174,12 +178,10 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter::WriteOutputRunt
 
   if (output_params_ptr_->GetOutputEveryIteration())
   {
-    // Get the time step and time for the output file. If output is desired at every iteration,
-    // the values are padded.
-    int i_step = 10000 * beam_contact->GState().GetStepN() + i_iteration;
-    double time = beam_contact->GState().GetTimeN() + 1e-8 * i_iteration;
-
-    WriteOutputBeamToSolidVolumeMeshTying(beam_contact, i_step, time);
+    auto [output_time, output_step] =
+        IO::GetTimeAndTimeStepIndexForOutput(output_params_ptr_->GetVisualizationParameters(),
+            beam_contact->GState().GetTimeN(), beam_contact->GState().GetStepN(), i_iteration);
+    WriteOutputBeamToSolidVolumeMeshTying(beam_contact, output_step, output_time);
   }
 }
 

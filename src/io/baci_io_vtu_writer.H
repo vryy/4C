@@ -33,25 +33,21 @@ class VtuWriter : public VtkWriterBase
   //! destructor
   virtual ~VtuWriter() {}
 
-  //! write the geometry defining this unstructured grid assuming contiguous points
-  void WriteGeometryUnstructuredGridContiguous(const std::vector<double>& point_coordinates,
-      const std::vector<int32_t>& cell_offset, const std::vector<uint8_t>& cell_types);
-
   //! write the geometry defining this unstructured grid
   void WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
-      const std::vector<int32_t>& point_cell_connectivity, const std::vector<int32_t>& cell_offset,
-      const std::vector<uint8_t>& cell_types);
+      const std::vector<IO::index_type>& point_cell_connectivity,
+      const std::vector<IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
+      const std::vector<IO::index_type>& face_connectivity,
+      const std::vector<IO::index_type>& face_offset);
 
 
   //! write a data vector with num_component values of type T per point
-  // Todo template <typename T>
-  void WritePointDataVector(const std::vector<double>& data, unsigned int num_components_per_point,
-      const std::string& name);
+  void WritePointDataVector(const IO::visualization_vector_type_variant& data,
+      unsigned int num_components_per_point, const std::string& name);
 
   //! write a data vector with num_component values of type T per cell
-  // Todo template <typename T>
-  void WriteCellDataVector(const std::vector<double>& data, unsigned int num_components_per_cell,
-      const std::string& name);
+  void WriteCellDataVector(const IO::visualization_vector_type_variant& data,
+      unsigned int num_components_per_cell, const std::string& name);
 
 
  protected:

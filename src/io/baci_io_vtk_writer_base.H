@@ -11,6 +11,7 @@
 #define BACI_IO_VTK_WRITER_BASE_H
 
 
+#include "baci_io_visualization_data.H"
 #include "baci_utils_exceptions.H"
 
 #include <bits/c++config.h>
@@ -21,6 +22,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <variant>
 #include <vector>
 
 
@@ -144,7 +146,7 @@ class VtkWriterBase
 
   //! write given field data, including time and cycle for vtk file.
   void WriteVtkFieldDataAndOrTimeAndOrCycle(
-      const std::map<std::string, std::vector<double>>& field_data_map);
+      const std::map<std::string, IO::visualization_vector_type_variant>& field_data_map);
 
   //! write field data for time and cycle for vtk file.
   void WriteVtkTimeAndOrCycle();
@@ -160,8 +162,8 @@ class VtkWriterBase
  protected:
   //! write a data vector as DataArray to corresponding vtk files
   // Todo template <typename T>
-  void WriteDataArray(
-      const std::vector<double>& data, const int num_components, const std::string& name);
+  void WriteDataArray(const IO::visualization_vector_type_variant& data, const int num_components,
+      const std::string& name);
 
   //! generate the part of the filename that expresses the processor ID
   const std::string& GetPartOfFileNameIndicatingProcessorId(unsigned int processor_id) const;
@@ -202,12 +204,13 @@ class VtkWriterBase
 
   //! write the required information about the DataArray to master file
   // Todo template <typename T>
-  void WriteDataArrayMasterFile(const int num_components, const std::string& name);
+  void WriteDataArrayMasterFile(
+      const int num_components, const std::string& name, const std::string& data_type_name);
 
   //! write the data array to this processor's file
-  // Todo template <typename T>
+  template <typename T>
   void WriteDataArrayThisProcessor(
-      const std::vector<double>& data, const int num_components, const std::string& name);
+      const std::vector<T>& data, const int num_components, const std::string& name);
 
 
   //! write epilogue of of the VTK master file (handled by proc 0)

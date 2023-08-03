@@ -71,9 +71,10 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces");
-      visualization_writer->AddPointDataVector("velocity", 3);
-      visualization_writer->AddPointDataVector("displacement", 3);
-      visualization_writer->AddPointDataVector("force", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("velocity", 3);
+      visualization_data.RegisterPointData<double>("displacement", 3);
+      visualization_data.RegisterPointData<double>("force", 3);
     }
 
     if (output_params_ptr_->GetMortarLambdaDiscretOutputFlag())
@@ -90,7 +91,8 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("integration-points");
-      visualization_writer->AddPointDataVector("displacement", 3);
+      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      visualization_data.RegisterPointData<double>("displacement", 3);
     }
   }
 
@@ -106,12 +108,9 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::WriteOutputRuntime(
 {
   CheckInitSetup();
 
-  // If output is desired at every iteration, the
-  // values are padded. The runtime output is written when the time step is already set to the next
-  // step.
-  if (output_params_ptr_->GetOutputEveryIteration()) i_step *= 10000;
-
-  WriteOutputBeamToFluidMeshTying(couplingenforcer, i_step, time);
+  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+      output_params_ptr_->GetVisualizationParameters(), time, i_step);
+  WriteOutputBeamToFluidMeshTying(couplingenforcer, output_step, output_time);
 }
 
 /**

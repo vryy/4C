@@ -18,7 +18,8 @@
 BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::BeamContactRuntimeVtkOutputParams()
     : isinit_(false),
       issetup_(false),
-      output_data_format_(INPAR::BEAMCONTACT::vague),
+      visualization_parameters_(IO::VisualizationParametersFactory(
+          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))),
       output_interval_steps_(-1),
       output_every_iteration_(false),
       output_forces_(false),
@@ -50,13 +51,11 @@ void BEAMINTERACTION::BeamContactRuntimeVtkOutputParams::Setup()
   /****************************************************************************/
   // get and check required parameters
   /****************************************************************************/
-  output_data_format_ = DRT::INPUT::IntegralValue<INPAR::BEAMCONTACT::OutputDataFormat>(
-      beam_contact_vtk_paramslist, "OUTPUT_DATA_FORMAT");
-
   output_interval_steps_ = beam_contact_vtk_paramslist.get<int>("INTERVAL_STEPS");
 
   output_every_iteration_ =
       (bool)DRT::INPUT::IntegralValue<int>(beam_contact_vtk_paramslist, "EVERY_ITERATION");
+  visualization_parameters_.every_iteration_ = output_every_iteration_;
 
   /****************************************************************************/
   output_forces_ =

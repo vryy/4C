@@ -240,8 +240,8 @@ bool STR::TIMINT::BaseDataIO::WriteRuntimeVtpResultsForThisStep(const int step) 
 {
   if (step < 0) dserror("The variable step is not allowed to be negative.");
   return (GetRuntimeVtpOutputParams() != Teuchos::null &&
-          DetermineWriteOutput(step, GetRuntimeVtpOutputParams()->OutputStepOffset(),
-              GetRuntimeVtpOutputParams()->OutputIntervalInSteps()));
+          DetermineWriteOutput(step, GetRuntimeVtkOutputParams()->OutputStepOffset(),
+              GetRuntimeVtkOutputParams()->OutputIntervalInSteps()));
 }
 
 

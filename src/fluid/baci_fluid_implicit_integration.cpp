@@ -383,13 +383,6 @@ void FLD::FluidImplicitTimeInt::Init()
     CreateFacesExtension();
   }
   reconstructder_ = DRT::INPUT::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
-
-  if (runtime_output_writer_ != Teuchos::null)
-  {
-    unsigned int num_timesteps_in_simulation_upper_bound = stepmax_;
-    runtime_output_writer_->Initialize(
-        Discretization(), num_timesteps_in_simulation_upper_bound, Time(), false);
-  }
 }  // FluidImplicitTimeInt::Init()
 
 /*----------------------------------------------------------------------*
@@ -3427,7 +3420,7 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
   Teuchos::RCP<Epetra_Vector> col_version =
       Teuchos::rcp(new Epetra_Vector(*(Discretization()->DofColMap()), true));
 
-  runtime_output_writer_->ResetTimeAndTimeStep(time_, step_);
+  runtime_output_writer_->Reset();
 
   if (runtime_output_params_.OutputVelocityState())
   {
@@ -3472,8 +3465,7 @@ void FLD::FluidImplicitTimeInt::WriteRuntimeOutput()
   if (runtime_output_params_.OutputNodeGID()) runtime_output_writer_->AppendNodeGID("node_gid");
 
   // finalize everything and write all required files to filesystem
-  runtime_output_writer_->WriteFiles();
-  runtime_output_writer_->WriteCollectionFileOfAllWrittenFiles();
+  runtime_output_writer_->WriteToDisk(time_, step_);
 }
 /*----------------------------------------------------------------------*
  | output of solution vector to binio                        gammi 04/07|

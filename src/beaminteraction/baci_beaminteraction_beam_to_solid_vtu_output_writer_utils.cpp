@@ -61,7 +61,9 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
 
   if (write_unique_ids)
   {
-    std::vector<double>& unique_id = visualization->GetMutablePointDataVector("uid_0_node_id");
+    auto& visualization_data = visualization->GetVisualizationDataMutable();
+    std::vector<double>& unique_id =
+        visualization_data.GetPointDataMutable<double>("uid_0_node_id");
     for (int i_lid = 0; i_lid < discret_ptr->NumMyRowNodes(); i_lid++)
       unique_id.push_back(discret_ptr->lRowNode(i_lid)->Id());
   }
@@ -77,20 +79,21 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
     const int condition_coupling_id, const bool write_unique_ids)
 {
   // Get the visualization vectors.
-  std::vector<double>& point_coordinates =
-      output_writer_base_ptr->GetMutablePointCoordinateVector();
+  auto& visualization_data = output_writer_base_ptr->GetVisualizationDataMutable();
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
   std::vector<double>& displacement =
-      output_writer_base_ptr->GetMutablePointDataVector("displacement");
+      visualization_data.GetPointDataMutable<double>("displacement");
   std::vector<double>& normal_averaged =
-      output_writer_base_ptr->GetMutablePointDataVector("normal_averaged");
+      visualization_data.GetPointDataMutable<double>("normal_averaged");
   std::vector<double>& normal_element =
-      output_writer_base_ptr->GetMutablePointDataVector("normal_element");
-  std::vector<double>& coupling_id =
-      output_writer_base_ptr->GetMutablePointDataVector("coupling_id");
+      visualization_data.GetPointDataMutable<double>("normal_element");
+  std::vector<double>& coupling_id = visualization_data.GetPointDataMutable<double>("coupling_id");
 
   std::vector<double>* face_id = nullptr;
   if (write_unique_ids)
-    face_id = &(output_writer_base_ptr->GetMutablePointDataVector("uid_0_face_id"));
+  {
+    face_id = &(visualization_data.GetPointDataMutable<double>("uid_0_face_id"));
+  }
 
   // Loop over face elements.
   for (auto const& face_element_iterator : face_elements)

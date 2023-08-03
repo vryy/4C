@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_io_visualization_manager.H"
 #include "baci_particle_engine_container.H"
 #include "baci_particle_engine_container_bundle.H"
 
@@ -22,12 +23,10 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-class RuntimeVtpWriter;
-
 namespace IO
 {
   class DiscretizationReader;
-}
+}  // namespace IO
 
 /*---------------------------------------------------------------------------*
  | class declarations                                                        |
@@ -37,8 +36,8 @@ namespace PARTICLEENGINE
   /*!
    * \brief particle runtime vtp writer class
    *
-   * A class that writes visualization output for particles in vtk/vtp format at runtime. For each
-   * particle type (and particle status) a RuntimeVtpWriter is initialized that writes the output to
+   * A class that writes visualization output for particles in vtk/vtu format at runtime. For each
+   * particle type (and particle status) a RuntimeVtuWriter is initialized that writes the output to
    * a separate name.
    *
    * \author Sebastian Fuchs \date 03/2018
@@ -72,10 +71,9 @@ namespace PARTICLEENGINE
      *
      * \author Sebastian Fuchs \date 03/2018
      *
-     * \param[in] write_binary_output     flag for output in binary format
      * \param[in] write_ghosted_particles flag for output of ghosted particles
      */
-    void Setup(bool write_binary_output, bool write_ghosted_particles);
+    void Setup(bool write_ghosted_particles);
 
     /*!
      * \brief read restart of runtime vtp writer
@@ -87,16 +85,6 @@ namespace PARTICLEENGINE
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     /*!
-     * \brief reset current simulation time and time step number
-     *
-     * \author Sebastian Fuchs \date 03/2018
-     *
-     * \param[in] time     output time
-     * \param[in] timestep output step
-     */
-    void ResetTimeAndTimeStep(double time, unsigned int timestep);
-
-    /*!
      * \brief set positions and states of particles
      *
      * \author Sebastian Fuchs \date 03/2018
@@ -104,18 +92,9 @@ namespace PARTICLEENGINE
     void SetParticlePositionsAndStates();
 
     /*!
-     * \brief write all required vtp files to filesystem
-     *
-     * \author Sebastian Fuchs \date 03/2018
+     * \brief Write visualization files to disk
      */
-    void WriteFiles();
-
-    /*!
-     * \brief write a vtp collection file to filesystem
-     *
-     * \author Sebastian Fuchs \date 03/2018
-     */
-    void WriteCollectionFileOfAllWrittenFiles();
+    void WriteToDisk(const double visualization_time, const int visualization_step);
 
    private:
     //! communicator
@@ -124,8 +103,9 @@ namespace PARTICLEENGINE
     //! particle container bundle
     ParticleContainerBundleShrdPtr particlecontainerbundle_;
 
-    //! collection of vtp writer objects indexed by particle type enum and particle status enum
-    std::vector<std::vector<std::shared_ptr<RuntimeVtpWriter>>> runtime_vtpwriters_;
+    //! collection of vtu writer objects indexed by particle type enum and particle status enum
+    std::vector<std::vector<std::shared_ptr<IO::VisualizationManager>>>
+        runtime_visualization_managers_;
 
     //! setup time of runtime vtp writer
     double setuptime_;

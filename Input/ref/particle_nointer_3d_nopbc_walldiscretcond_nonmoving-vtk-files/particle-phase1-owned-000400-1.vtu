@@ -1,0 +1,52 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+0.4
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="12" NumberOfCells="0" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAASAAAAA==eNrjXZDPw2N6eP+smSBwcj8DFPCiiUNpe5g4AxpAF0dXD+PjMN8eRvs8W25iNmmlPbp70MXR1aO7B10ch/n2OMyH0wBCKGqj
+        </DataArray>
+      </Points>
+
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAFwAAAA==eNqz4GuqXbWY24EBDViMioMBAHXEIl0=
+        </DataArray>
+        <DataArray type="Float64" Name="globalid" format="binary">
+AQAAAGAAAABgAAAALAAAAA==eNpjYACBD/YMEOAAoQSgtAiUloHSClBaBUqrQWktKK0DpQ2gtKEDAAZoBVE=
+        </DataArray>
+        <DataArray type="Float64" Name="owner" format="binary">
+AQAAAGAAAABgAAAAEAAAAA==eNpjYACBD/YMNKIBiuIONQ==
+        </DataArray>
+        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="binary">
+AQAAACABAAAgAQAAFwAAAA==eNqbemp2RZDCfXsGNDB1VBwMAL5AMBk=
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

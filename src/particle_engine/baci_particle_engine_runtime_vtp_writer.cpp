@@ -11,8 +11,7 @@
 #include "baci_particle_engine_runtime_vtp_writer.H"
 
 #include "baci_io.H"
-#include "baci_io_control.H"
-#include "baci_io_runtime_vtp_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
@@ -42,57 +41,33 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::Init(
       LastIterDensity, LastIterTemperature});
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(
-    bool write_binary_output, bool write_ghosted_particles)
+void PARTICLEENGINE::ParticleRuntimeVtpWriter::Setup(bool write_ghosted_particles)
 {
   // determine size of vector indexed by particle types
   const int typevectorsize = *(--particlecontainerbundle_->GetParticleTypes().end()) + 1;
 
   // allocate memory to hold particle types
-  runtime_vtpwriters_.resize(typevectorsize);
-
-  // determine path of output directory
-  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
-  size_t pos = outputfilename.find_last_of("/");
-  if (pos == outputfilename.npos)
-    pos = 0ul;
-  else
-    pos++;
-  const std::string output_directory_path(outputfilename.substr(0ul, pos));
-
-  // we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int max_number_timesteps_to_be_written = 1.0e+6;
-
-  // construct and initialize all vtp writer objects
-  std::shared_ptr<RuntimeVtpWriter> runtime_vtpwriter;
+  runtime_visualization_managers_.resize(typevectorsize);
 
   // iterate over particle types
   for (const auto& type : particlecontainerbundle_->GetParticleTypes())
   {
     // allocate memory for vtp writer objects of owned and ghosted states
-    (runtime_vtpwriters_[type]).resize(2);
+    (runtime_visualization_managers_[type]).resize(2);
 
     // iterate over particle statuses
     for (const auto& status : {Owned, Ghosted})
     {
       if (status == Ghosted and write_ghosted_particles == false) continue;
 
-      // construct vtp writer object for current particle type and status
-      runtime_vtpwriter = std::make_shared<RuntimeVtpWriter>();
-
       std::ostringstream fieldname;
       fieldname << "particle-" << EnumToTypeName(type) << "-" << EnumToStatusName(status);
 
-      // initialize the writer object
-      runtime_vtpwriter->Initialize(comm_.MyPID(), comm_.NumProc(),
-          max_number_timesteps_to_be_written, output_directory_path,
-          DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), fieldname.str(),
-          DRT::Problem::Instance()->OutputControlFile()->RestartName(), setuptime_,
-          write_binary_output);
-
-      // insert into data structure holding all vtp writer objects for each particle type and status
-      (runtime_vtpwriters_[type])[status] = runtime_vtpwriter;
+      // construct visualiation manager object for current particle type and status
+      (runtime_visualization_managers_[type])[status] = std::make_shared<IO::VisualizationManager>(
+          IO::VisualizationParametersFactory(
+              DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+          comm_, fieldname.str());
     }
   }
 }
@@ -104,28 +79,6 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::ResetTimeAndTimeStep(
-    double time, unsigned int timestep)
-{
-  // iterate over particle types
-  for (const auto& type : particlecontainerbundle_->GetParticleTypes())
-  {
-    // iterate over particle statuses
-    for (const auto& status : {Owned, Ghosted})
-    {
-      // check for runtime vtp writer for current particle type and status
-      if (not(runtime_vtpwriters_[type])[status]) continue;
-
-      // particle field name
-      std::ostringstream particlefieldname;
-      particlefieldname << "particle-" << EnumToTypeName(type) << "-" << EnumToStatusName(status);
-
-      (runtime_vtpwriters_[type])[status]->SetupForNewTimeStepAndGeometry(
-          time, timestep, particlefieldname.str());
-    }
-  }
-}
-
 void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 {
   // iterate over particle types
@@ -135,7 +88,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
     for (const auto& status : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
-      if (not(runtime_vtpwriters_[type])[status]) continue;
+      if (not(runtime_visualization_managers_[type])[status]) continue;
 
       // get container of current particle type and status
       ParticleContainer* container = particlecontainerbundle_->GetSpecificContainer(type, status);
@@ -168,8 +121,9 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
         if (state == Position)
         {
           // get and prepare storage for position data
-          std::vector<double>& positiondata =
-              (runtime_vtpwriters_[type])[status]->GetMutablePointCoordinateVector();
+          std::vector<double>& positiondata = (runtime_visualization_managers_[type])[status]
+                                                  ->GetVisualizationDataMutable()
+                                                  .GetPointCoordinatesMutable();
           positiondata.clear();
           positiondata.reserve(statedim * particlestored);
 
@@ -194,8 +148,9 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
           for (int i = 0; i < (statedim * particlestored); ++i) statedata.push_back(state_ptr[i]);
 
           // append particle state data to vtp writer
-          (runtime_vtpwriters_[type])[status]->AppendVisualizationPointDataVector(
-              statedata, statedim, statename);
+          (runtime_visualization_managers_[type])[status]
+              ->GetVisualizationDataMutable()
+              .SetPointDataVector<double>(statename, statedata, statedim);
         }
       }
 
@@ -210,20 +165,23 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
       for (int i = 0; i < particlestored; ++i) globaliddata.push_back(globalids[i]);
 
       // append global id of particles to vtp writer
-      (runtime_vtpwriters_[type])[status]->AppendVisualizationPointDataVector(
-          globaliddata, 1, "globalid");
+      (runtime_visualization_managers_[type])[status]
+          ->GetVisualizationDataMutable()
+          .SetPointDataVector<double>("globalid", globaliddata, 1);
 
       // set particle owner data
       std::vector<double> ownerdata(particlestored, comm_.MyPID());
 
       // append owner of particles to vtp writer
-      (runtime_vtpwriters_[type])[status]->AppendVisualizationPointDataVector(
-          ownerdata, 1, "owner");
+      (runtime_visualization_managers_[type])[status]
+          ->GetVisualizationDataMutable()
+          .SetPointDataVector<double>("owner", ownerdata, 1);
     }
   }
 }
 
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteFiles()
+void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteToDisk(
+    const double visualization_time, const int visualization_step)
 {
   // iterate over particle types
   for (const auto& type : particlecontainerbundle_->GetParticleTypes())
@@ -232,31 +190,10 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteFiles()
     for (const auto& status : {Owned, Ghosted})
     {
       // check for runtime vtp writer for current particle type and status
-      if (not(runtime_vtpwriters_[type])[status]) continue;
+      if (not(runtime_visualization_managers_[type])[status]) continue;
 
-      (runtime_vtpwriters_[type])[status]->WriteFiles();
-    }
-  }
-}
-
-void PARTICLEENGINE::ParticleRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFiles()
-{
-  // iterate over particle types
-  for (const auto& type : particlecontainerbundle_->GetParticleTypes())
-  {
-    // iterate over particle statuses
-    for (const auto& status : {Owned, Ghosted})
-    {
-      // check for runtime vtp writer for current particle type and status
-      if (not(runtime_vtpwriters_[type])[status]) continue;
-
-      // particle field name
-      std::ostringstream particlefieldname;
-      particlefieldname << "particle-" << EnumToTypeName(type) << "-" << EnumToStatusName(status);
-
-      (runtime_vtpwriters_[type])[status]->WriteCollectionFileOfAllWrittenFiles(
-          DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
-          particlefieldname.str());
+      (runtime_visualization_managers_[type])[status]->WriteToDisk(
+          visualization_time, visualization_step);
     }
   }
 }

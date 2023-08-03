@@ -33,8 +33,6 @@ void FBI::BeamToFluidMeshtyingVtkOutputParams::Setup()
       DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT");
 
   // Get global parameters.
-  output_data_format_ = DRT::INPUT::IntegralValue<INPAR::IO_RUNTIME_VTK::OutputDataFormat>(
-      global_vtk_paramslist, "OUTPUT_DATA_FORMAT");
   output_interval_steps_ = global_vtk_paramslist.get<int>("INTERVAL_STEPS");
   output_every_iteration_ =
       (bool)DRT::INPUT::IntegralValue<int>(global_vtk_paramslist, "EVERY_ITERATION");

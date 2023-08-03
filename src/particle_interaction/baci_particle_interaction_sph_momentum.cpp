@@ -11,7 +11,7 @@
 #include "baci_particle_interaction_sph_momentum.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
-#include "baci_io_runtime_vtp_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_element.H"
 #include "baci_lib_utils.H"
 #include "baci_particle_engine_container.H"
@@ -236,7 +236,7 @@ void PARTICLEINTERACTION::SPHMomentum::SetupParticleInteractionWriter()
 {
   // register specific runtime vtp writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeVtpWriter("particle-wall-momentum");
+    particleinteractionwriter_->RegisterSpecificRuntimeVtuWriter("particle-wall-momentum");
 }
 
 void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleContribution() const
@@ -898,14 +898,15 @@ void PARTICLEINTERACTION::SPHMomentum::MomentumEquationParticleWallContribution(
   if (writeinteractionoutput)
   {
     // get specific runtime vtp writer
-    RuntimeVtpWriter* runtime_vtpwriter =
-        particleinteractionwriter_->GetSpecificRuntimeVtpWriter("particle-wall-momentum");
+    IO::VisualizationManager* visualization_manager =
+        particleinteractionwriter_->GetSpecificRuntimeVtuWriter("particle-wall-momentum");
+    auto& visualization_data = visualization_manager->GetVisualizationDataMutable();
 
     // set wall attack points
-    runtime_vtpwriter->ResetGeometry(attackpoints);
+    visualization_data.GetPointCoordinatesMutable() = attackpoints;
 
     // append states
-    runtime_vtpwriter->AppendVisualizationPointDataVector(contactforces, 3, "contact force");
-    runtime_vtpwriter->AppendVisualizationPointDataVector(normaldirection, 3, "normal direction");
+    visualization_data.SetPointDataVector<double>("contact force", contactforces, 3);
+    visualization_data.SetPointDataVector<double>("normal direction", normaldirection, 3);
   }
 }

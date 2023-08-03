@@ -18,22 +18,26 @@
 #include <Teuchos_RCP.hpp>
 
 /*----------------------------------------------------------------------*/
-namespace INPAR
+namespace INPAR::IO_RUNTIME_VTK
 {
-  namespace IO_RUNTIME_VTK
+  /// data format for written numeric data
+  enum class OutputDataFormat
   {
-    /// data format for written numeric data
-    enum OutputDataFormat
-    {
-      binary,
-      ascii,
-      vague
-    };
+    binary,
+    ascii,
+    vague
+  };
 
-    /// set the valid parameters related to writing of VTK output at runtime
-    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+  // Specify the output writer that shall be used
+  enum class OutputWriter
+  {
+    none,
+    vtu_per_rank  // Write one file per time step per rank in the vtu format
+  };
 
-  }  // namespace IO_RUNTIME_VTK
-}  // namespace INPAR
+  /// set the valid parameters related to writing of VTK output at runtime
+  void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+}  // namespace INPAR::IO_RUNTIME_VTK
 
 #endif

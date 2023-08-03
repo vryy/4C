@@ -122,14 +122,6 @@ void INPAR::BEAMPOTENTIAL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterLis
   IntParameter("INTERVAL_STEPS", -1, "write VTK output at runtime every INTERVAL_STEPS steps",
       &beampotential_vtk_sublist);
 
-  // data format for written numeric data
-  setStringToIntegralParameter<int>("OUTPUT_DATA_FORMAT", "binary",
-      "data format for written numeric data",
-      tuple<std::string>("binary", "Binary", "ascii", "ASCII"),
-      tuple<int>(INPAR::BEAMPOTENTIAL::binary, INPAR::BEAMPOTENTIAL::binary,
-          INPAR::BEAMPOTENTIAL::ascii, INPAR::BEAMPOTENTIAL::ascii),
-      &beampotential_vtk_sublist);
-
   // whether to write output in every iteration of the nonlinear solver
   BoolParameter("EVERY_ITERATION", "No", "write output in every iteration of the nonlinear solver",
       &beampotential_vtk_sublist);

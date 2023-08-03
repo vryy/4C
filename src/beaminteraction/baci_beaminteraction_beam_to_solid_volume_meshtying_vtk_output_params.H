@@ -13,8 +13,10 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VOLUME_MESHTYING_VTK_OUTPUT_PARAMS_H
 
 
-#include "baci_inpar_IO_runtime_vtk_output.H"
+#include "baci_io_visualization_parameters.H"
 #include "baci_utils_exceptions.H"
+
+#include <memory>
 
 
 namespace BEAMINTERACTION
@@ -43,18 +45,17 @@ namespace BEAMINTERACTION
     void Setup();
 
     /**
+     * \brief Return the container holding the general output parameters
+     */
+    const IO::VisualizationParameters& GetVisualizationParameters() const
+    {
+      return visualization_parameters_;
+    }
+
+    /**
      * \brief Return the output every iteration flag.
      */
     bool GetOutputEveryIteration() const { return output_every_iteration_; }
-
-    /**
-     * \brief If the output should be binary or ascii
-     */
-    bool WriteBinaryOutput() const
-    {
-      CheckInitSetup();
-      return (output_data_format_ == INPAR::IO_RUNTIME_VTK::binary);
-    }
 
     /**
      * \brief Output interval regarding steps: write output every INTERVAL_STEPS steps.
@@ -131,8 +132,8 @@ namespace BEAMINTERACTION
     //! Flag if object is set up.
     bool issetup_;
 
-    //! Data format that will be used for the vtk files.
-    INPAR::IO_RUNTIME_VTK::OutputDataFormat output_data_format_;
+    //! General visualization parameters
+    IO::VisualizationParameters visualization_parameters_;
 
     //! Output interval regarding steps: write output every INTERVAL_STEPS steps.
     int output_interval_steps_;

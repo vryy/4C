@@ -12,7 +12,7 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_io_pstream.H"
-#include "baci_io_runtime_vtp_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_element.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_particle_wall_dem.H"
@@ -338,7 +338,7 @@ void PARTICLEINTERACTION::DEMContact::SetupParticleInteractionWriter()
 {
   // register specific runtime vtp writer
   if (writeparticlewallinteraction_)
-    particleinteractionwriter_->RegisterSpecificRuntimeVtpWriter("particle-wall-contact");
+    particleinteractionwriter_->RegisterSpecificRuntimeVtuWriter("particle-wall-contact");
 }
 
 double PARTICLEINTERACTION::DEMContact::GetMaxDensityOfAllMaterials() const
@@ -836,15 +836,16 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
   if (writeinteractionoutput)
   {
     // get specific runtime vtp writer
-    RuntimeVtpWriter* runtime_vtpwriter =
-        particleinteractionwriter_->GetSpecificRuntimeVtpWriter("particle-wall-contact");
+    IO::VisualizationManager* visualization_manager =
+        particleinteractionwriter_->GetSpecificRuntimeVtuWriter("particle-wall-contact");
+    auto& visualization_data = visualization_manager->GetVisualizationDataMutable();
 
     // set wall attack points
-    runtime_vtpwriter->ResetGeometry(attackpoints);
+    visualization_data.GetPointCoordinatesMutable() = attackpoints;
 
     // append states
-    runtime_vtpwriter->AppendVisualizationPointDataVector(contactforces, 3, "contact force");
-    runtime_vtpwriter->AppendVisualizationPointDataVector(normaldirection, 3, "normal direction");
+    visualization_data.SetPointDataVector<double>("contact force", contactforces, 3);
+    visualization_data.SetPointDataVector<double>("normal direction", normaldirection, 3);
   }
 }
 

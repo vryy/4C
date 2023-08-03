@@ -83,24 +83,6 @@ namespace PARTICLEWALL
         const std::shared_ptr<PARTICLEWALL::WallDataState> walldatastate);
 
     /*!
-     * \brief setup wall discretization runtime vtu writer
-     *
-     * \author Sebastian Fuchs \date 08/2019
-     *
-     * \param[in] write_binary_output     flag for output in binary format
-     */
-    void Setup(bool write_binary_output);
-
-    /*!
-     * \brief read restart of wall discretization runtime vtu writer
-     *
-     * \author Sebastian Fuchs \date 08/2019
-     *
-     * \param[in] reader discretization reader
-     */
-    void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
-
-    /*!
      * \brief write wall discretization runtime output
      *
      * \author Sebastian Fuchs \date 08/2019
@@ -111,9 +93,6 @@ namespace PARTICLEWALL
     void WriteWallDiscretizationRuntimeOutput(const int step, const double time) const;
 
    private:
-    //! setup time of runtime vtu writer
-    double setuptime_;
-
     //! wall discretization
     Teuchos::RCP<DRT::Discretization> walldiscretization_;
 

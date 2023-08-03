@@ -13,6 +13,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */
 
+#include "baci_io_visualization_manager.H"
+
 #include <Teuchos_RCP.hpp>
 
 /*-----------------------------------------------------------------------------------------------*/
@@ -20,7 +22,6 @@
 class Epetra_Vector;
 class Epetra_MultiVector;
 
-class RuntimeVtpWriter;
 
 namespace DRT
 {
@@ -44,24 +45,11 @@ class DiscretizationRuntimeVtpWriter
 {
  public:
   /// Constructor
-  DiscretizationRuntimeVtpWriter();
+  DiscretizationRuntimeVtpWriter(const Teuchos::RCP<const DRT::Discretization>& discretization,
+      IO::VisualizationParameters parameters);
 
   /// Destructor
-  virtual ~DiscretizationRuntimeVtpWriter() {}
-
-  /** \brief initialize object with all required data
-   *
-   *  \author grill
-   *  \date 04/17 */
-  void Initialize(Teuchos::RCP<const DRT::Discretization> discretization,
-      const std::string& geometry_name, unsigned int max_number_timesteps_to_be_written,
-      double time, bool write_binary_output);
-
-  /** \brief reset current simulation time and time step number
-   *
-   *  \author grill
-   *  \date 04/17 */
-  void ResetTimeAndTimeStep(double time, unsigned int timestep);
+  virtual ~DiscretizationRuntimeVtpWriter() = default;
 
   /** \brief append result vector with num_dof values per node to output data
    *
@@ -78,18 +66,10 @@ class DiscretizationRuntimeVtpWriter
       const Teuchos::RCP<Epetra_MultiVector>& result_data_nodebased,
       unsigned int result_num_components_per_node, const std::string& resultname);
 
-  /** \brief write all required VTP files to filesystem
-   *
-   *  \author grill
-   *  \date 04/17 */
-  void WriteFiles();
-
-  /** \brief write a VTP collection file summarizing all written files of this object to filesystem
-   *
-   *  \author grill
-   *  \date 04/17 */
-  void WriteCollectionFileOfAllWrittenFiles(const std::string& geometry_name);
-
+  /**
+   * \brief Write the visualization files to disk
+   */
+  void WriteToDisk(const double visualziation_time, const int visualization_step);
 
   /** \brief determine and set geometry data from nodes based on reference configuration
    *
@@ -102,7 +82,7 @@ class DiscretizationRuntimeVtpWriter
   Teuchos::RCP<const DRT::Discretization> discretization_;
 
   //! the actual vtp writer object that additionally stores the geometry and result data
-  Teuchos::RCP<RuntimeVtpWriter> runtime_vtpwriter_;
+  Teuchos::RCP<IO::VisualizationManager> visualization_manager_;
 };
 
 #endif

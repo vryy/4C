@@ -14,7 +14,7 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_runtime_csv_writer.H"
-#include "baci_io_runtime_vtp_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_globalproblem.H"
 
 /*---------------------------------------------------------------------------*
@@ -44,40 +44,22 @@ void PARTICLEINTERACTION::InteractionWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeVtpWriter(
+void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeVtuWriter(
     const std::string& fieldname)
 {
   // safety check
-  if (runtime_vtpwriters_.count(fieldname))
-    dserror("a runtime vtp writer for field '%s' is already stored!", fieldname.c_str());
-
-  // determine path of output directory
-  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
-  size_t pos = outputfilename.find_last_of("/");
-  if (pos == outputfilename.npos)
-    pos = 0ul;
-  else
-    pos++;
-  const std::string output_directory_path(outputfilename.substr(0ul, pos));
-
-  // we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int max_number_timesteps_to_be_written = 1.0e+6;
-
-  // get data format for written numeric data
-  bool write_binary_output = (DRT::INPUT::IntegralValue<INPAR::PARTICLE::OutputDataFormat>(
-                                  params_, "OUTPUT_DATA_FORMAT") == INPAR::PARTICLE::binary);
+  if (runtime_visualization_managers_.count(fieldname))
+    dserror("a runtime vtu writer for field '%s' is already stored!", fieldname.c_str());
 
   // construct and init the vtp writer object
-  std::shared_ptr<RuntimeVtpWriter> runtime_vtpwriter = std::make_shared<RuntimeVtpWriter>();
-
-  runtime_vtpwriter->Initialize(comm_.MyPID(), comm_.NumProc(), max_number_timesteps_to_be_written,
-      output_directory_path, DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
-      fieldname, DRT::Problem::Instance()->OutputControlFile()->RestartName(), setuptime_,
-      write_binary_output);
+  std::shared_ptr<IO::VisualizationManager> runtime_visualization_manager =
+      std::make_shared<IO::VisualizationManager>(
+          IO::VisualizationParametersFactory(
+              DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+          comm_, fieldname);
 
   // set the vtp writer object
-  runtime_vtpwriters_[fieldname] = runtime_vtpwriter;
+  runtime_visualization_managers_[fieldname] = runtime_visualization_manager;
 }
 
 void PARTICLEINTERACTION::InteractionWriter::RegisterSpecificRuntimeCsvWriter(
@@ -95,20 +77,14 @@ void PARTICLEINTERACTION::InteractionWriter::WriteParticleInteractionRuntimeOutp
     const int step, const double time) const
 {
   // iterate over vtp writer objects
-  for (auto& writerIt : runtime_vtpwriters_)
+  for (auto& writerIt : runtime_visualization_managers_)
   {
-    const std::string& fieldname = writerIt.first;
-    std::shared_ptr<RuntimeVtpWriter> runtime_vtpwriter = writerIt.second;
-
-    // reset time and time step of the writer object
-    runtime_vtpwriter->SetupForNewTimeStepAndGeometry(time, step, fieldname);
+    std::shared_ptr<IO::VisualizationManager> runtime_visualization_manager = writerIt.second;
 
     // data to be written preset in particle interaction evaluation
 
     // finalize everything and write all required files to filesystem
-    runtime_vtpwriter->WriteFiles();
-    runtime_vtpwriter->WriteCollectionFileOfAllWrittenFiles(
-        DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" + fieldname);
+    runtime_visualization_manager->WriteToDisk(time, step);
   }
 
   // iterate over csv writer objects

@@ -85,32 +85,11 @@ const std::string& VtuWriter::WriterPSuffix() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WriteGeometryUnstructuredGridContiguous(
-    const std::vector<double>& point_coordinates, const std::vector<int32_t>& cell_offset,
-    const std::vector<uint8_t>& cell_types)
-{
-  // we assumed contiguous order of coordinates in this format, so fill the
-  // vector with ascending numbers from 0 to num_points here
-
-  // always assume 3D for now Todo use as template parameter
-  const unsigned int num_spatial_dimensions = 3;
-
-  const unsigned int num_points = point_coordinates.size() / num_spatial_dimensions;
-
-  std::vector<int32_t> point_cell_connectivity;
-  point_cell_connectivity.reserve(num_points);
-
-  for (unsigned int i = 0; i < num_points; ++i) point_cell_connectivity.push_back(i);
-
-  WriteGeometryUnstructuredGrid(
-      point_coordinates, point_cell_connectivity, cell_offset, cell_types);
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_coordinates,
-    const std::vector<int32_t>& point_cell_connectivity, const std::vector<int32_t>& cell_offset,
-    const std::vector<uint8_t>& cell_types)
+    const std::vector<IO::index_type>& point_cell_connectivity,
+    const std::vector<IO::index_type>& cell_offset, const std::vector<uint8_t>& cell_types,
+    const std::vector<IO::index_type>& face_connectivity,
+    const std::vector<IO::index_type>& face_offset)
 {
   // always assume 3D for now Todo maybe use this as template to allow for 2D case
   const unsigned int num_spatial_dimensions = 3;
@@ -122,9 +101,6 @@ void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_c
   // some sanity checks
   if (point_coordinates.size() % num_spatial_dimensions != 0)
     dserror("VtuWriter assumes 3D point coordinates here! Extend to 2D if needed");
-
-  if (point_cell_connectivity.size() != num_points)
-    dserror("VtuWriter: length of connectivity vector must equal number of points");
 
   if (cell_offset.size() != cell_types.size())
     dserror(
@@ -248,13 +224,45 @@ void VtuWriter::WriteGeometryUnstructuredGrid(const std::vector<double>& point_c
   }
   currentout_ << "\n        </DataArray>\n";
 
+  // step 5: write face data if required
+  if (face_offset.size() > 0)
+  {
+    // Face connectivity
+    currentout_ << R"(        <DataArray type="Int32" Name="faces")";
+    if (write_binary_output_)
+    {
+      currentout_ << " format=\"binary\">\n";
+      LIBB64::writeCompressedBlock(face_connectivity, currentout_);
+    }
+    else
+    {
+      currentout_ << " format=\"ascii\">\n";
+      for (const int value : face_connectivity) currentout_ << value << " ";
+    }
+    currentout_ << "\n        </DataArray>\n";
+
+    // Face offsets
+    currentout_ << R"(        <DataArray type="Int32" Name="faceoffsets")";
+    if (write_binary_output_)
+    {
+      currentout_ << " format=\"binary\">\n";
+      LIBB64::writeCompressedBlock(face_offset, currentout_);
+    }
+    else
+    {
+      currentout_ << " format=\"ascii\">\n";
+      for (const int value : face_offset) currentout_ << value << " ";
+    }
+    currentout_ << "\n        </DataArray>\n";
+  }
+
   currentout_ << "      </Cells>\n\n";
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WritePointDataVector(
-    const std::vector<double>& data, unsigned int num_components_per_point, const std::string& name)
+void VtuWriter::WritePointDataVector(const IO::visualization_vector_type_variant& data,
+    unsigned int num_components_per_point, const std::string& name)
 {
   // start the point data section that will be written subsequently
   if (currentPhase_ == INIT)
@@ -285,8 +293,8 @@ void VtuWriter::WritePointDataVector(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtuWriter::WriteCellDataVector(
-    const std::vector<double>& data, unsigned int num_components_per_cell, const std::string& name)
+void VtuWriter::WriteCellDataVector(const IO::visualization_vector_type_variant& data,
+    unsigned int num_components_per_cell, const std::string& name)
 {
   // if required, end the point data section
   if (currentPhase_ == POINTS)

@@ -1,0 +1,79 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+0.000000000000000e+00 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="80" NumberOfCells="0" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAAIAHAACABwAA8AAAAA==eNp1lEGKwlAQBb1TFi7rNp5JvcGcYhaz1buIzOBWEucJVvN68/kFqUB1yLKs8/O9/J/Xyzo3cj+e1vlqHPP963zzPG9/uP3iw1P8FD/FT/Fjf+72h9svPjz2L+p/2OY++G6b38HP23v+Bn+dj7FH+8PtD7f/c5/DT/FT/BQ/9qeb/eH2h9v/uc/H+D7jN4/fPH5z+93f3H73Ny9+ip/ip/hHH/c3t9/9zeWn9Kf0p/Sn9Kf0p/Sn9Kf0p/Sn9Kf0p/Sn9Kf0p/TH/f1/i988fvP4ze13f3P73d+8+Cl+ip/iH33c39x+9zeP/wkXHF9O
+        </DataArray>
+      </Points>
+      
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="acceleration" NumberOfComponents="3" format="binary">
+AQAAAIAHAACABwAAigIAAA==eNpdlGtIU2EYgK1w2MVGd5BAqH5YJpvzbG7a4jAMoiv5YyUkjSNhN2wVRFeSKIrIlsUoKrEkDIMFmppUh+W8FEQ/Iir7UYGxQCFaEkWSFUOfN87368Dz44HvOe/7Nj8dDbcfcZpdRsPtu+35Zrw30rmy9WX8485V3x7bHcJHe8b5/rJoxqxlBcK1CZ6Zm7RvL8sXvjcxzpsn/EvOro8GrxWYeYofbih+eEPC6ocPdFv99bGx05NrHebFHqsf/jxh9cNtih+uK/7aoWDp2zan+Sth9cM1xQ+v6bb64S1Pxvm7fXHXjAGX2bQmee/BV6f0n7nw1Pcqt9sc/nR0ek6mJjzQv7rz0aVi03V89o5jOcXCD4azD81J+czD81t6PzhKhC/eVl3iSRaKn/+4eery33UBTfzw8/dTZrLRI354vLLjhH/MK374nnX2QGjEKX7m4daPV1O6NhaJH/7m5tU+e8wtfnjW2soz1dP+++G7D9RcnvvXIX7mKu0d3OoSPzz3gv7C91ATP7zcmxmpX1Asfjj9Kyr9d+oGC2U+6Z9+R+qnJpz+Q5FdofJsr3D6O5ZOMtsXlQqnP35D6Y/fUPrjN5T++A2lP372hf744fTHD6c/fjj98bN39McPpz9+OP3xw+lvD0cbq167ZH/pn+7UN+wWTv/GpsSWvAyfcPp/Lq3oODdvhXD64+cO0B8/nP744fTHD6c/fpvSH79N6Y/fpvTHb1P649eV/vh1pT9+XemPX1f695/8csX3rEjuG/3T3+vvPcLpH+zI2fRnxCec/jc2tMZCWX7h9MevKf3xa0p//JrSH7+m9MfPvaU/fjj98cPpjx9Of/zcbfrjh9MfP5z++OH/AIEE/ak=
+        </DataArray>
+        <DataArray type="Float64" Name="body frame relative position" NumberOfComponents="3" format="binary">
+AQAAAIAHAACABwAA/QAAAA==eNp1lDEOwkAQA/kTEe08EgqQQKLlCVQUVPwKJTmnGPA10VnOFL5dT/v5vF/T+J4v8/ls9+tyf/zop1XH+mH9bvpt/G9+dPOjmx/d/OPwmR/d/OjmRzc/d/Ojmx/d/OjmT8r/vujPH303TvEz/X9H/I7mRzdffso84HkwP7r58lPmCs+V+dHNl58yn3g+w7cefvFT5hzPufnOv/gp+4L3xXznX/yUvcN7Z77zL37K/uL9Dd96+MVP6QHcA+Y7/+Kn9AnuE/Odf/FTegn3kvnOv/gp/Yb7LXzr4Rc/pSdxT5rv/Iuf0re4b813/sVP6W3c2+Y7/+Kn9D9fLpx2Xg==
+        </DataArray>
+        <DataArray type="Float64" Name="boundary pressure" format="binary">
+AQAAAIACAACAAgAADwAAAA==eNpjYBgFo2DgAAACgAAB
+        </DataArray>
+        <DataArray type="Float64" Name="boundary velocity" NumberOfComponents="3" format="binary">
+AQAAAIAHAACABwAAFwAAAA==eNpjYBgFo2AUjIJRMApGAb0BAAeAAAE=
+        </DataArray>
+        <DataArray type="Float64" Name="force" NumberOfComponents="3" format="binary">
+AQAAAIAHAACABwAA1AMAAA==eNpNlX9MzGEcx89oQ9MuOV26lJ9JJ/1U6tm+jFFbJknW/LpVWphdhmFFh0SKnHL9Ivqlq8RFWWr6tmnD/BiGK0dDbVrCdFIXiZ73Zzv9897z9P6+n8/n9f0835t8adRofhAm3CyGjpRWRMckLxPTluzNCN0RIWwp3Z1h9pIKrZWHAw92+YqNAdiXXeT7YvZV7JcU4Xn7Cq7iujLk9JXh+X7K89fDH+q28rL0pYNgIv38OiXIePR7S/lMrB/M4SqqjNgfvIKc7qU8R7RUI+cc1WGmugqoHik9/9gVeSWU4z4L+zmzofbt2NcXIkdG+X6Uf5f66aD+PMvRVzL5GqtRV10N/D2B2A8tQJ62CvuSEuR0lUEtlPOQ6s4gPk0vu+/Ps5WIYfEbMzPSI4QjcVDJv79n2Tr2wh8+BWlbuZqfk071RZAqk3BO0bWkYNe3UcJE4vzjt5r3K9F96Jk9GiV4fC7yPf/KgecP7cxi36rg750L/we7VZxTPJ3XeAv9vp6JPtfXwP9xGnhqh5CvyUV+dCfPF3n+yTMsRg9/niP8W6Ygf5Mf8redAbdHCuRvp3M3BGN9vx18lLHgkrKDK883/DnElL7wqxj8OdXgE5APLopacDmQCH1FfbYSp3HvUP/SL+Ay9QL6GMvfXKxlZsyVEE+c5stQv6keXKRUbynxWbD45qrjPnLBnVTVoEwKcEps6fwx6c0EP7lw2gwdy5eY1jKDJ3z+pGpp/ZiKqfNwroE0PJefL44q4Wv25Sq2Znrx/OF+5DpauHI+ksTlrM0D/mDy59khv84FuSvoPcaeR/4dBfYLDVjbWMBndS/4JBdyPjxf9S2WXZwPfz3521zAR1sFPin0XowzoM00B0tojp6YkL+wC3PTkGPlH3Qim92Rw99XCb9sKvLH6zA3ffT+5S7IP+WHPiMXoW9NxGLOxzIMLiH9Vv6a/SvZLuLSRJxuEJ+tdK4Tvh9CNfHZ5w2/tw/0/STk9/xEvnrQyl+TsIxFe8GnxjyIq6cgX+eAfBsZ1F1LvJ2wbr6BdcII+BR2g09cgZV/673DLI9yKq7D3zAdfCLpXp2le5RK/LNCoHY0t150v8J24l69V1m/P0FrtOwr+T194Lfocb8OXqP7pMM9i9uFtUcd6vi4ANzS3ZJ4/ceKUPeA2fr9kYQfYjqam1+e8HvT/XKmueltwBz1OWMtUp8+UvRttEW+IR/5xR3W74+KadinWvgH7OEfID62xOVpJjjtIT6mIOht+v+6AfBRJIJP1n/fH3lgGoun3wVH8g9XgE9NJXg810PdEqB/AQjIXrk=
+        </DataArray>
+        <DataArray type="Float64" Name="globalid" format="binary">
+AQAAAIACAACAAgAAuQAAAA==eNo10aFuwzAQBmDDwsDCPELhoOFg4GDgYME2sLVSpxYMBhYaFhoWGg7mEQIHAwfbyl9MPp10ku/uD+H+0lt8EOJ7deLhQ/2p/qq2u2rhcNDHzbd+5mM1nKodE7P/C0dO7MzTc7vMx5nBvA1bDkzMLJztF+zXLHtyYGJm4cYdIjv2HDlxZthXz+6WeGHmH2f+M7jvEyOf2fGHA89MvMqn8JcjV3JquGbLF/Z85ZaXJWdeWU7xBgGgY+M=
+        </DataArray>
+        <DataArray type="Float64" Name="inertia" format="binary">
+AQAAAIACAACAAgAAFwAAAA==eNrb2Z7Jk3l5p93OUXqUHgAaAHTpOJA=
+        </DataArray>
+        <DataArray type="Float64" Name="mass" format="binary">
+AQAAAIACAACAAgAAFwAAAA==eNr7u/LjJd+kAPu/o/QoPQA0AIEddEA=
+        </DataArray>
+        <DataArray type="Float64" Name="owner" format="binary">
+AQAAAIACAACAAgAADwAAAA==eNpjYBgFo2DgAAACgAAB
+        </DataArray>
+        <DataArray type="Float64" Name="radius" format="binary">
+AQAAAIACAACAAgAAFAAAAA==eNozNgaBy/bGo/QoPQA0AHA+tUE=
+        </DataArray>
+        <DataArray type="Float64" Name="relative position" NumberOfComponents="3" format="binary">
+AQAAAIAHAACABwAA/QAAAA==eNp1lDEOwkAQA/kTEe08EgqQQKLlCVQUVPwKJTmnGPA10VnOFL5dT/v5vF/T+J4v8/ls9+tyf/zop1XH+mH9bvpt/G9+dPOjmx/d/OPwmR/d/OjmRzc/d/Ojmx/d/OjmT8r/vujPH303TvEz/X9H/I7mRzdffso84HkwP7r58lPmCs+V+dHNl58yn3g+w7cefvFT5hzPufnOv/gp+4L3xXznX/yUvcN7Z77zL37K/uL9Dd96+MVP6QHcA+Y7/+Kn9AnuE/Odf/FTegn3kvnOv/gp/Yb7LXzr4Rc/pSdxT5rv/Iuf0re4b813/sVP6W3c2+Y7/+Kn9D9fLpx2Xg==
+        </DataArray>
+        <DataArray type="Float64" Name="rigid body color" format="binary">
+AQAAAIACAACAAgAADwAAAA==eNpjYBgFo2DgAAACgAAB
+        </DataArray>
+        <DataArray type="Float64" Name="velocity" NumberOfComponents="3" format="binary">
+AQAAAIAHAACABwAAFwAAAA==eNpjYBgFo2AUjIJRMApGAb0BAAeAAAE=
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

@@ -164,14 +164,6 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   IntParameter("INTERVAL_STEPS", -1, "write VTK output at runtime every INTERVAL_STEPS steps",
       &beamcontact_vtk_sublist);
 
-  // data format for written numeric data
-  setStringToIntegralParameter<int>("OUTPUT_DATA_FORMAT", "binary",
-      "data format for written numeric data",
-      tuple<std::string>("binary", "Binary", "ascii", "ASCII"),
-      tuple<int>(INPAR::BEAMCONTACT::binary, INPAR::BEAMCONTACT::binary, INPAR::BEAMCONTACT::ascii,
-          INPAR::BEAMCONTACT::ascii),
-      &beamcontact_vtk_sublist);
-
   // whether to write output in every iteration of the nonlinear solver
   BoolParameter("EVERY_ITERATION", "No", "write output in every iteration of the nonlinear solver",
       &beamcontact_vtk_sublist);
