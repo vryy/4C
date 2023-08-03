@@ -1,5 +1,17 @@
 #-------------------------------------------------------------------------------
-#-------------------------------------------------------------------------------
+# General rules when to create a pipeline
+# N.B. This doesn't say anything about which jobs are run but only determines
+# if a pipeline is created.
+workflow:
+  rules:
+  # for merge requests
+  - if: $CI_MERGE_REQUEST_IID
+  # for tags
+  - if: $CI_COMMIT_TAG
+  # for the default branch
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  # if manually triggered with the web interface's "run pipeline"
+  - if: $CI_PIPELINE_SOURCE == "web"
 
 #-------------------------------------------------------------------------------
 # Define global variables for all jobs
@@ -129,14 +141,15 @@ before_script:
     when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# This kind of job is started when a user triggers a job in the gitlab UI.
-# Full tests are performed.
+# This kind of job is started when a user triggers a job in the gitlab UI or
+# inside a MR. Full tests are performed.
 .buildtest_full:
   extends: .buildtest_base
   rules:
   - if: $GITLAB_SCHEDULER_TYPE != "0"
     when: never
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
 
 
 # This kind of job is started by a scheduler, with the variable
@@ -171,7 +184,7 @@ before_script:
     href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
   - *post-process-log-files
-      # update (push) the cache of the coverage report:
+    # update (push) the cache of the coverage report:
     # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
@@ -348,9 +361,11 @@ checkcode:
     when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
   - if: $CI_PIPELINE_SOURCE == "schedule"
   tags:
   - checkcode
+  interruptible: true
 
 # IMCS--------------------------------------------------------------------------
 
@@ -361,18 +376,6 @@ imcs-buildtest_minimal_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-minimal-ubuntu20
-  needs: [checkcode]
-
-imcs-buildtest_full_ubuntu20:
-  extends: .buildtest_full
-  variables:
-    NUMBER_OF_TEST_THREADS: '12'
-    NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-  tags:
-  - imcs-full-ubuntu20
   needs: [checkcode]
 
 imcs-buildtest_daily_ubuntu20:
@@ -440,10 +443,12 @@ codeclimate:
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
   - if: $CI_PIPELINE_SOURCE == "schedule"
   allow_failure: true
   tags:
   - codeclimate
+  interruptible: true
 
 buildtest_minimal_release:
   extends: .buildtest_minimal
@@ -543,6 +548,8 @@ doxygen-web:
   - if: $GITLAB_SCHEDULER_TYPE == "3"
     when: never
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
+  interruptible: true
 
 doxygen:
   extends: .doxygen
@@ -604,6 +611,7 @@ buildtest_full_release:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
   - !reference [.buildtest_full, rules]
+  interruptible: true
 
 buildtest_full_debug:
   extends: .buildtest_daily_debug
@@ -651,6 +659,7 @@ build-verify-headers:
     expire_in: 1 day
   rules:
   - !reference [checkcode, rules]
+  interruptible: true
 
 readthedocs-web:
   extends: .readthedocs
@@ -670,6 +679,8 @@ readthedocs-web:
   - if: $GITLAB_SCHEDULER_TYPE == "3"
     when: never
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
+  interruptible: true
 
 readthedocs:
   extends: .readthedocs
