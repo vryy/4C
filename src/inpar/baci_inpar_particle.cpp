@@ -51,11 +51,6 @@ void INPAR::PARTICLE::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> li
       "RESULTSEVRY", 1, "write particle runtime output every RESULTSEVRY steps", &particledyn);
   IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &particledyn);
 
-  // data format for written numeric data via vtp
-  setStringToIntegralParameter<int>("OUTPUT_DATA_FORMAT", "Binary",
-      "data format for written numeric data", tuple<std::string>("Binary", "ASCII"),
-      tuple<int>(INPAR::PARTICLE::binary, INPAR::PARTICLE::ascii), &particledyn);
-
   // write ghosted particles
   BoolParameter(
       "WRITE_GHOSTED_PARTICLES", "no", "write ghosted particles (debug feature)", &particledyn);

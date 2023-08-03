@@ -142,10 +142,8 @@ void PARTICLEENGINE::ParticleEngine::ReadRestart(
 void PARTICLEENGINE::ParticleEngine::WriteParticleRuntimeOutput(
     const int step, const double time) const
 {
-  particlevtpwriter_->ResetTimeAndTimeStep(time, step);
   particlevtpwriter_->SetParticlePositionsAndStates();
-  particlevtpwriter_->WriteFiles();
-  particlevtpwriter_->WriteCollectionFileOfAllWrittenFiles();
+  particlevtpwriter_->WriteToDisk(time, step);
 }
 
 void PARTICLEENGINE::ParticleEngine::FreeUniqueGlobalIds(std::vector<int>& freeuniquegids)
@@ -1060,15 +1058,11 @@ void PARTICLEENGINE::ParticleEngine::InitParticleVtpWriter()
 
 void PARTICLEENGINE::ParticleEngine::SetupParticleVtpWriter() const
 {
-  // get data format for written numeric data via vtp
-  bool write_binary_output = (DRT::INPUT::IntegralValue<INPAR::PARTICLE::OutputDataFormat>(
-                                  params_, "OUTPUT_DATA_FORMAT") == INPAR::PARTICLE::binary);
-
   // get flag to determine output of ghosted particles (debug feature)
   bool write_ghosted_particles = DRT::INPUT::IntegralValue<int>(params_, "WRITE_GHOSTED_PARTICLES");
 
   // setup particle runtime vtp writer
-  particlevtpwriter_->Setup(write_binary_output, write_ghosted_particles);
+  particlevtpwriter_->Setup(write_ghosted_particles);
 }
 
 void PARTICLEENGINE::ParticleEngine::SetupTypeWeights()

@@ -26,7 +26,7 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
-#include "baci_io_runtime_vtp_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
@@ -35,6 +35,7 @@
 #include "baci_rigidsphere.H"
 #include "baci_structure_new_timint_basedataglobalstate.H"
 #include "baci_structure_new_timint_basedataio.H"
+#include "baci_structure_new_timint_basedataio_runtime_vtk_output.H"
 #include "baci_structure_new_timint_basedataio_runtime_vtp_output.H"
 #include "baci_utils_exceptions.H"
 
@@ -47,7 +48,7 @@
 BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::SphereBeamLinking()
     : sm_crosslinkink_ptr(Teuchos::null),
       spherebeamlinking_params_ptr_(Teuchos::null),
-      vtp_writer_ptr_(Teuchos::null),
+      visualization_manager_ptr_(Teuchos::null),
       random_number_sphere_beam_linking_step_(-1)
 {
 }
@@ -476,7 +477,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::RuntimeOutputStepSta
 {
   CheckInitSetup();
 
-  if (vtp_writer_ptr_ != Teuchos::null) WriteOutputRuntimeVtp();
+  if (visualization_manager_ptr_ != Teuchos::null) WriteOutputRuntimeVtp();
 }
 
 /*-------------------------------------------------------------------------------*
@@ -592,29 +593,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::InitOutputRuntimeVtp
 {
   CheckInit();
 
-  vtp_writer_ptr_ = Teuchos::rcp(new RuntimeVtpWriter());
-
-  // determine path of output directory
-  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
-
-  size_t pos = outputfilename.find_last_of("/");
-
-  if (pos == outputfilename.npos)
-    pos = 0ul;
-  else
-    pos++;
-
-  const std::string output_directory_path(outputfilename.substr(0ul, pos));
-
-  // Todo: we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
-
-  vtp_writer_ptr_->Initialize(BinDiscretPtr()->Comm().MyPID(), BinDiscretPtr()->Comm().NumProc(),
-      num_timesteps_in_simulation_upper_bound, output_directory_path,
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), "spherebeamlinker",
-      DRT::Problem::Instance()->OutputControlFile()->RestartName(), GState().GetTimeN(),
-      GInOutput().GetRuntimeVtpOutputParams()->WriteBinaryOutput());
+  visualization_manager_ptr_ = Teuchos::rcp(new IO::VisualizationManager(
+      GInOutput().GetRuntimeVtkOutputParams()->GetVisualizationParameters(),
+      BinDiscretPtr()->Comm(), "spherebeamlinker"));
 }
 
 /*-------------------------------------------------------------------------------*
@@ -639,7 +620,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
   const unsigned int num_spatial_dimensions = 3;
 
   // get and prepare storage for point coordinate values
-  std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
+  std::vector<double>& point_coordinates =
+      visualization_manager_ptr_->GetVisualizationDataMutable().GetPointCoordinatesMutable();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_row_points);
 
@@ -702,23 +684,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
     }
   }
 
-  // reset time and time step and geometry name in the writer object
-  vtp_writer_ptr_->SetupForNewTimeStepAndGeometry(
-      GState().GetTimeN(), GState().GetStepN(), "spherebeamlinker");
-
   // append all desired output data to the writer object's storage
   // i) number of bonds
-  vtp_writer_ptr_->AppendVisualizationPointDataVector(orientation, 3, "orientation");
+  visualization_manager_ptr_->GetVisualizationDataMutable().SetPointDataVector(
+      "orientation", orientation, 3);
   // ii) linker force
-  vtp_writer_ptr_->AppendVisualizationPointDataVector(force, 3, "force");
+  visualization_manager_ptr_->GetVisualizationDataMutable().SetPointDataVector("force", force, 3);
 
   // finalize everything and write all required VTU files to filesystem
-  vtp_writer_ptr_->WriteFiles();
-
-  // write a collection file summarizing all previously written files
-  vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles(
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
-      "spherebeamlinker");
+  visualization_manager_ptr_->WriteToDisk(GState().GetTimeN(), GState().GetStepN());
 }
 
 /*----------------------------------------------------------------------------*

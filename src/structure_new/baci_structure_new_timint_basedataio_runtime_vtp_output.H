@@ -14,6 +14,7 @@
 
 
 #include "baci_inpar_IO_runtime_vtp_output_structure.H"
+#include "baci_io_visualization_parameters.H"
 
 namespace Teuchos
 {
@@ -48,12 +49,12 @@ namespace STR
       /// setup new class variables
       void Setup();
 
-
-      /// whether to write numeric output data binary-encoded or in ascii format
-      bool WriteBinaryOutput() const
+      /**
+       * \brief Return the container holding the general output parameters
+       */
+      const IO::VisualizationParameters& GetVisualizationParameters() const
       {
-        CheckInitSetup();
-        return (output_data_format_ == INPAR::IO_RUNTIME_VTP_STRUCTURE::binary);
+        return visualization_parameters_;
       }
 
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
@@ -141,9 +142,8 @@ namespace STR
       /// @name variables controlling output
       /// @{
 
-      /// data format for numeric output data
-      INPAR::IO_RUNTIME_VTP_STRUCTURE::OutputDataFormat output_data_format_ =
-          INPAR::IO_RUNTIME_VTP_STRUCTURE::vague;
+      //! General visualization parameters
+      IO::VisualizationParameters visualization_parameters_;
 
       /// output interval regarding steps: write output every INTERVAL_STEPS steps
       int output_interval_steps_ = -1;

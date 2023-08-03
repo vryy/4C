@@ -13,14 +13,18 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_discretization_runtime_vtu_writer.H"
+#include "baci_io_visualization_parameters.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_particle_wall_datastate.H"
+
+#include <memory>
+
 
 /*---------------------------------------------------------------------------*
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WallDiscretizationRuntimeVtuWriter()
-    : setuptime_(0.0)
 {
   // empty constructor
 }
@@ -38,33 +42,16 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Init(
   walldatastate_ = walldatastate;
 
   // construct the writer object
-  runtime_vtuwriter_ =
-      std::unique_ptr<DiscretizationRuntimeVtuWriter>(new DiscretizationRuntimeVtuWriter());
-}
-
-void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::Setup(bool write_binary_output)
-{
-  // we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int max_number_timesteps_to_be_written = 1.0e+6;
-
-  // initialize the writer object
-  runtime_vtuwriter_->Initialize(
-      walldiscretization_, max_number_timesteps_to_be_written, setuptime_, write_binary_output);
-}
-
-void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::ReadRestart(
-    const std::shared_ptr<IO::DiscretizationReader> reader)
-{
-  // get restart time
-  setuptime_ = reader->ReadDouble("time");
+  runtime_vtuwriter_ = std::make_unique<DiscretizationRuntimeVtuWriter>(
+      walldiscretization_, IO::VisualizationParametersFactory(
+                               DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")));
 }
 
 void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRuntimeOutput(
     const int step, const double time) const
 {
-  // reset time and time step of the writer object
-  runtime_vtuwriter_->ResetTimeAndTimeStep(time, step);
+  // reset the writer object
+  runtime_vtuwriter_->Reset();
 
   // node displacements
   {
@@ -103,6 +90,5 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
   }
 
   // finalize everything and write all required files to filesystem
-  runtime_vtuwriter_->WriteFiles();
-  runtime_vtuwriter_->WriteCollectionFileOfAllWrittenFiles();
+  runtime_vtuwriter_->WriteToDisk(time, step);
 }

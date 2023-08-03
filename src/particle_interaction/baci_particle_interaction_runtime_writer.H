@@ -14,6 +14,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                                   |
  *---------------------------------------------------------------------------*/
+#include "baci_io_visualization_manager.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Comm.h>
@@ -25,8 +26,6 @@
 /*---------------------------------------------------------------------------*
  | forward declarations                                                      |
  *---------------------------------------------------------------------------*/
-class RuntimeVtpWriter;
-
 namespace IO
 {
   class DiscretizationReader;
@@ -57,7 +56,7 @@ namespace PARTICLEINTERACTION
     void ReadRestart(const std::shared_ptr<IO::DiscretizationReader> reader);
 
     //! register specific runtime vtp writer
-    void RegisterSpecificRuntimeVtpWriter(const std::string& fieldname);
+    void RegisterSpecificRuntimeVtuWriter(const std::string& fieldname);
 
     //! register specific runtime csv writer
     void RegisterSpecificRuntimeCsvWriter(const std::string& fieldname);
@@ -72,14 +71,14 @@ namespace PARTICLEINTERACTION
     inline bool GetCurrentWriteResultFlag() const { return writeresultsthisstep_; }
 
     //! get specific runtime vtp writer
-    inline RuntimeVtpWriter* GetSpecificRuntimeVtpWriter(const std::string& fieldname)
+    inline IO::VisualizationManager* GetSpecificRuntimeVtuWriter(const std::string& fieldname)
     {
 #ifdef DEBUG
-      if (not runtime_vtpwriters_.count(fieldname))
+      if (not runtime_visualization_managers_.count(fieldname))
         dserror("no runtime vtp writer for field '%s' stored!", fieldname.c_str());
 #endif
 
-      return runtime_vtpwriters_[fieldname].get();
+      return runtime_visualization_managers_[fieldname].get();
     }
 
     //! get specific runtime csv writer
@@ -110,7 +109,8 @@ namespace PARTICLEINTERACTION
     bool writeresultsthisstep_;
 
     //! holds all vtp writer objects
-    std::unordered_map<std::string, std::shared_ptr<RuntimeVtpWriter>> runtime_vtpwriters_;
+    std::unordered_map<std::string, std::shared_ptr<IO::VisualizationManager>>
+        runtime_visualization_managers_;
 
     //! holds all csv writer objects
     std::unordered_map<std::string, std::shared_ptr<IO::RuntimeCsvWriter>> runtime_csvwriters_;

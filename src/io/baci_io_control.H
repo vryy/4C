@@ -50,7 +50,16 @@ namespace IO
       \note might contain path
      */
     std::string FileName() const { return filename_; }
-    std::string FileNameOnlyPrefix();
+
+    /**
+     * @brief Return the file name prefix, i.e., the file name that is given to the baci call
+     */
+    std::string FileNameOnlyPrefix() const;
+
+    /**
+     * @brief Base output directory
+     */
+    std::string DirectoryName() const;
 
     /// original prefix as given
     /*!

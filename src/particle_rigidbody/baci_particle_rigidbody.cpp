@@ -65,9 +65,6 @@ void PARTICLERIGIDBODY::RigidBodyHandler::Setup(
   // setup rigid body data state container
   rigidbodydatastate_->Setup();
 
-  // setup rigid body runtime vtp writer
-  SetupRigidBodyVtpWriter();
-
   // setup affiliation pair handler
   affiliationpairs_->Setup(particleengineinterface);
 
@@ -156,10 +153,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InsertParticleStatesOfParticleTypes(
 void PARTICLERIGIDBODY::RigidBodyHandler::WriteRigidBodyRuntimeOutput(
     const int step, const double time) const
 {
-  rigidbodyvtpwriter_->ResetTimeAndTimeStep(time, step);
   rigidbodyvtpwriter_->SetRigidBodyPositionsAndStates(ownedrigidbodies_);
-  rigidbodyvtpwriter_->WriteFiles();
-  rigidbodyvtpwriter_->WriteCollectionFileOfAllWrittenFiles();
+  rigidbodyvtpwriter_->WriteToDisk(time, step);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::SetInitialAffiliationPairData()
@@ -483,16 +478,6 @@ void PARTICLERIGIDBODY::RigidBodyHandler::InitAffiliationPairHandler()
 
   // init affiliation pair handler
   affiliationpairs_->Init();
-}
-
-void PARTICLERIGIDBODY::RigidBodyHandler::SetupRigidBodyVtpWriter()
-{
-  // get data format for written numeric data via vtp
-  bool write_binary_output = (DRT::INPUT::IntegralValue<INPAR::PARTICLE::OutputDataFormat>(
-                                  params_, "OUTPUT_DATA_FORMAT") == INPAR::PARTICLE::binary);
-
-  // setup rigid body runtime vtp writer
-  rigidbodyvtpwriter_->Setup(write_binary_output);
 }
 
 void PARTICLERIGIDBODY::RigidBodyHandler::GetPackedRigidBodyStates(std::vector<char>& buffer) const

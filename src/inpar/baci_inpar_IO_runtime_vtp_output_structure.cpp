@@ -41,17 +41,6 @@ namespace INPAR
           "An offset added to the current step to shift the steps to be written.",
           &sublist_IO_VTP_structure);
 
-
-      // data format for written numeric data
-      setStringToIntegralParameter<int>("OUTPUT_DATA_FORMAT", "binary",
-          "data format for written numeric data",
-          tuple<std::string>("binary", "Binary", "ascii", "ASCII"),
-          tuple<int>(INPAR::IO_RUNTIME_VTP_STRUCTURE::binary,
-              INPAR::IO_RUNTIME_VTP_STRUCTURE::binary, INPAR::IO_RUNTIME_VTP_STRUCTURE::ascii,
-              INPAR::IO_RUNTIME_VTP_STRUCTURE::ascii),
-          &sublist_IO_VTP_structure);
-
-
       // whether to write output in every iteration of the nonlinear solver
       BoolParameter("EVERY_ITERATION", "No",
           "write output in every iteration of the nonlinear solver", &sublist_IO_VTP_structure);

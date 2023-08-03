@@ -13,7 +13,7 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_SOLID_VTU_OUTPUT_WRITER_VISUALIZATION_H
 
 
-#include "baci_io_runtime_vtu_writer.H"
+#include "baci_io_visualization_manager.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
    * files to disc, i.e. one file that will be opened with ParaView. The data that can be stored, is
    * point geometry, cell connected to the points, point data and cell data.
    */
-  class BeamToSolidVtuOutputWriterVisualization : public RuntimeVtuWriter
+  class BeamToSolidVtuOutputWriterVisualization : public IO::VisualizationManager
   {
    public:
     /**
@@ -59,77 +59,6 @@ namespace BEAMINTERACTION
      * \brief Destructor.
      */
     virtual ~BeamToSolidVtuOutputWriterVisualization(){};
-
-    /**
-     * \brief Return a mutable reference to the point coordinate vector of the vtu writer.
-     * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
-     * will be increased by additional_reserve.
-     * @return Point coordinate vector.
-     */
-    std::vector<double>& GetMutablePointCoordinateVector(int additional_reserve = -1);
-
-    /**
-     * \brief Return a mutable reference to the field data vector.
-     * @param data_name (in) Name of the data vector to return. If the name does not exist, an error
-     * will be thrown.
-     * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
-     * will be increased by additional_reserve.
-     * @return Point coordinate vector.
-     */
-    std::vector<double>& GetMutableFieldDataVector(std::string data_name);
-
-    /**
-     * \brief Return a mutable reference to the point data vector.
-     * @param data_name (in) Name of the data vector to return. If the name does not exist, an error
-     * will be thrown.
-     * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
-     * will be increased by additional_reserve.
-     * @return Point coordinate vector.
-     */
-    std::vector<double>& GetMutablePointDataVector(
-        std::string data_name, int additional_reserve = -1);
-
-    /**
-     * \brief Return a mutable reference to the cell data vector.
-     * @param data_name (in) Name of the data vector to return. If the name does not exist, an error
-     * will be thrown.
-     * @param additional_reserve (in) If this is larger than 0, the allocated length of the vector
-     * will be increased by additional_reserve.
-     * @return Point coordinate vector.
-     */
-    std::vector<double>& GetMutableCellDataVector(
-        std::string data_name, int additional_reserve = -1);
-
-    /**
-     * \brief Add an new (empty) field data vector to the object.
-     * @param data_name (in) Name of the new data. If this name already exists, an error will be
-     * thrown.
-     * @param reserve (in) If this is larger than 0, the created vector will allocate the number of
-     * entries.
-     */
-    void AddFieldDataVector(std::string data_name, int reserve = -1);
-
-    /**
-     * \brief Add an new (empty) point data vector to the object.
-     * @param data_name (in) Name of the new data. If this name already exists, an error will be
-     * thrown.
-     * @param n_dim (in) Number of spatial dimensions of the data. When writing the object, the
-     * dimension of this vector should be n_dim * n_nodes.
-     * @param reserve (in) If this is larger than 0, the created vector will allocate the number of
-     * entries.
-     */
-    void AddPointDataVector(std::string data_name, unsigned int n_dim, int reserve = -1);
-
-    /**
-     * \brief Add an new (empty) cell data vector to the object.
-     * @param data_name (in) Name of the new data. If this name already exists, an error will be
-     * thrown.
-     * @param n_dim (in) Number of spatial dimensions of the data. When writing the object, the
-     * dimension of this vector should be n_dim * n_nodes.
-     * @param reserve (in) If this is larger than 0, the created vector will allocate the number of
-     * entries.
-     */
-    void AddCellDataVector(std::string data_name, unsigned int n_dim, int reserve = -1);
 
     /**
      * \brief Add all nodes of a discretization to the output.

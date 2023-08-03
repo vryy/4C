@@ -137,14 +137,8 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
             preader = vtkXMLPUnstructuredGridReader()
             preader.SetFileName(pvtkpath)
             preader.Update()
-        elif type == 0:
-            preader = vtkXMLPPolyDataReader()
-            preader.SetFileName(pvtkpath)
-            preader.Update()
         else:
-            raise ValueError(
-                "Unknown VTK result type. known types: UnstructuredGrid, PolyData"
-            )
+            raise ValueError("Unknown VTK result type. known types: UnstructuredGrid")
 
         # A matching sorting could be introduced here to get rid of dependency on number of processors
 

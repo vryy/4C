@@ -74,16 +74,6 @@ void PARTICLEWALL::WallHandlerBase::Setup(
 
   // setup wall data state container
   walldatastate_->Setup();
-
-  // setup wall runtime vtu/vtp writers
-  {
-    // get data format for written numeric data
-    bool write_binary_output = (DRT::INPUT::IntegralValue<INPAR::PARTICLE::OutputDataFormat>(
-                                    params_, "OUTPUT_DATA_FORMAT") == INPAR::PARTICLE::binary);
-
-    // setup wall discretization runtime vtu writer
-    walldiscretizationruntimevtuwriter_->Setup(write_binary_output);
-  }
 }
 
 void PARTICLEWALL::WallHandlerBase::WriteRestart(const int step, const double time) const
@@ -94,18 +84,7 @@ void PARTICLEWALL::WallHandlerBase::WriteRestart(const int step, const double ti
   walldiscretizationwriter->NewStep(step, time);
 }
 
-void PARTICLEWALL::WallHandlerBase::ReadRestart(const int restartstep)
-{
-  // create discretization reader
-  const std::shared_ptr<IO::DiscretizationReader> reader =
-      std::make_shared<IO::DiscretizationReader>(walldiscretization_, restartstep);
-
-  // safety check
-  if (restartstep != reader->ReadInt("step")) dserror("time step on file not equal to given step!");
-
-  // read restart of wall discretization runtime vtu writer
-  walldiscretizationruntimevtuwriter_->ReadRestart(reader);
-}
+void PARTICLEWALL::WallHandlerBase::ReadRestart(const int restartstep) {}
 
 void PARTICLEWALL::WallHandlerBase::InsertParticleStatesOfParticleTypes(
     std::map<PARTICLEENGINE::TypeEnum, std::set<PARTICLEENGINE::StateEnum>>& particlestatestotypes)

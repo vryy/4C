@@ -14,10 +14,9 @@
 /* headers */
 
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_io_visualization_manager.H"
 
 #include <Teuchos_RCP.hpp>
-
-#include <vector>
 
 /*-----------------------------------------------------------------------------------------------*/
 /* forward declarations */
@@ -28,10 +27,9 @@ namespace CORE::GEO
     class BoundingBox;
   }
 }  // namespace CORE::GEO
+class Epetra_Comm;
 class Epetra_Vector;
 class Epetra_MultiVector;
-
-class RuntimeVtuWriter;
 
 namespace DRT
 {
@@ -66,7 +64,8 @@ class BeamDiscretizationRuntimeVtuWriter
 {
  public:
   /// Constructor
-  BeamDiscretizationRuntimeVtuWriter();
+  BeamDiscretizationRuntimeVtuWriter(
+      IO::VisualizationParameters parameters, const Epetra_Comm& comm);
 
   /// Destructor
   virtual ~BeamDiscretizationRuntimeVtuWriter() {}
@@ -76,18 +75,8 @@ class BeamDiscretizationRuntimeVtuWriter
    *  \author grill
    *  \date 03/17 */
   void Initialize(Teuchos::RCP<DRT::Discretization> discretization,
-      Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector,
       bool use_absolute_positions_for_point_coordinates, const unsigned int n_subsegments,
-      Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox,
-      unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output);
-
-
-  /** \brief reset current simulation time and time step number
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void ResetTimeAndTimeStep(double time, unsigned int timestep);
-
+      Teuchos::RCP<const CORE::GEO::MESHFREE::BoundingBox> const& periodic_boundingbox);
 
   /** \brief append triad field determined from given displacement state to output data
    *
@@ -215,18 +204,10 @@ class BeamDiscretizationRuntimeVtuWriter
    */
   void AppendRefLength();
 
-
-  /** \brief write all required VTU files to filesystem
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void WriteFiles();
-
-  /** \brief write a VTK collection file summarizing all written files of this object to filesystem
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void WriteCollectionFileOfAllWrittenFiles();
+  /**
+   * \brief Write the visualization files to disk
+   */
+  void WriteToDisk(const double visualization_time, const int visualization_step);
 
   /** \brief determine and set geometry data from beam elements based on given displacement state
    *
@@ -301,7 +282,7 @@ class BeamDiscretizationRuntimeVtuWriter
   std::vector<int> num_cells_per_element_;
 
   //! the actual vtu writer object that additionally stores the geometry and result data
-  Teuchos::RCP<RuntimeVtuWriter> runtime_vtuwriter_;
+  Teuchos::RCP<IO::VisualizationManager> visualization_manager_;
 
   //! flag indicating whether to use absolute positions for point coordinates
   // false: use reference position

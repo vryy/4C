@@ -612,26 +612,9 @@ void CORE::GEO::MESHFREE::BoundingBox::ApplyDirichlet(double timen)
  *----------------------------------------------------------------------------*/
 void CORE::GEO::MESHFREE::BoundingBox::InitRuntimeOutput()
 {
-  vtu_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter());
-
-  // Todo: we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
-
-  // initialize the writer object
-  double time = -1.0;
-  if (::DRT::Problem::Instance()->Restart())
-  {
-    IO::DiscretizationReader ioreader(
-        ::DRT::Problem::Instance()->GetDis("structure"), ::DRT::Problem::Instance()->Restart());
-    time = ioreader.ReadDouble("time");
-  }
-  else
-  {
-    time = 0.0;
-  }
-
-  vtu_writer_ptr_->Initialize(boxdiscret_, num_timesteps_in_simulation_upper_bound, time, true);
+  vtu_writer_ptr_ = Teuchos::rcp(new DiscretizationRuntimeVtuWriter(
+      boxdiscret_, IO::VisualizationParametersFactory(
+                       ::DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"))));
 }
 
 /*----------------------------------------------------------------------------*
@@ -642,13 +625,12 @@ void CORE::GEO::MESHFREE::BoundingBox::RuntimeOutputStepState(double timen, int 
 
   if (vtu_writer_ptr_ == Teuchos::null) return;
 
-  // reset time and time step of the writer object
-  vtu_writer_ptr_->ResetTimeAndTimeStep(timen, stepn);
+  // reset the writer object
+  vtu_writer_ptr_->Reset();
   vtu_writer_ptr_->AppendDofBasedResultDataVector(disn_col_, 3, 0, "displacement");
 
   // finalize everything and write all required VTU files to filesystem
-  vtu_writer_ptr_->WriteFiles();
-  vtu_writer_ptr_->WriteCollectionFileOfAllWrittenFiles();
+  vtu_writer_ptr_->WriteToDisk(timen, stepn);
 }
 
 /*----------------------------------------------------------------------------*

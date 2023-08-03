@@ -12,6 +12,7 @@
 
 #include "baci_beam3_discretization_runtime_vtu_output_params.H"
 #include "baci_inpar_parameterlist_utils.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_utils_exceptions.H"
 
 /*-----------------------------------------------------------------------------------------------*
@@ -23,9 +24,8 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   issetup_ = false;
 
   // initialize the parameter values
-  output_data_format_ =
-      DRT::INPUT::IntegralValue<INPAR::IO_RUNTIME_VTP_STRUCTURE::OutputDataFormat>(
-          IO_vtp_structure_paramslist, "OUTPUT_DATA_FORMAT");
+  visualization_parameters_ = IO::VisualizationParametersFactory(
+      DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT"));
 
   output_interval_steps_ = IO_vtp_structure_paramslist.get<int>("INTERVAL_STEPS");
 
@@ -34,10 +34,14 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
   output_every_iteration_ =
       (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "EVERY_ITERATION");
 
+  // Overwrite non default values in the visualization parameters
+  visualization_parameters_.every_iteration_ = output_every_iteration_;
+
+  if (output_every_iteration_)
+    dserror("Every iteration output not implemented for structure vtp output!");
+
   /*  output_displacement_state_ =
         (bool) DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "DISPLACEMENT");*/
-
-  if (output_every_iteration_) dserror("not implemented yet!");
 
   output_owner_ = (bool)DRT::INPUT::IntegralValue<int>(IO_vtp_structure_paramslist, "OWNER");
 

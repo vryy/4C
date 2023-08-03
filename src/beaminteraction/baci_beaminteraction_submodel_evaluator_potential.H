@@ -15,10 +15,9 @@
 
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
+#include "baci_io_visualization_manager.H"
 
 // forward declaration ...
-class RuntimeVtpWriter;
-
 namespace DRT
 {
   class Element;
@@ -209,7 +208,7 @@ namespace BEAMINTERACTION
       std::map<int, std::set<DRT::Element*>> nearby_elements_map_;
 
       //! runtime vtp writer for visualization of potential-based interactions
-      Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
+      Teuchos::RCP<IO::VisualizationManager> visualization_manager_;
     };
 
   }  // namespace SUBMODELEVALUATOR

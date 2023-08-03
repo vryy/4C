@@ -230,7 +230,7 @@ void VtkWriterBase::SetAndCreateVtkWorkingDirectory(
     dserror("VtkWriterBase: name for VTK working directory must not be empty!");
 
   working_directory_full_path_ =
-      path_existing_working_directory + name_vtk_subdirectory_to_be_created;
+      std::filesystem::path(path_existing_working_directory) / name_vtk_subdirectory_to_be_created;
 
   std::filesystem::create_directories(working_directory_full_path_);
 
@@ -337,7 +337,7 @@ void VtkWriterBase::WriteVtkHeaders()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void VtkWriterBase::WriteVtkFieldDataAndOrTimeAndOrCycle(
-    const std::map<std::string, std::vector<double>>& field_data_map)
+    const std::map<std::string, IO::visualization_vector_type_variant>& field_data_map)
 {
   ThrowErrorIfInvalidFileStream(currentout_);
 
@@ -366,7 +366,8 @@ void VtkWriterBase::WriteVtkFieldDataAndOrTimeAndOrCycle(
 
   // Write every field data array.
   for (const auto& field_data_iterator : field_data_map)
-    WriteFieldDataArray(field_data_iterator.first, field_data_iterator.second);
+    WriteFieldDataArray(
+        field_data_iterator.first, std::get<std::vector<double>>(field_data_iterator.second));
 
   // Finalize field data section.
   currentout_ << "    </FieldData>\n\n";
@@ -376,7 +377,7 @@ void VtkWriterBase::WriteVtkFieldDataAndOrTimeAndOrCycle(
  *----------------------------------------------------------------------*/
 void VtkWriterBase::WriteVtkTimeAndOrCycle()
 {
-  std::map<std::string, std::vector<double>> empty_map;
+  std::map<std::string, IO::visualization_vector_type_variant> empty_map;
   empty_map.clear();
   WriteVtkFieldDataAndOrTimeAndOrCycle(empty_map);
 }
@@ -444,12 +445,24 @@ void VtkWriterBase::WriteFieldDataArray(const std::string& name, const std::vect
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteDataArray(
-    const std::vector<double>& data, const int num_components, const std::string& name)
+void VtkWriterBase::WriteDataArray(const IO::visualization_vector_type_variant& data,
+    const int num_components, const std::string& name)
 {
-  if (myrank_ == 0) WriteDataArrayMasterFile(num_components, name);
+  std::string vtk_type_name = "";
+  if (std::holds_alternative<std::vector<double>>(data))
+  {
+    WriteDataArrayThisProcessor(std::get<std::vector<double>>(data), num_components, name);
+    vtk_type_name = ScalarTypeToVtkType<double>();
+  }
+  else if (std::holds_alternative<std::vector<int>>(data))
+  {
+    WriteDataArrayThisProcessor(std::get<std::vector<int>>(data), num_components, name);
+    vtk_type_name = ScalarTypeToVtkType<int>();
+  }
+  else
+    dserror("Got unexpected vector type");
 
-  WriteDataArrayThisProcessor(data, num_components, name);
+  if (myrank_ == 0) WriteDataArrayMasterFile(num_components, name, vtk_type_name);
 }
 
 /*----------------------------------------------------------------------*
@@ -471,13 +484,15 @@ const std::string& VtkWriterBase::GetPartOfFileNameIndicatingProcessorId(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void VtkWriterBase::WriteDataArrayMasterFile(const int num_components, const std::string& name)
+void VtkWriterBase::WriteDataArrayMasterFile(
+    const int num_components, const std::string& name, const std::string& data_type_name)
 {
   std::ofstream& masterfilestream = currentmasterout_;
   ThrowErrorIfInvalidFileStream(masterfilestream);
 
 
-  masterfilestream << "      <PDataArray type=\"Float64\" Name=\"" << name << "\"";
+  masterfilestream << "      <PDataArray type=\"" << data_type_name.c_str() << "\" Name=\"" << name
+                   << "\"";
 
   if (num_components > 1) masterfilestream << " NumberOfComponents=\"" << num_components << "\"";
 
@@ -486,14 +501,16 @@ void VtkWriterBase::WriteDataArrayMasterFile(const int num_components, const std
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+template <typename T>
 void VtkWriterBase::WriteDataArrayThisProcessor(
-    const std::vector<double>& data, const int num_components, const std::string& name)
+    const std::vector<T>& data, const int num_components, const std::string& name)
 {
   std::ofstream& filestream = currentout_;
   ThrowErrorIfInvalidFileStream(filestream);
 
 
-  filestream << "        <DataArray type=\"Float64\" Name=\"" << name << "\"";
+  filestream << "        <DataArray type=\"" << ScalarTypeToVtkType<T>() << "\" Name=\"" << name
+             << "\"";
 
   if (num_components > 1) filestream << " NumberOfComponents=\"" << num_components << "\"";
 
@@ -508,7 +525,7 @@ void VtkWriterBase::WriteDataArrayThisProcessor(
     filestream << " format=\"ascii\">\n";
 
     int counter = 1;
-    for (std::vector<double>::const_iterator it = data.begin(); it != data.end(); ++it)
+    for (typename std::vector<T>::const_iterator it = data.begin(); it != data.end(); ++it)
     {
       filestream << std::setprecision(15) << std::scientific << *it;
 

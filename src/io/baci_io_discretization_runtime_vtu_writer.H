@@ -13,6 +13,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 /* headers */
 
+#include "baci_io_visualization_manager.H"
+
 #include <Teuchos_RCP.hpp>
 
 /*-----------------------------------------------------------------------------------------------*/
@@ -21,7 +23,6 @@ class Epetra_Vector;
 class Epetra_MultiVector;
 class Epetra_Map;
 
-class RuntimeVtuWriter;
 
 namespace DRT
 {
@@ -45,23 +46,16 @@ class DiscretizationRuntimeVtuWriter
 {
  public:
   /// Constructor
-  DiscretizationRuntimeVtuWriter();
+  DiscretizationRuntimeVtuWriter(const Teuchos::RCP<const DRT::Discretization>& discretization,
+      IO::VisualizationParameters parameters);
 
   /// Destructor
   virtual ~DiscretizationRuntimeVtuWriter() {}
 
-  /** \brief initialize object with all required data
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void Initialize(Teuchos::RCP<const DRT::Discretization> discretization,
-      unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output);
-
-  /** \brief reset current simulation time and time step number
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void ResetTimeAndTimeStep(double time, unsigned int timestep);
+  /**
+   * @brief reset state depending if the maps changed or not
+   */
+  void Reset();
 
   /** \brief append result vector with num_dof values per node to output data
    *
@@ -123,18 +117,10 @@ class DiscretizationRuntimeVtuWriter
    */
   void AppendNodeGID(const std::string& resultname);
 
-  /** \brief write all required VTU files to filesystem
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void WriteFiles();
-
-  /** \brief write a VTK collection file summarizing all written files of this object to filesystem
-   *
-   *  \author grill
-   *  \date 03/17 */
-  void WriteCollectionFileOfAllWrittenFiles();
-
+  /**
+   * \brief Write the visualization files to disk
+   */
+  void WriteToDisk(const double visualziation_time, const int visualization_step);
 
  private:
   /** \brief determine and set geometry data from elements based on reference configuration
@@ -149,7 +135,7 @@ class DiscretizationRuntimeVtuWriter
   Teuchos::RCP<const DRT::Discretization> discretization_;
 
   //! the actual vtu writer object that additionally stores the geometry and result data
-  Teuchos::RCP<RuntimeVtuWriter> runtime_vtuwriter_;
+  Teuchos::RCP<IO::VisualizationManager> visualization_manager_;
 
   //! node row and col maps the geometry of runtime vtu writer is based on
   Teuchos::RCP<Epetra_Map> noderowmap_last_geometry_set_;
@@ -167,7 +153,7 @@ namespace IO
    */
   void AppendElementGhostingInformation(
       const Teuchos::RCP<const DRT::Discretization>& discretization,
-      const Teuchos::RCP<RuntimeVtuWriter>& runtime_vtuwriter, bool is_beam = false);
+      const Teuchos::RCP<IO::VisualizationManager>& visualization_manager, bool is_beam = false);
 }  // namespace IO
 
 #endif

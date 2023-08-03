@@ -16,14 +16,13 @@
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_inpar_beaminteraction.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_linalg_fixedsizematrix.H"
 
 #include <Epetra_MpiComm.h>
 
 #include <unordered_set>
 
-// forward declaration
-class RuntimeVtpWriter;
 
 namespace DRT
 {
@@ -169,7 +168,7 @@ namespace BEAMINTERACTION
       Teuchos::RCP<BEAMINTERACTION::SphereBeamLinkingParams> spherebeamlinking_params_ptr_;
 
       //! runtime output for cell beam crosslinks (integrins)
-      Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
+      Teuchos::RCP<IO::VisualizationManager> visualization_manager_ptr_;
 
       //! step number for random stuff concerning sphere beam linking
       int random_number_sphere_beam_linking_step_;

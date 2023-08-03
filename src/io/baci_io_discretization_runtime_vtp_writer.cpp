@@ -12,7 +12,7 @@
 #include "baci_io_discretization_runtime_vtp_writer.H"
 
 #include "baci_io_control.H"
-#include "baci_io_runtime_vtp_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
@@ -21,37 +21,15 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-DiscretizationRuntimeVtpWriter::DiscretizationRuntimeVtpWriter()
-    : discretization_(Teuchos::null), runtime_vtpwriter_(Teuchos::rcp(new RuntimeVtpWriter()))
+DiscretizationRuntimeVtpWriter::DiscretizationRuntimeVtpWriter(
+    const Teuchos::RCP<const DRT::Discretization>& discretization,
+    IO::VisualizationParameters parameters)
+    : discretization_(discretization),
+      visualization_manager_(Teuchos::rcp(
+          new IO::VisualizationManager(parameters, discretization->Comm(), discretization->Name())))
 {
-  // empty constructor
 }
 
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtpWriter::Initialize(
-    Teuchos::RCP<const DRT::Discretization> discretization, const std::string& geometry_name,
-    unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output)
-{
-  discretization_ = discretization;
-
-  // determine path of output directory
-  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
-
-  size_t pos = outputfilename.find_last_of("/");
-
-  if (pos == outputfilename.npos)
-    pos = 0ul;
-  else
-    pos++;
-
-  const std::string output_directory_path(outputfilename.substr(0ul, pos));
-
-  runtime_vtpwriter_->Initialize(discretization_->Comm().MyPID(), discretization_->Comm().NumProc(),
-      max_number_timesteps_to_be_written, output_directory_path,
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), geometry_name,
-      DRT::Problem::Instance()->OutputControlFile()->RestartName(), time, write_binary_output);
-}
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
@@ -68,7 +46,8 @@ void DiscretizationRuntimeVtpWriter::SetGeometryFromParticleDiscretization()
   unsigned int num_row_nodes = (unsigned int)discretization_->NumMyRowNodes();
 
   // get and prepare storage for point coordinate values
-  std::vector<double>& point_coordinates = runtime_vtpwriter_->GetMutablePointCoordinateVector();
+  std::vector<double>& point_coordinates =
+      visualization_manager_->GetVisualizationDataMutable().GetPointCoordinatesMutable();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_row_nodes);
 
@@ -93,14 +72,6 @@ void DiscretizationRuntimeVtpWriter::SetGeometryFromParticleDiscretization()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtpWriter::ResetTimeAndTimeStep(double time, unsigned int timestep)
-{
-  // Todo allow for independent setting of time/timestep and geometry name
-  runtime_vtpwriter_->SetupForNewTimeStepAndGeometry(time, timestep, discretization_->Name());
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtpWriter::AppendDofBasedResultDataVector(
     const Teuchos::RCP<Epetra_Vector>& result_data_dofbased, unsigned int result_num_dofs_per_node,
     const std::string& resultname)
@@ -114,8 +85,8 @@ void DiscretizationRuntimeVtpWriter::AppendDofBasedResultDataVector(
   for (int lid = 0; lid < result_data_dofbased->MyLength(); ++lid)
     vtp_point_result_data.push_back((*result_data_dofbased)[lid]);
 
-  runtime_vtpwriter_->AppendVisualizationPointDataVector(
-      vtp_point_result_data, result_num_dofs_per_node, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+      resultname, vtp_point_result_data, result_num_dofs_per_node);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -150,19 +121,14 @@ void DiscretizationRuntimeVtpWriter::AppendNodeBasedResultDataVector(
     }
   }
 
-  runtime_vtpwriter_->AppendVisualizationPointDataVector(
-      vtp_point_result_data, result_num_components_per_node, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+      resultname, vtp_point_result_data, result_num_components_per_node);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtpWriter::WriteFiles() { runtime_vtpwriter_->WriteFiles(); }
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFiles(
-    const std::string& geometry_name)
+void DiscretizationRuntimeVtpWriter::WriteToDisk(
+    const double visualziation_time, const int visualization_step)
 {
-  runtime_vtpwriter_->WriteCollectionFileOfAllWrittenFiles(
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" + geometry_name);
+  visualization_manager_->WriteToDisk(visualziation_time, visualization_step);
 }

@@ -17,9 +17,9 @@
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_discretization_geometric_search_params.H"
+#include "baci_io_visualization_manager.H"
 
 // forward declaration ...
-class RuntimeVtpWriter;
 namespace GEOMETRYPAIR
 {
   class GeometryEvaluationDataGlobal;
@@ -280,7 +280,7 @@ namespace BEAMINTERACTION
       std::map<int, std::set<DRT::Element*>> nearby_elements_map_;
 
       //! runtime vtp writer for visualization of contact forces
-      Teuchos::RCP<RuntimeVtpWriter> vtp_writer_ptr_;
+      Teuchos::RCP<IO::VisualizationManager> visualization_manager_ptr_;
 
       //! This object handles all beam to solid volume related visualization output.
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVolumeMeshtyingVtkOutputWriter>

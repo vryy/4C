@@ -12,7 +12,7 @@
 
 #include "baci_io.H"
 #include "baci_io_control.H"
-#include "baci_io_runtime_vtp_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_rigidbody_datastate.H"
 
@@ -20,7 +20,7 @@
  | definitions                                                               |
  *---------------------------------------------------------------------------*/
 PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::RigidBodyRuntimeVtpWriter(const Epetra_Comm& comm)
-    : comm_(comm), setuptime_(0.0), fieldname_("rigidbody")
+    : comm_(comm), setuptime_(0.0)
 {
   // empty constructor
 }
@@ -32,29 +32,10 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::Init(
   rigidbodydatastate_ = rigidbodydatastate;
 
   // construct the writer object
-  runtime_vtpwriter_ = std::make_shared<RuntimeVtpWriter>();
-}
-
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::Setup(bool write_binary_output)
-{
-  // determine path of output directory
-  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
-  size_t pos = outputfilename.find_last_of("/");
-  if (pos == outputfilename.npos)
-    pos = 0ul;
-  else
-    pos++;
-  const std::string output_directory_path(outputfilename.substr(0ul, pos));
-
-  // we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  const unsigned int max_number_timesteps_to_be_written = 1.0e+6;
-
-  // initialize the writer object
-  runtime_vtpwriter_->Initialize(comm_.MyPID(), comm_.NumProc(), max_number_timesteps_to_be_written,
-      output_directory_path, DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(),
-      fieldname_, DRT::Problem::Instance()->OutputControlFile()->RestartName(), setuptime_,
-      write_binary_output);
+  visualization_manager_ = std::make_shared<IO::VisualizationManager>(
+      IO::VisualizationParametersFactory(
+          DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+      comm_, "rigidbody");
 }
 
 void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::ReadRestart(
@@ -64,19 +45,15 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::ReadRestart(
   setuptime_ = reader->ReadDouble("time");
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::ResetTimeAndTimeStep(
-    double time, unsigned int timestep)
-{
-  runtime_vtpwriter_->SetupForNewTimeStepAndGeometry(time, timestep, fieldname_);
-}
-
 void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndStates(
     const std::vector<int>& ownedrigidbodies)
 {
+  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+
   // rigid body position
   {
     // get and prepare storage for position data
-    std::vector<double>& posdata = runtime_vtpwriter_->GetMutablePointCoordinateVector();
+    std::vector<double>& posdata = visualization_data.GetPointCoordinatesMutable();
     posdata.clear();
     posdata.reserve(3 * ownedrigidbodies.size());
 
@@ -101,7 +78,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
     for (int rigidbody_k : ownedrigidbodies) massdata.push_back(mass[rigidbody_k]);
 
     // append rigid body mass data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(massdata, 1, "mass");
+    visualization_data.SetPointDataVector<double>("mass", massdata, 1);
   }
 
   // rigid body velocity
@@ -118,7 +95,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
       veldata.insert(veldata.end(), vel[rigidbody_k].begin(), vel[rigidbody_k].end());
 
     // append rigid body velocity data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(veldata, 3, "velocity");
+    visualization_data.SetPointDataVector<double>("velocity", veldata, 3);
   }
 
   // rigid body acceleration
@@ -135,7 +112,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
       accdata.insert(accdata.end(), acc[rigidbody_k].begin(), acc[rigidbody_k].end());
 
     // append rigid body acceleration data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(accdata, 3, "acceleration");
+    visualization_data.SetPointDataVector<double>("acceleration", accdata, 3);
   }
 
   // rigid body angular velocity
@@ -152,7 +129,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
       angveldata.insert(angveldata.end(), angvel[rigidbody_k].begin(), angvel[rigidbody_k].end());
 
     // append rigid body angular velocity data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(angveldata, 3, "angular velocity");
+    visualization_data.SetPointDataVector<double>("angular velocity", angveldata, 3);
   }
 
   // rigid body angular acceleration
@@ -170,7 +147,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
       angaccdata.insert(angaccdata.end(), angacc[rigidbody_k].begin(), angacc[rigidbody_k].end());
 
     // append rigid body angular acceleration data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(angaccdata, 3, "angular acceleration");
+    visualization_data.SetPointDataVector<double>("angular acceleration", angaccdata, 3);
   }
 
   // rigid body force
@@ -187,7 +164,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
       forcedata.insert(forcedata.end(), force[rigidbody_k].begin(), force[rigidbody_k].end());
 
     // append rigid body force data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(forcedata, 3, "force");
+    visualization_data.SetPointDataVector<double>("force", forcedata, 3);
   }
 
   // rigid body torque
@@ -204,7 +181,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
       torquedata.insert(torquedata.end(), torque[rigidbody_k].begin(), torque[rigidbody_k].end());
 
     // append rigid body torque data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(torquedata, 3, "torque");
+    visualization_data.SetPointDataVector<double>("torque", torquedata, 3);
   }
 
   // rigid body global id
@@ -217,7 +194,7 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
     for (int rigidbody_k : ownedrigidbodies) globaliddata.push_back(rigidbody_k);
 
     // append rigid body global id data to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(globaliddata, 1, "globalid");
+    visualization_data.SetPointDataVector<double>("globalid", globaliddata, 1);
   }
 
   // rigid body owner
@@ -226,17 +203,12 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndState
     std::vector<double> ownerdata(ownedrigidbodies.size(), comm_.MyPID());
 
     // append owner of rigid bodies to vtp writer
-    runtime_vtpwriter_->AppendVisualizationPointDataVector(ownerdata, 1, "owner");
+    visualization_data.SetPointDataVector<double>("owner", ownerdata, 1);
   }
 }
 
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::WriteFiles()
+void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::WriteToDisk(
+    const double time, const unsigned int timestep_number)
 {
-  runtime_vtpwriter_->WriteFiles();
-}
-
-void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::WriteCollectionFileOfAllWrittenFiles()
-{
-  runtime_vtpwriter_->WriteCollectionFileOfAllWrittenFiles(
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" + fieldname_);
+  visualization_manager_->WriteToDisk(time, timestep_number);
 }

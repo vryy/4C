@@ -20,6 +20,7 @@
 #include <unistd.h>
 
 #include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <utility>
 #include <vector>
@@ -319,7 +320,7 @@ void IO::OutputControl::InsertRestartBackReference(int restart, const std::strin
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::string IO::OutputControl::FileNameOnlyPrefix()
+std::string IO::OutputControl::FileNameOnlyPrefix() const
 {
   std::string filenameonlyprefix = filename_;
 
@@ -330,6 +331,14 @@ std::string IO::OutputControl::FileNameOnlyPrefix()
   }
 
   return filenameonlyprefix;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+std::string IO::OutputControl::DirectoryName() const
+{
+  std::filesystem::path path(filename_);
+  return path.parent_path();
 }
 
 /*----------------------------------------------------------------------*/

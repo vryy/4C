@@ -13,7 +13,7 @@
 
 #include "baci_beam3_base.H"
 #include "baci_io_control.H"
-#include "baci_io_runtime_vtu_writer.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
@@ -25,39 +25,13 @@
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-DiscretizationRuntimeVtuWriter::DiscretizationRuntimeVtuWriter()
-    : runtime_vtuwriter_(Teuchos::rcp(new RuntimeVtuWriter()))
+DiscretizationRuntimeVtuWriter::DiscretizationRuntimeVtuWriter(
+    const Teuchos::RCP<const DRT::Discretization>& discretization,
+    IO::VisualizationParameters parameters)
+    : discretization_(discretization),
+      visualization_manager_(Teuchos::rcp(
+          new IO::VisualizationManager(parameters, discretization->Comm(), discretization->Name())))
 {
-  // empty constructor
-}
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtuWriter::Initialize(
-    Teuchos::RCP<const DRT::Discretization> discretization,
-    unsigned int max_number_timesteps_to_be_written, double time, bool write_binary_output)
-{
-  discretization_ = discretization;
-
-  // determine path of output directory
-  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
-
-  size_t pos = outputfilename.find_last_of("/");
-
-  if (pos == outputfilename.npos)
-    pos = 0ul;
-  else
-    pos++;
-
-  const std::string output_directory_path(outputfilename.substr(0ul, pos));
-
-  runtime_vtuwriter_->Initialize(discretization_->Comm().MyPID(), discretization_->Comm().NumProc(),
-      max_number_timesteps_to_be_written, output_directory_path,
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), discretization_->Name(),
-      DRT::Problem::Instance()->OutputControlFile()->RestartName(), time, write_binary_output);
-
-  // todo: if you want to use absolute positions, do this every time you write output
-  // with current col displacements
   SetGeometryFromDiscretizationStandard();
 }
 
@@ -78,15 +52,17 @@ void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
   // need to adjust order of filling in the coordinates).
-  std::vector<double>& point_coordinates = runtime_vtuwriter_->GetMutablePointCoordinateVector();
+  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_nodes);
 
-  std::vector<uint8_t>& cell_types = runtime_vtuwriter_->GetMutableCellTypeVector();
+  std::vector<uint8_t>& cell_types = visualization_data.GetCellTypesMutable();
   cell_types.clear();
   cell_types.reserve(num_row_elements);
 
-  std::vector<int32_t>& cell_offsets = runtime_vtuwriter_->GetMutableCellOffsetVector();
+  std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsetsMutable();
   cell_offsets.clear();
   cell_offsets.reserve(num_row_elements);
 
@@ -145,7 +121,7 @@ void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(double time, unsigned int timestep)
+void DiscretizationRuntimeVtuWriter::Reset()
 {
   // check if parallel distribution of discretization changed
   int map_changed = ((not noderowmap_last_geometry_set_->SameAs(*discretization_->NodeRowMap())) or
@@ -155,9 +131,6 @@ void DiscretizationRuntimeVtuWriter::ResetTimeAndTimeStep(double time, unsigned 
 
   // reset geometry of runtime vtu writer
   if (map_changed_allproc) SetGeometryFromDiscretizationStandard();
-
-  // Todo allow for independent setting of time/timestep and geometry name
-  runtime_vtuwriter_->SetupForNewTimeStepAndGeometry(time, timestep, discretization_->Name());
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -173,7 +146,7 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
   if (!discretization_->DofColMap()->SameAs(result_data_dofbased->Map()))
   {
     dserror(
-        "DiscretizationRuntimeVtpWriter: Received DofBasedResult's map does not match the "
+        "DiscretizationRuntimeVtuWriter: Received DofBasedResult's map does not match the "
         "discretization's dof col map.");
   }
 
@@ -214,8 +187,8 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
         result_num_dofs_per_node * pointcounter, vtu_point_result_data.size());
   }
 
-  runtime_vtuwriter_->AppendVisualizationPointDataVector(
-      vtu_point_result_data, result_num_dofs_per_node, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector(
+      resultname, vtu_point_result_data, result_num_dofs_per_node);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -230,13 +203,13 @@ void DiscretizationRuntimeVtuWriter::AppendNodeBasedResultDataVector(
   // safety checks
   if ((unsigned int)result_data_nodebased->NumVectors() != result_num_components_per_node)
     dserror(
-        "DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with %d columns but got %d",
+        "DiscretizationRuntimeVtuWriter: expected Epetra_MultiVector with %d columns but got %d",
         result_num_components_per_node, result_data_nodebased->NumVectors());
 
   if (!discretization_->NodeColMap()->SameAs(result_data_nodebased->Map()))
   {
     dserror(
-        "DiscretizationRuntimeVtpWriter: Received NodeBasedResult's map does not match the "
+        "DiscretizationRuntimeVtuWriter: Received NodeBasedResult's map does not match the "
         "discretization's node col map.");
   }
 
@@ -292,8 +265,8 @@ void DiscretizationRuntimeVtuWriter::AppendNodeBasedResultDataVector(
         result_num_components_per_node * pointcounter, vtu_point_result_data.size());
   }
 
-  runtime_vtuwriter_->AppendVisualizationPointDataVector(
-      vtu_point_result_data, result_num_components_per_node, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+      resultname, vtu_point_result_data, result_num_components_per_node);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -308,13 +281,13 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
   // safety check
   if ((unsigned int)result_data_elementbased->NumVectors() != result_num_components_per_element)
     dserror(
-        "DiscretizationRuntimeVtpWriter: expected Epetra_MultiVector with %d columns but got %d",
+        "DiscretizationRuntimeVtuWriter: expected Epetra_MultiVector with %d columns but got %d",
         result_num_components_per_element, result_data_elementbased->NumVectors());
 
   if (!discretization_->ElementRowMap()->SameAs(result_data_elementbased->Map()))
   {
     dserror(
-        "DiscretizationRuntimeVtpWriter: Received ElementBasedResult's map does not match the "
+        "DiscretizationRuntimeVtuWriter: Received ElementBasedResult's map does not match the "
         "discretization's element row map.");
   }
 
@@ -353,8 +326,8 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
         result_num_components_per_element * cellcounter, vtu_cell_result_data.size());
   }
 
-  runtime_vtuwriter_->AppendVisualizationCellDataVector(
-      vtu_cell_result_data, result_num_components_per_element, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+      resultname, vtu_cell_result_data, result_num_components_per_element);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -378,7 +351,8 @@ void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string result
   }
 
   // Pass data to the output writer.
-  runtime_vtuwriter_->AppendVisualizationCellDataVector(owner_of_row_elements, 1, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+      resultname, owner_of_row_elements, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -401,7 +375,8 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string& resultn
   }
 
   // Pass data to the output writer.
-  runtime_vtuwriter_->AppendVisualizationCellDataVector(gid_of_row_elements, 1, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+      resultname, gid_of_row_elements, 1);
 }
 
 
@@ -409,7 +384,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string& resultn
  *-----------------------------------------------------------------------------------------------*/
 void DiscretizationRuntimeVtuWriter::AppendElementGhostingInformation()
 {
-  IO::AppendElementGhostingInformation(discretization_, runtime_vtuwriter_);
+  IO::AppendElementGhostingInformation(discretization_, visualization_manager_);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -444,27 +419,23 @@ void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string& resultname
       gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
   }
 
-  runtime_vtuwriter_->AppendVisualizationPointDataVector(gid_of_nodes, 1, resultname);
+  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+      resultname, gid_of_nodes, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtuWriter::WriteFiles() { runtime_vtuwriter_->WriteFiles(); }
-
-/*-----------------------------------------------------------------------------------------------*
- *-----------------------------------------------------------------------------------------------*/
-void DiscretizationRuntimeVtuWriter::WriteCollectionFileOfAllWrittenFiles()
+void DiscretizationRuntimeVtuWriter::WriteToDisk(
+    const double visualziation_time, const int visualization_step)
 {
-  runtime_vtuwriter_->WriteCollectionFileOfAllWrittenFiles(
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-" +
-      discretization_->Name());
+  visualization_manager_->WriteToDisk(visualziation_time, visualization_step);
 }
 
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 void IO::AppendElementGhostingInformation(
     const Teuchos::RCP<const DRT::Discretization>& discretization,
-    const Teuchos::RCP<RuntimeVtuWriter>& runtime_vtuwriter, bool is_beam)
+    const Teuchos::RCP<IO::VisualizationManager>& visualization_manager, bool is_beam)
 {
   // Set up a multivector which will be populated with all ghosting informations.
   const Epetra_Comm& comm = discretization->ElementColMap()->Comm();
@@ -515,6 +486,6 @@ void IO::AppendElementGhostingInformation(
     }
   }
 
-  runtime_vtuwriter->AppendVisualizationCellDataVector(
-      ghosted_elements, n_proc, "element_ghosting");
+  visualization_manager->GetVisualizationDataMutable().SetCellDataVector(
+      "element_ghosting", ghosted_elements, n_proc);
 }

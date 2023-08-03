@@ -87,14 +87,6 @@ namespace INPAR
       boct_spbb   ///< spherical bounding boxes
     };
 
-    /// data format for written numeric data via vtk
-    enum OutputDataFormat
-    {
-      binary,
-      ascii,
-      vague
-    };
-
     /// set the beam contact parameters
     void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
 

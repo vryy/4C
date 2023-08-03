@@ -21,9 +21,7 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_pstream.H"
-#include "baci_io_runtime_vtp_writer.H"
-#include "baci_lib_globalproblem.H"
-#include "baci_linalg_fixedsizematrix.H"
+#include "baci_io_visualization_manager.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
@@ -428,11 +426,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::UpdateStepElement(bool r
    * element pairs)
    * move this to RuntimeOutputStepState as soon as we keep element pairs
    * from previous time step */
-  if (vtp_writer_ptr_ != Teuchos::null and
+  if (visualization_manager_ != Teuchos::null and
       GState().GetStepNp() %
               BeamPotentialParams().GetBeamPotentialVtkParams()->OutputIntervalInSteps() ==
           0)
+  {
     WriteTimeStepOutputRuntimeVtpBeamPotential();
+  }
 
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
@@ -526,9 +526,11 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::RunPostIterate(
 {
   CheckInitSetup();
 
-  if (vtp_writer_ptr_ != Teuchos::null and
+  if (visualization_manager_ != Teuchos::null and
       BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration())
+  {
     WriteIterationOutputRuntimeVtpBeamPotential(solver.getNumIterations());
+  }
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -860,34 +862,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::InitOutputRuntimeVtpBeam
 {
   CheckInit();
 
-  vtp_writer_ptr_ = Teuchos::rcp(new RuntimeVtpWriter());
-
-  // Todo: we need a better upper bound for total number of time steps here
-  // however, this 'only' affects the number of leading zeros in the vtk file names
-  unsigned int num_timesteps_in_simulation_upper_bound = 1000000;
-
-  if (BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration())
-    num_timesteps_in_simulation_upper_bound *= 10000;
-
-  // determine path of output directory
-  const std::string outputfilename(DRT::Problem::Instance()->OutputControlFile()->FileName());
-
-  size_t pos = outputfilename.find_last_of("/");
-
-  if (pos == outputfilename.npos)
-    pos = 0ul;
-  else
-    pos++;
-
-  const std::string output_directory_path(outputfilename.substr(0ul, pos));
-
-
-  // initialize the writer object
-  vtp_writer_ptr_->Initialize(Discret().Comm().MyPID(), Discret().Comm().NumProc(),
-      num_timesteps_in_simulation_upper_bound, output_directory_path,
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix(), "beam-potential",
-      DRT::Problem::Instance()->OutputControlFile()->RestartName(), GState().GetTimeN(),
-      BeamPotentialParams().GetBeamPotentialVtkParams()->WriteBinaryOutput());
+  visualization_manager_ = Teuchos::rcp(new IO::VisualizationManager(
+      BeamPotentialParams().GetBeamPotentialVtkParams()->GetVisualizationParameters(),
+      Discret().Comm(), "beam-potential"));
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -897,10 +874,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteTimeStepOutputRunti
 {
   CheckInitSetup();
 
-  if (not BeamPotentialParams().GetBeamPotentialVtkParams()->OutputEveryIteration())
-    WriteOutputRuntimeVtpBeamPotential(GState().GetStepN(), GState().GetTimeN());
-  else
-    WriteOutputRuntimeVtpBeamPotential(10000 * GState().GetStepN(), GState().GetTimeN());
+  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+      BeamPotentialParams().GetBeamPotentialVtkParams()->GetVisualizationParameters(),
+      GState().GetTimeN(), GState().GetStepN());
+  WriteOutputRuntimeVtpBeamPotential(output_step, output_time);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -910,13 +887,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteIterationOutputRunt
 {
   CheckInitSetup();
 
-  const int augmented_timestep_number_incl_iteration_count =
-      10000 * GState().GetStepN() + 1 * iteration_number;
-
-  const double augmented_time_incl_iteration_count = GState().GetTimeN() + 1e-8 * iteration_number;
-
-  WriteOutputRuntimeVtpBeamPotential(
-      augmented_timestep_number_incl_iteration_count, augmented_time_incl_iteration_count);
+  auto [output_time, output_step] = IO::GetTimeAndTimeStepIndexForOutput(
+      BeamPotentialParams().GetBeamPotentialVtkParams()->GetVisualizationParameters(),
+      GState().GetTimeN(), GState().GetStepN(), iteration_number);
+  WriteOutputRuntimeVtpBeamPotential(output_step, output_time);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -927,9 +901,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   CheckInitSetup();
 
   const unsigned int num_spatial_dimensions = 3;
-
-  // reset time and time step and geometry name in the writer object
-  vtp_writer_ptr_->SetupForNewTimeStepAndGeometry(time, timestep_number, "beam-potential");
 
   // estimate for number of interacting Gauss points = number of row points for writer object
   unsigned int num_row_points = 0;
@@ -952,7 +923,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   }
 
   // get and prepare storage for point coordinate values
-  std::vector<double>& point_coordinates = vtp_writer_ptr_->GetMutablePointCoordinateVector();
+  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_row_points);
 
@@ -1152,21 +1124,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   // append all desired output data to the writer object's storage
   if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForces())
   {
-    vtp_writer_ptr_->AppendVisualizationPointDataVector(
-        potential_force_vector, num_spatial_dimensions, "force");
+    visualization_manager_->GetVisualizationDataMutable().SetPointDataVector(
+        "force", potential_force_vector, num_spatial_dimensions);
   }
 
   if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteMoments())
   {
-    vtp_writer_ptr_->AppendVisualizationPointDataVector(
-        potential_moment_vector, num_spatial_dimensions, "moment");
+    visualization_manager_->GetVisualizationDataMutable().SetPointDataVector(
+        "moment", potential_moment_vector, num_spatial_dimensions);
   }
 
   // finalize everything and write all required vtk files to filesystem
-  vtp_writer_ptr_->WriteFiles();
-
-
-  // write a collection file summarizing all previously written files
-  vtp_writer_ptr_->WriteCollectionFileOfAllWrittenFiles(
-      DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix() + "-beam-potential");
+  visualization_manager_->WriteToDisk(time, timestep_number);
 }

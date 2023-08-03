@@ -312,13 +312,6 @@ namespace PARTICLERIGIDBODY
     void InitAffiliationPairHandler();
 
     /*!
-     * \brief setup rigid body runtime vtp writer
-     *
-     * \author Sebastian Fuchs \date 09/2020
-     */
-    void SetupRigidBodyVtpWriter();
-
-    /*!
      * \brief get packed rigid body state data
      *
      * Get the packed required states of all rigid bodies owned by this processor.

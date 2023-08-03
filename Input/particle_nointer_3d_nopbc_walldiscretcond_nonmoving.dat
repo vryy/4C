@@ -6,6 +6,8 @@ PROBLEMTYP                      Particle
 --------------------------------------------------------------------------IO
 STDOUTEVRY                      100
 VERBOSITY                       standard
+-------------------------------------------------------IO/RUNTIME VTK OUTPUT
+TIMESTEP_RESERVE_DIGITS         6
 ------------------------------------------------------------BINNING STRATEGY
 BIN_SIZE_LOWER_BOUND            0.1
 DOMAINBOUNDINGBOX               -0.5 -0.3 -0.4 0.5 0.3 0.4
@@ -15,7 +17,6 @@ DYNAMICTYP                      VelocityVerlet
 INTERACTION                     None
 RESULTSEVRY                     10
 RESTARTEVRY                     100
-OUTPUT_DATA_FORMAT              Binary
 WRITE_GHOSTED_PARTICLES         yes
 TIMESTEP                        1e-3
 NUMSTEP                         400
