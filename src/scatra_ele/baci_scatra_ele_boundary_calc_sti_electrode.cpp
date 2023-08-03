@@ -10,6 +10,7 @@
 #include "baci_scatra_ele_boundary_calc_sti_electrode.H"
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
+#include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_s2i.H"
 #include "baci_lib_discret.H"
 #include "baci_mat_electrode.H"
@@ -389,7 +390,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcSTIElectrode<distype, probdim>::Evaluat
     {
       static CORE::LINALG::Matrix<nen_, nsd_> xyze_transposed;
       xyze_transposed.UpdateT(my::xyze_);
-      DRT::ELEMENTS::UTILS::EvaluateShapeFunctionSpatialDerivative<distype, nsd_>(
+      CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
     }

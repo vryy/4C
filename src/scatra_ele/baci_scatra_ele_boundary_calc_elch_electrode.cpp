@@ -653,7 +653,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrode<distype, probdim>::Evalua
     {
       static CORE::LINALG::Matrix<nen_, nsd_> xyze_transposed;
       xyze_transposed.UpdateT(my::xyze_);
-      DRT::ELEMENTS::UTILS::EvaluateShapeFunctionSpatialDerivative<distype, nsd_>(
+      CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, nsd_>(
           my::derxy_, my::deriv_, xyze_transposed, normal);
       my::EvaluateSpatialDerivativeOfAreaIntegrationFactor(intpoints, gpid, dsqrtdetg_dd);
     }

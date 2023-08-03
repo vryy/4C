@@ -283,7 +283,7 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
   }
 
   static CORE::LINALG::Matrix<dim, num_ele_nodes> derxy;
-  DRT::ELEMENTS::UTILS::EvaluateShapeFunctionSpatialDerivative<distype, dim>(
+  CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<distype, dim>(
       derxy, deriv, xyze, *electrode_quantities.gp_normal);
 
   d_detF_dd.resize(electrode_ele->NumNode() * dim);
