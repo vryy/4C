@@ -48,49 +48,47 @@ namespace CORE::GEO
 
      private:
       void FormMatrixSystem(CORE::DRT::UTILS::GaussPointsComposite& gin,
-          Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs);
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs);
 
-      void Teuchos_GELS(Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol);
+      void Teuchos_GELS(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
       /*!
       \brief Solve the under/over determined system by performing QR decomposition, achived using
       Teuchos framework
        */
-      void QR_decomposition_Teuchos(Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol);
+      void QR_decomposition_Teuchos(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
       /*!
       \brief Solve the under/over determined system by performing QR decomposition, achived using
       LAPACK
        */
-      void QR_decomposition_LAPACK(Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol);
+      void QR_decomposition_LAPACK(Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
       bool Compress_Leja_points(CORE::DRT::UTILS::GaussPointsComposite& gin,
-          Teuchos::RCP<Teuchos::SerialDenseMatrix<int, double>>& mat,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol);
+          Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>& mat,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol);
 
       void ComputeAndPrintError(CORE::DRT::UTILS::GaussPointsComposite& gin,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& rhs,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol, std::vector<int>& work,
-          int& na);
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& rhs,
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na);
 
       void GetPivotalRows(
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, int>>& work_temp, std::vector<int>& work);
+          Teuchos::RCP<CORE::LINALG::IntSerialDenseVector>& work_temp, std::vector<int>& work);
 
       bool isThisValueAlreadyInDenseVector(
           int& input, std::vector<int>& vec, int upper_range, int& index);
 
       Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> FormNewQuadratureRule(
           CORE::DRT::UTILS::GaussPointsComposite& gin,
-          Teuchos::RCP<Teuchos::SerialDenseVector<int, double>>& sol, std::vector<int>& work,
-          int& na);
+          Teuchos::RCP<CORE::LINALG::SerialDenseVector>& sol, std::vector<int>& work, int& na);
       int GetCorrectIndex(int& input, std::vector<int>& vec, int upper_range);
 
       void WriteCompressedQuadratureGMSH(

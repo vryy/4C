@@ -57,7 +57,7 @@ void DRT::ELEMENTS::DiscSh3Type::NodalBlockInformation(
   dimns = 6;  // Number of dimensions. 3 Translations, 3 rotations, Global dofs
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::DiscSh3Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::DiscSh3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);

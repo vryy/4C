@@ -14,11 +14,11 @@
 
 #include "baci_lib_element.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 // forward declarations
 namespace CORE::LINALG
@@ -96,7 +96,7 @@ namespace DRT
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) = 0;
 
     /// do the null space computation
-    virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+    virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) = 0;
   };
 

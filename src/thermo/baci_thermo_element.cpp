@@ -76,10 +76,10 @@ void DRT::ELEMENTS::ThermoType::NodalBlockInformation(
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::ThermoType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ThermoType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Teuchos::SerialDenseMatrix<int, double> nullspace;
+  CORE::LINALG::SerialDenseMatrix nullspace;
   dserror("method ComputeNullSpace not implemented!");
   return nullspace;
 }

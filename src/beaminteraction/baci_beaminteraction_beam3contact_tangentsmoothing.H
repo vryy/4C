@@ -14,9 +14,9 @@
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 namespace CONTACT
 {
@@ -49,10 +49,10 @@ namespace CONTACT
     int GetBoundaryNode(const int nnode);
 
     //! \brief Get the element length based on element positions
-    double GetEleLength(const Teuchos::SerialDenseMatrix<int, double>& elepos, const int nright);
+    double GetEleLength(const CORE::LINALG::SerialDenseMatrix& elepos, const int nright);
 
     //! \brief Get the nodal derivative matrix
-    Teuchos::SerialDenseMatrix<int, double> GetNodalDerivatives(const int node, const int nnode,
+    CORE::LINALG::SerialDenseMatrix GetNodalDerivatives(const int node, const int nnode,
         double length, const DRT::Element::DiscretizationType distype);
 
     //! \brief Get the nodal tangent matrix
@@ -75,7 +75,7 @@ namespace CONTACT
       const int n_right1 = GetBoundaryNode(numnode1);
 
       // vectors for shape functions and their derivatives
-      Teuchos::SerialDenseMatrix<int, double> ele1pos(3, numnode1);
+      CORE::LINALG::SerialDenseMatrix ele1pos(3, numnode1);
 
       for (int i = 0; i < 3; i++)
         for (int j = 0; j < numnode1; j++) ele1pos(i, j) = ele1pos_linalg(3 * j + i);
@@ -87,7 +87,7 @@ namespace CONTACT
       for (int node = 1; node < numnode1 + 1; node++)
       {
         // calculate nodal derivatives
-        Teuchos::SerialDenseMatrix<int, double> deriv1 =
+        CORE::LINALG::SerialDenseMatrix deriv1 =
             GetNodalDerivatives(node, numnode1, length_ele1, distype1);
 
         for (int k = 0; k < 3; k++)
@@ -103,7 +103,7 @@ namespace CONTACT
         const int numnode_ele1l = neighbors1->GetLeftNeighbor()->NumNode();
         const int node_ele1l = neighbors1->GetLeftConNode() + 1;
 
-        Teuchos::SerialDenseMatrix<int, double> temppos(3, numnode_ele1l);
+        CORE::LINALG::SerialDenseMatrix temppos(3, numnode_ele1l);
 
         for (int j = 0; j < numnode_ele1l; j++)
         {
@@ -115,7 +115,7 @@ namespace CONTACT
         const int n_boundary = GetBoundaryNode(numnode_ele1l);
         const double length_ele1l = GetEleLength(temppos, n_boundary);
 
-        Teuchos::SerialDenseMatrix<int, double> deriv_neighbors_ele1l =
+        CORE::LINALG::SerialDenseMatrix deriv_neighbors_ele1l =
             GetNodalDerivatives(node_ele1l, numnode_ele1l, length_ele1l, distype_ele1l);
 
         for (int j = 0; j < numnode_ele1l; j++)
@@ -138,7 +138,7 @@ namespace CONTACT
         const int numnode_ele1r = neighbors1->GetRightNeighbor()->NumNode();
         const int node_ele1r = neighbors1->GetRightConNode() + 1;
 
-        Teuchos::SerialDenseMatrix<int, double> temppos(3, numnode_ele1r);
+        CORE::LINALG::SerialDenseMatrix temppos(3, numnode_ele1r);
 
         for (int j = 0; j < numnode_ele1r; j++)
         {
@@ -150,7 +150,7 @@ namespace CONTACT
         const int n_boundary = GetBoundaryNode(numnode_ele1r);
         const double length_ele1r = GetEleLength(temppos, n_boundary);
 
-        Teuchos::SerialDenseMatrix<int, double> deriv_neighbors_ele1r =
+        CORE::LINALG::SerialDenseMatrix deriv_neighbors_ele1r =
             GetNodalDerivatives(node_ele1r, numnode_ele1r, length_ele1r, distype_ele1r);
 
         for (int j = 0; j < numnode_ele1r; j++)

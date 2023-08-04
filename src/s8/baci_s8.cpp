@@ -41,7 +41,7 @@ namespace
   center of rotation for the rotational modes of the nullspace \return Translational (x,y,z) and
   rotational (around x,y,z) nullspace contribution for given node
   */
-  Teuchos::SerialDenseMatrix<int, double> ComputeShell3DNullSpace(DRT::Node& node, const double* x0)
+  CORE::LINALG::SerialDenseMatrix ComputeShell3DNullSpace(DRT::Node& node, const double* x0)
   {
     CORE::LINALG::Matrix<1, 3> dir;
 
@@ -61,7 +61,7 @@ namespace
 
     const double* x = node.X();
 
-    Teuchos::SerialDenseMatrix<int, double> nullspace(6, 6);
+    CORE::LINALG::SerialDenseMatrix nullspace(6, 6);
     // x-modes
     nullspace(0, 0) = 1.0;
     nullspace(0, 1) = 0.0;
@@ -150,7 +150,7 @@ void DRT::ELEMENTS::Shell8Type::NodalBlockInformation(
   nv = 6;
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Shell8Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Shell8Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeShell3DNullSpace(node, x0);

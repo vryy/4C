@@ -54,7 +54,7 @@ namespace DRT
         nv = numdf;
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
         return FLD::ComputeFluidNullSpace(node, numdof, dimnsp);

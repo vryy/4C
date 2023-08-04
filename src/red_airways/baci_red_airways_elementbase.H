@@ -17,10 +17,10 @@
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
 #include "baci_lib_parobjectfactory.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 // forward declarations
@@ -55,10 +55,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -453,10 +453,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -858,10 +858,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -1238,10 +1238,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }
@@ -1614,10 +1614,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }

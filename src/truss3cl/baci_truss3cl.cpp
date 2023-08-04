@@ -59,7 +59,7 @@ void DRT::ELEMENTS::Truss3CLType::NodalBlockInformation(
   nv = 3;
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Truss3CLType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Truss3CLType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);

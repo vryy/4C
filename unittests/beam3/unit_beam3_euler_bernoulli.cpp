@@ -68,7 +68,7 @@ namespace
     // nodal nullspace calculation for reference center of discretization at {0.0, 0.0, 0.0}
     // at node {-0.05, 0.05, 0.3}
     {
-      Teuchos::SerialDenseMatrix<int, double> nullspace_ref(6, 5);
+      CORE::LINALG::SerialDenseMatrix nullspace_ref(6, 5);
       nullspace_ref(0, 0) = 1.0;
       nullspace_ref(0, 3) = -0.273861278752583;
       nullspace_ref(0, 4) = 0.063333333333333;
@@ -88,7 +88,7 @@ namespace
       int numdof, dimnsp, nv, np;
 
       testele_->ElementType().NodalBlockInformation(node->Elements()[0], numdof, dimnsp, nv, np);
-      Teuchos::SerialDenseMatrix<int, double> nullspace = testele_->ElementType().ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{0.0, 0.0, 0.0}.data(), numdof, dimnsp);
 
       BACI_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);
@@ -97,7 +97,7 @@ namespace
     // nodal nullspace calculation for reference center of discretization at {-0.05, 0.05, 0.3}
     // at node {-0.05, 0.05, 0.3} -> rotational components in displacement vanish
     {
-      Teuchos::SerialDenseMatrix<int, double> nullspace_ref(6, 5);
+      CORE::LINALG::SerialDenseMatrix nullspace_ref(6, 5);
       nullspace_ref(0, 0) = 1.0;
       nullspace_ref(1, 1) = 1.0;
       nullspace_ref(2, 2) = 1.0;
@@ -111,7 +111,7 @@ namespace
       int numdof, dimnsp, nv, np;
 
       testele_->ElementType().NodalBlockInformation(node->Elements()[0], numdof, dimnsp, nv, np);
-      Teuchos::SerialDenseMatrix<int, double> nullspace = testele_->ElementType().ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix nullspace = testele_->ElementType().ComputeNullSpace(
           *node, std::vector{-0.05, 0.05, 0.3}.data(), numdof, dimnsp);
 
       BACI_EXPECT_NEAR(nullspace, nullspace_ref, testTolerance);

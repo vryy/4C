@@ -22,7 +22,6 @@
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 // #define mygaussruleeb intrule_line_6point //define gauss rule; intrule_line_1point -
@@ -51,7 +50,7 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(

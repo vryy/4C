@@ -77,10 +77,10 @@ void DRT::ELEMENTS::ElemagDiffType::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::ElemagDiffType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::ElemagDiffType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  Teuchos::SerialDenseMatrix<int, double> nullspace;
+  CORE::LINALG::SerialDenseMatrix nullspace;
   dserror("method ComputeNullSpace not implemented right now!");
   return nullspace;
 }

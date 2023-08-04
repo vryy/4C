@@ -12,11 +12,10 @@
 #include "baci_inpar_mortar.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mortar_node.H"
 #include "baci_utils_pairedvector.H"
-
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 // forward declarations
 namespace CORE::LINALG
@@ -49,7 +48,7 @@ namespace MORTAR
     virtual void NodalBlockInformation(
         DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-    virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+    virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
    private:

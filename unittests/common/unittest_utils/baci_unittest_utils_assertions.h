@@ -13,8 +13,6 @@
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
-#include <Teuchos_SerialDenseMatrix.hpp>
-
 #include <type_traits>
 
 namespace TESTING::INTERNAL

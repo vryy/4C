@@ -62,7 +62,7 @@ void DRT::ELEMENTS::So_pyramid5fbarType::NodalBlockInformation(
   np = 0;
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::So_pyramid5fbarType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);

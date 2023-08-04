@@ -10,13 +10,13 @@
 #include "baci_contact_constitutivelaw_mirco_contactconstitutivelaw.H"
 
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
 #include "baci_mat_par_bundle.H"
 
 #include <mirco_evaluate.h>
 #include <mirco_topology.h>
 #include <mirco_topologyutilities.h>
-#include <Teuchos_SerialDenseMatrix.hpp>
-#include <Teuchos_SerialDenseVector.hpp>
 
 #include <vector>
 
@@ -100,7 +100,7 @@ void CONTACT::CONSTITUTIVELAW::MircoConstitutiveLawParams::SetParameters()
 
   // Setup Topology
   const int N = pow(2, resolution_);
-  topology_ = Teuchos::rcp(new Teuchos::SerialDenseMatrix<int, double>(N + 1, N + 1));
+  topology_ = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(N + 1, N + 1));
 
   Teuchos::RCP<MIRCO::TopologyGeneration> surfacegenerator;
   // creating the correct surface object

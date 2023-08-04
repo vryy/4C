@@ -15,10 +15,10 @@
 #include "baci_lib_node.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 namespace DRT
@@ -48,7 +48,7 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
      private:

@@ -54,7 +54,6 @@ no direct physical interpretation. For 2D rotations both variants are identical.
 #include <Epetra_Vector.h>
 #include <Sacado.hpp>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 typedef Sacado::Fad::DFad<double> FAD;
@@ -132,7 +131,7 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(

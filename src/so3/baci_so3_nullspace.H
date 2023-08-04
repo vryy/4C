@@ -6,7 +6,7 @@
 #ifndef BACI_SO3_NULLSPACE_H
 #define BACI_SO3_NULLSPACE_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace DRT
 {
@@ -21,8 +21,7 @@ namespace DRT::ELEMENTS
   \param node (in):    node to calculate the nullspace on
      \param x0 (in):      center of discretization
                       */
-  Teuchos::SerialDenseMatrix<int, double> ComputeSolid3DNullSpace(
-      const DRT::Node& node, const double* x0);
+  CORE::LINALG::SerialDenseMatrix ComputeSolid3DNullSpace(const DRT::Node& node, const double* x0);
 
   /*!
    \brief Helper function for the nodal nullspace of solid elements in 2D
@@ -30,8 +29,7 @@ namespace DRT::ELEMENTS
     \param node (in):    node to calculate the nullspace on
     \param x0 (in):      center of discretization
   */
-  Teuchos::SerialDenseMatrix<int, double> ComputeSolid2DNullSpace(
-      const DRT::Node& node, const double* x0);
+  CORE::LINALG::SerialDenseMatrix ComputeSolid2DNullSpace(const DRT::Node& node, const double* x0);
 }  // namespace DRT::ELEMENTS
 
 #endif

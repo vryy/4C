@@ -6,7 +6,7 @@
 #ifndef BACI_FLUID_ELE_NULLSPACE_H
 #define BACI_FLUID_ELE_NULLSPACE_H
 
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace DRT
 {
@@ -22,7 +22,7 @@ namespace FLD
     \param numdof (in):  number of degrees of freedom
     \param dimnsp (in):  dimension of the nullspace
                          */
-  Teuchos::SerialDenseMatrix<int, double> ComputeFluidNullSpace(
+  CORE::LINALG::SerialDenseMatrix ComputeFluidNullSpace(
       const DRT::Node& node, const int numdof, const int dimnsp);
 }  // namespace FLD
 

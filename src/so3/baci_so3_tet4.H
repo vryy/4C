@@ -10,10 +10,9 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_mat_material.H"
 #include "baci_so3_base.H"
-
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 
 #define NUMNOD_SOTET4 4       ///< number of nodes
@@ -54,7 +53,7 @@ namespace DRT
       void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
       void SetupElementDefinition(

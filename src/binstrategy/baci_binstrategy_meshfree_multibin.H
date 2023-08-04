@@ -15,8 +15,7 @@
 #include "baci_binstrategy_utils.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_node.H"
-
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace DRT
 {
@@ -54,10 +53,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
         return nullspace;
       }

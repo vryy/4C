@@ -56,7 +56,7 @@ void DRT::ELEMENTS::Membrane_tri3Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_tri3Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid3DNullSpace(node, x0);
@@ -123,7 +123,7 @@ void DRT::ELEMENTS::Membrane_tri6Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_tri6Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
@@ -193,7 +193,7 @@ void DRT::ELEMENTS::Membrane_quad4Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_quad4Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
@@ -263,7 +263,7 @@ void DRT::ELEMENTS::Membrane_quad9Type::NodalBlockInformation(
   nv = 3;     // default value for no. of velocity dofs
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Membrane_quad9Type::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);

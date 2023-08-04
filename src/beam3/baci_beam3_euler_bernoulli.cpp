@@ -14,9 +14,8 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_exceptions.H"
-
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -67,7 +66,7 @@ void DRT::ELEMENTS::Beam3ebType::NodalBlockInformation(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::Beam3ebType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   if (numdof != 6)
@@ -158,7 +157,7 @@ Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::Beam3ebType::ComputeNullS
   rotTangOne.CrossProduct(omegaOne, tangent);
   rotTangTwo.CrossProduct(omegaTwo, tangent);
 
-  Teuchos::SerialDenseMatrix<int, double> nullspace(numdof, dimnsp);
+  CORE::LINALG::SerialDenseMatrix nullspace(numdof, dimnsp);
   // x-modes
   nullspace(0, 0) = 1.0;
   nullspace(0, 1) = 0.0;

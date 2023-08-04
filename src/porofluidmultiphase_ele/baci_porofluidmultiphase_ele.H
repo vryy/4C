@@ -12,8 +12,7 @@
 
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
-
-#include <Teuchos_SerialDenseMatrix.hpp>
+#include "baci_linalg_serialdensematrix.H"
 
 namespace DRT
 {
@@ -42,7 +41,7 @@ namespace DRT
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
       /// do the null space computation
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       /// setup the dat file input line definitions for this type of element
@@ -336,10 +335,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
         return nullspace;
       }

@@ -19,11 +19,11 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
+#include "baci_linalg_serialdensematrix.H"
 #include "baci_utils_singleton_owner.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
-#include <Teuchos_SerialDenseMatrix.hpp>
 
 const int NUMDIM_ALE3 = 3;  ///< number of dimensions
 const int NODDOF_ALE3 = 3;  ///< number of dofs per node
@@ -121,7 +121,7 @@ namespace DRT
       virtual void NodalBlockInformation(
           DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
 
       virtual void SetupElementDefinition(
@@ -565,10 +565,10 @@ namespace DRT
       {
       }
 
-      virtual Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
           DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
       {
-        Teuchos::SerialDenseMatrix<int, double> nullspace;
+        CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
         return nullspace;
       }

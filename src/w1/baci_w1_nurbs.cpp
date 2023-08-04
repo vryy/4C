@@ -57,7 +57,7 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::NodalBlockInformation(
   nv = 2;
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::NURBS::Wall1NurbsType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   return ComputeSolid2DNullSpace(node, x0);
