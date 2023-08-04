@@ -80,24 +80,22 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
   }
   eastype_ = EASType;
   if (eastype_ == DRT::ELEMENTS::So_hex8::soh8_easnone) return;
-  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;    // EAS alphas
-  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;   // EAS alphas
-  CORE::LINALG::SerialDenseMatrix* feas = nullptr;     // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kaainv = nullptr;   // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kaainvo = nullptr;  // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kda = nullptr;      // EAS history
-  CORE::LINALG::SerialDenseMatrix* Kdao = nullptr;     // EAS history
-  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;  // EAS history
-  alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
-      "alpha");  // get alpha of previous iteration
-  alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
-      "alphao");  // get alpha of previous iteration
-  feas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-  Kaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-  Kaainvo = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaao");
-  Kda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-  Kdao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kdao");
-  eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;               // EAS alphas
+  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;              // EAS alphas
+  CORE::LINALG::SerialDenseMatrix* feas = nullptr;                // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kaainv = nullptr;              // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kaainvo = nullptr;             // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kda = nullptr;                 // EAS history
+  CORE::LINALG::SerialDenseMatrix* Kdao = nullptr;                // EAS history
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;             // EAS history
+  alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // get alpha of previous iteration
+  alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // get alpha of previous iteration
+  feas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+  Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");
+  Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+  Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");
+  eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
   if (!alpha || !Kaainv || !Kda || !feas || !eas_inc) dserror("Missing EAS history-data");
 
   alpha->reshape(neas_, 1);
@@ -381,12 +379,12 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easupdate()
 {
-  const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");       // Alpha_{n+1}
-  auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");    // Alpha_n
-  const auto* Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");     // Kaa^{-1}_{n+1}
-  auto* Kaainvo = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
-  const auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");           // Kda_{n+1}
-  auto* Kdao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kdao");        // Kda_{n}
+  const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+  auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");        // Alpha_n
+  const auto* Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");  // Kaa^{-1}_{n+1}
+  auto* Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");      // Kaa^{-1}_{n}
+  const auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");        // Kda_{n+1}
+  auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");            // Kda_{n}
   switch (eastype_)
   {
     case DRT::ELEMENTS::So_hex8::soh8_easfull:
@@ -417,11 +415,11 @@ void DRT::ELEMENTS::So_hex8::soh8_easupdate()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_easrestore()
 {
-  auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");     // Alpha_{n+1}
+  auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");            // Alpha_{n+1}
   const auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");    // Alpha_n
-  auto* Kaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");   // Kaa^{-1}_{n+1}
+  auto* Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");          // Kaa^{-1}_{n+1}
   const auto* Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
-  auto* Kda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");         // Kda_{n+1}
+  auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");                // Kda_{n+1}
   const auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");        // Kda_{n}
   switch (eastype_)
   {

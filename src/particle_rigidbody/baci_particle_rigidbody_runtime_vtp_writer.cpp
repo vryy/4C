@@ -48,12 +48,12 @@ void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::ReadRestart(
 void PARTICLERIGIDBODY::RigidBodyRuntimeVtpWriter::SetRigidBodyPositionsAndStates(
     const std::vector<int>& ownedrigidbodies)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   // rigid body position
   {
     // get and prepare storage for position data
-    std::vector<double>& posdata = visualization_data.GetPointCoordinatesMutable();
+    std::vector<double>& posdata = visualization_data.GetPointCoordinates();
     posdata.clear();
     posdata.reserve(3 * ownedrigidbodies.size());
 

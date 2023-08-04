@@ -52,9 +52,9 @@ void STR::PREDICT::ConstDisVelAccPress::Compute(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
 
-  Teuchos::RCP<Epetra_Vector>& disnp_ptr = GlobalState().GetMutableDisNp();
-  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetMutableVelNp();
-  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetMutableAccNp();
+  Teuchos::RCP<Epetra_Vector>& disnp_ptr = GlobalState().GetDisNp();
+  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetVelNp();
+  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetAccNp();
 
   bool ok = true;
   switch (GetType())

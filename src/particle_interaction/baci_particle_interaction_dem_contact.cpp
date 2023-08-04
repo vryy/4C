@@ -827,7 +827,7 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
           nodal_force[node * 3 + dim] = funct[node] * wallcontactforce[dim];
 
       // assemble nodal forces
-      const int err = walldatastate->GetMutableForceCol()->SumIntoGlobalValues(
+      const int err = walldatastate->GetForceCol()->SumIntoGlobalValues(
           numnodes * 3, nodal_force.data(), lmele.data());
       if (err < 0) dserror("sum into Epetra_Vector failed!");
     }
@@ -838,10 +838,10 @@ void PARTICLEINTERACTION::DEMContact::EvaluateParticleWallContact()
     // get specific runtime vtp writer
     IO::VisualizationManager* visualization_manager =
         particleinteractionwriter_->GetSpecificRuntimeVtuWriter("particle-wall-contact");
-    auto& visualization_data = visualization_manager->GetVisualizationDataMutable();
+    auto& visualization_data = visualization_manager->GetVisualizationData();
 
     // set wall attack points
-    visualization_data.GetPointCoordinatesMutable() = attackpoints;
+    visualization_data.GetPointCoordinates() = attackpoints;
 
     // append states
     visualization_data.SetPointDataVector<double>("contact force", contactforces, 3);

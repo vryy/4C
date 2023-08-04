@@ -360,26 +360,25 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       // update internal EAS parameters
       if (eastype_ == soh8_eassosh8)
       {
-        const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");     // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+        auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");      // Alpha_n
         // alphao := alpha
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alphao, *alpha);
 
         // store the EAS matrices
         const auto* Kaainv =
-            data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");  // Kaa^{-1}_{n+1}
-        auto* Kaainvo =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");               // Kaa^{-1}_{n+1}
+        auto* Kaainvo = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(
             *Kaainvo, *Kaainv);
 
-        const auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");     // Kda_{n+1}
-        auto* Kdao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kdao");  // Kda_{n}
+        const auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");  // Kda_{n+1}
+        auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");      // Kda_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kdao, *Kda);
 
         // reset EAS internal force
         CORE::LINALG::SerialDenseMatrix* oldfeas =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
         oldfeas->putScalar(0.0);
       }
       // Update of history for materials
@@ -392,26 +391,25 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList& params,
       // restore internal EAS parameters
       if (eastype_ == soh8_eassosh8)
       {
-        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");   // Alpha_{n+1}
+        auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");          // Alpha_{n+1}
         const auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, 1>(*alpha, *alphao);
 
         // restore the EAS matrices
-        auto* Kaainv =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");  // Kaa^{-1}_{n+1}
+        auto* Kaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");  // Kaa^{-1}_{n+1}
         const auto* Kaainvo =
             data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaao");  // Kaa^{-1}_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, soh8_eassosh8>(
             *Kaainv, *Kaainvo);
 
-        auto* Kda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");   // Kda_{n+1}
+        auto* Kda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");          // Kda_{n+1}
         const auto* Kdao = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kdao");  // Kda_{n}
         CORE::LINALG::DENSEFUNCTIONS::update<double, soh8_eassosh8, NUMDOF_SOH8>(*Kda, *Kdao);
 
         // reset EAS internal force
         CORE::LINALG::SerialDenseMatrix* oldfeas =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
         oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
@@ -615,7 +613,7 @@ double DRT::ELEMENTS::So_sh8::sosh8_calc_energy(
       ** This corresponds to the (innermost) element update loop
       ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
       */
-      alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
+      alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
 
       /* evaluation of EAS variables (which are constant for the following):
       ** -> M defining interpolation of enhanced strains alpha, evaluated at GPs
@@ -822,13 +820,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(std::vector<int>& lm,  // locatio
       ** This corresponds to the (innermost) element update loop
       ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
       */
-      alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
+      alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
       // evaluate current (updated) EAS alphas (from history variables)
       // get stored EAS history
-      oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-      oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-      oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-      eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+      oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+      oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+      oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+      eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
       if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
         dserror("Missing EAS history-data");
 

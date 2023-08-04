@@ -385,7 +385,7 @@ enum INPAR::STR::DampKind STR::MODELEVALUATOR::Data::GetDampingType() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableStressDataPtr()
+Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::StressDataPtr()
 {
   CheckInitSetup();
   return stressdata_ptr_;
@@ -409,7 +409,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::StressData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableStrainDataPtr()
+Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::StrainDataPtr()
 {
   CheckInitSetup();
   return straindata_ptr_;
@@ -425,7 +425,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::StrainData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutablePlasticStrainDataPtr()
+Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::PlasticStrainDataPtr()
 {
   CheckInitSetup();
   return plastic_straindata_ptr_;
@@ -441,7 +441,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::PlasticStrainData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableCouplingStressDataPtr()
+Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::CouplingStressDataPtr()
 {
   CheckInitSetup();
   return couplstressdata_ptr_;
@@ -457,7 +457,7 @@ const std::vector<char>& STR::MODELEVALUATOR::Data::CouplingStressData() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableOptQuantityDataPtr()
+Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::OptQuantityDataPtr()
 {
   CheckInitSetup();
   return optquantitydata_ptr_;
@@ -512,7 +512,7 @@ enum INPAR::STR::OptQuantityType STR::MODELEVALUATOR::Data::GetOptQuantityOutput
 }
 
 Teuchos::RCP<STR::MODELEVALUATOR::GaussPointDataOutputManager>&
-STR::MODELEVALUATOR::Data::MutableGaussPointDataOutputManagerPtr()
+STR::MODELEVALUATOR::Data::GaussPointDataOutputManagerPtr()
 {
   CheckInitSetup();
   return gauss_point_data_manager_ptr_;

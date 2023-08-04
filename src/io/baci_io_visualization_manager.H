@@ -69,7 +69,7 @@ namespace IO
      * @param visualization_data_name (in) Name of the visualization data, if this argument is
      * empty, the default visualization data, i.e., "", will be returned.
      */
-    [[nodiscard]] VisualizationData& GetVisualizationDataMutable(
+    [[nodiscard]] VisualizationData& GetVisualizationData(
         const std::string& visualization_data_name = "");
 
     /**

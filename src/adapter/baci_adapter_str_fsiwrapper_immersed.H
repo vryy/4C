@@ -57,7 +57,7 @@ namespace ADAPTER
     Teuchos::RCP<Epetra_Vector> PredictFullInterfaceDispnp();
 
     /// Get mutable reference to DBC object
-    STR::Dbc& GetMutableDBC();
+    STR::Dbc& GetDBC();
 
     /// expand dirichlet bc map
     /// old struct. time integration version

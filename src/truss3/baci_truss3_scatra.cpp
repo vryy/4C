@@ -255,7 +255,7 @@ void DRT::ELEMENTS::Truss3Scatra::CalcGPStresses(
       INPAR::STR::StressType iostress;
       if (IsParamsInterface())
       {
-        stressdata = ParamsInterface().MutableStressDataPtr();
+        stressdata = ParamsInterface().StressDataPtr();
         iostress = ParamsInterface().GetStressOutputType();
       }
       else

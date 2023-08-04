@@ -435,41 +435,41 @@ namespace STR
       ///@{
 
       /// Returns final time \f$t_\text{fin}\f$
-      double& GetMutableTimeMax()
+      double& GetTimeMax()
       {
         CheckInitSetup();
         return timemax_;
       };
 
       /// Returns final time step \f$N\f$
-      int& GetMutableStepMax()
+      int& GetStepMax()
       {
         CheckInitSetup();
         return stepmax_;
       };
 
       /// Returns timer for solution technique
-      Teuchos::RCP<Teuchos::Time>& GetMutableTimer()
+      Teuchos::RCP<Teuchos::Time>& GetTimer()
       {
         CheckInitSetup();
         return timer_;
       };
 
       /// Returns minimal non-linear iteration number
-      int& GetMutableIterMin()
+      int& GetIterMin()
       {
         CheckInitSetup();
         return itermin_;
       };
 
       /// Returns maximal non-linear iteration number
-      int& GetMutableIterMax()
+      int& GetIterMax()
       {
         CheckInitSetup();
         return itermax_;
       };
 
-      double& GetMutablePreStressTime()
+      double& GetPreStressTime()
       {
         CheckInitSetup();
         return prestresstime_;
@@ -488,35 +488,35 @@ namespace STR
       }
 
       /// Returns prestress type
-      enum INPAR::STR::PreStress& GetMutablePreStressType()
+      enum INPAR::STR::PreStress& GetPreStressType()
       {
         CheckInitSetup();
         return prestresstype_;
       };
 
       /// Returns predictor type
-      enum INPAR::STR::PredEnum& GetMutablePredictorType()
+      enum INPAR::STR::PredEnum& GetPredictorType()
       {
         CheckInitSetup();
         return predtype_;
       };
 
       /// Returns dynamic type
-      enum INPAR::STR::DynamicType& GetMutableDynamicType()
+      enum INPAR::STR::DynamicType& GetDynamicType()
       {
         CheckInitSetup();
         return dyntype_;
       };
 
       /// Returns nonlinear solver type
-      enum INPAR::STR::NonlinSolTech& GetMutableNlnSolverType()
+      enum INPAR::STR::NonlinSolTech& GetNlnSolverType()
       {
         CheckInitSetup();
         return nlnsolvertype_;
       };
 
       /// Returns mid-time energy type
-      enum INPAR::STR::MidAverageEnum& GetMutableMidTimeEnergyType()
+      enum INPAR::STR::MidAverageEnum& GetMidTimeEnergyType()
       {
         CheckInitSetup();
         return mid_time_energy_type_;
@@ -524,49 +524,49 @@ namespace STR
 
       /// Returns the divergence action
       /// Short: What to do if the non-linear solver fails.
-      enum INPAR::STR::DivContAct& GetMutableDivergenceAction()
+      enum INPAR::STR::DivContAct& GetDivergenceAction()
       {
         CheckInitSetup();
         return divergenceaction_;
       };
 
       /// Returns nox parameters
-      Teuchos::ParameterList& GetMutableNoxParams()
+      Teuchos::ParameterList& GetNoxParams()
       {
         CheckInitSetup();
         return *noxparams_;
       }
 
       /// Returns nox parameters
-      Teuchos::RCP<Teuchos::ParameterList> GetMutableNoxParamsPtr()
+      Teuchos::RCP<Teuchos::ParameterList> GetNoxParamsPtr()
       {
         CheckInitSetup();
         return noxparams_;
       }
 
       /// Returns loca parameters
-      Teuchos::ParameterList& GetMutableLocaParams()
+      Teuchos::ParameterList& GetLocaParams()
       {
         CheckInitSetup();
         return *locaparams_;
       }
 
       /// Return random factor for time step in case nonlinear solver diverges
-      double& GetMutableRandomTimeStepFactor()
+      double& GetRandomTimeStepFactor()
       {
         CheckInitSetup();
         return rand_tsfac_;
       }
 
       /// Return level of refinement in case of divercontype_ == adapt_step
-      int& GetMutableDivConRefineLevel()
+      int& GetDivConRefineLevel()
       {
         CheckInitSetup();
         return divconrefinementlevel_;
       }
 
       /// Return number of fine steps in case of in case of divercontype_ == adapt_step
-      int& GetMutableDivConNumFineStep()
+      int& GetDivConNumFineStep()
       {
         CheckInitSetup();
         return divconnumfinestep_;
@@ -585,8 +585,7 @@ namespace STR
       }
 
       /// Returns linear solvers pointer
-      std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>&
-      GetMutableLinSolvers()
+      std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>& GetLinSolvers()
       {
         CheckInitSetup();
         return *linsolvers_;
@@ -597,21 +596,21 @@ namespace STR
       /// @name Get mutable damping control parameters (read and write access)
       ///@{
       /// Returns damping type
-      enum INPAR::STR::DampKind& GetMutableDampingType()
+      enum INPAR::STR::DampKind& GetDampingType()
       {
         CheckInitSetup();
         return damptype_;
       };
 
       /// Returns damping factor for stiffness \f$c_\text{K}\f$
-      double& GetMutableDampingStiffnessFactor()
+      double& GetDampingStiffnessFactor()
       {
         CheckInitSetup();
         return dampk_;
       };
 
       /// Returns damping factor for mass \f$c_\text{M}\f$
-      double& GetMutableDampingMassFactor()
+      double& GetDampingMassFactor()
       {
         CheckInitSetup();
         return dampm_;
@@ -621,7 +620,7 @@ namespace STR
       /// @name Get mutable mass and inertia control parameters (read and write access)
       ///@{
       /// Returns mass linearization type
-      enum INPAR::STR::MassLin& GetMutableMassLinType()
+      enum INPAR::STR::MassLin& GetMassLinType()
       {
         CheckInitSetup();
         return masslintype_;
@@ -631,14 +630,14 @@ namespace STR
       /// @name Get model evaluator control parameters (read and write access)
       ///@{
       /// Returns types of the current active models
-      std::set<enum INPAR::STR::ModelType>& GetMutableModelTypes()
+      std::set<enum INPAR::STR::ModelType>& GetModelTypes()
       {
         CheckInitSetup();
         return *modeltypes_;
       };
 
       /// Returns the current active element technologies
-      std::set<enum INPAR::STR::EleTech>& GetMutableElementTechnologies()
+      std::set<enum INPAR::STR::EleTech>& GetElementTechnologies()
       {
         CheckInitSetup();
         return *eletechs_;

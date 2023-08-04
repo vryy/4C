@@ -164,17 +164,16 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
     CORE::LINALG::Matrix<3, 1, scalar_type> r;
 
     // Get the visualization vectors.
-    auto& visualization_data = visualization_segmentation->GetVisualizationDataMutable();
-    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
-    std::vector<double>& displacement =
-        visualization_data.GetPointDataMutable<double>("displacement");
+    auto& visualization_data = visualization_segmentation->GetVisualizationData();
+    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
+    std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
 
     std::vector<double>* pair_beam_id = nullptr;
     std::vector<double>* pair_solid_id = nullptr;
     if (write_unique_ids)
     {
-      pair_beam_id = &(visualization_data.GetPointDataMutable<double>("uid_0_pair_beam_id"));
-      pair_solid_id = &(visualization_data.GetPointDataMutable<double>("uid_1_pair_solid_id"));
+      pair_beam_id = &(visualization_data.GetPointData<double>("uid_0_pair_beam_id"));
+      pair_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
     }
 
     // Loop over the segments on the beam.
@@ -215,18 +214,17 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairBase<beam, solid>::GetPairVi
     CORE::LINALG::Matrix<3, 1, double> force_integration_point;
 
     // Get the visualization vectors.
-    auto& visualization_data = visualization_integration_points->GetVisualizationDataMutable();
-    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
-    std::vector<double>& displacement =
-        visualization_data.GetPointDataMutable<double>("displacement");
-    std::vector<double>& force = visualization_data.GetPointDataMutable<double>("force");
+    auto& visualization_data = visualization_integration_points->GetVisualizationData();
+    std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
+    std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
+    std::vector<double>& force = visualization_data.GetPointData<double>("force");
 
     std::vector<double>* pair_beam_id = nullptr;
     std::vector<double>* pair_solid_id = nullptr;
     if (write_unique_ids)
     {
-      pair_beam_id = &(visualization_data.GetPointDataMutable<double>("uid_0_pair_beam_id"));
-      pair_solid_id = &(visualization_data.GetPointDataMutable<double>("uid_1_pair_solid_id"));
+      pair_beam_id = &(visualization_data.GetPointData<double>("uid_0_pair_beam_id"));
+      pair_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
     }
 
     // Loop over the segments on the beam.

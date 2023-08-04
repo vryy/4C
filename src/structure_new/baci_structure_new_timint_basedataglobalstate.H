@@ -567,7 +567,7 @@ namespace STR
       /// @name Get general purpose algorithm members (read only access)
       ///@{
       /// attached discretization
-      Teuchos::RCP<DRT::DiscretizationInterface> GetMutableDiscret()
+      Teuchos::RCP<DRT::DiscretizationInterface> GetDiscret()
       {
         CheckInit();
         return discret_;
@@ -635,35 +635,35 @@ namespace STR
       ///@{
 
       /// Return target time \f$t_{n+1}\f$
-      double& GetMutableTimeNp()
+      double& GetTimeNp()
       {
         CheckInit();
         return timenp_;
       };
 
       /// Return time \f$t_{n}\f$ of last converged step
-      double& GetMutableTimeN()
+      double& GetTimeN()
       {
         CheckInit();
         return (*timen_)[0];
       };
 
       /// Return time \f$t_{n}, t_{n-1}, ...\f$ of last converged steps
-      Teuchos::RCP<::TIMINT::TimIntMStep<double>>& GetMutableMultiTime()
+      Teuchos::RCP<::TIMINT::TimIntMStep<double>>& GetMultiTime()
       {
         CheckInit();
         return timen_;
       };
 
       /// Return time step index for \f$t_{n+1}\f$
-      int& GetMutableStepNp()
+      int& GetStepNp()
       {
         CheckInit();
         return stepnp_;
       };
 
       /// Return time step index for \f$t_{n}\f$
-      int& GetMutableStepN()
+      int& GetStepN()
       {
         CheckInit();
         return stepn_;
@@ -673,35 +673,35 @@ namespace STR
       void SetNlnIterationNumber(const int nln_iter);
 
       /// Return time for linear solver
-      double& GetMutableLinearSolverTime()
+      double& GetLinearSolverTime()
       {
         CheckInitSetup();
         return dtsolve_;
       };
 
       /// Return element evaluation time
-      double& GetMutableElementEvaluationTime()
+      double& GetElementEvaluationTime()
       {
         CheckInitSetup();
         return dtele_;
       };
 
       /// Return time step size \f$\Delta t\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<double>>& GetMutableDeltaTime()
+      Teuchos::RCP<::TIMINT::TimIntMStep<double>>& GetDeltaTime()
       {
         CheckInit();
         return dt_;
       };
 
       /// Return timer for solution technique
-      Teuchos::RCP<Teuchos::Time>& GetMutableTimer()
+      Teuchos::RCP<Teuchos::Time>& GetTimer()
       {
         CheckInitSetup();
         return timer_;
       };
 
       /// Return the prediction indicator
-      bool& GetMutableIsPredict()
+      bool& IsPredict()
       {
         CheckInitSetup();
         return ispredict_;
@@ -712,133 +712,133 @@ namespace STR
       ///@{
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableDisNp()
+      Teuchos::RCP<Epetra_Vector>& GetDisNp()
       {
         CheckInitSetup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetMutableDisN()
+      Teuchos::RCP<Epetra_Vector> GetDisN()
       {
         CheckInitSetup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMutableMultiDis()
+      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiDis()
       {
         CheckInitSetup();
         return dis_;
       }
 
       /// Return velocities \f$V_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableVelNp()
+      Teuchos::RCP<Epetra_Vector>& GetVelNp()
       {
         CheckInitSetup();
         return velnp_;
       }
 
       /// Return velocities \f$V_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetMutableVelN()
+      Teuchos::RCP<Epetra_Vector> GetVelN()
       {
         CheckInitSetup();
         return (*vel_)(0);
       }
 
       /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMutableMultiVel()
+      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel()
       {
         CheckInitSetup();
         return vel_;
       }
 
       /// Return accelerations \f$A_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableAccNp()
+      Teuchos::RCP<Epetra_Vector>& GetAccNp()
       {
         CheckInitSetup();
         return accnp_;
       }
 
       /// Return accelerations \f$A_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetMutableAccN()
+      Teuchos::RCP<Epetra_Vector> GetAccN()
       {
         CheckInitSetup();
         return (*acc_)(0);
       }
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMutableMultiAcc()
+      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
       {
         CheckInitSetup();
         return acc_;
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFintN()
+      Teuchos::RCP<Epetra_Vector>& GetFintN()
       {
         CheckInitSetup();
         return fintn_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFintNp()
+      Teuchos::RCP<Epetra_Vector>& GetFintNp()
       {
         CheckInitSetup();
         return fintnp_;
       }
 
       /// Return external force \f$fext_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFextN()
+      Teuchos::RCP<Epetra_Vector>& GetFextN()
       {
         CheckInitSetup();
         return fextn_;
       }
 
       /// Return external force \f$fext_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFextNp()
+      Teuchos::RCP<Epetra_Vector>& GetFextNp()
       {
         CheckInitSetup();
         return fextnp_;
       }
 
       /// Return reaction force \f$freact_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFreactN()
+      Teuchos::RCP<Epetra_Vector>& GetFreactN()
       {
         CheckInitSetup();
         return freactn_;
       }
 
       /// Return reaction force \f$freact_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFreactNp()
+      Teuchos::RCP<Epetra_Vector>& GetFreactNp()
       {
         CheckInitSetup();
         return freactnp_;
       }
 
       /// Return inertia force \f$finertial_{n}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFinertialN()
+      Teuchos::RCP<Epetra_Vector>& GetFinertialN()
       {
         CheckInitSetup();
         return finertialn_;
       }
 
       /// Return inertial force \f$finertial_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFinertialNp()
+      Teuchos::RCP<Epetra_Vector>& GetFinertialNp()
       {
         CheckInitSetup();
         return finertialnp_;
       }
 
       /// Return viscous force \f$f_{viscous,n}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFviscoN()
+      Teuchos::RCP<Epetra_Vector>& GetFviscoN()
       {
         CheckInitSetup();
         return fviscon_;
       }
 
       /// Return viscous force \f$fviscous_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableFviscoNp()
+      Teuchos::RCP<Epetra_Vector>& GetFviscoNp()
       {
         CheckInitSetup();
         return fvisconp_;
@@ -848,7 +848,7 @@ namespace STR
        *
        *  Please note that this old structural residual is already scaled by the
        *  different time integration factors! */
-      Teuchos::RCP<Epetra_Vector>& GetMutableFstructureOld()
+      Teuchos::RCP<Epetra_Vector>& GetFstructureOld()
       {
         CheckInitSetup();
         return fstructold_;
@@ -859,21 +859,21 @@ namespace STR
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetMutableJacobian()
+      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetJacobian()
       {
         CheckInitSetup();
         return jac_;
       }
 
       /// mass matrix (constant)
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetMutableMassMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetMassMatrix()
       {
         CheckInitSetup();
         return mass_;
       }
 
       /// damping matrix
-      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetMutableDampMatrix()
+      Teuchos::RCP<CORE::LINALG::SparseOperator>& GetDampMatrix()
       {
         CheckInitSetup();
         return damp_;

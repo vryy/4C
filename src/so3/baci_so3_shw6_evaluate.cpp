@@ -215,8 +215,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
@@ -229,8 +229,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
@@ -324,13 +324,13 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
     // evaluate current (updated) EAS alphas (from history variables)
     // get stored EAS history
-    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
 
@@ -1297,11 +1297,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
   const double step_length = StrParamsInterface().GetStepLength();
 
-  auto* oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-  auto* oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-  auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
-  auto* eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
-  auto* oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  auto* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+  auto* oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+  auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
+  auto* eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+  auto* oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
   if (StrParamsInterface().IsDefaultStep())

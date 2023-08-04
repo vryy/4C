@@ -41,7 +41,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
   if (not IsInit()) dserror("Init() has not been called, yet!");
 
   // setup the pointers for displacement and stiffness
-  disnp_ptr_ = GState().GetMutableDisNp();
+  disnp_ptr_ = GState().GetDisNp();
   stiff_beaminteract_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
   f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
@@ -197,7 +197,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::UpdateStepState(const double& time
   beamcman_->Update(*disnp_ptr_, EvalData().GetStepNp(), EvalData().GetNlnIter());
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
 
   // Todo take care of the minus sign in front of timefac_np
   fstructold_ptr->Update(-timefac_n, *f_beaminteract_np_ptr_, 1.0);

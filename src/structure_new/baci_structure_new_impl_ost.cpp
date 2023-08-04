@@ -69,11 +69,11 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetMutableFinertialN();
-  finertianp_ptr_ = GlobalState().GetMutableFinertialNp();
+  finertian_ptr_ = GlobalState().GetFinertialN();
+  finertianp_ptr_ = GlobalState().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetMutableFviscoN();
-  fvisconp_ptr_ = GlobalState().GetMutableFviscoNp();
+  fviscon_ptr_ = GlobalState().GetFviscoN();
+  fvisconp_ptr_ = GlobalState().GetFviscoNp();
 
   issetup_ = true;
 }
@@ -97,7 +97,7 @@ void STR::IMPLICIT::OneStepTheta::PostSetup()
     if (TimInt().IsRestarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
+    Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
@@ -147,18 +147,18 @@ void STR::IMPLICIT::OneStepTheta::SetState(const Epetra_Vector& x)
   // new end-point displacements
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetMutableDisNp()->Scale(1.0, *disnp_ptr);
+  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetMutableVelNp()->Update(
+  GlobalState().GetVelNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(0), 1.0 / (theta_ * dt), *disnp_ptr, 0.0);
 
   // ---------------------------------------------------------------------------
   // new end-point accelerations
   // ---------------------------------------------------------------------------
-  GlobalState().GetMutableAccNp()->Update(
+  GlobalState().GetAccNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(1), 1.0 / (theta_ * theta_ * dt * dt), *disnp_ptr, 0.0);
 }
 

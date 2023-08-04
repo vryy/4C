@@ -321,7 +321,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::AddGravityAcceleration(std::vector<dou
   for (const int rigidbody_k : ownedrigidbodies_)
   {
     // get pointer to rigid body states
-    double* acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k].data();
+    double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
 
     // set gravity acceleration
     PARTICLEINTERACTION::UTILS::VecAdd(acc_k, gravity.data());
@@ -526,16 +526,14 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ExtractPackedRigidBodyStates(std::vect
     ownedrigidbodies_.push_back(rigidbody_k);
 
     // get reference to rigid body states
-    double& mass_k = rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
-    std::vector<double>& inertia_k = rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k];
-    std::vector<double>& pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k];
-    std::vector<double>& rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k];
-    std::vector<double>& vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k];
-    std::vector<double>& angvel_k =
-        rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k];
-    std::vector<double>& acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k];
-    std::vector<double>& angacc_k =
-        rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k];
+    double& mass_k = rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    std::vector<double>& inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k];
+    std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
+    std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
+    std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
+    std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+    std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
+    std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
     DRT::ParObject::ExtractfromPack(position, buffer, mass_k);
     for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, buffer, inertia_k[i]);
@@ -721,16 +719,14 @@ void PARTICLERIGIDBODY::RigidBodyHandler::CommunicateRigidBodyStates(
       const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
-      double& mass_k = rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
-      std::vector<double>& inertia_k = rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k];
-      std::vector<double>& pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k];
-      std::vector<double>& rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k];
-      std::vector<double>& vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k];
-      std::vector<double>& angvel_k =
-          rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k];
-      std::vector<double>& acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k];
-      std::vector<double>& angacc_k =
-          rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k];
+      double& mass_k = rigidbodydatastate_->GetRefMass()[rigidbody_k];
+      std::vector<double>& inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k];
+      std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
+      std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
+      std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
+      std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
+      std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
+      std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
       DRT::ParObject::ExtractfromPack(position, rmsg, mass_k);
       for (int i = 0; i < 6; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, inertia_k[i]);
@@ -773,9 +769,9 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearPartialMassQuantities()
   for (const int rigidbody_k : hostedrigidbodies_)
   {
     // get pointer to rigid body states
-    double* mass_k = &rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
-    double* inertia_k = rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k].data();
-    double* pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k].data();
+    double* mass_k = &rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    double* inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k].data();
+    double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
 
     // clear mass quantities
     mass_k[0] = 0.0;
@@ -821,8 +817,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
     const int rigidbody_k = it->second;
 
     // get pointer to rigid body states
-    double* mass_k = &rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
-    double* pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k].data();
+    double* mass_k = &rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -838,7 +834,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
   {
     // get pointer to rigid body states
     const double* mass_k = &rigidbodydatastate_->GetRefMass()[rigidbody_k];
-    double* pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k].data();
+    double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
 
 #ifdef DEBUG
     if (not(mass_k[0] > 0.0)) dserror("partial mass of rigid body %d is zero!", rigidbody_k);
@@ -867,7 +863,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialMassQuantities()
 
     // get pointer to rigid body states
     const double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
-    double* inertia_k = rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k].data();
+    double* inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k].data();
 
     // get pointer to particle states
     const double* mass_i = container_i->GetPtrToState(PARTICLEENGINE::Mass, particle_i);
@@ -985,8 +981,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
 #endif
 
     // get pointer to rigid body states
-    double* mass_k = &rigidbodydatastate_->GetRefMutableMass()[rigidbody_k];
-    double* pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k].data();
+    double* mass_k = &rigidbodydatastate_->GetRefMass()[rigidbody_k];
+    double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
 
     // clear mass and position
     mass_k[0] = 0.0;
@@ -1022,7 +1018,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeFullMassQuantities(
 
     // get pointer to rigid body states
     const double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
-    double* inertia_k = rigidbodydatastate_->GetRefMutableInertia()[rigidbody_k].data();
+    double* inertia_k = rigidbodydatastate_->GetRefInertia()[rigidbody_k].data();
 
     // clear inertia
     for (int i = 0; i < 6; ++i) inertia_k[i] = 0.0;
@@ -1053,8 +1049,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyForceAndTorque()
   for (const int rigidbody_k : hostedrigidbodies_)
   {
     // get pointer to rigid body states
-    double* force_k = rigidbodydatastate_->GetRefMutableForce()[rigidbody_k].data();
-    double* torque_k = rigidbodydatastate_->GetRefMutableTorque()[rigidbody_k].data();
+    double* force_k = rigidbodydatastate_->GetRefForce()[rigidbody_k].data();
+    double* torque_k = rigidbodydatastate_->GetRefTorque()[rigidbody_k].data();
 
     // clear force and torque of rigid body k
     PARTICLEINTERACTION::UTILS::VecClear(force_k);
@@ -1113,8 +1109,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputePartialForceAndTorque()
     const int rigidbody_k = it->second;
 
     // get pointer to rigid body states
-    double* force_k = rigidbodydatastate_->GetRefMutableForce()[rigidbody_k].data();
-    double* torque_k = rigidbodydatastate_->GetRefMutableTorque()[rigidbody_k].data();
+    double* force_k = rigidbodydatastate_->GetRefForce()[rigidbody_k].data();
+    double* torque_k = rigidbodydatastate_->GetRefTorque()[rigidbody_k].data();
 
     // get pointer to particle states
     const double* relpos_i =
@@ -1179,8 +1175,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::GatherPartialAndComputeFullForceAndTor
       for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, tmp_torque_k[i]);
 
       // get pointer to rigid body states
-      double* force_k = rigidbodydatastate_->GetRefMutableForce()[rigidbody_k].data();
-      double* torque_k = rigidbodydatastate_->GetRefMutableTorque()[rigidbody_k].data();
+      double* force_k = rigidbodydatastate_->GetRefForce()[rigidbody_k].data();
+      double* torque_k = rigidbodydatastate_->GetRefTorque()[rigidbody_k].data();
 
       // sum gathered contribution to full force and torque
       PARTICLEINTERACTION::UTILS::VecAdd(force_k, tmp_force_k.data());
@@ -1203,8 +1199,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ComputeAccelerationsFromForceAndTorque
     const double* rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k].data();
     const double* force_k = rigidbodydatastate_->GetRefForce()[rigidbody_k].data();
     const double* torque_k = rigidbodydatastate_->GetRefTorque()[rigidbody_k].data();
-    double* acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k].data();
-    double* angacc_k = rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k].data();
+    double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
+    double* angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k].data();
 
     // compute acceleration of rigid body k
     PARTICLEINTERACTION::UTILS::VecAddScale(acc_k, 1 / mass_k[0], force_k);
@@ -1255,7 +1251,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyOrientation()
   for (const int rigidbody_k : ownedrigidbodies_)
   {
     // get pointer to rigid body states
-    double* rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k].data();
+    double* rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k].data();
 
     // initialize rotation of rigid body k
     UTILS::QuaternionClear(rot_k);
@@ -1268,8 +1264,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyPositions(const double 
   for (const int rigidbody_k : ownedrigidbodies_)
   {
     // get pointer to rigid body states
-    double* pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k].data();
-    double* rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k].data();
+    double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
+    double* rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k].data();
     const double* vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k].data();
     const double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
 
@@ -1298,8 +1294,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::UpdateRigidBodyVelocities(const double
   for (const int rigidbody_k : ownedrigidbodies_)
   {
     // get pointer to rigid body states
-    double* vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k].data();
-    double* angvel_k = rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k].data();
+    double* vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k].data();
+    double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
     const double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
     const double* angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k].data();
 
@@ -1315,8 +1311,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::ClearRigidBodyAccelerations()
   for (const int rigidbody_k : ownedrigidbodies_)
   {
     // get pointer to rigid body states
-    double* acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k].data();
-    double* angacc_k = rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k].data();
+    double* acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k].data();
+    double* angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k].data();
 
     // clear accelerations of rigid body k
     PARTICLEINTERACTION::UTILS::VecClear(acc_k);
@@ -1368,8 +1364,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyPositions()
       const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
-      std::vector<double>& pos_k = rigidbodydatastate_->GetRefMutablePosition()[rigidbody_k];
-      std::vector<double>& rot_k = rigidbodydatastate_->GetRefMutableRotation()[rigidbody_k];
+      std::vector<double>& pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k];
+      std::vector<double>& rot_k = rigidbodydatastate_->GetRefRotation()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, pos_k[i]);
       for (int i = 0; i < 4; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, rot_k[i]);
@@ -1424,9 +1420,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyVelocities()
       const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
-      std::vector<double>& vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k];
-      std::vector<double>& angvel_k =
-          rigidbodydatastate_->GetRefMutableAngularVelocity()[rigidbody_k];
+      std::vector<double>& vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k];
+      std::vector<double>& angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, vel_k[i]);
       for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angvel_k[i]);
@@ -1482,9 +1477,8 @@ void PARTICLERIGIDBODY::RigidBodyHandler::BroadcastRigidBodyAccelerations()
       const int rigidbody_k = DRT::ParObject::ExtractInt(position, rmsg);
 
       // get reference to rigid body states
-      std::vector<double>& acc_k = rigidbodydatastate_->GetRefMutableAcceleration()[rigidbody_k];
-      std::vector<double>& angacc_k =
-          rigidbodydatastate_->GetRefMutableAngularAcceleration()[rigidbody_k];
+      std::vector<double>& acc_k = rigidbodydatastate_->GetRefAcceleration()[rigidbody_k];
+      std::vector<double>& angacc_k = rigidbodydatastate_->GetRefAngularAcceleration()[rigidbody_k];
 
       for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, acc_k[i]);
       for (int i = 0; i < 3; ++i) DRT::ParObject::ExtractfromPack(position, rmsg, angacc_k[i]);
@@ -1906,7 +1900,7 @@ void PARTICLERIGIDBODY::RigidBodyHandler::SetRigidBodyVelocitiesAfterPhaseChange
     // get pointer to rigid body states
     const double* pos_k = rigidbodydatastate_->GetRefPosition()[rigidbody_k].data();
     const double* angvel_k = rigidbodydatastate_->GetRefAngularVelocity()[rigidbody_k].data();
-    double* vel_k = rigidbodydatastate_->GetRefMutableVelocity()[rigidbody_k].data();
+    double* vel_k = rigidbodydatastate_->GetRefVelocity()[rigidbody_k].data();
 
     const double* prevpos_k = previousposition[rigidbody_k].data();
 

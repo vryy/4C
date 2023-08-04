@@ -398,7 +398,7 @@ void STR::MODELEVALUATOR::Contact::UpdateStepState(const double& timefac_n)
       Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
   if (not strcontactrhs_ptr.is_null())
   {
-    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
     fstructold_ptr->Update(timefac_n, *strcontactrhs_ptr, 1.0);
   }
 

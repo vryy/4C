@@ -477,7 +477,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::MyEvaluate(Teuchos::ParameterList
         INPAR::STR::StressType iocouplingstress = INPAR::STR::stress_none;
         if (this->IsParamsInterface())
         {
-          couplingstressdata = this->StrParamsInterface().MutableCouplingStressDataPtr();
+          couplingstressdata = this->StrParamsInterface().CouplingStressDataPtr();
           iocouplingstress = this->StrParamsInterface().GetCouplingStressOutputType();
         }
         else

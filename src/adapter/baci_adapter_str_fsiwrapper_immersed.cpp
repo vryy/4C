@@ -257,9 +257,9 @@ void ADAPTER::FSIStructureWrapperImmersed::Output(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-STR::Dbc& ADAPTER::FSIStructureWrapperImmersed::GetMutableDBC()
+STR::Dbc& ADAPTER::FSIStructureWrapperImmersed::GetDBC()
 {
-  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Base>(structure_, true)->GetMutableDBC();
+  return Teuchos::rcp_dynamic_cast<STR::TIMINT::Base>(structure_, true)->GetDBC();
 }
 
 /*----------------------------------------------------------------------*/
@@ -267,7 +267,7 @@ STR::Dbc& ADAPTER::FSIStructureWrapperImmersed::GetMutableDBC()
 void ADAPTER::FSIStructureWrapperImmersed::AddDirichDofs(
     const Teuchos::RCP<const Epetra_Map> maptoadd)
 {
-  GetMutableDBC().AddDirichDofs(maptoadd);
+  GetDBC().AddDirichDofs(maptoadd);
 }
 
 /*----------------------------------------------------------------------*/
@@ -275,7 +275,7 @@ void ADAPTER::FSIStructureWrapperImmersed::AddDirichDofs(
 void ADAPTER::FSIStructureWrapperImmersed::RemoveDirichDofs(
     const Teuchos::RCP<const Epetra_Map> maptoremove)
 {
-  GetMutableDBC().RemoveDirichDofs(maptoremove);
+  GetDBC().RemoveDirichDofs(maptoremove);
 }
 
 /*----------------------------------------------------------------------*/

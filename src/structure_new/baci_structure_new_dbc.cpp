@@ -97,7 +97,7 @@ void STR::Dbc::Setup()
       Teuchos::ParameterList& p_linsolver = const_cast<Teuchos::ParameterList&>(
           pnox.sublist("Direction").sublist("Newton").sublist("Linear Solver"));
       NOX::NLN::LinSystem::PrePostOperator::Map& prepostlinsystem_map =
-          NOX::NLN::LinSystem::PrePostOp::GetMutableMap(p_linsolver);
+          NOX::NLN::LinSystem::PrePostOp::GetMap(p_linsolver);
       // create the new pre/post operator for the nox nln linear system
       Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepostdbc_ptr =
           Teuchos::rcp(new NOX::NLN::LinSystem::PrePostOp::Dbc(Teuchos::rcp(this, false)));

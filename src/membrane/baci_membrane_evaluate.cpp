@@ -183,8 +183,8 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
         if (IsParamsInterface())  // new structural time integration
         {
-          stressdata = StrParamsInterface().MutableStressDataPtr();
-          straindata = StrParamsInterface().MutableStrainDataPtr();
+          stressdata = StrParamsInterface().StressDataPtr();
+          straindata = StrParamsInterface().StrainDataPtr();
 
           iostress = StrParamsInterface().GetStressOutputType();
           iostrain = StrParamsInterface().GetStrainOutputType();
@@ -241,7 +241,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<std::vector<char>> thickdata = Teuchos::null;
 
         if (IsParamsInterface())  // new structural time integration
-          thickdata = StrParamsInterface().MutableOptQuantityDataPtr();
+          thickdata = StrParamsInterface().OptQuantityDataPtr();
         else  // old structural time integration
           thickdata = params.get<Teuchos::RCP<std::vector<char>>>("optquantity", Teuchos::null);
 

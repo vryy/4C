@@ -41,7 +41,7 @@ namespace CORE::LINALG
      *
      * @return 4-tensor
      */
-    inline std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim>& GetMutable()
+    inline std::array<std::array<std::array<std::array<double, dim>, dim>, dim>, dim>& Get()
     {
       return fourTensor_;
     }
@@ -92,7 +92,7 @@ namespace CORE::LINALG
     if (i1 >= dim or i2 >= dim or i3 >= dim or i4 >= dim)
       dserror("Indices %i,%i,%i,%i out of range in FourTensor<%i>.", i1, i2, i3, i4, dim);
 #endif
-    return GetMutable()[i1][i2][i3][i4];
+    return Get()[i1][i2][i3][i4];
   }
 
   template <int dim>

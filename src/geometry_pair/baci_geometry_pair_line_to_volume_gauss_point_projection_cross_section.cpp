@@ -34,7 +34,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   // created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTrackerMutable();
+      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTracker();
 
   if (projection_tracker.find(line_element_id) == projection_tracker.end())
   {
@@ -63,7 +63,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   this->CheckInitSetup();
 
   // Get the Gauss point projection tracker for this line element.
-  std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable();
+  std::vector<bool>& line_projection_tracker = GetLineProjectionVector();
 
   // Gauss rule.
   CORE::DRT::UTILS::IntegrationPoints1D gauss_points_axis =
@@ -176,7 +176,7 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
   if (segments.size() == 1 && segments[0].GetNumberOfProjectionPoints() > 0)
   {
     // Check if all points of this line projected.
-    const std::vector<bool>& projection_vector = GetLineProjectionVectorMutable();
+    const std::vector<bool>& projection_vector = GetLineProjectionVector();
     bool all_projected =
         std::all_of(projection_vector.begin(), projection_vector.end(), [](bool v) { return v; });
     if (!all_projected)
@@ -198,12 +198,12 @@ void GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<scal
  */
 template <typename scalar_type, typename line, typename volume>
 std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToVolumeGaussPointProjectionCrossSection<
-    scalar_type, line, volume>::GetLineProjectionVectorMutable() const
+    scalar_type, line, volume>::GetLineProjectionVector() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTrackerMutable();
+      this->line_to_3d_evaluation_data_->GetGaussPointProjectionTracker();
   return projection_tracker[line_element_id];
 }
 

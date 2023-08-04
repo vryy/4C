@@ -231,9 +231,9 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the line projection vector for the line element in the pair.
      * @param pair (in) Pointer to the pair object that is being evaluated.
-     * @return Mutable reference to line projection vector.
+     * @return  reference to line projection vector.
      */
-    static std::vector<bool>& GetLineProjectionVectorMutable(const pair_type* pair);
+    static std::vector<bool>& GetLineProjectionVector(const pair_type* pair);
   };
 
 
@@ -304,7 +304,7 @@ namespace GEOMETRYPAIR
      * case.
      * @return Reference to segment tracking vector.
      */
-    static std::set<LineSegment<double>>& GetSegmentTrackingSetMutable(const pair_type* pair);
+    static std::set<LineSegment<double>>& GetSegmentTrackingSet(const pair_type* pair);
   };
 
 }  // namespace GEOMETRYPAIR

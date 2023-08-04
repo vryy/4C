@@ -152,15 +152,15 @@ namespace STR
 
       //! @name output related functions
       //! @{
-      virtual Teuchos::RCP<std::vector<char>>& MutableStressDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& StressDataPtr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& MutableStrainDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& StrainDataPtr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& MutablePlasticStrainDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& PlasticStrainDataPtr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& MutableCouplingStressDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& CouplingStressDataPtr() = 0;
 
-      virtual Teuchos::RCP<std::vector<char>>& MutableOptQuantityDataPtr() = 0;
+      virtual Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() = 0;
 
       //! get the current stress type
       virtual enum INPAR::STR::StressType GetStressOutputType() const = 0;
@@ -175,7 +175,7 @@ namespace STR
       virtual enum INPAR::STR::StressType GetCouplingStressOutputType() const = 0;
 
       virtual Teuchos::RCP<MODELEVALUATOR::GaussPointDataOutputManager>&
-      MutableGaussPointDataOutputManagerPtr() = 0;
+      GaussPointDataOutputManagerPtr() = 0;
 
       //! add contribution to energy of specified type
       virtual void AddContributionToEnergyType(double value, enum STR::EnergyType type) = 0;

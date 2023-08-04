@@ -163,8 +163,6 @@ namespace CONTACT
 
       const CONTACT::AUG::Potential& Potential() const { return *potentialPtr_; }
 
-      CONTACT::AUG::Potential& MutablePotential() const { return *potentialPtr_; }
-
       void SetPDController(
           const Teuchos::RCP<CONTACT::AUG::ParallelDistributionController>& pd_control)
       {

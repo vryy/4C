@@ -81,7 +81,7 @@ namespace STR
 
      public:
       /// get the binary output writer
-      Teuchos::RCP<IO::DiscretizationWriter> GetMutableOutputPtr()
+      Teuchos::RCP<IO::DiscretizationWriter> GetOutputPtr()
       {
         CheckInitSetup();
         return output_;

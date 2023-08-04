@@ -64,7 +64,7 @@ void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
   if (IsPredictorState()) return;
 
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetMutableDisNp()->Scale(1.0, *disnp_ptr);
+  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -185,8 +185,8 @@ void STR::IMPLICIT::Statics::PreUpdate()
   const double dt = (*GlobalState().GetDeltaTime())[0];
 
   const INPAR::STR::PredEnum& pred_type = impl_ptr->Predictor().GetType();
-  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetMutableAccNp();
-  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetMutableVelNp();
+  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetAccNp();
+  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetVelNp();
 
   switch (pred_type)
   {
