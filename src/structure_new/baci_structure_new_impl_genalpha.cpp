@@ -128,8 +128,6 @@ void STR::IMPLICIT::GenAlpha::Setup()
 
   // Has to be set before the PostSetup() routine is called!
   issetup_ = true;
-
-  PostSetup();
 }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

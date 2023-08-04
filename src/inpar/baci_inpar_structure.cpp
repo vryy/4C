@@ -115,6 +115,8 @@ namespace INPAR
           "RESULTSEVRY", 1, "save displacements and contact forces every RESULTSEVRY steps", &sdyn);
       IntParameter("RESEVRYERGY", 0, "write system energies every requested step", &sdyn);
       IntParameter("RESTARTEVRY", 1, "write restart possibility every RESTARTEVRY steps", &sdyn);
+      BoolParameter("CALC_ACC_ON_RESTART", "No",
+          "Compute the initial state for a restart dynamics analysis", &sdyn);
       IntParameter("OUTPUT_STEP_OFFSET", 0,
           "An offset added to the current step to shift the steps to be written.", &sdyn);
       // Time loop control

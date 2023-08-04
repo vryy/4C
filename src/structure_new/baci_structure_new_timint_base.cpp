@@ -105,7 +105,7 @@ void STR::TIMINT::Base::Setup()
   int_ptr_->Init(
       DataSDynPtr(), DataGlobalStatePtr(), DataIOPtr(), dbc_ptr_, Teuchos::rcp(this, false));
   int_ptr_->Setup();
-
+  int_ptr_->PostSetup();
   // Initialize and Setup the input/output writer for every Newton iteration
   dataio_->InitSetupEveryIterationWriter(this, DataSDyn().GetMutableNoxParams());
 
@@ -960,6 +960,8 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
 
   // (3) read specific time integrator (forces, etc.) and model evaluator data
   int_ptr_->ReadRestart(ioreader);
+  int_ptr_->PostSetup();  // compute here the equilibrium system to account for initial
+                          // displacement/velocity.
 
   // short screen output
   if (dataglobalstate_->GetMyRank() == 0)

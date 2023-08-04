@@ -50,9 +50,17 @@ void STR::IMPLICIT::Statics::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
+void STR::IMPLICIT::Statics::PostSetup()
+{
+  CheckInitSetup();
+  // DO NOTHING
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
 void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
 {
-  CheckInit();
+  CheckInitSetup();
   if (IsPredictorState()) return;
 
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);

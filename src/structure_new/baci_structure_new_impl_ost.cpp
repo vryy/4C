@@ -76,8 +76,6 @@ void STR::IMPLICIT::OneStepTheta::Setup()
   fvisconp_ptr_ = GlobalState().GetMutableFviscoNp();
 
   issetup_ = true;
-
-  PostSetup();
 }
 
 /*----------------------------------------------------------------------------*
