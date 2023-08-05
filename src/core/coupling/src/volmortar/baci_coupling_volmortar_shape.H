@@ -1843,8 +1843,8 @@ namespace CORE::VOLMORTAR
     bool LocalToGlobal(const ::DRT::Element& ele, const double* xi, double* globcoord)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
       if (IsNurbs<distype>()) dserror("ERROR: Lagr. LocalToGlobal called for NURBS!");
 
       static const int n = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

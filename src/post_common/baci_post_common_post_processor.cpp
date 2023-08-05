@@ -428,7 +428,7 @@ void runEnsightVtuFilter(PostProblem& problem)
 
       DRT::ELEMENTS::Transport* transport_element = dynamic_cast<DRT::ELEMENTS::Transport*>(
           problem.get_discretization(0)->discretization()->lRowElement(0));
-      if (transport_element == NULL)
+      if (transport_element == nullptr)
         dserror("Elements of unknown type on scalar transport discretization!");
 
       if (transport_element->ImplType() == INPAR::SCATRA::impltype_elch_electrode_thermo or

@@ -142,7 +142,7 @@ FSI::LungMonolithic::LungMonolithic(
 
   // additional "ale" matrices filled in the fluid elements
   Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, FluidField()->Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, FluidField()->Discretization()->Comm()));
   CORE::LINALG::MapExtractor constrextractor;
   constrextractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
   AleConstrMatrix_ =
@@ -589,7 +589,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::LungMonolithic::CreateLinearSystem(
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList* lsParams = NULL;
+  Teuchos::ParameterList* lsParams = nullptr;
 
   // in case of nonlinCG the linear solver list is somewhere else
   if (dirParams.get("Method", "User Defined") == "User Defined")

@@ -206,7 +206,7 @@ void scatra_cardiac_monodomain_dyn(int restart)
         {
           DRT::ELEMENTS::Transport* element =
               dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-          if (element == NULL)
+          if (element == nullptr)
             dserror("Invalid element type!");
           else
             element->SetImplType(INPAR::SCATRA::impltype_std);

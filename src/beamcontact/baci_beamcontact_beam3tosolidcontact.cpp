@@ -277,7 +277,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes, numnodalvalues>::Evalua
   const DRT::ELEMENTS::Beam3Base* beamele1 =
       static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
 
-  if (beamele1 == NULL) dserror("cast to beam base failed!");
+  if (beamele1 == nullptr) dserror("cast to beam base failed!");
 
   const double radius1 =
       MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();

@@ -41,7 +41,7 @@ namespace CORE::GEO
      private:
       struct ChildCell
       {
-        ChildCell() : done_(false), parent_(NULL) {}
+        ChildCell() : done_(false), parent_(nullptr) {}
 
         bool ContainsChild(VolumeCell* vc) { return cells_.count(vc) > 0; }
 

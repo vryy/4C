@@ -145,7 +145,7 @@ bool LOCA::NLN::StatusTest::Factory::checkAndTagTest(const Teuchos::ParameterLis
     const Teuchos::RCP<LOCA::StatusTest::Abstract>& test,
     std::map<std::string, Teuchos::RCP<LOCA::StatusTest::Abstract>>* tagged_tests) const
 {
-  if ((isParameterType<std::string>(p, "Tag")) && (tagged_tests != NULL))
+  if ((isParameterType<std::string>(p, "Tag")) && (tagged_tests != nullptr))
   {
     (*tagged_tests)[getParameter<std::string>(p, "Tag")] = test;
     return true;

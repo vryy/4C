@@ -202,7 +202,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
     // 2) communication
     std::vector<int> unique_pidlist(uniquesize);
     int err = binstrategy_->BinDiscret()->ElementRowMap()->RemoteIDList(
-        uniquesize, uniquevec_targetbinIdlist.data(), unique_pidlist.data(), NULL);
+        uniquesize, uniquevec_targetbinIdlist.data(), unique_pidlist.data(), nullptr);
     if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
     // 3) build full pid list via lookup table
@@ -451,7 +451,7 @@ bool BEAMINTERACTION::BeamCrosslinkerHandler::PlaceNodeCorrectly(Teuchos::RCP<DR
     DRT::MESHFREE::MeshfreeMultiBin* currbin =
         dynamic_cast<DRT::MESHFREE::MeshfreeMultiBin*>(binstrategy_->BinDiscret()->gElement(binId));
 #ifdef DEBUG
-    if (currbin == NULL)
+    if (currbin == nullptr)
       dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeMultiBin failed");
 #endif
     // check whether it is a row bin

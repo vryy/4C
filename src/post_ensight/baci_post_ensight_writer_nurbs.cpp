@@ -48,7 +48,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("This probably isn't a NurbsDiscretization\n");
   }
@@ -1413,7 +1413,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("This probably isn't a NurbsDiscretization\n");
   }
@@ -1722,7 +1722,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(std::ofstream& file, const int nu
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*field_->discretization()));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("This probably isn't a NurbsDiscretization\n");
   }
@@ -3341,7 +3341,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(std::ofstream& file, const int 
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*field_->discretization()));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("This probably isn't a NurbsDiscretization\n");
   }

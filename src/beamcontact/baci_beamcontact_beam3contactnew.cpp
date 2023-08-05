@@ -145,14 +145,14 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   const DRT::ELEMENTS::Beam3Base* beamele1 =
       static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
 
-  if (beamele1 == NULL) dserror("cast to beam base failed!");
+  if (beamele1 == nullptr) dserror("cast to beam base failed!");
 
   radius1_ = MANIPULATERADIUS * beamele1->GetCircularCrossSectionRadiusForInteractions();
 
   const DRT::ELEMENTS::Beam3Base* beamele2 =
       static_cast<const DRT::ELEMENTS::Beam3Base*>(element2_);
 
-  if (beamele2 == NULL) dserror("cast to beam base failed!");
+  if (beamele2 == nullptr) dserror("cast to beam base failed!");
 
   radius2_ = MANIPULATERADIUS * beamele2->GetCircularCrossSectionRadiusForInteractions();
 
@@ -495,7 +495,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateFcContact(const
 
 // Quantities necessary for automatic differentiation
 #ifdef AUTOMATICDIFF
-  if (fc1_FAD != NULL and fc2_FAD != NULL)
+  if (fc1_FAD != nullptr and fc2_FAD != nullptr)
   {
     for (int i = 0; i < dim1; ++i)
     {
@@ -511,7 +511,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateFcContact(const
   //**********************************************************************
   // assemble contact forces
   //**********************************************************************
-  if (!DoNotAssemble and fint != NULL)
+  if (!DoNotAssemble and fint != nullptr)
   {
     for (int i = 0; i < dim1; ++i)
     {
@@ -972,7 +972,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateStiffcContact(c
     CORE::LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     CORE::LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
 
-    EvaluateFcContact(pp, NULL, N1, N2, &fc1_FAD, &fc2_FAD);
+    EvaluateFcContact(pp, nullptr, N1, N2, &fc1_FAD, &fc2_FAD);
     for (int j = 0; j < dim1 + dim2; j++)
     {
       for (int i = 0; i < dim1; i++)
@@ -1260,7 +1260,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForc
   }
 
 #ifdef AUTOMATICDIFF
-  if (fc1_FAD != NULL and fc2_FAD != NULL)
+  if (fc1_FAD != nullptr and fc2_FAD != nullptr)
   {
     for (int i = 0; i < dim1; ++i)
     {
@@ -1276,7 +1276,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicForc
   //**********************************************************************
   // assemble contact forces
   //**********************************************************************
-  if (!DoNotAssemble and fint != NULL)
+  if (!DoNotAssemble and fint != nullptr)
   {
     for (int i = 0; i < dim1; ++i)
     {
@@ -1680,7 +1680,7 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::EvaluateAlgorithmicStif
     CORE::LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     CORE::LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
 
-    EvaluateFcContact(pp, NULL, N1, N2, &fc1_FAD, &fc2_FAD);
+    EvaluateFcContact(pp, nullptr, N1, N2, &fc1_FAD, &fc2_FAD);
     for (int j = 0; j < dim1 + dim2; j++)
     {
       for (int i = 0; i < dim1; i++)
@@ -3642,14 +3642,14 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
     // ID is element1_
     if (xi1_old_ < -1.0)
     {
-      if (neighbors1_->GetLeftNeighbor() != NULL)
+      if (neighbors1_->GetLeftNeighbor() != nullptr)
       {
         id1 = neighbors1_->GetLeftNeighbor()->Id();
       }
     }
     else if (xi1_old_ > 1.0)
     {
-      if (neighbors1_->GetRightNeighbor() != NULL) id1 = neighbors1_->GetRightNeighbor()->Id();
+      if (neighbors1_->GetRightNeighbor() != nullptr) id1 = neighbors1_->GetRightNeighbor()->Id();
     }
     else
     {
@@ -3658,14 +3658,14 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
 
     if (xi2_old_ < -1.0)
     {
-      if (neighbors2_->GetLeftNeighbor() != NULL)
+      if (neighbors2_->GetLeftNeighbor() != nullptr)
       {
         id2 = neighbors2_->GetLeftNeighbor()->Id();
       }
     }
     else if (xi2_old_ > 1.0)
     {
-      if (neighbors2_->GetRightNeighbor() != NULL) id2 = neighbors2_->GetRightNeighbor()->Id();
+      if (neighbors2_->GetRightNeighbor() != nullptr) id2 = neighbors2_->GetRightNeighbor()->Id();
     }
     else
     {
@@ -3683,8 +3683,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
       if (contactpairmap.find(std::make_pair(id1, id2)) != contactpairmap.end())
       {
         // It is already tested in GetNormalOld() that the corresponding pair had a valid closest
-        // point solution in the last time step if &normal_old_!=NULL!
-        if (contactpairmap[std::make_pair(id1, id2)]->GetNormalOld() != NULL)
+        // point solution in the last time step if &normal_old_!=nullptr!
+        if (contactpairmap[std::make_pair(id1, id2)]->GetNormalOld() != nullptr)
         {
           normal_old_ = *(contactpairmap[std::make_pair(id1, id2)]->GetNormalOld());
 
@@ -3733,8 +3733,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::GetNeighborNormalOld(
       if (contactpairmap.find(std::make_pair(id2, id1)) != contactpairmap.end())
       {
         // It is already tested in GetNormalOld() that the corresponding pair had a valid closest
-        // point solution in the last time step if &normal_old_!=NULL!
-        if (contactpairmap[std::make_pair(id2, id1)]->GetNormalOld() != NULL)
+        // point solution in the last time step if &normal_old_!=nullptr!
+        if (contactpairmap[std::make_pair(id2, id1)]->GetNormalOld() != nullptr)
         {
           normal_old_ = *(contactpairmap[std::make_pair(id2, id1)]->GetNormalOld());
 
@@ -3813,19 +3813,19 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::CheckBoundaryContact()
   // If the considered element has no neighbor (-> boundary element) and the corresponding
   // parameter coordinate has exceeded the end of the physical beam, the contact is deactivated
   // for this pair for the complete time step!
-  if (neighbors1_->GetLeftNeighbor() == NULL and xi1_ < -1.0 and !cppunconverged_)
+  if (neighbors1_->GetLeftNeighbor() == nullptr and xi1_ < -1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }
-  if (neighbors1_->GetRightNeighbor() == NULL and xi1_ > 1.0 and !cppunconverged_)
+  if (neighbors1_->GetRightNeighbor() == nullptr and xi1_ > 1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }
-  if (neighbors2_->GetLeftNeighbor() == NULL and xi2_ < -1.0 and !cppunconverged_)
+  if (neighbors2_->GetLeftNeighbor() == nullptr and xi2_ < -1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }
-  if (neighbors2_->GetRightNeighbor() == NULL and xi2_ > 1.0 and !cppunconverged_)
+  if (neighbors2_->GetRightNeighbor() == nullptr and xi2_ > 1.0 and !cppunconverged_)
   {
     beamendcontactopened_ = true;
   }

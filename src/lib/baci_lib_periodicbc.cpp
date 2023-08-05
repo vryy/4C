@@ -263,8 +263,8 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
     std::map<int, std::vector<int>> midtosid;
 
     // pointers to master and slave condition
-    DRT::Condition* mastercond = NULL;
-    DRT::Condition* slavecond = NULL;
+    DRT::Condition* mastercond = nullptr;
+    DRT::Condition* slavecond = nullptr;
 
     // global master node Ids and global slave node Ids
     std::vector<int> masternodeids;

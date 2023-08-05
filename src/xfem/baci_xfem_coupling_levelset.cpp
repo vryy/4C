@@ -455,7 +455,7 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       {
         // get the processor's local node
         DRT::Node* lsnode = cutter_dis_->lRowNode(lnodeid);
-        if (lsnode == NULL) dserror("Returned node is null-pointer.");
+        if (lsnode == nullptr) dserror("Returned node is null-pointer.");
 
         std::vector<int> initialdof =
             Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)->InitialDof(lsnode);
@@ -1278,8 +1278,8 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
   cutterele_cond.reserve(nummycolele);
 
   //// initialize the vector invalid coupling-condition type "NONE"
-  // EleCoupCond init_pair = EleCoupCond(INPAR::XFEM::CouplingCond_NONE,NULL);
-  for (int lid = 0; lid < nummycolele; ++lid) cutterele_cond.push_back(NULL);
+  // EleCoupCond init_pair = EleCoupCond(INPAR::XFEM::CouplingCond_NONE,nullptr);
+  for (int lid = 0; lid < nummycolele; ++lid) cutterele_cond.push_back(nullptr);
 
   //-----------------------------------------------------------------------------------
   // loop all column cutting elements on this processor
@@ -1294,7 +1294,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
     std::vector<DRT::Condition*> mynewcond;
     GetConditionByRobinId(mycond, robin_id, mynewcond);
 
-    DRT::Condition* cond_unique = NULL;
+    DRT::Condition* cond_unique = nullptr;
 
     // safety checks
     if (mynewcond.size() != 1)
@@ -1317,7 +1317,7 @@ void XFEM::LevelSetCouplingNavierSlip::SetElementSpecificConditions(
   //  // loop all column cutting elements on this processor
   for (int lid = 0; lid < nummycolele; ++lid)
   {
-    if (cutterele_cond[lid] == NULL)
+    if (cutterele_cond[lid] == nullptr)
       dserror("cutter element with local id %i has no Robin-condition!!!", lid);
   }
 }
@@ -1764,7 +1764,7 @@ const Teuchos::RCP<const Epetra_Vector> XFEM::LevelSetCouplingTwoPhase::ComputeT
     // get the positioning of the node
     CORE::GEO::CUT::Point::PointPosition pos = CORE::GEO::CUT::Point::undecided;
 
-    DRT::Node* bg_node = NULL;
+    DRT::Node* bg_node = nullptr;
 
     if (have_nodematching_dis_)
     {

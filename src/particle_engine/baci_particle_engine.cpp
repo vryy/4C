@@ -977,7 +977,7 @@ void PARTICLEENGINE::ParticleEngine::SetupBinGhosting()
     std::vector<int> ghostbins_vec(ghostbins.begin(), ghostbins.end());
     const int size = static_cast<int>(ghostbins.size());
     std::vector<int> pidlist(size);
-    const int err = binrowmap_->RemoteIDList(size, ghostbins_vec.data(), pidlist.data(), NULL);
+    const int err = binrowmap_->RemoteIDList(size, ghostbins_vec.data(), pidlist.data(), nullptr);
     if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
     for (int i = 0; i < size; ++i)
@@ -1412,7 +1412,7 @@ void PARTICLEENGINE::ParticleEngine::DetermineParticlesToBeDistributed(
     // 2) communication
     std::vector<int> unique_pidlist(uniquesize);
     int err = binrowmap_->RemoteIDList(
-        uniquesize, uniquevec_bingidlist.data(), unique_pidlist.data(), NULL);
+        uniquesize, uniquevec_bingidlist.data(), unique_pidlist.data(), nullptr);
     if (err < 0) dserror("RemoteIDList returned err=%d", err);
 
     // 3) build full pid list via lookup table

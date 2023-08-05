@@ -108,7 +108,7 @@ namespace DRT
                                   and elements
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       virtual void IntegrateShapeFunction(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
@@ -180,7 +180,7 @@ namespace DRT
                                   and elements
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void CalcTractionVelocityComponent(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
@@ -193,7 +193,7 @@ namespace DRT
                                   and elements
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void ComputeNeumannUvIntegral(DRT::ELEMENTS::FluidBoundary* ele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
@@ -238,7 +238,7 @@ namespace DRT
                                   and elements
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void ImpedanceIntegration(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -251,7 +251,7 @@ namespace DRT
                                   and elements
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       */
       void dQdu(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -278,10 +278,10 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
                                   the controling method does not epxect the element to fill
                                   this matrix.                          and elements
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       */
       void NeumannInflow(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,

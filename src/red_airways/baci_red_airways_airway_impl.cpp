@@ -571,7 +571,7 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
     case DRT::Element::line2:
     {
       static AirwayImpl<DRT::Element::line2>* airway;
-      if (airway == NULL)
+      if (airway == nullptr)
       {
         airway = new AirwayImpl<DRT::Element::line2>;
       }
@@ -581,7 +581,7 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
       dserror("shape %d (%d nodes) not supported", red_airway->Shape(), red_airway->NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -1139,7 +1139,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
-          if (CoupledTo3DParams.get() == NULL)
+          if (CoupledTo3DParams.get() == nullptr)
           {
             dserror(
                 "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
@@ -1614,7 +1614,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(RedAirway* ele,
         // -----------------------------------------------------------------
         // If the parameter list is empty, then something is wrong!
         // -----------------------------------------------------------------
-        if (CoupledTo3DParams.get() == NULL)
+        if (CoupledTo3DParams.get() == nullptr)
         {
           dserror(
               "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
@@ -1879,14 +1879,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       // -------------------------------------------------------------------
       std::string fluidType = "none";
       // if RedAirwayScatraAirCond then material type is air
-      if (ele->Nodes()[0]->GetCondition("RedAirwayScatraAirCond") != NULL &&
-          ele->Nodes()[1]->GetCondition("RedAirwayScatraAirCond") != NULL)
+      if (ele->Nodes()[0]->GetCondition("RedAirwayScatraAirCond") != nullptr &&
+          ele->Nodes()[1]->GetCondition("RedAirwayScatraAirCond") != nullptr)
       {
         fluidType = "air";
       }
       // if RedAirwayScatraHemoglobinCond then material type is blood
-      else if (ele->Nodes()[0]->GetCondition("RedAirwayScatraHemoglobinCond") != NULL &&
-               ele->Nodes()[1]->GetCondition("RedAirwayScatraHemoglobinCond") != NULL)
+      else if (ele->Nodes()[0]->GetCondition("RedAirwayScatraHemoglobinCond") != nullptr &&
+               ele->Nodes()[1]->GetCondition("RedAirwayScatraHemoglobinCond") != nullptr)
       {
         fluidType = "blood";
       }
@@ -2145,8 +2145,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateScatra(RedAirway* ele,
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
   // ---------------------------------------------------------------------
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == NULL ||
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == NULL)
+  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr ||
+      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr)
   {
     return;
   }
@@ -2209,8 +2209,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::UpdateElem12Scatra(RedAirway* ele,
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
   // ---------------------------------------------------------------------
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == NULL ||
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == NULL)
+  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr ||
+      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr)
   {
     return;
   }
@@ -2271,14 +2271,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalPO2FromScatra(RedAirway* ele,
   // -------------------------------------------------------------------
   std::string fluidType = "none";
   // if RedAirwayScatraAirCond then material type is air
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraAirCond") != NULL &&
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraAirCond") != NULL)
+  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraAirCond") != nullptr &&
+      ele->Nodes()[1]->GetCondition("RedAirwayScatraAirCond") != nullptr)
   {
     fluidType = "air";
   }
   // if RedAirwayScatraHemoglobinCond then material type is blood
-  else if (ele->Nodes()[0]->GetCondition("RedAirwayScatraHemoglobinCond") != NULL &&
-           ele->Nodes()[1]->GetCondition("RedAirwayScatraHemoglobinCond") != NULL)
+  else if (ele->Nodes()[0]->GetCondition("RedAirwayScatraHemoglobinCond") != nullptr &&
+           ele->Nodes()[1]->GetCondition("RedAirwayScatraHemoglobinCond") != nullptr)
   {
     fluidType = "blood";
   }
@@ -2426,8 +2426,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvalNodalEssentialValues(RedAirway* ele
   // ---------------------------------------------------------------------
   // perform this step only for capillaries
   // ---------------------------------------------------------------------
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == NULL ||
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == NULL)
+  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr ||
+      ele->Nodes()[1]->GetCondition("RedAirwayScatraCapillaryCond") == nullptr)
   {
     return;
   }

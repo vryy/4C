@@ -105,7 +105,7 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -196,5 +196,5 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::De
     }
   }  // switch(impltype)
 
-  return NULL;
+  return nullptr;
 }

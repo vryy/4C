@@ -275,7 +275,7 @@ namespace CORE::GEO
        */
       bool hasParent() const
       {
-        if (parent_ != NULL)
+        if (parent_ != nullptr)
           return true;
         else
           return false;
@@ -331,7 +331,7 @@ namespace CORE::GEO
       const TreeNode* getParent() const
       {
         if (this->hasParent()) return parent_;
-        return NULL;
+        return nullptr;
       };
 
       /*!

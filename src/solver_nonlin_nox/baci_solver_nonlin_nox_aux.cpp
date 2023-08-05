@@ -407,7 +407,7 @@ NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTestWithQuantity(
     T* desiredTest = dynamic_cast<T*>(&test);
 
     // not the desired status test...
-    if (desiredTest == 0) return NULL;
+    if (desiredTest == 0) return nullptr;
     // yeah we found one...
     else
     {
@@ -415,7 +415,7 @@ NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTestWithQuantity(
       if (desiredTest->IsQuantity(qtype))
         return desiredTest;
       else
-        return NULL;
+        return nullptr;
     }
   }
   // if the nox_nln_statustest_combo Test cast was successful
@@ -431,7 +431,7 @@ NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTestWithQuantity(
   }
 
   // default return
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -453,7 +453,7 @@ NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(NOX::StatusTest::Gen
   {
     const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& tests = comboTest->GetTestVector();
 
-    NOX::StatusTest::Generic* gdesired_test = NULL;
+    NOX::StatusTest::Generic* gdesired_test = nullptr;
     for (const auto& test : tests)
     {
       // recursive function call
@@ -478,7 +478,7 @@ NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTest(NOX::StatusTest::Gen
   }
 
   // default return
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*

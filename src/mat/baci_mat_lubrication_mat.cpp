@@ -23,7 +23,7 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdat
     : Parameter(matdata),
       density_(matdata->GetDouble("DENSITY")),
       lubricationlawID_(matdata->GetInt("LUBRICATIONLAWID")),
-      lubricationlaw_(NULL)
+      lubricationlaw_(nullptr)
 {
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -43,21 +43,21 @@ MAT::PAR::LubricationMat::LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdat
   {
     case INPAR::MAT::m_lubrication_law_constant:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawConstant(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_lubrication_law_barus:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawBarus(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_lubrication_law_roeland:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::LubricationLawRoeland(curmat));
       lubricationlaw_ = static_cast<MAT::PAR::LubricationLaw*>(curmat->Parameter());
       break;
@@ -86,7 +86,7 @@ DRT::ParObject* MAT::LubricationMatType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::LubricationMat::LubricationMat() : params_(NULL) {}
+MAT::LubricationMat::LubricationMat() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -107,7 +107,7 @@ void MAT::LubricationMat::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -127,7 +127,7 @@ void MAT::LubricationMat::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

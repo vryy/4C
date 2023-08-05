@@ -127,7 +127,7 @@ template <class MatrixType, class VectorType>
 void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CheckReuseStatusOfActiveSet(
     bool& bAllowReuse, const Teuchos::ParameterList* linSysParams)
 {
-  if (linSysParams != NULL)
+  if (linSysParams != nullptr)
   {
     if (linSysParams->isSublist("Linear System properties"))
     {

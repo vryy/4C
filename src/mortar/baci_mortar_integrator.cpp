@@ -308,7 +308,7 @@ MORTAR::MortarIntegrator* MORTAR::MortarIntegrator::Impl(
       dserror("Error...");
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 

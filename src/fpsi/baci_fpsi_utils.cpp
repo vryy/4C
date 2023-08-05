@@ -197,7 +197,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
   bool condition_exists = true;
 
   DRT::Condition* slavecond = slavedis.GetCondition(condname);
-  if (slavecond == NULL)
+  if (slavecond == nullptr)
   {
     condition_exists = false;
     std::cout << "WARNING: Condition <" << condname << "> does not exist on discretisation <"
@@ -206,7 +206,7 @@ void FPSI::Utils::SetupLocalInterfaceFacingElementMap(DRT::Discretization& maste
   }
 
   DRT::Condition* mastercond = masterdis.GetCondition(condname);
-  if (mastercond == NULL)
+  if (mastercond == nullptr)
   {
     condition_exists = false;
     std::cout << "WARNING: Condition <" << condname << "> does not exist on discretisation <"
@@ -473,7 +473,7 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
   std::map<int, int>::iterator mapcurr;
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator slaveelecurr;
   std::map<int, Teuchos::RCP<DRT::Element>>::iterator masterelecurr;
-  DRT::Element* masterele = NULL;
+  DRT::Element* masterele = nullptr;
 
   DRT::Problem* problem = DRT::Problem::Instance();
   const Epetra_Comm& comm = problem->GetDis(masterdis->Name())->Comm();
@@ -525,10 +525,10 @@ void FPSI::Utils::RedistributeInterface(Teuchos::RCP<DRT::Discretization> master
 
         if (masterele->Owner() != comm.MyPID())
         {
-          masterele = NULL;
+          masterele = nullptr;
           mastereleowner = -1;
         }
-      }  // only the owner of the masterele has a pointer != NULL and mastereleowner != -1
+      }  // only the owner of the masterele has a pointer != nullptr and mastereleowner != -1
 
       comm.GatherAll(&mastereleowner, mastereleowners.data(), 1);
 

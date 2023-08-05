@@ -226,7 +226,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::IntegrateShapeFunction(DRT::E
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
     // get new node positions for isale
     xyze_ += edispnp;
@@ -272,7 +272,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDivOp(DRT::ELEMENTS::Flui
   if (ele->IsAle())  // Do ALE specific updates if necessary
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
     // get new node positions of ALE mesh
     xyze_ += edispnp;
@@ -312,7 +312,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   //----------------------------------------------------------------------------
 
   CORE::LINALG::Matrix<nsd_, nen_> evel(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, NULL, "vel");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, nullptr, "vel");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -326,7 +326,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::VelGradientProjection(DRT::EL
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "disp");
 
     // get new node positions for isale
     xyze_ += edispnp;
@@ -384,7 +384,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   //----------------------------------------------------------------------------
 
   CORE::LINALG::Matrix<nen_, 1> epres(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &epres, "pres");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, nullptr, &epres, "pres");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -398,7 +398,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::PresGradientProjection(DRT::E
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "disp");
 
     // get new node positions for isale
     xyze_ += edispnp;
@@ -463,7 +463,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
   // np_genalpha: velocity at time n+alpha_F, pressure at time n+1, velocity for continuity equ. at
   // time n+1 ost:         velocity/pressure at time n+1
   CORE::LINALG::Matrix<nsd_, nen_> evelaf(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelaf, NULL, "velaf");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelaf, nullptr, "velaf");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -490,7 +490,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeDivU(DRT::ELEMENTS::Fl
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
     // get new node positions for isale
     xyze_ += edispnp;
@@ -617,7 +617,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeError(DRT::ELEMENTS::F
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
     // get new node positions for isale
     xyze_ += edispnp;
@@ -1290,12 +1290,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ExtractValuesFromGlobalVecto
   DRT::UTILS::ExtractMyValues(*matrix_state, mymatrix, lm);
 
   // rotate the vector field in the case of rotationally symmetric boundary conditions
-  if (matrixtofill != NULL) rotsymmpbc.RotateMyValuesIfNecessary(mymatrix);
+  if (matrixtofill != nullptr) rotsymmpbc.RotateMyValuesIfNecessary(mymatrix);
 
   for (int inode = 0; inode < nen_; ++inode)  // number of nodes
   {
     // fill a vector field via a pointer
-    if (matrixtofill != NULL)
+    if (matrixtofill != nullptr)
     {
       for (int idim = 0; idim < nsd_; ++idim)  // number of dimensions
       {
@@ -1303,7 +1303,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ExtractValuesFromGlobalVecto
       }  // end for(idim)
     }
     // fill a scalar field via a pointer
-    if (vectortofill != NULL) (*vectortofill)(inode, 0) = mymatrix[nsd_ + (inode * numdofpernode_)];
+    if (vectortofill != nullptr)
+      (*vectortofill)(inode, 0) = mymatrix[nsd_ + (inode * numdofpernode_)];
   }
 }
 
@@ -1369,10 +1370,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
     ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, &eprenp, "velnp");
 
   CORE::LINALG::Matrix<nen_, 1> escaaf(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &escaaf, "scaaf");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, nullptr, &escaaf, "scaaf");
 
   CORE::LINALG::Matrix<nsd_, nen_> emhist(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &emhist, NULL, "hist");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &emhist, nullptr, "hist");
 
   CORE::LINALG::Matrix<nsd_, nen_> eaccam(true);
   CORE::LINALG::Matrix<nen_, 1> escadtam(true);
@@ -1400,8 +1401,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
 
   if (ele->IsAle())
   {
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridv, NULL, "gridv");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridv, nullptr, "gridv");
   }
 
   // get additional state vector for AVM3 case and multifractal subgrid scales:
@@ -1412,10 +1413,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcDissipation(Fluid* ele,
   if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv or
       fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &fsevelaf, NULL, "fsvelaf");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &fsevelaf, nullptr, "fsvelaf");
     if (fldpara_->PhysicalType() == INPAR::FLUID::loma and
         fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &fsescaaf, "fsscaaf");
+      ExtractValuesFromGlobalVector(
+          discretization, lm, *rotsymmpbc_, nullptr, &fsescaaf, "fsscaaf");
   }
 
   // get node coordinates and number of elements per node
@@ -2749,7 +2751,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassMatrix(DRT::ELEMENTS:
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
     // get new node positions of ALE mesh
     xyze_ += edispnp;
@@ -2946,7 +2948,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityGradientAn
   {
     // update fluid displacements
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
     DRT::Node** nodes = ele->Nodes();
     for (int inode = 0; inode < nen_; ++inode)
@@ -3128,7 +3130,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
   if (isALE)
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
     for (int node = 0; node < nen_; ++node)
       for (int dof = 0; dof < nsd_; ++dof) targeteledisp[node * nsd_ + dof] = edispnp(dof, node);
@@ -3183,7 +3185,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
     if (isALE)
     {
       CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
       radius = sqrt(
           pow((ele->Nodes()[1]->X()[0] + edispnp(0, 1)) - (ele->Nodes()[7]->X()[0] + edispnp(0, 7)),
@@ -3465,7 +3467,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
     if (isALE)
     {
       CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
       for (int node = 0; node < nen_; ++node)
         for (int dof = 0; dof < nsd_; ++dof) targeteledisp[node * nsd_ + dof] = edispnp(dof, node);
@@ -3633,7 +3635,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "disp");
 
     // get new node positions for isale
     xyze_ += edispnp;
@@ -3648,7 +3650,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToPoint(
 
   static CORE::LINALG::Matrix<nsd_, nen_> evel;
   // fill the local element vector with the global values
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, NULL, "vel");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, nullptr, "vel");
   velint_.Multiply(evel, funct_);
 
   for (int isd = 0; isd < nsd_; isd++)
@@ -3685,7 +3687,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "disp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "disp");
 
     // get new node positions for isale
     xyze_ += edispnp;
@@ -3703,14 +3705,14 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolatePressureToPoint(
   if (discretization.HasState("vel"))
   {
     // fill the local element vector with the global values
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &epre, "vel");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, nullptr, &epre, "vel");
     elevec1[0] = funct_.Dot(epre);
   }
 
   if (discretization.HasState("velnp"))
   {
     // fill the local element vector with the global values
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &epre, "velnp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, nullptr, &epre, "velnp");
 
     if (elevec1.length() != 2) dserror("velnp is set, there must be a vel as well");
 
@@ -4219,7 +4221,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
-    if (nurbsdis == NULL)
+    if (nurbsdis == nullptr)
     {
       dserror("we need a nurbs discretisation for nurbs elements\n");
     }
@@ -4447,7 +4449,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcTimeStep(DRT::ELEMENTS::F
   // np_genalpha: additional vector for velocity at time n+1
   CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
 
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, NULL, "velnp");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, nullptr, "velnp");
 
   convvelint_.Multiply(evelnp, funct_);
 
@@ -4527,7 +4529,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcMassFlowPeriodicHill(
   if (ele->IsAle()) dserror("no ale for periodic hill");
 
   CORE::LINALG::Matrix<nsd_, nen_> evelnp(true);
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, NULL, "velnp");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evelnp, nullptr, "velnp");
 
   // definition of matrices
   CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_> estif_u(true);
@@ -4608,7 +4610,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
   if (ele->IsAle())
   {
     CORE::LINALG::Matrix<nsd_, nen_> edisp(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edisp, NULL, "disp");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edisp, nullptr, "disp");
 
     // get new node positions of ALE mesh
     xyze_ += edisp;
@@ -4621,7 +4623,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
   {
     // extract element velocities
     CORE::LINALG::Matrix<nsd_, nen_> evel(true);
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, NULL, "vel");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &evel, nullptr, "vel");
 
     // get gradient of velocity at element center
     vderxy_.MultiplyNT(evel, derxy_);

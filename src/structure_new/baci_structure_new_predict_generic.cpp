@@ -100,7 +100,7 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
   grp.setX(*x_vec);
 
   NOX::NLN::Group* nlngrp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  dsassert(nlngrp_ptr != NULL, "Group cast failed!");
+  dsassert(nlngrp_ptr != nullptr, "Group cast failed!");
   // evaluate the right hand side and the jacobian
   implint_ptr_->SetIsPredictorState(true);
   nlngrp_ptr->computeFandJacobian();

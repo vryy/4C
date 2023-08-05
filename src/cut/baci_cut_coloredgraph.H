@@ -147,7 +147,7 @@ namespace CORE::GEO
           }
           else
             dserror("Invalid element with id %d", Id);
-          return NULL;
+          return nullptr;
         }
         // Split split trace into the closed loops
         void SplitSplittrace(const std::vector<int>& split_trace, Graph& datagraph,

@@ -288,9 +288,9 @@ void POROELASTSCATRA::PoroScatraBase::SetupCoupling(Teuchos::RCP<DRT::Discretiza
     std::pair<int, int> dofsets21_fluidscatra = std::pair<int, int>(2, 0);
 
     // setup projection matrices (use default material strategy)
-    volcoupl_structurescatra_->Init(structdis, scatradis, NULL, NULL, &dofsets12_structurescatra,
-        &dofsets21_structurescatra, Teuchos::null);
-    volcoupl_fluidscatra_->Init(fluiddis, scatradis, NULL, NULL, &dofsets12_fluidscatra,
+    volcoupl_structurescatra_->Init(structdis, scatradis, nullptr, nullptr,
+        &dofsets12_structurescatra, &dofsets21_structurescatra, Teuchos::null);
+    volcoupl_fluidscatra_->Init(fluiddis, scatradis, nullptr, nullptr, &dofsets12_fluidscatra,
         &dofsets21_fluidscatra, Teuchos::null);
 
     volcoupl_structurescatra_->Setup();

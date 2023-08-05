@@ -39,7 +39,7 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
       dserror("Only line2 elements available so far");
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -71,5 +71,5 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::DefineProblemTy
     }
   }
 
-  return NULL;
+  return nullptr;
 }

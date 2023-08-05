@@ -125,7 +125,7 @@ namespace BEAMINTERACTION
         return element2_;
       else
         dserror("Index has to be 0 or 1, got %d", index);
-      return NULL;
+      return nullptr;
     };
 
     /*!

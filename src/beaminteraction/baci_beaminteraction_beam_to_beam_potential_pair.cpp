@@ -33,8 +33,8 @@
 template <unsigned int numnodes, unsigned int numnodalvalues, typename T>
 BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::BeamToBeamPotentialPair()
     : BeamPotentialPair(),
-      beam_element1_(NULL),
-      beam_element2_(NULL),
+      beam_element1_(nullptr),
+      beam_element2_(nullptr),
       time_(0.0),
       k_(0.0),
       m_(0.0),
@@ -136,10 +136,10 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
   CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, T> force_pot2(true);
 
 
-  if (stiffmat11 != NULL) stiffmat11->shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->shape(dim1, dim2);
-  if (stiffmat21 != NULL) stiffmat21->shape(dim2, dim1);
-  if (stiffmat22 != NULL) stiffmat22->shape(dim2, dim2);
+  if (stiffmat11 != nullptr) stiffmat11->shape(dim1, dim1);
+  if (stiffmat12 != nullptr) stiffmat12->shape(dim1, dim2);
+  if (stiffmat21 != nullptr) stiffmat21->shape(dim2, dim1);
+  if (stiffmat22 != nullptr) stiffmat22->shape(dim2, dim2);
 
 
   // compute the values for element residual vectors ('force') and linearizations ('stiff')
@@ -173,13 +173,13 @@ bool BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::Eval
 
 
   // resize variables and fill with pre-computed values
-  if (forcevec1 != NULL)
+  if (forcevec1 != nullptr)
   {
     forcevec1->size(dim1);
     for (unsigned int i = 0; i < dim1; ++i)
       (*forcevec1)(i) = CORE::FADUTILS::CastToDouble(force_pot1(i));
   }
-  if (forcevec2 != NULL)
+  if (forcevec2 != nullptr)
   {
     forcevec2->size(dim2);
     for (unsigned int i = 0; i < dim2; ++i)
@@ -406,8 +406,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
           }
 
           // evaluate analytic contributions to linearization
-          if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and
-              stiffmat22 != NULL)
+          if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+              stiffmat22 != nullptr)
           {
             EvaluateStiffpotAnalyticContributions_LargeSepApprox(dist, norm_dist, norm_dist_exp1,
                 q1q2_JacFac_GaussWeights, N1_i[igp1], N2_i[igp2], *stiffmat11, *stiffmat12,
@@ -438,7 +438,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues,
   force_pot1.Scale(prefactor);
   force_pot2.Scale(prefactor);
 
-  if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+  if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+      stiffmat22 != nullptr)
   {
     ScaleStiffpotAnalyticContributionsIfRequired(
         prefactor, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
@@ -886,8 +887,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
           }
 
           // evaluate analytic contributions to linearization
-          if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and
-              stiffmat22 != NULL)
+          if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+              stiffmat22 != nullptr)
           {
             EvaluateStiffpotAnalyticContributions_DoubleLengthSpecific_SmallSepApprox(dist,
                 norm_dist, gap, gap_regularized, gap_exp1, q1q2_JacFac_GaussWeights, N1_i[igp1],
@@ -916,7 +917,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
   force_pot1.Scale(prefactor);
   force_pot2.Scale(prefactor);
 
-  if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+  if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+      stiffmat22 != nullptr)
   {
     ScaleStiffpotAnalyticContributionsIfRequired(
         prefactor, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);
@@ -1806,7 +1808,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
         }
 
 
-        if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+        if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+            stiffmat22 != nullptr)
         {
           // evaluate contributions to linearization based on analytical expression
           EvaluateStiffpotAnalyticContributions_SingleLengthSpecific_SmallSepApprox_Simple(
@@ -1829,7 +1832,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
       force_pot1.Update(1.0, force_pot_slave_GP, 1.0);
       force_pot2.Update(1.0, force_pot_master_GP, 1.0);
 
-      if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+      if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+          stiffmat22 != nullptr)
       {
         AddStiffmatContributionsXiMasterAutomaticDifferentiationIfRequired(force_pot_slave_GP,
             force_pot_master_GP, lin_xi_master_slaveDofs, lin_xi_master_masterDofs, *stiffmat11,
@@ -1851,7 +1855,8 @@ void BEAMINTERACTION::BeamToBeamPotentialPair<numnodes, numnodalvalues, T>::
     }  // end loop over Gauss points per segment
   }    // end loop over integration segments
 
-  if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+  if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+      stiffmat22 != nullptr)
   {
     ScaleStiffpotAnalyticContributionsIfRequired(
         prefactor, *stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22);

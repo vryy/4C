@@ -402,7 +402,7 @@ void Beam3ContactOctTree::OctreeOutput(
         filename << "ContactPairs" << std::setw(6) << std::setfill('0') << step << ".dat";
       else
         filename << "ContactPairsInit.dat" << std::endl;
-      FILE* fp = NULL;
+      FILE* fp = nullptr;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
       for (int i = 0; i < (int)cpairelements.size(); i++)
@@ -419,7 +419,7 @@ void Beam3ContactOctTree::OctreeOutput(
         filename << "OctreeLimits" << std::setw(6) << std::setfill('0') << step << ".dat";
       else
         filename << "OctreeLimitsInit.dat" << std::endl;
-      FILE* fp = NULL;
+      FILE* fp = nullptr;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
       for (int u = 0; u < (int)octreelimits_.size(); u++)
@@ -456,7 +456,7 @@ void Beam3ContactOctTree::OctreeOutput(
         filename << "BoundingBoxCoords" << std::setw(6) << std::setfill('0') << step << ".dat";
       else
         filename << "BoundingBoxCoordsInit.dat" << std::endl;
-      FILE* fp = NULL;
+      FILE* fp = nullptr;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
       for (int u = 0; u < allbboxes_->MyLength(); u++)
@@ -1102,7 +1102,7 @@ bool Beam3ContactOctTree::locateAll()
     if (!discret_.Comm().MyPID())
     {
       filename << "BBinOct_" << searchdis_.Comm().NumProc() << "_procs.dat";
-      FILE* fp = NULL;
+      FILE* fp = nullptr;
       fp = fopen(filename.str().c_str(), "w");
       std::stringstream myfile;
       for (int u = 0; u < bboxesinoctants_->MyLength(); u++)

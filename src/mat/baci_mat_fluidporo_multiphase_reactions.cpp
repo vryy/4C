@@ -77,7 +77,7 @@ DRT::ParObject* MAT::FluidPoroMultiPhaseReactionsType::Create(const std::vector<
  | construct empty material object                           vuong 08/16 |
  *----------------------------------------------------------------------*/
 MAT::FluidPoroMultiPhaseReactions::FluidPoroMultiPhaseReactions()
-    : FluidPoroMultiPhase(), paramsreac_(NULL)
+    : FluidPoroMultiPhase(), paramsreac_(nullptr)
 {
 }
 
@@ -120,7 +120,7 @@ void MAT::FluidPoroMultiPhaseReactions::SetupMatMap()
  *----------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhaseReactions::Clear()
 {
-  paramsreac_ = NULL;
+  paramsreac_ = nullptr;
   return;
 }
 
@@ -138,7 +138,7 @@ void MAT::FluidPoroMultiPhaseReactions::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (paramsreac_ != NULL) matid = paramsreac_->Id();  // in case we are in post-process mode
+  if (paramsreac_ != nullptr) matid = paramsreac_->Id();  // in case we are in post-process mode
 
   AddtoPack(data, matid);
 
@@ -163,7 +163,7 @@ void MAT::FluidPoroMultiPhaseReactions::Unpack(const std::vector<char>& data)
   // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position, data, matid);
-  paramsreac_ = NULL;
+  paramsreac_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

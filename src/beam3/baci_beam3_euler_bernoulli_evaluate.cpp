@@ -146,11 +146,11 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, &elemat1, NULL, &elevec1);
+        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, &elemat1, nullptr, &elevec1);
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, NULL, NULL, &elevec1);
+        CalcInternalAndInertiaForcesAndStiff(params, myvel, mydisp, nullptr, nullptr, &elevec1);
       }
     }
     break;
@@ -171,7 +171,7 @@ int DRT::ELEMENTS::Beam3eb::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
-        CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, NULL, &elevec1);
+        CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_brownianstiff)
         CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, &elemat1, &elevec1);
       else
@@ -393,7 +393,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
     // all parts have been evaluated at the boundaries which helps simplifying the matrices
     // In contrast to the Neumann part of the residual force here is NOT a factor of (-1) needed, as
     // elemat1 is directly added to the stiffness matrix without sign change.
-    if (elemat1 != NULL)
+    if (elemat1 != nullptr)
     {
       for (int i = 3; i < 6; i++)
       {
@@ -924,7 +924,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
 
       // assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
       {
 // assemble parts from tension
 #ifndef ANS_BEAM3EB
@@ -960,7 +960,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
             (*stiffmatrix)(i, j) += R_bending(i, j);
           }
         }  // for(int i = 0; i < dofpn*nnode; i++)
-      }    // if (stiffmatrix != NULL)
+      }    // if (stiffmatrix != nullptr)
 
       for (int i = 0; i < 3; i++)
       {
@@ -970,7 +970,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       }
 
       // assemble internal force vector f_internal / Res in thesis Meier
-      if (force != NULL)
+      if (force != nullptr)
       {
         for (int i = 0; i < 3; i++)
         {
@@ -999,16 +999,16 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
           (*force)(i) += Res_bending(i);
         }
-      }  // if (force != NULL)
+      }  // if (force != nullptr)
 
       // assemble massmatrix if requested
       // calculating mass matrix (local version = global version)
       // note: the mass matrix currently implemented is just a dummy and should not yet be used
-      if (massmatrix != NULL)
+      if (massmatrix != nullptr)
       {
         for (int i = 0; i < 6 * nnode; i++) (*massmatrix)(i, i) = 1;
 
-      }  // if (massmatrix != NULL)
+      }  // if (massmatrix != nullptr)
     }    // for(int numgp=0; numgp < gausspoints.nquad; numgp++)
   }
 #else
@@ -1291,17 +1291,17 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       R_inextensibility(i, 14) = Res_inextensibility(i).dx(14);
     }
 #ifdef SWITCHINEXTENSIBLEON
-    if (force != NULL)
+    if (force != nullptr)
     {
       // shifting values from fixed size vector to epetra vector *force
       for (int i = 0; i < 15; i++)
       {
         (*force)(i) += Res_inextensibility(i).val();
       }
-    }  // if (force != NULL)
+    }  // if (force != nullptr)
 
     // assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       for (int i = 0; i < 15; i++)
       {
@@ -1310,7 +1310,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           (*stiffmatrix)(i, j) += R_inextensibility(i, j).val();
         }
       }  // for(int i = 0; i < dofpn*nnode; i++)
-    }    // if (stiffmatrix != NULL)
+    }    // if (stiffmatrix != nullptr)
 #else
     (*stiffmatrix)(6, 6) += 1.0;
     (*stiffmatrix)(13, 13) += 1.0;
@@ -1548,7 +1548,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 #endif
 
       // assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
       {
 // assemble parts from tension
 #ifndef ANS_BEAM3EB
@@ -1638,7 +1638,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           }
         }  // for(int i = 0; i < dofpn*nnode; i++)
 #endif
-      }    // if (stiffmatrix != NULL)
+      }    // if (stiffmatrix != nullptr)
 
       for (int i = 0; i < 3; i++)
       {
@@ -1648,7 +1648,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         n1(i) = r_x(i) * tension;
       }
       // assemble internal force vector f_internal / Res in thesis Meier
-      if (force != NULL)
+      if (force != nullptr)
       {
         for (int i = 0; i < 3; i++)
         {
@@ -1707,7 +1707,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           (*force)(i1) += Res_bending(i);
         }
 #endif
-      }  // if (force != NULL)
+      }  // if (force != nullptr)
 
 #ifdef ANS_BEAM3EB
 
@@ -1790,7 +1790,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
       NTilde.MultiplyTN(N_mass, N_mass);
 
-      if (massmatrix != NULL)
+      if (massmatrix != nullptr)
       {
 #ifndef INEXTENSIBLE
         for (int i = 0; i < 6 * nnode; i++)
@@ -1817,7 +1817,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
           }
         }
 #endif
-      }  // if (massmatrix != NULL)
+      }  // if (massmatrix != nullptr)
 
       Ekin_ += 0.5 * wgt * jacobi_ * mass_inertia_translational * std::pow(r_t.Norm2(), 2.0);
 
@@ -2049,7 +2049,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
     f_visc.Multiply(damp_mat, vel_rel);
 
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       // loop over all shape functions
       for (unsigned int i = 0; i < nnode * vpernode; i++)
@@ -2058,7 +2058,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateTranslationalDamping(
           (*force)(i * ndim + idim) += N_i(i) * jacobi_ * gausspoints.qwgt[gp] * f_visc(idim);
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // compute matrix product of damping matrix and gradient of background velocity
       CORE::LINALG::Matrix<ndim, ndim> dampmatvelbackgroundgrad(true);
@@ -2154,7 +2154,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
                          randnumvec(jdim);
 
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       // loop over all shape functions
       for (unsigned int i = 0; i < nnode * vpernode; i++)
@@ -2164,7 +2164,7 @@ void DRT::ELEMENTS::Beam3eb::EvaluateStochasticForces(
               N_i(i) * f_stoch(idim) * std::sqrt(jacobi_ * gausspoints.qwgt[gp]);
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // loop over all shape functions in row dimension
       for (unsigned int i = 0; i < nnode * vpernode; i++)

@@ -146,7 +146,7 @@ void CORE::GEO::MESHFREE::BoundingBox::Setup()
   // initialize bounding box discretization
   SetupBoundingBoxDiscretization();
 
-  if (boxdiscret_->GetCondition("Dirichlet") != NULL) havedirichletbc_ = true;
+  if (boxdiscret_->GetCondition("Dirichlet") != nullptr) havedirichletbc_ = true;
 
   // displacement vector in row and col format
   disn_row_ = CORE::LINALG::CreateVector(*boxdiscret_->DofRowMap(), true);

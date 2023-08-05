@@ -810,7 +810,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortNonlinIter(
 {
   // cast scalar transport time integrator
   const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
-  if (elchtimint == NULL) dserror("Cast of scalar transport time integrator failed!");
+  if (elchtimint == nullptr) dserror("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();
@@ -1003,7 +1003,7 @@ bool SCATRA::ConvCheckStrategyStdMacroScaleElch::AbortOuterIter(
 {
   // cast scalar transport time integrator
   const ScaTraTimIntElch* const elchtimint = dynamic_cast<const ScaTraTimIntElch*>(&scatratimint);
-  if (elchtimint == NULL) dserror("Cast of scalar transport time integrator failed!");
+  if (elchtimint == nullptr) dserror("Cast of scalar transport time integrator failed!");
 
   // extract processor ID
   const int mypid = scatratimint.Discretization()->Comm().MyPID();

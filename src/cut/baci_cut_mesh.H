@@ -143,11 +143,11 @@ namespace CORE::GEO
 
       /// creates a new line
       void NewLine(Point* p1, Point* p2, Side* cut_side1, Side* cut_side2, Element* cut_element,
-          std::vector<Line*>* newlines = NULL);
+          std::vector<Line*>* newlines = nullptr);
 
       /// ?
       bool NewLinesBetween(const std::vector<Point*>& line, Side* cut_side1, Side* cut_side2,
-          Element* cut_element, std::vector<Line*>* newlines = NULL);
+          Element* cut_element, std::vector<Line*>* newlines = nullptr);
 
       /// creates a new facet, consists of points, additional bool if it is a facet on a cutsurface
       Facet* NewFacet(const std::vector<Point*>& points, Side* side, bool cutsurface);

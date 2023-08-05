@@ -241,7 +241,7 @@ namespace DRT
     {
       std::vector<int> dofs(0);
       // get the first dofs of the node (not enriched)
-      Dof(dofs, node, nds, 0, NULL);
+      Dof(dofs, node, nds, 0, nullptr);
       return static_cast<int>(dofs.size());
     }
 

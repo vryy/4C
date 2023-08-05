@@ -237,7 +237,7 @@ void FSI::LungMonolithicStructureSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // split in two blocks according to inner and fsi structure dofs
   Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, StructureField()->Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, StructureField()->Discretization()->Comm()));
   CORE::LINALG::MapExtractor extractor;
   extractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
 
@@ -384,14 +384,14 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSpa
   s.Add(AddStructConstrMatrix_->Matrix(0, 0), false, 1.0, 1.0);
 
   siitransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(0), 1.0,
-      NULL, NULL, mat.Matrix(0, 0), true, false);
+      nullptr, nullptr, mat.Matrix(0, 0), true, false);
 
   CORE::ADAPTER::CouplingMasterConverter converter(coupsf);
   sigtransform_(s, *structfield->FSIInterface()->Map(0), *structfield->FSIInterface()->Map(1),
-      1. / timescale, NULL, &converter, mat.Matrix(0, 1), true, false);
+      1. / timescale, nullptr, &converter, mat.Matrix(0, 1), true, false);
 
   sgitransform_(s, *structfield->FSIInterface()->Map(1), *structfield->FSIInterface()->Map(0),
-      1. / scale, &converter, NULL, mat.Matrix(1, 0), true, true);
+      1. / scale, &converter, nullptr, mat.Matrix(1, 0), true, true);
 
   sggtransform_(s, *structfield->FSIInterface()->Map(1), *structfield->FSIInterface()->Map(1),
       1. / (scale * timescale), &converter, &converter, mat.Matrix(1, 1), true, true);
@@ -409,11 +409,11 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSpa
   CORE::LINALG::MapExtractor extractor;
 
   sciitransform_(AddStructConstrMatrix_->Matrix(0, 1), *structfield->FSIInterface()->Map(0),
-      *ConstrMap_, 1., NULL, NULL, mat.Matrix(0, 3), true, false);
+      *ConstrMap_, 1., nullptr, nullptr, mat.Matrix(0, 3), true, false);
 
   // add interface part to fluid block
   scgitransform_(AddStructConstrMatrix_->Matrix(0, 1), *structfield->FSIInterface()->Map(1),
-      *ConstrMap_, 1. / scale, &converter, NULL, mat.Matrix(1, 3), true, true);
+      *ConstrMap_, 1. / scale, &converter, nullptr, mat.Matrix(1, 3), true, true);
 
   /*----------------------------------------------------------------------*/
   // ale part
@@ -445,9 +445,9 @@ void FSI::LungMonolithicStructureSplit::SetupSystemMatrix(CORE::LINALG::BlockSpa
   // split in two blocks according to inner and fsi structure dofs
 
   csiitransform_(AddStructConstrMatrix_->Matrix(1, 0), *ConstrMap_,
-      *structfield->FSIInterface()->Map(0), 1., NULL, NULL, mat.Matrix(3, 0), true, false);
+      *structfield->FSIInterface()->Map(0), 1., nullptr, nullptr, mat.Matrix(3, 0), true, false);
   csigtransform_(AddStructConstrMatrix_->Matrix(1, 0), *ConstrMap_,
-      *structfield->FSIInterface()->Map(1), 1. / timescale, NULL, &converter, mat.Matrix(3, 1),
+      *structfield->FSIInterface()->Map(1), 1. / timescale, nullptr, &converter, mat.Matrix(3, 1),
       true, true);
 
   /*----------------------------------------------------------------------*/

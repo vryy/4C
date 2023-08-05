@@ -433,7 +433,8 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::ComputePorosity(
     params.set<double>("delta time", my::scatraparatimint_->Dt());
 
     // use structure material to evaluate porosity
-    structmat->ComputePorosity(params, pres, J, -1, porosity, NULL, NULL, NULL, NULL, NULL, false);
+    structmat->ComputePorosity(
+        params, pres, J, -1, porosity, nullptr, nullptr, nullptr, nullptr, nullptr, false);
   }
 
   // save porosity in diffusion manager for later access

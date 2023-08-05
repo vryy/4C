@@ -221,7 +221,7 @@ int DRT::ELEMENTS::Beam3rType::Initialize(DRT::Discretization& dis)
 
     for (int node = 0; node < nnodecl; ++node)
     {
-      if (currele->Nodes()[node] == NULL)
+      if (currele->Nodes()[node] == nullptr)
         dserror("beam3r: Cannot get nodes in order to compute reference configuration");
 
       for (unsigned int dim = 0; dim < 3; ++dim)

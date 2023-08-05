@@ -779,7 +779,7 @@ Teuchos::RCP<Epetra_Vector> FSI::Partitioned::InterfaceForce()
 /*----------------------------------------------------------------------*/
 bool FSI::Partitioned::computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
 {
-  const char* flags[] = {"Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", NULL};
+  const char* flags[] = {"Residual", "Jac", "Prec", "FD_Res", "MF_Res", "MF_Jac", "User", nullptr};
 
   Teuchos::Time timer("FSI_computeF", true);
   const double startTime = timer.wallTime();

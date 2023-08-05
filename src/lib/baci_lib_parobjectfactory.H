@@ -64,7 +64,7 @@ namespace DRT
     int UniqueParObjectId();
 
     /// Create ParObject from packed data
-    virtual DRT::ParObject* Create(const std::vector<char>& data) { return NULL; }
+    virtual DRT::ParObject* Create(const std::vector<char>& data) { return nullptr; }
 
     /// internal name of this ParObjectType.
     virtual std::string Name() const = 0;

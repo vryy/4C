@@ -449,7 +449,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(std::ofstream& file,
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(field_->discretization())));
 
-    if (nurbsdis == NULL)
+    if (nurbsdis == nullptr)
     {
       dserror("This probably isn't a NurbsDiscretization\n");
     }

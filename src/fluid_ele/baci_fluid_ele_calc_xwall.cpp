@@ -1309,7 +1309,8 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::GetGridDispALE(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
 {
-  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispnp, NULL, "dispnp");
+  my::ExtractValuesFromGlobalVector(
+      discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
   // add displacement when fluid nodes move in the ALE case
   // xyze_ does only know 8 nodes

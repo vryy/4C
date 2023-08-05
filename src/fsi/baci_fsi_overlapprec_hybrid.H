@@ -64,7 +64,7 @@ namespace FSI
         INPAR::FSI::LinearBlockSolver strategy,  ///< type of linear preconditioner
         std::list<int> interfaceprocs,           ///< IDs of processors that own interface nodes
         INPAR::FSI::Verbosity verbosity,         ///< verbosity of FSI algorithm
-        FILE* err = NULL                         ///< error file handle
+        FILE* err = nullptr                      ///< error file handle
     );
 
     //! @name Setup

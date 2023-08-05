@@ -155,7 +155,7 @@ int DRT::ELEMENTS::Beam3kType::Initialize(DRT::Discretization& dis)
       currele->UnShiftNodePosition(disp_shift, *periodic_boundingbox);
 
     // getting element's nodal coordinates and treating them as reference configuration
-    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+    if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
     {

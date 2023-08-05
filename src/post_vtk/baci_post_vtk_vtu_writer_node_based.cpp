@@ -110,7 +110,7 @@ void PostVtuWriterNode::WriteGeo()
     {
       WriteGeoNurbsEle(ele, celltypes, outNodeId, celloffset, coordinates);
     }
-    else if (beamele != NULL)
+    else if (beamele != nullptr)
     {
       WriteGeoBeamEle(beamele, celltypes, outNodeId, celloffset, coordinates);
     }

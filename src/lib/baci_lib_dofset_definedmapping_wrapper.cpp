@@ -214,7 +214,7 @@ const DRT::Node* DRT::DofSetDefinedMappingWrapper::GetSourceNode(int targetLid) 
   int sourcegid = (*targetlidtosourcegidmapping_)[targetLid];
 
   // the target is not mapped -> return null pointer
-  if (sourcegid == -1) return NULL;
+  if (sourcegid == -1) return nullptr;
   // get the node from the source discretization
   return sourcedis_->gNode(sourcegid);
 }

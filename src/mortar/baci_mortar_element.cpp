@@ -28,7 +28,7 @@ MORTAR::MortarElementType& MORTAR::MortarElementType::Instance() { return instan
 DRT::ParObject* MORTAR::MortarElementType::Create(const std::vector<char>& data)
 {
   MORTAR::MortarElement* ele =
-      new MORTAR::MortarElement(0, 0, DRT::Element::dis_none, 0, NULL, false);
+      new MORTAR::MortarElement(0, 0, DRT::Element::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }
@@ -652,8 +652,8 @@ void MORTAR::MortarElement::ComputeNormalAtXi(
 double MORTAR::MortarElement::ComputeUnitNormalAtXi(const double* xi, double* n)
 {
   // check input
-  if (!xi) dserror("ComputeUnitNormalAtXi called with xi=NULL");
-  if (!n) dserror("ComputeUnitNormalAtXi called with n=NULL");
+  if (!xi) dserror("ComputeUnitNormalAtXi called with xi=nullptr");
+  if (!n) dserror("ComputeUnitNormalAtXi called with n=nullptr");
 
   // empty local basis vectors
   double gxi[3];
@@ -682,8 +682,8 @@ double MORTAR::MortarElement::ComputeUnitNormalAtXi(const double* xi, double* n)
 double MORTAR::MortarElement::ComputeAveragedUnitNormalAtXi(const double* xi, double* n)
 {
   // check input
-  if (!xi) dserror("ComputeUnitNormalAtXi called with xi=NULL");
-  if (!n) dserror("ComputeUnitNormalAtXi called with n=NULL");
+  if (!xi) dserror("ComputeUnitNormalAtXi called with xi=nullptr");
+  if (!n) dserror("ComputeUnitNormalAtXi called with n=nullptr");
 
   int nnodes = NumPoint();
   CORE::LINALG::SerialDenseVector val(nnodes);
@@ -1021,7 +1021,7 @@ void MORTAR::MortarElement::DerivJacobian(
   // get element nodes
   int nnodes = NumNode();
 
-  DRT::Node** mynodes = NULL;  // Nodes();
+  DRT::Node** mynodes = nullptr;  // Nodes();
   mynodes = Nodes();
 
   if (!mynodes) dserror("DerivJacobian: Null pointer!");
@@ -1288,8 +1288,8 @@ double MORTAR::MortarElement::ComputeAreaDeriv(CORE::GEN::pairedvector<int, doub
 bool MORTAR::MortarElement::LocalToGlobal(const double* xi, double* globcoord, int inttype)
 {
   // check input
-  if (!xi) dserror("LocalToGlobal called with xi=NULL");
-  if (!globcoord) dserror("LocalToGlobal called with globcoord=NULL");
+  if (!xi) dserror("LocalToGlobal called with xi=nullptr");
+  if (!globcoord) dserror("LocalToGlobal called with globcoord=nullptr");
 
   // collect fundamental data
   const int nnodes = NumNode();
@@ -1591,7 +1591,7 @@ void MORTAR::MortarElement::InitializeDataContainer()
   // only initialize if not yet done
   if (modata_ == Teuchos::null) modata_ = Teuchos::rcp(new MORTAR::MortarEleDataContainer());
 
-  if (ParentElement() != NULL)
+  if (ParentElement() != nullptr)
   {
     int numdof =
         ParentElement()->NumNode() * ParentElement()->NumDofPerNode(*ParentElement()->Nodes()[0]);

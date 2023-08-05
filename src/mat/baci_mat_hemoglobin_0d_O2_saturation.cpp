@@ -50,7 +50,7 @@ DRT::ParObject* MAT::Hemoglobin_0d_O2_saturationType::Create(const std::vector<c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Hemoglobin_0d_O2_saturation::Hemoglobin_0d_O2_saturation() : params_(NULL) {}
+MAT::Hemoglobin_0d_O2_saturation::Hemoglobin_0d_O2_saturation() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -75,7 +75,7 @@ void MAT::Hemoglobin_0d_O2_saturation::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -93,7 +93,7 @@ void MAT::Hemoglobin_0d_O2_saturation::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

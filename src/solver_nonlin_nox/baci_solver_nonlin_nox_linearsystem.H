@@ -278,7 +278,7 @@ namespace NOX
       /// access the jacobian
       inline CORE::LINALG::SparseOperator& Jacobian() const
       {
-        if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is NULL!");
+        if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
 
         return *jacPtr_;
       }
@@ -286,7 +286,7 @@ namespace NOX
       /// access the jacobian (read-only)
       inline const Teuchos::RCP<CORE::LINALG::SparseOperator>& JacobianPtr() const
       {
-        if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is NULL!");
+        if (jacPtr_.is_null()) throwError("JacPtr", "JacPtr is nullptr!");
 
         return jacPtr_;
       }

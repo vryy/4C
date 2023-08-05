@@ -80,7 +80,7 @@ CONTACT::MtManager::MtManager(DRT::Discretization& discret, double alphaf) : MOR
   {
     // initialize vector for current group of conditions and temp condition
     std::vector<DRT::Condition*> currentgroup(0);
-    DRT::Condition* tempcond = NULL;
+    DRT::Condition* tempcond = nullptr;
 
     // try to build meshtying group around this condition
     currentgroup.push_back(contactconditions[i]);

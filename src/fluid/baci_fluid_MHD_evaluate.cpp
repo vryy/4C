@@ -579,9 +579,9 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(Teuchos::ParameterList& mhdbcpar
   Epetra_CrsMatrix* Epetra_Crs_bndmat =
       dynamic_cast<Epetra_CrsMatrix*>(bndmat_->EpetraOperator().get());
 
-  if (Epetra_Crs_bndmat == NULL)
+  if (Epetra_Crs_bndmat == nullptr)
   {
-    dserror("NULL Epetra_Crs_bndmat\n");
+    dserror("nullptr Epetra_Crs_bndmat\n");
   }
 
   CORE::LINALG::Add(*Epetra_Crs_bndmat, false, 1.0, *(sysmat_->EpetraMatrix()), 1.0);

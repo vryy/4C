@@ -132,7 +132,7 @@ void FSI::ConstrMonolithicStructureSplit::SetupSystem()
   StructureField()->UseBlockMatrix();
 
   Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, StructureField()->Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, StructureField()->Discretization()->Comm()));
   Teuchos::RCP<CORE::LINALG::MapExtractor> extractor;
   extractor->Setup(*conman_->GetConstraintMap(), emptymap, conman_->GetConstraintMap());
   conman_->UseBlockMatrix(extractor, StructureField()->Interface());

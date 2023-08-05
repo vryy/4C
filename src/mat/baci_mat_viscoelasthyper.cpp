@@ -116,7 +116,7 @@ void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
   summandProperties_.Pack(data);
   AddtoPack(data, isovisco_);
@@ -126,7 +126,7 @@ void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
 
   anisotropy_.PackAnisotropy(data);
 
-  if (params_ != NULL)  // summands are not accessible in postprocessing mode
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
@@ -186,7 +186,7 @@ void MAT::ViscoElastHyper::Pack(DRT::PackBuffer& data) const
 void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  params_ = NULL;
+  params_ = nullptr;
   potsum_.clear();
 
   summandProperties_.Clear();
@@ -227,7 +227,7 @@ void MAT::ViscoElastHyper::Unpack(const std::vector<char>& data)
 
   anisotropy_.UnpackAnisotropy(data, position);
 
-  if (params_ != NULL)  // summands are not accessible in postprocessing mode
+  if (params_ != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
@@ -993,7 +993,7 @@ void MAT::ViscoElastHyper::EvaluateViscoGeneralizedGenMax(CORE::LINALG::Matrix<6
   int numbranch = -1;
   double tau = -1.0;
   std::string solve = "";
-  const std::vector<int>* matids = NULL;
+  const std::vector<int>* matids = nullptr;
   std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>> branchpotsum(
       0);  // vector of summands in one branch
   std::vector<std::vector<Teuchos::RCP<MAT::ELASTIC::Summand>>> branchespotsum(

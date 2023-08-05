@@ -73,8 +73,8 @@ void FSI::BlockMonolithic::RedistributeMonolithicGraph(
   DRT::UTILS::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
-  std::map<int, DRT::Node*>* slavenodesPtr = NULL;
-  std::map<int, DRT::Node*>* mastergnodesPtr = NULL;
+  std::map<int, DRT::Node*>* slavenodesPtr = nullptr;
+  std::map<int, DRT::Node*>* mastergnodesPtr = nullptr;
 
   // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
   if (coupling == fsi_iter_mortar_monolithicfluidsplit or
@@ -325,8 +325,8 @@ void FSI::BlockMonolithic::RedistributeDomainDecomposition(const INPAR::FSI::Red
   DRT::UTILS::FindConditionObjects(
       *fluiddis, fluidnodes, fluidgnodes, fluidelements, "FSICoupling");
 
-  std::map<int, DRT::Node*>* slavenodesPtr = NULL;
-  std::map<int, DRT::Node*>* mastergnodesPtr = NULL;
+  std::map<int, DRT::Node*>* slavenodesPtr = nullptr;
+  std::map<int, DRT::Node*>* mastergnodesPtr = nullptr;
 
   // ToDo (mayr) Move this to routine in derived classes to replace the if-clause by inheritence
   if (coupling == fsi_iter_mortar_monolithicfluidsplit or

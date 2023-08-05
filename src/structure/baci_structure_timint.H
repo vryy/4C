@@ -556,11 +556,11 @@ namespace STR
 
     //! check whether the initial conditions are fulfilled */
     virtual void NonlinearMassSanityCheck(
-        Teuchos::RCP<const Epetra_Vector> fext,          ///< external forces
-        Teuchos::RCP<const Epetra_Vector> dis,           ///< displacements
-        Teuchos::RCP<const Epetra_Vector> vel,           ///< velocities
-        Teuchos::RCP<const Epetra_Vector> acc,           ///< accelerations
-        const Teuchos::ParameterList* sdynparams = NULL  ///< structural dynamics parameter list
+        Teuchos::RCP<const Epetra_Vector> fext,             ///< external forces
+        Teuchos::RCP<const Epetra_Vector> dis,              ///< displacements
+        Teuchos::RCP<const Epetra_Vector> vel,              ///< velocities
+        Teuchos::RCP<const Epetra_Vector> acc,              ///< accelerations
+        const Teuchos::ParameterList* sdynparams = nullptr  ///< structural dynamics parameter list
     ) const;
 
     //@}

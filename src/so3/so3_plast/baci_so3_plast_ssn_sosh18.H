@@ -134,7 +134,7 @@ namespace DRT
       //! evaluate an element
       //! evaluate element stiffness, mass, internal forces, etc.
       //!
-      //! if NULL on input, the controlling method does not expect the element
+      //! if nullptr on input, the controlling method does not expect the element
       //!  to fill these matrices or vectors.
       //!
       //!  \return 0 if successful, negative otherwise

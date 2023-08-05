@@ -37,14 +37,14 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------*/
     bool IsBeamElement(DRT::Element const& element)
     {
-      return (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element) != NULL) ? true : false;
+      return (dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element) != nullptr) ? true : false;
     }
 
     /*----------------------------------------------------------------------*
      *----------------------------------------------------------------------*/
     bool IsRigidSphereElement(DRT::Element const& element)
     {
-      return (dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(&element) != NULL) ? true : false;
+      return (dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(&element) != nullptr) ? true : false;
     }
 
     /*----------------------------------------------------------------------*
@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
         const DRT::ELEMENTS::Beam3Base* beamele =
             dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(node.Elements()[i]);
 
-        if (beamele != NULL and beamele->IsCenterlineNode(node)) beamclnode = true;
+        if (beamele != nullptr and beamele->IsCenterlineNode(node)) beamclnode = true;
       }
       return beamclnode;
     }
@@ -206,7 +206,7 @@ namespace BEAMINTERACTION
       DRT::ELEMENTS::Beam3Base const* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele);
 
       // so far, only beam elements can be cut by a periodic boundary
-      if (beamele == NULL) return;
+      if (beamele == nullptr) return;
 
       beamele->UnShiftNodePosition(eledisp, pbb);
     }
@@ -384,7 +384,7 @@ namespace BEAMINTERACTION
 
         // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to
         // next node
-        if (cond == NULL) continue;
+        if (cond == nullptr) continue;
 
         // get filament number
         int const currfilnum = cond->GetInt("FilamentId");
@@ -425,7 +425,7 @@ namespace BEAMINTERACTION
               dynamic_cast<DRT::ELEMENTS::Beam3Base*>(node->Elements()[j]);
 
 #ifdef DEBUG
-          if (currbeamele == NULL)
+          if (currbeamele == nullptr)
             dserror("DESIGN LINE BEAM FILAMENT CONDITIONS only applicable to beam elements.");
 #endif
 
@@ -496,7 +496,7 @@ namespace BEAMINTERACTION
       DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(ele);
 
 #ifdef DEBUG
-      if (beamele == NULL) dserror("Dynamic cast to beam3base failed");
+      if (beamele == nullptr) dserror("Dynamic cast to beam3base failed");
 #endif
 
       // get current position at binding spot xi
@@ -623,7 +623,7 @@ namespace BEAMINTERACTION
       // First we need the local IDs of the centerline DOFs.
       std::vector<unsigned int> local_centerline_dof_indices;
       auto beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-      if (beam_element != NULL)
+      if (beam_element != nullptr)
       {
         beam_element->CenterlineDofIndicesOfElement(local_centerline_dof_indices);
         if (local_centerline_dof_indices.size() != n_centerline_dof)
@@ -662,7 +662,7 @@ namespace BEAMINTERACTION
 
       const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-      if (beamele != NULL)
+      if (beamele != nullptr)
       {
         beamele->CenterlineDofIndicesOfElement(ele_centerline_dof_indices);
       }
@@ -694,7 +694,7 @@ namespace BEAMINTERACTION
 
 
       // assemble centerline DOF values correctly into element DOFvec vectors/matrices
-      if (eleforce != NULL)
+      if (eleforce != nullptr)
       {
         for (unsigned int iele = 0; iele < 2; ++iele)
         {
@@ -716,7 +716,7 @@ namespace BEAMINTERACTION
         }
       }
 
-      if (elestiff != NULL)
+      if (elestiff != nullptr)
       {
         for (unsigned int iele = 0; iele < 2; ++iele)
         {
@@ -797,7 +797,7 @@ namespace BEAMINTERACTION
       DRT::ELEMENTS::Beam3Base const* beam_element_ptr =
           dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-      if (beam_element_ptr != NULL)
+      if (beam_element_ptr != nullptr)
       {
         // get the current absolute values for those Dofs relevant for centerline interpolation
         // initial values are added by element itself
@@ -827,7 +827,7 @@ namespace BEAMINTERACTION
       DRT::ELEMENTS::Beam3Base const* beam_element_ptr =
           dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-      if (beam_element_ptr != NULL)
+      if (beam_element_ptr != nullptr)
       {
         // get the current  values for those Dofs relevant for centerline interpolation
         beam_element_ptr->ExtractCenterlineDofValuesFromElementStateVector(
@@ -1163,15 +1163,15 @@ namespace BEAMINTERACTION
         // get ele pointer
         DRT::Element* eleptr = discret->lRowElement(i);
 
-        if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != NULL)
+        if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
         {
           eletypeset[0].insert(eleptr->Id());
         }
-        else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != NULL)
+        else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
         {
           eletypeset[1].insert(eleptr->Id());
         }
-        else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != NULL)
+        else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != nullptr)
         {
           eletypeset[2].insert(eleptr->Id());
         }

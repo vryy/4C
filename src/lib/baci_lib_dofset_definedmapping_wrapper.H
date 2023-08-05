@@ -171,7 +171,7 @@ namespace DRT
     ) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         return sourcedofset_->NumDof(node);
       else
         return sourcedofset_->NumDof(sourcenode);
@@ -192,7 +192,7 @@ namespace DRT
     ) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node.LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         return sourcedofset_->NumDofPerNode(node);
       else
         return sourcedofset_->NumDofPerNode(*sourcenode);
@@ -204,7 +204,7 @@ namespace DRT
     ) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         return sourcedofset_->Dof(node);
       else
         return sourcedofset_->Dof(sourcenode);
@@ -217,7 +217,7 @@ namespace DRT
     ) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         sourcedofset_->Dof(dof, node, nodaldofset);
       else
         sourcedofset_->Dof(dof, sourcenode, nodaldofset);
@@ -230,7 +230,7 @@ namespace DRT
     virtual int Dof(const Node* node, int dof) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         return sourcedofset_->Dof(node, dof);
       else
         return sourcedofset_->Dof(sourcenode, dof);
@@ -247,7 +247,7 @@ namespace DRT
     virtual void Dof(const Node* node, std::vector<int>& lm) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         return sourcedofset_->Dof(node, lm);
       else
         return sourcedofset_->Dof(sourcenode, lm);
@@ -260,7 +260,7 @@ namespace DRT
     ) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         sourcedofset_->Dof(node, startindex, lm);
       else
         sourcedofset_->Dof(sourcenode, startindex, lm);
@@ -281,7 +281,7 @@ namespace DRT
     ) const
     {
       const DRT::Node* sourcenode = GetSourceNode(node->LID());
-      if (sourcenode == NULL)
+      if (sourcenode == nullptr)
         sourcedofset_->Dof(element, node, lm);
       else
         sourcedofset_->Dof(element, sourcenode, lm);

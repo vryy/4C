@@ -201,10 +201,10 @@ namespace IO
     Level* level_;
 
     /// ostream for all non-target procs and inadmissible cases
-    std::ostream* blackholestream_ = NULL;
+    std::ostream* blackholestream_ = nullptr;
 
     /// ostream if all prerequisites are fulfilled
-    std::ostream* mystream_ = NULL;
+    std::ostream* mystream_ = nullptr;
 
   };  // class Pstream
 

@@ -33,9 +33,9 @@ typedef struct _SHELL8
     s8_rst,
     s8_rst_ortho
   } forcetyp;
-#define S8_FORCETYPE                         \
-  {                                          \
-    "s8_xyz", "s8_rst", "s8_rst_ortho", NULL \
+#define S8_FORCETYPE                            \
+  {                                             \
+    "s8_xyz", "s8_rst", "s8_rst_ortho", nullptr \
   }
   struct _ARRAY4D forces;
   /*struct _ARRAY    energy;*/

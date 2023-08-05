@@ -29,7 +29,7 @@
 CONTACT::AUG::LagrangeMultiplierFunction::LagrangeMultiplierFunction()
     : isinit_(false),
       issetup_(false),
-      strategy_(NULL),
+      strategy_(nullptr),
       interfaces_(0),
       data_(Teuchos::null),
       lin_solver_type_(INPAR::SOLVER::SolverType::undefined),

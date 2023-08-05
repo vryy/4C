@@ -46,9 +46,9 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::MODELEVALUATOR::Structure::Structure()
-    : dt_ele_ptr_(NULL),
+    : dt_ele_ptr_(nullptr),
       masslin_type_(INPAR::STR::ml_none),
-      stiff_ptr_(NULL),
+      stiff_ptr_(nullptr),
       stiff_ptc_ptr_(Teuchos::null),
       dis_incr_ptr_(Teuchos::null),
       vtu_writer_ptr_(Teuchos::null),
@@ -1511,7 +1511,7 @@ void STR::MODELEVALUATOR::Structure::DetermineEnergy(
   DetermineStrainEnergy(disnp, global);
 
   // global calculation of kinetic energy
-  if (masslin_type_ == INPAR::STR::ml_none and velnp != NULL)
+  if (masslin_type_ == INPAR::STR::ml_none and velnp != nullptr)
   {
     double kinetic_energy_times2 = 0.0;
 
@@ -1765,7 +1765,7 @@ void STR::MODELEVALUATOR::Structure::PostOutput()
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
 {
   CheckInit();
-  dsassert(!GState().GetMutableFintNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMutableFintNp().is_null(), "nullptr!");
 
   return *GState().GetMutableFintNp();
 }
@@ -1775,7 +1775,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFintNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetFintNp().is_null(), "nullptr!");
 
   return *GState().GetFintNp();
 }
@@ -1785,7 +1785,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 {
   CheckInit();
-  dsassert(!GState().GetMutableFextNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMutableFextNp().is_null(), "nullptr!");
 
   return *GState().GetMutableFextNp();
 }
@@ -1795,7 +1795,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFextNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetFextNp().is_null(), "nullptr!");
 
   return *GState().GetFextNp();
 }
@@ -1805,7 +1805,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
 {
   CheckInit();
-  dsassert(!GState().GetMutableFinertialNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMutableFinertialNp().is_null(), "nullptr!");
 
   return *GState().GetMutableFinertialNp();
 }
@@ -1815,7 +1815,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFinertialNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetFinertialNp().is_null(), "nullptr!");
 
   return *GState().GetFinertialNp();
 }
@@ -1825,7 +1825,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
 {
   CheckInit();
-  dsassert(!GState().GetMutableFviscoNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMutableFviscoNp().is_null(), "nullptr!");
 
   return *GState().GetMutableFviscoNp();
 }
@@ -1835,7 +1835,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
 {
   CheckInit();
-  dsassert(!GState().GetFviscoNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetFviscoNp().is_null(), "nullptr!");
 
   return *GState().GetFviscoNp();
 }
@@ -1845,7 +1845,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
 {
   CheckInit();
-  dsassert(!GState().GetMutableDisNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMutableDisNp().is_null(), "nullptr!");
 
   return *GState().GetMutableDisNp();
 }
@@ -1855,7 +1855,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
 {
   CheckInit();
-  dsassert(!GState().GetDisNp().is_null(), "NULL pointer!");
+  dsassert(!GState().GetDisNp().is_null(), "nullptr!");
 
   return *GState().GetDisNp();
 }
@@ -1865,7 +1865,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
 CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 {
   CheckInit();
-  dsassert(stiff_ptr_, "NULL pointer!");
+  dsassert(stiff_ptr_, "nullptr!");
 
   return *stiff_ptr_;
 }
@@ -1875,7 +1875,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 {
   CheckInit();
-  dsassert(stiff_ptc_ptr_ != Teuchos::null, "NULL pointer!");
+  dsassert(stiff_ptc_ptr_ != Teuchos::null, "nullptr!");
 
   return *stiff_ptc_ptr_;
 }
@@ -1885,7 +1885,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 {
   CheckInit();
-  dsassert(!GState().GetMutableMassMatrix().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMutableMassMatrix().is_null(), "nullptr!");
 
   return *GState().GetMutableMassMatrix();
 }
@@ -1895,7 +1895,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 {
   CheckInit();
-  dsassert(!GState().GetMassMatrix().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMassMatrix().is_null(), "nullptr!");
 
   return *GState().GetMassMatrix();
 }
@@ -1905,7 +1905,7 @@ const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 {
   CheckInit();
-  dsassert(!GState().GetMutableDampMatrix().is_null(), "NULL pointer!");
+  dsassert(!GState().GetMutableDampMatrix().is_null(), "nullptr!");
 
   return *GState().GetMutableDampMatrix();
 }
@@ -1915,7 +1915,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
 {
   CheckInit();
-  dsassert(!GState().GetDampMatrix().is_null(), "NULL pointer!");
+  dsassert(!GState().GetDampMatrix().is_null(), "nullptr!");
 
   return *GState().GetDampMatrix();
 }

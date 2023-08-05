@@ -180,22 +180,22 @@ void check4nodedInline(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -243,22 +243,22 @@ void check4nodedconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -309,27 +309,27 @@ void check5nodedInline(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -377,27 +377,27 @@ void check5nodedconvex(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.5;
   x[1] = 1.5;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -448,27 +448,27 @@ void check5nodedconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.5;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -521,27 +521,27 @@ void check5nodedAdjacentconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.6;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -596,32 +596,32 @@ void check6nodedconvex(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.5;
   x[1] = 1.5;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -672,32 +672,32 @@ void check6nodedconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.2;
   x[1] = 0.9;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.5;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -749,37 +749,37 @@ void check7nodedconvex(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.4;
   x[1] = 0.6;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.9;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.3;
   x[1] = 1.5;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -833,37 +833,37 @@ void check7nodedconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.4;
   x[1] = 0.6;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.9;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.3;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.1;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -917,42 +917,42 @@ void check8nodedconvex(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = -0.1;
   x[1] = 0.1;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1006,42 +1006,42 @@ void check8nodedconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.4;
   x[1] = 0.1;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1097,42 +1097,42 @@ void check8nodedAdjacentconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 3.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 3.0;
   x[1] = 2.0;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.0;
   x[1] = 2.0;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1186,47 +1186,47 @@ void check9nodedconvex(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.15;
   x[1] = 0.3;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = -0.1;
   x[1] = 0.1;
-  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1283,47 +1283,47 @@ void check9nodedconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -0.4;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = -0.05;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.15;
   x[1] = 0.3;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.1;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.8;
   x[1] = 0.8;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.1;
   x[1] = 0.1;
-  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1380,52 +1380,52 @@ void check10nodedconvex(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.3;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.0;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.2;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.0;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = -0.1;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1482,52 +1482,52 @@ void check10nodedconcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.4;
   x[1] = -0.3;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.3;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.0;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.4;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.2;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.0;
   x[1] = 0.4;
-  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 0.1;
   x[1] = 0.3;
-  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1585,27 +1585,27 @@ void check5nodedTwinConcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.2;
   x[1] = 0.1;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.3;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.2;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1660,32 +1660,32 @@ void check6nodedTwinConcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.3;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.9;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1738,42 +1738,42 @@ void check8nodedTriConcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.5;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.5;
   x[1] = 0.7;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.0;
   x[1] = 0.8;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.2;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1831,49 +1831,49 @@ void check8nodedTriConcaveGenPlane(
   x[1] = 0.0;
   x[2] = 0.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[1] = 0.5;
   x[2] = 0.2;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[1] = 1.0;
   x[2] = 0.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[1] = 1.0;
   x[2] = 1.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[1] = 0.5;
   x[2] = 0.7;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[1] = 0.0;
   x[2] = 1.0;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[1] = 0.0;
   x[2] = 0.8;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[1] = 0.2;
   x[2] = 0.5;
   x[0] = 0.5 * (7.0 - 3.0 * x[1] - 4.0 * x[2]);
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -1933,7 +1933,7 @@ void check13nodedConvex(
     x[0] = cos(theta);
     x[1] = sin(theta);
 
-    CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+    CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
     ptlist[i] = p1;
   }
 
@@ -1998,37 +1998,37 @@ void check7nodedconti3concave(
 
   x[0] = 1.0;
   x[1] = 0.728885;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.992803;
   x[1] = 0.726274;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.958516;
   x[1] = 0.710801;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.950656;
   x[1] = 0.706818;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.916667;
   x[1] = 0.671407;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.916667;
   x[1] = 0.75;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 1.0;
   x[1] = 0.75;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2089,52 +2089,52 @@ void check10nodedShift1ptConcave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 2.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 3.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 2.5;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 3.0;
   x[1] = 2.0;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 1.5;
   x[1] = 1.5;
-  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 0.0;
   x[1] = 2.0;
-  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2192,42 +2192,42 @@ void check8nodedEarClip(
 
   x[0] = 0.888889;
   x[2] = 0.333333;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.944444;
   x[2] = 0.333333;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.944444;
   x[2] = 0.291667;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.942495;
   x[2] = 0.291667;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.942497;
   x[2] = 0.320888;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.916262;
   x[2] = 0.320832;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.916332;
   x[2] = 0.291667;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.888889;
   x[2] = 0.291667;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2293,37 +2293,37 @@ void check7noded2concave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.75;
   x[1] = 0.8;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.5;
   x[1] = 0.3;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.25;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2384,32 +2384,32 @@ void ProblemSplitAnyFacet1(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 1.0;
   x[1] = 1.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.8;
   x[1] = 0.95;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.8;
   x[1] = 0.2;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.5;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2463,37 +2463,37 @@ void InsideChcek1(CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE::
 
   x[0] = -0.5;
   x[1] = -0.5;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = -0.5;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.5;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.0;
   x[1] = -0.5;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.5;
   x[1] = -0.5;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.5;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2548,77 +2548,77 @@ void check15node5concave(
 
   x[0] = 0.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.5;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.5;
   x[1] = -1.0;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 1.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 1.5;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 1.3;
   x[1] = -0.8;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 1.5;
   x[1] = -0.8;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 2.0;
   x[1] = -0.5;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 2.0;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 2.2;
   x[1] = 0.0;
-  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
   x[0] = 2.2;
   x[1] = -2.0;
-  CORE::GEO::CUT::Point* p11 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p11 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[10] = p11;
 
   x[0] = 1.5;
   x[1] = -2.0;
-  CORE::GEO::CUT::Point* p12 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p12 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[11] = p12;
 
   x[0] = 0.8;
   x[1] = -0.8;
-  CORE::GEO::CUT::Point* p13 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p13 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[12] = p13;
 
   x[0] = 0.8;
   x[1] = -2.0;
-  CORE::GEO::CUT::Point* p14 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p14 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[13] = p14;
 
   x[0] = 0.0;
   x[1] = -2.0;
-  CORE::GEO::CUT::Point* p15 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p15 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[14] = p15;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2688,42 +2688,42 @@ void check8nodeQuadInsidePt(
 
   x[1] = 4.8;
   x[2] = 4.88;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[1] = 4.8;
   x[2] = 4.8;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[1] = 4.88;
   x[2] = 4.8;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[1] = 4.88;
   x[2] = 4.80242;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[1] = 4.85799;
   x[2] = 4.81544;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[1] = 4.83652;
   x[2] = 4.83652;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[1] = 4.81544;
   x[2] = 4.85799;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[1] = 4.80242;
   x[2] = 4.88;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2777,73 +2777,73 @@ void checkTemporary(CORE::GEO::CUT::Mesh& mesh, CORE::GEO::CUT::Element* e, CORE
   x[0] = 0.88888889999999998182;
   x[1] = 0.42666670000000000984;
   x[2] = 0.33333329999999999904;
-  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[0] = p1;
 
   x[0] = 0.94444439999999996171;
   x[1] = 0.42666670000000000984;
   x[2] = 0.33333329999999999904;
-  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p2 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[1] = p2;
 
   x[0] = 0.94444439999999996171;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p3 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[2] = p3;
 
   x[0] = 0.94249491196456902653;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p4 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[3] = p4;
 
   x[0] = 0.94249721210427384044;
   x[1] = 0.42666670000000006535;
   x[2] = 0.31880103717759145088;
-  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p5 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[4] = p5;
 
   x[0] = 0.94249702599927487334;
   x[1] = 0.42666670000000000984;
   x[2] = 0.32088789735568812311;
-  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p6 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[5] = p6;
 
   x[0] = 0.92175085458703109875;
   x[1] = 0.42666669999999995433;
   x[2] = 0.32084499284473377845;
-  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p7 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[6] = p7;
 
   x[0] = 0.91626198313675544238;
   x[1] = 0.42666670000000000984;
   x[2] = 0.32083212917404180242;
-  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p8 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[7] = p8;
 
   x[0] = 0.91628195746516871711;
   x[1] = 0.42666670000000006535;
   x[2] = 0.31289655478182087922;
-  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p9 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[8] = p9;
 
   x[0] = 0.91631968416588871484;
   x[1] = 0.42666669999999989882;
   x[2] = 0.29666529690944831721;
-  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p10 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[9] = p10;
 
   x[0] = 0.9163322539230824848;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  CORE::GEO::CUT::Point* p11 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p11 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[10] = p11;
 
   x[0] = 0.88888889999999998182;
   x[1] = 0.42666670000000000984;
   x[2] = 0.29166670000000000096;
-  CORE::GEO::CUT::Point* p12 = mesh.NewPoint(x, NULL, s, 0.0);
+  CORE::GEO::CUT::Point* p12 = mesh.NewPoint(x, nullptr, s, 0.0);
   ptlist[11] = p12;
 
   CORE::GEO::CUT::TriangulateFacet tf(ptlist);
@@ -2900,7 +2900,7 @@ void checkTemporary2(
     double theta = i * 2.0 * 22.0 / 7.0 / num;
     x[0] = cos(theta);
     x[1] = sin(theta);
-    CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, NULL, s, 0.0);
+    CORE::GEO::CUT::Point* p1 = mesh.NewPoint(x, nullptr, s, 0.0);
     ptlist[i] = p1;
   }
 

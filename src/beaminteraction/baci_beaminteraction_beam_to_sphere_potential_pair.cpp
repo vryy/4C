@@ -35,8 +35,8 @@
 template <unsigned int numnodes, unsigned int numnodalvalues>
 BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::BeamToSpherePotentialPair()
     : BeamPotentialPair(),
-      beam_element_(NULL),
-      sphere_element_(NULL),
+      beam_element_(nullptr),
+      sphere_element_(nullptr),
       time_(0.0),
       k_(0.0),
       m_(0.0),
@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   // cast first element to Beam3Base
   beam_element_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
 
-  if (beam_element_ == NULL)
+  if (beam_element_ == nullptr)
     dserror(
         "cast to Beam3Base failed! first element in BeamToSpherePotentialPair pair"
         " must be a beam element!");
@@ -83,7 +83,7 @@ void BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Setup
   // cast second element to RigidSphere
   sphere_element_ = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(Element2());
 
-  if (sphere_element_ == NULL)
+  if (sphere_element_ == nullptr)
     dserror(
         "cast to Rigidsphere failed! second element in BeamToSpherePotentialPair pair"
         " must be a Rigidsphere element!");
@@ -166,41 +166,41 @@ bool BEAMINTERACTION::BeamToSpherePotentialPair<numnodes, numnodalvalues>::Evalu
   }
 
   // resize variables and fill with pre-computed values
-  if (forcevec1 != NULL)
+  if (forcevec1 != nullptr)
   {
     forcevec1->size(dim1);
     for (unsigned int i = 0; i < dim1; ++i)
       (*forcevec1)(i) = CORE::FADUTILS::CastToDouble(fpot1_(i));
   }
-  if (forcevec2 != NULL)
+  if (forcevec2 != nullptr)
   {
     forcevec2->size(dim2);
     for (unsigned int i = 0; i < dim2; ++i)
       (*forcevec2)(i) = CORE::FADUTILS::CastToDouble(fpot2_(i));
   }
 
-  if (stiffmat11 != NULL)
+  if (stiffmat11 != nullptr)
   {
     stiffmat11->shape(dim1, dim1);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
         (*stiffmat11)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, icol));
   }
-  if (stiffmat12 != NULL)
+  if (stiffmat12 != nullptr)
   {
     stiffmat12->shape(dim1, dim2);
     for (unsigned int irow = 0; irow < dim1; ++irow)
       for (unsigned int icol = 0; icol < dim2; ++icol)
         (*stiffmat12)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot1_(irow, dim1 + icol));
   }
-  if (stiffmat21 != NULL)
+  if (stiffmat21 != nullptr)
   {
     stiffmat21->shape(dim2, dim1);
     for (unsigned int irow = 0; irow < dim2; ++irow)
       for (unsigned int icol = 0; icol < dim1; ++icol)
         (*stiffmat21)(irow, icol) = CORE::FADUTILS::CastToDouble(stiffpot2_(irow, icol));
   }
-  if (stiffmat22 != NULL)
+  if (stiffmat22 != nullptr)
   {
     stiffmat22->shape(dim2, dim2);
     for (unsigned int irow = 0; irow < dim2; ++irow)

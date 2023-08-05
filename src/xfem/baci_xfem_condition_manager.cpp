@@ -1023,7 +1023,7 @@ DRT::Element* XFEM::ConditionManager::GetCouplingElement(
     dserror("there is no valid mesh-/levelset-coupling condition object for side: %i", coup_sid);
 
 
-  return NULL;
+  return nullptr;
 }
 
 void XFEM::ConditionManager::GetCouplingEleLocationVector(

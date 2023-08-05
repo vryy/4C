@@ -170,7 +170,7 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
-    if (beamele != NULL)
+    if (beamele != nullptr)
       continue;
     else
     {
@@ -233,7 +233,7 @@ void DiscretizationRuntimeVtuWriter::AppendNodeBasedResultDataVector(
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
-    if (beamele != NULL) continue;
+    if (beamele != nullptr) continue;
 
     const std::vector<int>& numbering =
         DRT::ELEMENTS::GetVtkCellTypeFromBaciElementShapeType(ele->Shape()).second;
@@ -307,7 +307,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // simply skip beam elements here (handled by BeamDiscretizationRuntimeVtuWriter)
-    if (beamele != NULL) continue;
+    if (beamele != nullptr) continue;
 
     for (unsigned int icpe = 0; icpe < result_num_components_per_element; ++icpe)
     {

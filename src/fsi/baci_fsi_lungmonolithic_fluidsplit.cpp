@@ -240,7 +240,7 @@ void FSI::LungMonolithicFluidSplit::SetupRHSFirstiter(Epetra_Vector& f)
   //--------------------------------------------------------------------------------
   // split in two blocks according to inner and fsi structure dofs
   Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, StructureField()->Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, StructureField()->Discretization()->Comm()));
   CORE::LINALG::MapExtractor extractor;
   extractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
 
@@ -389,7 +389,7 @@ void FSI::LungMonolithicFluidSplit::SetupSystemMatrix(CORE::LINALG::BlockSparseM
       Teuchos::rcp_dynamic_cast<ADAPTER::FluidLung>(FluidField());
 
   Teuchos::RCP<Epetra_Map> emptymap =
-      Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, FluidField()->Discretization()->Comm()));
+      Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, FluidField()->Discretization()->Comm()));
   CORE::LINALG::MapExtractor extractor;
   extractor.Setup(*ConstrMap_, emptymap, ConstrMap_);
 

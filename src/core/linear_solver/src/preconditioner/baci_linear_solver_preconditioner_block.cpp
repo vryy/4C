@@ -71,13 +71,13 @@ void CORE::LINEAR_SOLVER::SimplePreconditioner::Setup(
             Teuchos::rcp(new std::vector<double>(plength, 1.0));
         // TODO: std::vector<double> has zero length for particular cases (e.g. no Lagrange
         // multiplier on this processor)
-        //      -> Teuchos::RCP for the null space is set to NULL in Fedora 12 -> dserror
+        //      -> Teuchos::RCP for the null space is set to nullptr in Fedora 12 -> dserror
         //      -> Teuchos::RCP points to a random memory field in Fedora 8 -> Teuchos::RCP for null
-        //      space is not NULL
+        //      space is not nullptr
         // Temporary work around (ehrl, 21.12.11):
         // In the case of plength=0 the std::vector<double> is rescaled (size 0 -> size 1, initial
         // value 0) in order to avoid problems with ML (ML expects an Teuchos::RCP for the null
-        // space != NULL)
+        // space != nullptr)
         if (plength == 0) pnewns->resize(1, 0.0);
         inv2.sublist("ML Parameters").set("null space: vectors", pnewns->data());
         inv2.sublist("ML Parameters").remove("nullspace", false);

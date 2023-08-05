@@ -295,19 +295,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -326,14 +326,14 @@ namespace DRT
       \param discretization (in): reference to the underlying discretization
       \param condition (in)     : condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       //@}
 
@@ -586,19 +586,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -620,14 +620,14 @@ namespace DRT
       \param discretization (in): reference to the underlying discretization
       \param condition (in)     : condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       //@}
 
@@ -915,19 +915,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -949,14 +949,14 @@ namespace DRT
       \param discretization (in): reference to the underlying discretization
       \param condition (in)     : condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       /*!
       \brief return the master parent Elemag element
@@ -965,7 +965,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != NULL,
+        dsassert(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != nullptr,
             "Master element is no Elemag element");
         return static_cast<DRT::ELEMENTS::Elemag*>(parent);
       }
@@ -977,7 +977,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != NULL,
+        dsassert(dynamic_cast<DRT::ELEMENTS::Elemag*>(parent) != nullptr,
             "Slave element is no Elemag element");
         return static_cast<DRT::ELEMENTS::Elemag*>(parent);
       }

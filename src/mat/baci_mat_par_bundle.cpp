@@ -54,7 +54,7 @@ void MAT::PAR::Bundle::MakeParameters()
       Teuchos::RCP<MAT::Material> mat = MAT::Material::Factory(matid);
       // check if allocation was successful
       Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
-      if (matpar->Parameter() != NULL) continue;
+      if (matpar->Parameter() != nullptr) continue;
     }
 
     // 2nd try
@@ -63,7 +63,7 @@ void MAT::PAR::Bundle::MakeParameters()
       Teuchos::RCP<MAT::ELASTIC::Summand> mat = MAT::ELASTIC::Summand::Factory(matid);
       // check if allocation was successful
       Teuchos::RCP<MAT::PAR::Material> matpar = m->second;
-      if (matpar->Parameter() != NULL) continue;
+      if (matpar->Parameter() != nullptr) continue;
     }
 
     // trials failed

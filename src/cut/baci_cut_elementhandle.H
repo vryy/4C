@@ -265,7 +265,7 @@ namespace CORE::GEO
     class LinearElementHandle : public ElementHandle
     {
      public:
-      LinearElementHandle() : element_(NULL), cells_set_(false), bcell_sets_(0) {}
+      LinearElementHandle() : element_(nullptr), cells_set_(false), bcell_sets_(0) {}
 
       explicit LinearElementHandle(Element* e) : element_(e), cells_set_(false), bcell_sets_(0)
       {

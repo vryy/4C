@@ -221,40 +221,40 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<2, 2, 2>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             break;
           }
           case 3:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<3, 3, 1>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<3, 2, 2>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             break;
           }
           case 4:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<4, 4, 1>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<4, 2, 2>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             break;
           }
           case 5:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<5, 5, 1>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<5, 2, 2>(
-                  params, mydisp, &elemat1, NULL, &elevec1, NULL);
+                  params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
             break;
           }
           default:
@@ -269,40 +269,40 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<2, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             break;
           }
           case 3:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<3, 3, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<3, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             break;
           }
           case 4:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<4, 4, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<4, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             break;
           }
           case 5:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<5, 5, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             else
               CalcInternalAndInertiaForcesAndStiff<5, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, NULL);
+                  params, mydisp, nullptr, nullptr, &elevec1, nullptr);
             break;
           }
           default:
@@ -318,40 +318,40 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             else
               CalcInternalAndInertiaForcesAndStiff<2, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             break;
           }
           case 3:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<3, 3, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             else
               CalcInternalAndInertiaForcesAndStiff<3, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             break;
           }
           case 4:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<4, 4, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             else
               CalcInternalAndInertiaForcesAndStiff<4, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             break;
           }
           case 5:
           {
             if (!centerline_hermite_)
               CalcInternalAndInertiaForcesAndStiff<5, 5, 1>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             else
               CalcInternalAndInertiaForcesAndStiff<5, 2, 2>(
-                  params, mydisp, NULL, NULL, &elevec1, &elevec2);
+                  params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
             break;
           }
           default:
@@ -427,33 +427,33 @@ int DRT::ELEMENTS::Beam3r::Evaluate(Teuchos::ParameterList& params,
           case 2:
           {
             if (!centerline_hermite_)
-              CalcBrownianForcesAndStiff<2, 2, 1>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<2, 2, 1>(params, myvel, mydisp, nullptr, &elevec1);
             else
-              CalcBrownianForcesAndStiff<2, 2, 2>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<2, 2, 2>(params, myvel, mydisp, nullptr, &elevec1);
             break;
           }
           case 3:
           {
             if (!centerline_hermite_)
-              CalcBrownianForcesAndStiff<3, 3, 1>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<3, 3, 1>(params, myvel, mydisp, nullptr, &elevec1);
             else
-              CalcBrownianForcesAndStiff<3, 2, 2>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<3, 2, 2>(params, myvel, mydisp, nullptr, &elevec1);
             break;
           }
           case 4:
           {
             if (!centerline_hermite_)
-              CalcBrownianForcesAndStiff<4, 4, 1>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<4, 4, 1>(params, myvel, mydisp, nullptr, &elevec1);
             else
-              CalcBrownianForcesAndStiff<4, 2, 2>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<4, 2, 2>(params, myvel, mydisp, nullptr, &elevec1);
             break;
           }
           case 5:
           {
             if (!centerline_hermite_)
-              CalcBrownianForcesAndStiff<5, 5, 1>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<5, 5, 1>(params, myvel, mydisp, nullptr, &elevec1);
             else
-              CalcBrownianForcesAndStiff<5, 2, 2>(params, myvel, mydisp, NULL, &elevec1);
+              CalcBrownianForcesAndStiff<5, 2, 2>(params, myvel, mydisp, nullptr, &elevec1);
             break;
           }
           default:
@@ -743,7 +743,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
     // internal force vector
     CORE::LINALG::Matrix<numdofelement, 1, double> internal_force(true);
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       internal_force.SetView(&((*force)(0)));
     }
@@ -752,7 +752,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
         disp_totlag_centerline, Qnode, stiffmatrix, internal_force);
 
     // calculation of inertia forces/moments and mass matrix
-    if (massmatrix != NULL or inertia_force != NULL)
+    if (massmatrix != nullptr or inertia_force != nullptr)
     {
       CalcInertiaForceAndMassMatrix<nnodetriad, nnodecl, vpernode>(
           disp_totlag_centerline, Qnode, massmatrix, inertia_force);
@@ -781,22 +781,22 @@ void DRT::ELEMENTS::Beam3r::CalcInternalAndInertiaForcesAndStiff(
         disp_totlag_centerline_FAD, Qnode_FAD);
 
     CalcInternalForceAndStiff<nnodetriad, nnodecl, vpernode, Sacado::Fad::DFad<double>>(
-        disp_totlag_centerline_FAD, Qnode_FAD, NULL, internal_force);
+        disp_totlag_centerline_FAD, Qnode_FAD, nullptr, internal_force);
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       for (unsigned int idof = 0; idof < numdofelement; ++idof)
         (*force)(idof) = CORE::FADUTILS::CastToDouble(internal_force(idof));
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       CalcStiffmatAutomaticDifferentiation<nnodetriad, nnodecl, vpernode>(
           *stiffmatrix, Qnode, internal_force);
     }
 
     // calculation of inertia forces/moments and mass matrix
-    if (massmatrix != NULL or inertia_force != NULL)
+    if (massmatrix != nullptr or inertia_force != nullptr)
     {
       CalcInertiaForceAndMassMatrix<nnodetriad, nnodecl, vpernode>(
           disp_totlag_centerline, Qnode, massmatrix, inertia_force);
@@ -998,7 +998,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
               r_s_hat(i, j) * stressn(j) * I_i[numgp](node) * wgt * jacobiGPelastf_[numgp];
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       CalcStiffmatAnalyticForceContributions<nnodetriad, nnodecl, vpernode>(*stiffmatrix, stressn,
           cn, r_s_hat, *triad_interpolation_scheme_ptr, I_i[numgp], H_i_xi[numgp], wgt,
@@ -1105,7 +1105,7 @@ void DRT::ELEMENTS::Beam3r::CalcInternalForceAndStiff(
     }
 
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       CalcStiffmatAnalyticMomentContributions<nnodetriad, nnodecl, vpernode>(*stiffmatrix, stressm,
           cm, *triad_interpolation_scheme_ptr, Psi_l, Psi_l_s, I_i[numgp], I_i_xi[numgp], wgt,
@@ -1423,7 +1423,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
     auxmatrix1.Update(-1.0, S_Pit, 1.0);
     auxmatrix1.Update(1.0, Lambdanewmass_Jpbar_LambdaconvmassT_Tmatrix, 1.0);
 
-    if (inertia_force != NULL)
+    if (inertia_force != nullptr)
     {
       // inertia forces
       for (unsigned int i = 0; i < 3; i++)
@@ -1452,7 +1452,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
       }
     }
 
-    if (massmatrix != NULL)
+    if (massmatrix != nullptr)
     {
       // linearization of inertia forces: massmatrix
       for (unsigned int jnode = 0; jnode < nnodecl; jnode++)
@@ -1544,7 +1544,7 @@ void DRT::ELEMENTS::Beam3r::CalcInertiaForceAndMassMatrix(
   // (1.0-alpham_)/(beta_*dt*dt*(1.0-alphaf_)) later. so we apply inverse factor here because the
   // correct prefactors for displacement/velocity/acceleration dependent terms have been applied
   // individually above
-  if (massmatrix != NULL) massmatrix->scale(beta * dt * dt * (1.0 - alpha_f) / (1.0 - alpha_m));
+  if (massmatrix != nullptr) massmatrix->scale(beta * dt * dt * (1.0 - alpha_f) / (1.0 - alpha_m));
 }
 
 /*----------------------------------------------------------------------------*
@@ -2114,7 +2114,7 @@ void DRT::ELEMENTS::Beam3r::CalcBrownianForcesAndStiff(Teuchos::ParameterList& p
   // add stiffness and forces (i.e. moments) due to rotational damping effects
   EvaluateRotationalDamping<nnodetriad, nnodecl, vpernode, 3>(params, Q_i, stiffmatrix, force);
 
-  if (stiffmatrix != NULL) stiff_ptc_ = *stiffmatrix;
+  if (stiffmatrix != nullptr) stiff_ptc_ = *stiffmatrix;
 
   // add stiffness and forces due to translational damping effects
   EvaluateTranslationalDamping<nnodecl, vpernode, 3>(
@@ -2139,7 +2139,7 @@ template <unsigned int nnode>
 void DRT::ELEMENTS::Beam3r::lumpmass(CORE::LINALG::SerialDenseMatrix* massmatrix)
 {
   // lump mass matrix
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (int c = 0; c < (*massmatrix).numCols(); ++c)  // parse columns
@@ -2347,7 +2347,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
 
     const double jacobifac_gp_weight = jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp];
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       // loop over all nodes
       for (unsigned int inode = 0; inode < nnodecl; inode++)
@@ -2366,7 +2366,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateRotationalDamping(
       }
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       triad_interpolation_scheme_ptr->GetNodalGeneralizedRotationInterpolationMatrices(
           Itilde, Psi_l, I_i[gp]);
@@ -2555,7 +2555,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
 
     const double jacobifac_gp_weight = jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp];
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       // loop over all nodes used for centerline interpolation
       for (unsigned int inode = 0; inode < nnodecl; inode++)
@@ -2570,7 +2570,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateTranslationalDamping(Teuchos::ParameterList&
         }
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // compute matrix product of damping matrix and gradient of background velocity
       CORE::LINALG::Matrix<ndim, ndim> dampmatvelbackgroundgrad(true);
@@ -2734,7 +2734,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
     const double sqrt_jacobifac_gp_weight =
         std::sqrt(jacobiGPdampstoch_[gp] * gausspoints.qwgt[gp]);
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       // loop over all nodes
       for (unsigned int inode = 0; inode < nnodecl; inode++)
@@ -2751,7 +2751,7 @@ void DRT::ELEMENTS::Beam3r::EvaluateStochasticForces(Teuchos::ParameterList& par
         }
     }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // note: division by sqrt of jacobi factor, because H_i_s = H_i_xi / jacobifactor
       const double sqrt_gp_weight_jacobifac_inv =

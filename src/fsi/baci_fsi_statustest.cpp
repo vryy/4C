@@ -425,7 +425,7 @@ double NOX::FSI::PartialNormUpdate::computeNorm(const Epetra_Vector& v)
 NOX::FSI::MinIters::MinIters(int minIterations, const NOX::Utils* u)
     : miniters(minIterations), niters(0), status(NOX::StatusTest::Unevaluated)
 {
-  if (u != NULL) utils = *u;
+  if (u != nullptr) utils = *u;
 
   if (miniters < 1)
   {

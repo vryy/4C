@@ -52,7 +52,7 @@ namespace CORE::LINALG
 
     \param params (in) : parameter list holding solver configuration
     \param comm (in)   : a reference to a epetra communicator object
-    \param outfile (in): ptr to an error file on proc 0 only. If NULL on input,
+    \param outfile (in): ptr to an error file on proc 0 only. If nullptr on input,
                          no output will be generated.
     */
     Solver(Teuchos::RCP<Teuchos::ParameterList>& params, const Epetra_Comm& comm, FILE* outfile);
@@ -72,10 +72,10 @@ namespace CORE::LINALG
      Trilinos build-in library.
 
     \param comm (in)   : a reference to a epetra communicator object
-    \param outfile (in): ptr to an error file on proc 0 only. If NULL on input,
+    \param outfile (in): ptr to an error file on proc 0 only. If nullptr on input,
                          no output will be generated.
     */
-    Solver(const Epetra_Comm& comm, FILE* outfile = NULL);
+    Solver(const Epetra_Comm& comm, FILE* outfile = nullptr);
 
     /*!
     \brief Constructor taking a validated input parameter list for Solver
@@ -300,7 +300,7 @@ namespace CORE::LINALG
     const Epetra_Comm& comm_;
     //! (internal) parameter list
     Teuchos::RCP<Teuchos::ParameterList> params_;
-    //! file to write output to (proc 0 only, can be NULL on input)
+    //! file to write output to (proc 0 only, can be nullptr on input)
     FILE* outfile_;
 
     /// internal solver strategy

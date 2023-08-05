@@ -141,7 +141,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   {
     // initialize vector for current group of conditions and temp condition
     std::vector<DRT::Condition*> currentgroup(0);
-    DRT::Condition* tempcond = NULL;
+    DRT::Condition* tempcond = nullptr;
 
     // try to build contact group around this condition
     currentgroup.push_back(contactconditions[i]);
@@ -497,7 +497,7 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
           Teuchos::RCP<DRT::FaceElement> faceele =
               Teuchos::rcp_dynamic_cast<DRT::FaceElement>(ele, true);
           if (faceele == Teuchos::null) dserror("Cast to FaceElement failed!");
-          if (faceele->ParentElement() == NULL) dserror("face parent does not exist");
+          if (faceele->ParentElement() == nullptr) dserror("face parent does not exist");
           if (Discret().ElementColMap()->LID(faceele->ParentElement()->Id()) == -1)
             dserror("vol dis does not have parent ele");
           cele->SetParentMasterElement(faceele->ParentElement(), faceele->FaceParentNumber());
@@ -1492,7 +1492,7 @@ void CONTACT::CoManager::PostprocessQuantities(IO::DiscretizationWriter& output)
     std::cout << "resultnor= " << resultnor[0] << std::endl;
     std::cout << "resulttan= " << resulttan[0] << std::endl;
 
-    FILE* MyFile = NULL;
+    FILE* MyFile = nullptr;
     std::ostringstream filename;
     const std::string filebase =
         DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();

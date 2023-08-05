@@ -63,7 +63,7 @@ void CORE::LINEAR_SOLVER::AMGnxn_Preconditioner::Setup(
   // Check whether this is a block sparse matrix
   CORE::LINALG::BlockSparseMatrixBase* A_bl =
       dynamic_cast<CORE::LINALG::BlockSparseMatrixBase*>(matrix);
-  if (A_bl == NULL)
+  if (A_bl == nullptr)
     dserror("The AMGnxn preconditioner works only for BlockSparseMatrixBase or derived classes");
 
   // Do all the setup

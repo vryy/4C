@@ -58,7 +58,7 @@ namespace STR
 
       //! (derived)
       bool AssembleForce(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const;
+          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const;
 
       //! (derived)
       void WriteRestart(

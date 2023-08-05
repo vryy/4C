@@ -1146,7 +1146,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
 
       // write info to error file
       if (myrank_ == 0)
-        if (errfile_ != NULL)
+        if (errfile_ != nullptr)
           fprintf(errfile_, "solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
               itemax, ittolinc_, maxres, maxrelinc);
 
@@ -1184,7 +1184,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
                     << std::endl
                     << std::endl;
 
-          if (errfile_ != NULL)
+          if (errfile_ != nullptr)
           {
             fprintf(errfile_,
                 "divergent solve continued:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  "
@@ -1196,7 +1196,7 @@ bool POROFLUIDMULTIPHASE::TimIntImpl::AbortNonlinIter(
       }
       case INPAR::POROFLUIDMULTIPHASE::divcont_stop:
       {
-        if (errfile_ != NULL)
+        if (errfile_ != nullptr)
         {
           fprintf(errfile_,
               "divergent solve stoped:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n",

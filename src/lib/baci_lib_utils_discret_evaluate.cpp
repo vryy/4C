@@ -89,7 +89,7 @@ void DRT::UTILS::Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& 
 
   for (int i = 0; i < numcolele; ++i)
   {
-    DRT::Element* actele = NULL;
+    DRT::Element* actele = nullptr;
     if (is_subset)
     {
       const int egid = ele_gids[i];

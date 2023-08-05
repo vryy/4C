@@ -44,7 +44,7 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
     case DRT::Element::line2:
     {
       static AcinusImpl<DRT::Element::line2>* acinus;
-      if (acinus == NULL)
+      if (acinus == nullptr)
       {
         acinus = new AcinusImpl<DRT::Element::line2>;
       }
@@ -54,7 +54,7 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
       dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -465,7 +465,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
           // -----------------------------------------------------------------
-          if (CoupledTo3DParams.get() == NULL)
+          if (CoupledTo3DParams.get() == nullptr)
           {
             dserror(
                 "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
@@ -925,7 +925,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(RedAcinus* ele,
         // -----------------------------------------------------------------
         // If the parameter list is empty, then something is wrong!
         // -----------------------------------------------------------------
-        if (CoupledTo3DParams.get() == NULL)
+        if (CoupledTo3DParams.get() == nullptr)
         {
           dserror(
               "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters "
@@ -1398,8 +1398,8 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvalPO2FromScatra(RedAcinus* ele,
   // -------------------------------------------------------------------
   std::string fluidType = "none";
   // if RedAirwayScatraAirCond then material type is air
-  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraAirCond") != NULL &&
-      ele->Nodes()[1]->GetCondition("RedAirwayScatraAirCond") != NULL)
+  if (ele->Nodes()[0]->GetCondition("RedAirwayScatraAirCond") != nullptr &&
+      ele->Nodes()[1]->GetCondition("RedAirwayScatraAirCond") != nullptr)
   {
     fluidType = "air";
   }

@@ -125,8 +125,8 @@ namespace XFEM
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement>
             xyze,
         CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
-            1>* nurbs_weights = NULL,
-        std::vector<CORE::LINALG::SerialDenseVector>* nurbs_knots = NULL);
+            1>* nurbs_weights = nullptr,
+        std::vector<CORE::LINALG::SerialDenseVector>* nurbs_knots = nullptr);
 
     //! compute characteristic element length h_k
     template <DRT::Element::DiscretizationType distype>
@@ -141,8 +141,8 @@ namespace XFEM
             bintpoints,  ///< integration points for boundary cell integration
         const INPAR::XFEM::ViscStab_hk visc_stab_hk,  ///< h definition
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> emb =
-            Teuchos::null,         ///< pointer to the embedded coupling implementation
-        DRT::Element* face = NULL  ///< side element in 3D
+            Teuchos::null,            ///< pointer to the embedded coupling implementation
+        DRT::Element* face = nullptr  ///< side element in 3D
     );
 
     //! compute full scaling of Nitsche's penalty term (xfluid-fluid)

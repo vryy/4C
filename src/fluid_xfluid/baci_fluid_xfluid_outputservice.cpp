@@ -530,7 +530,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutput(
     DRT::Element* actele = (discret_)->lRowElement(i);
     CORE::GEO::CUT::ElementHandle* e = wizard->GetElement(actele);
 
-    if (e != NULL)
+    if (e != nullptr)
     {
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;

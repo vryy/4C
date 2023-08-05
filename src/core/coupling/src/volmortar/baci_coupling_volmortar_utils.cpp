@@ -21,13 +21,13 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial2To1(
     const std::vector<int>& ids_2, Teuchos::RCP<::DRT::Discretization> dis1,
     Teuchos::RCP<::DRT::Discretization> dis2)
 {
-  if (ele1 == NULL) dserror("ERROR: Got NULL pointer for AssignMaterial for element!");
+  if (ele1 == nullptr) dserror("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
   // if no corresponding element found -> leave
   if (ids_2.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  ::DRT::Element* ele2 = NULL;
+  ::DRT::Element* ele2 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords1 = ::DRT::UTILS::ElementCenterRefeCoords(ele1);
@@ -64,13 +64,13 @@ void CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy::AssignMaterial1To2(
     const std::vector<int>& ids_1, Teuchos::RCP<::DRT::Discretization> dis1,
     Teuchos::RCP<::DRT::Discretization> dis2)
 {
-  if (ele2 == NULL) dserror("ERROR: Got NULL pointer for AssignMaterial for element!");
+  if (ele2 == nullptr) dserror("ERROR: Got nullptr pointer for AssignMaterial for element!");
 
   // if no corresponding element found -> leave
   if (ids_1.empty()) return;
 
   // default strategy: take material of element with closest center in reference coordinates
-  ::DRT::Element* ele1 = NULL;
+  ::DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords2 = ::DRT::UTILS::ElementCenterRefeCoords(ele2);

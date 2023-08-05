@@ -203,7 +203,7 @@ namespace DRT
           DRT::Condition& condition,                 ///< Neumann condition to evaluate
           std::vector<int>& lm,                      ///< location vector
           CORE::LINALG::SerialDenseVector& elevec1,  ///< vector to be filled by element
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
 
      private:

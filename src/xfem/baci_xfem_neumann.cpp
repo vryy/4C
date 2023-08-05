@@ -51,7 +51,7 @@ void XFEM::EvaluateNeumann(Teuchos::ParameterList& params,
   if (!discret->Filled()) dserror("FillComplete() was not called");
   if (!discret->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
-  bool assemblemat = (systemmatrix != NULL);
+  bool assemblemat = (systemmatrix != nullptr);
 
   // get the current time
   const double time = params.get("total time", -1.0);

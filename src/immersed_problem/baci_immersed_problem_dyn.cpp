@@ -66,7 +66,7 @@ void immersed_problem_drt()
             DRT::ImmersedNode* inode = dynamic_cast<DRT::ImmersedNode*>(
                 (problem->GetDis("fluid")->gElement(gid)->Nodes()[0]));
 
-            if (inode == NULL)
+            if (inode == nullptr)
               dserror(
                   "dynamic cast from Node to ImmersedNode failed.\n"
                   "Make sure you defined INODE instead of NODE in your input file.");

@@ -84,9 +84,9 @@ namespace CORE::LINALG
       \param logical_range_map  (i) sub-map that defines a logical block matrix row within src
       \param logical_domain_map (i) sub-map that defines a logical block matrix column within src
       \param scale          (i) scaling factor to be applied
-      \param row_converter  (i) src to dst abstraction on ADAPTER::Coupling, if NULL: no row
+      \param row_converter  (i) src to dst abstraction on ADAPTER::Coupling, if nullptr: no row
       transform is done \param col_converter  (i) src to dst abstraction on ADAPTER::Coupling,
-      if NULL: no column transform is done \param dst          (i/o) destination matrix \param
+      if nullptr: no column transform is done \param dst          (i/o) destination matrix \param
       exactmatch     (i) do not drop any source values if true \param addmatrix      (i) remove
       current dst values if false
      */

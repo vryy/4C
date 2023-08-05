@@ -149,7 +149,7 @@ namespace CORE::GEO
     class LinearSideHandle : public SideHandle
     {
      public:
-      LinearSideHandle() : side_(NULL) {}
+      LinearSideHandle() : side_(nullptr) {}
 
       explicit LinearSideHandle(Side* s) : side_(s) {}
 

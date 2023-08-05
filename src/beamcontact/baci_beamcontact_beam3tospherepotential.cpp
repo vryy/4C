@@ -58,7 +58,7 @@ CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::Beam3tospherepotentia
 
   element1_ = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element1);
 
-  if (element1_ == NULL)
+  if (element1_ == nullptr)
   {
     dserror(
         "cast to Beam3Base failed! first element in Beam3tospherepotential pair"
@@ -72,7 +72,7 @@ CONTACT::Beam3tospherepotential<numnodes, numnodalvalues>::Beam3tospherepotentia
 
   element2_ = dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element2);
 
-  if (element2_ == NULL)
+  if (element2_ == nullptr)
   {
     dserror(
         "cast to Rigidsphere failed! second element in Beam3tospherepotential pair"

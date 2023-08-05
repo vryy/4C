@@ -40,7 +40,7 @@ void XFEM::XFEMDofSet::Dof(
 int XFEM::XFEMDofSet::NumDofPerNode(const DRT::Node& node) const
 {
   CORE::GEO::CUT::Node* n = wizard_.GetNode(node.Id());
-  if (n != NULL)
+  if (n != nullptr)
   {
     int numdofpernode = DRT::DofSet::NumDofPerNode(node);
     return numdofpernode * n->NumDofSets();

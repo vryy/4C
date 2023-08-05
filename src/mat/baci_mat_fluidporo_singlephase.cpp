@@ -52,21 +52,21 @@ MAT::PAR::FluidPoroSinglePhase::FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Mate
   {
     case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_phasedof_pressure:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_phasedof_saturation:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
       phasedof_ = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
       break;
@@ -117,7 +117,7 @@ DRT::ParObject* MAT::FluidPoroSinglePhaseType::Create(const std::vector<char>& d
 /*----------------------------------------------------------------------*
  *   Create empty material                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroSinglePhase::FluidPoroSinglePhase() : params_(NULL) {}
+MAT::FluidPoroSinglePhase::FluidPoroSinglePhase() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  *   Create material with parameters                         vuong 08/16 |
@@ -141,7 +141,7 @@ void MAT::FluidPoroSinglePhase::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -159,7 +159,7 @@ void MAT::FluidPoroSinglePhase::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -343,7 +343,7 @@ DRT::ParObject* MAT::FluidPoroSingleVolFracType::Create(const std::vector<char>&
 /*----------------------------------------------------------------------*
  *   Create empty material                             kremheller 10/17 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac() : params_(NULL) {}
+MAT::FluidPoroSingleVolFrac::FluidPoroSingleVolFrac() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  *   Create material with parameters                    kremheller 10/17 |
@@ -367,7 +367,7 @@ void MAT::FluidPoroSingleVolFrac::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -385,7 +385,7 @@ void MAT::FluidPoroSingleVolFrac::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -472,7 +472,7 @@ DRT::ParObject* MAT::FluidPoroVolFracPressureType::Create(const std::vector<char
 /*----------------------------------------------------------------------*
  *   Create empty material                             kremheller 02/18 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroVolFracPressure::FluidPoroVolFracPressure() : params_(NULL) {}
+MAT::FluidPoroVolFracPressure::FluidPoroVolFracPressure() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  *   Create material with parameters                    kremheller 02/18 |
@@ -496,7 +496,7 @@ void MAT::FluidPoroVolFracPressure::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -514,7 +514,7 @@ void MAT::FluidPoroVolFracPressure::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

@@ -124,7 +124,7 @@ void ART::ArteryScatraCloneStrategy::SetElementData(
 
   // note: SetMaterial() was reimplemented by the transport element!
   DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
-  if (trans != NULL)
+  if (trans != nullptr)
   {
     // set material
     trans->SetMaterial(matid, oldele);

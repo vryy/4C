@@ -32,8 +32,8 @@ BEAMINTERACTION::BeamContactPair::BeamContactPair()
       issetup_(false),
       geometry_pair_(Teuchos::null),
       params_(Teuchos::null),
-      element1_(NULL),
-      element2_(NULL)
+      element1_(nullptr),
+      element2_(nullptr)
 {
   // empty constructor
 }

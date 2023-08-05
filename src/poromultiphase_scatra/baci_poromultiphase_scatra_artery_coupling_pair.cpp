@@ -895,13 +895,13 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
   // resize and initialize variables to zero
-  if (forcevec1 != NULL) forcevec1->size(dim1_);
-  if (forcevec2 != NULL) forcevec2->size(dim2_);
+  if (forcevec1 != nullptr) forcevec1->size(dim1_);
+  if (forcevec2 != nullptr) forcevec2->size(dim2_);
 
-  if (stiffmat11 != NULL) stiffmat11->shape(dim1_, dim1_);
-  if (stiffmat12 != NULL) stiffmat12->shape(dim1_, dim2_);
-  if (stiffmat21 != NULL) stiffmat21->shape(dim2_, dim1_);
-  if (stiffmat22 != NULL) stiffmat22->shape(dim2_, dim2_);
+  if (stiffmat11 != nullptr) stiffmat11->shape(dim1_, dim1_);
+  if (stiffmat12 != nullptr) stiffmat12->shape(dim1_, dim2_);
+  if (stiffmat21 != nullptr) stiffmat21->shape(dim2_, dim1_);
+  if (stiffmat22 != nullptr) stiffmat22->shape(dim2_, dim2_);
 
   if (arterymat_->IsCollapsed()) return 0.0;
 
@@ -975,8 +975,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 {
   if (!ispreevaluated_) dserror("MeshTying Pair has not yet been pre-evaluated");
 
-  if (stiffmat11 != NULL) stiffmat11->shape(dim1_, dim1_);
-  if (stiffmat12 != NULL) stiffmat12->shape(dim1_, dim2_);
+  if (stiffmat11 != nullptr) stiffmat11->shape(dim1_, dim1_);
+  if (stiffmat12 != nullptr) stiffmat12->shape(dim1_, dim2_);
 
   // do not evaluate if element is collapsed
   if (arterymat_->IsCollapsed()) return;
@@ -1382,9 +1382,9 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     CORE::LINALG::SerialDenseMatrix* D_ele, CORE::LINALG::SerialDenseMatrix* M_ele,
     CORE::LINALG::SerialDenseVector* Kappa_ele)
 {
-  if (D_ele != NULL) D_ele->shape(dim1_, dim1_);
-  if (M_ele != NULL) M_ele->shape(dim1_, dim2_);
-  if (Kappa_ele != NULL) Kappa_ele->size(dim1_);
+  if (D_ele != nullptr) D_ele->shape(dim1_, dim1_);
+  if (M_ele != nullptr) M_ele->shape(dim1_, dim2_);
+  if (Kappa_ele != nullptr) Kappa_ele->size(dim1_);
 
   if (numcoupleddofs_ > 0)
   {

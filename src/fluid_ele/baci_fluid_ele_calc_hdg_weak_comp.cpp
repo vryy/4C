@@ -477,7 +477,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       double r = 0.0;
       CORE::LINALG::Matrix<nsd_, 1> w(true);
 
-      dsassert(initfield != NULL && startfunc != NULL,
+      dsassert(initfield != nullptr && startfunc != nullptr,
           "initfield or startfuncno not set for initial value");
 
       // This function returns th value of the interior variables from the
@@ -529,12 +529,12 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
   for (unsigned int face = 0; face < nfaces_; ++face)
   {
     // check whether we are in the project phase for all faces or for boundary values
-    if (initfield == NULL)
+    if (initfield == nullptr)
     {
       // We get here only if it is not an initial value but it is a time
       // dependant boundary value. If we are here we only want the function to run
       // for boundary faces specified in the faceConsider variable
-      dsassert(faceConsider != NULL, "Unsupported operation");
+      dsassert(faceConsider != nullptr, "Unsupported operation");
       if (*faceConsider != face) continue;
     }
 
@@ -566,13 +566,14 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
 
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
-      if (initfield != NULL)  // Initial function
+      if (initfield != nullptr)  // Initial function
         EvaluateDensityMomentum(*startfunc, xyz, 0.0, r, w);
       else
       {
         // This is used to project a function only on the boundary during the
         // temporal evolution of the simulation
-        dsassert(functno != NULL && time != NULL && onoff != NULL, "No array with functions given");
+        dsassert(functno != nullptr && time != nullptr && onoff != nullptr,
+            "No array with functions given");
 
         // Deciding if to use the function or not for the density
         if ((*onoff)[0] == 1)
@@ -619,7 +620,7 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
 
     // In this case we fill elevec1 with the values of trVec because we have not
     // defined trVec as a matrix beginning where elevec1 begins
-    if (initfield != NULL)  // This is for initial functions
+    if (initfield != nullptr)  // This is for initial functions
       for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
       {
         elevec1(face * shapesface_->nfdofs_ * (1 + nsd_) + i) = trVec(i, 0);

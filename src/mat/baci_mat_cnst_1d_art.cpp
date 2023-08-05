@@ -76,7 +76,7 @@ DRT::ParObject* MAT::Cnst_1d_artType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::Cnst_1d_art::Cnst_1d_art()
-    : params_(NULL), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
+    : params_(nullptr), diam_init_(0.0), diam_(0.0), diam_previous_time_step_(0.0)
 {
 }
 
@@ -102,7 +102,7 @@ void MAT::Cnst_1d_art::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
   AddtoPack(data, diam_init_);
   AddtoPack(data, diam_);
@@ -123,7 +123,7 @@ void MAT::Cnst_1d_art::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

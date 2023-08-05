@@ -427,7 +427,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
   {
     const MAT::FluidPoroMultiPhase* actmat =
         dynamic_cast<const MAT::FluidPoroMultiPhase*>(mat.get());
-    if (actmat == NULL) dserror("cast failed");
+    if (actmat == nullptr) dserror("cast failed");
     numdofpernode_ = actmat->NumMat();
   }
   else

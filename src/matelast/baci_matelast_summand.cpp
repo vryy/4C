@@ -300,7 +300,7 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     }
     case INPAR::MAT::mes_isomuscleblemker:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::ELASTIC::PAR::IsoMuscleBlemker(curmat));
       MAT::ELASTIC::PAR::IsoMuscleBlemker* params =
           static_cast<MAT::ELASTIC::PAR::IsoMuscleBlemker*>(curmat->Parameter());

@@ -196,12 +196,12 @@ namespace DRT
         virtual const std::vector<double>* Phinp() const
         {
           dserror("Access method Phinp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual const CORE::LINALG::Matrix<nen, 1>* ElementPhinp(const int k) const
         {
           dserror("Access method ElementPhinp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual bool ElementHasValidVolFracPressure(const int ivolfrac) const
         {
@@ -220,23 +220,23 @@ namespace DRT
         virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradPhinp() const
         {
           dserror("Access method GradPhinp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual const std::vector<double>* Phidtnp() const
         {
           dserror("Access method Phidtnp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
 
         virtual const std::vector<double>* Hist() const
         {
           dserror("Access method Hist() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual const CORE::LINALG::Matrix<nsd, 1>* ConVelnp() const
         {
           dserror("Access method ConVelnp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual double DivConVelnp() const
         {
@@ -246,22 +246,22 @@ namespace DRT
         virtual const CORE::LINALG::Matrix<nsd, nen>* EConVelnp() const
         {
           dserror("Access method EConVelnp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual const CORE::LINALG::Matrix<nsd, 1>* Dispnp() const
         {
           dserror("Access method Dispnp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual const std::vector<double>* Scalarnp() const
         {
           dserror("Access method Salarnp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
         virtual const std::vector<CORE::LINALG::Matrix<nsd, 1>>* GradScalarnp() const
         {
           dserror("Access method GradScalarnp() not implemented! Wrong VariableManager?");
-          return NULL;
+          return nullptr;
         };
 
         //@}

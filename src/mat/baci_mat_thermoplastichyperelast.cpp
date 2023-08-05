@@ -83,7 +83,7 @@ DRT::ParObject* MAT::ThermoPlasticHyperElastType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 03/13 |
  *----------------------------------------------------------------------*/
-MAT::ThermoPlasticHyperElast::ThermoPlasticHyperElast() : params_(NULL) {}
+MAT::ThermoPlasticHyperElast::ThermoPlasticHyperElast() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -109,7 +109,7 @@ void MAT::ThermoPlasticHyperElast::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // pack history data
@@ -164,7 +164,7 @@ void MAT::ThermoPlasticHyperElast::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
   {
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
@@ -470,7 +470,7 @@ void MAT::ThermoPlasticHyperElast::Evaluate(const CORE::LINALG::Matrix<3, 3>* de
   // -------------------------- extract scalar-valued element temperature
   // initialise temperature
   double scalartemp = 0.0;
-  if (params.getEntryPtr("scalartemp") != NULL)
+  if (params.getEntryPtr("scalartemp") != nullptr)
   {
     // TSI, i.e. temperature is available --> use this temperature
     scalartemp = params.get<double>("scalartemp", -1.0);

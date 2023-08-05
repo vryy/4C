@@ -44,7 +44,7 @@ FLD::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization>& actdis,
 void FLD::TimIntHDG::Init()
 {
   DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
-  if (hdgdis == NULL) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0
                         ? dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))
@@ -466,7 +466,7 @@ namespace
       Teuchos::RCP<Epetra_MultiVector>& tracevel, Teuchos::RCP<Epetra_Vector>& cellPres)
   {
     // create dofsets for velocity and pressure at nodes
-    if (pressure.get() == NULL || pressure->GlobalLength() != dis.NumGlobalNodes())
+    if (pressure.get() == nullptr || pressure->GlobalLength() != dis.NumGlobalNodes())
     {
       velocity.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
       pressure.reset(new Epetra_Vector(*dis.NodeRowMap()));

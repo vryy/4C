@@ -461,7 +461,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
     // magnetic field. If there is only one component all the components will
     // be initialized to the same value.
     CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
-    dsassert(start_func != NULL, "funct not set for initial value");
+    dsassert(start_func != nullptr, "funct not set for initial value");
     EvaluateAll(*start_func, time, xyz, intVal);
     // now fill the components in the one-sided mass matrix and the right hand side
     for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
@@ -671,7 +671,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTest(DRT::EL
       // magnetic field. If there is only one component all the components will
       // be initialized to the same value.
       CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
-      dsassert(start_func != NULL, "funct not set for initial value");
+      dsassert(start_func != nullptr, "funct not set for initial value");
       EvaluateAll(*start_func, time, xyz, intVal);
       // now fill the components in the one-sided mass matrix and the right hand side
       for (unsigned int i = 0; i < shapes_.ndofs_; ++i)
@@ -1451,7 +1451,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
         // magnetic field. If there is only one component all the components will
         // be initialized to the same value.
         CORE::LINALG::SerialDenseVector intVal(2 * nsd_);
-        dsassert(funct != NULL, "funct not set for initial value");
+        dsassert(funct != nullptr, "funct not set for initial value");
         EvaluateAll((*funct)[0], time, xyz, intVal);
         // now fill the components in the one-sided mass matrix and the right hand side
         for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)

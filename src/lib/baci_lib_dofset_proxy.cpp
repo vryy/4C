@@ -28,7 +28,7 @@ DRT::DofSetProxy::DofSetProxy(DofSetInterface* dofset)
  *----------------------------------------------------------------------*/
 DRT::DofSetProxy::~DofSetProxy()
 {
-  if (dofset_ != NULL) dofset_->Unregister(this);
+  if (dofset_ != nullptr) dofset_->Unregister(this);
 }
 
 
@@ -60,8 +60,8 @@ int DRT::DofSetProxy::AssignDegreesOfFreedom(
  *----------------------------------------------------------------------*/
 void DRT::DofSetProxy::NotifyAssigned()
 {
-  if (dofset_ == NULL)
-    dserror("dofset_ pointer is NULL");
+  if (dofset_ == nullptr)
+    dserror("dofset_ pointer is nullptr");
   else
     isassigned_ = dofset_->Filled();
 
@@ -82,7 +82,7 @@ void DRT::DofSetProxy::Reset()
 void DRT::DofSetProxy::Disconnect(DofSetInterface* dofset)
 {
   if (dofset == dofset_)
-    dofset_ = NULL;
+    dofset_ = nullptr;
   else
     dserror("cannot disconnect from non-connected DofSet");
 
@@ -109,7 +109,7 @@ void DRT::DofSetProxy::CheckIsAssigned() const
   dsassert(isassigned_,
       "AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
       "and/or this proxy was not notified.");
-  dsassert(dofset_ != NULL, "dofset_ pointer is NULL");
+  dsassert(dofset_ != nullptr, "dofset_ pointer is nullptr");
 
   return;
 }

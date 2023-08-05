@@ -66,7 +66,7 @@ namespace FSI
    public:
     BlockPreconditioningMatrixFS(const CORE::LINALG::MultiMapExtractor& maps,
         ::ADAPTER::Fluid& fluid, ::ADAPTER::AleFluidWrapper& ale, int symmetric, double omega = 1.0,
-        int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = NULL);
+        int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Mathematical functions */
     //@{
@@ -136,7 +136,7 @@ namespace FSI
     /// construction
     OverlappingBlockMatrixFS(const CORE::LINALG::MultiMapExtractor& maps, ::ADAPTER::Fluid& fluid,
         ::ADAPTER::AleFluidWrapper& ale, bool structuresplit, int symmetric, double omega = 1.0,
-        int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = NULL);
+        int iterations = 1, double fomega = 1.0, int fiterations = 0, FILE* err = nullptr);
 
     /** \name Attribute access functions */
     //@{

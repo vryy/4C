@@ -113,7 +113,7 @@ void SCATRA::LEVELSET::Intersection::GetZeroLevelSet(const Epetra_Vector& phi,
     // =========================================================
     // cell is in contact with the interface (cut or touched)
     // =========================================================
-    if (ehandle != NULL)
+    if (ehandle != nullptr)
     {
       CORE::GEO::CUT::plain_element_set cuteles;
 

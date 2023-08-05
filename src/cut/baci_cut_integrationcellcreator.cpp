@@ -284,7 +284,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateTet4Cell(
   Facet* bot = *cit_facet;
 
   const std::vector<Point*>& bot_points = bot->CornerPoints();
-  Point* top_point = NULL;
+  Point* top_point = nullptr;
 
   for (++cit_facet; cit_facet != facets.end(); ++cit_facet)
   {
@@ -297,7 +297,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateTet4Cell(
       Point* p = *cit_sp;
       if (std::find(bot_points.begin(), bot_points.end(), p) == bot_points.end())
       {
-        if (top_point == NULL)
+        if (top_point == nullptr)
         {
           top_point = p;
         }
@@ -408,7 +408,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
 
     plain_facet_set::const_iterator i = facets.begin();
     Facet* bot = *i;
-    Facet* top = NULL;
+    Facet* top = nullptr;
     for (++i; i != facets.end(); ++i)
     {
       Facet* f = *i;
@@ -418,7 +418,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
         break;
       }
     }
-    if (top == NULL)
+    if (top == nullptr)
     {
       dserror("illegal hex8 cell");
     }
@@ -426,7 +426,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
     const std::vector<Point*>& bot_points = bot->CornerPoints();
     const std::vector<Point*>& top_points = top->CornerPoints();
 
-    std::vector<Point*> points(8, static_cast<Point*>(NULL));
+    std::vector<Point*> points(8, static_cast<Point*>(nullptr));
 
     std::copy(bot_points.begin(), bot_points.end(), points.data());
 
@@ -474,7 +474,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
             }
 
             pos = (pointpos1 - points.begin()) + 4;
-            if (points[pos] == NULL)
+            if (points[pos] == nullptr)
             {
               points[pos] = top_point1;
             }
@@ -484,7 +484,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateHex8Cell(
             }
 
             pos = (pointpos2 - points.begin()) + 4;
-            if (points[pos] == NULL)
+            if (points[pos] == nullptr)
             {
               points[pos] = top_point2;
             }
@@ -620,7 +620,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
     const std::vector<Point*>& bot_points = bot->CornerPoints();
     const std::vector<Point*>& top_points = top->CornerPoints();
 
-    std::vector<Point*> points(6, static_cast<Point*>(NULL));
+    std::vector<Point*> points(6, static_cast<Point*>(nullptr));
 
     std::copy(bot_points.begin(), bot_points.end(), points.data());
 
@@ -665,7 +665,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
           }
 
           pos = (pointpos1 - points.begin()) + 3;
-          if (points[pos] == NULL)
+          if (points[pos] == nullptr)
           {
             points[pos] = top_point1;
           }
@@ -675,7 +675,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreateWedge6Cell(
           }
 
           pos = (pointpos2 - points.begin()) + 3;
-          if (points[pos] == NULL)
+          if (points[pos] == nullptr)
           {
             points[pos] = top_point2;
           }
@@ -840,7 +840,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell(
     Facet* bot = quads[0];
 
     const std::vector<Point*>& bot_points = bot->CornerPoints();
-    Point* top_point = NULL;
+    Point* top_point = nullptr;
 
     for (std::vector<Facet*>::iterator i = tris.begin(); i != tris.end(); ++i)
     {
@@ -852,7 +852,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::CreatePyramid5Cell(
         Point* p = *i;
         if (std::find(bot_points.begin(), bot_points.end(), p) == bot_points.end())
         {
-          if (top_point == NULL)
+          if (top_point == nullptr)
           {
             top_point = p;
           }
@@ -1160,7 +1160,7 @@ bool CORE::GEO::CUT::IntegrationCellCreator::Hex8HorizontalCut(Mesh& mesh, Eleme
 
     // create new points
     element->GlobalCoordinates(rst, xyz);
-    projected_points.push_back(mesh.NewPoint(xyz.A(), NULL, NULL, 0.0));
+    projected_points.push_back(mesh.NewPoint(xyz.A(), nullptr, nullptr, 0.0));
     // change Benedikt: do not set the position for additionally created points
     /* REMARK:
      * the propagation of the inside/outside position to facets and volume cells

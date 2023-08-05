@@ -590,7 +590,7 @@ namespace DRT
     This map includes all nodes stored on this proc and also owned by this proc.
     This map is non-ambiguous, meaning that it is a non-overlapping map.
 
-    \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
     const Epetra_Map* NodeRowMap() const override;
 
@@ -601,7 +601,7 @@ namespace DRT
     This map includes all nodes stored on this proc including any ghosted nodes
     This map is ambiguous, meaning that it is an overlapping map
 
-    \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
     virtual const Epetra_Map* NodeColMap() const;
     /*!
@@ -611,7 +611,7 @@ namespace DRT
     This map includes all elements stored on this proc and also owned by this proc.
     This map is non-ambiguous, meaning that it is a non-overlapping map.
 
-    \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
     const Epetra_Map* ElementRowMap() const override;
     /*!
@@ -621,7 +621,7 @@ namespace DRT
     This map includes all elements stored on this proc including any ghosted elements
     This map is ambiguous, meaning that it is an overlapping map
 
-    \return NULL if Filled() is false. A call to FillComplete() is a prerequisite.
+    \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
     virtual const Epetra_Map* ElementColMap() const;
 
@@ -682,7 +682,7 @@ namespace DRT
     DEBUG version and throw an error message if not. Will crash in non-DEBUG
     version if element does not exist on calling processor.
 
-    \return Address of element if element is owned by calling proc, returns NULL
+    \return Address of element if element is owned by calling proc, returns nullptr
             otherwise
     */
     DRT::Element* gElement(int gid) const override;
@@ -1086,7 +1086,7 @@ namespace DRT
 
     \param name (in): Name of condition
 
-    \return Returns NULL if condition with that name does not exist
+    \return Returns nullptr if condition with that name does not exist
     */
     DRT::Condition* GetCondition(const std::string& name) const override;
 

@@ -1862,7 +1862,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 bool MORTAR::MortarElement::EvaluateShape(const double* xi, CORE::LINALG::SerialDenseVector& val,
     CORE::LINALG::SerialDenseMatrix& deriv, const int valdim, bool dualquad)
 {
-  if (!xi) dserror("EvaluateShape called with xi=NULL");
+  if (!xi) dserror("EvaluateShape called with xi=nullptr");
 
   // get node number and node pointers
   DRT::Node** mynodes = Nodes();
@@ -2070,7 +2070,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMult(const INPAR::MORTAR::ShapeFcn& 
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none) return true;
 
-  if (!xi) dserror("EvaluateShapeLagMult called with xi=NULL");
+  if (!xi) dserror("EvaluateShapeLagMult called with xi=nullptr");
 
   // dual LM shape functions or not
   bool dual = false;
@@ -2515,7 +2515,7 @@ bool MORTAR::MortarElement::EvaluateShapeLagMultLin(const INPAR::MORTAR::ShapeFc
   // some methods don't need a Lagrange multiplier interpolation
   if (lmtype == INPAR::MORTAR::shape_none) return true;
 
-  if (!xi) dserror("EvaluateShapeLagMultLin called with xi=NULL");
+  if (!xi) dserror("EvaluateShapeLagMultLin called with xi=nullptr");
   if (!IsSlave()) dserror("EvaluateShapeLagMultLin called for master element");
 
   // check for feasible element types (line3,tri6, quad8 or quad9)
@@ -4342,7 +4342,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 bool MORTAR::MortarElement::Evaluate2ndDerivShape(
     const double* xi, CORE::LINALG::SerialDenseMatrix& secderiv, const int& valdim)
 {
-  if (!xi) dserror("Evaluate2ndDerivShape called with xi=NULL");
+  if (!xi) dserror("Evaluate2ndDerivShape called with xi=nullptr");
 
   //**********************************************************************
   // IMPORTANT NOTE: In 3D the ordering of the 2nd derivatives is:

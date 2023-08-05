@@ -115,7 +115,7 @@ DRT::ParObject* MAT::RobinsonType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | constructor (public) --> called in Create()               dano 11/11 |
  *----------------------------------------------------------------------*/
-MAT::Robinson::Robinson() : params_(NULL) {}
+MAT::Robinson::Robinson() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -139,7 +139,7 @@ void MAT::Robinson::Pack(DRT::PackBuffer& data) const
   // matid
   int matid = -1;
   // in case we are in post-process mode
-  if (params_ != NULL) matid = params_->Id();
+  if (params_ != nullptr) matid = params_->Id();
   AddtoPack(data, matid);
 
   // pack history data
@@ -186,7 +186,7 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

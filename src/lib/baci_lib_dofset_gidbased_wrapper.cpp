@@ -58,8 +58,8 @@ int DRT::DofSetGIDBasedWrapper::AssignDegreesOfFreedom(
  *----------------------------------------------------------------------*/
 void DRT::DofSetGIDBasedWrapper::NotifyAssigned()
 {
-  if (sourcedis_->NodeColMap() == NULL) dserror("No NodeColMap on sourcedis");
-  if (sourcedis_->ElementColMap() == NULL) dserror("No ElementColMap on sourcedis");
+  if (sourcedis_->NodeColMap() == nullptr) dserror("No NodeColMap on sourcedis");
+  if (sourcedis_->ElementColMap() == nullptr) dserror("No ElementColMap on sourcedis");
 
   isassigned_ = sourcedofset_->Filled();
 
@@ -91,7 +91,7 @@ void DRT::DofSetGIDBasedWrapper::CheckIsAssigned() const
   dsassert(isassigned_,
       "AssignDegreesOfFreedom was not called on parent dofset of this proxy,\n"
       "and/or this proxy was not notified.");
-  dsassert(sourcedofset_ != Teuchos::null, "dofset_ pointer is NULL");
+  dsassert(sourcedofset_ != Teuchos::null, "dofset_ pointer is nullptr");
 
   return;
 }

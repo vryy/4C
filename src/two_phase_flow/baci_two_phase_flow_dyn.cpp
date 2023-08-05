@@ -124,7 +124,7 @@ void two_phase_dyn(int restart)
         {
           DRT::ELEMENTS::Transport* element =
               dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-          if (element == NULL)
+          if (element == nullptr)
             dserror("Invalid element type!");
           else
             element->SetImplType(INPAR::SCATRA::impltype_levelset);
@@ -290,7 +290,7 @@ void fluid_xfem_ls_drt(int restart)
 
   // Reserve DoF's for fluid
   const Epetra_Map* noderowmap = xfluiddis->NodeRowMap();
-  if (noderowmap == NULL) dserror("we expect a fill-complete call before!");
+  if (noderowmap == nullptr) dserror("we expect a fill-complete call before!");
   int nodeindexrange =
       noderowmap->MaxAllGID() - noderowmap->MinAllGID() + 1;  // if id's are not continuous numbered
 
@@ -359,7 +359,7 @@ void fluid_xfem_ls_drt(int restart)
     {
       DRT::ELEMENTS::Transport* element =
           dynamic_cast<DRT::ELEMENTS::Transport*>(scatradis->lColElement(i));
-      if (element == NULL)
+      if (element == nullptr)
         dserror("Invalid element type!");
       else
         element->SetImplType(INPAR::SCATRA::impltype_levelset);

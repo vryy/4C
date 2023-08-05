@@ -72,7 +72,7 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*
@@ -91,5 +91,5 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Defi
   else
     dserror("Defined problem type does not exist!!");
 
-  return NULL;
+  return nullptr;
 }

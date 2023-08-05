@@ -56,7 +56,7 @@ bool BEAMCONTACT::BeamCenterlineNode(const DRT::Node& node)
     const DRT::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(node.Elements()[i]);
 
-    if (beamele != NULL)
+    if (beamele != nullptr)
       if (beamele->IsCenterlineNode(node)) beamclnode = true;
   }
 
@@ -95,7 +95,7 @@ bool BEAMCONTACT::BeamElement(const DRT::Element& element)
 {
   const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element);
 
-  if (beamele != NULL)
+  if (beamele != nullptr)
     return true;
   else
     return false;
@@ -171,9 +171,9 @@ double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
   const DRT::ELEMENTS::Rigidsphere* thissphere =
       dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(ele);
 
-  if (beamele != NULL)
+  if (beamele != nullptr)
     eleradius = MANIPULATERADIUS * beamele->GetCircularCrossSectionRadiusForInteractions();
-  else if (thissphere != NULL)
+  else if (thissphere != nullptr)
     eleradius = thissphere->Radius();
   else
     dserror(

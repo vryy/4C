@@ -112,8 +112,8 @@ namespace FLD
     ){};
 
     /// Gmsh output of discretization
-    virtual void GmshOutputDiscretization(
-        bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = NULL){};
+    virtual void GmshOutputDiscretization(bool print_faces, int step,
+        std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr){};
 
     /// Main output routine for gmsh output
     virtual void GmshOutput(const std::string& filename_base,  ///< name for output file
@@ -199,7 +199,7 @@ namespace FLD
 
     /// Gmsh output of discretization
     void GmshOutputDiscretization(
-        bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = NULL);
+        bool print_faces, int step, std::map<int, CORE::LINALG::Matrix<3, 1>>* curr_pos = nullptr);
 
     /// Main output routine for gmsh output
     void GmshOutput(const std::string& filename_base,  ///< name for output file

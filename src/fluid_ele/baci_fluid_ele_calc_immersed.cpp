@@ -34,7 +34,7 @@ DRT::ELEMENTS::FluidEleCalcImmersed<distype>::Instance(CORE::UTILS::SingletonAct
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalcImmersed<distype>::FluidEleCalcImmersed()
-    : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(NULL), gp_iquad_(0)
+    : DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc(), immersedele_(nullptr), gp_iquad_(0)
 {
   my::fldpara_ = DRT::ELEMENTS::FluidEleParameterStd::Instance();
 }
@@ -233,7 +233,8 @@ void DRT::ELEMENTS::FluidEleCalcImmersed<distype>::ComputeSubgridScaleVelocity(
     // some checking
     if (my::fldparatimint_->IsStationary())
       dserror("there is no time dependent subgrid scale closure for stationary problems\n");
-    if (saccn == NULL or sveln == NULL or svelnp == NULL) dserror("no subscale array provided");
+    if (saccn == nullptr or sveln == nullptr or svelnp == nullptr)
+      dserror("no subscale array provided");
 
     // parameter definitions
     double alphaF = my::fldparatimint_->AlphaF();

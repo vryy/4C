@@ -35,7 +35,7 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& di
 
   const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-  if (beamele != NULL)
+  if (beamele != nullptr)
   {
     beamele->CenterlineDofIndicesOfElement(ele_centerline_dof_indices);
   }
@@ -77,7 +77,7 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
 
 
   // assemble centerline DOF values correctly into element DOFvec vectors/matrices
-  if (eleforce != NULL)
+  if (eleforce != nullptr)
   {
     for (unsigned int iele = 0; iele < 2; ++iele)
     {
@@ -99,7 +99,7 @@ void FBI::UTILS::AssembleCenterlineDofForceStiffIntoFBIElementForceStiff(
     }
   }
 
-  if (elestiff != NULL)
+  if (elestiff != nullptr)
   {
     for (unsigned int iele = 0; iele < 2; ++iele)
     {

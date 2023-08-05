@@ -60,7 +60,7 @@ namespace DRT
     \param element (in)     : the element (optionally)
     */
     virtual void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
-        const Element* element = NULL) const
+        const Element* element = nullptr) const
     {
       if (nds > 1) dserror("xwall discretization can only handle one dofset at the moment");
 
@@ -70,11 +70,11 @@ namespace DRT
       std::vector<int> totaldof;
       dofsets_[nds]->Dof(totaldof, node, nodaldofset);
 
-      if (element == NULL && element->Shape() == DRT::Element::hex8)
+      if (element == nullptr && element->Shape() == DRT::Element::hex8)
         dserror("element required for location vector of hex8 element");
 
       int size;
-      if (element != NULL)
+      if (element != nullptr)
         size = std::min((int)totaldof.size(), element->NumDofPerNode(*node));
       else
         size = (int)totaldof.size();

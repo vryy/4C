@@ -67,7 +67,7 @@ SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
         slave_xyz  ///< global node coordinates of coupling slave element
 )
 {
-  SlaveElementInterface* sla = NULL;
+  SlaveElementInterface* sla = nullptr;
 
   // get number of dofs for this slave element
   const unsigned numdofpernode = slave_ele->NumDofPerNode(*slave_ele->Nodes()[0]);
@@ -180,7 +180,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
     CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
-  NitscheInterface* nit = NULL;
+  NitscheInterface* nit = nullptr;
   typedef NitscheCoupling<distype, DRT::Element::dis_none, 3> NitscheCouplType;
   nit = new NitscheCouplType(C_umum, rhC_um, fldparaxfem);
 
@@ -194,7 +194,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
     CORE::LINALG::SerialDenseMatrix::Base& C_umum, CORE::LINALG::SerialDenseMatrix::Base& rhC_um,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
-  NitscheInterface* nit = NULL;
+  NitscheInterface* nit = nullptr;
 
   // get number of dofs for this boundary element
   const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);
@@ -296,7 +296,7 @@ NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
     CORE::LINALG::SerialDenseMatrix::Base& rhC_us,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
-  NitscheInterface* nit = NULL;
+  NitscheInterface* nit = nullptr;
 
   // get number of dofs for this boundary element
   const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);
@@ -407,7 +407,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
     CORE::LINALG::SerialDenseMatrix::Base& rhC_um, CORE::LINALG::SerialDenseMatrix::Base& rhC_us,
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
-  NitscheInterface* nit = NULL;
+  NitscheInterface* nit = nullptr;
 
   // get number of dofs for the embedded element
   const unsigned numdofpernode = vele->NumDofPerNode(*vele->Nodes()[0]);
@@ -487,7 +487,7 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
                                   ///< adjoint viscous term
 )
 {
-  HybridLMInterface* hybridlm = NULL;
+  HybridLMInterface* hybridlm = nullptr;
   typedef HybridLMCoupling<distype, DRT::Element::dis_none, 3> HybridLMCouplType;
   hybridlm = new HybridLMCouplType(is_viscAdjointSymmetric);
 
@@ -570,7 +570,7 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
                                   ///< adjoint viscous term
 )
 {
-  HybridLMInterface* hlm = NULL;
+  HybridLMInterface* hlm = nullptr;
 
   // get number of dofs for this boundary element
   const unsigned numdofpernode = bele->NumDofPerNode(*bele->Nodes()[0]);

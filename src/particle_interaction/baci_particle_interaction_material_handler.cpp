@@ -55,7 +55,7 @@ void PARTICLEINTERACTION::MaterialHandler::Init()
         dynamic_cast<const MAT::PAR::ParticleMaterialBase*>(matparameter);
 
     // safety check
-    if (particlematparameter == NULL) dserror("cast to specific particle material failed!");
+    if (particlematparameter == nullptr) dserror("cast to specific particle material failed!");
 
     // relate particle types to particle material parameters
     phasetypetoparticlematpar_[type_i] = particlematparameter;

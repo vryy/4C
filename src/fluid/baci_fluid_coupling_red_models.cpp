@@ -1147,7 +1147,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(
   std::vector<DRT::Condition*> conds_red;
   discret_redD_->GetCondition("Art_redD_3D_CouplingCond", conds_red);
 
-  DRT::Condition* cond_red = NULL;
+  DRT::Condition* cond_red = nullptr;
   for (unsigned int i = 0; i != conds_red.size(); i++)
   {
     if (conds_red[i]->GetInt("ConditionID") == condid_)

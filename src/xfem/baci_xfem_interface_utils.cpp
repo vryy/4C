@@ -616,7 +616,7 @@ double XFEM::UTILS::EvalElementVolume(
     case DRT::Element::nurbs8:
     case DRT::Element::nurbs27:
     {
-      if (nurbs_weights == NULL || nurbs_knots == NULL)
+      if (nurbs_weights == nullptr || nurbs_knots == nullptr)
         dserror("For Nurbs elements, weights and knots are required!");
       CORE::DRT::NURBS::UTILS::nurbs_get_funct_deriv(
           funct, deriv, xsi, *nurbs_knots, *nurbs_weights, distype);

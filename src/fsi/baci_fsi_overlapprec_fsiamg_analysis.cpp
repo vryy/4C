@@ -274,7 +274,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::Analyse_SingleField(const std::string fi
       Teuchos::ParameterList p;
       SelectMLAPISmoother(type, level, subp, p, pushlist);
       S = Teuchos::rcp(new MLAPI::InverseOperator());
-      S->Reshape(A[level], type, p, NULL);
+      S->Reshape(A[level], type, p, nullptr);
       for (int i = 0; i < 99; ++i)
       {
         double damp = 1.0 - i * 0.01;  // reduce damping factor in steps of 0.01;

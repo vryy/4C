@@ -104,7 +104,7 @@ namespace XFEM
     /// Returns the xFEM field discretizaton
     DRT::DiscretizationInterface& XFieldDiscret()
     {
-      if (xfield_discret_ptr_.is_null()) dserror("xfield_discret_ptr_ is NULL!");
+      if (xfield_discret_ptr_.is_null()) dserror("xfield_discret_ptr_ is nullptr!");
 
       return *xfield_discret_ptr_;
     }
@@ -115,7 +115,7 @@ namespace XFEM
     /// Returns the standard field discretizaton
     DRT::DiscretizationInterface& FieldDiscret()
     {
-      if (field_discret_ptr_.is_null()) dserror("field_discret_ptr_ is NULL!");
+      if (field_discret_ptr_.is_null()) dserror("field_discret_ptr_ is nullptr!");
 
       return *field_discret_ptr_;
     }

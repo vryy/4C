@@ -296,8 +296,9 @@ void CONTACT::CoTSIInterface::AssembleLinConduct(CORE::LINALG::SparseMatrix& lin
 
   AssembleDualMassLumped(linConductThermoLMglobal, linConductDISglobal);
 
-  AssembleLinDM_X(&linConductDISglobal, NULL, -delta_bar, LinDM_Diss, activenodes_);
-  AssembleDM_linDiss(&linConductDISglobal, NULL, &linConductContactLMglobal, NULL, -delta_bar);
+  AssembleLinDM_X(&linConductDISglobal, nullptr, -delta_bar, LinDM_Diss, activenodes_);
+  AssembleDM_linDiss(
+      &linConductDISglobal, nullptr, &linConductContactLMglobal, nullptr, -delta_bar);
 
   AssembleDM_LMn(-beta_bar, &linConductTEMPglobal);
   AssembleLinLMnDM_Temp(-beta_bar, &linConductDISglobal, &linConductContactLMglobal);
@@ -387,7 +388,7 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X
     const Teuchos::RCP<Epetra_Map> node_rowmap)
 {
   // get out if there's nothing to do
-  if (linD_X == NULL && linM_X == NULL) return;
+  if (linD_X == nullptr && linM_X == nullptr) return;
 
   // no dissipation without friction
   if (!friction_ && mode == LinDM_Diss) return;
@@ -416,7 +417,7 @@ void CONTACT::CoTSIInterface::AssembleLinDM_X(CORE::LINALG::SparseMatrix* linD_X
       case LinDM_Diss:
       {
         CONTACT::FriNode* frnode = dynamic_cast<CONTACT::FriNode*>(cnode);
-        if (frnode == NULL)
+        if (frnode == nullptr)
           lm = 0.;
         else
         {
@@ -549,8 +550,8 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
     CORE::LINALG::SparseMatrix* m_LinDissContactLM, const double fac)
 {
   // get out if there's nothing to do
-  if (d_LinDissDISP == NULL && m_LinDissDISP == NULL && d_LinDissContactLM == NULL &&
-      m_LinDissContactLM == NULL)
+  if (d_LinDissDISP == nullptr && m_LinDissDISP == nullptr && d_LinDissContactLM == nullptr &&
+      m_LinDissContactLM == nullptr)
     return;
 
   // there's no dissipation without friction
@@ -570,7 +571,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
     CoNode* cnode = dynamic_cast<CoNode*>(node);
     FriNode* fnode = dynamic_cast<FriNode*>(cnode);
     // if this is not a friction node, there is no dissipation so go to the next one
-    if (fnode == NULL) continue;
+    if (fnode == nullptr) continue;
 
     // get nodal normal
     const CORE::LINALG::Matrix<3, 1> n(cnode->MoData().n(), true);
@@ -598,7 +599,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
 
 
     // linearization w.r.t. displacements
-    if (d_LinDissDISP != NULL || m_LinDissDISP != NULL)
+    if (d_LinDissDISP != nullptr || m_LinDissDISP != nullptr)
     {
       // get nodal jump and deriv
       const std::vector<std::map<int, double>>& derivJump = fnode->FriData().GetDerivJump();
@@ -619,7 +620,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
 
       // put everything together*******************************************
       /**************************************************** D-matrix ******/
-      if (d_LinDissDISP != NULL)
+      if (d_LinDissDISP != nullptr)
         if ((cnode->MoData().GetD()).size() > 0)
           for (_cip k = cnode->MoData().GetD().begin(); k != cnode->MoData().GetD().end(); ++k)
           {
@@ -631,7 +632,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
                   fac * k->second * currDeriv->second, kcnode->Dofs()[0], currDeriv->first);
           }
       /**************************************************** M-matrix ******/
-      if (m_LinDissDISP != NULL)
+      if (m_LinDissDISP != nullptr)
         if ((cnode->MoData().GetM()).size() > 0)
           for (_cim k = cnode->MoData().GetM().begin(); k != cnode->MoData().GetM().end(); ++k)
           {
@@ -645,7 +646,7 @@ void CONTACT::CoTSIInterface::AssembleDM_linDiss(CORE::LINALG::SparseMatrix* d_L
     }  // linearization w.r.t. displacements
 
     // linearization wrt contact Lagrange multiplier
-    if (d_LinDissContactLM != NULL)
+    if (d_LinDissContactLM != nullptr)
       // put everything together*******************************************
       /**************************************************** D-matrix ******/
       if ((cnode->MoData().GetD()).size() > 0)
@@ -678,7 +679,7 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
     const double fac, CORE::LINALG::SparseMatrix* lin_disp, CORE::LINALG::SparseMatrix* lin_lm)
 {
   // get out if there's nothing to do
-  if (lin_disp == NULL) dserror("called to assemble something but didn't provide a matrix");
+  if (lin_disp == nullptr) dserror("called to assemble something but didn't provide a matrix");
 
   typedef std::map<int, double>::const_iterator _cim;
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _cip;
@@ -756,7 +757,7 @@ void CONTACT::CoTSIInterface::AssembleLinLMnDM_Temp(
 void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::SparseMatrix* DM_LMn)
 {
   // get out if there's nothing to do
-  if (DM_LMn == NULL) dserror("called to assemble something but didn't provide a matrix");
+  if (DM_LMn == nullptr) dserror("called to assemble something but didn't provide a matrix");
 
   typedef std::map<int, double>::const_iterator _cim;
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _cip;
@@ -798,7 +799,7 @@ void CONTACT::CoTSIInterface::AssembleDM_LMn(const double fac, CORE::LINALG::Spa
 void CONTACT::CoTSIInterface::AssembleInactive(CORE::LINALG::SparseMatrix* linConductThermoLM)
 {
   // get out if there's nothing to do
-  if (linConductThermoLM == NULL)
+  if (linConductThermoLM == nullptr)
     dserror("called to assemble something but didn't provide a matrix");
 
   // inactive nodes

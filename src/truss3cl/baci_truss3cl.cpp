@@ -408,7 +408,7 @@ void DRT::ELEMENTS::Truss3CL::LocationVector(
 
         if (doDirichlet)
         {
-          const std::vector<int>* flag = NULL;
+          const std::vector<int>* flag = nullptr;
           DRT::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
@@ -442,7 +442,7 @@ void DRT::ELEMENTS::Truss3CL::LocationVector(
 
     if (doDirichlet)
     {
-      const std::vector<int>* flag = NULL;
+      const std::vector<int>* flag = nullptr;
       DRT::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
@@ -490,7 +490,7 @@ int DRT::ELEMENTS::Truss3CLType::Initialize(DRT::Discretization& dis)
     currele->xrefe_.clear();
 
     // getting element's nodal coordinates and treating them as reference configuration
-    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+    if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
     {

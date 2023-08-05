@@ -113,7 +113,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
     {
       DRT::ELEMENTS::Transport* element =
           dynamic_cast<DRT::ELEMENTS::Transport*>(discret_->lColElement(i));
-      if (element == NULL) dserror("Invalid element type!");
+      if (element == nullptr) dserror("Invalid element type!");
 
       if (element->Material()->MaterialType() == INPAR::MAT::m_matlist_reactions)
         element->SetImplType(INPAR::SCATRA::impltype_advreac);

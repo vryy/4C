@@ -902,7 +902,7 @@ void CONTACT::Beam3tospherecontact<numnodes, numnodalvalues>::ComputeGap(
 {
   const DRT::ELEMENTS::Beam3Base* beamele = static_cast<const DRT::ELEMENTS::Beam3Base*>(element1_);
 
-  if (beamele == NULL) dserror("cast to beam base failed!");
+  if (beamele == nullptr) dserror("cast to beam base failed!");
 
   // compute radii of both elements
   double radius_ele1 = MANIPULATERADIUS * beamele->GetCircularCrossSectionRadiusForInteractions();

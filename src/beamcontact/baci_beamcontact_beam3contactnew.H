@@ -267,7 +267,7 @@ namespace CONTACT
         return &normal_old_;
       }
       else
-        return NULL;
+        return nullptr;
     };
 
     /*!
@@ -492,8 +492,8 @@ namespace CONTACT
     void EvaluateFcContact(const double& pp, Epetra_Vector* fint,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = NULL,
-        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = NULL);
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = nullptr);
 
     /*!
     \brief Evaluate contact stiffness
@@ -518,8 +518,8 @@ namespace CONTACT
     void EvaluateAlgorithmicForce(const double& pp, Epetra_Vector* fint,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N1,
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2,
-        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = NULL,
-        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = NULL);
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = nullptr);
 
     /*!
     \brief Evaluate algorithmic stiffnesses that make convergence more robust / faster

@@ -142,11 +142,11 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 {
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
-  Epetra_CrsMatrix* Aprime = NULL;
+  Epetra_CrsMatrix* Aprime = nullptr;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,nullptr,false));
     Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
@@ -187,11 +187,11 @@ void CORE::LINALG::Add(const Epetra_CrsMatrix& A, const bool transposeA, const d
 {
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
-  Epetra_CrsMatrix* Aprime = NULL;
+  Epetra_CrsMatrix* Aprime = nullptr;
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    // Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,nullptr,false));
     Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
@@ -219,7 +219,7 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Transpose(const Epetra_CrsMatrix& A
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
   Teuchos::RCP<EpetraExt::RowMatrix_Transpose> Atrans =
-      Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(/*false,NULL,false*/));
+      Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(/*false,nullptr,false*/));
   Epetra_CrsMatrix* Aprime =
       &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
 
@@ -267,7 +267,7 @@ Teuchos::RCP<Epetra_CrsMatrix> CORE::LINALG::Multiply(
   const int guessnpr = std::max(A.MaxNumEntries(), B.MaxNumEntries());
 
   // create resultmatrix with correct rowmap
-  Epetra_CrsMatrix* C = NULL;
+  Epetra_CrsMatrix* C = nullptr;
   if (!transA)
     C = new Epetra_CrsMatrix(::Copy, A.OperatorRangeMap(), guessnpr, false);
   else

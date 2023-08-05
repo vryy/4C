@@ -257,29 +257,29 @@ namespace DRT
         const Epetra_Map& noderowmap, const Epetra_Map& elecolmap, const std::string& statename,
         const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
         const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-        const Epetra_Map* fullnoderowmap = NULL,
-        const std::map<int, int>* slavetomastercolnodesmap = NULL,
-        Epetra_Vector* const sys_mat_diagonal_ptr = NULL);
+        const Epetra_Map* fullnoderowmap = nullptr,
+        const std::map<int, int>* slavetomastercolnodesmap = nullptr,
+        Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
 
     Teuchos::RCP<Epetra_MultiVector> ComputeNodalL2Projection(Discretization& dis,
         const Epetra_Map& noderowmap, const unsigned& numcolele, const std::string& statename,
         const int& numvec, Teuchos::ParameterList& params, const int& solvernumber,
         const enum INPAR::SCATRA::L2ProjectionSystemType& l2_proj_type,
-        const Epetra_Map* fullnoderowmap = NULL,
-        const std::map<int, int>* slavetomastercolnodesmap = NULL,
-        Epetra_Vector* const sys_mat_diagonal_ptr = NULL);
+        const Epetra_Map* fullnoderowmap = nullptr,
+        const std::map<int, int>* slavetomastercolnodesmap = nullptr,
+        Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
 
     Teuchos::RCP<Epetra_MultiVector> SolveDiagonalNodalL2Projection(
         CORE::LINALG::SparseMatrix& massmatrix, Epetra_MultiVector& rhs, const int& numvec,
-        const Epetra_Map& noderowmap, const Epetra_Map* fullnoderowmap = NULL,
-        const std::map<int, int>* slavetomastercolnodesmap = NULL,
-        Epetra_Vector* const sys_mat_diagonal_ptr = NULL);
+        const Epetra_Map& noderowmap, const Epetra_Map* fullnoderowmap = nullptr,
+        const std::map<int, int>* slavetomastercolnodesmap = nullptr,
+        Epetra_Vector* const sys_mat_diagonal_ptr = nullptr);
 
     Teuchos::RCP<Epetra_MultiVector> SolveNodalL2Projection(CORE::LINALG::SparseMatrix& massmatrix,
         Epetra_MultiVector& rhs, const Epetra_Comm& comm, const int& numvec,
         const int& solvernumber, const Epetra_Map& noderowmap,
-        const Epetra_Map* fullnoderowmap = NULL,
-        const std::map<int, int>* slavetomastercolnodesmap = NULL);
+        const Epetra_Map* fullnoderowmap = nullptr,
+        const std::map<int, int>* slavetomastercolnodesmap = nullptr);
 
     Teuchos::RCP<Epetra_MultiVector> PostSolveNodalL2Projection(
         const Teuchos::RCP<Epetra_MultiVector>& nodevec, const Epetra_Map& noderowmap,

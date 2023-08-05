@@ -19,7 +19,7 @@ MAT::PAR::FluidPoroRelPermeabilityLaw*
 MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(int matID)
 {
   // initialize null pointer
-  MAT::PAR::FluidPoroRelPermeabilityLaw* relpermeabilitylaw = NULL;
+  MAT::PAR::FluidPoroRelPermeabilityLaw* relpermeabilitylaw = nullptr;
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -39,7 +39,7 @@ MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(int matID)
   {
     case INPAR::MAT::m_fluidporo_relpermeabilitylaw_constant:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawConstant(curmat));
       relpermeabilitylaw =
           static_cast<MAT::PAR::FluidPoroRelPermeabilityLawConstant*>(curmat->Parameter());
@@ -47,7 +47,7 @@ MAT::PAR::FluidPoroRelPermeabilityLaw::CreateRelPermeabilityLaw(int matID)
     }
     case INPAR::MAT::m_fluidporo_relpermeabilitylaw_exp:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroRelPermeabilityLawExponent(curmat));
       relpermeabilitylaw =
           static_cast<MAT::PAR::FluidPoroRelPermeabilityLawExponent*>(curmat->Parameter());

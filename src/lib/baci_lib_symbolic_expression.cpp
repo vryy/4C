@@ -377,7 +377,7 @@ namespace DRT::UTILS::SYMBOLICEXPRESSIONDETAILS
           {
             pos_--;
           }
-          real_ = strtod(str_, NULL);
+          real_ = strtod(str_, nullptr);
           tok_ = Lexer::tok_real;
           return;
         }

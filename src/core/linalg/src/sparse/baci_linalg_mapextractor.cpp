@@ -64,7 +64,7 @@ void CORE::LINALG::MultiMapExtractor::CheckForValidMapExtractor() const
   {
     if (maps_[i] != Teuchos::null)
     {
-      if (maps_[i]->DataPtr() == NULL)
+      if (maps_[i]->DataPtr() == nullptr)
       {
         dserror("Got zero data pointer on setup of block %d of maps_\n", i);
       }

@@ -87,7 +87,7 @@ namespace NOX
 
         /// compute the modified Newton direction
         bool computeModifiedNewton(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver, Epetra_Vector* diagonal = NULL);
+            const NOX::Solver::Generic& solver, Epetra_Vector* diagonal = nullptr);
 
         /// solve the unmodified system
         bool solveUnmodifiedSystem(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
@@ -122,7 +122,7 @@ namespace NOX
         Teuchos::RCP<Epetra_Vector> getDiagonal(const NOX::Abstract::Group& grp) const;
 
         /// print info to stream
-        void print(std::ostream& os, const NOX::NLN::CorrectionType* corr_type = NULL) const;
+        void print(std::ostream& os, const NOX::NLN::CorrectionType* corr_type = nullptr) const;
 
         /// throw error which can be caught
         void throwError(
@@ -141,7 +141,7 @@ namespace NOX
         double primal_diag_corr_last_ = 0.0;
 
         /// number of corrections (pointer to the value in the parameter list)
-        int* corr_counter_ = NULL;
+        int* corr_counter_ = nullptr;
 
         /// count successive reduction
         int successive_red_counter_ = 1000;

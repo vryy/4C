@@ -631,8 +631,8 @@ MORTAR::IntCell::IntCell(int id, int nvertices, CORE::LINALG::Matrix<3, 3>& coor
 bool MORTAR::IntCell::LocalToGlobal(const double* xi, double* globcoord, int inttype)
 {
   // check input
-  if (!xi) dserror("LocalToGlobal called with xi=NULL");
-  if (!globcoord) dserror("LocalToGlobal called with globcoord=NULL");
+  if (!xi) dserror("LocalToGlobal called with xi=nullptr");
+  if (!globcoord) dserror("LocalToGlobal called with globcoord=nullptr");
 
   if (Shape() == DRT::Element::tri3 or Shape() == DRT::Element::line2)
   {
@@ -703,7 +703,7 @@ void MORTAR::IntCell::Print()
 bool MORTAR::IntCell::EvaluateShape(
     const double* xi, CORE::LINALG::Matrix<3, 1>& val, CORE::LINALG::Matrix<3, 2>& deriv)
 {
-  if (!xi) dserror("EvaluateShape (IntCell) called with xi=NULL");
+  if (!xi) dserror("EvaluateShape (IntCell) called with xi=nullptr");
 
   // 3noded triangular element
   if (Shape() == DRT::Element::tri3)

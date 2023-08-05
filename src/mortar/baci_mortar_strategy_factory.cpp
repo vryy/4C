@@ -174,7 +174,7 @@ void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::DiscretizationInt
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&(discret));
-  if (nurbsdis == NULL) dserror("Dynamic cast failed!");
+  if (nurbsdis == nullptr) dserror("Dynamic cast failed!");
 
   Teuchos::RCP<const DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();
   std::vector<CORE::LINALG::SerialDenseVector> parentknots(Dim());

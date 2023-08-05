@@ -297,22 +297,24 @@ namespace DRT
           std::vector<int>& lm,                     ///< (in) location matrix for de-assembly
           CORE::LINALG::SerialDenseMatrix&
               elemat1,  ///< (out) (stiffness-)matrix to be filled by
-                        ///< element. If NULL on input, the controling method
+                        ///< element. If nullptr on input, the controling method
                         ///< does not expect the element to fill this matrix.
           CORE::LINALG::SerialDenseMatrix&
               elemat2,  ///< (out) (mass-)matrix to be filled by element. If
-                        ///< NULL on input, the controling method does not
+                        ///< nullptr on input, the controling method does not
                         ///< expect the element to fill this matrix.
           CORE::LINALG::SerialDenseVector&
               elevec1,  ///< (out) (internal force-)vector to be filled by
-                        ///< element. If NULL on input, the controlling method
+                        ///< element. If nullptr on input, the controlling method
                         ///< does not expect the element to fill this vector
-          CORE::LINALG::SerialDenseVector& elevec2,  ///< (out)  vector to be filled by element. If
-                                                     ///< NULL on input, the controlling method does
-                                                     ///< not expect the element to fill this vector
-          CORE::LINALG::SerialDenseVector& elevec3   ///< (out) vector to be filled by element. If
-                                                     ///< NULL on input, the controlling method does
-                                                     ///< not expect the element to fill this vector
+          CORE::LINALG::SerialDenseVector&
+              elevec2,  ///< (out)  vector to be filled by element. If
+                        ///< nullptr on input, the controlling method does
+                        ///< not expect the element to fill this vector
+          CORE::LINALG::SerialDenseVector&
+              elevec3  ///< (out) vector to be filled by element. If
+                       ///< nullptr on input, the controlling method does
+                       ///< not expect the element to fill this vector
           ) override;
 
 
@@ -325,7 +327,7 @@ namespace DRT
       /// \param discretization (in): A reference to the underlying discretization
       /// \param condition (in)     : The condition to be evaluated
       /// \param lm (in)            : location vector of this element
-      /// \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      /// \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       ///
       /// \return 0 if successful, negative otherwise
       int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -840,13 +842,13 @@ namespace DRT
       /// Following the pattern given at #ExtractDispAndPres()
       static void BuildElementMatrix(CORE::LINALG::Matrix<NUMDOF_, NUMDOF_>* mat,  ///< 32x32 matrix
           const CORE::LINALG::Matrix<NUMDISP_, NUMDISP_>*
-              matdd,  ///< 24x24 sub-matrix, if NULL then 0s are inserted
+              matdd,  ///< 24x24 sub-matrix, if nullptr then 0s are inserted
           const CORE::LINALG::Matrix<NUMDISP_, NUMPRES_>*
-              matdp,  ///< 24x8 sub-matrix, if NULL then 0s are inserted
+              matdp,  ///< 24x8 sub-matrix, if nullptr then 0s are inserted
           const CORE::LINALG::Matrix<NUMPRES_, NUMDISP_>*
-              matpd,  ///< 8x24 sub-matrix, if NULL then transpose of #matdp is inserted or 0s
+              matpd,  ///< 8x24 sub-matrix, if nullptr then transpose of #matdp is inserted or 0s
           const CORE::LINALG::Matrix<NUMPRES_, NUMPRES_>*
-              matpp  ///< 8x8 sub-matrix, if NULL then 0s are inserted
+              matpp  ///< 8x8 sub-matrix, if nullptr then 0s are inserted
       );
 
       /// Build 32x1 element vector
@@ -854,9 +856,9 @@ namespace DRT
       /// Following the pattern given at #ExtractDispAndPres()
       static void BuildElementVector(CORE::LINALG::Matrix<NUMDOF_, 1>* vct,  ///< 32x1 vector
           const CORE::LINALG::Matrix<NUMDISP_, 1>*
-              vctd,  ///< 24x1 sub-vector, if NULL then 0s are inserted
+              vctd,  ///< 24x1 sub-vector, if nullptr then 0s are inserted
           const CORE::LINALG::Matrix<NUMPRES_, 1>*
-              vctp  ///< 8x1 sub-vector, if NULL then 0s are inserted
+              vctp  ///< 8x1 sub-vector, if nullptr then 0s are inserted
       );
 
       /// Assemble global volume

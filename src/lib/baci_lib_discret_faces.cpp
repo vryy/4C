@@ -869,7 +869,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
     {
       dsassert(master_peid != -1, "At least the master element should be present");
       DRT::Element* parent_master = gElement(master_peid);
-      DRT::Element* parent_slave = slave_peid != -1 ? gElement(slave_peid) : NULL;
+      DRT::Element* parent_slave = slave_peid != -1 ? gElement(slave_peid) : nullptr;
 
       dsassert(master_peid == parent_master->Id(), "Internal error");
       dsassert(slave_peid == -1 || slave_peid == parent_slave->Id(), "Internal error");
@@ -894,7 +894,7 @@ void DRT::DiscretizationFaces::BuildFaces(const bool verbose)
       // Teuchos::RCP's finished)
       Teuchos::RCP<DRT::FaceElement> surf_clone =
           Teuchos::rcp(dynamic_cast<DRT::FaceElement*>(surf->Clone()));
-      if (surf_clone.get() == NULL) dserror("Invalid element detected. Expected face element");
+      if (surf_clone.get() == nullptr) dserror("Invalid element detected. Expected face element");
 
       // Set owning process of surface to node with smallest gid
       // REMARK: see below

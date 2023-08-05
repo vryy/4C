@@ -71,7 +71,7 @@ Converter::Converter(PostField* field) : field_(field)
   {
     DRT::Element* actele = s8dis_->lRowElement(i);
     DRT::ELEMENTS::Shell8* actshell = dynamic_cast<DRT::ELEMENTS::Shell8*>(actele);
-    if (actshell == NULL) dserror("not a shell8 element");
+    if (actshell == nullptr) dserror("not a shell8 element");
 
     const CORE::LINALG::SerialDenseMatrix* dirs = actshell->GetDirectors();
     const std::vector<double>* thick = actshell->GetThickness();
@@ -122,7 +122,7 @@ Converter::Converter(PostField* field) : field_(field)
   {
     DRT::Element* actele = s8dis_->lRowElement(i);
     DRT::ELEMENTS::Shell8* actshell = dynamic_cast<DRT::ELEMENTS::Shell8*>(actele);
-    if (actshell == NULL) dserror("not a shell8 element");
+    if (actshell == nullptr) dserror("not a shell8 element");
 
     std::vector<int> h8nodeids;
     copy(actele->NodeIds(), actele->NodeIds() + 4, back_inserter(h8nodeids));

@@ -152,7 +152,7 @@ bool STR::MODELEVALUATOR::Cardiovascular0D::AssembleForce(
 
   if (block_vec_ptr.is_null())
     dserror(
-        "The 0D cardiovascular model vector is a NULL pointer, although \n"
+        "The 0D cardiovascular model vector is a nullptr pointer, although \n"
         "the structural part indicates, that 0D cardiovascular model contributions \n"
         "are present!");
 

@@ -294,7 +294,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
   bool unique_std_uncut_n = true;
 
   // check for unique std dofset and surrounding uncut elements at t^(n+1)
-  if (n_new != NULL)
+  if (n_new != nullptr)
   {
     const int numDofSets_new = n_new->NumDofSets();  //= dof_cellsets_new.size()
 
@@ -306,7 +306,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
   }
 
   // check for unique std dofset and surrounding uncut elements at t^n
-  if (n_old != NULL)
+  if (n_old != nullptr)
   {
     const int numDofSets_old = n_old->NumDofSets();  //= dof_cellsets_old.size()
 
@@ -320,8 +320,8 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
   //===========================================================
   // switch cases A-D
   //===========================================================
-  if ((n_new == NULL and n_old == NULL) or (n_new == NULL and unique_std_uncut_n) or
-      (unique_std_uncut_np and n_old == NULL) or (unique_std_uncut_np and unique_std_uncut_n))
+  if ((n_new == nullptr and n_old == nullptr) or (n_new == nullptr and unique_std_uncut_n) or
+      (unique_std_uncut_np and n_old == nullptr) or (unique_std_uncut_np and unique_std_uncut_n))
   {
     //---------------------------------------------------------------------------------
     // case A: surrounding elements not cut at t^n AND t^(n+1) => copy dofs
@@ -340,9 +340,9 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
         newRowStateVectors, oldRowStateVectors, dbcgids);
 
   }  // end case A
-  else if (n_new == NULL or unique_std_uncut_np)
+  else if (n_new == nullptr or unique_std_uncut_np)
   {
-    if (n_old == NULL) dserror("you should call case A here");
+    if (n_old == nullptr) dserror("you should call case A here");
 
     //---------------------------------------------------------------------------------
     // case B: at least one surrounding element cut at t^(n), uncut elements at t^(n+1)
@@ -360,7 +360,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
     const int nds_new = 0;
     CORE::GEO::CUT::Point::PointPosition pos_new = CORE::GEO::CUT::Point::undecided;
 
-    if (n_new == NULL)
+    if (n_new == nullptr)
       pos_new = CORE::GEO::CUT::Point::outside;  // by default for nodes outside the cut-boundingbox
     else
     {
@@ -503,9 +503,9 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
       }
     }  // end more than one dofset
   }    // end case B
-  else if (n_old == NULL or unique_std_uncut_n)
+  else if (n_old == nullptr or unique_std_uncut_n)
   {
-    if (n_new == NULL) dserror("you should call case A here");
+    if (n_new == nullptr) dserror("you should call case A here");
 
     // how many sets of dofs?
     const int numDofSets_new = n_new->NumDofSets();  //= dof_cellsets_new.size()
@@ -637,7 +637,7 @@ void XFEM::XFluidTimeInt::TransferNodalDofsToNewMap(
   }    // end case C
   else
   {
-    if (n_new == NULL or n_old == NULL) dserror("this case should be done before");
+    if (n_new == nullptr or n_old == nullptr) dserror("this case should be done before");
 
     // how many sets of dofs?
     const int numDofSets_new = n_new->NumDofSets();  //= dof_cellsets_new.size()
@@ -871,7 +871,7 @@ bool XFEM::XFluidTimeInt::NonIntersectedElements(
     CORE::GEO::CUT::ElementHandle* ehandle = wizard->GetElement(e);
 
     // elements which do not have an element-handle are non-intersected anyway
-    if (ehandle == NULL) continue;
+    if (ehandle == nullptr) continue;
 
     // check if the element is intersected or not.
     // If the element is not intersected or is just fully or partially touched at a facet
@@ -904,7 +904,7 @@ void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
 
   CORE::GEO::CUT::Node* n = wizard_new_->GetNode(node->Id());
 
-  if (n == NULL)
+  if (n == nullptr)
   {
     // it can happen that the node was std at t^n, however cut elements around it (nodehandle
     // available at t^n and SL called) and at new time t^(n+1) it is a std-node without a
@@ -943,7 +943,7 @@ void XFEM::XFluidTimeInt::FindSurroundingGhostDofsets(
 
       CORE::GEO::CUT::Node* ghost_node_cut = wizard_new_->GetNode(ghost_nid);
 
-      if (ghost_node_cut == NULL)
+      if (ghost_node_cut == nullptr)
         continue;  // this node is then a standard node or not on this proc
 
       // check if the neighbored node is a ghost node w.r.t to the cellset of the SL-node
@@ -1219,7 +1219,7 @@ bool XFEM::XFluidTimeInt::SetReconstrMethod(const DRT::Node* node,  /// drt node
   CORE::GEO::CUT::Node* n = wizard_new_->GetNode(node->Id());
 
   int numdofsets = -1;
-  if (n != NULL)
+  if (n != nullptr)
   {
     numdofsets = n->NumDofSets();
   }

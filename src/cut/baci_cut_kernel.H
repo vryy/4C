@@ -606,11 +606,11 @@ namespace CORE::GEO
        *  \author sudhakar
        *  \date 11/14 */
       double getAreaTri(
-          const std::vector<Point*>& poly, CORE::LINALG::Matrix<3, 1>* normalvec = NULL);
+          const std::vector<Point*>& poly, CORE::LINALG::Matrix<3, 1>* normalvec = nullptr);
       double getAreaTri(const double* a, const double* b, const double* c,
-          CORE::LINALG::Matrix<3, 1>* normalvec = NULL);
+          CORE::LINALG::Matrix<3, 1>* normalvec = nullptr);
       template <class T>
-      double getAreaTri(const T& xyze, CORE::LINALG::Matrix<3, 1>* normalvec = NULL)
+      double getAreaTri(const T& xyze, CORE::LINALG::Matrix<3, 1>* normalvec = nullptr)
       {
         if (xyze.M() != 3) dserror("Currently unsupported element dimension!");
         if (xyze.N() != 3) dserror("Wrong node number!");
@@ -960,7 +960,7 @@ namespace CORE::GEO
        public:
         /// constructor
         ComputePositionStrategy(CORE::LINALG::Matrix<dim, 1, floatType>& xsi, bool checklimits)
-            : xsi_(xsi), xyze_(NULL), px_(NULL), tol_(0.0)
+            : xsi_(xsi), xyze_(nullptr), px_(nullptr), tol_(0.0)
         {
         }
 
@@ -1831,9 +1831,9 @@ namespace CORE::GEO
             : xsi_(xsi),
               // we do initializing of distance in SetupSolve, because xsi could be from derived
               // class and not initialize at this point yet
-              distance_(NULL),
-              xyze_side_(NULL),
-              px_(NULL),
+              distance_(nullptr),
+              xyze_side_(nullptr),
+              px_(nullptr),
               tol_(0.0),
               zeroarea_(false)
         {
@@ -2195,7 +2195,7 @@ namespace CORE::GEO
           B = 0.0;
 
           floatType det = EvalDerivsInParameterSpace<probDim, sideType, floatType>(
-              xyze_side, xsi_side, sideDeriv1_, B, NULL, &n1, &n2, false);
+              xyze_side, xsi_side, sideDeriv1_, B, nullptr, &n1, &n2, false);
 
           A.UpdateT(B);
 
@@ -3362,8 +3362,8 @@ namespace CORE::GEO
         ComputeIntersectionStrategy(
             CORE::LINALG::Matrix<dimEdge + dimSide, 1, floatType>& xsi, bool checklimits)
             : xsi_(xsi),
-              xyze_side_(NULL),
-              xyze_edge_(NULL),
+              xyze_side_(nullptr),
+              xyze_edge_(nullptr),
               residual_(0.0),
               off_count_(0),
               check_limits_(checklimits),

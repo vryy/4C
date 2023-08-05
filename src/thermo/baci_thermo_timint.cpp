@@ -62,7 +62,7 @@ THR::TimInt::TimInt(const Teuchos::ParameterList& ioparams,
       writetempgrad_(
           DRT::INPUT::IntegralValue<INPAR::THR::TempGradType>(ioparams, "THERM_TEMPGRAD")),
       writeenergyevery_(tdynparams.get<int>("RESEVRYERGY")),
-      energyfile_(NULL),
+      energyfile_(nullptr),
       calcerror_(DRT::INPUT::IntegralValue<INPAR::THR::CalcError>(tdynparams, "CALCERROR")),
       errorfunctno_(tdynparams.get<int>("CALCERRORFUNCNO")),
       time_(Teuchos::null),

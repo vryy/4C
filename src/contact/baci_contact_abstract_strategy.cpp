@@ -2445,7 +2445,7 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
     // processor 0 does all the work
     if (output && Comm().MyPID() == 0)
     {
-      FILE* MyFile = NULL;
+      FILE* MyFile = nullptr;
       std::ostringstream filename;
       const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
       filename << filebase << ".interface";
@@ -2798,7 +2798,7 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet() const
         sum_jumpall_final = sum_jumpall / iter_slip;
       }
 
-      FILE* MyFile = NULL;
+      FILE* MyFile = nullptr;
       std::ostringstream filename;
       const std::string filebase =
           DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();

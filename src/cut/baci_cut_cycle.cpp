@@ -268,7 +268,7 @@ void CORE::GEO::CUT::Cycle::GmshDump(std::ofstream& file) const
     std::stringstream section_name;
     section_name << "Line" << i;
     CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-    CORE::GEO::CUT::OUTPUT::GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshLineDump(file, p1, p2, p1->Id(), p2->Id(), false, nullptr);
     CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
   }
 }

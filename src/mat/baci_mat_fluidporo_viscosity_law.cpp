@@ -20,7 +20,7 @@
 MAT::PAR::FluidPoroViscosityLaw* MAT::PAR::FluidPoroViscosityLaw::CreateViscosityLaw(int matID)
 {
   // initialize null pointer
-  MAT::PAR::FluidPoroViscosityLaw* viscositylaw = NULL;
+  MAT::PAR::FluidPoroViscosityLaw* viscositylaw = nullptr;
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -40,14 +40,14 @@ MAT::PAR::FluidPoroViscosityLaw* MAT::PAR::FluidPoroViscosityLaw::CreateViscosit
   {
     case INPAR::MAT::m_fluidporo_viscositylaw_constant:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawConstant(curmat));
       viscositylaw = static_cast<MAT::PAR::FluidPoroViscosityLawConstant*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_viscositylaw_celladh:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroViscosityLawCellAdherence(curmat));
       viscositylaw =
           static_cast<MAT::PAR::FluidPoroViscosityLawCellAdherence*>(curmat->Parameter());

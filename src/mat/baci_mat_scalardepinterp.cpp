@@ -54,7 +54,7 @@ DRT::ParObject* MAT::ScalarDepInterpType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::ScalarDepInterp::ScalarDepInterp()
-    : params_(NULL),
+    : params_(nullptr),
       isinit_(false),
       lambda_zero_mat_(Teuchos::null),
       lambda_unit_mat_(Teuchos::null),
@@ -203,7 +203,7 @@ void MAT::ScalarDepInterp::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   int numgp = 0;
@@ -244,7 +244,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -279,7 +279,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == NULL) dserror("failed to unpack elastic material");
+    if (matel == nullptr) dserror("failed to unpack elastic material");
     lambda_zero_mat_ = Teuchos::rcp(matel);
   }
   else
@@ -292,7 +292,7 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
   {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic2);  // Unpack is done here
     MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
-    if (matel == NULL) dserror("failed to unpack elastic material");
+    if (matel == nullptr) dserror("failed to unpack elastic material");
     lambda_unit_mat_ = Teuchos::rcp(matel);
   }
   else

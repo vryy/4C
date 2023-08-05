@@ -201,7 +201,7 @@ void CORE::GEO::CutWizard::SetMarkedConditionSides(
     CORE::GEO::CUT::SideHandle* cut_sidehandle =
         intersection_->GetMeshHandle().GetSide(node_ids_of_cutterele);
 
-    if (cut_sidehandle != NULL)
+    if (cut_sidehandle != nullptr)
     {
       CORE::GEO::CUT::plain_side_set cut_sides;
       cut_sidehandle->CollectSides(cut_sides);
@@ -518,7 +518,7 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
     }
     else
     {
-      AddElement(element, xyze, NULL);
+      AddElement(element, xyze, nullptr);
     }
   }
 }

@@ -90,7 +90,7 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*
@@ -107,5 +107,5 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::DefineProblemTy
   else
     dserror("Defined problem type does not exist!!");
 
-  return NULL;
+  return nullptr;
 }

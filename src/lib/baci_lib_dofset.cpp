@@ -191,13 +191,13 @@ int DRT::DofSet::AssignDegreesOfFreedom(
   // numdf for all nodes and elements
   numdfcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
   numdfcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
-  if (facedis != Teuchos::null && facedis->FaceColMap() != NULL)
+  if (facedis != Teuchos::null && facedis->FaceColMap() != nullptr)
     numdfcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
 
   // index of first dof for all nodes and elements
   idxcolnodes_ = Teuchos::rcp(new Epetra_IntVector(*dis.NodeColMap()));
   idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
-  if (facedis != Teuchos::null && facedis->FaceColMap() != NULL)
+  if (facedis != Teuchos::null && facedis->FaceColMap() != nullptr)
     idxcolfaces_ = Teuchos::rcp(new Epetra_IntVector(*facedis->FaceColMap()));
 
   //////////////////////////////////////////////////////////////////
@@ -351,7 +351,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
     //////////////////////////////////////////////////////////////////
 
     // Now do it again for the faces
-    if (facedis != Teuchos::null && facedis->FaceRowMap() != NULL)
+    if (facedis != Teuchos::null && facedis->FaceRowMap() != nullptr)
     {
       Epetra_IntVector numdfrowfaces(*facedis->FaceRowMap());
       Epetra_IntVector idxrowfaces(*facedis->FaceRowMap());
@@ -362,7 +362,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
       {
         Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
         // If no faces are found, continue...
-        if (faces == NULL) continue;
+        if (faces == nullptr) continue;
         for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
           if (faces[face]->Owner() == mypid)
           {
@@ -377,7 +377,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
       for (int i = 0; i < numcolelements; ++i)
       {
         Teuchos::RCP<DRT::FaceElement>* faces = dis.lColElement(i)->Faces();
-        if (faces == NULL) continue;
+        if (faces == nullptr) continue;
         for (int face = 0; face < dis.lColElement(i)->NumFace(); ++face)
           if (faces[face]->Owner() == mypid)
           {
@@ -498,7 +498,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(
   Exporter elementexporter(*dis.ElementRowMap(), *dis.ElementColMap(), dis.Comm());
   elementexporter.Export(elementdofset);
 
-  if (facedis != Teuchos::null && facedis->FaceRowMap() != NULL)
+  if (facedis != Teuchos::null && facedis->FaceRowMap() != nullptr)
   {
     Exporter faceexporter(*facedis->FaceRowMap(), *facedis->FaceColMap(), dis.Comm());
     faceexporter.Export(facedofset);

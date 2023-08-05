@@ -43,35 +43,35 @@ MAT::PAR::FluidPoroPhaseLaw* MAT::PAR::FluidPoroPhaseLaw::CreatePhaseLaw(int pha
       DRT::Problem::Instance(probinst)->Materials()->ById(phaselawId);
 
   // phase law
-  MAT::PAR::FluidPoroPhaseLaw* phaselaw = NULL;
+  MAT::PAR::FluidPoroPhaseLaw* phaselaw = nullptr;
 
   // build the pressure-saturation law
   switch (curmat->Type())
   {
     case INPAR::MAT::m_fluidporo_phaselaw_linear:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawLinear(curmat));
       phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawLinear*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_phaselaw_tangent:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawTangent(curmat));
       phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawTangent*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_phaselaw_constraint:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawConstraint(curmat));
       phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawConstraint*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_phaselaw_byfunction:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseLawByFunction(curmat));
       phaselaw = static_cast<MAT::PAR::FluidPoroPhaseLawByFunction*>(curmat->Parameter());
       break;

@@ -376,7 +376,7 @@ bool CONTACT::CoCoupling3d::SlaveVertexLinearization(
   std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> nodelin(0);
   MORTAR::IntElement* sIntEle = dynamic_cast<MORTAR::IntElement*>(&SlaveIntElement());
 
-  if (sIntEle == NULL)
+  if (sIntEle == nullptr)
   {
     // resize the linearizations
     nodelin.resize(nrow, std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
@@ -515,7 +515,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
   std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> snodelin(0);
   MORTAR::IntElement* sIntEle = dynamic_cast<MORTAR::IntElement*>(&SlaveIntElement());
 
-  if (sIntEle == NULL)
+  if (sIntEle == nullptr)
   {
     // resize the linearizations
     snodelin.resize(nrow, std::vector<CORE::GEN::pairedvector<int, double>>(3, 1));
@@ -545,7 +545,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
   std::vector<std::vector<CORE::GEN::pairedvector<int, double>>> mnodelin(0);
   MORTAR::IntElement* mIntEle = dynamic_cast<MORTAR::IntElement*>(&MasterIntElement());
 
-  if (mIntEle == NULL)
+  if (mIntEle == nullptr)
   {
     // resize the linearizations
     mnodelin.resize(
@@ -556,7 +556,7 @@ bool CONTACT::CoCoupling3d::MasterVertexLinearization(
     {
       MORTAR::MortarNode* mrtrmnode =
           dynamic_cast<MORTAR::MortarNode*>(MasterIntElement().Nodes()[in]);
-      if (mrtrmnode == NULL) dserror("dynamic cast to mortar node went wrong");
+      if (mrtrmnode == nullptr) dserror("dynamic cast to mortar node went wrong");
 
       for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
     }
@@ -1769,7 +1769,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         {
           MORTAR::IntElement* ie =
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
-          if (ie == NULL) dserror("NULL pointer");
+          if (ie == nullptr) dserror("nullptr pointer");
           MORTAR::MortarProjector::Impl(SlaveElement())
               ->ProjectGaussPointAuxn3D(
                   globgp, Coupling()[m]->Auxn(), SlaveElement(), psxi, psprojalpha);
@@ -1818,7 +1818,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
         {
           MORTAR::IntElement* ie =
               dynamic_cast<MORTAR::IntElement*>(&(Coupling()[m]->SlaveIntElement()));
-          if (ie == NULL) dserror("wtf");
+          if (ie == nullptr) dserror("wtf");
           integrator.DerivXiGP3DAuxPlane(SlaveElement(), psxi, currcell->Auxn(), dpsxigp,
               psprojalpha, currcell->GetDerivAuxn(), lingp);
           // ie->MapToParent(dsxigp,dpsxigp); // old way of doing it via affine map... wrong (popp

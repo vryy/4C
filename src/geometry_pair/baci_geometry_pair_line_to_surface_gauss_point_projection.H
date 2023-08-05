@@ -75,7 +75,7 @@ namespace GEOMETRYPAIR
         const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
         const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
-            NULL) const override;
+            nullptr) const override;
 
     /**
      * \brief Check if a Gauss point projected valid for this pair in PreEvaluate.
@@ -93,7 +93,7 @@ namespace GEOMETRYPAIR
         const CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type>& q_surface,
         std::vector<LineSegment<scalar_type>>& segments,
         const CORE::LINALG::Matrix<3 * surface::n_nodes_, 1, scalar_type>* nodal_normals =
-            NULL) const override;
+            nullptr) const override;
 
    private:
     /**

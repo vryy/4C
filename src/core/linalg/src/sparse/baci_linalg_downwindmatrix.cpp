@@ -81,7 +81,7 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
         int err = A.ExtractMyRowCopy(iii, maxnumentries, numentries, values.data(), indices.data());
         if (err) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d", err);
         for (int j = 0; j < numentries; ++j) indices[j] = A.ColMap().GID(indices[j]);
-        ML_az_sort(indices.data(), numentries, NULL, values.data());
+        ML_az_sort(indices.data(), numentries, nullptr, values.data());
         for (int j = 0; j < numentries; ++j)
         {
           const int gdofcol = indices[j];
@@ -244,7 +244,7 @@ void CORE::LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
       for (int j = 0; j < bs_; ++j) gindices[i * bs_ + j] = nnoderowmap->GID(i) * bs_ + j;
     ndofrowmap_ =
         Teuchos::rcp(new Epetra_Map(-1, mynodelength * bs_, gindices.data(), 0, A.Comm()));
-    ML_az_sort(gindices.data(), mynodelength * bs_, NULL, NULL);
+    ML_az_sort(gindices.data(), mynodelength * bs_, nullptr, nullptr);
     sndofrowmap_ =
         Teuchos::rcp(new Epetra_Map(-1, mynodelength * bs_, gindices.data(), 0, A.Comm()));
   }

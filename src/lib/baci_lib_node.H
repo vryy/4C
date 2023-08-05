@@ -152,7 +152,7 @@ namespace DRT
       if (NumElement())
         return element_.data();
       else
-        return NULL;
+        return nullptr;
     }
 
     /*!
@@ -163,7 +163,7 @@ namespace DRT
       if (NumElement())
         return (const DRT::Element* const*)(element_.data());
       else
-        return NULL;
+        return nullptr;
     }
 
 
@@ -243,7 +243,7 @@ namespace DRT
 
     \param name (in): Name of condition
 
-    \return Returns NULL if condition with that name does not exist
+    \return Returns nullptr if condition with that name does not exist
     */
     virtual DRT::Condition* GetCondition(const std::string& name) const;
 

@@ -23,7 +23,7 @@ CORE::GEO::CUT::Tri6SideHandle::Tri6SideHandle(Mesh& mesh, int sid, const std::v
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
   }
 
@@ -62,7 +62,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std:
   nodes_.reserve(4);
   for (int i = 0; i < 4; ++i)
   {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
     n->Coordinates(&xyze(0, i));
   }
@@ -116,7 +116,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
     const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
@@ -159,7 +159,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     nodes_.reserve(8);
     for (int i = 0; i < 8; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
       n->Coordinates(&xyze(0, i));
     }
@@ -218,7 +218,7 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
     nodes_.reserve(9);
     for (int i = 0; i < 9; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
     const CellTopologyData* top_data = shards::getCellTopologyData<shards::Triangle<3>>();
@@ -263,7 +263,7 @@ CORE::GEO::CUT::Quad9SideHandle::Quad9SideHandle(
     nodes_.reserve(9);
     for (int i = 0; i < 9; ++i)
     {
-      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+      Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
       nodes_.push_back(n);
     }
 

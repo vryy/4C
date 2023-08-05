@@ -324,7 +324,7 @@ namespace DRT
       if (nodeid_.size())
         return nodeid_.data();
       else
-        return NULL;
+        return nullptr;
     }
 
     /*!
@@ -335,16 +335,16 @@ namespace DRT
              element that has not been added to a discretization
              (or the discretization has not been called FillComplete)
              does not have pointers to nodes. In this case, the method returns
-             NULL.
+             nullptr.
     \return Ptr to pointers to nodes of the element in local nodal ordering.
-            Returns NULL if pointers to not exist.
+            Returns nullptr if pointers to not exist.
     */
     virtual Node** Nodes()
     {
       if (node_.size())
         return node_.data();
       else
-        return NULL;
+        return nullptr;
     }
 
     // mgee: change to this (as const and !const):
@@ -359,16 +359,16 @@ namespace DRT
              element that has not been added to a discretization
              (or the discretization has not been called FillComplete)
              does not have pointers to nodes. In this case, the method returns
-             NULL.
+             nullptr.
     \return Ptr to pointers to nodes of the element in local nodal ordering.
-            Returns NULL if pointers to not exist.
+            Returns nullptr if pointers to not exist.
     */
     virtual const Node* const* Nodes() const
     {
       if (node_.size())
         return (const DRT::Node* const*)(node_.data());
       else
-        return NULL;
+        return nullptr;
     }
 
     /*!
@@ -402,7 +402,7 @@ namespace DRT
     /*!
     \brief Get vector of Teuchos::RCPs to the lines of this element
 
-    This is a base class dummy routine that always returns NULL.
+    This is a base class dummy routine that always returns nullptr.
     The derived element class is expected to allocate and store
     a vector of elements that represent the edges of this element.
     These edges are then used to create and evaluate boundary conditions.
@@ -420,12 +420,12 @@ namespace DRT
     }
 
     // virtual const Element*const* Lines() const { dserror("unexpected base method called.");
-    // return NULL; }
+    // return nullptr; }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the surfaces of this element
 
-    This is a base class dummy routine that always returns NULL.
+    This is a base class dummy routine that always returns nullptr.
     The derived element class is expected to allocate and store
     a vector of elements that represent the surfaces of this element.
     These surfaces are then used to create and evaluate boundary conditions.
@@ -445,7 +445,7 @@ namespace DRT
     /*!
     \brief Get vector of Teuchos::RCPs to the volumes of this element
 
-    This is a base class dummy routine that always returns NULL.
+    This is a base class dummy routine that always returns nullptr.
     The derived element class is expected to allocate and store
     a vector of elements that represent the volume of this element.
     Length of this vector would usually be just one.
@@ -483,7 +483,7 @@ namespace DRT
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
     Surfaces)
     */
-    Teuchos::RCP<DRT::FaceElement>* Faces() { return face_.empty() ? NULL : face_.data(); }
+    Teuchos::RCP<DRT::FaceElement>* Faces() { return face_.empty() ? nullptr : face_.data(); }
 
     /*!
     \brief Get vector of Teuchos::RCPs to the faces of this element (as opposed to the Lines or
@@ -491,7 +491,7 @@ namespace DRT
     */
     Teuchos::RCP<DRT::FaceElement> const* Faces() const
     {
-      return face_.empty() ? NULL : face_.data();
+      return face_.empty() ? nullptr : face_.data();
     }
 
     /*!
@@ -912,7 +912,7 @@ namespace DRT
 
     \param name (in): Name of condition
 
-    \return Returns NULL if condition with that name does not exist
+    \return Returns nullptr if condition with that name does not exist
     */
     virtual DRT::Condition* GetCondition(const std::string& name) const;
 
@@ -1161,7 +1161,7 @@ namespace DRT
     */
     virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = NULL) = 0;
+        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) = 0;
 
 
     //@}
@@ -1402,21 +1402,21 @@ namespace DRT
     \brief Return the parent element the face element is connected to (for interior faces, the
     parent master element).
 
-    If no parent master has been assigned, NULL is returned (e.g. on non-face discretizations)
+    If no parent master has been assigned, nullptr is returned (e.g. on non-face discretizations)
     */
     DRT::Element* ParentElement() const { return parent_master_; }
 
     /*!
     \brief Return the master element the face element is connected to
 
-    If no parent master has been assigned, NULL is returned (e.g. on non-face discretizations)
+    If no parent master has been assigned, nullptr is returned (e.g. on non-face discretizations)
     */
     DRT::Element* ParentMasterElement() const { return parent_master_; }
 
     /*!
     \brief Return the slave element the face element is connected to
 
-    If no parent slave has been assigned, NULL is returned (non-face discretizations, boundary
+    If no parent slave has been assigned, nullptr is returned (non-face discretizations, boundary
     faces)
     */
     DRT::Element* ParentSlaveElement() const { return parent_slave_; }
@@ -1475,7 +1475,7 @@ namespace DRT
     {
       parent_master_ = master;
       lface_master_ = lface_master;
-      if (master != NULL) parent_id_ = master->Id();
+      if (master != nullptr) parent_id_ = master->Id();
     }
 
     /*!
@@ -1510,10 +1510,10 @@ namespace DRT
     void SetLocalTrafoMap(const std::vector<int>& trafo);
 
    private:
-    //! \brief The master parent element of face element. NULL for usual elements
+    //! \brief The master parent element of face element. nullptr for usual elements
     DRT::Element* parent_master_;
 
-    //! \brief The master parent element of face element. NULL for usual elements
+    //! \brief The master parent element of face element. nullptr for usual elements
     DRT::Element* parent_slave_;
 
     //! The local surface number of this surface w.r.t to the parent_master_ element

@@ -474,7 +474,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
   }
 }
 

@@ -58,7 +58,7 @@ namespace CORE::GEO
       /*!
       \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
        */
-      void DumpGmsh(std::ofstream& file, int* value = NULL);
+      void DumpGmsh(std::ofstream& file, int* value = nullptr);
 
       /*!
       \brief Writes the geometry of boundarycell, and the constant scalar "value" in GMSH format
@@ -252,7 +252,7 @@ namespace CORE::GEO
           CORE::DRT::UTILS::shape_function_2D(funct, eta[0], eta[1], distype);
           CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta[0], eta[1], distype);
           CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
-              xyze, deriv, metrictensor, drs, NULL);
+              xyze, deriv, metrictensor, drs, nullptr);
           if (not std::isnan(drs)) area += intpoints.qwgt[i] * drs;
         }
         return area;

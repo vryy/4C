@@ -1084,7 +1084,7 @@ void ADAPTER::CouplingEhlMortar::CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vect
 {
   *active = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowNodes()));
   *slip = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowNodes()));
-  if (active_old != NULL)
+  if (active_old != nullptr)
     *active_old = Teuchos::rcp(new Epetra_Vector(*interface_->SlaveRowNodes()));
   for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
@@ -1099,7 +1099,7 @@ void ADAPTER::CouplingEhlMortar::CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vect
     else
       (*slip)->operator[](i) = 0.;
 
-    if (active_old != NULL)
+    if (active_old != nullptr)
     {
       if (cnode->CoData().ActiveOld())
         (*active_old)->operator[](i) = 1.;

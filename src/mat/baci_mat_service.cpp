@@ -200,7 +200,7 @@ void MAT::VolumetrifyAndIsochorify(CORE::LINALG::Matrix<6, 1>* pk2vol,
 {
   // useful call?
 #ifdef DEBUG
-  if ((pk2vol == NULL) and (cvol == NULL) and (pk2iso == NULL) and (ciso == NULL))
+  if ((pk2vol == nullptr) and (cvol == nullptr) and (pk2iso == nullptr) and (ciso == nullptr))
     dserror("Useful call? Apparently you do not want to compute anything");
 #endif
 

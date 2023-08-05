@@ -604,12 +604,12 @@ void STR::MODELEVALUATOR::BrownianDyn::RandomNumbersPerElement()
   {
     DRT::ELEMENTS::Beam3Base* beamele =
         dynamic_cast<DRT::ELEMENTS::Beam3Base*>(discret_ptr_->lColElement(i));
-    if (beamele != NULL)
+    if (beamele != nullptr)
     {
       randomnumbersperlocalelement =
           std::max(randomnumbersperlocalelement, beamele->HowManyRandomNumbersINeed());
     }
-    else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(discret_ptr_->lColElement(i)) != NULL)
+    else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(discret_ptr_->lColElement(i)) != nullptr)
     {
       randomnumbersperlocalelement = std::max(randomnumbersperlocalelement,
           dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(discret_ptr_->lColElement(i))
@@ -722,7 +722,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::IsAnyBeamElementLengthLargerThanMinHalfPB
       const DRT::ELEMENTS::Beam3Base* beamele =
           dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Discret().lRowElement(elelid));
 
-      if (beamele != NULL and beamele->RefLength() >= halfofminimalperiodlength) return true;
+      if (beamele != nullptr and beamele->RefLength() >= halfofminimalperiodlength) return true;
     }
   }
 
@@ -781,7 +781,7 @@ void STR::MODELEVALUATOR::BrownianDyn::SeedRandomGenerator()
     // .. different each program start
     else if( seed_differs_every_time_int != rand_data_.seed_differs_every_time_int )
     {
-      rand_data_.seedvariable = static_cast<int>( time(NULL) ) + 27 * ( myrank + 1 );
+      rand_data_.seedvariable = static_cast<int>( time(nullptr) ) + 27 * ( myrank + 1 );
       rand_data_.seed_differs_every_time_int = seed_differs_every_time_int;
     }
   }

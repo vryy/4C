@@ -18,7 +18,7 @@
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::InfNormPreconditioner::InfNormPreconditioner(
     Teuchos::RCP<PreconditionerType> preconditioner)
-    : PreconditionerType(NULL), preconditioner_(preconditioner)
+    : PreconditionerType(nullptr), preconditioner_(preconditioner)
 {
 }
 
@@ -28,7 +28,7 @@ void CORE::LINEAR_SOLVER::InfNormPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
-  if (A == NULL) dserror("CrsMatrix expected");
+  if (A == nullptr) dserror("CrsMatrix expected");
 
   // do infnorm scaling
   rowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(), false));
@@ -66,7 +66,7 @@ void CORE::LINEAR_SOLVER::InfNormPreconditioner::Finish(
 //----------------------------------------------------------------------------------
 CORE::LINEAR_SOLVER::SymDiagPreconditioner::SymDiagPreconditioner(
     Teuchos::RCP<PreconditionerType> preconditioner)
-    : PreconditionerType(NULL), preconditioner_(preconditioner)
+    : PreconditionerType(nullptr), preconditioner_(preconditioner)
 {
 }
 
@@ -76,7 +76,7 @@ void CORE::LINEAR_SOLVER::SymDiagPreconditioner::Setup(
     bool create, Epetra_Operator* matrix, Epetra_MultiVector* x, Epetra_MultiVector* b)
 {
   Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
-  if (A == NULL) dserror("CrsMatrix expected");
+  if (A == nullptr) dserror("CrsMatrix expected");
 
   SetupLinearProblem(matrix, x, b);
 

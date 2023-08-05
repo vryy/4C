@@ -133,7 +133,7 @@ CORE::LINALG::Matrix<3, 3> MAT::PlasticElastHyper::beFCpi_;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PlasticElastHyper::PlasticElastHyper()
-    : params_(NULL),
+    : params_(nullptr),
       last_plastic_defgrd_inverse_(Teuchos::null),
       last_alpha_isotropic_(Teuchos::null),
       last_alpha_kinematic_(Teuchos::null),
@@ -176,7 +176,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (MatParams() != NULL) matid = MatParams()->Id();  // in case we are in post-process mode
+  if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
@@ -184,7 +184,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, PlAniso_full_);
   AddtoPack(data, InvPlAniso_full_);
 
-  if (MatParams() != NULL)  // summands are not accessible in postprocessing mode
+  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
@@ -228,7 +228,7 @@ void MAT::PlasticElastHyper::Pack(DRT::PackBuffer& data) const
 void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  params_ = NULL;
+  params_ = nullptr;
   potsum_.clear();
 
   std::vector<char>::size_type position = 0;
@@ -261,7 +261,7 @@ void MAT::PlasticElastHyper::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, PlAniso_full_);
   ExtractfromPack(position, data, InvPlAniso_full_);
 
-  if (MatParams() != NULL)  // summands are not accessible in postprocessing mode
+  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
@@ -641,7 +641,7 @@ double MAT::PlasticElastHyper::StrainEnergyTSI(
 
   double dPj1 = 0.;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->AddCoupDerivVol(sqrt(prinv(0)), &dPj1, NULL, NULL, NULL);
+    potsum_[p]->AddCoupDerivVol(sqrt(prinv(0)), &dPj1, nullptr, nullptr, nullptr);
   psi -= 3. * Cte() * (temp - InitTemp()) * dPj1;
 
 
@@ -681,7 +681,7 @@ void MAT::PlasticElastHyper::EvaluateThermalStress(const CORE::LINALG::Matrix<3,
   {
     potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, NULL);
+    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
   }
 
   // inverse RCG
@@ -733,7 +733,7 @@ void MAT::PlasticElastHyper::EvaluateCTvol(const CORE::LINALG::Matrix<3, 3>* def
   {
     potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, NULL);
+    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
   }
 
   // clear
@@ -780,7 +780,7 @@ void MAT::PlasticElastHyper::EvaluateGoughJoule(
   {
     potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, NULL);
+    potsum_[p]->AddCoupDerivVol(modinv(2), &dPmodI(2), &ddPmodII(2), &dddPmodIII, nullptr);
   }
 
   he_fac = -3. * Cte() * ddPmodII(2);
@@ -801,8 +801,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
     CORE::LINALG::Matrix<6, 6>* d_cauchy_dC, CORE::LINALG::Matrix<6, 9>* d_cauchy_dF,
     CORE::LINALG::Matrix<6, 1>* d_cauchy_dT)
 {
-  int check =
-      +(cauchy != NULL) + (d_cauchy_dC != NULL) + (d_cauchy_dF != NULL) + (d_cauchy_ddp != NULL);
+  int check = +(cauchy != nullptr) + (d_cauchy_dC != nullptr) + (d_cauchy_dF != nullptr) +
+              (d_cauchy_ddp != nullptr);
   if (!(check == 0 || check == 4)) dserror("some inconsistency with provided variables");
 
   CORE::LINALG::Matrix<3, 1> dPI;
@@ -822,7 +822,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
   NCP->Clear();
   dNCPdC->Clear();
   dNCPdDp->Clear();
-  if (dNCPdT != NULL) dNCPdT->Clear();
+  if (dNCPdT != nullptr) dNCPdT->Clear();
 
   // new temporary matrices
   CORE::LINALG::Matrix<3, 3> mStr;  // Mandel stress tensor
@@ -1078,7 +1078,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
     if (d_cauchy_ddp) d_cauchy_ddp->Multiply(*d_cauchy_dFpi, dFpiDdeltaDp);
 
     // TSI
-    if (dNCPdT != NULL)
+    if (dNCPdT != nullptr)
     {
       if (DisMode() == INPAR::TSI::Taylor_Quinney)
       {
@@ -1251,7 +1251,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
       NCP->Update(-ypl / absetatr_H, etatr_v, 1.);
 
       // derivative w.r.t. temperature
-      if (dNCPdT != NULL) dNCPdT->Update(-dYpldT / absetatr_H, etatr_v, 0.);
+      if (dNCPdT != nullptr) dNCPdT->Update(-dYpldT / absetatr_H, etatr_v, 0.);
     }
 
     // not active but needs condensation due to acitivity in last iteration
@@ -1285,7 +1285,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
       dNCPdDp->MultiplyNT(dYplDai / (ypl * absHeta), *NCP, tmp61, 1.);
 
       // derivative w.r.t. temperature
-      if (dNCPdT != NULL)
+      if (dNCPdT != nullptr)
         dNCPdT->Multiply(-s() * cpl() / ypl * dYpldT, InvPlAniso_full_, deltaDp_v, 0.);
     }
     else
@@ -1298,7 +1298,7 @@ void MAT::PlasticElastHyper::EvaluateNCP(const CORE::LINALG::Matrix<3, 3>* mStr,
       // in the elastic realm. this is a slightly inconsistent linearization for s!=0
       // however, that way we can ensure that deltaLp=0 (exactly) at any Newton iteration
 
-      if (dNCPdT != NULL) dNCPdT->Clear();
+      if (dNCPdT != nullptr) dNCPdT->Clear();
     }
   }
   // elastic gp
@@ -1324,8 +1324,8 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
     CORE::LINALG::Matrix<6, 6>* d_cauchy_dC, CORE::LINALG::Matrix<6, 9>* d_cauchy_dF,
     CORE::LINALG::Matrix<6, 1>* d_cauchy_dT)
 {
-  int check = +(cauchy != NULL) + (d_cauchy_dC != NULL) + (d_cauchy_dF != NULL) +
-              (d_cauchy_ddp != NULL) + (d_cauchy_dT != NULL);
+  int check = +(cauchy != nullptr) + (d_cauchy_dC != nullptr) + (d_cauchy_dF != nullptr) +
+              (d_cauchy_ddp != nullptr) + (d_cauchy_dT != nullptr);
   if (!(check == 0 || check == 5)) dserror("some inconsistency with provided variables");
 
   CORE::LINALG::Matrix<3, 1> dPI(true);
@@ -1345,7 +1345,7 @@ void MAT::PlasticElastHyper::EvaluatePlast(const CORE::LINALG::Matrix<3, 3>* def
   NCP->Clear();
   dNCPdC->Clear();
   dNCPdLp->Clear();
-  if (dNCPdT != NULL) dNCPdT->Clear();
+  if (dNCPdT != nullptr) dNCPdT->Clear();
 
   // new temporary matrices
   CORE::LINALG::Matrix<3, 3> mStr;  // Mandel stress tensor
@@ -1848,7 +1848,7 @@ void MAT::PlasticElastHyper::EvaluateCauchyPlast(const CORE::LINALG::Matrix<3, 1
     double d_dPI2_dT = 0.;
     if (summandProperties_.isomod) dserror("only coupled SEF are supposed to end up here");
     for (unsigned int p = 0; p < potsum_.size(); ++p)
-      potsum_[p]->AddCoupDerivVol(j, NULL, &d_dPI2_dT, NULL, NULL);
+      potsum_[p]->AddCoupDerivVol(j, nullptr, &d_dPI2_dT, nullptr, nullptr);
 
     const double fac = -3. * Cte();
     d_dPI2_dT *= fac * .5 / j;
@@ -1911,7 +1911,7 @@ void MAT::PlasticElastHyper::EvaluateCauchyTempDeriv(const CORE::LINALG::Matrix<
   double ddPmodII = 0.0;
   double dddPmodIII = 0.0;
   for (unsigned int p = 0; p < potsum_.size(); ++p)
-    potsum_[p]->AddCoupDerivVol(sqI3, &dPmodI, &ddPmodII, &dddPmodIII, NULL);
+    potsum_[p]->AddCoupDerivVol(sqI3, &dPmodI, &ddPmodII, &dddPmodIII, nullptr);
 
   // those are actually the temperature derivatives of the coefficients
   // then we plug them into the cauchy stress derivative and voila
@@ -1965,7 +1965,7 @@ void MAT::PlasticElastHyper::AddThermalExpansionDerivs(const CORE::LINALG::Matri
   {
     potsum_[p]->AddDerivativesModified(dPmodI, ddPmodII, modinv, gp, eleGID);
     potsum_[p]->Add3rdVolDeriv(modinv, dddPmodIII);
-    potsum_[p]->AddCoupDerivVol(j, NULL, &(ddPmodII(2)), &dddPmodIII, NULL);
+    potsum_[p]->AddCoupDerivVol(j, nullptr, &(ddPmodII(2)), &dddPmodIII, nullptr);
   }
 
   const double dT = temp - InitTemp();

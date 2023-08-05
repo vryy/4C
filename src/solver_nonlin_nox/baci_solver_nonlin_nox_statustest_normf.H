@@ -48,7 +48,7 @@ namespace NOX
             const std::vector<double>& tolerance,
             const std::vector<NOX::Abstract::Vector::NormType>& ntype,
             const std::vector<NOX::StatusTest::NormF::ScaleType>& stype,
-            const NOX::Utils* u = NULL);
+            const NOX::Utils* u = nullptr);
 
         //! Destructor.
         virtual ~NormF(){};

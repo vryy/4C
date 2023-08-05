@@ -534,7 +534,7 @@ MORTAR::MortarNode* MORTAR::MortarNode::FindClosestNode(
     const Teuchos::RCP<DRT::Discretization> intdis, const Teuchos::RCP<Epetra_Map> nodesearchmap,
     double& mindist)
 {
-  MortarNode* closestnode = NULL;
+  MortarNode* closestnode = nullptr;
 
   // loop over all nodes of the DRT::Discretization that are
   // included in the given Epetra_Map ("brute force" search)

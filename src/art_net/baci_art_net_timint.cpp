@@ -97,7 +97,7 @@ void ART::TimInt::Init(const Teuchos::ParameterList& globaltimeparams,
 void ART::TimInt::Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
-  if (CoupledTo3D && CouplingParams.get() == NULL)
+  if (CoupledTo3D && CouplingParams.get() == nullptr)
   {
     dserror(
         "Coupling parameter list is not allowed to be empty, If a 3-D/reduced-D coupling is "

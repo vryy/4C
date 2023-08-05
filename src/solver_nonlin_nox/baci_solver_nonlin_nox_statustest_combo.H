@@ -31,14 +31,14 @@ namespace NOX
       {
        public:
         //! Constructor. Optional argument is the error stream for output.
-        Combo(ComboType t, const NOX::Utils* u = NULL);
+        Combo(ComboType t, const NOX::Utils* u = nullptr);
 
         //! Constructor with a single test.
-        Combo(ComboType t, const Teuchos::RCP<Generic>& a, const NOX::Utils* u = NULL);
+        Combo(ComboType t, const Teuchos::RCP<Generic>& a, const NOX::Utils* u = nullptr);
 
         //! Constructor with two tests.
         Combo(ComboType t, const Teuchos::RCP<Generic>& a, const Teuchos::RCP<Generic>& b,
-            const NOX::Utils* u = NULL);
+            const NOX::Utils* u = nullptr);
 
         //! Destructor
         virtual ~Combo(){};

@@ -30,16 +30,16 @@ namespace CORE::GEO
       class NullFile
       {
        public:
-        NullFile() : f_(NULL) {}
+        NullFile() : f_(nullptr) {}
 
         ~NullFile()
         {
-          if (f_ != NULL) fclose(f_);
+          if (f_ != nullptr) fclose(f_);
         }
 
         operator FILE*()
         {
-          if (f_ == NULL) f_ = fopen("/dev/null", "w");
+          if (f_ == nullptr) f_ = fopen("/dev/null", "w");
           return f_;
         }
 
@@ -593,7 +593,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
           {
             std::vector<int> ids;
             ids.reserve(dim + 1);
-            vertexT* vertex = NULL;
+            vertexT* vertex = nullptr;
 
             // FOREACHvertex_(facet->vertices)
             for (void** vertexp = &facet->vertices->e[0].p;
@@ -1074,7 +1074,7 @@ void CORE::GEO::CUT::TetMesh::FindProperSides(const PlainEntitySet<3>& tris,
       Entity<4>* tet = *i;
 
       // Test if the tet exist as member in the volume-cell, if not skip this tet.
-      if (members != NULL and members->count(tet) == 0)
+      if (members != nullptr and members->count(tet) == 0)
       {
         continue;
       }

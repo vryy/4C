@@ -320,7 +320,7 @@ bool MORTAR::Coupling3d::ProjectSlave()
 
     // store into vertex data structure
     SlaveVertices().push_back(
-        Vertex(vertices, Vertex::slave, snodeids, NULL, NULL, false, false, NULL, -1.0));
+        Vertex(vertices, Vertex::slave, snodeids, nullptr, nullptr, false, false, nullptr, -1.0));
 
     // std::cout << "->RealNode(S) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " <<
     // mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl; std::cout <<
@@ -364,8 +364,8 @@ bool MORTAR::Coupling3d::ProjectMaster()
     mnodeids[0] = mycnode->Id();
 
     // store into vertex data structure
-    MasterVertices().push_back(
-        Vertex(vertices, Vertex::projmaster, mnodeids, NULL, NULL, false, false, NULL, -1.0));
+    MasterVertices().push_back(Vertex(
+        vertices, Vertex::projmaster, mnodeids, nullptr, nullptr, false, false, nullptr, -1.0));
 
     // std::cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " <<
     // mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl; std::cout <<
@@ -809,10 +809,10 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
           lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
 
           // store intersection points
-          intersec1.push_back(Vertex(
-              ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true, false, NULL, alphap));
-          intersec2.push_back(Vertex(
-              iq, Vertex::lineclip, lcids, poly2[j].Next(), &poly2[j], true, false, NULL, alphaq));
+          intersec1.push_back(Vertex(ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true,
+              false, nullptr, alphap));
+          intersec2.push_back(Vertex(iq, Vertex::lineclip, lcids, poly2[j].Next(), &poly2[j], true,
+              false, nullptr, alphaq));
         }
       }
     }
@@ -1144,8 +1144,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
     if (out)
       std::cout << "\nStart loop on Slave at " << current->Coord()[0] << " " << current->Coord()[1]
                 << " " << current->Coord()[2] << std::endl;
-    respoly.push_back(Vertex(current->Coord(), Vertex::lineclip, current->Nodeids(), NULL, NULL,
-        false, false, NULL, -1.0));
+    respoly.push_back(Vertex(current->Coord(), Vertex::lineclip, current->Nodeids(), nullptr,
+        nullptr, false, false, nullptr, -1.0));
 
     do
     {
@@ -1160,8 +1160,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
           if (out)
             std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
                       << " " << current->Coord()[2] << std::endl;
-          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), NULL,
-              NULL, false, false, NULL, -1.0));
+          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), nullptr,
+              nullptr, false, false, nullptr, -1.0));
         } while (current->Intersect() == false);
         if (out)
           std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1]
@@ -1177,8 +1177,8 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
           if (out)
             std::cout << "Current vertex is " << current->Coord()[0] << " " << current->Coord()[1]
                       << " " << current->Coord()[2] << std::endl;
-          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), NULL,
-              NULL, false, false, NULL, -1.0));
+          respoly.push_back(Vertex(current->Coord(), current->VType(), current->Nodeids(), nullptr,
+              nullptr, false, false, nullptr, -1.0));
         } while (current->Intersect() == false);
         if (out)
           std::cout << "Found intersection: " << current->Coord()[0] << " " << current->Coord()[1]
@@ -1386,7 +1386,7 @@ void MORTAR::Coupling3d::PolygonClipping(std::vector<Vertex>& poly1, std::vector
     gmshcount++;
 
     // do output to file in c-style
-    FILE* fp = NULL;
+    FILE* fp = nullptr;
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream gmshfilecontent;
     gmshfilecontent << "View \" Clipping \" {" << std::endl;
@@ -1683,7 +1683,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
         problemcount++;
 
         // do output to file in c-style
-        FILE* fp = NULL;
+        FILE* fp = nullptr;
         fp = fopen(filename.str().c_str(), "w");
         std::stringstream gmshfilecontent;
         gmshfilecontent << "View \" ProblemClipping S" << sid << "/M" << mid << " \" {"
@@ -1975,8 +1975,8 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
           lcids[3] = (int)((poly2[j].Next())->Nodeids()[0]);
 
           // store intersection points
-          intersec.push_back(Vertex(
-              ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true, false, NULL, alphap));
+          intersec.push_back(Vertex(ip, Vertex::lineclip, lcids, poly1[i].Next(), &poly1[i], true,
+              false, nullptr, alphap));
         }
       }
     }
@@ -2505,7 +2505,7 @@ bool MORTAR::Coupling3d::PolygonClippingConvexHull(std::vector<Vertex>& poly1,
     gmshcount++;
 
     // do output to file in c-style
-    FILE* fp = NULL;
+    FILE* fp = nullptr;
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream gmshfilecontent;
 
@@ -3481,7 +3481,7 @@ void MORTAR::Coupling3d::GmshOutputCells(int lid)
   filename << "o/gmsh_output/cells_" << proc << ".pos";
 
   // do output to file in c-style
-  FILE* fp = NULL;
+  FILE* fp = nullptr;
 
   // static variable
   static int count = 0;

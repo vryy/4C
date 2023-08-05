@@ -579,7 +579,7 @@ void CONTACT::AUG::Interface::EvalActiveContributions(
   // set active slave node map of this interface and start the
   // coupling evaluation
   cparams_ptr->Set<Epetra_Map>(activenodes_.get(), 1);
-  EvaluateCoupling(*interfaceData_.SActiveEleColMap(), NULL, cparams_ptr);
+  EvaluateCoupling(*interfaceData_.SActiveEleColMap(), nullptr, cparams_ptr);
   cparams_ptr->ClearEntry(CORE::GEN::AnyDataContainer::DataType::any, 1);
 }
 
@@ -2135,7 +2135,7 @@ template <>
 Teuchos::RCP<const Epetra_Map>
 CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::master>() const
 {
-  if (MEleRowMap().is_null()) dserror("Master element row map ptr is NULL.");
+  if (MEleRowMap().is_null()) dserror("Master element row map ptr is nullptr.");
 
   return MEleRowMap();
 }
@@ -2146,7 +2146,7 @@ template <>
 Teuchos::RCP<const Epetra_Map>
 CONTACT::AUG::InterfaceDataContainer::ElementRowMapPtr<CONTACT::AUG::SideType::slave>() const
 {
-  if (SEleRowMap().is_null()) dserror("Slave element row map ptr is NULL.");
+  if (SEleRowMap().is_null()) dserror("Slave element row map ptr is nullptr.");
 
   return SEleRowMap();
 }

@@ -106,7 +106,7 @@ namespace STR
         std::vector<std::string>& full_filepaths, bool write_condition_header);
 
     void WriteConditionHeader(
-        std::ostream& os, const int col_width, const DRT::Condition* cond = NULL) const;
+        std::ostream& os, const int col_width, const DRT::Condition* cond = nullptr) const;
 
     void WriteColumnHeader(std::ostream& os, const int col_width) const;
 
@@ -130,9 +130,9 @@ namespace STR
     inline void ThrowIfNotSetup() const { dsassert(issetup_, "Call Setup() first!"); }
 
    private:
-    DRT::DiscretizationInterface* discret_ptr_ = NULL;
-    STR::TIMINT::BaseDataGlobalState* gstate_ptr_ = NULL;
-    STR::Dbc* dbc_ptr_ = NULL;
+    DRT::DiscretizationInterface* discret_ptr_ = nullptr;
+    STR::TIMINT::BaseDataGlobalState* gstate_ptr_ = nullptr;
+    STR::Dbc* dbc_ptr_ = nullptr;
 
     std::vector<std::string> full_filepaths_ = std::vector<std::string>();
 

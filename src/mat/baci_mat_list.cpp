@@ -81,7 +81,7 @@ DRT::ParObject* MAT::MatListType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::MatList::MatList() : params_(NULL) {}
+MAT::MatList::MatList() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -123,7 +123,7 @@ void MAT::MatList::SetupMatMap()
 /*----------------------------------------------------------------------*/
 void MAT::MatList::Clear()
 {
-  params_ = NULL;
+  params_ = nullptr;
   mat_.clear();
   return;
 }
@@ -140,14 +140,14 @@ void MAT::MatList::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
-  if (params_ != NULL)
+  if (params_ != nullptr)
     if (params_->local_)
     {
       // loop map of associated local materials
-      if (params_ != NULL)
+      if (params_ != nullptr)
       {
         // std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
         std::vector<int>::const_iterator m;
@@ -176,7 +176,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid(-1);
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -190,7 +190,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
             MaterialType());
     }
 
-  if (params_ != NULL)  // params_ are not accessible in postprocessing mode
+  if (params_ != nullptr)  // params_ are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
@@ -216,7 +216,7 @@ void MAT::MatList::Unpack(const std::vector<char>& data)
     // -> position check cannot be done in this case
     if (position != data.size())
       dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-  }  // if (params_ != NULL)
+  }  // if (params_ != nullptr)
 }
 
 /*----------------------------------------------------------------------*

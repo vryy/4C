@@ -45,7 +45,11 @@ DRT::ParObject* MAT::StructPoroReactionECMType::Create(const std::vector<char>& 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::StructPoroReactionECM::StructPoroReactionECM()
-    : refporosity_old_(-1.0), refporositydot_old_(0.0), chempot_(0), chempot_init_(0), params_(NULL)
+    : refporosity_old_(-1.0),
+      refporositydot_old_(0.0),
+      chempot_(0),
+      chempot_init_(0),
+      params_(nullptr)
 {
 }
 
@@ -71,7 +75,7 @@ void MAT::StructPoroReactionECM::Setup(int numgp, DRT::INPUT::LineDefinition* li
   double dpsidphiref = 0.0;
   Teuchos::ParameterList params;
   params_->poro_law_->ConstitutiveDerivatives(params, 0.0, 1.0, params_->init_porosity_,
-      refporosity_, NULL, NULL, NULL, &dpsidphiref, NULL);
+      refporosity_, nullptr, nullptr, nullptr, &dpsidphiref, nullptr);
 
   const double initphi = params_->init_porosity_;
   const double deltaphi = refporosity_ - initphi;
@@ -96,7 +100,7 @@ void MAT::StructPoroReactionECM::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // refporosity_
@@ -125,7 +129,7 @@ void MAT::StructPoroReactionECM::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -233,7 +237,7 @@ void MAT::StructPoroReactionECM::ChemPotential(
   double dpsidphiref = 0.0;
 
   params_->poro_law_->ConstitutiveDerivatives(
-      params, press, J, porosity, refporosity_, NULL, NULL, NULL, &dpsidphiref, NULL);
+      params, press, J, porosity, refporosity_, nullptr, nullptr, nullptr, &dpsidphiref, nullptr);
 
   pot = 1.0 / Density() * psi - 1.0 / mat_->Density() * dpsidphiref - chempot_init_[gp];
   chempot_[gp] = pot;

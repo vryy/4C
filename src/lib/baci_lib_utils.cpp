@@ -220,7 +220,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::ComputeNodalL2Projection(Discretiza
     Epetra_Vector* const sys_mat_diagonal_ptr)
 {
   // extract the desired element pointers
-  std::vector<DRT::Element*> coleles(elecolmap.NumMyElements(), NULL);
+  std::vector<DRT::Element*> coleles(elecolmap.NumMyElements(), nullptr);
   for (int elid = 0; elid < elecolmap.NumMyElements(); ++elid)
     coleles[elid] = dis.gElement(elecolmap.GID(elid));
 
@@ -403,7 +403,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveDiagonalNodalL2Projection(
   massmatrix.ExtractDiagonalCopy(mass_diagonal);
 
   // store the diagonal ( optional )
-  if (sys_mat_diagonal_ptr != NULL)
+  if (sys_mat_diagonal_ptr != nullptr)
   {
     sys_mat_diagonal_ptr->Scale(1.0, mass_diagonal);
   }
@@ -445,7 +445,7 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::SolveNodalL2Projection(
       case INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid2:
       case INPAR::SOLVER::PreconditionerType::multigrid_muelu:
       {
-        Teuchos::ParameterList* preclist_ptr = NULL;
+        Teuchos::ParameterList* preclist_ptr = nullptr;
         // switch here between ML and MueLu cases
         if (prectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml or
             prectyp == INPAR::SOLVER::PreconditionerType::multigrid_ml_fluid or
@@ -521,9 +521,9 @@ Teuchos::RCP<Epetra_MultiVector> DRT::UTILS::PostSolveNodalL2Projection(
   const int numvec = nodevec->NumVectors();
 
   // if no pbc are involved leave here
-  if (fullnoderowmap == NULL or noderowmap.PointSameAs(*fullnoderowmap)) return nodevec;
+  if (fullnoderowmap == nullptr or noderowmap.PointSameAs(*fullnoderowmap)) return nodevec;
 
-  if (slavetomastercolnodesmap == NULL)
+  if (slavetomastercolnodesmap == nullptr)
     dserror("You have to provide a \"slavetomastercolnodesmap\" for the PBC handling!");
 
   // solution vector based on full row map in which the solution of the master node is inserted into
@@ -1203,9 +1203,9 @@ DRT::UTILS::RestartManager::RestartManager()
   sigemptyset(&the_action.sa_mask);
   the_action.sa_flags = SA_SIGINFO;
 
-  if (sigaction(SIGUSR1, &the_action, NULL))
+  if (sigaction(SIGUSR1, &the_action, nullptr))
     dserror("signal handler for action SIGUSR1 could not be registered");
-  if (sigaction(SIGUSR2, &the_action, NULL))
+  if (sigaction(SIGUSR2, &the_action, nullptr))
     dserror("signal handler for action SIGUSR2 could not be registered");
 }
 
@@ -1292,7 +1292,7 @@ std::vector<double> DRT::UTILS::ElementCenterRefeCoords(const DRT::Element* cons
  *------------------------------------------------------------------------------*/
 void DRT::UTILS::Checkfgets(char* output, FILE* stream, std::string filename)
 {
-  if (output == NULL)
+  if (output == nullptr)
   {
     if (ferror(stream))
     {

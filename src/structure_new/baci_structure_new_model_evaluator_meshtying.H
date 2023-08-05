@@ -174,7 +174,7 @@ namespace STR
        *
        *  \author hiermeier \date 08/17 */
       Teuchos::RCP<Epetra_Vector> AssembleForceOfModels(
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL,
+          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr,
           const bool apply_dbc = false) const;
 
       virtual Teuchos::RCP<CORE::LINALG::SparseOperator> GetAuxDisplJacobian() const

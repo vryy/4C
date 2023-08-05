@@ -26,8 +26,8 @@ BEAMINTERACTION::BeamPotentialPair::BeamPotentialPair()
     : isinit_(false),
       issetup_(false),
       beam_potential_params_(Teuchos::null),
-      element1_(NULL),
-      element2_(NULL)
+      element1_(nullptr),
+      element2_(nullptr)
 {
   // empty constructor
 }

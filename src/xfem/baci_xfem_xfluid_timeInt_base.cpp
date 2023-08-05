@@ -166,7 +166,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
   std::set<int> eids;
   std::set<int> common_nodes;
 
-  if (ele1 == NULL or ele2 == NULL)
+  if (ele1 == nullptr or ele2 == nullptr)
   {
     check_allsides = true;  // no efficient search possible
   }
@@ -262,7 +262,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
       CORE::GEO::CUT::ElementHandle* eh = wizard->GetElement(ele);
 
       // no cutsides within this element, then no side changing possible
-      if (eh == NULL)
+      if (eh == nullptr)
       {
         continue;  // next element
       }
@@ -670,7 +670,7 @@ void XFEM::XFLUID_TIMEINT_BASE::addPBCelements(
 
   // get pbcnode
   bool pbcnodefound = false;  // boolean indicating whether this node is a pbc node
-  DRT::Node* pbcnode = NULL;
+  DRT::Node* pbcnode = nullptr;
   findPBCNode(node, pbcnode, pbcnodefound);
 
   // add elements located around the coupled pbc node
@@ -1023,25 +1023,26 @@ void XFEM::XFLUID_STD::elementSearch(
     bool& found                      /// is element found?
 ) const
 {
-  // REMARK: if ele!= NULL, then check that element first, before loop all row elements
+  // REMARK: if ele!= nullptr, then check that element first, before loop all row elements
 
   int startid;  // local row element id
-  if (ele == NULL)
+  if (ele == nullptr)
     startid = 0;  // start with first local row element
   else
-    startid = -1;  // pseudo-id so that id+1 will be 0 (for additional element check, if ele!=NULL)
+    startid =
+        -1;  // pseudo-id so that id+1 will be 0 (for additional element check, if ele!=nullptr)
 
-  DRT::Element* currele = NULL;  // current element
+  DRT::Element* currele = nullptr;  // current element
 
   // loop over elements
   for (int ieleid = startid; ieleid < discret_->NumMyRowElements(); ieleid++)
   {
-    // if ele != NULL additional check
+    // if ele != nullptr additional check
     // first it should be checked if it is fitting
     if (ieleid == -1)
     {
       currele = ele;
-      ele = NULL;  // reset ele, ele will be set if an element is found finally
+      ele = nullptr;  // reset ele, ele will be set if an element is found finally
     }
     else
       currele = discret_->lRowElement(ieleid);
@@ -1250,7 +1251,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
   std::set<int> sides;
 
   // is there a nodehandle to get information about cutting sides near this node?
-  if (n_new != NULL)
+  if (n_new != nullptr)
   {
     //--------------------------------------------------------
     // get involved side ids for projection and distance computation
@@ -1308,7 +1309,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
     }
   }
 
-  if ((points.size() == 0 and sides.size() == 0) or n_new == NULL)
+  if ((points.size() == 0 and sides.size() == 0) or n_new == nullptr)
   {
     // node does not carry a node handle -> Semilagrangean algorithm for nodes with too much
     // structural movement
@@ -1446,7 +1447,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
   {
     DRT::Element* side = boundarydis_->gElement(proj_sid);
 
-    if (side == NULL) dserror("side with id %d not found ", proj_sid);
+    if (side == nullptr) dserror("side with id %d not found ", proj_sid);
 
     // side geometry at initial state t^0
     const int numnodes = side->NumNode();
@@ -1596,7 +1597,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback(TimeIntData& data)
       }
       else
       {
-        side_2 = NULL;
+        side_2 = nullptr;
       }
       //---------------------------------------------------------
       // line geometry at initial state t^0
@@ -1722,7 +1723,7 @@ bool XFEM::XFLUID_STD::FindNearestSurfPoint(
     const std::string state              ///< state n or np?
 )
 {
-  if (vc == NULL) dserror("do not call FindNearestSurfPoint with Null-Pointer for Volumecell");
+  if (vc == nullptr) dserror("do not call FindNearestSurfPoint with Null-Pointer for Volumecell");
 
   //--------------------------------------------------------
   // get involved side ids for projection and distance computation
@@ -1948,7 +1949,7 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(DRT::Element* side1,  ///< pointer
 
   normal_avg.Update(1.0, normal1, 1.0);
 
-  if (side2 != NULL)  // in case we have side2, use averaged normal
+  if (side2 != nullptr)  // in case we have side2, use averaged normal
   {
     for (int i = 0; i < side2->NumNode(); i++)
       xi_2_avg.Update(1.0, CORE::DRT::UTILS::GetNodeCoordinates(i, side2->Shape()), 1.0);

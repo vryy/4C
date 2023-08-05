@@ -1183,7 +1183,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocityO
     // some checking
     if (fldparatimint_->IsStationary())
       dserror("there is no time dependent subgrid scale closure for stationary problems\n");
-    if (saccn == NULL or sveln == NULL or svelnp == NULL) dserror("no subscale array provided");
+    if (saccn == nullptr or sveln == nullptr or svelnp == nullptr)
+      dserror("no subscale array provided");
 
     // parameter definitions
     double alphaF = fldparatimint_->AlphaF();
@@ -2324,8 +2325,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALEOSTNew(
     default:
     {
       GetGridDispALE(discretization, lm, edispnp);
-      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridvnp, NULL, "gridv");
-      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridvn, NULL, "gridvn");
+      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridvnp, nullptr, "gridv");
+      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridvn, nullptr, "gridvn");
       break;
     }
   }

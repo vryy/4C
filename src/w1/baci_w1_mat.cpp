@@ -344,7 +344,7 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(CORE::LINALG::Matrix<6, 1>* stress
     CORE::LINALG::Matrix<6, 6>* cmat, const CORE::LINALG::Matrix<6, 1>* glstrain,
     Teuchos::ParameterList& params, const int gp)
 {
-  SolidMaterial()->Evaluate(NULL, glstrain, params, stress, cmat, gp, Id());
+  SolidMaterial()->Evaluate(nullptr, glstrain, params, stress, cmat, gp, Id());
 
   return;
 }

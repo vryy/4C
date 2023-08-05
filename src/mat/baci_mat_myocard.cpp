@@ -63,7 +63,7 @@ DRT::ParObject* MAT::MyocardType::Create(const std::vector<char>& data)
  |  Constructor                                    (public)  cbert 08/13 |
  *----------------------------------------------------------------------*/
 MAT::Myocard::Myocard()
-    : params_(NULL),
+    : params_(nullptr),
       difftensor_(0),
       nb_state_variables_(0),
       myocard_mat_(Teuchos::null),
@@ -99,7 +99,7 @@ void MAT::Myocard::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
   AddtoPack(data, nb_state_variables_);
   AddtoPack(data, difftensor_);
@@ -150,7 +150,7 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
     diff_at_ele_center_ = false;
   ExtractfromPack(position, data, num_gp);
 
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() !=
       Teuchos::null)  // it does not enter here in postprocessing
   {
@@ -218,7 +218,7 @@ void MAT::Myocard::UnpackMaterial(const std::vector<char>& data)
     diff_at_ele_center_ = false;
   ExtractfromPack(position, data, num_gp);
 
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() !=
       Teuchos::null)  // it does not enter here in postprocessing
   {

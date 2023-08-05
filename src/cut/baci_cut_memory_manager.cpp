@@ -91,7 +91,7 @@ void* CORE::GEO::CUT::ConstMemoryPool::Allocate()
     else
     {
       void* ret = freed_data_ptr_;
-      if (*freed_data_ptr_ == NULL)
+      if (*freed_data_ptr_ == nullptr)
       {
         std::stringstream msg;
         msg << "Out of memory for the const container of the size " << GetSize();
@@ -106,7 +106,7 @@ void* CORE::GEO::CUT::ConstMemoryPool::Allocate()
     std::stringstream msg;
     msg << "Out of memory for the const container of the size " << GetSize();
     dserror(msg.str());
-    return NULL;
+    return nullptr;
   }
 }
 
@@ -123,8 +123,8 @@ void CORE::GEO::CUT::ConstMemoryPool::Free(void* ptr)
 
 void CORE::GEO::CUT::ConstMemoryPool::ResetContainer()
 {
-  // reset linked list to point to NULL
-  freed_data_ptr_ = NULL;
+  // reset linked list to point to nullptr
+  freed_data_ptr_ = nullptr;
   current_data_ = reinterpret_cast<char*>(container_start_);
   linear_ = true;
   free_size_ = n_;
@@ -525,7 +525,7 @@ void CORE::GEO::CUT::DebugCustomMemoryManager::SwitchState()
 {
   MemoryState prev_state = state_;
   state_ = (prev_state == normal) ? pool : normal;
-  if (prev_ == NULL)
+  if (prev_ == nullptr)
   {
 #if EXTENDED_CUT_DEBUG_OUTPUT
     std::cout << "Previous state was null!" << std::endl;
@@ -579,13 +579,13 @@ std::unordered_map<size_t, int>& CORE::GEO::CUT::DebugCustomMemoryManager::GetMe
 }
 
 CORE::GEO::CUT::DebugCustomMemoryManager::DebugCustomMemoryManager()
-    : mem_(new NormalMemoryAllocator), state_(normal), prev_(NULL)
+    : mem_(new NormalMemoryAllocator), state_(normal), prev_(nullptr)
 {
   // start record right after creation
   StartRecord();
 }
 
-CORE::GEO::CUT::CustomMemoryManager::CustomMemoryManager() : state_(normal), prev_(NULL)
+CORE::GEO::CUT::CustomMemoryManager::CustomMemoryManager() : state_(normal), prev_(nullptr)
 {
   // Here should be size in bytes and corresponding number of elements in the contaienr of that size
   static const int sizes[] = {64, 26, 48, 24, 56, 88, 40, 176, 72, 38, 80, 136, 32};
@@ -615,11 +615,11 @@ void CORE::GEO::CUT::CustomMemoryManager::SwitchState()
   MemoryState prev_state = state_;
   // get next state
   state_ = (prev_state == normal) ? pool : normal;
-  if (prev_ == NULL)
+  if (prev_ == nullptr)
   {
     // if we do switch first time, also do the allocatio
 #if EXTENDED_CUT_DEBUG_OUTPUT
-    std::cout << "Previous state of the memory manager was NULL!" << std::endl;
+    std::cout << "Previous state of the memory manager was nullptr!" << std::endl;
 #endif
     if (state_ == pool)
       prev_ = new GenericMemoryPool(memory_allocations_, true, true);

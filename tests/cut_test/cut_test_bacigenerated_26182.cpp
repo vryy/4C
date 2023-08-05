@@ -62,56 +62,56 @@ void test_bacigenerated_26182()
     coord.push_back(0.0381185725434579);
     coord.push_back(-0.2054918748388551);
     coord.push_back(0.2836358125097307);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 2
     coord.clear();
     coord.push_back(0.03735877861984278);
     coord.push_back(-0.2052182309456932);
     coord.push_back(0.2835416114222981);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 3
     coord.clear();
     coord.push_back(0.03685694307523227);
     coord.push_back(-0.2052748618265615);
     coord.push_back(0.283541994183189);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 4
     coord.clear();
     coord.push_back(0.03188501306376229);
     coord.push_back(-0.2058311483375475);
     coord.push_back(0.2835445248807935);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 5
     coord.clear();
     coord.push_back(0.03270799660887865);
     coord.push_back(-0.2109021370569417);
     coord.push_back(0.2849057629839958);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 6
     coord.clear();
     coord.push_back(0.03694724241223234);
     coord.push_back(-0.2188755644071342);
     coord.push_back(0.2871315284537586);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 7
     coord.clear();
     coord.push_back(0.03858491978605437);
     coord.push_back(-0.207166670292633);
     coord.push_back(0.2840910300152406);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 8
     coord.clear();
     coord.push_back(0.03887836646707293);
     coord.push_back(-0.2057655187320171);
     coord.push_back(0.2837300135971634);
-    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+    maincylcepoints.push_back(intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 1
     coord.clear();
@@ -119,7 +119,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.2052182309456932);
     coord.push_back(0.2835416114222981);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 2
     coord.clear();
@@ -130,7 +130,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.2054918748388551);
     coord.push_back(0.2836358125097307);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 3
     coord.clear();
@@ -138,7 +138,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.2057655187320171);
     coord.push_back(0.2837300135971634);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 4
     coord.clear();
@@ -146,7 +146,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.207166670292633);
     coord.push_back(0.2840910300152406);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 5
     coord.clear();
@@ -154,7 +154,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.2188755644071342);
     coord.push_back(0.2871315284537586);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 6
     coord.clear();
@@ -162,7 +162,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.2109021370569417);
     coord.push_back(0.2849057629839958);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 7
     coord.clear();
@@ -170,7 +170,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.2058311483375475);
     coord.push_back(0.2835445248807935);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
   {  // 8
     coord.clear();
@@ -178,7 +178,7 @@ void test_bacigenerated_26182()
     coord.push_back(-0.2052748618265615);
     coord.push_back(0.283541994183189);
     mainholecyclepoints[0].push_back(
-        intersection.NormalMesh().NewPoint(&coord[0], NULL, NULL, 0.0));
+        intersection.NormalMesh().NewPoint(&coord[0], nullptr, nullptr, 0.0));
   }
 
   CORE::GEO::CUT::Side* cutside;

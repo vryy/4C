@@ -74,7 +74,7 @@ void SCATRA::ScatraFluidCloneStrategy::SetElementData(
 
   // note: SetMaterial() was reimplemented by the transport element!
   DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
-  if (trans != NULL)
+  if (trans != nullptr)
   {
     trans->SetMaterial(matid, oldele);
     trans->SetDisType(oldele->Shape());  // set distype as well!
@@ -142,7 +142,7 @@ void SCATRA::ScatraReactionCloneStrategy::SetElementData(
 
   // note: SetMaterial() was reimplemented by the transport element!
   DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
-  if (trans != NULL)
+  if (trans != nullptr)
   {
     trans->SetMaterial(matid, oldele);
     trans->SetDisType(oldele->Shape());  // set distype as well!

@@ -77,7 +77,7 @@ namespace DRT
                                                               ///< copied to the new discretization
       )
       {
-        if (cond.Nodes() == NULL or cond.Nodes()->size() == 0)
+        if (cond.Nodes() == nullptr or cond.Nodes()->size() == 0)
           dserror("The condition has no nodes!");
 
         // make sure connectivity is all set
@@ -358,12 +358,12 @@ namespace DRT
         // try to cast sourcedis to NurbsDiscretisation
         DRT::NURBS::NurbsDiscretization* nurbsdis =
             dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(sourcedis)));
-        bool isnurbsdis(nurbsdis != NULL);
+        bool isnurbsdis(nurbsdis != nullptr);
 
         // try to cast source node to immersed node
         DRT::ImmersedNode* inode =
             dynamic_cast<DRT::ImmersedNode*>(sourcedis->gNode(sourcedis->NodeRowMap()->GID(0)));
-        bool buildimmersednode(inode != NULL);
+        bool buildimmersednode(inode != nullptr);
 
         // check and analyze source discretization
         InitialChecks(*sourcedis, *targetdis);
@@ -406,7 +406,7 @@ namespace DRT
         for (cit = conds.begin(); cit != conds.end(); ++cit)
         {
           // check the source condition
-          if ((*cit)->Nodes() == NULL or (*cit)->Nodes()->size() == 0)
+          if ((*cit)->Nodes() == nullptr or (*cit)->Nodes()->size() == 0)
             dserror("The condition has no nodes!");
         }
 
@@ -451,12 +451,12 @@ namespace DRT
         // try to cast sourcedis to NurbsDiscretisation
         const DRT::NURBS::NurbsDiscretization* nurbsdis_ptr =
             dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&sourcedis);
-        bool isnurbsdis(nurbsdis_ptr != NULL);
+        bool isnurbsdis(nurbsdis_ptr != nullptr);
 
         // try to cast source node to immersed node
         DRT::ImmersedNode* inode =
             dynamic_cast<DRT::ImmersedNode*>(sourcedis.gNode(sourcedis.NodeRowMap()->GID(0)));
-        bool buildimmersednode(inode != NULL);
+        bool buildimmersednode(inode != nullptr);
 
         AnalyzeConditionedSourceDis(
             sourcedis, sourceelements, eletype_, rownodeset_, colnodeset_, roweleset_, coleleset_);
@@ -719,7 +719,7 @@ namespace DRT
                 *it);
 
           DRT::Element* sourceele = src_ele_citer->second.get();
-          if (sourceele == NULL) dserror("The sourceele pointer is NULL!");
+          if (sourceele == nullptr) dserror("The sourceele pointer is nullptr!");
 
           std::string approxtype = "Polynomial";
           if (isnurbsdis)
@@ -783,9 +783,10 @@ namespace DRT
           if (mat_ptr.is_null())
           {
             DRT::FaceElement* src_face_element = dynamic_cast<DRT::FaceElement*>(sourceele);
-            if (src_face_element != NULL) mat_ptr = src_face_element->ParentElement()->Material();
+            if (src_face_element != nullptr)
+              mat_ptr = src_face_element->ParentElement()->Material();
           }
-          // It is no FaceElement or the material pointer of the parent element is NULL.
+          // It is no FaceElement or the material pointer of the parent element is nullptr.
           if (mat_ptr.is_null()) dserror("The condition element has no material!");
 
           int src_matid = mat_ptr->Parameter()->Id();
@@ -855,9 +856,9 @@ namespace DRT
     {
       const DRT::Discretization* sourcedis_ptr =
           dynamic_cast<const DRT::Discretization*>(&sourcedis);
-      if (sourcedis_ptr == NULL) dserror("Cast of the source discretization failed!");
+      if (sourcedis_ptr == nullptr) dserror("Cast of the source discretization failed!");
       DRT::Discretization* targetdis_ptr = dynamic_cast<DRT::Discretization*>(&targetdis);
-      if (targetdis_ptr == NULL) dserror("Cast of the target discretization failed!");
+      if (targetdis_ptr == nullptr) dserror("Cast of the target discretization failed!");
 
       // access the communicator for time measurement
       const Epetra_Comm& comm = sourcedis_ptr->Comm();

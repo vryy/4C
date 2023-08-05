@@ -180,7 +180,8 @@ void ADAPTER::ScaTraFluidCouplingAlgorithm::SetupFieldCoupling(
     volcoupl_fluidscatra_ = Teuchos::rcp(new CORE::ADAPTER::MortarVolCoupl());
 
     // setup projection matrices (use default material strategy)
-    volcoupl_fluidscatra_->Init(fluiddis, scatradis, NULL, NULL, NULL, NULL, Teuchos::null, true);
+    volcoupl_fluidscatra_->Init(
+        fluiddis, scatradis, nullptr, nullptr, nullptr, nullptr, Teuchos::null, true);
   }
 }
 

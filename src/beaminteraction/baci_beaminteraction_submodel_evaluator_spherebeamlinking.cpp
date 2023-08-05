@@ -785,7 +785,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::CheckFeasibilityOfNe
         dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(neighbors[eiter]);
 
 #ifdef DEBUG
-    if (sphere == NULL or beamele == NULL)
+    if (sphere == nullptr or beamele == nullptr)
       dserror(" First element should be a sphere, second element a beam.");
 #endif
 

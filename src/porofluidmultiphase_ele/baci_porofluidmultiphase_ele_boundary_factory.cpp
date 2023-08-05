@@ -61,7 +61,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
     }
   }
 
-  return NULL;
+  return nullptr;
 }
 
 

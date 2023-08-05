@@ -61,7 +61,7 @@ DRT::ParObject* MAT::Membrane_ActiveStrainType::Create(const std::vector<char>& 
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
 MAT::Membrane_ActiveStrain::Membrane_ActiveStrain()
-    : params_(NULL),
+    : params_(nullptr),
       matpassive_(0),
       voltage_(Teuchos::null),
       activation_(Teuchos::null),
@@ -99,7 +99,7 @@ void MAT::Membrane_ActiveStrain::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // fiber vectors: Fiber1, Fiber2, Normal
@@ -172,7 +172,7 @@ void MAT::Membrane_ActiveStrain::Unpack(const std::vector<char>& data)
   {
     DRT::ParObject* o = DRT::UTILS::Factory(matpassive_data);  // Unpack is done here
     MAT::So3Material* matpassive = dynamic_cast<MAT::So3Material*>(o);
-    if (matpassive == NULL) dserror("failed to unpack passive material");
+    if (matpassive == nullptr) dserror("failed to unpack passive material");
 
     matpassive_ = Teuchos::rcp(matpassive);
   }

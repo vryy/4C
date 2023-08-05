@@ -45,7 +45,7 @@ DRT::ParObject* MAT::ScatraMatMultiPoroFluidType::Create(const std::vector<char>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid() : params_(NULL) {}
+MAT::ScatraMatMultiPoroFluid::ScatraMatMultiPoroFluid() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -68,7 +68,7 @@ void MAT::ScatraMatMultiPoroFluid::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // add base class material
@@ -88,7 +88,7 @@ void MAT::ScatraMatMultiPoroFluid::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -135,7 +135,7 @@ DRT::ParObject* MAT::ScatraMatMultiPoroVolFracType::Create(const std::vector<cha
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac() : params_(NULL) {}
+MAT::ScatraMatMultiPoroVolFrac::ScatraMatMultiPoroVolFrac() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -159,7 +159,7 @@ void MAT::ScatraMatMultiPoroVolFrac::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // add base class material
@@ -179,7 +179,7 @@ void MAT::ScatraMatMultiPoroVolFrac::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -223,7 +223,7 @@ DRT::ParObject* MAT::ScatraMatMultiPoroSolidType::Create(const std::vector<char>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid() : params_(NULL) {}
+MAT::ScatraMatMultiPoroSolid::ScatraMatMultiPoroSolid() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -245,7 +245,7 @@ void MAT::ScatraMatMultiPoroSolid::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // add base class material
@@ -265,7 +265,7 @@ void MAT::ScatraMatMultiPoroSolid::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -318,7 +318,7 @@ DRT::ParObject* MAT::ScatraMatMultiPoroTemperatureType::Create(const std::vector
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature() : params_(NULL) {}
+MAT::ScatraMatMultiPoroTemperature::ScatraMatMultiPoroTemperature() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -341,7 +341,7 @@ void MAT::ScatraMatMultiPoroTemperature::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // add base class material
@@ -361,7 +361,7 @@ void MAT::ScatraMatMultiPoroTemperature::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

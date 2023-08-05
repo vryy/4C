@@ -40,7 +40,7 @@ namespace DRT
      *
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
-     *  is not set or set to \c NULL, this routine generates almost no overhead
+     *  is not set or set to \c nullptr, this routine generates almost no overhead
      *  and is equivalent to the more familiar implementation in DRT::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
@@ -53,14 +53,14 @@ namespace DRT
      *  \author hiermeier \date 12/16 */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
         const Teuchos::RCP<CORE::LINALG::SparseOperator>& systemmatrix,
-        const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map = NULL);
+        const Teuchos::RCP<Epetra_Vector>& systemvector, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate the elements of the given discretization and fill the
      *         system matrices and vectors
      *
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
-     *  is not set or set to \c NULL, this routine generates almost no overhead
+     *  is not set or set to \c nullptr, this routine generates almost no overhead
      *  and is equivalent to the more familiar implementation in DRT::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
@@ -74,14 +74,14 @@ namespace DRT
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
         std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrix,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
-        const Epetra_Map* col_ele_map = NULL);
+        const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate the elements of the given discretization and fill the
      *         system matrices and vectors
      *
      *  This evaluate routine supports the evaluation of a subset of all column
      *  elements inside the given discretization. If the \c col_ele_map pointer
-     *  is not set or set to \c NULL, this routine generates almost no overhead
+     *  is not set or set to \c nullptr, this routine generates almost no overhead
      *  and is equivalent to the more familiar implementation in DRT::Discretization.
      *
      *  \param discret      (in)  : discretization containing the considered elements
@@ -93,7 +93,7 @@ namespace DRT
      *
      *  \author hiermeier \date 12/16 */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        DRT::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = NULL);
+        DRT::AssembleStrategy& strategy, const Epetra_Map* col_ele_map = nullptr);
 
     /** \brief Evaluate Dirichlet boundary conditions
      *

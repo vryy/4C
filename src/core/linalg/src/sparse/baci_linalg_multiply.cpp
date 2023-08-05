@@ -47,12 +47,12 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
 
-  // EpetraExt::RowMatrix_Transpose transposera(true,NULL,false);
-  // EpetraExt::RowMatrix_Transpose transposerb(true,NULL,false);
+  // EpetraExt::RowMatrix_Transpose transposera(true,nullptr,false);
+  // EpetraExt::RowMatrix_Transpose transposerb(true,nullptr,false);
   EpetraExt::RowMatrix_Transpose transposera;
   EpetraExt::RowMatrix_Transpose transposerb;
-  Epetra_CrsMatrix* Atrans = NULL;
-  Epetra_CrsMatrix* Btrans = NULL;
+  Epetra_CrsMatrix* Atrans = nullptr;
+  Epetra_CrsMatrix* Btrans = nullptr;
   if (transA)
     Atrans = dynamic_cast<Epetra_CrsMatrix*>(&transposera(*A.EpetraMatrix()));
   else
@@ -115,7 +115,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
   {
     N_rcvd += (getrow_comm->neighbors)[i].N_rcv;
     N_send += (getrow_comm->neighbors)[i].N_send;
-    if (((getrow_comm->neighbors)[i].N_rcv != 0) && ((getrow_comm->neighbors)[i].rcv_list != NULL))
+    if (((getrow_comm->neighbors)[i].N_rcv != 0) &&
+        ((getrow_comm->neighbors)[i].rcv_list != nullptr))
       flag = 1;
   }
   // For some unknown reason, ML likes to have stuff one larger than
@@ -148,8 +149,8 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CORE::LINALG::MLMultiply(const Epetra_C
 
   int allocated = 0;
   int rowlength;
-  double* val = NULL;
-  int* bindx = NULL;
+  double* val = nullptr;
+  int* bindx = nullptr;
   const int myrowlength = A.RowMap().NumMyElements();
   const Epetra_Map& rowmap = A.RowMap();
 

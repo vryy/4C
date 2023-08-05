@@ -508,7 +508,7 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
       CORE::LINALG::CreateVector(*xdiscret->DofColMap(), true);
 
   //------------------------------------------------------------
-  const Epetra_Map* rmap = NULL;
+  const Epetra_Map* rmap = nullptr;
 
   // TODO: do not create a new matrix all the time, why not creating an epetraFE matrix in
   // fluidimplicit directly?
@@ -531,7 +531,7 @@ void FLD::XFluidFluid::AddEosPresStabToEmbLayer()
   {
     DRT::Element* actface = xdiscret->lRowFace(i);
     DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
-    if (ele == NULL) dserror("expect FluidIntFace element");
+    if (ele == nullptr) dserror("expect FluidIntFace element");
     edgestab_->EvaluateEdgeStabBoundaryGP(faceparams, xdiscret,
         mc_xff_->GetAuxiliaryDiscretization(), ele, sysmat_linalg, residual_col);
   }

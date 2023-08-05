@@ -52,7 +52,7 @@ namespace FLD
     // set gen-alpha
     TimIntGenAlpha* timeint_genalpha = dynamic_cast<TimIntGenAlpha*>(&timeint);
 
-    if (timeint_genalpha != NULL) is_genalpha_ = true;
+    if (timeint_genalpha != nullptr) is_genalpha_ = true;
 
     if (timeint.special_flow_ == "forced_homogeneous_isotropic_turbulence" or
         timeint.special_flow_ == "scatra_forced_homogeneous_isotropic_turbulence")
@@ -1154,7 +1154,7 @@ namespace FLD
   {
     // here we are using the interior velocity
     TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&timeint);
-    if (hdgfluid == NULL) dserror("this should be a hdg time integer");
+    if (hdgfluid == nullptr) dserror("this should be a hdg time integer");
 
     // we want to use the interior velocity here
     velnp_ = hdgfluid->ReturnIntVelnp();

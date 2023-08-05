@@ -89,7 +89,7 @@ void MAT::ELASTIC::RemodelFiber::UnpackSummand(
     const std::vector<char>& data, std::vector<char>::size_type& position)
 {
   //  // make sure we have a pristine material
-  //  params_ = NULL;
+  //  params_ = nullptr;
   //  potsumfiber_.clear();
 
   int num_fiber = 0;

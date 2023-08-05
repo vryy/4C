@@ -27,7 +27,7 @@
 IO::DiscretizationReader::DiscretizationReader() /* [PROTECTED] */
     : dis_(Teuchos::null),
       input_(Teuchos::null),
-      restart_step_(NULL),
+      restart_step_(nullptr),
       reader_(Teuchos::null),
       meshreader_(Teuchos::null)
 {
@@ -340,7 +340,7 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
   std::string name = dis_->Name();
 
   symbol = map_find_symbol(file, caption);
-  while (symbol != NULL)
+  while (symbol != nullptr)
   {
     if (symbol_is_map(symbol))
     {
@@ -354,7 +354,7 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
     }
     symbol = symbol->next;
   }
-  if (symbol == NULL)
+  if (symbol == nullptr)
   {
     dserror(
         "No restart entry for discretization '%s' step %d in symbol table. "
@@ -369,7 +369,7 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
    * interested in. Now we need to continue our search to find the
    * step that defines the output file used for our step. */
 
-  while (symbol != NULL)
+  while (symbol != nullptr)
   {
     if (symbol_is_map(symbol))
     {
@@ -391,7 +391,7 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
   }
 
   /* No restart files defined? */
-  if (symbol == NULL)
+  if (symbol == nullptr)
   {
     dserror("no restart file definitions found in control file");
   }
@@ -402,8 +402,8 @@ void IO::DiscretizationReader::FindGroup(int step, MAP* file, const char* captio
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
 {
-  MAP* result_info = NULL;
-  MAP* file_info = NULL;
+  MAP* result_info = nullptr;
+  MAP* file_info = nullptr;
 
   FindGroup(step, file, "result", "result_file", result_info, file_info);
   reader_ = OpenFiles("result_file", file_info);
@@ -419,8 +419,8 @@ const Epetra_Comm& IO::DiscretizationReader::Comm() const { return dis_->Comm();
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::FindMeshGroup(int step, MAP* file)
 {
-  MAP* result_info = NULL;
-  MAP* file_info = NULL;
+  MAP* result_info = nullptr;
+  MAP* file_info = nullptr;
 
   FindGroup(step, file, "field", "mesh_file", result_info, file_info);
   meshreader_ = OpenFiles("mesh_file", file_info);
@@ -466,8 +466,8 @@ Teuchos::RCP<IO::HDFReader> IO::DiscretizationReader::OpenFiles(
 /*----------------------------------------------------------------------*/
 int IO::DiscretizationReader::GetNumOutputProc(int step)
 {
-  MAP* result_info = NULL;
-  MAP* file_info = NULL;
+  MAP* result_info = nullptr;
+  MAP* file_info = nullptr;
 
   FindGroup(step, input_->ControlFile(), "result", "result_file", result_info, file_info);
 
@@ -1346,7 +1346,7 @@ void IO::DiscretizationWriter::WriteElementData(bool writeowner)
     // elements and boundary elements become visible in post processing
     if ((int)elerowmap->NumMyElements() >= 1)
     {
-      if (dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(0)) != NULL)
+      if (dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(dis_->lRowElement(0)) != nullptr)
       {  // if dynamic cast is successful write those data
         for (int i = 0; i < elerowmap->NumMyElements(); ++i)
         {
@@ -1476,7 +1476,7 @@ void IO::DiscretizationWriter::WriteKnotvector() const
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(dis_.get());
 
-    if (nurbsdis != NULL)
+    if (nurbsdis != nullptr)
     {
       // get knotvector from nurbsdis
       Teuchos::RCP<DRT::NURBS::Knotvector> knots = nurbsdis->GetKnotVector();

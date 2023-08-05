@@ -1373,8 +1373,8 @@ void NTS::CoInterpolator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Morta
   // check for problem dimension
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
+  DRT::Node** snodes = nullptr;
+  DRT::Node** mnodes = nullptr;
   int numsnode = sele.NumNode();
   int nummnode = mele.NumNode();
 
@@ -1773,7 +1773,7 @@ NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::MortarElement
       dserror("Chosen element type not supported!");
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 

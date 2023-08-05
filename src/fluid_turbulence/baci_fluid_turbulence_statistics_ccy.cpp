@@ -95,7 +95,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*actdis));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     dserror("Need Nurbs mesh for turbulent flows around a circular cylinder\n");
   }
@@ -580,17 +580,18 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
-  if (nurbsdis == NULL) dserror("Oops. Your discretization is not a NurbsDiscretization.");
+  if (nurbsdis == nullptr) dserror("Oops. Your discretization is not a NurbsDiscretization.");
 
   nurbsdis->SetState("velnp", meanvelnp_);
 
-  DRT::NURBS::NurbsDiscretization* scatranurbsdis(NULL);
+  DRT::NURBS::NurbsDiscretization* scatranurbsdis(nullptr);
   if (withscatra_)
   {
     nurbsdis->SetState("scanp", meanscanp_);
 
     scatranurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*scatradis_));
-    if (scatranurbsdis == NULL) dserror("Oops. Your discretization is not a NurbsDiscretization.");
+    if (scatranurbsdis == nullptr)
+      dserror("Oops. Your discretization is not a NurbsDiscretization.");
 
     if (meanfullphinp_ == Teuchos::null)
       dserror("Teuchos::RCP is Teuchos::null");
@@ -708,7 +709,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
       // get pointer to corresponding scatra element with identical global id
       DRT::Element* const actscatraele = scatranurbsdis->gElement(gid);
-      if (actscatraele == NULL) dserror("could not access transport element with gid %d", gid);
+      if (actscatraele == nullptr) dserror("could not access transport element with gid %d", gid);
 
       // extract local values from the global vectors
       std::vector<int> scatralm;
@@ -1069,7 +1070,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
   // clean up
   nurbsdis->ClearState();
-  if (scatranurbsdis != NULL)
+  if (scatranurbsdis != nullptr)
   {
     scatranurbsdis->ClearState();
   }

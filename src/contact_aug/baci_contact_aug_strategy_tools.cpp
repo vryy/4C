@@ -109,7 +109,7 @@ CONTACT::AUG::Strategy::FD_Debug* CONTACT::AUG::Strategy::FD_Debug::Instance(
  *----------------------------------------------------------------------*/
 void CONTACT::AUG::Strategy::FD_Debug::Init(Strategy* strat, const double delta)
 {
-  if (not strat) dserror("NULL pointer!");
+  if (not strat) dserror("nullptr pointer!");
 
   strat_ = strat;
   delta_ = delta;
@@ -346,7 +346,7 @@ void CONTACT::AUG::Strategy::FD_Debug::UndoPerturbation(const int gid, const int
  *----------------------------------------------------------------------------*/
 DRT::Node* CONTACT::AUG::Strategy::FD_Debug::FindINode(const int gid) const
 {
-  DRT::Node* node = NULL;
+  DRT::Node* node = nullptr;
 
   // do the finite difference step
   for (auto& interface : strat_->Interfaces())
@@ -374,7 +374,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> CONTACT::AUG::ExtractMatrix(
   if (target_range_map.NumGlobalElements())
   {
     CORE::LINALG::MatrixLogicalSplitAndTransform extractor;
-    extractor(source, target_range_map, target_domain_map, 1.0, NULL, NULL, target);
+    extractor(source, target_range_map, target_domain_map, 1.0, nullptr, nullptr, target);
   }
 
   target.Complete(target_domain_map, target_range_map);

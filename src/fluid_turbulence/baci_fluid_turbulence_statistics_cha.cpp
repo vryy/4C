@@ -245,7 +245,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
     (*boundingbox_)(1, row) = -10e+19;
   }
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     // create set of available homogeneous planes. The normal direction
     // is read from the parameter list
@@ -1387,7 +1387,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     this->EvaluatePointwiseMeanValuesInPlanes();
   }
@@ -1993,7 +1993,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     discret_->Comm().SumAll(&locprocessedeles, &numele_, 1);
   }
@@ -3779,7 +3779,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*discret_));
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     for (unsigned i = 0; i < planecoordinates_->size(); ++i)
     {

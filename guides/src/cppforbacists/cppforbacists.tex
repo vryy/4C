@@ -620,7 +620,7 @@ Animal::Animal(int j)
 Animal::Animal()
 {
    j_ = -1;
-   myvec_ = NULL;
+   myvec_ = nullptr;
    return;
 }
 
@@ -913,7 +913,7 @@ class Solid3 : public Element
 
    virtual ~Solid3();
 
-   int* NodeIds() { return NULL; }
+   int* NodeIds() { return nullptr; }
 
    int Material()
    { return material_; }
@@ -932,7 +932,7 @@ We get the following results by just looking at the Element part of Solid3:\\
    ...
    Solid3 myele(1,nnode,ids,7);
    Element& baseele = myele; // this is the base type!, works fine
-   // always returns NULL as well!
+   // always returns nullptr as well!
    int* nodeids = baseele.NodeIds();
 }
 \end{verbatim}
@@ -943,7 +943,7 @@ A derived class can reimplement a base class method:\\
 {
    ...
    Solid3 myele(1,nnode,ids,7);
-   // always returns NULL !
+   // always returns nullptr !
    int* nodeids = myele.NodeIds();
 }
 \end{verbatim}

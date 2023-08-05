@@ -61,7 +61,7 @@ DRT::ParObject* MAT::PlasticElastHyperVCUType::Create(const std::vector<char>& d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::PlasticElastHyperVCU::PlasticElastHyperVCU() : params_(NULL) {}
+MAT::PlasticElastHyperVCU::PlasticElastHyperVCU() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -93,11 +93,11 @@ void MAT::PlasticElastHyperVCU::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (MatParams() != NULL) matid = MatParams()->Id();  // in case we are in post-process mode
+  if (MatParams() != nullptr) matid = MatParams()->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
   summandProperties_.Pack(data);
 
-  if (MatParams() != NULL)  // summands are not accessible in postprocessing mode
+  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // loop map of associated potential summands
     for (unsigned int p = 0; p < potsum_.size(); ++p)
@@ -119,7 +119,7 @@ void MAT::PlasticElastHyperVCU::Pack(DRT::PackBuffer& data) const
 void MAT::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
-  params_ = NULL;
+  params_ = nullptr;
   potsum_.clear();
 
   std::vector<char>::size_type position = 0;
@@ -148,7 +148,7 @@ void MAT::PlasticElastHyperVCU::Unpack(const std::vector<char>& data)
 
   summandProperties_.Unpack(position, data);
 
-  if (MatParams() != NULL)  // summands are not accessible in postprocessing mode
+  if (MatParams() != nullptr)  // summands are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;
@@ -215,7 +215,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
   // get 2pk stresses
   CORE::LINALG::Matrix<6, 1> etstr;
   CORE::LINALG::Matrix<6, 6> etcmat;
-  ElastHyper::Evaluate(NULL, &ee_test, params, &etstr, &etcmat, gp, eleGID);
+  ElastHyper::Evaluate(nullptr, &ee_test, params, &etstr, &etcmat, gp, eleGID);
 
   double yf;
   double normZero = 0.0;
@@ -309,7 +309,7 @@ void MAT::PlasticElastHyperVCU::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgr
       CORE::LINALG::Matrix<6, 6> elastCmat;
       CORE::LINALG::Matrix<6, 1> elastStressDummy;
       CORE::LINALG::Matrix<6, 6> elastCmatDummy;
-      ElastHyper::Evaluate(NULL, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
+      ElastHyper::Evaluate(nullptr, &eeOut, params, &elastStress, &elastCmat, gp, eleGID);
 
       CORE::LINALG::Matrix<6, 6> d2ced2lpVoigt[6];
       Ce2ndDeriv(defgrd, last_plastic_defgrd_inverse_[gp], dLp, d2ced2lpVoigt);
@@ -951,7 +951,7 @@ void MAT::PlasticElastHyperVCU::EvaluateRHS(const int gp, const CORE::LINALG::Ma
 
   CORE::LINALG::Matrix<6, 1> se;
   CORE::LINALG::Matrix<6, 6> dummy;
-  ElastHyper::Evaluate(NULL, &eeOut, params, &se, &dummy, gp, eleGID);
+  ElastHyper::Evaluate(nullptr, &eeOut, params, &se, &dummy, gp, eleGID);
 
   EvalDceDlp(last_plastic_defgrd_inverse_[gp], &defgrd, dexpOut_mat, cetrial, expOut, dcedlp,
       dFpiDdeltaDp);

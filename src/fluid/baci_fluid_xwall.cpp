@@ -767,7 +767,7 @@ void FLD::XWall::SetupL2Projection()
             solver_->Params().sublist("NodalBlockInformation").set("number of dofs per node", 3);
             solver_->Params().sublist("NodalBlockInformation").set("nullspace dimension", 3);
 
-            Teuchos::ParameterList* mllist_ptr = NULL;
+            Teuchos::ParameterList* mllist_ptr = nullptr;
             mllist_ptr = &((solver_->Params()).sublist("ML Parameters"));
             Teuchos::ParameterList& mllist = *mllist_ptr;  // solveparams.sublist("ML Parameters");
 
@@ -1040,7 +1040,7 @@ void FLD::XWall::CalcTauW(
       elevector2.size(numnode);
 
       // call the element specific evaluate method (elemat1 = mass matrix, elemat2 = rhs)
-      // elevector1 has to be NULL here, because I am assuming a dof-based vector otherwise
+      // elevector1 has to be nullptr here, because I am assuming a dof-based vector otherwise
       actele->Evaluate(
           params, *xwdiscret_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
 
@@ -1257,7 +1257,7 @@ void FLD::XWall::AdaptMLNullspace(const Teuchos::RCP<CORE::LINALG::Solver>& solv
   Teuchos::ParameterList& mlparams = solver->Params().sublist("ML Parameters");
 
   // get nullspace parameters
-  double* nullspace = mlparams.get("null space: vectors", (double*)NULL);
+  double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
   if (!nullspace) dserror("No nullspace supplied in parameter list");
   int nsdim = mlparams.get("null space: dimension", 1);
   if (nsdim != 4) dserror("Wrong Nullspace dimension for XWall");

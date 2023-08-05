@@ -91,7 +91,7 @@ void CORE::LINALG::MatrixLogicalSplitAndTransform::SetupGidMap(const Epetra_Map&
 {
   if (not havegidmap_)
   {
-    if (converter != NULL)
+    if (converter != nullptr)
     {
       ::DRT::Exporter ex(rowmap, colmap, comm);
       converter->FillSrcToDstMap(gidmap_);
@@ -305,7 +305,7 @@ bool CORE::LINALG::MatrixRowTransform::operator()(const CORE::LINALG::SparseMatr
     CORE::LINALG::SparseMatrix& dst, bool addmatrix)
 {
   return transformer(
-      src, src.RangeMap(), src.DomainMap(), scale, &converter, NULL, dst, false, addmatrix);
+      src, src.RangeMap(), src.DomainMap(), scale, &converter, nullptr, dst, false, addmatrix);
 }
 
 
@@ -316,7 +316,7 @@ bool CORE::LINALG::MatrixColTransform::operator()(const Epetra_Map&, const Epetr
     bool exactmatch, bool addmatrix)
 {
   return transformer(
-      src, src.RangeMap(), src.DomainMap(), scale, NULL, &converter, dst, exactmatch, addmatrix);
+      src, src.RangeMap(), src.DomainMap(), scale, nullptr, &converter, dst, exactmatch, addmatrix);
 }
 
 

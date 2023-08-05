@@ -44,7 +44,7 @@ void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::DiscretizationF
   DRT::UTILS::Dbc::ReadDirichletCondition(discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == NULL) return;
+  if (discret.FaceRowMap() == nullptr) return;
 
   // get onoff toggles
   const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
@@ -155,10 +155,10 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
     const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, NULL);
+  DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == NULL) return;
+  if (discret.FaceRowMap() == nullptr) return;
 
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.Nodes();
@@ -205,7 +205,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
       initParams.set<int>(
           "action", FLD::project_fluid_field);  // TODO: Introduce a general action type that is
                                                 // valid for all problems
-    if (funct != NULL)
+    if (funct != nullptr)
     {
       Teuchos::Array<int> functarray(*funct);
       initParams.set("funct", functarray);
@@ -321,7 +321,7 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
       std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
 
       bool do_evaluate = false;
-      if (funct != NULL)
+      if (funct != nullptr)
         for (unsigned int i = 0; i < component; ++i)
           if ((*funct)[i] > 0) do_evaluate = true;
 

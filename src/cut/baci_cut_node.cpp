@@ -342,7 +342,7 @@ void CORE::GEO::CUT::Node::FindDOFSets(bool include_inner)
   }
 
   // do any remaining internal volumes that are not connected to any node
-  BuildDOFCellSets(NULL, cells, cells, done);
+  BuildDOFCellSets(nullptr, cells, cells, done);
 
   //   std::cout << " #dofsets: " << dofsets_.size() << " [";
   //   for ( unsigned i=0; i<dofsets_.size(); ++i )
@@ -397,7 +397,7 @@ void CORE::GEO::CUT::Node::FindDOFSetsNEW(
   }
 
   // do any remaining internal volumes that are not connected to any node
-  BuildDOFCellSets(NULL, cell_sets, cells, cell_sets, done);
+  BuildDOFCellSets(nullptr, cell_sets, cells, cell_sets, done);
 }
 
 

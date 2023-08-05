@@ -130,7 +130,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   // two uncut elements / standard fluid case
   // problems cut with levelset will not enter here!
   //------------------------------------------------------------------------------
-  if (p_master_handle == NULL and p_slave_handle == NULL)
+  if (p_master_handle == nullptr and p_slave_handle == nullptr)
   {
     num_edgestab++;
 
@@ -159,7 +159,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   // second case: element handles for both parent elements
   // two elements that are maybe cut
   //------------------------------------------------------------------------------
-  else if (p_master_handle != NULL and p_slave_handle != NULL)
+  else if (p_master_handle != nullptr and p_slave_handle != nullptr)
   {
     // linear elements
     if (p_master->Shape() == DRT::Element::hex8 or p_master->Shape() == DRT::Element::tet4 or
@@ -455,8 +455,8 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   // third case: element handle only for master element or for slave element available
   // at most one element cut
   //------------------------------------------------------------------------------
-  else if ((p_master_handle != NULL and p_slave_handle == NULL) or
-           (p_master_handle == NULL and p_slave_handle != NULL))
+  else if ((p_master_handle != nullptr and p_slave_handle == nullptr) or
+           (p_master_handle == nullptr and p_slave_handle != nullptr))
   {
     // linear elements
     if (p_master->Shape() == DRT::Element::hex8 or p_master->Shape() == DRT::Element::tet4 or
@@ -502,13 +502,13 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
 
             // which element is the parent element
-            if (p_master_handle != NULL)
+            if (p_master_handle != nullptr)
             {
               nds_master = vc->NodalDofSet();
 
               for (size_t i = 0; i < p_slave_numnode; i++) nds_slave.push_back(0);
             }
-            else if (p_slave_handle != NULL)
+            else if (p_slave_handle != nullptr)
             {
               for (size_t i = 0; i < p_master_numnode; i++) nds_master.push_back(0);
 
@@ -522,7 +522,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
           num_edgestab++;
 
           // at most one element can be a cut one
-          if (p_master_handle != NULL)
+          if (p_master_handle != nullptr)
           {
             if (p_master_handle->IsIntersected())
             {
@@ -532,7 +532,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             else
               face_type = INPAR::XFEM::face_type_std;
           }
-          else if (p_slave_handle != NULL)
+          else if (p_slave_handle != nullptr)
           {
             if (p_slave_handle->IsIntersected())
             {

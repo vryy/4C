@@ -119,7 +119,7 @@ DRT::ParObject* DRT::ParObjectFactory::Create(const std::vector<char>& data)
 
   DRT::ParObject* o = i->second->Create(data);
 
-  if (o == NULL)
+  if (o == nullptr)
   {
     dserror("failed to create object of type %d", type);
   }
@@ -146,7 +146,7 @@ Teuchos::RCP<DRT::Element> DRT::ParObjectFactory::Create(
   {
     ParObjectType* pot = i->second;
     ElementType* eot = dynamic_cast<ElementType*>(pot);
-    if (eot != NULL)
+    if (eot != nullptr)
     {
       Teuchos::RCP<DRT::Element> ele = eot->Create(eletype, eledistype, id, owner);
       if (ele != Teuchos::null)
@@ -234,7 +234,7 @@ void DRT::ParObjectFactory::InitializeElements(DRT::Discretization& dis)
   {
     ParObjectType* pot = type_map_[*i];
     ElementType* eot = dynamic_cast<ElementType*>(pot);
-    if (eot != NULL)
+    if (eot != nullptr)
     {
       ae.insert(eot);
       int err = eot->Initialize(dis);
@@ -283,7 +283,7 @@ void DRT::ParObjectFactory::SetupElementDefinition(
   {
     ParObjectType* pot = i->second;
     ElementType* eot = dynamic_cast<ElementType*>(pot);
-    if (eot != NULL)
+    if (eot != nullptr)
     {
       eot->SetupElementDefinition(definitions);
     }

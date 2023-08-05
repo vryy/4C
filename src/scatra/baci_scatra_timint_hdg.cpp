@@ -42,7 +42,7 @@ SCATRA::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization> &actdis,
       timealgoset_(INPAR::SCATRA::timeint_gen_alpha),
       startalgo_(true),
       theta_(-1),
-      hdgdis_(NULL),
+      hdgdis_(nullptr),
       padaptivity_(DRT::INPUT::IntegralValue<bool>(*params, "PADAPTIVITY")),
       padapterrortol_(params->get<double>("PADAPTERRORTOL")),
       padapterrorbase_(params->get<double>("PADAPTERRORBASE")),
@@ -59,7 +59,7 @@ SCATRA::TimIntHDG::TimIntHDG(const Teuchos::RCP<DRT::Discretization> &actdis,
 void SCATRA::TimIntHDG::Setup()
 {
   hdgdis_ = dynamic_cast<DRT::DiscretizationHDG *>(discret_.get());
-  if (hdgdis_ == NULL) dserror("Did not receive an HDG discretization");
+  if (hdgdis_ == nullptr) dserror("Did not receive an HDG discretization");
 
   // vector to store the dofs per element
   const Teuchos::RCP<Epetra_IntVector> eledofs =
@@ -1065,7 +1065,7 @@ void SCATRA::TimIntHDG::AdaptDegree()
 
   // cast and check if hdg discretization is provided
   DRT::DiscretizationHDG *hdgdis = dynamic_cast<DRT::DiscretizationHDG *>(discret_.get());
-  if (hdgdis == NULL) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
 
   // vector to store the dofs per single element
   const Teuchos::RCP<Epetra_IntVector> eledofs =

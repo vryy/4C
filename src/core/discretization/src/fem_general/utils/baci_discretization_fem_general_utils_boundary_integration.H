@@ -1726,8 +1726,8 @@ namespace CORE::DRT::UTILS
       // Computation of the integration factor & shape function at the Gauss point & derivative of
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points Computation of nurb specific stuff is not activated here
-      CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(
-          funct, deriv, fac, unitnormal, drs, xsi, xyze, intpoints, gpid, NULL, NULL, isnurbs);
+      CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct, deriv, fac, unitnormal, drs, xsi,
+          xyze, intpoints, gpid, nullptr, nullptr, isnurbs);
 
       for (int inode = 0; inode < bdrynen; ++inode)
       {

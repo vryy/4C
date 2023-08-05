@@ -862,7 +862,7 @@ void MAT::ActiveFiber::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     cmat->Update(1.0, cmatactive, 1.0);
   }
 #else
-  if (cmat != NULL)
+  if (cmat != nullptr)
   {
     // Setup active elasticity tensor cmatactive
     CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> cmatactive(true);

@@ -34,11 +34,11 @@ Teuchos::RCP<const DRT::UTILS::Dbc> DRT::UTILS::BuildDbc(
     const DRT::DiscretizationInterface* discret_ptr)
 {
   // HDG discretization
-  if (dynamic_cast<const DRT::DiscretizationHDG*>(discret_ptr) != NULL)
+  if (dynamic_cast<const DRT::DiscretizationHDG*>(discret_ptr) != nullptr)
     return Teuchos::rcp<const DRT::UTILS::Dbc>(new const DRT::UTILS::DbcHDG());
 
   // Nurbs discretization
-  if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discret_ptr) != NULL)
+  if (dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(discret_ptr) != nullptr)
     return Teuchos::rcp<const DRT::UTILS::Dbc>(new const DRT::UTILS::DbcNurbs());
 
   // default case
@@ -227,7 +227,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
   for (unsigned i = 0; i < nnode; ++i)
   {
     // do only nodes in my row map
-    DRT::Node* actnode = NULL;
+    DRT::Node* actnode = nullptr;
     bool isrow = true;
     int nlid = discret.NodeRowMap()->LID((*nodeids)[i]);
     if (nlid < 0)
@@ -556,7 +556,7 @@ void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::DiscretizationInterface& d
 
   // build map of Dirichlet DOFs
   int nummyelements = 0;
-  int* myglobalelements = NULL;
+  int* myglobalelements = nullptr;
   std::vector<int> dbcgidsv;
   if (dbcrowgids->size() > 0)
   {

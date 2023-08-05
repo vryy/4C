@@ -239,8 +239,8 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
   CORE::LINALG::Matrix<probdim, numNodesSide> side_deriv1;
   CORE::LINALG::Matrix<probdim, probdim> xjm;
   CORE::LINALG::Matrix<probdim, 1> normal_center;
-  CORE::GEO::CUT::EvalDerivsInParameterSpace<probdim, sidetype, double>(
-      xyze_surfaceElement_, rst_side_center, side_deriv1, xjm, NULL, &normal_center, NULL, true);
+  CORE::GEO::CUT::EvalDerivsInParameterSpace<probdim, sidetype, double>(xyze_surfaceElement_,
+      rst_side_center, side_deriv1, xjm, nullptr, &normal_center, nullptr, true);
 
   // calcualte the direction vector of the edge element
   CORE::LINALG::Matrix<probdim, 1> dedge(&xyze_lineElement_(0, 0), false);

@@ -35,7 +35,7 @@ STR::Dbc::Dbc()
       locsysman_ptr_(Teuchos::null),
       zeros_ptr_(Teuchos::null),
       dbcmap_ptr_(Teuchos::null),
-      freact_ptr_(NULL)
+      freact_ptr_(nullptr)
 {
   // empty constructor
 }
@@ -445,7 +445,7 @@ Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
  *----------------------------------------------------------------------------*/
 Epetra_Vector& STR::Dbc::Freact() const
 {
-  dsassert(freact_ptr_, "NULL pointer");
+  dsassert(freact_ptr_, "nullptr");
 
   return *freact_ptr_;
 }

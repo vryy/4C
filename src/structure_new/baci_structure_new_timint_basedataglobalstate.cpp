@@ -517,7 +517,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
     std::vector<int> nodalrotvecdofs;
 
     // so far we only expect DoFs of beam elements for the rotvecdofset
-    if (beameleptr == NULL)
+    if (beameleptr == nullptr)
     {
       nodaladditdofs = discret_->Dof(0, nodeptr);
     }
@@ -899,7 +899,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
   CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
           &jac);
-  if (blockmat_ptr != NULL)
+  if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
       dserror(
@@ -946,7 +946,7 @@ void STR::TIMINT::BaseDataGlobalState::AssignModelBlock(CORE::LINALG::SparseOper
         "not been created.");
 
   CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
-  if (stiff_ptr != NULL)
+  if (stiff_ptr != nullptr)
   {
     stiff_ptr->Assign(access, matrix);
     return;
@@ -967,7 +967,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
   CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
           &jac);
-  if (blockmat_ptr != NULL)
+  if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
       dserror(
@@ -1013,7 +1013,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
         "not been created.");
 
   CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
-  if (stiff_ptr != NULL)
+  if (stiff_ptr != nullptr)
   {
     block = Teuchos::rcpFromRef(*stiff_ptr);
     return block;
@@ -1044,7 +1044,7 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
   CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>* blockmat_ptr =
       dynamic_cast<CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(
           &jac);
-  if (blockmat_ptr != NULL)
+  if (blockmat_ptr != nullptr)
   {
     if (MaxBlockNumber() < 2)
       dserror(
@@ -1053,7 +1053,7 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
     const int& b_id = model_block_id_.at(mt);
 
     const int num_cols = blockmat_ptr->Cols();
-    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(num_cols, NULL));
+    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(num_cols, nullptr));
 
     for (int i = 0; i < num_cols; ++i) (*rowofblocks)[i] = &(blockmat_ptr->Matrix(b_id, i));
 
@@ -1067,9 +1067,9 @@ STR::TIMINT::BaseDataGlobalState::ExtractRowOfBlocks(
         "not been created.");
 
   CORE::LINALG::SparseMatrix* stiff_ptr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
-  if (stiff_ptr != NULL)
+  if (stiff_ptr != nullptr)
   {
-    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(1, NULL));
+    rowofblocks = Teuchos::rcp(new std::vector<CORE::LINALG::SparseMatrix*>(1, nullptr));
     (*rowofblocks)[0] = stiff_ptr;
     return rowofblocks;
   }

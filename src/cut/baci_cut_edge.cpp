@@ -373,14 +373,14 @@ void CORE::GEO::CUT::Edge::CutPointsIncluding(Point* begin, Point* end, std::vec
  *----------------------------------------------------------------------------*/
 void CORE::GEO::CUT::Edge::CutPointsInside(Element* element, std::vector<Point*>& line)
 {
-  Point* first = NULL;
-  Point* last = NULL;
+  Point* first = nullptr;
+  Point* last = nullptr;
   for (PointPositionSet::iterator i = cut_points_.begin(); i != cut_points_.end(); ++i)
   {
     Point* p = *i;
     if (p->IsCut(element))
     {
-      if (first == NULL)
+      if (first == nullptr)
       {
         first = last = p;
       }
@@ -390,7 +390,7 @@ void CORE::GEO::CUT::Edge::CutPointsInside(Element* element, std::vector<Point*>
       }
     }
   }
-  if (first != NULL and first != last)
+  if (first != nullptr and first != last)
   {
     CutPointsIncluding(first, last, line);
     if (line.size() > 2)
@@ -443,7 +443,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Edge::NodeInElement(Element* element, Poi
   {
     return p;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -789,7 +789,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
   {
     // perform the actual edge - edge intersection
     const enum IntersectionStatus istatus =
-        inter_ptr->ComputeEdgeSideIntersection(tolerance, true, NULL);
+        inter_ptr->ComputeEdgeSideIntersection(tolerance, true, nullptr);
 
     enum IntersectionStatus retstatus = istatus;
 
@@ -797,13 +797,13 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
     {
       case intersect_single_cut_point:
       {
-        double* x_ptr = NULL;
+        double* x_ptr = nullptr;
 
         x_ptr = inter_ptr->FinalPointEdgeEdge();
 
         const double& pos = inter_ptr->LocalCoordinates()[0];
 
-        Point* p = NULL;
+        Point* p = nullptr;
         p = Point::NewPoint(*mesh, x_ptr, pos, this, side, tolerance);
 
         p->AddEdge(this);
@@ -849,7 +849,7 @@ bool CORE::GEO::CUT::ConcreteEdge<probDim, edgeType, dimEdge, numNodesEdge>::Com
 
         dsassert(xyz_cuts.size() == r_cuts.size(), "Size mismatch!");
 
-        Point* p = NULL;
+        Point* p = nullptr;
         for (unsigned i = 0; i < xyz_cuts.size(); ++i)
         {
           p = Point::NewPoint(*mesh, xyz_cuts[i].A(), r_cuts[i](0), this, side, tolerance);

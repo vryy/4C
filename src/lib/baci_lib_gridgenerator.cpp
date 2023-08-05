@@ -164,7 +164,7 @@ namespace DRT
         // smooth transition.
         DRT::INPUT::LineDefinition* linedef =
             ed.ElementLines(inputData.elementtype_, inputData.distype_);
-        if (linedef == NULL)
+        if (linedef == nullptr)
           dserror("a matching line definition is needed for %s %s", inputData.elementtype_.c_str(),
               inputData.distype_.c_str());
 

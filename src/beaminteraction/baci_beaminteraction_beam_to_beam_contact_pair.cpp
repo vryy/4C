@@ -96,18 +96,18 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
     bool leftboundarynode1 = false;
     bool rightboundarynode1 = false;
 
-    if (neighbors1_->GetLeftNeighbor() == NULL) leftboundarynode1 = true;
+    if (neighbors1_->GetLeftNeighbor() == nullptr) leftboundarynode1 = true;
 
-    if (neighbors1_->GetRightNeighbor() == NULL) rightboundarynode1 = true;
+    if (neighbors1_->GetRightNeighbor() == nullptr) rightboundarynode1 = true;
 
     boundarynode1_ = std::make_pair(leftboundarynode1, rightboundarynode1);
 
     bool leftboundarynode2 = false;
     bool rightboundarynode2 = false;
 
-    if (neighbors2_->GetLeftNeighbor() == NULL) leftboundarynode2 = true;
+    if (neighbors2_->GetLeftNeighbor() == nullptr) leftboundarynode2 = true;
 
-    if (neighbors2_->GetRightNeighbor() == NULL) rightboundarynode2 = true;
+    if (neighbors2_->GetRightNeighbor() == nullptr) rightboundarynode2 = true;
 
     boundarynode2_ = std::make_pair(leftboundarynode2, rightboundarynode2);
   }
@@ -226,13 +226,13 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
   unsigned int dim2 = 3 * numnodes * numnodalvalues;
 
   // resize and initialize variables to zero
-  if (forcevec1 != NULL) forcevec1->size(dim1);
-  if (forcevec2 != NULL) forcevec2->size(dim2);
+  if (forcevec1 != nullptr) forcevec1->size(dim1);
+  if (forcevec2 != nullptr) forcevec2->size(dim2);
 
-  if (stiffmat11 != NULL) stiffmat11->shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->shape(dim1, dim2);
-  if (stiffmat21 != NULL) stiffmat21->shape(dim2, dim1);
-  if (stiffmat22 != NULL) stiffmat22->shape(dim2, dim2);
+  if (stiffmat11 != nullptr) stiffmat11->shape(dim1, dim1);
+  if (stiffmat12 != nullptr) stiffmat12->shape(dim1, dim2);
+  if (stiffmat21 != nullptr) stiffmat21->shape(dim2, dim1);
+  if (stiffmat22 != nullptr) stiffmat22->shape(dim2, dim2);
 
 
   //**********************************************************************
@@ -363,12 +363,12 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Evaluate(
   // Todo avoid computation of norm here and rather use the maximum of all 'DoNotAssemble' flags
   //      which is set for each cp, gp and ep of this element pair (in EvaluateFcContact
   //      EvaluateStiffcContact)
-  if ((forcevec1 != NULL and forcevec1->normInf() > 0) or
-      (forcevec2 != NULL and forcevec2->normInf() > 0) or
-      (stiffmat11 != NULL and stiffmat11->normInf() > 0) or
-      (stiffmat12 != NULL and stiffmat12->normInf() > 0) or
-      (stiffmat21 != NULL and stiffmat21->normInf() > 0) or
-      (stiffmat22 != NULL and stiffmat22->normInf() > 0))
+  if ((forcevec1 != nullptr and forcevec1->normInf() > 0) or
+      (forcevec2 != nullptr and forcevec2->normInf() > 0) or
+      (stiffmat11 != nullptr and stiffmat11->normInf() > 0) or
+      (stiffmat12 != nullptr and stiffmat12->normInf() > 0) or
+      (stiffmat21 != nullptr and stiffmat21->normInf() > 0) or
+      (stiffmat22 != nullptr and stiffmat22->normInf() > 0))
   {
     return true;
   }
@@ -520,12 +520,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     //    std::endl;
 
     // call function to compute contact contribution to residual vector
-    if (forcevec1 != NULL and forcevec2 != NULL)
+    if (forcevec1 != nullptr and forcevec2 != nullptr)
       EvaluateFcContact(*forcevec1, *forcevec2, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2,
           N1_xi, N2_xi, cpvariables_[numcp], 1.0, true, false, false, false);
 
     // call function to compute contact contribution to stiffness matrix
-    if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+    if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+        stiffmat22 != nullptr)
       EvaluateStiffcContact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22, r1, r2, r1_xi,
           r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, cpvariables_[numcp], 1.0,
           true, false, false, false);
@@ -901,7 +902,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
   }      // for(int interval=imin;interval<=imax;interval++)
 
 #ifdef ENDPOINTSEGMENTATION
-  if (iminmax == NULL or leftrightsolutionwithinsegment == NULL or eta1_leftrightboundary == NULL)
+  if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
+      eta1_leftrightboundary == nullptr)
     dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
 
   *iminmax = std::make_pair(imin, imax);
@@ -929,7 +931,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
 // Compute linearizations of integration interval boundaries if necessary
 #ifdef ENDPOINTSEGMENTATION
 
-  if (iminmax == NULL or leftrightsolutionwithinsegment == NULL or eta1_leftrightboundary == NULL)
+  if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
+      eta1_leftrightboundary == nullptr)
     dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
 
   int imin = (*iminmax).first;
@@ -1044,13 +1047,14 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes,
     gpvariables_[numgptot]->SetIntegratedEnergy(integrated_energy);
 
     // call function to compute contact contribution to residual vector
-    if (forcevec1 != NULL and forcevec2 != NULL)
+    if (forcevec1 != nullptr and forcevec2 != nullptr)
       EvaluateFcContact(*forcevec1, *forcevec2, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2,
           N1_xi, N2_xi, gpvariables_[numgptot], intfac, false, true, false, false);
 
 #ifndef ENDPOINTSEGMENTATION
     // call function to compute contact contribution to stiffness matrix
-    if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+    if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+        stiffmat22 != nullptr)
       EvaluateStiffcContact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22, r1, r2, r1_xi,
           r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, gpvariables_[numgptot],
           intfac, false, true, false, false);
@@ -1442,12 +1446,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateA
     bool fixedendpointeta = epvariables_[numep]->GetIntIds().second;
 
     // call function to compute contact contribution to residual vector
-    if (forcevec1 != NULL and forcevec2 != NULL)
+    if (forcevec1 != nullptr and forcevec2 != nullptr)
       EvaluateFcContact(*forcevec1, *forcevec2, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2,
           N1_xi, N2_xi, epvariables_[numep], 1.0, false, false, fixedendpointxi, fixedendpointeta);
 
     // call function to compute contact contribution to stiffness matrix
-    if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+    if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+        stiffmat22 != nullptr)
       EvaluateStiffcContact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22, r1, r2, r1_xi,
           r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, N1_xixi, N2_xixi, epvariables_[numep], 1.0,
           false, false, fixedendpointxi, fixedendpointeta);
@@ -3167,7 +3172,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateF
 
 // Quantities necessary for automatic differentiation
 #ifdef AUTOMATICDIFF
-  if (fc1_FAD != NULL and fc2_FAD != NULL)
+  if (fc1_FAD != nullptr and fc2_FAD != nullptr)
   {
     for (unsigned int i = 0; i < dim1; ++i)
     {
@@ -3465,8 +3470,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
 
     CORE::LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     CORE::LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
-    EvaluateFcContact(NULL, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, variables,
-        intfac, cpp, gp, fixedendpointxi, fixedendpointeta, &fc1_FAD, &fc2_FAD);
+    EvaluateFcContact(nullptr, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
+        variables, intfac, cpp, gp, fixedendpointxi, fixedendpointeta, &fc1_FAD, &fc2_FAD);
 
     if (cpp)  // in case of large-angle-contact (standard closest-point-projection), we need
               // delta_xi and delta_eta.
@@ -3748,7 +3753,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::EvaluateS
 
     CORE::LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     CORE::LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
-    EvaluateFcContact(NULL, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
+    EvaluateFcContact(nullptr, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
         cpvariables, intfac, false, true, false, false, &fc1_FAD, &fc2_FAD);
 
 #ifdef AUTOMATICDIFF

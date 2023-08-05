@@ -154,7 +154,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::FindCycles(
     }
 
     unsigned lcount = 0;
-    std::vector<Point *> line(2, NULL);
+    std::vector<Point *> line(2, nullptr);
     for (std::map<int, Point *>::const_iterator cit = all_points_.begin(); cit != all_points_.end();
          ++cit)
     {
@@ -174,7 +174,7 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::Graph::SplitMainCyclesIntoLineCy
     Cycle closed_cycle = *ic;
     const unsigned cycle_length = closed_cycle.size();
 
-    std::vector<Point *> line(2, NULL);
+    std::vector<Point *> line(2, nullptr);
     // split the connected cycle into line segments
     for (unsigned i = 0; i < cycle_length; ++i)
     {

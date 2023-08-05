@@ -43,7 +43,7 @@ namespace SCATRA
   {
     // set gen-alpha
     TimIntGenAlpha* timeint_genalpha = dynamic_cast<TimIntGenAlpha*>(timeint);
-    if (timeint_genalpha != NULL)
+    if (timeint_genalpha != nullptr)
     {
       is_genalpha_ = true;
       phiaf_ = timeint_genalpha->Phiaf();

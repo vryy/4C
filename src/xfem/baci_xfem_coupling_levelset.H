@@ -1117,7 +1117,7 @@ namespace XFEM
       const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<DISTYPE>::dim;
 
       DRT::Element* cutter_ele = cutter_dis_->gElement(cutter_eid);
-      if (cutter_ele == NULL) dserror("element not available");
+      if (cutter_ele == nullptr) dserror("element not available");
 
       CORE::LINALG::Matrix<nsd, 1> gradphi(true);
       double curvature = 0.0;

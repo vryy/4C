@@ -40,7 +40,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int 
       // make sure all nodes are there
       for (int i = 0; i < numnode; ++i)
       {
-        if (lsv != NULL)
+        if (lsv != nullptr)
           NormalMesh().GetNode(nids[i], &xyz(0, i), lsv[i]);
         else
           NormalMesh().GetNode(nids[i], &xyz(0, i));
@@ -50,7 +50,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshIntersection::AddElement(int 
       return mesh_.CreateElement(eid, nids, distype);
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -87,7 +87,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshIntersection::AddCutSide(int sid
   {
     cut_mesh.GetNode(nids[i], &xyz(0, i));
     //     nodalpoints.insert( n->point() );
-    //     if ( n==NULL )
+    //     if ( n==nullptr )
     //     {
     //       // if there is no node with that id but a node at the given location,
     //       // the side is illegal and cannot be created

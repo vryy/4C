@@ -121,7 +121,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   // get the solution group
   NOX::Abstract::Group& grp = nlnsolver.SolutionGroup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == NULL) dserror("Dynamic cast failed!");
+  if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
 
   // get nox parameter
   Teuchos::ParameterList& noxparams = ti_impl->DataSDyn().GetMutableNoxParams();

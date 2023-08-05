@@ -90,7 +90,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
       // error = ex_get_elem_block (exoid_, epropID[i], mychar, &num_el_in_blk, &num_nod_per_elem,
       // &num_attr);
       error = ex_get_block(exoid_, EX_ELEM_BLOCK, ebids[i], mychar, &num_el_in_blk,
-          &num_nod_per_elem, NULL, NULL, &num_attr);
+          &num_nod_per_elem, nullptr, nullptr, &num_attr);
       if (error != 0) dserror("exo error returned");
       // prefer std::string to store element type
       std::string ele_type(mychar);
@@ -144,7 +144,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
       // get nodes in node set
       std::vector<int> node_set_node_list(num_nodes_in_set);
-      error = ex_get_set(exoid_, EX_NODE_SET, npropID[i], node_set_node_list.data(), NULL);
+      error = ex_get_set(exoid_, EX_NODE_SET, npropID[i], node_set_node_list.data(), nullptr);
       if (error > 0)
         std::cout << "'ex_get_set' for EX_NODE_SET returned warning while reading node set "
                   << npropID[i] << std::endl;
@@ -1044,7 +1044,7 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
       if (error != 0) dserror("error writing node set params");
       std::vector<int> nodelist(num_nodes_in_set);
       ns.FillNodelistArray(nodelist.data());
-      error = ex_put_set(exoid, EX_NODE_SET, nsID, nodelist.data(), NULL);
+      error = ex_put_set(exoid, EX_NODE_SET, nsID, nodelist.data(), nullptr);
       if (error != 0) dserror("error writing node set \"%s\" ", nsname);
       error = ex_put_name(exoid, EX_NODE_SET, nsID, nsname);
       if (error != 0) dserror("error writing node set name");

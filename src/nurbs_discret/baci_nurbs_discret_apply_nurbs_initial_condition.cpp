@@ -37,7 +37,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(DRT::Discretization& dis, FILE* o
   // with setting initial conditions. Otherwise return.
   DRT::NURBS::NurbsDiscretization* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&dis);
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     return;
   }
@@ -78,7 +78,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
   // with setting initial conditions. Otherwise return.
   DRT::NURBS::NurbsDiscretization* nurbsdis = dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&dis);
 
-  if (nurbsdis == NULL)
+  if (nurbsdis == nullptr)
   {
     return;
   }

@@ -99,10 +99,10 @@ namespace CORE::GEO
             isscaled_(false),
             isshifted_(false),
             useboundingbox_(false),
-            mesh_ptr_(NULL),
-            edge_ptr_(NULL),
-            side_ptr_(NULL),
-            options_ptr_(NULL)
+            mesh_ptr_(nullptr),
+            edge_ptr_(nullptr),
+            side_ptr_(nullptr),
+            options_ptr_(nullptr)
       {
       }
 
@@ -130,9 +130,9 @@ namespace CORE::GEO
         isshifted_ = useshifting;
         useboundingbox_ = useboundingbox;
 
-        mesh_ptr_ = NULL;
-        edge_ptr_ = NULL;
-        side_ptr_ = NULL;
+        mesh_ptr_ = nullptr;
+        edge_ptr_ = nullptr;
+        side_ptr_ = nullptr;
         options_ptr_ = options;
 
         if (static_cast<unsigned>(xyze_lineElement.numRows()) != ProbDim() or
@@ -194,8 +194,8 @@ namespace CORE::GEO
        *  See derived class for more information.
        *
        *  \author hiermeier \date 08/16 */
-      virtual IntersectionStatus ComputeEdgeSideIntersection(
-          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL) = 0;
+      virtual IntersectionStatus ComputeEdgeSideIntersection(double& tolerance,
+          bool check_inside = true, std::vector<int>* touched_edges = nullptr) = 0;
 
       /** \brief Computes the intersection points of the edge with the specified side
        *  and stores the points in cuts
@@ -299,7 +299,7 @@ namespace CORE::GEO
       /// get a reference to the mesh object
       Mesh& GetMesh()
       {
-        if (mesh_ptr_ != NULL) return *mesh_ptr_;
+        if (mesh_ptr_ != nullptr) return *mesh_ptr_;
         dserror("The mesh pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
@@ -307,7 +307,7 @@ namespace CORE::GEO
       /// get a pointer to the mesh object
       Mesh* GetMeshPtr()
       {
-        if (mesh_ptr_ != NULL) return mesh_ptr_;
+        if (mesh_ptr_ != nullptr) return mesh_ptr_;
         dserror("The mesh pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
@@ -315,7 +315,7 @@ namespace CORE::GEO
       /// get a reference to the edge object
       Edge& GetEdge()
       {
-        if (edge_ptr_ != NULL) return *edge_ptr_;
+        if (edge_ptr_ != nullptr) return *edge_ptr_;
         dserror("The edge pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
@@ -323,7 +323,7 @@ namespace CORE::GEO
       /// get a pointer to the edge object
       Edge* GetEdgePtr()
       {
-        if (edge_ptr_ != NULL) return edge_ptr_;
+        if (edge_ptr_ != nullptr) return edge_ptr_;
         dserror("The edge pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
@@ -331,7 +331,7 @@ namespace CORE::GEO
       /// get a reference to the side object
       Side& GetSide()
       {
-        if (side_ptr_ != NULL) return *side_ptr_;
+        if (side_ptr_ != nullptr) return *side_ptr_;
         dserror("The side pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
@@ -339,7 +339,7 @@ namespace CORE::GEO
       /// get a pointer to the side object
       Side* GetSidePtr()
       {
-        if (side_ptr_ != NULL) return side_ptr_;
+        if (side_ptr_ != nullptr) return side_ptr_;
         dserror("The side pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
@@ -347,7 +347,7 @@ namespace CORE::GEO
       /// get a pointer to the cut options object
       Options* GetOptionsPtr()
       {
-        if (options_ptr_ != NULL) return options_ptr_;
+        if (options_ptr_ != nullptr) return options_ptr_;
         dserror("The option pointer is not yet initialized!");
         exit(EXIT_FAILURE);
       }
@@ -633,7 +633,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier \date 08/16 */
       virtual IntersectionStatus ComputeEdgeSideIntersection(
-          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL)
+          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = nullptr)
       {
         switch (GetOptionsPtr()->GeomIntersect_Floattype())
         {
@@ -654,7 +654,7 @@ namespace CORE::GEO
 
       template <INPAR::CUT::CUT_Floattype floattype>
       IntersectionStatus ComputeEdgeSideIntersectionT(
-          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = NULL)
+          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = nullptr)
       {
         CheckInit();
         TEUCHOS_FUNC_TIME_MONITOR("ComputeEdgeSideIntersection");
@@ -992,7 +992,7 @@ namespace CORE::GEO
 
       // Computes tri3 edge intersection used for quad4 -> 2 tri3 splits
       IntersectionStatus ComputeEdgeTri3IntersectionQuad4Split(
-          int triangleid, bool* close_to_shared_edge = NULL)
+          int triangleid, bool* close_to_shared_edge = nullptr)
       {
         switch (GetOptionsPtr()->GeomIntersect_Floattype())
         {
@@ -1014,7 +1014,7 @@ namespace CORE::GEO
 
       template <INPAR::CUT::CUT_Floattype floattype>
       IntersectionStatus ComputeEdgeTri3IntersectionQuad4SplitT(
-          int triangleid, bool* close_to_shared_edge = NULL)
+          int triangleid, bool* close_to_shared_edge = nullptr)
       {
         if (triangleid < 0) dserror("The triangle id has to be positive!");
 
@@ -1356,7 +1356,7 @@ namespace CORE::GEO
           ::DRT::Element::DiscretizationType sideType>
       IntersectionBase* CreateConcreteIntersection(const int& probdim) const
       {
-        CORE::GEO::CUT::IntersectionBase* inter_ptr = NULL;
+        CORE::GEO::CUT::IntersectionBase* inter_ptr = nullptr;
         switch (probdim)
         {
           case 2:

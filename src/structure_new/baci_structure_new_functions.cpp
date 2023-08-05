@@ -92,7 +92,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> STR::TryCreateStructureFunction(
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
   }
 }
 

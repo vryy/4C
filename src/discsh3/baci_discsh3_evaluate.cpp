@@ -471,7 +471,7 @@ void DRT::ELEMENTS::DiscSh3::sh3_nlnstiffmass(Teuchos::ParameterList& params,
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force
   // vector might occur
-  //  if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
+  //  if(params.get<std::string>("internalforces","no")=="yes" && force != nullptr)
   //  internalforces_ = *force;
   /*the following function call applied statistical forces and damping matrix according to the
    * fluctuation dissipation theorem; it is dedicated to the application of beam3 elements in the
@@ -587,9 +587,9 @@ inline void DRT::ELEMENTS::DiscSh3::MyTranslationalDamping(
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
     {
-      if (force != NULL)
+      if (force != nullptr)
         FAD_force(i) += Damping_mat(i, j) * vel[j] / 3;  // 1/3 because of the nodal weight
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
         for (int k = 0; k < NUMDOF_DISCSH3; k++)
         {
           FAD_StiffMat(i, j) +=
@@ -599,10 +599,10 @@ inline void DRT::ELEMENTS::DiscSh3::MyTranslationalDamping(
 
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
   {
-    if (force != NULL) (*force)(i) += FAD_force(i).val();
+    if (force != nullptr) (*force)(i) += FAD_force(i).val();
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
     {
-      if (stiffmatrix != NULL) (*stiffmatrix)(i, j) += FAD_StiffMat(i, j).val();
+      if (stiffmatrix != nullptr) (*stiffmatrix)(i, j) += FAD_StiffMat(i, j).val();
     }
   }
 
@@ -682,10 +682,10 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
   for (int i = 0; i < NUMDOF_DISCSH3; i++)
     for (int j = 0; j < NUMDOF_DISCSH3; j++)
     {
-      if (force != NULL)
+      if (force != nullptr)
         FAD_force(i) += Stoch_mat(i, j) * RandomNumber(j) / 3;  // weight 1/3 per node
 
-      if (stiffmatrix != NULL)  //    loop over all column nodes
+      if (stiffmatrix != nullptr)  //    loop over all column nodes
         for (int k = 0; k < NUMNOD_DISCSH3; k++)
         {
           FAD_StiffMat(i, j) += Grad_StochMat(k)(i, j) * RandomNumber(j) / 3;
@@ -694,7 +694,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
 
   // loop dimensions with respect to columns
   for (int i = 0; i < NUMDIM_DISCSH3; i++)
-    if (force != NULL)
+    if (force != nullptr)
     {
       (*force)(i) -= FAD_force(i).val();
     }
@@ -703,7 +703,7 @@ inline void DRT::ELEMENTS::DiscSh3::MyStochasticForces(
   for (int i = 0; i < NUMDIM_DISCSH3; i++)
     for (int j = 0; j < NUMDIM_DISCSH3; j++)
     {
-      if (stiffmatrix != NULL) (*stiffmatrix)(i, j) -= FAD_StiffMat(i, j).val();
+      if (stiffmatrix != nullptr) (*stiffmatrix)(i, j) -= FAD_StiffMat(i, j).val();
     }
 
 
@@ -2479,7 +2479,7 @@ void DRT::ELEMENTS::DiscSh3::sh3_lumpmass(
     const std::vector<double>& disp, CORE::LINALG::SerialDenseMatrix* massmatrix)
 {
   // lump mass matrix (In this case, dummy. There is no massterm. )
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (int c = 0; c < (*massmatrix).numCols(); c++)  // parse columns

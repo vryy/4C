@@ -1049,7 +1049,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // is not activated here Computation of nurb specific stuff is not activated here
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     for (int inode = 0; inode < bdrynen_; ++inode)
     {
@@ -1180,7 +1180,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
     int contr_elements = 0;
     DRT::Node* thisNode = (ele->Nodes())[inode];
 #ifdef DEBUG
-    if (thisNode == NULL) dserror("No node!\n");
+    if (thisNode == nullptr) dserror("No node!\n");
 #endif
     int NumElement = thisNode->NumElement();
     DRT::Element** ElementsPtr = thisNode->Elements();
@@ -1205,7 +1205,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
         {
           DRT::Node* checkNode = NodesPtr[surfnode];
           // check whether a free surface condition is active on this node
-          if (checkNode->GetCondition("FREESURFCoupling") != NULL)
+          if (checkNode->GetCondition("FREESURFCoupling") != nullptr)
           {
             numfsnodes++;
           }
@@ -1304,7 +1304,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
     // Computation of the integration factor & shape function at the Gauss point & derivative of the
     // shape function at the Gauss point Computation of nurb specific stuff is not activated here
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     // fac multiplied by the timefac
     const double fac_timefac = fac_ * timefac;
@@ -1458,7 +1458,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCalculation(DRT::ELEMENTS::F
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     // add to area integral
     area += fac_;
@@ -1532,7 +1532,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureBoundaryIntegral(
   for (int gpid = 0; gpid < intpoints.IP().nquad; gpid++)
   {
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     // add to pressure boundary integral
     for (int inode = 0; inode < bdrynen_; ++inode)
@@ -1612,7 +1612,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
       // the shape function at the Gauss point Computation of the unit normal vector at the Gauss
       // points Computation of nurb specific stuff is not activated here
       CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-          xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+          xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
       // global coordinates of gausspoint
       CORE::LINALG::Matrix<(nsd_), 1> coordgp(true);
@@ -1719,7 +1719,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(DRT::ELEMENTS::F
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     // compute flowrate at gauss point
     velint_.Multiply(evelnp, funct_);
@@ -1856,7 +1856,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(DRT::ELEMENTS::Flu
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // is not activated here Computation of nurb specific stuff is not activated here
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal
@@ -2101,7 +2101,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     const double fac_facrhs_pres = fac_ * tfacrhs * pressure;
 
@@ -2162,7 +2162,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::dQdu(DRT::ELEMENTS::FluidBoundar
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     for (int node = 0; node < bdrynen_; ++node)
     {
@@ -2481,7 +2481,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
     // shape function at the Gauss point Computation of the unit normal vector at the Gauss points
     // Computation of nurb specific stuff is not activated here
     CORE::DRT::UTILS::EvalShapeFuncAtBouIntPoint<distype>(funct_, deriv_, fac_, unitnormal_, drs_,
-        xsi_, xyze_, intpoints, gpid, NULL, NULL, IsNurbs<distype>::isnurbs);
+        xsi_, xyze_, intpoints, gpid, nullptr, nullptr, IsNurbs<distype>::isnurbs);
 
     // Get the velocity value at the corresponding Gauss point.
     std::vector<double> vel_gps(nsd_, 0.0);

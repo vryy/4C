@@ -130,7 +130,7 @@ namespace DRT
      * This map includes all nodes stored on this proc and also owned by this proc.
      * This map is non-ambiguous, meaning that it is a non-overlapping map.
      *
-     * \return NULL if Filled() is false. A call to FillComplete() is a prerequisite. */
+     * \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite. */
     virtual const Epetra_Map* NodeRowMap() const = 0;
 
     /** \brief Get map associated with the distribution of the ownership of elements
@@ -139,7 +139,7 @@ namespace DRT
      *  This map includes all elements stored on this proc and also owned by this proc.
      *  This map is non-ambiguous, meaning that it is a non-overlapping map.
      *
-     *  \return NULL if Filled() is false. A call to FillComplete() is a prerequisite. */
+     *  \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite. */
     virtual const Epetra_Map* ElementRowMap() const = 0;
 
     /** \brief Get processor local number of nodes owned by this processor
@@ -167,7 +167,7 @@ namespace DRT
      *  DEBUG version and throw an error message if not. Will crash in non-DEBUG
      *  version if element does not exist on calling processor.
      *
-     *  \return Address of element if element is owned by calling proc, returns NULL
+     *  \return Address of element if element is owned by calling proc, returns nullptr
      *          otherwise */
     virtual DRT::Element* gElement(int gid) const = 0;
 
@@ -308,7 +308,7 @@ namespace DRT
      *  \param element        (in): the element (optional)
      */
     virtual void Dof(std::vector<int>& dof, const Node* node, unsigned dofset_id,
-        unsigned nodaldofset_id, const Element* element = NULL) const = 0;
+        unsigned nodaldofset_id, const Element* element = nullptr) const = 0;
 
     /** \brief Get all conditions with a certain name
      *
@@ -343,7 +343,7 @@ namespace DRT
      *
      *  \param name (in): Name of condition
      *
-     *  \return Returns NULL if condition with that name does not exist */
+     *  \return Returns nullptr if condition with that name does not exist */
     virtual DRT::Condition* GetCondition(const std::string& name) const = 0;
 
     /*!
@@ -434,7 +434,7 @@ namespace DRT
       return;
     }
     virtual void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
-        CORE::LINALG::SparseOperator* systemmatrix = NULL) = 0;
+        CORE::LINALG::SparseOperator* systemmatrix = nullptr) = 0;
 
     /** \brief Call elements to evaluate
      *

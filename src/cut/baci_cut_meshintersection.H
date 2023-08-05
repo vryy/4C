@@ -53,7 +53,7 @@ namespace CORE::GEO
       /// add this background element if it falls within the bounding box of cut mesh
       ElementHandle* AddElement(int eid, const std::vector<int>& nids,
           const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
-          const double* lsv = NULL);
+          const double* lsv = nullptr);
 
       /// add a side of the cut mesh and return the sidehandle (e.g. quadratic sidehandle for
       /// quadratic sides)

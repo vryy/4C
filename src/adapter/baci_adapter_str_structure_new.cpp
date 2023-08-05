@@ -162,7 +162,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // Here we read the discretization at the current
   // time step from restart files
   // ---------------------------------------------------------------------------
-  if (actdis_->GetCondition("PointCoupling") != NULL)
+  if (actdis_->GetCondition("PointCoupling") != nullptr)
   {
     std::vector<Teuchos::RCP<DRT::Discretization>> actdis_vec(
         1, Teuchos::rcp_dynamic_cast<DRT::Discretization>(actdis_, true));
@@ -572,7 +572,7 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
 
     // Detect EAS --------------------------------------------------------------
     DRT::ELEMENTS::So_base* so_base_ele = dynamic_cast<DRT::ELEMENTS::So_base*>(actele);
-    if (so_base_ele != NULL)
+    if (so_base_ele != nullptr)
     {
       if (so_base_ele->HaveEAS()) iseas_local = 1;
     }
@@ -581,7 +581,7 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
     else
     {
       DRT::ELEMENTS::Shell8* shell8_ele = dynamic_cast<DRT::ELEMENTS::Shell8*>(actele);
-      if (shell8_ele != NULL)
+      if (shell8_ele != nullptr)
         if (shell8_ele->HaveEAS()) iseas_local = 1;
     }
 
@@ -590,7 +590,7 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
 
     // Detect fbar
     DRT::ELEMENTS::So_hex8fbar* so_hex8fbar_ele = dynamic_cast<DRT::ELEMENTS::So_hex8fbar*>(actele);
-    if (so_hex8fbar_ele != NULL) isfbar_local = 1;
+    if (so_hex8fbar_ele != nullptr) isfbar_local = 1;
 
     // Detect non-additive rotation-vector DOFs --------------------------------
     if (actele->ElementType() == DRT::ELEMENTS::Beam3rType::Instance() or

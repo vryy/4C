@@ -71,7 +71,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
     Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
         Teuchos::rcp(new TSI::UTILS::TSIMaterialStrategy());
     // init coupling adapter projection matrices
-    volcoupl_->Init(structdis, thermodis, NULL, NULL, NULL, NULL, materialstrategy);
+    volcoupl_->Init(structdis, thermodis, nullptr, nullptr, nullptr, nullptr, materialstrategy);
     // redistribute discretizations to meet needs of volmortar coupling
     volcoupl_->Redistribute();
     // setup projection matrices
@@ -141,7 +141,7 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::tsi)
   {
     DRT::Condition* mrtrcond = StructureField()->Discretization()->GetCondition("MortarMulti");
-    if (mrtrcond != NULL)
+    if (mrtrcond != nullptr)
     {
       mortar_coupling_ = Teuchos::rcp(new MORTAR::MultiFieldCoupling());
       mortar_coupling_->PushBackCoupling(

@@ -96,7 +96,7 @@ namespace CONTACT
       /** create a new penalty update object and use the data of another
        *  penalty update object to set it up. */
       static PenaltyUpdate* Create(
-          const INPAR::CONTACT::PenaltyUpdate update_type, const PenaltyUpdate* pu_src = NULL);
+          const INPAR::CONTACT::PenaltyUpdate update_type, const PenaltyUpdate* pu_src = nullptr);
 
      public:
       /// default constructor
@@ -278,10 +278,10 @@ namespace CONTACT
       bool isinit_ = false;
 
       /// call-back to the surrounding strategy
-      AUG::Strategy* strategy_ptr_ = NULL;
+      AUG::Strategy* strategy_ptr_ = nullptr;
 
       /// container of the surrounding strategy
-      DataContainer* data_ptr_ = NULL;
+      DataContainer* data_ptr_ = nullptr;
 
       /// internal state object (see container description)
       State state_;

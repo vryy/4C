@@ -68,7 +68,7 @@ bool CONTACT::INTEGRATOR::FindFeasibleMasterElements(MORTAR::MortarElement& sele
       const DRT::Element::DiscretizationType mastertype = meles[m]->Shape();
       // project Gauss point onto master element
 #ifdef DEBUG_FIND_FEASIBLE_MASTER_ELEMENT
-      CONTACT::AUG::ProjectorBase* proj_ptr = NULL;
+      CONTACT::AUG::ProjectorBase* proj_ptr = nullptr;
       if (sele.Id() == -1 or sele.Id() == -1)
         proj_ptr = CONTACT::AUG::ProjectorBase::Get(probdim, slavetype, mastertype, true);
       else

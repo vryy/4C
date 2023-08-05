@@ -147,7 +147,7 @@ bool FSI::MonolithicLinearSystem::applyJacobianInverse(
     Epetra_Operator* op = jacPtr.get();
     Epetra_Vector* rhs = &(nonConstInput.getEpetraVector());
     Epetra_Vector* lhs = &(result.getEpetraVector());
-    if (!op || !rhs || !lhs) dserror("One of the objects in linear system is NULL");
+    if (!op || !rhs || !lhs) dserror("One of the objects in linear system is nullptr");
 
     // max iterations
     aztest_maxiter_ = Teuchos::rcp(new AztecOO_StatusTestMaxIters(maxit));

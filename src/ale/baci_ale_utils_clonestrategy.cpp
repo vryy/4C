@@ -53,14 +53,14 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
   if (nurbsdis == false)
   {
     DRT::ELEMENTS::Ale2* ale2 = dynamic_cast<DRT::ELEMENTS::Ale2*>(newele.get());
-    if (ale2 != NULL)
+    if (ale2 != nullptr)
     {
       ale2->SetMaterial(matid);
     }
     else
     {
       DRT::ELEMENTS::Ale3* ale3 = dynamic_cast<DRT::ELEMENTS::Ale3*>(newele.get());
-      if (ale3 != NULL)
+      if (ale3 != nullptr)
       {
         ale3->SetMaterial(matid);
       }
@@ -74,7 +74,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
   {
     DRT::ELEMENTS::NURBS::Ale2Nurbs* ale2 =
         dynamic_cast<DRT::ELEMENTS::NURBS::Ale2Nurbs*>(newele.get());
-    if (ale2 != NULL)
+    if (ale2 != nullptr)
     {
       ale2->SetMaterial(matid);
     }
@@ -83,7 +83,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
       DRT::ELEMENTS::NURBS::Ale3Nurbs* ale3 =
           dynamic_cast<DRT::ELEMENTS::NURBS::Ale3Nurbs*>(newele.get());
 
-      if (ale3 != NULL)
+      if (ale3 != nullptr)
       {
         ale3->SetMaterial(matid);
       }
@@ -108,7 +108,7 @@ bool ALE::UTILS::AleCloneStrategy::DetermineEleType(
   // Check, whether actele is a fluid element in order to account for
   // the possible split in Eulerian an ALE regions
   DRT::ELEMENTS::Fluid* f3 = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
-  if (f3 != NULL)
+  if (f3 != nullptr)
   {
     cloneit = f3->IsAle();  // if not ALE, element will not be cloned
                             // --> theoretically, support of Eulerian sub meshes

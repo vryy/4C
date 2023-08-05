@@ -862,7 +862,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
     // Teuchos::RCP<MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
-    if (ele == NULL)
+    if (ele == nullptr)
     {
       dserror("expect fluid element");
     }
@@ -872,7 +872,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
 
     CORE::GEO::CUT::ElementHandle* e = state_->Wizard()->GetElement(actele);
 
-    if (e != NULL)
+    if (e != nullptr)
     {
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
@@ -1245,7 +1245,7 @@ void FLD::XFluid::AssembleMatAndRHS_VolTerms()
         set_counter += 1;
 
       }  // end of loop over cellsets // end of assembly for each set of cells
-    }    // end of if(e!=NULL) // assembly for cut elements
+    }    // end of if(e!=nullptr) // assembly for cut elements
     else
     {
       Teuchos::RCP<MAT::Material> mat = actele->Material();
@@ -1328,7 +1328,7 @@ void FLD::XFluid::AssembleMatAndRHS_FaceTerms(
       DRT::Element* actface = xdiscret->lRowFace(i);
 
       DRT::ELEMENTS::FluidIntFace* face_ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
-      if (face_ele == NULL) dserror("expect FluidIntFace element");
+      if (face_ele == nullptr) dserror("expect FluidIntFace element");
 
       bool gmsh_EOS_out(DRT::INPUT::IntegralValue<int>(params_->sublist("XFEM"), "GMSH_EOS_OUT"));
       edgestab_->EvaluateEdgeStabGhostPenalty(faceparams, discret_, face_ele, sysmat, residual_col,
@@ -1373,7 +1373,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
     Teuchos::RCP<MAT::Material> mat = actele->Material();
 
     DRT::ELEMENTS::Fluid* ele = dynamic_cast<DRT::ELEMENTS::Fluid*>(actele);
-    if (ele == NULL)
+    if (ele == nullptr)
     {
       dserror("expect fluid element");
     }
@@ -1384,7 +1384,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
     CORE::GEO::CUT::ElementHandle* e = state_->Wizard()->GetElement(actele);
 
 
-    if (e != NULL)
+    if (e != nullptr)
     {
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
@@ -1476,7 +1476,7 @@ void FLD::XFluid::IntegrateShapeFunction(Teuchos::ParameterList& eleparams,
         set_counter += 1;
 
       }  // end of loop over cellsets // end of assembly for each set of cells
-    }    // end of if(e!=NULL) // assembly for cut elements
+    }    // end of if(e!=nullptr) // assembly for cut elements
     else
     {
       TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::Evaluate 3) standard domain");
@@ -1970,7 +1970,7 @@ void FLD::XFluid::ComputeErrorNorms(Teuchos::RCP<CORE::LINALG::SerialDenseVector
         DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(actele->Shape(), "xfem");
 
     // xfem element
-    if (e != NULL)
+    if (e != nullptr)
     {
       std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
       std::vector<std::vector<int>> nds_sets;
@@ -2647,8 +2647,8 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
         printf(")\n");
         printf("+------------+-------------+-------------+-------------+-------------+\n");
 
-        FILE* errfile = params_->get<FILE*>("err file", NULL);
-        if (errfile != NULL)
+        FILE* errfile = params_->get<FILE*>("err file", nullptr);
+        if (errfile != nullptr)
         {
           fprintf(errfile,
               "fluid solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  vinc=%10.3E  "
@@ -2685,8 +2685,8 @@ bool FLD::XFluid::ConvergenceCheck(int itnum, int itemax, const double velrestol
       printf("|            >>>>>> not converged in itemax steps!              |\n");
       printf("+---------------------------------------------------------------+\n");
 
-      FILE* errfile = params_->get<FILE*>("err file", NULL);
-      if (errfile != NULL)
+      FILE* errfile = params_->get<FILE*>("err file", nullptr);
+      if (errfile != nullptr)
       {
         fprintf(errfile,
             "fluid unconverged solve:   %3d/%3d   vres=%10.3E  pres=%10.3E  "
@@ -2711,7 +2711,7 @@ void FLD::XFluid::InitKrylovSpaceProjection()
   int numcond = KSPcond.size();
   int numfluid = 0;
 
-  DRT::Condition* kspcond = NULL;
+  DRT::Condition* kspcond = nullptr;
   // check if for fluid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -4050,7 +4050,7 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> FLD::XFluid::CreateDBCMapExtractor(
 
   // build map of Dirichlet DOFs
   int nummyelements = 0;
-  int* myglobalelements = NULL;
+  int* myglobalelements = nullptr;
   std::vector<int> dbcgidsv;
   if (dbcgids->size() > 0)
   {

@@ -144,8 +144,8 @@ namespace CONTACT
           const NOX::Solver::Generic& solver) const;
 
       double GetValue(const enum INPAR::CONTACT::PlotFuncName functype,
-          NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy = NULL,
-          const Epetra_Vector* curr_dir = NULL) const;
+          NOX::NLN::CONSTRAINT::Group& plot_grp, const double* curr_xy = nullptr,
+          const Epetra_Vector* curr_dir = nullptr) const;
 
       double GetNodalErrorAtPosition(
           const double* pos, const std::vector<std::pair<int, double>>& nodal_error) const;
@@ -242,14 +242,14 @@ namespace CONTACT
 
       std::string filepath_;
 
-      const CONTACT::AUG::Strategy* strat_ = NULL;
+      const CONTACT::AUG::Strategy* strat_ = nullptr;
 
       /// full discretization
-      const DRT::DiscretizationInterface* discret_ = NULL;
+      const DRT::DiscretizationInterface* discret_ = nullptr;
 
-      STR::MODELEVALUATOR::Contact* model_ = NULL;
+      STR::MODELEVALUATOR::Contact* model_ = nullptr;
 
-      const int* curr_step_np_ = NULL;
+      const int* curr_step_np_ = nullptr;
 
       std::ios_base::openmode file_open_mode_;
 

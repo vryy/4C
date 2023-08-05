@@ -173,7 +173,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
                 " number of defined potential laws!");
 
           pair_is_active = elepairptr->Evaluate(&(eleforce_centerlineDOFs[0]),
-              &(eleforce_centerlineDOFs[1]), NULL, NULL, NULL, NULL, currconds,
+              &(eleforce_centerlineDOFs[1]), nullptr, nullptr, nullptr, nullptr, currconds,
               BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
               BeamPotentialParams().PotentialLawExponents().at(npotlaw1 - 1));
 
@@ -187,7 +187,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
             // assemble force vector affecting the centerline DoFs only
             // into element force vector ('all DoFs' format, as usual)
             BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-                Discret(), elegids, eleforce_centerlineDOFs, dummystiff, &eleforce, NULL);
+                Discret(), elegids, eleforce_centerlineDOFs, dummystiff, &eleforce, nullptr);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
@@ -262,7 +262,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
                 " number of defined potential laws!");
 
 
-          pair_is_active = elepairptr->Evaluate(NULL, NULL, &(elestiff_centerlineDOFs[0][0]),
+          pair_is_active = elepairptr->Evaluate(nullptr, nullptr, &(elestiff_centerlineDOFs[0][0]),
               &(elestiff_centerlineDOFs[0][1]), &(elestiff_centerlineDOFs[1][0]),
               &(elestiff_centerlineDOFs[1][1]), currconds,
               BeamPotentialParams().PotentialLawPrefactors().at(npotlaw1 - 1),
@@ -278,7 +278,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
             // assemble stiffness matrix affecting the centerline DoFs only
             // into element stiffness matrix ('all DoFs' format, as usual)
             BEAMINTERACTION::UTILS::AssembleCenterlineDofForceStiffIntoElementForceStiff(
-                Discret(), elegids, dummyforce, elestiff_centerlineDOFs, NULL, &elestiff);
+                Discret(), elegids, dummyforce, elestiff_centerlineDOFs, nullptr, &elestiff);
 
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
@@ -663,8 +663,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       nodes1 = currele->Nodes();
       nodes2 = currneighborele->Nodes();
 
-      dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
-      dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+      dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+      dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
       nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
@@ -799,8 +799,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   nodes1 = ele1->Nodes();
   nodes2 = ele2->Nodes();
 
-  dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
-  dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+  dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+  dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
   nodes1[0]->GetCondition("BeamPotentialLineCharge", conditions_element1);
 

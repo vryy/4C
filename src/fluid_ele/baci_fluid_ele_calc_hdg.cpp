@@ -439,7 +439,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
       CORE::LINALG::Matrix<nsd_, nsd_> grad(true);  // is not necessarily set in EvaluateAll
       double p;
 
-      dsassert(initfield != NULL && startfunc != NULL,
+      dsassert(initfield != nullptr && startfunc != nullptr,
           "initfield or startfuncno not set for initial value");
 
       // This function returns the values of velocity, gradient and pressure from the given
@@ -535,12 +535,12 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   for (unsigned int face = 0; face < nfaces_; ++face)
   {
     // check whether we are in the project phase for all faces or for boundary values
-    if (initfield == NULL)
+    if (initfield == nullptr)
     {
       // We get here only if IT IS NOT an initial value but IT IS a time
       // dependant boundary value. If we are here we only want the function to run
       // for boundary faces specified in the faceConsider variable
-      dsassert(faceConsider != NULL, "Unsupported operation");
+      dsassert(faceConsider != nullptr, "Unsupported operation");
       if (*faceConsider != face) continue;
     }
 
@@ -577,15 +577,16 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
       // Deciding if we are initializing a field or if it is a time dependant
       // boundary condition
-      if (initfield != NULL)  // Initial function
+      if (initfield != nullptr)  // Initial function
         EvaluateVelocity(*startfunc, INPAR::FLUID::InitialField(*initfield), xyz, u);
       else
       {
         // This is used to project a function only on the boundary during the
         // temporal evolution of the simulation. This is strictly connected to
         // the first if of the loop, in fact, the condition is the same
-        //"initfield == NULL" and the face is a boundary face.
-        dsassert(functno != NULL && time != NULL && onoff != NULL, "No array with functions given");
+        //"initfield == nullptr" and the face is a boundary face.
+        dsassert(functno != nullptr && time != nullptr && onoff != nullptr,
+            "No array with functions given");
         for (unsigned int d = 0; d < nsd_; ++d)
         {
           // Deciding if to use the function or not for the current component
@@ -632,7 +633,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
 
     // In this case we fill elevec1 with the values of trVec because we have not
     // defined trVec as a matrix beginning where elevec1 begins
-    if (initfield != NULL)  // This is for initial functions
+    if (initfield != nullptr)  // This is for initial functions
       for (unsigned int d = 0; d < nsd_; ++d)
         for (unsigned int i = 0; i < shapesface_->nfdofs_; ++i)
           // remember that "face" is an iterator index and therefore we are
@@ -647,7 +648,7 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
   }  // for over the faces
   // here we are adding as the first element of elevec1 the value pressure
   // averaged over the volume
-  if (initfield != NULL) elevec1(0) = avgpre / vol;
+  if (initfield != nullptr) elevec1(0) = avgpre / vol;
 
   return 0;
 }

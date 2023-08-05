@@ -33,8 +33,8 @@ XFEM::XFACoupling_Manager::XFACoupling_Manager(Teuchos::RCP<FLD::XFluid> xfluid,
   Ale_Struct_coupling_ == Teuchos::null;
   if (structure_ != Teuchos::null)
   {
-    if (ale_->Discretization()->GetCondition("StructAleCoupling") != NULL &&
-        structure_->Discretization()->GetCondition("StructAleCoupling") != NULL)
+    if (ale_->Discretization()->GetCondition("StructAleCoupling") != nullptr &&
+        structure_->Discretization()->GetCondition("StructAleCoupling") != nullptr)
     {
       if (ale_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size() !=
           structure_->Discretization()->GetCondition("StructAleCoupling")->Nodes()->size())

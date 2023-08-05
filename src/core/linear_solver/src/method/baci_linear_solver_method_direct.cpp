@@ -137,7 +137,7 @@ void CORE::LINEAR_SOLVER::DirectSolver<MatrixType, VectorType>::Setup(
   {
     amesos_ = Teuchos::null;
 
-    reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex2(NULL));
+    reindexer_ = Teuchos::rcp(new EpetraExt::LinearProblem_Reindex2(nullptr));
 
     if (solvertype_ == "umfpack")
     {

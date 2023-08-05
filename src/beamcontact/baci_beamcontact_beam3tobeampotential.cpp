@@ -59,7 +59,7 @@ CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::Beam3tobeampotential(
 
   element1_ = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element1);
 
-  if (element1_ == NULL)
+  if (element1_ == nullptr)
   {
     dserror(
         "cast to Beam3Base failed! first element in Beam3tospherepotential pair"
@@ -73,7 +73,7 @@ CONTACT::Beam3tobeampotential<numnodes, numnodalvalues>::Beam3tobeampotential(
 
   element2_ = dynamic_cast<DRT::ELEMENTS::Beam3Base*>(element2);
 
-  if (element2_ == NULL)
+  if (element2_ == nullptr)
   {
     dserror(
         "cast to Beam3Base failed! first element in Beam3tospherepotential pair"

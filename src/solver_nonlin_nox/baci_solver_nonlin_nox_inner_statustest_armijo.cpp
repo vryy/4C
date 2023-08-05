@@ -87,7 +87,7 @@ NOX::NLN::INNER::StatusTest::StatusType NOX::NLN::INNER::StatusTest::Armijo::Che
   // Amrijo rule plays only a role as inner status test for line search solvers
   const NOX::NLN::LineSearch::Generic* linesearch =
       dynamic_cast<const NOX::NLN::LineSearch::Generic*>(&interface);
-  if (linesearch == NULL)
+  if (linesearch == nullptr)
   {
     std::ostringstream msg;
     msg << "Dynamic cast to NOX::NLN::LineSearch::Generic failed!\n\n"

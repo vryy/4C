@@ -1867,7 +1867,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
   Teuchos::RCP<Epetra_Vector> residual_col =
       CORE::LINALG::CreateVector(*(facediscret_->DofColMap()), true);
 
-  const Epetra_Map* rmap = NULL;
+  const Epetra_Map* rmap = nullptr;
 
   Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
   if (systemmatrix1 != Teuchos::null)
@@ -1876,7 +1876,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
     sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
   }
   else
-    dserror("sysmat is NULL!");
+    dserror("sysmat is nullptr!");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
@@ -1890,7 +1890,7 @@ void FLD::FluidImplicitTimeInt::EvaluateFluidEdgeBased(
 
     {
       DRT::ELEMENTS::FluidIntFace* ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace*>(actface);
-      if (ele == NULL) dserror("expect FluidIntFace element");
+      if (ele == nullptr) dserror("expect FluidIntFace element");
 
       // get the parent fluid elements
       DRT::Element* p_master = ele->ParentMasterElement();
@@ -6526,7 +6526,7 @@ void FLD::FluidImplicitTimeInt::ApplyDirichletBC(Teuchos::ParameterList& params,
   // --------------------------------------------------------------------------------
   discret_->ClearState();
   // If we have HDG discret
-  if (dynamic_cast<const DRT::DiscretizationHDG*>(&(*discret_)) != NULL)
+  if (dynamic_cast<const DRT::DiscretizationHDG*>(&(*discret_)) != nullptr)
   {
     auto dbc = Teuchos::rcp<const DRT::UTILS::Dbc>(new const FLD::UTILS::DbcHDG_Fluid());
     (*dbc)(*discret_, params, systemvector, systemvectord, systemvectordd, Teuchos::null,

@@ -1224,13 +1224,13 @@ namespace DRT
       //    DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
       //
       //    // rotate the vector field in the case of rotationally symmetric boundary conditions
-      //    if(matrixtofill != NULL)
+      //    if(matrixtofill != nullptr)
       //      rotsymmpbc.RotateMyValuesIfNecessary(mymatrix);
       //
       //    for (int inode=0; inode<nen_; ++inode)  // number of nodes
       //    {
       //      // fill a vector field via a pointer
-      //      if (matrixtofill != NULL)
+      //      if (matrixtofill != nullptr)
       //      {
       //        for(int idim=0; idim<nsd_; ++idim) // number of dimensions
       //        {
@@ -1238,7 +1238,7 @@ namespace DRT
       //        }  // end for(idim)
       //      }
       //      // fill a scalar field via a pointer
-      //      if (vectortofill != NULL)
+      //      if (vectortofill != nullptr)
       //        (*vectortofill)(inode,0) = mymatrix[nsd_+(inode*numdofpernode_)];
       //    }
       //  }

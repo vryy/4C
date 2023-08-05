@@ -873,7 +873,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientEleCenter(const
   //  if (ele->IsAle())
   //  {
   //    CORE::LINALG::Matrix<nsd_,nen_> edisp(true);
-  //    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edisp, NULL, "disp");
+  //    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edisp, nullptr, "disp");
   //
   //    // get new node positions of ALE mesh
   //     xyze_ += edisp;

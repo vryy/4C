@@ -37,7 +37,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // modeling of an orthopressure load without the need to do any linearization. However,
   // this can only be achieved by referring the 'neum_pseudo_orthopressure' load to the last
   // converged configuration, which introduces an error as compared with 'neum_orthopressure'.
-  bool loadlin = (elemat1 != NULL);
+  bool loadlin = (elemat1 != nullptr);
 
   // get type of condition
   enum LoadType
@@ -192,7 +192,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
       {  // uniform load on reference configuration
 
         // compute infinitesimal line element dr for integration along the line
-        const double dr = w1_substitution(xye, deriv, NULL, numnod);
+        const double dr = w1_substitution(xye, deriv, nullptr, numnod);
 
         double functfac = 1.0;
 
@@ -474,7 +474,7 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
   int err = der_par.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xye, 0.0);
   if (err != 0) dserror("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
-  if (unrm != NULL)
+  if (unrm != nullptr)
   {
     (*unrm)[0] = 1 / dr * der_par(0, 1);
     (*unrm)[1] = -1 / dr * der_par(0, 0);
@@ -597,7 +597,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
           CORE::DRT::UTILS::shape_function_1D(funct, e1, distype);
           CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
 
-          double dr = w1_substitution(xscurr, deriv, NULL, numnod);
+          double dr = w1_substitution(xscurr, deriv, nullptr, numnod);
 
           elevector2[0] += intpoints.qwgt[gpid] * dr;
 

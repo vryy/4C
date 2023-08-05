@@ -134,15 +134,15 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       }
       else if (act == ELEMENTS::struct_calc_nlnstiff)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, mydisp, &elemat1, NULL, &elevec1, NULL);
+        CalcInternalAndInertiaForcesAndStiff(params, mydisp, &elemat1, nullptr, &elevec1, nullptr);
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, mydisp, NULL, NULL, &elevec1, NULL);
+        CalcInternalAndInertiaForcesAndStiff(params, mydisp, nullptr, nullptr, &elevec1, nullptr);
       }
       else if (act == ELEMENTS::struct_calc_internalinertiaforce)
       {
-        CalcInternalAndInertiaForcesAndStiff(params, mydisp, NULL, NULL, &elevec1, &elevec2);
+        CalcInternalAndInertiaForcesAndStiff(params, mydisp, nullptr, nullptr, &elevec1, &elevec2);
       }
 
       // ATTENTION: In order to perform a brief finite difference check of the nonlinear stiffness
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::Beam3k::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
-        CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, NULL, &elevec1);
+        CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_brownianstiff)
         CalcBrownianForcesAndStiff<2, 2, 3>(params, myvel, mydisp, &elemat1, &elevec1);
       else
@@ -336,7 +336,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     // internal force vector
     CORE::LINALG::Matrix<numdofelement, 1, double> internal_force(true);
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       // set view on CORE::LINALG::SerialDenseVector to avoid copying of data
       internal_force.SetView(&((*force)(0)));
@@ -389,7 +389,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     }
 
     // *************** INERTIA *******************************************
-    if (massmatrix != NULL or force_inert != NULL)
+    if (massmatrix != nullptr or force_inert != nullptr)
     {
       // construct as a view on CORE::LINALG::SerialDenseVector to avoid copying of data
       CORE::LINALG::Matrix<numdofelement, 1, double> inertia_force(*force_inert, true);
@@ -450,13 +450,13 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     if (weakkirchhoff_)
     {
       CalculateInternalForcesAndStiffWK<nnodecl, FAD>(params, disp_totlag_centerline_FAD,
-          triad_mat_cp_FAD, NULL, internal_force_FAD, v_theta_gp_FAD, lin_theta_gp_FAD,
+          triad_mat_cp_FAD, nullptr, internal_force_FAD, v_theta_gp_FAD, lin_theta_gp_FAD,
           triad_mat_gp_FAD);
     }
     else
     {
       CalculateInternalForcesAndStiffSK<nnodecl>(params, disp_totlag_centerline_FAD,
-          triad_mat_cp_FAD, NULL, internal_force_FAD, v_theta_gp_FAD, triad_mat_gp_FAD);
+          triad_mat_cp_FAD, nullptr, internal_force_FAD, v_theta_gp_FAD, triad_mat_gp_FAD);
     }
 
     if (rotvec_ == true)
@@ -465,7 +465,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     }
 
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       for (unsigned int i = 0; i < numdofelement; ++i)
       {
@@ -474,7 +474,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
     }
 
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // Calculating stiffness matrix with FAD
       for (unsigned int i = 0; i < numdofelement; ++i)
@@ -490,26 +490,26 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
 
     // *************** INERTIA *******************************************
-    if (massmatrix != NULL or force_inert != NULL)
+    if (massmatrix != nullptr or force_inert != nullptr)
     {
       CORE::LINALG::Matrix<numdofelement, 1, FAD> inertia_force_FAD(true);
 
       CalculateInertiaForcesAndMassMatrix<nnodecl, FAD>(params, triad_mat_gp_FAD,
-          disp_totlag_centerline_FAD, v_theta_gp_FAD, lin_theta_gp_FAD, inertia_force_FAD, NULL);
+          disp_totlag_centerline_FAD, v_theta_gp_FAD, lin_theta_gp_FAD, inertia_force_FAD, nullptr);
 
       if (rotvec_ == true)
       {
         ApplyRotVecTrafo<nnodecl, FAD>(disp_totlag_centerline_FAD, inertia_force_FAD);
       }
 
-      if (force_inert != NULL)
+      if (force_inert != nullptr)
       {
         for (unsigned int i = 0; i < numdofelement; ++i)
           (*force_inert)(i) = inertia_force_FAD(i).val();
       }
 
 
-      if (massmatrix != NULL)
+      if (massmatrix != nullptr)
       {
         // Calculating stiffness matrix with FAD
         for (unsigned int i = 0; i < numdofelement; ++i)
@@ -523,7 +523,7 @@ void DRT::ELEMENTS::Beam3k::CalcInternalAndInertiaForcesAndStiff(Teuchos::Parame
 
 
 
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     double dt = 1000.0;
     double beta = -1.0;
@@ -707,7 +707,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     Calc_v_thetapartheta<nnodecl>(v_thetapar_cp[ind], L, r_s, abs_r_s);
 
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       PreComputeTermsAtCPForStiffmatContributionsAnalyticWK<nnodecl>(
           lin_theta_cp[ind], lin_v_epsilon_cp[ind], L, N_s, r_s, abs_r_s, Qrefconv_[ind]);
@@ -834,7 +834,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInternalForcesAndStiffWK(Teuchos::Parameter
     internal_force.Update(1.0, f_int_aux, 1.0);
 
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       CalculateStiffmatContributionsAnalyticWK<nnodecl>(*stiffmatrix, disp_totlag_centerline,
           *triad_interpolation_scheme_ptr, v_theta_s_bar, lin_theta_cp, lin_theta_gp[numgp],
@@ -1832,7 +1832,7 @@ void DRT::ELEMENTS::Beam3k::CalculateInertiaForcesAndMassMatrix(Teuchos::Paramet
 
 
     // compute analytic mass matrix if required
-    if (massmatrix != NULL)
+    if (massmatrix != nullptr)
     {
       // temporal derivative of angular momentum equals negative inertia moment
       CORE::LINALG::Matrix<3, 1, T> moment_rho(Pi_t);
@@ -2136,7 +2136,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
 
     // find out at which node the condition is applied
     const std::vector<int>* nodeids = condition.Nodes();
-    if (nodeids == NULL) dserror("failed to retrieve node IDs from condition!");
+    if (nodeids == nullptr) dserror("failed to retrieve node IDs from condition!");
 
     /* find out local node number --> this is done since the first element of a Neumann point
      * condition is used for this function in this case we do not know whether it is the left
@@ -2166,7 +2166,7 @@ int DRT::ELEMENTS::Beam3k::EvaluateNeumann(Teuchos::ParameterList& params,
     const std::vector<int>* function_numbers = condition.Get<std::vector<int>>("funct");
 
     // Check if distributed moment load is applied and throw error
-    if (function_numbers != NULL)
+    if (function_numbers != nullptr)
     {
       for (unsigned int idof = 3; idof < 6; ++idof)
       {
@@ -2259,7 +2259,7 @@ void DRT::ELEMENTS::Beam3k::EvaluatePointNeumannEB(CORE::LINALG::SerialDenseVect
           f_ext_fixedsize, moment, r_s, abs_r_s, node);
 
 
-      if (stiffmat != NULL)
+      if (stiffmat != nullptr)
       {
         EvaluateStiffMatrixAnalyticFromPointNeumannMoment<nnodecl>(
             *stiffmat, moment, r_s, abs_r_s, node);
@@ -2319,7 +2319,7 @@ void DRT::ELEMENTS::Beam3k::EvaluatePointNeumannEB(CORE::LINALG::SerialDenseVect
 
       // IMPORTANT: in contrast to f_ext, elemat1 it is directly added to the stiffness matrix,
       // therefore there has to be a sign change!
-      if (stiffmat != NULL)
+      if (stiffmat != nullptr)
       {
         // Calculating stiffness matrix with FAD
         for (unsigned int i = 0; i < 6 * nnodecl + BEAM3K_COLLOCATION_POINTS; ++i)
@@ -2508,7 +2508,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumann(CORE::LINALG::SerialDenseVector&
     }
 
 
-    if (rotvec_ == true and stiffmat != NULL)
+    if (rotvec_ == true and stiffmat != nullptr)
     {
       // IMPORTANT: in contrast to f_ext, elemat1 it is directly added to the stiffness matrix,
       // therefore there has to be a sign change!
@@ -2585,7 +2585,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateLineNeumannForces(
     // sum up load components
     for (unsigned int idof = 0; idof < 3; ++idof)
     {
-      if (function_numbers != NULL and (*function_numbers)[idof] > 0)
+      if (function_numbers != nullptr and (*function_numbers)[idof] > 0)
       {
         functionfac =
             DRT::Problem::Instance()
@@ -2661,7 +2661,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
     CORE::LINALG::Matrix<ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS, 1, double>
         force_brownian(true);
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       // set view on CORE::LINALG::SerialDenseVector to avoid copying of data
       force_brownian.SetView(&((*force)(0)));
@@ -2692,7 +2692,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
     EvaluateRotationalDamping<double, nnode, vpernode, ndim>(
         disp_totlag_centerline, triad_mat_cp, stiffmatrix, force_brownian);
 
-    if (stiffmatrix != NULL) stiff_ptc_ = *stiffmatrix;
+    if (stiffmatrix != nullptr) stiff_ptc_ = *stiffmatrix;
 
     // add stiffness and forces due to translational damping effects
     EvaluateTranslationalDamping<double, nnode, vpernode, ndim>(
@@ -2755,7 +2755,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
 
 
     // Update stiffness matrix and force vector
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // Calculating stiffness matrix with FAD
       for (unsigned int i = 0; i < ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS; i++)
@@ -2763,7 +2763,7 @@ inline void DRT::ELEMENTS::Beam3k::CalcBrownianForcesAndStiff(Teuchos::Parameter
           (*stiffmatrix)(i, j) = force_brownian_FAD(i).dx(j);
     }
 
-    if (force != NULL)
+    if (force != nullptr)
     {
       for (unsigned int i = 0; i < ndim * vpernode * nnode + BEAM3K_COLLOCATION_POINTS; i++)
         (*force)(i) = force_brownian_FAD(i).val();
@@ -2862,7 +2862,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateTranslationalDamping(Teuchos::ParameterList&
             N_i(vpernode * inode + 1) * f_visc(idim) * jacobifac_gp_weight;
       }
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       EvaluateAnalyticStiffmatContributionsFromTranslationalDamping<nnode, vpernode, ndim>(
           *stiffmatrix, damp_mat, r_s, vel_rel, gamma, velbackgroundgrad, N_i, N_i_xi, jacobi_[gp],
@@ -3036,7 +3036,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateStochasticForces(
       }
 
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       EvaluateAnalyticStiffmatContributionsFromStochasticForces<nnode, vpernode, ndim>(
           *stiffmatrix, r_s, randnumvec, gamma, N_i, N_i_xi, jacobi_[gp], gausspoints.qwgt[gp]);
@@ -3277,7 +3277,7 @@ void DRT::ELEMENTS::Beam3k::EvaluateRotationalDamping(
     f_int.Update(wgt * jacobi_[gp], f_int_aux, 1.0);
 
 
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       EvaluateAnalyticStiffmatContributionsFromRotationalDamping<2, 2, 3>(*stiffmatrix,
           disp_totlag_centerline, *triad_interpolation_scheme_ptr, theta, deltatheta, triad_mat,
@@ -3783,9 +3783,9 @@ void DRT::ELEMENTS::Beam3k::CalcStiffContributionsPTC(CORE::LINALG::SerialDenseM
 //          vel_aux[i] += h_rel / params.get<double>("delta time",0.01);
 //
 //          if(weakkirchhoff_)
-//            CalculateInternalForcesWK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
+//            CalculateInternalForcesWK(params,disp_aux,nullptr,nullptr,&force_aux,nullptr,false);
 //          else
-//            CalculateInternalForcesSK(params,disp_aux,NULL,NULL,&force_aux,NULL,false);
+//            CalculateInternalForcesSK(params,disp_aux,nullptr,nullptr,&force_aux,nullptr,false);
 //
 //          //computing derivative d(fint)/du numerically by finite difference
 //          for(int u = 0 ; u < 6*2+BEAM3K_COLLOCATION_POINTS ; u++ )

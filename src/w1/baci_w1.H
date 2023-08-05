@@ -243,20 +243,20 @@ namespace DRT
                                            ///< control routine and elements
           DRT::Discretization& discretization,  ///< A reference to the underlying discretization
           std::vector<int>& lm,                 ///< location vector of this element
-          CORE::LINALG::SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If NULL on
-                                                     ///< input, the controling method does not
+          CORE::LINALG::SerialDenseMatrix& elemat1,  ///< matrix to be filled by element. If nullptr
+                                                     ///< on input, the controling method does not
                                                      ///< epxect the element to fill this matrix.
-          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< matrix to be filled by element. If NULL on
-                                                     ///< input, the controling method does not
+          CORE::LINALG::SerialDenseMatrix& elemat2,  ///< matrix to be filled by element. If nullptr
+                                                     ///< on input, the controling method does not
                                                      ///< epxect the element to fill this matrix.
-          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector to be filled by element. If NULL on
-                                                     ///< input, the controlling method does not
+          CORE::LINALG::SerialDenseVector& elevec1,  ///< vector to be filled by element. If nullptr
+                                                     ///< on input, the controlling method does not
                                                      ///< epxect the element to fill this vector
-          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element. If NULL on
-                                                     ///< input, the controlling method does not
+          CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element. If nullptr
+                                                     ///< on input, the controlling method does not
                                                      ///< epxect the element to fill this vector
-          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element. If NULL on
-                                                     ///< input, the controlling method does not
+          CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element. If nullptr
+                                                     ///< on input, the controlling method does not
                                                      ///< epxect the element to fill this vector
       );
 
@@ -272,8 +272,8 @@ namespace DRT
           DRT::Condition& condition,            ///<  The condition to be evaluated
           std::vector<int>& lm,                 ///< location vector of this element
           CORE::LINALG::SerialDenseVector&
-              elevec1,  ///< vector to be filled by element. If NULL on input
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+              elevec1,  ///< vector to be filled by element. If nullptr on input
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       //@}
 
@@ -924,8 +924,8 @@ namespace DRT
           DRT::Condition& condition,  ///< (in) The condition to be evaluated
           std::vector<int>& lm,       ///< (in) location vector of this element
           CORE::LINALG::SerialDenseVector&
-              elevec1,  ///< (out) vector to be filled by element. If NULL on input
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+              elevec1,  ///< (out) vector to be filled by element. If nullptr on input
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       /// Evaluate a boundary condition
       ///

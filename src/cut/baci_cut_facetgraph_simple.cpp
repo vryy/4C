@@ -152,7 +152,7 @@ void CORE::GEO::CUT::SimpleFacetGraph_2D::CreateVolumeCells(
     volumes.push_back(plain_facet_set());
     plain_facet_set& collected_facets = volumes.back();
 
-    std::vector<Point*> line_points(2, NULL);
+    std::vector<Point*> line_points(2, nullptr);
     for (unsigned i = 0; i < cycle_length; ++i)
     {
       line_points[0] = vol_point_cycle()[i % cycle_length];

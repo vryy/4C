@@ -184,7 +184,7 @@ namespace MAT
         dserror(
             "The constraint phase law does not have pressure coupling! \n "
             "Combining Saturation DOF and constraint phase law is invalid!");
-        return NULL;
+        return nullptr;
       };
 
 

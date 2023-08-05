@@ -42,7 +42,7 @@ namespace CORE::GEO
 
       virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const = 0;
 
-      void DumpGmsh(std::ofstream& file, int* value = NULL);
+      void DumpGmsh(std::ofstream& file, int* value = nullptr);
 
       /** \brief calculate the element volume
        *

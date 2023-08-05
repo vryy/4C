@@ -186,12 +186,12 @@ namespace MAT
    *
    * @param[in,out] pk2vol  Volumetric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
    *                        \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31}
-   *                        ]_\text{vol}\f$, if != NULL
-   * @param[in] cvol        Volumetric contribution to constitutive tensor, if != NULL
+   *                        ]_\text{vol}\f$, if != nullptr
+   * @param[in] cvol        Volumetric contribution to constitutive tensor, if != nullptr
    * @param[in] pk2iso      Isochoric 2nd Piola--Kirchhoff 6-Voigt stress, i.e.
    *                        \f$[ S^{11}\; S^{22}\; S^{33}\; S^{12}\; S^{23}\; S^{31}
-   *                        ]_\text{iso}\f$, if != NULL
-   * @param[in,out] ciso    Isochoric contribution to constitutive tensor, if != NULL
+   *                        ]_\text{iso}\f$, if != nullptr
+   * @param[in,out] ciso    Isochoric contribution to constitutive tensor, if != nullptr
    * @param[in] gl          Green--Lagrange 6-Voigt strain, i.e. \f$[ E_{11}\; E_{22}\; E_{33}\;
    *                        2E_{12}\; 2E_{23}\; 2E_{31} ]\f$
    * @param[in] pk2         2nd Piola--Kirchhoff 6-Voigt stress, i.e. \f$[ S^{11}\; S^{22}\;

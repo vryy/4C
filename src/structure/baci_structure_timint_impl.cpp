@@ -264,7 +264,7 @@ void STR::TimIntImpl::Setup()
   int numcond = KSPcond.size();
   int numsolid = 0;
 
-  DRT::Condition* kspcond = NULL;
+  DRT::Condition* kspcond = nullptr;
   // check if for solid Krylov projection is required
   for (int icond = 0; icond < numcond; icond++)
   {
@@ -568,7 +568,7 @@ void STR::TimIntImpl::PrepareLineSearch()
   {
     DRT::Element* actele = discret_->lRowElement(i);
     DRT::ELEMENTS::So_hex8* ele_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(actele);
-    if ((ele_hex8 != NULL && ele_hex8->HaveEAS() == true) ||
+    if ((ele_hex8 != nullptr && ele_hex8->HaveEAS() == true) ||
         (actele->ElementType() == DRT::ELEMENTS::So_Hex8P1J1Type::Instance()) ||
         (actele->ElementType() == DRT::ELEMENTS::So_shw6Type::Instance()))
       haveCondensationLocal = 1;
@@ -4060,7 +4060,7 @@ void STR::TimIntImpl::ExportContactQuantities()
   std::cout << "*** total inttime per time step= " << curinttime * iteration << std::endl;
 
   // write number of active nodes for converged newton in textfile xx x.active
-  FILE* MyFile = NULL;
+  FILE* MyFile = nullptr;
   std::ostringstream filename;
   const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
   filename << filebase << ".active";
@@ -4078,7 +4078,7 @@ void STR::TimIntImpl::ExportContactQuantities()
 
 
   // write required time
-  FILE* MyFile2 = NULL;
+  FILE* MyFile2 = nullptr;
   std::ostringstream filename2;
   const std::string filebase2 = DRT::Problem::Instance()->OutputControlFile()->FileName();
   filename2 << filebase2 << ".time";

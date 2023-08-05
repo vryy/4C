@@ -99,8 +99,8 @@ namespace XFEM
           my_sele_ids_(std::set<int>()),
           contact_ele_rowmap_fluidownerbased_(Teuchos::null),
           contact_strategy_(contact_strategy),
-          contact_strategy_fsi_(NULL),
-          contact_strategy_fpi_(NULL)
+          contact_strategy_fsi_(nullptr),
+          contact_strategy_fpi_(nullptr)
     {
     }
 
@@ -128,7 +128,7 @@ namespace XFEM
         const CORE::LINALG::Matrix<3, 1>& normal,        // normal for projection
         bool& FSI_integrated,
         bool& gp_on_this_proc,  // for serial run
-        double* poropressure = NULL);
+        double* poropressure = nullptr);
 
     /// Get the FSI traction called from contact gausspoint
     double Get_FSI_Traction(const MORTAR::MortarElement* ele,
@@ -136,7 +136,7 @@ namespace XFEM
         const CORE::LINALG::Matrix<1, 1>& xsi_boundary, const CORE::LINALG::Matrix<2, 1>& normal,
         bool& FSI_integrated,
         bool& gp_on_this_proc,  // for serial run
-        double* poropressure = NULL)
+        double* poropressure = nullptr)
     {
       dserror("no 2D xfsi with contact");
       return -1.0;

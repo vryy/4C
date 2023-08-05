@@ -36,7 +36,7 @@ namespace CORE::GEO
     const int numnode = ele->NumNode();
 
     const ::DRT::Node* const* nodes = ele->Nodes();
-    dsassert(nodes != NULL,
+    dsassert(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
     for (int inode = 0; inode < numnode; inode++)
@@ -70,7 +70,7 @@ namespace CORE::GEO
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     const ::DRT::Node* const* nodes = ele->Nodes();
-    dsassert(nodes != NULL,
+    dsassert(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
     for (int inode = 0; inode < numnode; inode++)
@@ -105,7 +105,7 @@ namespace CORE::GEO
     const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     const ::DRT::Node* const* nodes = ele->Nodes();
-    dsassert(nodes != NULL,
+    dsassert(nodes != nullptr,
         "element has no nodal pointers, so getting a position array doesn't make sense!");
 
     dsassert((dim > 0) && (dim < 4), "Illegal number of space dimensions");

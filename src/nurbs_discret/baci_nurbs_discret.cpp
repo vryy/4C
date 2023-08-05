@@ -166,7 +166,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
   {
     // build map of Dirichlet DOFs
     int nummyelements = 0;
-    int* myglobalelements = NULL;
+    int* myglobalelements = nullptr;
     std::vector<int> dbcgidsv;
     if (dbcgids[set_row]->size() > 0)
     {
@@ -186,7 +186,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
   {
     // build map of Dirichlet DOFs
     int nummyelements = 0;
-    int* myglobalelements = NULL;
+    int* myglobalelements = nullptr;
     std::vector<int> dbcgidsv;
     if (dbcgids[set_col]->size() > 0)
     {

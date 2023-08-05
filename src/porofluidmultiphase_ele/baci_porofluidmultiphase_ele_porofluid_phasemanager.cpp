@@ -215,7 +215,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(
       solidpressure_(0.0),
       invbulkmodulifluid_(numfluidphases, 0.0),
       invbulkmodulussolid_(0.0),
-      ele_(NULL),
+      ele_(nullptr),
       isevaluated_(false),
       issetup_(false)
 {
@@ -240,7 +240,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseM
       solidpressure_(old.solidpressure_),
       invbulkmodulifluid_(old.invbulkmodulifluid_),
       invbulkmodulussolid_(old.invbulkmodulussolid_),
-      ele_(NULL),
+      ele_(nullptr),
       isevaluated_(old.isevaluated_),
       issetup_(old.issetup_)
 {
@@ -253,7 +253,7 @@ DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::PhaseManagerCore(const PhaseM
 void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerCore::Setup(
     const DRT::Element* ele, const int matnum)
 {
-  dsassert(ele != NULL, "Element is null pointer for setup of phase manager!");
+  dsassert(ele != nullptr, "Element is null pointer for setup of phase manager!");
   // save current element
   ele_ = ele;
   // get material
@@ -860,7 +860,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDerivAndPorosity::EvaluateGPSt
 
   // use structure material to evaluate porosity
   structmat->ComputePorosity(params, phasemanager_->SolidPressure(), J, -1, porosity_,
-      &dporosity_dp_, &dporosity_dJ_, NULL, NULL, NULL, false);
+      &dporosity_dp_, &dporosity_dJ_, nullptr, nullptr, nullptr, false);
 
   // Note:
   // for phase law density dependent, incompressible:

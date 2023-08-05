@@ -27,7 +27,7 @@ int XFEM::XFEMTransparentIndependentDofSet::NumDofPerNode(const DRT::Node &node)
   if (wizard_ != Teuchos::null)
   {
     CORE::GEO::CUT::Node *n = wizard_->GetNode(node.Id());
-    if (n != NULL)
+    if (n != nullptr)
     {
       int numdofpernode = DRT::DofSet::NumDofPerNode(node);
       return numdofpernode * n->NumDofSets();

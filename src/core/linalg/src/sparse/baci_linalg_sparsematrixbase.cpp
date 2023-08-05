@@ -217,8 +217,8 @@ bool CORE::LINALG::SparseMatrixBase::IsDbcApplied(
     if (sys_rlid == -1) continue;
 
     int NumEntries = 0;
-    double* Values = NULL;
-    int* Indices = NULL;
+    double* Values = nullptr;
+    int* Indices = nullptr;
     sysmat_->ExtractMyRowView(sys_rlid, NumEntries, Values, Indices);
 
     std::fill(gIndices.begin(), gIndices.end(), 0.0);
@@ -234,8 +234,8 @@ bool CORE::LINALG::SparseMatrixBase::IsDbcApplied(
         if (not trafo->Filled()) dserror("The trafo matrix must be filled!");
 
         int tNumEntries = 0;
-        double* tValues = NULL;
-        int* tIndices = NULL;
+        double* tValues = nullptr;
+        int* tIndices = nullptr;
 
         const int trafo_rlid = trafo->RowMap().LID(row);
         trafo->EpetraMatrix()->ExtractMyRowView(trafo_rlid, tNumEntries, tValues, tIndices);

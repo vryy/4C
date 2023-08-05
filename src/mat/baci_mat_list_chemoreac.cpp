@@ -48,7 +48,7 @@ DRT::ParObject* MAT::MatListChemoReacType::Create(const std::vector<char>& data)
  | construct empty material object                           thon 06/15 |
  *----------------------------------------------------------------------*/
 MAT::MatListChemoReac::MatListChemoReac()
-    : MatList(), MatListChemotaxis(), MatListReactions(), paramsreachemo_(NULL)
+    : MatList(), MatListChemotaxis(), MatListReactions(), paramsreachemo_(nullptr)
 {
 }
 
@@ -88,7 +88,7 @@ void MAT::MatListChemoReac::SetupMatMap()
  *----------------------------------------------------------------------*/
 void MAT::MatListChemoReac::Clear()
 {
-  paramsreachemo_ = NULL;
+  paramsreachemo_ = nullptr;
   return;
 }
 
@@ -107,7 +107,7 @@ void MAT::MatListChemoReac::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (paramsreachemo_ != NULL)
+  if (paramsreachemo_ != nullptr)
     matid = paramsreachemo_->Id();  // in case we are in post-process mode
 
   AddtoPack(data, matid);
@@ -135,7 +135,7 @@ void MAT::MatListChemoReac::Unpack(const std::vector<char>& data)
   // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position, data, matid);
-  paramsreachemo_ = NULL;
+  paramsreachemo_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

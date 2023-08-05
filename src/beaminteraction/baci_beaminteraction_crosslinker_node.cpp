@@ -194,7 +194,7 @@ void CROSSLINKING::CrosslinkerNode::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, tmp);
     DRT::ParObject* o = DRT::UTILS::Factory(tmp);
     MAT::CrosslinkerMat* mat = dynamic_cast<MAT::CrosslinkerMat*>(o);
-    if (mat == NULL) dserror("failed to unpack material");
+    if (mat == nullptr) dserror("failed to unpack material");
     // unpack material
     mat_ = Teuchos::rcp(mat);
   }

@@ -1383,7 +1383,7 @@ namespace IMMERSED
               {
                 DRT::Node* checkNode = NodesPtr[surfnode];
                 // check whether a IMMERSEDCoupling condition is active on this node
-                if (checkNode->GetCondition("IMMERSEDCoupling") != NULL) ++numfsinodes;
+                if (checkNode->GetCondition("IMMERSEDCoupling") != nullptr) ++numfsinodes;
               }
 
               // only surface elements with IMMERSEDCoupling condition are relevant (all nodes of

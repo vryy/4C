@@ -328,7 +328,7 @@ namespace NOX
        *  and optionally an error stream for printing errors.
        *
        */
-      MinIters(int minIterations, const NOX::Utils* u = NULL);
+      MinIters(int minIterations, const NOX::Utils* u = nullptr);
 
       //! Destructor.
       virtual ~MinIters();

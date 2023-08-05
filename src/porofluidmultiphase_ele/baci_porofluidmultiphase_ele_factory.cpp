@@ -111,7 +111,7 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*

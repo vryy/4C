@@ -100,18 +100,18 @@ CONTACT::Beam3contact<numnodes, numnodalvalues>::Beam3contact(const DRT::Discret
     bool leftboundarynode1 = false;
     bool rightboundarynode1 = false;
 
-    if (neighbors1_->GetLeftNeighbor() == NULL) leftboundarynode1 = true;
+    if (neighbors1_->GetLeftNeighbor() == nullptr) leftboundarynode1 = true;
 
-    if (neighbors1_->GetRightNeighbor() == NULL) rightboundarynode1 = true;
+    if (neighbors1_->GetRightNeighbor() == nullptr) rightboundarynode1 = true;
 
     boundarynode1_ = std::make_pair(leftboundarynode1, rightboundarynode1);
 
     bool leftboundarynode2 = false;
     bool rightboundarynode2 = false;
 
-    if (neighbors2_->GetLeftNeighbor() == NULL) leftboundarynode2 = true;
+    if (neighbors2_->GetLeftNeighbor() == nullptr) leftboundarynode2 = true;
 
-    if (neighbors2_->GetRightNeighbor() == NULL) rightboundarynode2 = true;
+    if (neighbors2_->GetRightNeighbor() == nullptr) rightboundarynode2 = true;
 
     boundarynode2_ = std::make_pair(leftboundarynode2, rightboundarynode2);
   }
@@ -864,7 +864,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::GetActiveSmallAnglePairs(
   }      // for(int interval=imin;interval<=imax;interval++)
 
 #ifdef ENDPOINTSEGMENTATION
-  if (iminmax == NULL or leftrightsolutionwithinsegment == NULL or eta1_leftrightboundary == NULL)
+  if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
+      eta1_leftrightboundary == nullptr)
     dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
 
   *iminmax = std::make_pair(imin, imax);
@@ -889,7 +890,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateActiveSmallAnglePa
 // Compute linearizations of integration interval boundaries if necessary
 #ifdef ENDPOINTSEGMENTATION
 
-  if (iminmax == NULL or leftrightsolutionwithinsegment == NULL or eta1_leftrightboundary == NULL)
+  if (iminmax == nullptr or leftrightsolutionwithinsegment == nullptr or
+      eta1_leftrightboundary == nullptr)
     dserror("In case of ENDPOINTSEGMENTATION no NUll pointer should be handeld in!!!");
 
   int imin = (*iminmax).first;
@@ -3154,7 +3156,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_V
 
 // Quantities necessary for automatic differentiation
 #ifdef AUTOMATICDIFF
-  if (fc1_FAD != NULL and fc2_FAD != NULL)
+  if (fc1_FAD != nullptr and fc2_FAD != nullptr)
   {
     for (int i = 0; i < dim1; ++i)
     {
@@ -3170,7 +3172,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateFcContact(Epetra_V
   //**********************************************************************
   // assemble contact forces
   //**********************************************************************
-  if (!DoNotAssemble and fint != NULL)
+  if (!DoNotAssemble and fint != nullptr)
   {
     for (int i = 0; i < dim1; ++i)
     {
@@ -3530,8 +3532,8 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContact(
 #ifdef AUTOMATICDIFF
     CORE::LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     CORE::LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
-    EvaluateFcContact(NULL, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi, variables,
-        intfac, cpp, gp, fixedendpointxi, fixedendpointeta, &fc1_FAD, &fc2_FAD);
+    EvaluateFcContact(nullptr, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
+        variables, intfac, cpp, gp, fixedendpointxi, fixedendpointeta, &fc1_FAD, &fc2_FAD);
 
     if (cpp)  // in case of large-angle-contact (standard closest-point-projection), we need
               // delta_xi and delta_eta.
@@ -3799,7 +3801,7 @@ void CONTACT::Beam3contact<numnodes, numnodalvalues>::EvaluateStiffcContactIntSe
 
     CORE::LINALG::Matrix<dim1, 1, TYPE> fc1_FAD(true);
     CORE::LINALG::Matrix<dim2, 1, TYPE> fc2_FAD(true);
-    EvaluateFcContact(NULL, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
+    EvaluateFcContact(nullptr, r1, r2, r1_xi, r2_xi, r1_xixi, r2_xixi, N1, N2, N1_xi, N2_xi,
         cpvariables, intfac, false, true, false, false, &fc1_FAD, &fc2_FAD);
 
 #ifdef AUTOMATICDIFF

@@ -131,7 +131,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
 {
   gp_on_this_proc = true;
   if (!fluid_init_) dserror("Fluid not initialized!");
-  if (ele == NULL) dserror("Contact Element not set!");
+  if (ele == nullptr) dserror("Contact Element not set!");
 
   if (parallel_)
   {
@@ -152,12 +152,12 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
 
   // 1 // get CutSide--> BC --> VolumeCell --> FluidElement --> Check for Dofs
   CORE::GEO::CUT::SideHandle* sidehandle = cutwizard_->GetCutSide(GetSurfSid(ele->Id()));
-  if (sidehandle == NULL) dserror("Coundn't find Sidehandle for this structural surface!");
+  if (sidehandle == nullptr) dserror("Coundn't find Sidehandle for this structural surface!");
 
   std::vector<int> nds;
   int eleid;
 
-  CORE::GEO::CUT::VolumeCell* volumecell = NULL;
+  CORE::GEO::CUT::VolumeCell* volumecell = nullptr;
   static CORE::LINALG::Matrix<3, 1> elenormal(true);
   static CORE::LINALG::Matrix<3, 1> x(false);
   CORE::LINALG::Matrix<2, 1> new_xsi(xsi_boundary.A(), false);
@@ -180,7 +180,7 @@ double XFEM::XFluid_Contact_Comm::Get_FSI_Traction(MORTAR::MortarElement* ele,
   static std::vector<double> velpres;
   static std::vector<double> disp;
   static std::vector<double> ivel;
-  DRT::Element* fluidele = NULL;
+  DRT::Element* fluidele = nullptr;
   CORE::LINALG::SerialDenseMatrix ele_xyze;
   double pres_m;
   static CORE::LINALG::Matrix<3, 1> vel_m;
@@ -452,7 +452,7 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
     std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> bintpoints;
 
     CORE::GEO::CUT::ElementHandle* cele = cutwizard_->GetElement(fluidele);
-    if (cele == NULL) dserror("Couldn't find cut element for ele %d", fluidele->Id());
+    if (cele == nullptr) dserror("Couldn't find cut element for ele %d", fluidele->Id());
 
     std::vector<CORE::GEO::CUT::plain_volumecell_set> cell_sets;
     {
@@ -530,13 +530,13 @@ void XFEM::XFluid_Contact_Comm::Get_Penalty_Param(DRT::Element* fluidele,
   double kappa_m = 1.0;
   double kappa_s = 1.0 - kappa_m;
   double visc_stab_fac = 0.0;
-  mc_[mcidx_]->Get_ViscPenalty_Stabfac(fluidele, NULL, kappa_m, kappa_s, inv_h_k, visc_stab_fac,
+  mc_[mcidx_]->Get_ViscPenalty_Stabfac(fluidele, nullptr, kappa_m, kappa_s, inv_h_k, visc_stab_fac,
       dummy, nit_stab_gamma_, nit_stab_gamma_, is_pseudo_2D_, visc_stab_trace_estimate_);
 
   Teuchos::RCP<MAT::Material> mat;
   XFEM::UTILS::GetVolumeCellMaterial(fluidele, mat);
   const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
-  if (actmat == NULL) dserror("Cast of Fluidmat failed!");
+  if (actmat == nullptr) dserror("Cast of Fluidmat failed!");
 
   XFEM::UTILS::NIT_Compute_FullPenalty_Stabfac(
       penalty_fac,  ///< to be filled: full Nitsche's penalty term scaling (viscous+convective part)
@@ -591,10 +591,10 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
     if (max_surf_gid < mcfpi_ps_pf_->GetCutterDis()->ElementColMap()->MaxAllGID() + startgid)
       max_surf_gid = mcfpi_ps_pf_->GetCutterDis()->ElementColMap()->MaxAllGID() + startgid;
   }
-  soSurfId_to_mortar_ele_.resize(max_surf_gid - min_surf_id_ + 1, NULL);
+  soSurfId_to_mortar_ele_.resize(max_surf_gid - min_surf_id_ + 1, nullptr);
   min_mortar_id_ = contact_interface_dis.ElementColMap()->MinAllGID();
   const int max_mortar_gid = contact_interface_dis.ElementColMap()->MaxAllGID();
-  mortarId_to_soSurf_ele_.resize(max_mortar_gid - min_mortar_id_ + 1, NULL);
+  mortarId_to_soSurf_ele_.resize(max_mortar_gid - min_mortar_id_ + 1, nullptr);
   mortarId_to_somc_.resize(max_mortar_gid - min_mortar_id_ + 1, -1);
   mortarId_to_sosid_.resize(max_mortar_gid - min_mortar_id_ + 1, -1);
 
@@ -651,9 +651,9 @@ void XFEM::XFluid_Contact_Comm::SetupSurfElePtrs(DRT::Discretization& contact_in
   ele_ptrs_already_setup_ = true;
 
   contact_strategy_fsi_ =
-      dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(&contact_strategy_);  // might be NULL
+      dynamic_cast<CONTACT::CoNitscheStrategyFsi*>(&contact_strategy_);  // might be nullptr
   contact_strategy_fpi_ =
-      dynamic_cast<CONTACT::CoNitscheStrategyFpi*>(&contact_strategy_);  // might be NULL
+      dynamic_cast<CONTACT::CoNitscheStrategyFpi*>(&contact_strategy_);  // might be nullptr
 }
 
 bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*& sele,
@@ -664,7 +664,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
   distance = 0.0;
   FSI_integrated = true;
   // 1 // Compute global coord x
-  volumecell = NULL;
+  volumecell = nullptr;
   if (sele->Shape() == DRT::Element::quad4)
   {
     const int numnodes =
@@ -682,7 +682,7 @@ bool XFEM::XFluid_Contact_Comm::GetVolumecell(DRT::ELEMENTS::StructuralSurface*&
     dserror("GetFacet: Your solid face is not a quad4, please add your element type here!");
 
   // 2 //Identify Subside
-  CORE::GEO::CUT::Facet* facet = NULL;
+  CORE::GEO::CUT::Facet* facet = nullptr;
 
   CORE::GEO::CUT::plain_side_set subsides;
   sidehandle->CollectSides(subsides);
@@ -939,7 +939,7 @@ CORE::GEO::CUT::Side* XFEM::XFluid_Contact_Comm::FindnextPhysicalSide(CORE::LINA
 
   distance = 1e200;
   CORE::LINALG::Matrix<3, 1> newx(true);
-  CORE::GEO::CUT::Side* newSide = NULL;
+  CORE::GEO::CUT::Side* newSide = nullptr;
 
   for (std::set<CORE::GEO::CUT::Side*>::iterator psit = physical_sides.begin();
        psit != physical_sides.end(); ++psit)
@@ -1133,8 +1133,8 @@ std::vector<CORE::GEO::CUT::Side*> XFEM::XFluid_Contact_Comm::GetNewNeighboringS
 CORE::GEO::CUT::Element* XFEM::XFluid_Contact_Comm::GetNextElement(CORE::GEO::CUT::Element* ele,
     std::set<CORE::GEO::CUT::Element*>& performed_elements, int& lastid)
 {
-  CORE::GEO::CUT::Element* newele = NULL;
-  if (lastid == -1 && ele != NULL)
+  CORE::GEO::CUT::Element* newele = nullptr;
+  if (lastid == -1 && ele != nullptr)
   {
     for (std::size_t s = 0; s < ele->Sides().size(); ++s)
     {
@@ -1161,13 +1161,13 @@ CORE::GEO::CUT::Element* XFEM::XFluid_Contact_Comm::GetNextElement(CORE::GEO::CU
       ++lastid;
       if (lastid > 2 * fluiddis_->ElementColMap()->NumGlobalElements())
       {
-        return NULL;
+        return nullptr;
       }
       std::cout << "==| Doing the expensive Version of finding an element! |==" << lastid
                 << std::endl;
 
       CORE::GEO::CUT::ElementHandle* elementh = cutwizard_->GetElement(lastid);
-      if (elementh == NULL) continue;
+      if (elementh == nullptr) continue;
       CORE::GEO::CUT::plain_element_set pes;
       elementh->CollectElements(pes);
 
@@ -1312,7 +1312,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         std::vector<CORE::GEO::CUT::Point*> points;
         for (unsigned p = 0; p < side->NumNodes(); ++p) points.push_back(side->Nodes()[p]->point());
         Teuchos::RCP<CORE::GEO::CUT::Tri3BoundaryCell> tmp_bc =
-            Teuchos::rcp(new CORE::GEO::CUT::Tri3BoundaryCell(tcoords, NULL, points));
+            Teuchos::rcp(new CORE::GEO::CUT::Tri3BoundaryCell(tcoords, nullptr, points));
         tmp_bc->Normal(CORE::LINALG::Matrix<2, 1>(true), normal_bc);
         if (normal_bc.Dot(normal_side) < 0.0)
           bcs.push_back(tmp_bc);
@@ -1329,7 +1329,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
             coord += 3;
           }
           Teuchos::RCP<CORE::GEO::CUT::Tri3BoundaryCell> tmp_bc_rev =
-              Teuchos::rcp(new CORE::GEO::CUT::Tri3BoundaryCell(tcoords, NULL, tmp_points));
+              Teuchos::rcp(new CORE::GEO::CUT::Tri3BoundaryCell(tcoords, nullptr, tmp_points));
           bcs.push_back(tmp_bc_rev);
         }
       }
@@ -1371,7 +1371,7 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         CORE::DRT::UTILS::shape_function_2D_deriv1(
             deriv, coords(idx, 0), coords(idx, 1), DRT::Element::quad4);
         CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<DRT::Element::quad4>(
-            xquad_m, deriv, metrictensor, drs_sh, NULL);
+            xquad_m, deriv, metrictensor, drs_sh, nullptr);
         weights.push_back(iquad.Weight() * drs / drs_sh);  // small tri3 to quad4 weight
         ++idx;
       }

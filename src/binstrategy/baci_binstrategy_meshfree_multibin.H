@@ -194,7 +194,7 @@ namespace DRT
         if (associatedeleid_[bin_content].size())
           return associatedeleid_[bin_content].data();
         else
-          return NULL;
+          return nullptr;
       }
 
       /*------------------------------------------------------------------------*/
@@ -202,7 +202,7 @@ namespace DRT
        * \brief Get vector of ptrs to associated  elements
        *
        * \return Ptr to pointers to nodes of the element in local nodal ordering.
-       *      Returns NULL if pointers to not exist.
+       *      Returns nullptr if pointers to not exist.
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
       inline virtual Element** AssociatedEles(BINSTRATEGY::UTILS::BinContentType bin_content)
@@ -210,7 +210,7 @@ namespace DRT
         if (associatedeleid_[bin_content].size())
           return associatedele_[bin_content].data();
         else
-          return NULL;
+          return nullptr;
       }
 
       /*------------------------------------------------------------------------*/
@@ -300,7 +300,8 @@ namespace DRT
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1 = NULL)
+          CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr)
       {
         return 0;
       }

@@ -90,10 +90,10 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
                                   the controling method does not epxect the element to fill
                                   this matrix.
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
@@ -116,10 +116,10 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
                                   the controling method does not epxect the element to fill
                                   this matrix.
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
@@ -134,10 +134,10 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)      : matrix to be filled by element. If nullptr on input,
                                   the controling method does not epxect the element to fill
                                   this matrix.
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
                                   the controling method does not epxect the element to fill
                                   this matrix.
       */
@@ -216,7 +216,7 @@ namespace DRT
       \param params (in)        : ParameterList for communication between control routine
       \param discretization (in): A reference to the underlying discretization
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       */
       void ComputeFlowRate(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,

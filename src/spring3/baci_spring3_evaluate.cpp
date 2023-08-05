@@ -144,9 +144,9 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
       else if (act == Spring3::calc_struct_nlnstifflmass)
         t3_nlnstiffmass(params, myvel, mydisp, &elemat1, &elemat2, &elevec1);
       else if (act == Spring3::calc_struct_nlnstiff)
-        t3_nlnstiffmass(params, myvel, mydisp, &elemat1, NULL, &elevec1);
+        t3_nlnstiffmass(params, myvel, mydisp, &elemat1, nullptr, &elevec1);
       else if (act == Spring3::calc_struct_internalforce)
-        t3_nlnstiffmass(params, myvel, mydisp, NULL, NULL, &elevec1);
+        t3_nlnstiffmass(params, myvel, mydisp, nullptr, nullptr, &elevec1);
 
       /*at the end of an iteration step the geometric configuration has to be updated: the starting
        * point for the next iteration step is the configuration at the end of the current step */
@@ -195,7 +195,7 @@ int DRT::ELEMENTS::Spring3::Evaluate(Teuchos::ParameterList& params,
               disp_aux[numdof*k + i] += h_rel;
               vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
 
-              t3_nlnstiffmass(params,vel_aux,disp_aux,NULL,NULL,&force_aux);
+              t3_nlnstiffmass(params,vel_aux,disp_aux,nullptr,nullptr,&force_aux);
 
               //computing derivative d(fint)/du numerically by finite difference
               for(int u = 0 ; u < numdof*nnode ; u++ )

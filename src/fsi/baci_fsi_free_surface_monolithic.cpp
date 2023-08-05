@@ -790,7 +790,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::MonolithicFS::CreateLinearSystem(
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList* lsParams = NULL;
+  Teuchos::ParameterList* lsParams = nullptr;
 
   // in case of nonlinCG the linear solver list is somewhere else
   if (dirParams.get("Method", "User Defined") == "User Defined")
@@ -1099,14 +1099,14 @@ void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(
   {
     y->Scale(omega);
     Teuchos::RCP<Epetra_Vector> tmpy = Teuchos::rcp(new Epetra_Vector(y->Map()));
-    if (err != NULL)
+    if (err != nullptr)
       if (comm.MyPID() == 0) fprintf(err, "    fluid richardson (%d,%f):", iterations, omega);
     for (int i = 0; i < iterations; ++i)
     {
       innerOp.EpetraMatrix()->Multiply(false, *y, *tmpx);
       tmpx->Update(1.0, *x, -1.0);
 
-      if (err != NULL)
+      if (err != nullptr)
       {
         double n;
         tmpx->Norm2(&n);
@@ -1116,7 +1116,7 @@ void FSI::BlockPreconditioningMatrixFS::LocalBlockRichardson(
       solver->Solve(innerOp.EpetraMatrix(), tmpy, tmpx, false);
       y->Update(omega, *tmpy, 1.0);
     }
-    if (err != NULL)
+    if (err != nullptr)
       if (comm.MyPID() == 0) fprintf(err, "\n");
   }
 }

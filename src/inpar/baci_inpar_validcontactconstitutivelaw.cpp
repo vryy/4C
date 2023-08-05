@@ -23,7 +23,7 @@ void DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& strea
 
   for (unsigned i = 0; i < coconstlawlist.size(); ++i)
   {
-    coconstlawlist[i]->Print(stream, NULL);
+    coconstlawlist[i]->Print(stream, nullptr);
   }
 }
 

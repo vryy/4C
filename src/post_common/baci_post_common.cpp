@@ -164,7 +164,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
   /*--------------------------------------------------------------------*/
   /* collect all result groups */
   SYMBOL* symbol = map_find_symbol(&control_table_, "result");
-  while (symbol != NULL)
+  while (symbol != nullptr)
   {
     if (!symbol_is_map(symbol))
     {
@@ -277,7 +277,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 
     /* test open to see if it exists */
     FILE* f = fopen(control_file_name.c_str(), "rb");
-    if (f == NULL)
+    if (f == nullptr)
     {
       printf("Restarted control file '%s' does not exist. Skip previous results.\n",
           control_file_name.c_str());
@@ -291,11 +291,11 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
     /*------------------------------------------------------------------*/
     /* find the first result in the current table */
     SYMBOL* first_result = map_find_symbol(&control_table_, "result");
-    if (first_result == NULL)
+    if (first_result == nullptr)
     {
       dserror("no result sections in control file '%s'\n", control_file_name.c_str());
     }
-    while (first_result->next != NULL)
+    while (first_result->next != nullptr)
     {
       first_result = first_result->next;
     }
@@ -329,7 +329,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
       SYMBOL dummy_symbol;
       SYMBOL* previous_results = &dummy_symbol;
       previous_results->next = map_find_symbol(table, "result");
-      while (previous_results->next != NULL)
+      while (previous_results->next != nullptr)
       {
         SYMBOL* result;
         int step;
@@ -343,7 +343,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
            * map. The assumption is a perfect ordering */
           map_prepend_symbols(
               &control_table_, "result", result, map_symbol_count(table, "result") - counter);
-          previous_results->next = NULL;
+          previous_results->next = nullptr;
 
           /*
            * In case all results go to the main map we have to disconnect
@@ -372,7 +372,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
       SYMBOL dummy_symbol;
       SYMBOL* previous_fields = &dummy_symbol;
       previous_fields->next = map_find_symbol(table, "field");
-      while (previous_fields->next != NULL)
+      while (previous_fields->next != nullptr)
       {
         SYMBOL* field;
         int step;
@@ -386,7 +386,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
            * map. The assumption is a perfect ordering */
           map_prepend_symbols(
               &control_table_, "field", field, map_symbol_count(table, "field") - counter);
-          previous_fields->next = NULL;
+          previous_fields->next = nullptr;
 
           /*
            * In case all fields go to the main map we have to disconnect
@@ -414,7 +414,7 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
 void PostProblem::read_meshes()
 {
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
-  if (mesh == NULL) dserror("No field found.");
+  if (mesh == nullptr) dserror("No field found.");
 
   // We have to reverse the traversal of meshes we get from the control file
   // in order to get the same dof numbers in all discretizations as we had
@@ -424,17 +424,17 @@ void PostProblem::read_meshes()
   // the calculation!
   std::stack<MAP*> meshstack;
 
-  while (mesh != NULL)
+  while (mesh != nullptr)
   {
     // only those fields with a mesh file entry are readable here
     // (each control file is bound to include at least one of those)
-    if (map_find_symbol(symbol_map(mesh), "mesh_file") != NULL)
+    if (map_find_symbol(symbol_map(mesh), "mesh_file") != nullptr)
     {
       meshstack.push(symbol_map(mesh));
     }
     mesh = mesh->next;
   }
-  mesh = NULL;
+  mesh = nullptr;
 
   while (not meshstack.empty())
   {
@@ -495,7 +495,7 @@ void PostProblem::read_meshes()
       Teuchos::RCP<std::vector<char>> cond_pbcsline;
       Teuchos::RCP<std::vector<char>> cond_pbcssurf;
 
-      for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != NULL;
+      for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != nullptr;
            condition = condition->next)
       {
         char* condname;
@@ -606,7 +606,7 @@ void PostProblem::read_meshes()
           DRT::NURBS::NurbsDiscretization* nurbsdis =
               dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
-          if (nurbsdis == NULL)
+          if (nurbsdis == nullptr)
             dserror("Discretization %s is not a NurbsDiscretization",
                 currfield.discretization()->Name().c_str());
 
@@ -655,7 +655,7 @@ void PostProblem::read_meshes()
 
           knots->Unpack(*packed_knots);
 
-          if (nurbsdis == NULL)
+          if (nurbsdis == nullptr)
           {
             dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
           }
@@ -716,7 +716,7 @@ void PostProblem::read_meshes()
 void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputstep)
 {
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
-  if (mesh == NULL) dserror("No field found.");
+  if (mesh == nullptr) dserror("No field found.");
 
   // We have to reverse the traversal of meshes we get from the control file
   // in order to get the same dof numbers in all discretizations as we had
@@ -729,10 +729,10 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
   bool found = false;
 
   // search for the desired time step
-  while (found == false and mesh != NULL)
+  while (found == false and mesh != nullptr)
   {
     // only those fields with a mesh file entry are readable here
-    if (map_find_symbol(meshmap, "mesh_file") != NULL)
+    if (map_find_symbol(meshmap, "mesh_file") != nullptr)
     {
       int step;
       if (!map_find_int(meshmap, "step", &step)) dserror("No step information in field.");
@@ -750,7 +750,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
       }
     }
   }
-  mesh = NULL;
+  mesh = nullptr;
   if (found == false) dserror("mesh for desired time step (%d) not found", outputstep);
 
   {
@@ -787,7 +787,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
     Teuchos::RCP<std::vector<char>> cond_pbcsline;
     Teuchos::RCP<std::vector<char>> cond_pbcssurf;
 
-    for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != NULL;
+    for (SYMBOL* condition = map_find_symbol(meshmap, "condition"); condition != nullptr;
          condition = condition->next)
     {
       char* condname;
@@ -900,7 +900,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
         DRT::NURBS::NurbsDiscretization* nurbsdis =
             dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*currfield.discretization()));
 
-        if (nurbsdis == NULL)
+        if (nurbsdis == nullptr)
           dserror("Discretization %s is not a NurbsDiscretization",
               currfield.discretization()->Name().c_str());
 
@@ -949,7 +949,7 @@ void PostProblem::re_read_mesh(int fieldpos, std::string fieldname, int outputst
 
         knots->Unpack(*packed_knots);
 
-        if (nurbsdis == NULL)
+        if (nurbsdis == nullptr)
         {
           dserror("expected a nurbs discretisation for spatial approx. Nurbs\n");
         }
@@ -1045,10 +1045,10 @@ int PostProblem::get_max_nodeid(const std::string& fieldname)
 {
   SYMBOL* mesh = map_find_symbol(&control_table_, "field");
 
-  if (mesh == NULL) dserror("No field found.");
+  if (mesh == nullptr) dserror("No field found.");
 
   int maxnodeid = -1;
-  while (mesh != NULL)
+  while (mesh != nullptr)
   {
     MAP* meshmap = symbol_map(mesh);
     mesh = mesh->next;
@@ -1085,7 +1085,7 @@ PostField::~PostField() {}
  * The Constructor of PostResult
  *----------------------------------------------------------------------*/
 PostResult::PostResult(PostField* field)
-    : field_(field), pos_(-1), group_(NULL), file_((field->problem()->input_dir()))
+    : field_(field), pos_(-1), group_(nullptr), file_((field->problem()->input_dir()))
 {
 }
 

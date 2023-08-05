@@ -727,8 +727,8 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     bool isininterfacecolmap = false;
     int ilid = interface_->SlaveColNodes()->LID(gid);
     if (ilid >= 0) isininterfacecolmap = true;
-    ::DRT::Node* node = NULL;
-    MORTAR::MortarNode* mtnode = NULL;
+    ::DRT::Node* node = nullptr;
+    MORTAR::MortarNode* mtnode = nullptr;
     if (isininterfacecolmap)
     {
       node = interface_->Discret().gNode(gid);
@@ -741,7 +741,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     bool isinproblemcolmap = false;
     int lid = slavedis->NodeColMap()->LID(gid);
     if (lid >= 0) isinproblemcolmap = true;
-    ::DRT::Node* pnode = NULL;
+    ::DRT::Node* pnode = nullptr;
     if (isinproblemcolmap)
     {
       pnode = slavedis->gNode(gid);
@@ -751,7 +751,7 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
     // ... AND standard node in ALE discret if fluid=slave
     // (check if the node is available on this processor)
     bool isinproblemcolmap2 = false;
-    ::DRT::Node* alenode = NULL;
+    ::DRT::Node* alenode = nullptr;
     if (aledis != Teuchos::null)
     {
       int lid2 = aledis->NodeColMap()->LID(gid);

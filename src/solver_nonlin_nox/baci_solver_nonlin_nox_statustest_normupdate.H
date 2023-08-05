@@ -79,7 +79,7 @@ namespace NOX
             const std::vector<double>& tolerance,
             const std::vector<NOX::Abstract::Vector::NormType>& ntype,
             const std::vector<NormUpdate::ScaleType>& stype, const double& alpha,
-            const double& beta, const NOX::Utils* u = NULL);
+            const double& beta, const NOX::Utils* u = nullptr);
 
         //! Destructor.
         virtual ~NormUpdate(){};
@@ -201,7 +201,7 @@ namespace NOX
             const std::vector<double>& tolerance,
             const std::vector<NOX::Abstract::Vector::NormType>& ntype,
             const std::vector<NormUpdate::ScaleType>& stype, const double& alpha,
-            const double& beta, const NOX::Utils* u = NULL)
+            const double& beta, const NOX::Utils* u = nullptr)
             :  // call base class constructor
               NormUpdate(checkList, toltype, tolerance, ntype, stype, alpha, beta, u)
         {

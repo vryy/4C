@@ -241,7 +241,7 @@ void CORE::GEO::CUT::TetMeshIntersection::FindEdgeCuts()
           double tolerance;
           try
           {
-            e->ComputeCut(&mesh_, ce, NULL, NULL, tolerance);
+            e->ComputeCut(&mesh_, ce, nullptr, nullptr, tolerance);
           }
           catch (std::runtime_error& err)
           {
@@ -576,15 +576,15 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
 
     if (nonnodecells == 1)
     {
-      VolumeCell* parent_vc = NULL;
-      ChildCell* child_cells = NULL;
+      VolumeCell* parent_vc = nullptr;
+      ChildCell* child_cells = nullptr;
       for (std::map<VolumeCell*, ChildCell>::iterator i = cellmap.begin(); i != cellmap.end(); ++i)
       {
         VolumeCell* vc = i->first;
         ChildCell& cc = i->second;
         if (not cc.done_)
         {
-          if (parent_vc == NULL)
+          if (parent_vc == nullptr)
           {
             parent_vc = vc;
             child_cells = &cc;
@@ -595,7 +595,7 @@ void CORE::GEO::CUT::TetMeshIntersection::MapVolumeCells(Mesh& parent_mesh, Elem
           }
         }
       }
-      if (parent_vc == NULL)
+      if (parent_vc == nullptr)
       {
         throw std::runtime_error("no open parent cell");
       }
@@ -915,7 +915,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
         std::vector<Point*> parent_points(points);
         ToParent(parent_mesh, parent_points);
 
-        Facet* parent_facet = NULL;
+        Facet* parent_facet = nullptr;
         Facet* child_facet = bc->GetFacet();
 
         if (not child_facet->OnBoundaryCellSide())
@@ -1006,7 +1006,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
             Facet* f = *i;
             if (f->ContainsSome(facet_points))
             {
-              if (parent_facet == NULL)
+              if (parent_facet == nullptr)
               {
                 parent_facet = f;
               }
@@ -1017,7 +1017,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(Mesh& parent_mesh, Element* eleme
               }
             }
           }
-          if (parent_facet == NULL)
+          if (parent_facet == nullptr)
           {
             str << "no parent facet found";
             throw std::runtime_error(str.str());
@@ -1066,7 +1066,7 @@ void CORE::GEO::CUT::TetMeshIntersection::Fill(VolumeCell* parent_cell, ChildCel
             if (not f->OnBoundaryCellSide())
             {
               VolumeCell* nc = f->Neighbor(vc);
-              if (nc != NULL)
+              if (nc != nullptr)
               {
                 if (done_child_cells.count(nc) == 0)
                 {
@@ -1176,7 +1176,7 @@ void CORE::GEO::CUT::TetMeshIntersection::RegisterNewPoints(
           Point* p = *i;
           if (child_to_parent_.count(p) == 0)
           {
-            Point* pp = parent_mesh.NewPoint(p->X(), NULL, NULL, p->Tolerance());
+            Point* pp = parent_mesh.NewPoint(p->X(), nullptr, nullptr, p->Tolerance());
             Register(pp, p);
           }
         }
@@ -1227,7 +1227,7 @@ void CORE::GEO::CUT::TetMeshIntersection::SwapPoints(
     std::map<Point*, Point*>::const_iterator j = pointmap.find(p);
     if (j == pointmap.end())
     {
-      Point* np = mesh.NewPoint(p->X(), NULL, NULL, p->Tolerance());
+      Point* np = mesh.NewPoint(p->X(), nullptr, nullptr, p->Tolerance());
       new_points.push_back(np);
     }
     else
@@ -1280,7 +1280,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::TetMeshIntersection::SwapPoint(
   if (j == pointmap.end())
   {
     // throw std::runtime_error( "no such point" );
-    return NULL;
+    return nullptr;
   }
   return j->second;
 }
@@ -1304,7 +1304,7 @@ void CORE::GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
 
     Node* new_node = cut_mesh_.GetNode(n->Id(), p->X());
     Point* np = ToChild(p);
-    if (np != NULL)
+    if (np != nullptr)
     {
       if (new_node->point() != np)
       {
@@ -1337,14 +1337,14 @@ void CORE::GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
       Point* p = *i;
       Point* np = ToChild(p);
 
-      if (np != NULL)
+      if (np != nullptr)
       {
         np->AddEdge(ne);
         np->Position(Point::oncutsurface);
       }
       else
       {
-        np = Point::NewPoint(mesh_, p->X(), p->t(e), ne, NULL, p->Tolerance());
+        np = Point::NewPoint(mesh_, p->X(), p->t(e), ne, nullptr, p->Tolerance());
         np->Position(Point::oncutsurface);
         Register(p, np);
       }
@@ -1360,7 +1360,7 @@ void CORE::GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
   {
     Point* p = *i;
     Point* np = ToChild(p);
-    if (np != NULL)
+    if (np != nullptr)
     {
       np->AddSide(cs);
       np->Position(Point::oncutsurface);
@@ -1378,12 +1378,12 @@ void CORE::GEO::CUT::TetMeshIntersection::CopyCutSide(Side* s, Facet* f)
     Point* p1 = ToChild(l->BeginPoint());
     Point* p2 = ToChild(l->EndPoint());
 
-    if (p1 != NULL)
+    if (p1 != nullptr)
     {
       p1->AddSide(cs);
     }
 
-    if (p2 != NULL)
+    if (p2 != nullptr)
     {
       p2->AddSide(cs);
     }
