@@ -5,7 +5,7 @@ baci_add_library(
   HEADERS
   baci_post_common.H
   )
-baci_add_dependency(post_common inpar module_registry)
+baci_add_dependency(post_common inpar global_legacy_module)
 
 set(OBJS_POST_PROCESSOR_MAIN
     # cmake-format: sortable
