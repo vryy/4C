@@ -20,7 +20,6 @@
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
-#include "baci_so3_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -140,6 +139,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
     case DRT::Element::tri6:
     {
       ExtractDisplacementValues<DRT::Element::tri6>(ele, discretization, la);
+      break;
+    }
+    case DRT::Element::tri3:
+    {
+      ExtractDisplacementValues<DRT::Element::tri3>(ele, discretization, la);
       break;
     }
     case DRT::Element::nurbs9:
@@ -1010,7 +1014,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   normal = CORE::GEO::computeCrossProduct(dist1, dist2);
 
   const double length = normal.Norm2();
-  if (length < 1.0e-10) dserror("Zero length for element normal");
+  if (length < 1.0e-16) dserror("Zero length for element normal");
 
   normal.Scale(1.0 / length);
 
@@ -1031,7 +1035,7 @@ CORE::LINALG::Matrix<2, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   normal(1) = (-1.0) * (xyze(0, 1) - xyze(0, 0));
 
   const double length = normal.Norm2();
-  if (length < 1.0e-10) dserror("Zero length for element normal");
+  if (length < 1.0e-16) dserror("Zero length for element normal");
 
   normal.Scale(1.0 / length);
 
@@ -1056,7 +1060,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
     parent_ele_v2(dim, 0) = nodes_parent_ele(dim, 0) - nodes_parent_ele(dim, 2);
   }
 
-  auto normal_parent_ele = CORE::GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
+  const auto normal_parent_ele = CORE::GEO::computeCrossProduct(parent_ele_v1, parent_ele_v2);
   normal = CORE::GEO::computeCrossProduct(normal_parent_ele, boundary_ele);
 
   // compute inward vector and check if its scalar product with the normal vector is negative.
@@ -1088,7 +1092,7 @@ CORE::LINALG::Matrix<3, 1> DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim
   if (inward_vector.Dot(normal) >= 0.0) normal.Scale(-1.0);
 
   const double length = normal.Norm2();
-  if (length < 1.0e-10) dserror("Zero length for element normal");
+  if (length < 1.0e-16) dserror("Zero length for element normal");
 
   normal.Scale(1.0 / length);
 
