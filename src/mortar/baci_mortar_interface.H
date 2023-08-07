@@ -329,6 +329,10 @@ namespace MORTAR
 
     inline bool IsPoro() const { return poro_; }
 
+    inline bool& IsPoroScatra() { return poroscatra_; }
+
+    inline bool IsPoroScatra() const { return poroscatra_; }
+
     inline Teuchos::RCP<DRT::Exporter>& SlExporterPtr() { return sl_exporter_; }
 
     inline DRT::Exporter& Exporter()
@@ -510,6 +514,9 @@ namespace MORTAR
 
     //! flag if poro contact problem!
     bool poro_;
+
+    //! flag if poroscatra contact problem!
+    bool poroscatra_;
 
     //! flag if ehl contact problem!
     bool ehl_;
@@ -1294,6 +1301,7 @@ namespace MORTAR
     void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
 
     void SetPoroFlag(bool poro) { poro_ = poro; }
+    void SetPoroScatraFlag(bool poroscatra) { poroscatra_ = poroscatra; }
     void SetEhlFlag(bool ehl) { ehl_ = ehl; }
 
     //@}
@@ -1769,9 +1777,10 @@ namespace MORTAR
     bool& searchuseauxpos_;      ///< ref. to use auxiliary position when computing dops
     double& inttime_interface_;  ///< ref. to integration time
 
-    bool& nurbs_;  ///< ref. to flag for nurbs shape functions
-    bool& poro_;   ///< ref. to flag if poro contact problem!
-    bool& ehl_;    ///< ref. to flag if ehl contact problem!
+    bool& nurbs_;       ///< ref. to flag for nurbs shape functions
+    bool& poro_;        ///< ref. to flag if poro contact problem!
+    bool& poroscatra_;  ///< ref. to flag if poroscatra contact problem!
+    bool& ehl_;         ///< ref. to flag if ehl contact problem!
 
     /// @}
   };  // class MortarInterface

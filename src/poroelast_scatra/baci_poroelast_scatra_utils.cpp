@@ -11,6 +11,7 @@
 
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_faces.H"
+#include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
@@ -129,4 +130,81 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> POROELASTSCATRA::UTILS::BuildPoroScatra
   }
 
   return porositysplitter;
+}
+
+void POROELASTSCATRA::UTILS::CreateVolumeGhosting(DRT::Discretization& idiscret)
+{
+  // We get the discretizations from the global problem, as the contact does not have
+  // both structural and porofluid discretization, but we should guarantee consistent ghosting!
+
+  DRT::Problem* problem = DRT::Problem::Instance();
+
+  std::vector<Teuchos::RCP<DRT::Discretization>> voldis;
+  voldis.push_back(problem->GetDis("structure"));
+  voldis.push_back(problem->GetDis("porofluid"));
+  voldis.push_back(problem->GetDis("scatra"));
+
+  const Epetra_Map* ielecolmap = idiscret.ElementColMap();
+
+  for (auto& voldi : voldis)
+  {
+    // 1 Ghost all Volume Element + Nodes,for all ghosted mortar elements!
+    std::vector<int> rdata;
+
+    // Fill rdata with existing colmap
+
+    const Epetra_Map* elecolmap = voldi->ElementColMap();
+    const Teuchos::RCP<Epetra_Map> allredelecolmap =
+        CORE::LINALG::AllreduceEMap(*voldi->ElementRowMap());
+
+    for (int i = 0; i < elecolmap->NumMyElements(); ++i)
+    {
+      int gid = elecolmap->GID(i);
+      rdata.push_back(gid);
+    }
+
+    // Find elements, which are ghosted on the interface but not in the volume discretization
+    for (int i = 0; i < ielecolmap->NumMyElements(); ++i)
+    {
+      int gid = ielecolmap->GID(i);
+
+      DRT::Element* ele = idiscret.gElement(gid);
+      if (!ele) dserror("ERROR: Cannot find element with gid %", gid);
+      auto* faceele = dynamic_cast<DRT::FaceElement*>(ele);
+
+      int volgid = 0;
+      if (!faceele)
+        dserror("Cast to FaceElement failed!");
+      else
+        volgid = faceele->ParentElementId();
+
+      // Ghost the parent element additionally
+      if (elecolmap->LID(volgid) == -1 &&
+          allredelecolmap->LID(volgid) !=
+              -1)  // Volume Discretization has not Element on this proc but on another
+        rdata.push_back(volgid);
+    }
+
+    // re-build element column map
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(
+        new Epetra_Map(-1, static_cast<int>(rdata.size()), rdata.data(), 0, voldi->Comm()));
+    rdata.clear();
+
+    // redistribute the volume discretization according to the
+    // new (=old) element column layout & and ghost also nodes!
+    voldi->ExtendedGhosting(*newelecolmap, true, true, true, false);  // no check!!!
+  }
+
+  // 2 Material pointers need to be reset after redistribution.
+  POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[1]);
+  POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[0], voldis[2]);
+  POROELAST::UTILS::SetMaterialPointersMatchingGrid(voldis[1], voldis[2]);
+
+  // 3 Reconnect Face Element -- Porostructural Parent Element Pointers!
+  POROELAST::UTILS::ReconnectParentPointers(idiscret, *voldis[0], &(*voldis[1]));
+
+  // 4 In case we use
+  Teuchos::RCP<DRT::DiscretizationFaces> facediscret =
+      Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(voldis[1]);
+  if (facediscret != Teuchos::null) facediscret->FillCompleteFaces(true, true, true, true);
 }

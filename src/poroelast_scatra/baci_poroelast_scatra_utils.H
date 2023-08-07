@@ -84,6 +84,12 @@ namespace POROELASTSCATRA
      on all processors in the general mortar coupling framework.
      Here we additionally ghost volume elements and their nodes
      (required if an evaluation of gradients is required)!
+
+     Prerequisites of this funtion:
+     All Contact Elements need a set parent_id_ (member of faceelement!) before
+     calling CreateInterfaceGhosting as this id will be communicated to all
+     processors! Otherwise any information which connects face and volume
+     element is lost! (Parent Element Pointer is not communicated)
      */
     void CreateVolumeGhosting(
         DRT::Discretization& idiscret);  // redistributed interface discretization of contact!
