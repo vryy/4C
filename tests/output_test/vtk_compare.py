@@ -70,19 +70,20 @@ def compare_vtk(path1, path2, points_in_time, tol_float=1e-8, raise_error=True):
         # find relative paths to pvtk files
         for type_tag in mydata.findall("Collection/DataSet"):
             stepfile = type_tag.get("file")
+            timepoint = float(type_tag.get("timestep"))
             # only use timestep if it is close to values in given list or all are used
             if (
                 np.isclose(
-                    float(type_tag.get("timestep")),
+                    timepoint,
                     points_in_time,
                     atol=1e-10,
                     rtol=0.0,
                 ).any()
-            ) or (points_in_time == []):
+            ) or (len(points_in_time) == 0):
                 filearray.append(stepfile)
 
         # if something did not go as intended
-        if (len(points_in_time) != len(filearray)) and not (points_in_time == []):
+        if (len(points_in_time) != len(filearray)) and not (len(points_in_time) == 0):
             raise ValueError(
                 "Number of time steps given does not match number of files found! Check input or adjust tolerance."
             )
