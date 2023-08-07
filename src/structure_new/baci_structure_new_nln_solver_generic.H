@@ -94,14 +94,11 @@ namespace STR
         //! Check if Init() and Setup() have been called
         void CheckInitSetup() const
         {
-          if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+          dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
         }
 
         //! Check if Init() has been called
-        void CheckInit() const
-        {
-          if (!IsInit()) dserror("You have to call Init() first!");
-        }
+        void CheckInit() const { dsassert(IsInit(), "You have to call Init() first!"); }
 
         //! Returns the global state data container pointer
         const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState> DataGlobalStatePtr()

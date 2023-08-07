@@ -61,7 +61,7 @@ STR::MODELEVALUATOR::Structure::Structure()
  *----------------------------------------------------------------------------*/
 void STR::MODELEVALUATOR::Structure::Setup()
 {
-  if (not IsInit()) dserror("Init() has not been called, yet!");
+  dsassert(IsInit(), "Init() has not been called, yet!");
 
   // get the global state content
   {
@@ -77,7 +77,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
   stiff_ptc_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
-  if (stiff_ptr_ == NULL) dserror("Dynamic cast to CORE::LINALG::SparseMatrix failed!");
+  dsassert(stiff_ptr_ != NULL, "Dynamic cast to CORE::LINALG::SparseMatrix failed!");
 
   // get the structural dynamic content
   {
@@ -1765,7 +1765,7 @@ void STR::MODELEVALUATOR::Structure::PostOutput()
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
 {
   CheckInit();
-  if (GState().GetMutableFintNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMutableFintNp().is_null(), "NULL pointer!");
 
   return *GState().GetMutableFintNp();
 }
@@ -1775,7 +1775,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 {
   CheckInit();
-  if (GState().GetFintNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetFintNp().is_null(), "NULL pointer!");
 
   return *GState().GetFintNp();
 }
@@ -1785,7 +1785,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FintNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 {
   CheckInit();
-  if (GState().GetMutableFextNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMutableFextNp().is_null(), "NULL pointer!");
 
   return *GState().GetMutableFextNp();
 }
@@ -1795,7 +1795,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
 {
   CheckInit();
-  if (GState().GetFextNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetFextNp().is_null(), "NULL pointer!");
 
   return *GState().GetFextNp();
 }
@@ -1805,7 +1805,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FextNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
 {
   CheckInit();
-  if (GState().GetMutableFinertialNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMutableFinertialNp().is_null(), "NULL pointer!");
 
   return *GState().GetMutableFinertialNp();
 }
@@ -1815,7 +1815,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
 {
   CheckInit();
-  if (GState().GetFinertialNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetFinertialNp().is_null(), "NULL pointer!");
 
   return *GState().GetFinertialNp();
 }
@@ -1825,7 +1825,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FinertialNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
 {
   CheckInit();
-  if (GState().GetMutableFviscoNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMutableFviscoNp().is_null(), "NULL pointer!");
 
   return *GState().GetMutableFviscoNp();
 }
@@ -1835,7 +1835,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
 {
   CheckInit();
-  if (GState().GetFviscoNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetFviscoNp().is_null(), "NULL pointer!");
 
   return *GState().GetFviscoNp();
 }
@@ -1845,7 +1845,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::FviscoNp() const
 Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
 {
   CheckInit();
-  if (GState().GetMutableDisNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMutableDisNp().is_null(), "NULL pointer!");
 
   return *GState().GetMutableDisNp();
 }
@@ -1855,7 +1855,7 @@ Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp()
 const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
 {
   CheckInit();
-  if (GState().GetDisNp().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetDisNp().is_null(), "NULL pointer!");
 
   return *GState().GetDisNp();
 }
@@ -1865,7 +1865,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Structure::DisNp() const
 CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 {
   CheckInit();
-  if (not stiff_ptr_) dserror("NULL pointer!");
+  dsassert(stiff_ptr_, "NULL pointer!");
 
   return *stiff_ptr_;
 }
@@ -1875,7 +1875,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::Stiff() const
 CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 {
   CheckInit();
-  if (stiff_ptc_ptr_ == Teuchos::null) dserror("NULL pointer!");
+  dsassert(stiff_ptc_ptr_ != Teuchos::null, "NULL pointer!");
 
   return *stiff_ptc_ptr_;
 }
@@ -1885,7 +1885,7 @@ CORE::LINALG::SparseMatrix& STR::MODELEVALUATOR::Structure::StiffPTC() const
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 {
   CheckInit();
-  if (GState().GetMutableMassMatrix().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMutableMassMatrix().is_null(), "NULL pointer!");
 
   return *GState().GetMutableMassMatrix();
 }
@@ -1895,7 +1895,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass()
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 {
   CheckInit();
-  if (GState().GetMassMatrix().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMassMatrix().is_null(), "NULL pointer!");
 
   return *GState().GetMassMatrix();
 }
@@ -1905,7 +1905,7 @@ const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Mass() const
 CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 {
   CheckInit();
-  if (GState().GetMutableDampMatrix().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetMutableDampMatrix().is_null(), "NULL pointer!");
 
   return *GState().GetMutableDampMatrix();
 }
@@ -1915,7 +1915,7 @@ CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp()
 const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
 {
   CheckInit();
-  if (GState().GetDampMatrix().is_null()) dserror("NULL pointer!");
+  dsassert(!GState().GetDampMatrix().is_null(), "NULL pointer!");
 
   return *GState().GetDampMatrix();
 }
@@ -1925,7 +1925,7 @@ const CORE::LINALG::SparseOperator& STR::MODELEVALUATOR::Structure::Damp() const
 void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
     Teuchos::RCP<STR::MODELEVALUATOR::Data> interface_ptr, Teuchos::ParameterList& params)
 {
-  if (interface_ptr == Teuchos::null) dserror("ParamsInterface pointer not set");
+  dsassert(interface_ptr != Teuchos::null, "ParamsInterface pointer not set");
 
   params.set<double>("delta time", interface_ptr->GetDeltaTime());
   params.set<double>("total time", interface_ptr->GetTotalTime());

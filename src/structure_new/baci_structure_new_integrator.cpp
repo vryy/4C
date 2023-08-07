@@ -95,16 +95,13 @@ void STR::Integrator::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Integrator::CheckInit() const
-{
-  if (not IsInit()) dserror("Call Init() first!");
-}
+void STR::Integrator::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Integrator::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -742,7 +739,7 @@ void STR::Integrator::MidTimeEnergy::CopyNpToN()
  *----------------------------------------------------------------------------*/
 bool STR::Integrator::MidTimeEnergy::IsCorrectlyConfigured() const
 {
-  if (not issetup_) dserror("Call Setup() first.");
+  dsassert(issetup_, "Call Setup() first.");
 
   if (avg_type_ == INPAR::STR::midavg_vague)
   {

@@ -35,7 +35,7 @@ void STR::NLN::SOLVER::PseudoTransient::Setup()
   // Note, that the issetup_ flag is also updated during this call.
   Nox::Setup();
 
-  if (not IsSetup()) dserror("issetup_ should be \"true\" at this point!");
+  dsassert(IsSetup(), "issetup_ should be \"true\" at this point!");
 
   return;
 }

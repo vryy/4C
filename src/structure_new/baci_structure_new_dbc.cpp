@@ -117,16 +117,13 @@ void STR::Dbc::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::CheckInit() const
-{
-  if (not IsInit()) dserror("Call Init() first!");
-}
+void STR::Dbc::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Dbc::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -448,7 +445,7 @@ Teuchos::RCP<const Epetra_Vector> STR::Dbc::GetZerosPtr() const
  *----------------------------------------------------------------------------*/
 Epetra_Vector& STR::Dbc::Freact() const
 {
-  if (not freact_ptr_) dserror("NULL pointer");
+  dsassert(freact_ptr_, "NULL pointer");
 
   return *freact_ptr_;
 }

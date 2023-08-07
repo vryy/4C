@@ -65,7 +65,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == NULL) dserror("Dynamic cast failed!");
+  dsassert(grp_ptr != NULL, "Dynamic cast failed!");
   grp_ptr->ResetPrePostOperator(NoxParams().sublist("Group Options"));
 
   ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_tangdis);
@@ -145,7 +145,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& STR::PREDICT::TangDis::GetDbcIncr() const
 {
-  if (dbc_incr_ptr_.is_null()) dserror("The dbc increment is not initialized!");
+  dsassert(!dbc_incr_ptr_.is_null(), "The dbc increment is not initialized!");
   return *dbc_incr_ptr_;
 }
 

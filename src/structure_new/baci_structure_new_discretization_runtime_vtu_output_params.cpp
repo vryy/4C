@@ -81,7 +81,7 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Init(
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Setup()
 {
-  if (not IsInit()) dserror("Init() has not been called, yet!");
+  dsassert(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -92,5 +92,5 @@ void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructureRuntimeVtuOutputParams::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }

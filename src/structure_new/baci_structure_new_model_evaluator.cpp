@@ -44,15 +44,12 @@ STR::ModelEvaluator::ModelEvaluator()
  *----------------------------------------------------------------------------*/
 void STR::ModelEvaluator::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::ModelEvaluator::CheckInit() const
-{
-  if (not IsInit()) dserror("Call Init() first!");
-}
+void STR::ModelEvaluator::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -871,7 +868,7 @@ void STR::ModelEvaluator::ExtractModelVector(STR::ModelEvaluator::Vector& partia
       ++cit;
     }
 
-    if (cit == me_vec_ptr_->end()) dserror("Couldn't find the model type in me_vec_ptr_.");
+    dsassert(cit != me_vec_ptr_->end(), "Couldn't find the model type in me_vec_ptr_.");
 
     partial_me_vec.push_back(*cit);
   }

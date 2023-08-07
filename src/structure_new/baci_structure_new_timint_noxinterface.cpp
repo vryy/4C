@@ -68,15 +68,12 @@ void STR::TIMINT::NoxInterface::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::NoxInterface::CheckInit() const
-{
-  if (not IsInit()) dserror("Call Init() first!");
-}
+void STR::TIMINT::NoxInterface::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::NoxInterface::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*
@@ -111,7 +108,7 @@ bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_O
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  if (jac_ptr == NULL) dserror("Dynamic cast failed.");
+  dsassert(jac_ptr != NULL, "Dynamic cast failed.");
 
   if (not implint_ptr_->ApplyStiff(x, *jac_ptr)) return false;
 
@@ -131,7 +128,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  if (jac_ptr == NULL) dserror("Dynamic cast failed!");
+  dsassert(jac_ptr != NULL, "Dynamic cast failed!");
 
   if (not implint_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
 
@@ -157,7 +154,7 @@ bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::Cor
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  if (jac_ptr == NULL) dserror("Dynamic cast failed!");
+  dsassert(jac_ptr != NULL, "Dynamic cast failed!");
 
   std::vector<INPAR::STR::ModelType> constraint_models;
   FindConstraintModels(&grp, constraint_models);

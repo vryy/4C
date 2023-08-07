@@ -74,7 +74,7 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtkOutput::Setup()
 {
-  if (not IsInit()) dserror("Init() has not been called, yet!");
+  dsassert(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -85,5 +85,5 @@ void STR::TIMINT::ParamsRuntimeVtkOutput::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtkOutput::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }

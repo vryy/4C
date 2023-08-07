@@ -62,7 +62,7 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
 {
-  if (not IsInit()) dserror("Init() has not been called, yet!");
+  dsassert(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -73,5 +73,5 @@ void STR::TIMINT::ParamsRuntimeVtpOutput::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsRuntimeVtpOutput::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }

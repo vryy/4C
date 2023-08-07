@@ -100,7 +100,7 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
   grp.setX(*x_vec);
 
   NOX::NLN::Group* nlngrp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (nlngrp_ptr == NULL) dserror("Group cast failed!");
+  dsassert(nlngrp_ptr != NULL, "Group cast failed!");
   // evaluate the right hand side and the jacobian
   implint_ptr_->SetIsPredictorState(true);
   nlngrp_ptr->computeFandJacobian();
@@ -117,16 +117,13 @@ const std::string STR::PREDICT::Generic::Name() const
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::PREDICT::Generic::CheckInit() const
-{
-  if (not IsInit()) dserror("Call Init() first!");
-}
+void STR::PREDICT::Generic::CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::PREDICT::Generic::CheckInitSetup() const
 {
-  if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }
 
 /*----------------------------------------------------------------------------*

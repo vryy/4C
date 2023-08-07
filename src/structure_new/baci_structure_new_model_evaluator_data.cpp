@@ -395,7 +395,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableStressDataPtr
  *----------------------------------------------------------------------------*/
 const Epetra_Vector& STR::MODELEVALUATOR::Data::CurrentElementVolumeData() const
 {
-  if (elevolumes_ptr_.is_null()) dserror("Undefined reference to element volume data!");
+  dsassert(!elevolumes_ptr_.is_null(), "Undefined reference to element volume data!");
   return *elevolumes_ptr_;
 }
 
@@ -403,7 +403,7 @@ const Epetra_Vector& STR::MODELEVALUATOR::Data::CurrentElementVolumeData() const
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::StressData() const
 {
-  if (stressdata_ptr_.is_null()) dserror("Undefined reference to the stress data!");
+  dsassert(!stressdata_ptr_.is_null(), "Undefined reference to the stress data!");
   return *stressdata_ptr_;
 }
 
@@ -419,7 +419,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableStrainDataPtr
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::StrainData() const
 {
-  if (straindata_ptr_.is_null()) dserror("Undefined reference to the strain data!");
+  dsassert(!straindata_ptr_.is_null(), "Undefined reference to the strain data!");
   return *straindata_ptr_;
 }
 
@@ -435,7 +435,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutablePlasticStrain
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::PlasticStrainData() const
 {
-  if (plastic_straindata_ptr_.is_null()) dserror("Undefined reference to the plastic strain data!");
+  dsassert(!plastic_straindata_ptr_.is_null(), "Undefined reference to the plastic strain data!");
   return *plastic_straindata_ptr_;
 }
 
@@ -451,7 +451,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableCouplingStres
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::CouplingStressData() const
 {
-  if (couplstressdata_ptr_.is_null()) dserror("Undefined reference to the stress data!");
+  dsassert(!couplstressdata_ptr_.is_null(), "Undefined reference to the stress data!");
   return *couplstressdata_ptr_;
 }
 
@@ -467,7 +467,7 @@ Teuchos::RCP<std::vector<char>>& STR::MODELEVALUATOR::Data::MutableOptQuantityDa
  *----------------------------------------------------------------------------*/
 const std::vector<char>& STR::MODELEVALUATOR::Data::OptQuantityData() const
 {
-  if (optquantitydata_ptr_.is_null()) dserror("Undefined reference to the optional quantity data!");
+  dsassert(!optquantitydata_ptr_.is_null(), "Undefined reference to the optional quantity data!");
   return *optquantitydata_ptr_;
 }
 

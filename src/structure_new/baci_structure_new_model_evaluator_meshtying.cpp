@@ -165,7 +165,7 @@ bool STR::MODELEVALUATOR::Meshtying::AssembleForce(Epetra_Vector& f, const doubl
   {
     block_vec_ptr = Strategy().GetRhsBlockPtr(DRT::UTILS::VecBlockType::displ);
     // if there are no active contact contributions, we can skip this...
-    if (block_vec_ptr.is_null()) dserror("force not available");
+    dsassert(!block_vec_ptr.is_null(), "force not available");
     CORE::LINALG::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
   }
   else if (Strategy().IsCondensedSystem())

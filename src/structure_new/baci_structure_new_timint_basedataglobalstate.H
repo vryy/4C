@@ -253,13 +253,13 @@ namespace STR
 
       inline void CheckInitSetup() const
       {
-        if (!IsInit() or !IsSetup())
-          dserror("Call STR::BaseDataGlobalState::Init() and Setup() first!");
+        dsassert(
+            IsInit() and IsSetup(), "Call STR::BaseDataGlobalState::Init() and Setup() first!");
       }
 
       inline void CheckInit() const
       {
-        if (!IsInit()) dserror("STR::BaseDataGlobalState::Init() has not been called, yet!");
+        dsassert(IsInit(), "STR::BaseDataGlobalState::Init() has not been called, yet!");
       }
 
      public:
@@ -616,7 +616,7 @@ namespace STR
       /// Returns global problem map
       const Epetra_Map& GlobalProblemMap() const
       {
-        if (gproblem_map_ptr_.is_null()) dserror("The global problem map is not defined!");
+        dsassert(!gproblem_map_ptr_.is_null(), "The global problem map is not defined!");
         return *gproblem_map_ptr_;
       };
 

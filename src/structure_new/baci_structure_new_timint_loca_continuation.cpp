@@ -140,7 +140,7 @@ void STR::TIMINT::LOCAContinuation::Setup()
   Teuchos::RCP<LOCA::MultiContinuation::AbstractGroup> loca_grp_ptr =
       Teuchos::rcp_dynamic_cast<LOCA::MultiContinuation::AbstractGroup>(
           loca_problem.CreateGroup(linsys));
-  if (loca_grp_ptr.is_null()) dserror("Dynamic cast failed!");
+  dsassert(!loca_grp_ptr.is_null(), "Dynamic cast failed!");
 
   Teuchos::RCP<NOX::StatusTest::Generic> nox_ostatus = Teuchos::null;
   Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> nox_istatus = Teuchos::null;
@@ -259,7 +259,7 @@ const NOX::Abstract::Group& STR::TIMINT::LOCAContinuation::GetSolutionGroup() co
   CheckInitSetup();
   Teuchos::RCP<const NOX::Abstract::Group> solgrp_ptr = loca_stepper_ptr_->getSolutionGroup();
 
-  if (solgrp_ptr.is_null()) dserror("The solution group is not initialized!");
+  dsassert(!solgrp_ptr.is_null(), "The solution group is not initialized!");
 
   return *solgrp_ptr;
 }
