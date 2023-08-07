@@ -141,6 +141,11 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
       ExtractDisplacementValues<DRT::Element::tri6>(ele, discretization, la);
       break;
     }
+    case DRT::Element::tri3:
+    {
+      ExtractDisplacementValues<DRT::Element::tri3>(ele, discretization, la);
+      break;
+    }
     case DRT::Element::nurbs9:
     {
       ExtractDisplacementValues<DRT::Element::nurbs9>(ele, discretization, la);
