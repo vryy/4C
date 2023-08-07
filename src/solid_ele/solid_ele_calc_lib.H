@@ -94,6 +94,28 @@ namespace DRT::ELEMENTS
   };
 
   template <DRT::Element::DiscretizationType distype>
+  NodalCoordinates<distype> EvaluateNodalCoordinatesOld(const DRT::Element& ele,
+      const DRT::Discretization& discretization, const std::vector<int>& lm)
+  {
+    const Epetra_Vector& displacements = *discretization.GetState("old displacement");
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
+
+    NodalCoordinates<distype> coordinates;
+    for (int i = 0; i < DETAIL::nen<distype>; ++i)
+    {
+      for (int d = 0; d < DETAIL::nsd<distype>; ++d)
+      {
+        coordinates.reference_(i, d) = ele.Nodes()[i]->X()[d];
+        coordinates.current_(i, d) =
+            coordinates.reference_(i, d) + mydisp[i * DETAIL::nsd<distype> + d];
+      }
+    }
+
+    return coordinates;
+  }
+
+  template <DRT::Element::DiscretizationType distype>
   NodalCoordinates<distype> EvaluateNodalCoordinates(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
@@ -336,6 +358,36 @@ namespace DRT::ELEMENTS
   }
 
   /*!
+   * @brief Evaluates the material stress (2. Piola Kirchhoff stress tensor and the linearization
+   * w.r.t Green-Lagrange strain)
+   *
+   * @tparam distype
+   * @param material (in) : Reference to the material
+   * @param strains (in) : Strain measures of the element
+   * @param strains_old (in) : Strain measures of the element old
+   * @param strains_m (in) : Strain measures of the element middle
+   * @param density (in) : Density
+   * @param params (in) : List of additional parameter to pass quantities from the time integrator
+   * to the material
+   * @param gp (in) : Gauss point
+   * @param eleGID (in) : Global element id
+   * @return Stress<distype> : Object holding the 2. Piola Kirchhoff stress tensor and the
+   * linearization w.r.t. Green Lagrange strain tensor
+   */
+  template <DRT::Element::DiscretizationType distype>
+  Stress<distype> EvaluateMaterialStressGEMM(MAT::So3Material& material, Strains<distype>& strains,
+      Strains<distype>& strains_old, LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strains_m,
+      Teuchos::ParameterList& params, int gp, int eleGID)
+  {
+    Stress<distype> stress;
+
+    material.EvaluateGEMM(&stress.pk2_, &stress.cmat_, &gl_strains_m, &strains.gl_strain_,
+        &strains_old.gl_strain_, &strains.rcg_, &strains_old.rcg_, gp, eleGID);
+
+    return stress;
+  }
+
+  /*!
    * @brief Adds the internal force vector contribution of one Gauss point
    *
    * @tparam distype
@@ -376,6 +428,33 @@ namespace DRT::ELEMENTS
     LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nen<distype> * DETAIL::nsd<distype>> cb;
     cb.Multiply(stress.cmat_, Bop);
     stiffness_matrix.MultiplyTN(integration_fac, Bop, cb, 1.0);
+  }
+
+  /*!
+   * @brief Add GEMM elastic stiffness matrix contribution of one Gauss point
+   *
+   * @tparam distype
+   * @param Bop (in) : Strain gradient (B-Operator)
+   * @param BopM (in) : Mid point strain gradient (B-Operator at mid point)
+   * @param stress (in) : Stress measures
+   * @param pre_fac (in) : Pre-factor = detJ_w * (1 - alphaf + xi) with the integration factor
+   * detJ_w and the GEMM coefficients alphaf and xi
+   * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
+   */
+  template <DRT::Element::DiscretizationType distype>
+  void AddElasticStiffnessMatrixGEMM(
+      const LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>&
+          Bop,
+      const LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>&
+          BopM,
+      const Stress<distype> stress, const double pre_fac,
+      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
+          DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
+  {
+    // GEMM contribution: (1.0 - gemmalphaf + gemmxi) * detJ_w * (BopM^T . cmat . Bop)
+    LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nen<distype> * DETAIL::nsd<distype>> cb;
+    cb.Multiply(stress.cmat_, Bop);
+    stiffness_matrix.MultiplyTN(pre_fac, BopM, cb, 1.0);
   }
 
   /*!

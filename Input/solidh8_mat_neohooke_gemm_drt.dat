@@ -37,7 +37,7 @@ DAMPING                         Yes
 M_DAMP                          0.1
 K_DAMP                          0.1
 TOLDISP                         1.0E-08
-MAXITER                         50
+MAXITER                         3
 -------------------------------------------------STRUCTURAL DYNAMIC/GEMM
 ALPHA_F                         0.5
 ALPHA_M                         0.5
@@ -214,14 +214,14 @@ NODE 25 COORD 1.000000000000000e+00 5.000000000000000e-01 0.000000000000000e+00
 NODE 26 COORD 1.000000000000000e+00 1.000000000000000e+00 5.000000000000000e-01
 NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 8 20 26 18 19 24 27 25 MAT 1 KINEM nonlinear EAS none
-2 SOLIDH8 HEX8 5 8 18 13 12 19 25 21 MAT 1 KINEM nonlinear EAS none
-3 SOLIDH8 HEX8 7 15 20 8 14 22 24 19 MAT 1 KINEM nonlinear EAS none
-4 SOLIDH8 HEX8 3 7 8 5 9 14 19 12 MAT 1 KINEM nonlinear EAS none
-5 SOLIDH8 HEX8 6 17 23 16 8 20 26 18 MAT 1 KINEM nonlinear EAS none
-6 SOLIDH8 HEX8 2 6 16 10 5 8 18 13 MAT 1 KINEM nonlinear EAS none
-7 SOLIDH8 HEX8 4 11 17 6 7 15 20 8 MAT 1 KINEM nonlinear EAS none
-8 SOLIDH8 HEX8 1 4 6 2 3 7 8 5 MAT 1 KINEM nonlinear EAS none
+1 SOLID HEX8 8 20 26 18 19 24 27 25 MAT 1 KINEM nonlinear
+2 SOLID HEX8 5 8 18 13 12 19 25 21 MAT 1 KINEM nonlinear
+3 SOLID HEX8 7 15 20 8 14 22 24 19 MAT 1 KINEM nonlinear
+4 SOLID HEX8 3 7 8 5 9 14 19 12 MAT 1 KINEM nonlinear
+5 SOLID HEX8 6 17 23 16 8 20 26 18 MAT 1 KINEM nonlinear
+6 SOLID HEX8 2 6 16 10 5 8 18 13 MAT 1 KINEM nonlinear
+7 SOLID HEX8 4 11 17 6 7 15 20 8 MAT 1 KINEM nonlinear
+8 SOLID HEX8 1 4 6 2 3 7 8 5 MAT 1 KINEM nonlinear
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000.0 NUE 0.3

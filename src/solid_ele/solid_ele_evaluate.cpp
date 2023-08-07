@@ -121,6 +121,12 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
       return 0;
     }
+    case DRT::ELEMENTS::struct_calc_nlnstiff_gemm:
+    {
+      DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateNonlinearForceStiffnessMassGEMM(
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
+      return 0;
+    }
     case struct_calc_internalforce:
     {
       DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->EvaluateNonlinearForceStiffnessMass(

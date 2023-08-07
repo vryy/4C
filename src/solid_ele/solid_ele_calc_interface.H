@@ -94,6 +94,25 @@ namespace DRT
           Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
           Epetra_SerialDenseMatrix* mass_matrix) = 0;
 
+      /*!
+       * @brief Evaluate the force vector, stiffness matrix and mass matrix of the element with GEMM
+       *
+       * @param ele (in) : reference to the element
+       * @param solid_material (in) : Solid material of the element
+       * @param discretization  (in) : Reference to the discretization
+       * @param lm (in) : Location vector
+       * @param params (in) : ParameterList for communication between control routine, elements and
+       * materials
+       * @param force_vector (out) : pointer to force vector or nullptr
+       * @param stiffness_matrix (out) : pointer to stiffness matrix or nullptr
+       * @param mass_matrix (out) : pointer to mass matrix or nullptr
+       */
+      virtual void EvaluateNonlinearForceStiffnessMassGEMM(const DRT::Element& ele,
+          MAT::So3Material& solid_material, const DRT::Discretization& discretization,
+          const std::vector<int>& lm, Teuchos::ParameterList& params,
+          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
+          Epetra_SerialDenseMatrix* mass_matrix) = 0;
+
       virtual void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) = 0;
 

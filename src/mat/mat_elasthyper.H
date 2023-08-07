@@ -241,7 +241,6 @@ namespace MAT
     /// evaluate for GEMM
     void EvaluateGEMM(LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                  ///< Constitutive matrix
-        double* density,                             ///< Density
         LINALG::Matrix<6, 1>* glstrain_m,            ///< Green-Lagrange strain at t_{n+1/2}
         LINALG::Matrix<6, 1>* glstrain_new,          ///< Green-Lagrange strain at t_{n+1}
         LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
