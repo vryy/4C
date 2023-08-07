@@ -20,7 +20,6 @@
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_std.H"
 #include "baci_scatra_ele_parameter_timint.H"
-#include "baci_so3_utils.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
