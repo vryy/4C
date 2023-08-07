@@ -198,8 +198,9 @@ before_script:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
     - '*.log'
+    - coverage_report/
     when: always
-    expire_in: 1 day
+    expire_in: 30 days
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "3"
 
