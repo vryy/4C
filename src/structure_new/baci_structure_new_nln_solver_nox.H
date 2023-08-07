@@ -76,7 +76,7 @@ namespace STR
         const NOX::StatusTest::Generic& GetOStatusTest() const
         {
           CheckInitSetup();
-          if (ostatus_.is_null()) dserror("The outer status test object is not defined!");
+          dsassert(!ostatus_.is_null(), "The outer status test object is not defined!");
           return *ostatus_;
         }
 

@@ -37,7 +37,7 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildIntegrator(
   Teuchos::RCP<STR::Integrator> int_ptr = Teuchos::null;
   int_ptr = BuildImplicitIntegrator(datasdyn);
   if (int_ptr.is_null()) int_ptr = BuildExplicitIntegrator(datasdyn);
-  if (int_ptr.is_null()) dserror("We could not find a suitable dynamic integrator (Dynamic Type).");
+  dsassert(!int_ptr.is_null(), "We could not find a suitable dynamic integrator (Dynamic Type).");
 
   return int_ptr;
 }

@@ -102,14 +102,11 @@ namespace STR
     /// Check if Init() and Setup() have been called
     inline void CheckInitSetup() const
     {
-      if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+      dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
     }
 
     /// Check if Init() has been called
-    inline void CheckInit() const
-    {
-      if (not IsInit()) dserror("Call Init() first!");
-    }
+    inline void CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
 
    private:
     /** \brief Get the result of the special structural quantity

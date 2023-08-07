@@ -238,7 +238,7 @@ namespace STR
       [[nodiscard]] inline const Teuchos::RCP<STR::ELEMENTS::BeamParamsInterface>
       GetBeamParamsInterfacePtr() const override
       {
-        if (beam_data_ptr_.is_null()) dserror("pointer to beam data container not set!");
+        dsassert(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
         return beam_data_ptr_;
       }
 
@@ -248,7 +248,7 @@ namespace STR
        *  not part of the ParamsInterface. Feel free to add. */
       const Generic& GetModelEvaluator() const
       {
-        if (not model_ptr_) dserror("No reference to the model evaluator available!");
+        dsassert(model_ptr_, "No reference to the model evaluator available!");
 
         return *model_ptr_;
       }
@@ -652,36 +652,36 @@ namespace STR
       //! access the beam data container, if applicable
       inline BeamData& GetBeamData()
       {
-        if (beam_data_ptr_.is_null()) dserror("pointer to beam data container not set!");
+        dsassert(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
         return *beam_data_ptr_;
       }
       inline const Teuchos::RCP<BeamData>& GetBeamDataPtr()
       {
-        if (beam_data_ptr_.is_null()) dserror("pointer to beam data container not set!");
+        dsassert(!beam_data_ptr_.is_null(), "pointer to beam data container not set!");
         return beam_data_ptr_;
       }
 
       //! access the contact data container, if the contact model is active
       inline ContactData& Contact()
       {
-        if (contact_data_ptr_.is_null()) dserror("The contact model is not active!");
+        dsassert(!contact_data_ptr_.is_null(), "The contact model is not active!");
         return *contact_data_ptr_;
       }
       inline const Teuchos::RCP<ContactData>& ContactPtr()
       {
-        if (contact_data_ptr_.is_null()) dserror("The contact model is not active!");
+        dsassert(!contact_data_ptr_.is_null(), "The contact model is not active!");
         return contact_data_ptr_;
       }
 
       //! access the brownian dynamic data container
       inline BrownianDynData& BrownianDyn()
       {
-        if (browniandyn_data_ptr_.is_null()) dserror("The brownian dynamic model is not active!");
+        dsassert(!browniandyn_data_ptr_.is_null(), "The brownian dynamic model is not active!");
         return *browniandyn_data_ptr_;
       }
       inline const Teuchos::RCP<BrownianDynData>& BrownianDynPtr()
       {
-        if (browniandyn_data_ptr_.is_null()) dserror("The brownian dynamic model is not active!");
+        dsassert(!browniandyn_data_ptr_.is_null(), "The brownian dynamic model is not active!");
         return browniandyn_data_ptr_;
       }
       //!@}
@@ -743,14 +743,11 @@ namespace STR
       //! Checks the init and setup status
       inline void CheckInitSetup() const
       {
-        if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+        dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const
-      {
-        if (!IsInit()) dserror("Init() has not been called, yet!");
-      }
+      inline void CheckInit() const { dsassert(IsInit(), "Init() has not been called, yet!"); }
 
      private:
       //! fill the normtype maps
@@ -1042,14 +1039,11 @@ namespace STR
       //! Checks the init and setup status
       inline void CheckInitSetup() const
       {
-        if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+        dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const
-      {
-        if (!IsInit()) dserror("Init() has not been called, yet!");
-      }
+      inline void CheckInit() const { dsassert(IsInit(), "Init() has not been called, yet!"); }
 
      private:
       bool isinit_;
@@ -1237,14 +1231,11 @@ namespace STR
       //! Checks the init and setup status
       inline void CheckInitSetup() const
       {
-        if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+        dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const
-      {
-        if (!IsInit()) dserror("Init() has not been called, yet!");
-      }
+      inline void CheckInit() const { dsassert(IsInit(), "Init() has not been called, yet!"); }
 
       //! Time integration strategy
       inline const STR::TIMINT::Base& TimInt() const
@@ -1397,14 +1388,11 @@ namespace STR
       //! Checks the init and setup status
       inline void CheckInitSetup() const
       {
-        if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+        dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
       }
 
       //! Checks the init status
-      inline void CheckInit() const
-      {
-        if (!IsInit()) dserror("Init() has not been called, yet!");
-      }
+      inline void CheckInit() const { dsassert(IsInit(), "Init() has not been called, yet!"); }
 
      private:
       bool isinit_;

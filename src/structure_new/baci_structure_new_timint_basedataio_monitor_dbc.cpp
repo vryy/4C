@@ -60,7 +60,7 @@ void STR::TIMINT::ParamsMonitorDBC::Init(
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsMonitorDBC::Setup()
 {
-  if (not IsInit()) dserror("Init() has not been called, yet!");
+  dsassert(IsInit(), "Init() has not been called, yet!");
 
   // Nothing to do here at the moment
 
@@ -71,5 +71,5 @@ void STR::TIMINT::ParamsMonitorDBC::Setup()
  *-----------------------------------------------------------------------------------------------*/
 void STR::TIMINT::ParamsMonitorDBC::CheckInitSetup() const
 {
-  if (not IsInit() or not IsSetup()) dserror("Call Init() and Setup() first!");
+  dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
 }

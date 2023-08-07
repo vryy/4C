@@ -88,15 +88,12 @@ namespace STR
       inline const bool& IsSetup() const { return issetup_; };
 
       /// Check if Init() has been called, yet.
-      inline void CheckInit() const
-      {
-        if (!IsInit()) dserror("Init() has not been called, yet!");
-      }
+      inline void CheckInit() const { dsassert(IsInit(), "Init() has not been called, yet!"); }
 
       /// Check if Init() and Setup() have been called, yet.
       inline void CheckInitSetup() const
       {
-        if (!IsInit() or !IsSetup()) dserror("Call Init() and Setup() first!");
+        dsassert(IsInit() and IsSetup(), "Call Init() and Setup() first!");
       }
 
      public:

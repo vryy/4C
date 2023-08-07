@@ -153,7 +153,7 @@ namespace STR
       {
         CheckInitSetup();
 
-        if (energyfile_.is_null()) dserror("energy file stream uninitialized");
+        dsassert(!energyfile_.is_null(), "energy file stream uninitialized");
 
         return *energyfile_;
       };

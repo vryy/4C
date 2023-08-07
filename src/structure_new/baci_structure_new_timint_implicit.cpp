@@ -154,7 +154,7 @@ void STR::TIMINT::Implicit::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
+  dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
 
   // cast away const-qualifier for building the Nox Vector
   Teuchos::RCP<Epetra_Vector> mutable_disiterinc =
@@ -195,7 +195,7 @@ void STR::TIMINT::Implicit::Evaluate()
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();
 
   auto* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
+  dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
 
   // you definitely have to evaluate here. You might be called from a coupled
   // problem and the group might not be aware, that a different state than

@@ -601,7 +601,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
     /* use the last converged state to construct a new solution vector */
     case DRT::UTILS::VecInitType::last_time_step:
     {
-      if (modeleval_ptr.is_null()) dserror("We need access to the STR::ModelEvaluator object!");
+      dsassert(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
       std::map<INPAR::STR::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
@@ -619,7 +619,7 @@ Teuchos::RCP<NOX::Epetra::Vector> STR::TIMINT::BaseDataGlobalState::CreateGlobal
     /* use the current global state to construct a new solution vector */
     case DRT::UTILS::VecInitType::init_current_state:
     {
-      if (modeleval_ptr.is_null()) dserror("We need access to the STR::ModelEvaluator object!");
+      dsassert(!modeleval_ptr.is_null(), "We need access to the STR::ModelEvaluator object!");
 
       std::map<INPAR::STR::ModelType, int>::const_iterator ci;
       for (ci = model_block_id_.begin(); ci != model_block_id_.end(); ++ci)
@@ -1093,7 +1093,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Extra
 Teuchos::RCP<const CORE::LINALG::SparseMatrix>
 STR::TIMINT::BaseDataGlobalState::GetJacobianDisplBlock() const
 {
-  if (jac_.is_null()) dserror("The jacobian is not initialized!");
+  dsassert(!jac_.is_null(), "The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
 }
 
@@ -1101,7 +1101,7 @@ STR::TIMINT::BaseDataGlobalState::GetJacobianDisplBlock() const
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::JacobianDisplBlock()
 {
-  if (jac_.is_null()) dserror("The jacobian is not initialized!");
+  dsassert(!jac_.is_null(), "The jacobian is not initialized!");
   return ExtractDisplBlock(*jac_);
 }
 
@@ -1110,7 +1110,7 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::Jacob
 Teuchos::RCP<const CORE::LINALG::SparseMatrix> STR::TIMINT::BaseDataGlobalState::GetJacobianBlock(
     const INPAR::STR::ModelType mt, const DRT::UTILS::MatBlockType bt) const
 {
-  if (jac_.is_null()) dserror("The jacobian is not initialized!");
+  dsassert(!jac_.is_null(), "The jacobian is not initialized!");
 
   return ExtractModelBlock(*jac_, mt, bt);
 }

@@ -125,15 +125,9 @@ namespace STR
 
     inline const Epetra_Comm& Comm() const;
 
-    inline void ThrowIfNotInit() const
-    {
-      if (not isinit_) dserror("Call Init() first!");
-    }
+    inline void ThrowIfNotInit() const { dsassert(isinit_, "Call Init() first!"); }
 
-    inline void ThrowIfNotSetup() const
-    {
-      if (not issetup_) dserror("Call Setup() first!");
-    }
+    inline void ThrowIfNotSetup() const { dsassert(issetup_, "Call Setup() first!"); }
 
    private:
     DRT::DiscretizationInterface* discret_ptr_ = NULL;
