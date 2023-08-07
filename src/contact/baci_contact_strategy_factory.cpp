@@ -632,7 +632,7 @@ void CONTACT::STRATEGY::Factory::ReadAndCheckInput(Teuchos::ParameterList& param
         "Everything which is related to a special time integration scheme has to be moved to the"
         " related scheme. Don't do it here! -- hiermeier 02/2016");
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-    params.set<int>("PROBTYPE", INPAR::CONTACT::poro);
+    params.set<int>("PROBTYPE", INPAR::CONTACT::poroelast);
     //    //porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
     //    double porotimefac = 1/(stru.sublist("ONESTEPTHETA").get<double>("THETA") *
     //    stru.get<double>("TIMESTEP")); params.set<double> ("porotimefac", porotimefac);
@@ -713,7 +713,8 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     friplus = true;
 
   // only for poro
-  bool isporo = (params.get<int>("PROBTYPE") == INPAR::CONTACT::poro);
+  bool isporo = (params.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast) ||
+                (params.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra);
   bool structmaster = false;
   bool structslave = false;
   bool isanyselfcontact = false;
@@ -1640,7 +1641,8 @@ Teuchos::RCP<CONTACT::CoAbstractStrategy> CONTACT::STRATEGY::Factory::BuildStrat
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
-    if (params.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+    if (params.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+        params.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
     {
       dserror("This contact strategy is not yet considered!");
       //      strategy_ptr = Teuchos::rcp(new PoroLagrangeStrategy(

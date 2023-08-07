@@ -5876,7 +5876,8 @@ void CONTACT::CoIntegrator::IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::
       // PORO stuff
       //*******************************
       bool poroprob = false;
-      if (imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+      if (imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+          imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
         if (imortar_.get<bool>("CONTACTNOPEN"))  // evaluate additional terms just in case of no
                                                  // penectration condition
           poroprob = true;
@@ -6073,7 +6074,8 @@ void CONTACT::CoIntegrator::IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::
       // PORO stuff
       //*******************************
       bool poroprob = false;
-      if (imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+      if (imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+          imortar_.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
         if (imortar_.get<bool>("CONTACTNOPEN"))  // evaluate additional terms just in case of no
                                                  // penectration condition
           poroprob = true;

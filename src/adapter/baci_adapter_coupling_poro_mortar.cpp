@@ -55,7 +55,18 @@ void ADAPTER::CouplingPoroMortar::ReadMortarCondition(Teuchos::RCP<DRT::Discreti
       mastergnodes, slavegnodes, masterelements, slaveelements);
 
   // Set Problem Type to Poro
-  input.set<int>("PROBTYPE", INPAR::CONTACT::poro);
+  switch (DRT::Problem::Instance()->GetProblemType())
+  {
+    case ProblemType::poroelast:
+      input.set<int>("PROBTYPE", INPAR::CONTACT::poroelast);
+      break;
+    case ProblemType::poroscatra:
+      input.set<int>("PROBTYPE", INPAR::CONTACT::poroscatra);
+      break;
+    default:
+      dserror("Invalid poro problem is specified");
+      break;
+  }
 
   // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
   const Teuchos::ParameterList& stru = DRT::Problem::Instance()->StructuralDynamicParams();

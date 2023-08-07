@@ -32,6 +32,7 @@
 #include "baci_mortar_node.H"
 #include "baci_mortar_utils.H"
 #include "baci_nurbs_discret.H"
+#include "baci_poroelast_scatra_utils.H"
 #include "baci_poroelast_utils.H"
 #include "baci_rebalance.H"
 
@@ -83,6 +84,7 @@ MORTAR::InterfaceDataContainer::InterfaceDataContainer()
       inttime_interface_(0.0),
       nurbs_(false),
       poro_(false),
+      poroscatra_(false),
       ehl_(false),
       isinit_(false)
 {
@@ -131,6 +133,7 @@ MORTAR::MortarInterface::MortarInterface(Teuchos::RCP<MORTAR::InterfaceDataConta
       inttime_interface_(interfaceData_->IntTimeInterface()),
       nurbs_(interfaceData_->IsNurbs()),
       poro_(interfaceData_->IsPoro()),
+      poroscatra_(interfaceData_->IsPoroScatra()),
       ehl_(interfaceData_->IsEhl())
 {
   if (not interfaceData_->IsInit())
@@ -198,6 +201,7 @@ MORTAR::MortarInterface::MortarInterface(Teuchos::RCP<InterfaceDataContainer> in
       inttime_interface_(interfaceData_->IntTimeInterface()),
       nurbs_(interfaceData_->IsNurbs()),
       poro_(interfaceData_->IsPoro()),
+      poroscatra_(interfaceData_->IsPoroScatra()),
       ehl_(interfaceData_->IsEhl())
 {
   interfaceData_->SetIsInit(true);
@@ -220,8 +224,6 @@ MORTAR::MortarInterface::MortarInterface(Teuchos::RCP<InterfaceDataContainer> in
 
   CreateInterfaceDiscretization();
   SetShapeFunctionType();
-
-  poro_ = false;
 }
 
 /*----------------------------------------------------------------------*
@@ -576,7 +578,12 @@ void MORTAR::MortarInterface::FillComplete(
   // ghost also parent elements according to the ghosting strategy of the interface (atm just for
   // poro)
   if (poro_)
-    POROELAST::UTILS::CreateVolumeGhosting(Discret());
+  {
+    if (poroscatra_)
+      POROELASTSCATRA::UTILS::CreateVolumeGhosting(Discret());
+    else
+      POROELAST::UTILS::CreateVolumeGhosting(Discret());
+  }
   else if (imortar_.isParameter("STRATEGY"))
   {
     if (DRT::INPUT::IntegralValue<INPAR::MORTAR::AlgorithmType>(imortar_, "ALGORITHM") ==
