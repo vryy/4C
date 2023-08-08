@@ -10,6 +10,7 @@
 #include "lib_element_integration_select.H"
 #include "lib_element.H"
 #include "lib_voigt_notation.H"
+#include "lib_linedefinition.H"
 
 int STR::UTILS::DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distype)
 {
@@ -140,4 +141,60 @@ LINALG::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
   LINALG::Matrix<6, 1> ea;
   ::UTILS::VOIGT::Strains::MatrixToVector(ea_matrix, ea);
   return ea;
+}
+
+int STR::UTILS::READELEMENT::ReadElementMaterial(DRT::INPUT::LineDefinition* linedef)
+{
+  int material = 0;
+  linedef->ExtractInt("MAT", material);
+  return material;
+}
+
+INPAR::STR::KinemType STR::UTILS::READELEMENT::ReadElementKinematicType(
+    DRT::INPUT::LineDefinition* linedef)
+{
+  std::string kinem;
+  linedef->ExtractString("KINEM", kinem);
+  if (kinem == "nonlinear")
+    return INPAR::STR::kinem_nonlinearTotLag;
+  else if (kinem == "linear")
+    return INPAR::STR::kinem_linear;
+  else
+  {
+    dserror("unknown kinematic type %s", kinem.c_str());
+    return INPAR::STR::kinem_vague;
+  }
+}
+
+void STR::UTILS::READELEMENT::ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef,
+    ::STR::ELEMENTS::EASType& eastype, std::set<INPAR::STR::EleTech>& eletech)
+{
+  std::string type;
+  linedef->ExtractString("EAS", type);
+  if (type == "mild")
+  {
+    eastype = ::STR::ELEMENTS::EASType::eastype_h8_9;
+    eletech.insert(INPAR::STR::EleTech::eas);
+  }
+  else if (type == "full")
+  {
+    eastype = ::STR::ELEMENTS::EASType::eastype_h8_21;
+    eletech.insert(INPAR::STR::EleTech::eas);
+  }
+  else if (type == "none")
+  {
+    eastype = ::STR::ELEMENTS::EASType::soh8_easnone;
+  }
+  else
+    dserror("unrecognized eas type for hex8: %s", type.c_str());
+}
+
+void STR::UTILS::NodalBlockInformationSolid(
+    DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+{
+  // todo: to this combined for 2D and 3D
+  numdf = 3;
+  dimns = 6;
+
+  nv = 3;
 }

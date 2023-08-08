@@ -2036,6 +2036,12 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
     case DRT::ELEMENTS::struct_gauss_point_data_output:
       action = "struct_gauss_point_data_output";
       break;
+    case DRT::ELEMENTS::struct_poro_calc_fluidcoupling:
+      action = "struct_poro_calc_fluidcoupling";
+      break;
+    case DRT::ELEMENTS::struct_poro_calc_scatracoupling:
+      action = "struct_poro_calc_scatracoupling";
+      break;
     default:
       action = "unknown";
       break;

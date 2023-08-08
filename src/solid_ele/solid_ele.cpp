@@ -175,11 +175,7 @@ DRT::ParObject* DRT::ELEMENTS::SolidType::Create(const std::vector<char>& data)
 void DRT::ELEMENTS::SolidType::NodalBlockInformation(
     Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  // todo: to this combined for 2D and 3D
-  numdf = 3;
-  dimns = 6;
-
-  nv = 3;
+  STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
 
 Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::SolidType::ComputeNullSpace(
@@ -252,14 +248,14 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Lines()
                             // (calculated in evaluate)
   {
     // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> surfaces(1);
-    surfaces[0] = Teuchos::rcp(this, false);
-    return surfaces;
+    std::vector<Teuchos::RCP<Element>> lines(1);
+    lines[0] = Teuchos::rcp(this, false);
+    return lines;
   }
   else
   {
     dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
+    return DRT::Element::Lines();
   }
 }
 
@@ -273,9 +269,11 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Surfaces()
 
   // so we have to allocate new line elements:
 
-  if (NumSurface() > 1)  // 2D boundary element and 3D parent element
+  if (NumSurface() > 1)
+  {  // 2D boundary element and 3D parent element
     return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, Solid>(
         DRT::UTILS::buildSurfaces, this);
+  }
   else if (NumSurface() == 1)  // 2D boundary element and 2D parent element -> body load
                                // (calculated in evaluate)
   {
@@ -303,7 +301,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Volumes()
   else  //
   {
     dserror("Volumes() does not exist for 1D/2D-elements");
-    return DRT::Element::Surfaces();
+    return DRT::Element::Volumes();
   }
 }
 
@@ -377,46 +375,20 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 {
   // set discretization type
   distype_ = DRT::StringToDistype(distype);
-  solid_interface_ = SolidFactory::ProvideImpl(this);
+  solid_interface_ = SolidFactory::ProvideImpl(this, GetEleTech(), GetKinemType(), GetEAStype());
 
   // read number of material model
-  int material = 0;
-  linedef->ExtractInt("MAT", material);
-  SetMaterial(material);
+  SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
   //  SolidMaterial()->Setup(STR::UTILS::DisTypeToNgpOptGaussRule(Shape()), linedef);
 
   // kinematic type
-  std::string kinem;
-  linedef->ExtractString("KINEM", kinem);
-  if (kinem == "nonlinear")
-    SetKinematicType(INPAR::STR::kinem_nonlinearTotLag);
-  else if (kinem == "linear")
-    SetKinematicType(INPAR::STR::kinem_linear);
-  else
-    dserror("unknown kinematic type %s", kinem.c_str());
+  SetKinematicType(STR::UTILS::READELEMENT::ReadElementKinematicType(linedef));
 
   if (linedef->HaveNamed("EAS"))
   {
-    std::string eastype;
-    linedef->ExtractString("EAS", eastype);
     if (Shape() == DRT::Element::hex8)
     {
-      if (eastype == "mild")
-      {
-        eastype_ = ::STR::ELEMENTS::EASType::eastype_h8_9;
-        eletech_.insert(INPAR::STR::EleTech::eas);
-      }
-      else if (eastype == "full")
-      {
-        eastype_ = ::STR::ELEMENTS::EASType::eastype_h8_21;
-        eletech_.insert(INPAR::STR::EleTech::eas);
-      }
-      else if (eastype == "none")
-      {
-        eastype_ = ::STR::ELEMENTS::EASType::soh8_easnone;
-      }
-      else
-        dserror("unrecognized eas type for hex8: %s", eastype.c_str());
+      STR::UTILS::READELEMENT::ReadAndSetEAS(linedef, eastype_, eletech_);
     }
     else
       dserror("no EAS allowed for this element shape");
@@ -427,7 +399,8 @@ bool DRT::ELEMENTS::Solid::ReadElement(
     if (Shape() == DRT::Element::hex8) eletech_.insert(INPAR::STR::EleTech::fbar);
   }
 
-  DRT::ELEMENTS::SolidFactory::ProvideImpl(this)->Setup(*SolidMaterial(), linedef);
+  DRT::ELEMENTS::SolidFactory::ProvideImpl(this, GetEleTech(), GetKinemType(), GetEAStype())
+      ->Setup(*SolidMaterial(), linedef);
   return true;
 }
 

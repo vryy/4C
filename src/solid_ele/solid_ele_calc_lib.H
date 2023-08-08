@@ -16,6 +16,8 @@
 #include "discretization_fem_general_utils_gausspoints.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "solid_ele.H"
+#include "mat_fluidporo_multiphase.H"
+#include "mat_structporo.H"
 #include "lib_utils.H"
 #include "mat_so3_material.H"
 #include "lib_voigt_notation.H"
@@ -39,6 +41,75 @@ namespace DRT::ELEMENTS::DETAIL
 
 namespace DRT::ELEMENTS
 {
+  inline void LumpMatrix(Epetra_SerialDenseMatrix& matrix)
+  {
+    dsassert(matrix.N() == matrix.M(), "The provided mass matrix is not a square matrix!");
+
+    // we assume mass is a square matrix
+    for (int c = 0; c < matrix.N(); ++c)  // parse columns
+    {
+      double d = 0.0;
+      for (int r = 0; r < matrix.M(); ++r)  // parse rows
+      {
+        d += matrix(r, c);  // accumulate row entries
+        matrix(r, c) = 0.0;
+      }
+      matrix(c, c) = d;  // apply sum of row entries on diagonal
+    }
+  }
+
+  template <typename T>
+  inline std::vector<char>& GetMutableStressData(const T& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStressDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("stress");
+    }
+  }
+
+  template <typename T>
+  inline std::vector<char>& GetMutableStrainData(const T& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return *ele.ParamsInterface().MutableStrainDataPtr();
+    }
+    else
+    {
+      return *params.get<Teuchos::RCP<std::vector<char>>>("strain");
+    }
+  }
+
+  template <typename T>
+  inline INPAR::STR::StressType GetIOStressType(const T& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStressOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress");
+    }
+  }
+
+  template <typename T>
+  inline INPAR::STR::StrainType GetIOStrainType(const T& ele, const Teuchos::ParameterList& params)
+  {
+    if (ele.IsParamsInterface())
+    {
+      return ele.ParamsInterface().GetStrainOutputType();
+    }
+    else
+    {
+      return DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain");
+    }
+  }
+
   template <DRT::Element::DiscretizationType distype>
   constexpr auto GetGaussRuleMassMatrix()
   {
@@ -187,8 +258,19 @@ namespace DRT::ELEMENTS
   {
     double determinant_;
     LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> inverse_jacobian_;
-    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> n_xyz_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> N_XYZ_;
   };
+
+
+  template <DRT::Element::DiscretizationType distype>
+  struct SpatialMaterialMapping
+  {
+    double determinant_deformation_gradient_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> deformation_gradient_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> inverse_deformation_gradient_;
+  };
+
+
 
   /*!
    * @brief Evaluates the jacobian mapping of the element
@@ -196,7 +278,7 @@ namespace DRT::ELEMENTS
    * @tparam distype : Discretization type
    * @param shapefcns (in) : Shape functions and derivatives evaluated at the respective point in
    * the parameter space
-   * @param nodal_coordniates (in) : Reference and current coordinates of the nodes of the element
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
    * @param gp (in) : Id of the Gauss point
    * @return JacobianMapping<distype> : An object holding quantities of the jacobian mapping
    * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ, integration
@@ -205,92 +287,141 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   JacobianMapping<distype> EvaluateJacobianMapping(
       const ShapeFunctionsAndDerivatives<distype>& shapefcns,
-      const NodalCoordinates<distype>& nodal_coordniates)
+      const NodalCoordinates<distype>& nodal_coordinates)
   {
     JacobianMapping<distype> jacobian;
 
-    jacobian.inverse_jacobian_.Multiply(shapefcns.derivatives_, nodal_coordniates.reference_);
+    jacobian.inverse_jacobian_.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_);
     jacobian.determinant_ = jacobian.inverse_jacobian_.Invert();
-    jacobian.n_xyz_.Multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
+    jacobian.N_XYZ_.Multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
 
     return jacobian;
   }
 
   template <DRT::Element::DiscretizationType distype>
   double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<distype>& shapefcns,
-      const NodalCoordinates<distype>& nodal_coordniates)
+      const NodalCoordinates<distype>& nodal_coordinates)
   {
     LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> jacobian;
-    jacobian.Multiply(shapefcns.derivatives_, nodal_coordniates.reference_);
+    jacobian.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_);
 
     return jacobian.Determinant();
   }
 
   template <DRT::Element::DiscretizationType distype>
-  struct Strains
+  struct CauchyGreen
   {
-    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> defgrd_;
-    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> rcg_;
-    LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> right_cauchy_green_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> inverse_right_cauchy_green;
   };
+
+  /*!
+   * @brief Evaluates the mapping between the spatial and material configuration of the element
+   *
+   * @tparam distype : Discretization type
+   * @param jacobian_mapping (in) : An object holding quantities of the jacobian mapping
+   * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ)
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @param scale_defgrd (in) : scaling for deformation gradient
+   * @param kinematictype (in) : kinematic type of element
+   * @return SpatialMaterialMapping<distype> : An object holding quantities of the spatial material
+   * mapping (deformation_gradient, inverse_deformation_gradient,
+   * determinant_deformation_gradient)
+   */
+  template <DRT::Element::DiscretizationType distype>
+  SpatialMaterialMapping<distype> EvaluateSpatialMaterialMapping(
+      const JacobianMapping<distype>& jacobian_mapping,
+      const NodalCoordinates<distype>& nodal_coordinates, const double scale_defgrd = 1.0,
+      const INPAR::STR::KinemType& kinematictype = INPAR::STR::kinem_nonlinearTotLag)
+  {
+    SpatialMaterialMapping<distype> spatial_material_mapping;
+    spatial_material_mapping.deformation_gradient_.Clear();
+
+    if (kinematictype == INPAR::STR::kinem_linear)
+    {
+      for (int i = 0; i < DETAIL::nsd<distype>; i++)
+        spatial_material_mapping.deformation_gradient_(i, i) = 1.0;
+    }
+    else
+    {
+      spatial_material_mapping.deformation_gradient_.MultiplyTT(
+          scale_defgrd, nodal_coordinates.current_, jacobian_mapping.N_XYZ_);
+    }
+    spatial_material_mapping.inverse_deformation_gradient_.Invert(
+        spatial_material_mapping.deformation_gradient_);
+    spatial_material_mapping.determinant_deformation_gradient_ =
+        spatial_material_mapping.deformation_gradient_.Determinant();
+
+    return spatial_material_mapping;
+  }
+
 
   /*!
    * @brief Evaluates Green Lagrange strain from right cauchy green tensor
    *
    * GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param strains (in/out) : Strain measures
    * Cauchy-Green deformation tensor, Green-Lagrange strain tensor)
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  void EvaluateGreenLagrangeStrain(Strains<distype>& strains)
+  LINALG::Matrix<DETAIL::numstr<distype>, 1> EvaluateGreenLagrangeStrain(
+      CauchyGreen<distype> cauchygreen)
   {
-    strains.gl_strain_(0) = 0.5 * (strains.rcg_(0, 0) - 1.0);
-    strains.gl_strain_(1) = 0.5 * (strains.rcg_(1, 1) - 1.0);
-    strains.gl_strain_(2) = 0.5 * (strains.rcg_(2, 2) - 1.0);
-    strains.gl_strain_(3) = strains.rcg_(0, 1);
-    strains.gl_strain_(4) = strains.rcg_(1, 2);
-    strains.gl_strain_(5) = strains.rcg_(2, 0);
+    LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain;
+
+    gl_strain(0) = 0.5 * (cauchygreen.right_cauchy_green_(0, 0) - 1.0);
+    gl_strain(1) = 0.5 * (cauchygreen.right_cauchy_green_(1, 1) - 1.0);
+    gl_strain(2) = 0.5 * (cauchygreen.right_cauchy_green_(2, 2) - 1.0);
+    gl_strain(3) = cauchygreen.right_cauchy_green_(0, 1);
+    gl_strain(4) = cauchygreen.right_cauchy_green_(1, 2);
+    gl_strain(5) = cauchygreen.right_cauchy_green_(2, 0);
+
+    return gl_strain;
   }
 
+
   /*!
-   * @brief Evaluates strain measures
+   * @brief Evaluates right Cauchy-Green deformation tensor and its inverse
    *
-   * @tparam distype
-   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
-   * @param jacobian_mapping (in) : Quantities of the jacobian mapping
-   * @param scale_defgrd (in) : Optional scalar factor for deformation gradient
-   * @return Strains<distype> : Strain measures of the element (deformation gradient, right
-   * Cauchy-Green deformation tensor, Green-Lagrange strain tensor)
+   * @tparam distype: Discretization type
+   * @param spatial_material_mapping (in) : An object holding quantities of the spatial material
+   * mapping (deformation_gradient, inverse_deformation_gradient,
+   * determinant_deformation_gradient)
+   * @return CauchyGreen<distype> : An object holding the right Cauchy-Green deformation tensor and
+   * its inverse)
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  Strains<distype> EvaluateStrains(const NodalCoordinates<distype>& nodal_coordinates,
-      const JacobianMapping<distype>& jacobian_mapping, double scale_defgrd = 1.0)
+  CauchyGreen<distype> EvaluateCauchyGreen(SpatialMaterialMapping<distype> spatial_material_mapping)
   {
-    Strains<distype> strains;
+    CauchyGreen<distype> cauchygreen;
 
-    strains.defgrd_.MultiplyTT(scale_defgrd, nodal_coordinates.current_, jacobian_mapping.n_xyz_);
-    strains.rcg_.MultiplyTN(strains.defgrd_, strains.defgrd_);
-    EvaluateGreenLagrangeStrain(strains);
+    cauchygreen.right_cauchy_green_.MultiplyTN(spatial_material_mapping.deformation_gradient_,
+        spatial_material_mapping.deformation_gradient_);
 
-    return strains;
+    cauchygreen.inverse_right_cauchy_green.Invert(cauchygreen.right_cauchy_green_);
+
+    return cauchygreen;
   }
+
 
   /*!
    * @brief Evaluates the strain gradient (B-Operator) of the specified element
    *
    * @tparam distype
    * @param jacobian_mapping (in) : Quantities of the jacobian mapping
-   * @param strains (in) : Strain measures of the element
+   * @param spatial_material_mapping (in) :An object holding quantities of the spatial material
+   * mapping (deformation_gradient, inverse_deformation_gradient,
+   * determinant_deformation_gradient)
    * @return LINALG::Matrix<numstr<distype>, nsd<distype> * nen<distype>> : B-Operator
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
   LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>
-  EvaluateStrainGradient(
-      const JacobianMapping<distype>& jacobian_mapping, const Strains<distype>& strains)
+  EvaluateStrainGradient(const JacobianMapping<distype>& jacobian_mapping,
+      const SpatialMaterialMapping<distype>& spatial_material_mapping)
   {
     // B-operator
     LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>> Bop;
@@ -299,27 +430,36 @@ namespace DRT::ELEMENTS
       for (int d = 0; d < DETAIL::nsd<distype>; ++d)
         for (int e = 0; e < DETAIL::nsd<distype>; ++e)
           Bop(d, DETAIL::nsd<distype> * i + e) =
-              strains.defgrd_(e, d) * jacobian_mapping.n_xyz_(d, i);
+              spatial_material_mapping.deformation_gradient_(e, d) * jacobian_mapping.N_XYZ_(d, i);
 
       // TODO: make this work for 2D
-      Bop(3, DETAIL::nsd<distype> * i + 0) = strains.defgrd_(0, 0) * jacobian_mapping.n_xyz_(1, i) +
-                                             strains.defgrd_(0, 1) * jacobian_mapping.n_xyz_(0, i);
-      Bop(3, DETAIL::nsd<distype> * i + 1) = strains.defgrd_(1, 0) * jacobian_mapping.n_xyz_(1, i) +
-                                             strains.defgrd_(1, 1) * jacobian_mapping.n_xyz_(0, i);
-      Bop(3, DETAIL::nsd<distype> * i + 2) = strains.defgrd_(2, 0) * jacobian_mapping.n_xyz_(1, i) +
-                                             strains.defgrd_(2, 1) * jacobian_mapping.n_xyz_(0, i);
-      Bop(4, DETAIL::nsd<distype> * i + 0) = strains.defgrd_(0, 1) * jacobian_mapping.n_xyz_(2, i) +
-                                             strains.defgrd_(0, 2) * jacobian_mapping.n_xyz_(1, i);
-      Bop(4, DETAIL::nsd<distype> * i + 1) = strains.defgrd_(1, 1) * jacobian_mapping.n_xyz_(2, i) +
-                                             strains.defgrd_(1, 2) * jacobian_mapping.n_xyz_(1, i);
-      Bop(4, DETAIL::nsd<distype> * i + 2) = strains.defgrd_(2, 1) * jacobian_mapping.n_xyz_(2, i) +
-                                             strains.defgrd_(2, 2) * jacobian_mapping.n_xyz_(1, i);
-      Bop(5, DETAIL::nsd<distype> * i + 0) = strains.defgrd_(0, 2) * jacobian_mapping.n_xyz_(0, i) +
-                                             strains.defgrd_(0, 0) * jacobian_mapping.n_xyz_(2, i);
-      Bop(5, DETAIL::nsd<distype> * i + 1) = strains.defgrd_(1, 2) * jacobian_mapping.n_xyz_(0, i) +
-                                             strains.defgrd_(1, 0) * jacobian_mapping.n_xyz_(2, i);
-      Bop(5, DETAIL::nsd<distype> * i + 2) = strains.defgrd_(2, 2) * jacobian_mapping.n_xyz_(0, i) +
-                                             strains.defgrd_(2, 0) * jacobian_mapping.n_xyz_(2, i);
+      Bop(3, DETAIL::nsd<distype> * i + 0) =
+          spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ_(1, i) +
+          spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ_(0, i);
+      Bop(3, DETAIL::nsd<distype> * i + 1) =
+          spatial_material_mapping.deformation_gradient_(1, 0) * jacobian_mapping.N_XYZ_(1, i) +
+          spatial_material_mapping.deformation_gradient_(1, 1) * jacobian_mapping.N_XYZ_(0, i);
+      Bop(3, DETAIL::nsd<distype> * i + 2) =
+          spatial_material_mapping.deformation_gradient_(2, 0) * jacobian_mapping.N_XYZ_(1, i) +
+          spatial_material_mapping.deformation_gradient_(2, 1) * jacobian_mapping.N_XYZ_(0, i);
+      Bop(4, DETAIL::nsd<distype> * i + 0) =
+          spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ_(2, i) +
+          spatial_material_mapping.deformation_gradient_(0, 2) * jacobian_mapping.N_XYZ_(1, i);
+      Bop(4, DETAIL::nsd<distype> * i + 1) =
+          spatial_material_mapping.deformation_gradient_(1, 1) * jacobian_mapping.N_XYZ_(2, i) +
+          spatial_material_mapping.deformation_gradient_(1, 2) * jacobian_mapping.N_XYZ_(1, i);
+      Bop(4, DETAIL::nsd<distype> * i + 2) =
+          spatial_material_mapping.deformation_gradient_(2, 1) * jacobian_mapping.N_XYZ_(2, i) +
+          spatial_material_mapping.deformation_gradient_(2, 2) * jacobian_mapping.N_XYZ_(1, i);
+      Bop(5, DETAIL::nsd<distype> * i + 0) =
+          spatial_material_mapping.deformation_gradient_(0, 2) * jacobian_mapping.N_XYZ_(0, i) +
+          spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ_(2, i);
+      Bop(5, DETAIL::nsd<distype> * i + 1) =
+          spatial_material_mapping.deformation_gradient_(1, 2) * jacobian_mapping.N_XYZ_(0, i) +
+          spatial_material_mapping.deformation_gradient_(1, 0) * jacobian_mapping.N_XYZ_(2, i);
+      Bop(5, DETAIL::nsd<distype> * i + 2) =
+          spatial_material_mapping.deformation_gradient_(2, 2) * jacobian_mapping.N_XYZ_(0, i) +
+          spatial_material_mapping.deformation_gradient_(2, 0) * jacobian_mapping.N_XYZ_(2, i);
     }
 
     return Bop;
@@ -338,7 +478,10 @@ namespace DRT::ELEMENTS
    *
    * @tparam distype
    * @param material (in) : Reference to the material
-   * @param strains (in) : Strain measures of the element
+   * @param spatial_material_mapping (in) : An object holding quantities of the spatial material
+   * mapping (deformation_gradient, inverse_deformation_gradient,
+   * determinant_deformation_gradient)
+   * @param gl_strain (in) : Green Lagrange strain
    * @param params (in) : List of additional parameter to pass quantities from the time integrator
    * to the material
    * @param gp (in) : Gauss point
@@ -348,12 +491,14 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype>
   Stress<distype> EvaluateMaterialStress(MAT::So3Material& material,
-      const Strains<distype>& strains, Teuchos::ParameterList& params, int gp, int eleGID)
+      const SpatialMaterialMapping<distype> spatial_material_mapping,
+      const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain, Teuchos::ParameterList& params,
+      int gp, int eleGID)
   {
     Stress<distype> stress;
 
-    material.Evaluate(
-        &strains.defgrd_, &strains.gl_strain_, params, &stress.pk2_, &stress.cmat_, gp, eleGID);
+    material.Evaluate(&spatial_material_mapping.deformation_gradient_, &gl_strain, params,
+        &stress.pk2_, &stress.cmat_, gp, eleGID);
     return stress;
   }
 
@@ -537,7 +682,8 @@ namespace DRT::ELEMENTS
   }
 
   template <DRT::Element::DiscretizationType distype>
-  void AssembleStrainTypeToMatrixRow(const Strains<distype>& strains,
+  void AssembleStrainTypeToMatrixRow(const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain,
+      const SpatialMaterialMapping<distype> spatial_material_mapping,
       INPAR::STR::StrainType strain_type, Epetra_SerialDenseMatrix& data, int row)
   {
     switch (strain_type)
@@ -545,14 +691,15 @@ namespace DRT::ELEMENTS
       case INPAR::STR::strain_gl:
       {
         LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_stress_like;
-        ::UTILS::VOIGT::Strains::ToStressLike(strains.gl_strain_, gl_strain_stress_like);
+        ::UTILS::VOIGT::Strains::ToStressLike(gl_strain, gl_strain_stress_like);
         AssembleVectorToMatrixRow(gl_strain_stress_like, data, row);
         return;
       }
       case INPAR::STR::strain_ea:
       {
         const LINALG::Matrix<DETAIL::numstr<distype>, 1> ea =
-            STR::UTILS::GreenLagrangeToEulerAlmansi(strains.gl_strain_, strains.defgrd_);
+            STR::UTILS::GreenLagrangeToEulerAlmansi(
+                gl_strain, spatial_material_mapping.deformation_gradient_);
         LINALG::Matrix<DETAIL::numstr<distype>, 1> ea_stress_like;
         ::UTILS::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
         AssembleVectorToMatrixRow(ea_stress_like, data, row);
@@ -568,8 +715,9 @@ namespace DRT::ELEMENTS
 
 
   template <DRT::Element::DiscretizationType distype>
-  void AssembleStressTypeToMatrixRow(const Strains<distype>& strains, const Stress<distype> stress,
-      INPAR::STR::StressType stress_type, Epetra_SerialDenseMatrix& data, int row)
+  void AssembleStressTypeToMatrixRow(const SpatialMaterialMapping<distype> spatial_material_mapping,
+      const Stress<distype> stress, INPAR::STR::StressType stress_type,
+      Epetra_SerialDenseMatrix& data, int row)
   {
     switch (stress_type)
     {
@@ -581,7 +729,8 @@ namespace DRT::ELEMENTS
       case INPAR::STR::stress_cauchy:
       {
         LINALG::Matrix<DETAIL::numstr<distype>, 1> cauchy;
-        STR::UTILS::Pk2ToCauchy(stress.pk2_, strains.defgrd_, cauchy);
+        STR::UTILS::Pk2ToCauchy(
+            stress.pk2_, spatial_material_mapping.deformation_gradient_, cauchy);
         AssembleVectorToMatrixRow(cauchy, data, row);
         return;
       }

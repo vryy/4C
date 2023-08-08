@@ -13,6 +13,9 @@
 #include "discretization_fem_general_utils_integration.H"
 #include "lib_element.H"
 #include "linalg_utils_densematrix_eigen.H"
+#include "inpar_structure.H"
+#include "solid_ele_eas_utils.H"
+#include "solid_ele.H"
 
 namespace STR::UTILS
 {
@@ -62,7 +65,10 @@ namespace STR::UTILS
   };
 
 
+
   int DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distype);
+
+  void NodalBlockInformationSolid(DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
   void Pk2ToCauchy(const LINALG::Matrix<6, 1>& pk2, const LINALG::Matrix<3, 3>& defgrd,
       LINALG::Matrix<6, 1>& cauchy);
@@ -118,6 +124,39 @@ namespace STR::UTILS
     R.Multiply(defgrd_disp, U_disp);
     defgrd_mod.Multiply(R, U_mod);
   }
+
+
+  namespace ELEMENTDEFINITION
+  {
+    void AddElementDefinitionElementNodes(
+        DRT::INPUT::LineDefinition& defs, std::basic_string<char> name, int numnodes);
+
+    void AddElementDefinitionElementMaterial(DRT::INPUT::LineDefinition& defs);
+
+    void AddElementDefinitionElementKinematics(DRT::INPUT::LineDefinition& defs);
+
+    template <int nsd>
+    void AddElementDefinitionCylinderCoordinates(DRT::INPUT::LineDefinition& defs);
+
+    template <int nsd>
+    void AddElementDefinitionFiber(DRT::INPUT::LineDefinition& defs);
+
+    void AddElementDefinitionEAS(DRT::INPUT::LineDefinition& defs);
+
+    void AddElementDefinitionFBAR(DRT::INPUT::LineDefinition& defs);
+  }  // namespace ELEMENTDEFINITION
+
+  namespace READELEMENT
+  {
+    int ReadElementMaterial(DRT::INPUT::LineDefinition* linedef);
+
+    INPAR::STR::KinemType ReadElementKinematicType(DRT::INPUT::LineDefinition* linedef);
+
+    void ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef, ::STR::ELEMENTS::EASType& eastype,
+        std::set<INPAR::STR::EleTech>& eletech);
+
+
+  }  // namespace READELEMENT
 
 }  // namespace STR::UTILS
 
