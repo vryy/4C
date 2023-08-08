@@ -126,10 +126,11 @@ namespace MAT
 
     void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
         LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, int gp, int eleGID) override;
+        const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+        const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+        const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+        const LINALG::Matrix<3, 3>* rcg_new, const LINALG::Matrix<3, 3>* rcg_old, int gp,
+        int eleGID) override;
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6, 6>& cmat);

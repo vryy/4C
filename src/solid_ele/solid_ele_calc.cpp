@@ -168,16 +168,25 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        Strains<distype> strains = EvaluateStrains<distype>(nodal_coordinates, jacobian_mapping);
+        SpatialMaterialMapping<distype> spatial_material_mapping =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        Strains<distype> strains_old =
-            EvaluateStrains<distype>(nodal_coordinates_old, jacobian_mapping);
+        SpatialMaterialMapping<distype> spatial_material_mapping_old =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates_old);
 
         LINALG::Matrix<numstr_, numdofperelement_> Bop =
-            EvaluateStrainGradient(jacobian_mapping, strains);
+            EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
         LINALG::Matrix<numstr_, numdofperelement_> Bop_old =
-            EvaluateStrainGradient(jacobian_mapping, strains_old);
+            EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping_old);
+
+        CauchyGreen<distype> cauchy_green = EvaluateCauchyGreen(spatial_material_mapping);
+        CauchyGreen<distype> cauchy_green_old = EvaluateCauchyGreen(spatial_material_mapping_old);
+
+        LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+            EvaluateGreenLagrangeStrain(cauchy_green);
+        LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_old =
+            EvaluateGreenLagrangeStrain(cauchy_green_old);
 
         // computed averaged mid-point quantities
         // 1. non-linear mid-B-operator from Bop and Bop_old
@@ -188,11 +197,11 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
         // 2. mid-strain GL-vector from gl_strains and gl_strains_old
         // E_{m} = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_{n}
         LINALG::Matrix<numstr_, 1> gl_strains_m(true);
-        gl_strains_m.Update(1.0 - gemmalphaf + gemmxi, strains.gl_strain_, gemmalphaf - gemmxi,
-            strains_old.gl_strain_);
+        gl_strains_m.Update(
+            1.0 - gemmalphaf + gemmxi, gl_strain, gemmalphaf - gemmxi, gl_strain_old);
 
-        const Stress<distype> stress = EvaluateMaterialStressGEMM(
-            solid_material, strains, strains_old, gl_strains_m, params, gp, ele.Id());
+        const Stress<distype> stress = EvaluateMaterialStressGEMM(solid_material, gl_strain,
+            gl_strain_old, gl_strains_m, cauchy_green, cauchy_green_old, params, gp, ele.Id());
 
         if (force.has_value()) AddInternalForceVector(BopM, stress, integration_factor, *force);
 
@@ -201,7 +210,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
           AddElasticStiffnessMatrixGEMM(
               Bop, BopM, stress, integration_factor * (1.0 - gemmalphaf + gemmxi), *stiff);
           AddGeometricStiffnessMatrix(
-              jacobian_mapping.n_xyz_, stress, integration_factor * (1.0 - gemmalphaf), *stiff);
+              jacobian_mapping.N_XYZ_, stress, integration_factor * (1.0 - gemmalphaf), *stiff);
         }
 
         if (mass.has_value())

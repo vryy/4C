@@ -520,14 +520,17 @@ namespace DRT::ELEMENTS
    * linearization w.r.t. Green Lagrange strain tensor
    */
   template <DRT::Element::DiscretizationType distype>
-  Stress<distype> EvaluateMaterialStressGEMM(MAT::So3Material& material, Strains<distype>& strains,
-      Strains<distype>& strains_old, LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strains_m,
+  Stress<distype> EvaluateMaterialStressGEMM(MAT::So3Material& material,
+      const LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strains,
+      const LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strains_old,
+      const LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strains_m,
+      const CauchyGreen<distype>& rcg, const CauchyGreen<distype>& rcg_old,
       Teuchos::ParameterList& params, int gp, int eleGID)
   {
     Stress<distype> stress;
 
-    material.EvaluateGEMM(&stress.pk2_, &stress.cmat_, &gl_strains_m, &strains.gl_strain_,
-        &strains_old.gl_strain_, &strains.rcg_, &strains_old.rcg_, gp, eleGID);
+    material.EvaluateGEMM(&stress.pk2_, &stress.cmat_, &gl_strains_m, &gl_strains, &gl_strains_old,
+        &rcg.right_cauchy_green_, &rcg_old.right_cauchy_green_, gp, eleGID);
 
     return stress;
   }
