@@ -1259,7 +1259,7 @@ int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
-    const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
+    const Epetra_Comm& comm, const int dim, const Teuchos::ParameterList& icparams,
     const bool selfcontact, const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
     const int contactconstitutivelawid)
@@ -1274,7 +1274,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
     const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
-    const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
+    const int dim, const Teuchos::ParameterList& icparams, const bool selfcontact,
     const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr, const int contactconstitutivelawid)
 {
