@@ -71,7 +71,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   INPAR::STR::KinemType kintype = INPAR::STR::kinem_linear;
   // if oldele is a so3_base element or a so3_Plast element
   DRT::ELEMENTS::So_base* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(oldele);
-  if (so_base != NULL)
+  if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else
     dserror("oldele is neither a So_base element!");
@@ -283,7 +283,7 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
   INPAR::STR::KinemType kintype = INPAR::STR::kinem_linear;
 
   // default strategy: take material of element with closest center in reference coordinates
-  DRT::Element* ele1 = NULL;
+  DRT::Element* ele1 = nullptr;
   double mindistance = 1e10;
   {
     std::vector<double> centercoords2 = DRT::UTILS::ElementCenterRefeCoords(ele2);
@@ -307,13 +307,13 @@ void TSI::UTILS::TSIMaterialStrategy::AssignMaterial1To2(
 
   // if Aele is a so3_base element
   DRT::ELEMENTS::So_base* so_base = dynamic_cast<DRT::ELEMENTS::So_base*>(ele1);
-  if (so_base != NULL)
+  if (so_base != nullptr)
     kintype = so_base->KinematicType();
   else
     dserror("ele1 is not a so3_thermo element!");
 
   DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(ele2);
-  if (therm != NULL)
+  if (therm != nullptr)
   {
     therm->SetKinematicType(kintype);  // set kintype in cloned thermal element
   }

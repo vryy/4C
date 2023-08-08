@@ -597,10 +597,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
   {
     if (out) std::cout << "CASE 1" << std::endl;
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 2.: nodes on each other
@@ -609,10 +609,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 2" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 3.: e0 on v0 and e1 valid
@@ -621,10 +621,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 3" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 4.: e1 on v0 and e0 valid
@@ -633,10 +633,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 4" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 5.: e0 on v1 and e1 valid
@@ -645,10 +645,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 5" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 6.: e1 on v1 and e0 valid
@@ -657,10 +657,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 6" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 7.: e0 on v0 and e1 out of v1 but in v0
@@ -669,10 +669,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 7" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex1.Coord(), MORTAR::Vertex::projslave,
-        lineVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 8.: e1 on v0 and e0 out of v1 but in v0
@@ -681,10 +681,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 8" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex1.Coord(), MORTAR::Vertex::projslave,
-        lineVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 9.: e1 on v1 and e0 out of v0 but in v1
@@ -693,10 +693,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 9" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex0.Coord(), MORTAR::Vertex::projslave,
-        lineVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 10.: e0 on v1 and e1 out of v0 but in v1
@@ -705,10 +705,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 10" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex0.Coord(), MORTAR::Vertex::projslave,
-        lineVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 11.: e0 on v0 and e1 out of v0 but in v1
@@ -753,10 +753,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 15" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 16.: all slave nodes are projected: E0 out of V0  and E1 out of V1
@@ -765,10 +765,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 16" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(lineVertex0.Coord(), MORTAR::Vertex::projslave,
-        lineVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex1.Coord(), MORTAR::Vertex::projslave,
-        lineVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 17.: all slave nodes are projected: E1 out of V0  and E0 out of V1
@@ -777,10 +777,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 17" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(lineVertex0.Coord(), MORTAR::Vertex::projslave,
-        lineVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex1.Coord(), MORTAR::Vertex::projslave,
-        lineVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 18.: mixed: E0 and E1 pos to V0 and E0 pos to V1
@@ -789,10 +789,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 18" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex1.Coord(), MORTAR::Vertex::projslave,
-        lineVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 19.: mixed: E0 and E1 pos to V0 and E1 pos to V1
@@ -801,10 +801,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 19" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex1.Coord(), MORTAR::Vertex::projslave,
-        lineVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 20.: mixed: E0 neg and E1 pos to V0 and E0 and E1 pos to V1
@@ -813,10 +813,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 20" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex1.Coord(), MORTAR::Vertex::master,
-        edgeVertex1.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex1.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex0.Coord(), MORTAR::Vertex::projslave,
-        lineVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 21.: mixed: E1 neg and E0 pos to V0 and E0 and E1 pos to V1
@@ -825,10 +825,10 @@ bool CONTACT::LineToSurfaceCoupling3d::LineToLineClipping(MORTAR::Vertex& edgeVe
     if (out) std::cout << "CASE 21" << std::endl;
 
     InterSections().push_back(MORTAR::Vertex(edgeVertex0.Coord(), MORTAR::Vertex::master,
-        edgeVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        edgeVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
 
     InterSections().push_back(MORTAR::Vertex(lineVertex0.Coord(), MORTAR::Vertex::projslave,
-        lineVertex0.Nodeids(), NULL, NULL, false, false, NULL, -1));
+        lineVertex0.Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
   }
   // ========================================================
   // 22.: out: E0 and E1 in V0 and out of V1
@@ -1135,7 +1135,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
 
           // store intersection points
           TempInterSections().push_back(MORTAR::Vertex(coords, MORTAR::Vertex::lineclip, lcids,
-              &(SlaveVertices()[1]), &(SlaveVertices()[0]), true, false, NULL, alpha));
+              &(SlaveVertices()[1]), &(SlaveVertices()[0]), true, false, nullptr, alpha));
         }
       }
     }  // end vertex loop
@@ -1188,7 +1188,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
         {
           TempInterSections().push_back(
               MORTAR::Vertex(SlaveVertices()[i].Coord(), MORTAR::Vertex::projslave,
-                  SlaveVertices()[i].Nodeids(), NULL, NULL, false, false, NULL, -1));
+                  SlaveVertices()[i].Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
         }
       }
     }  // if intersections != 2
@@ -1256,7 +1256,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
           // store slave vertex as intersection point
           InterSections().push_back(
               MORTAR::Vertex(SlaveVertices()[j].Coord(), MORTAR::Vertex::projslave,
-                  SlaveVertices()[j].Nodeids(), NULL, NULL, false, false, NULL, -1));
+                  SlaveVertices()[j].Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
           break;
         }
       }
@@ -1281,7 +1281,7 @@ void CONTACT::LineToSurfaceCoupling3d::LineClipping()
 
             InterSections().push_back(
                 MORTAR::Vertex(MasterVertices()[j].Coord(), MORTAR::Vertex::master,
-                    MasterVertices()[j].Nodeids(), NULL, NULL, false, false, NULL, -1));
+                    MasterVertices()[j].Nodeids(), nullptr, nullptr, false, false, nullptr, -1));
             break;
           }
         }
@@ -1970,8 +1970,8 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectSlave()
     snodeids[0] = mycnode->Id();
 
     // store into vertex data structure
-    SlaveVertices().push_back(MORTAR::Vertex(
-        vertices, MORTAR::Vertex::projslave, snodeids, NULL, NULL, false, false, NULL, -1.0));
+    SlaveVertices().push_back(MORTAR::Vertex(vertices, MORTAR::Vertex::projslave, snodeids, nullptr,
+        nullptr, false, false, nullptr, -1.0));
   }
   return true;
 }
@@ -2054,7 +2054,7 @@ void CONTACT::LineToSurfaceCoupling3d::SlaveVertexLinearization(
   {
     MORTAR::MortarNode* mrtrmnode =
         dynamic_cast<MORTAR::MortarNode*>(idiscret_.gNode(LineElement()->NodeIds()[in]));
-    if (mrtrmnode == NULL) dserror("dynamic cast to mortar node went wrong");
+    if (mrtrmnode == nullptr) dserror("dynamic cast to mortar node went wrong");
 
     for (int dim = 0; dim < 3; ++dim) mnodelin[in][dim][mrtrmnode->Dofs()[dim]] += 1.;
   }
@@ -2161,7 +2161,7 @@ bool CONTACT::LineToSurfaceCoupling3d::ProjectMaster()
 
     // store into vertex data structure
     MasterVertices().push_back(MORTAR::Vertex(
-        vertices, MORTAR::Vertex::master, mnodeids, NULL, NULL, false, false, NULL, -1.0));
+        vertices, MORTAR::Vertex::master, mnodeids, nullptr, nullptr, false, false, nullptr, -1.0));
 
     // std::cout << "->RealNode(M) " << mycnode->Id() << ": " << mycnode->xspatial()[0] << " " <<
     // mycnode->xspatial()[1] << " " << mycnode->xspatial()[2] << std::endl; std::cout <<

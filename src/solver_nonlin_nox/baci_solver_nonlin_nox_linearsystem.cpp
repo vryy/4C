@@ -876,9 +876,9 @@ void NOX::NLN::LinearSystem::convertSparseToDenseMatrix(const CORE::LINALG::Spar
     // number of entries in this row
     int numentries = 0;
     // values of the entries in this row
-    double* rvals = NULL;
+    double* rvals = nullptr;
     // local indices
-    int* indices = NULL;
+    int* indices = nullptr;
 
     crs_mat->ExtractMyRowView(rlid, numentries, rvals, indices);
 
@@ -951,8 +951,8 @@ void NOX::NLN::LinearSystem::callGGEV(CORE::LINALG::SerialDenseMatrix& mat,
 
   Teuchos::LAPACK<int, double> lapack;
   lapack.GGEV('N', 'N', mat.numCols(), mat.values(), mat.stride(), bmat.values(), bmat.stride(),
-      reigenvalues.values(), ieigenvalues.values(), beta.values(), NULL, 1, NULL, 1, work.data(),
-      lwork, &info);
+      reigenvalues.values(), ieigenvalues.values(), beta.values(), nullptr, 1, nullptr, 1,
+      work.data(), lwork, &info);
 
   // postprocess the actual eigenvalues
   for (int i = 0; i < reigenvalues.numCols(); ++i)
@@ -983,7 +983,7 @@ void NOX::NLN::LinearSystem::callGEEV(CORE::LINALG::SerialDenseMatrix& mat,
 
   Teuchos::LAPACK<int, double> lapack;
   lapack.GEEV('N', 'N', mat.numCols(), mat.values(), mat.stride(), reigenvalues.values(),
-      ieigenvalues.values(), NULL, 1, NULL, 1, work.data(), lwork, &info);
+      ieigenvalues.values(), nullptr, 1, nullptr, 1, work.data(), lwork, &info);
 
   if (info) dserror("GEEV failed!");
 }

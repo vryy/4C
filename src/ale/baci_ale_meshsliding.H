@@ -23,11 +23,11 @@ namespace ALE
   {
    public:
     //! Constructor
-    Meshsliding(Teuchos::RCP<DRT::Discretization> dis,       ///> actual discretisation
-        CORE::LINALG::Solver& solver,                        ///> solver
-        int msht,                                            ///> meshting parameter list
-        int nsd,                                             ///> number space dimensions
-        const UTILS::MapExtractor* surfacesplitter = NULL);  ///> surface splitter
+    Meshsliding(Teuchos::RCP<DRT::Discretization> dis,          ///> actual discretisation
+        CORE::LINALG::Solver& solver,                           ///> solver
+        int msht,                                               ///> meshting parameter list
+        int nsd,                                                ///> number space dimensions
+        const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     virtual ~Meshsliding() { return; };
 

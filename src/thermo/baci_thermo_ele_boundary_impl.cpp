@@ -39,50 +39,50 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
     case DRT::Element::quad4:
     {
       static TemperBoundaryImpl<DRT::Element::quad4>* cp4;
-      if (cp4 == NULL) cp4 = new TemperBoundaryImpl<DRT::Element::quad4>(numdofpernode);
+      if (cp4 == nullptr) cp4 = new TemperBoundaryImpl<DRT::Element::quad4>(numdofpernode);
       return cp4;
     }
     case DRT::Element::quad8:
     {
       static TemperBoundaryImpl<DRT::Element::quad8>* cp8;
-      if (cp8 == NULL) cp8 = new TemperBoundaryImpl<DRT::Element::quad8>(numdofpernode);
+      if (cp8 == nullptr) cp8 = new TemperBoundaryImpl<DRT::Element::quad8>(numdofpernode);
       return cp8;
     }
     case DRT::Element::quad9:
     {
       static TemperBoundaryImpl<DRT::Element::quad9>* cp9;
-      if (cp9 == NULL) cp9 = new TemperBoundaryImpl<DRT::Element::quad9>(numdofpernode);
+      if (cp9 == nullptr) cp9 = new TemperBoundaryImpl<DRT::Element::quad9>(numdofpernode);
       return cp9;
     }
     case DRT::Element::nurbs9:
     {
       static TemperBoundaryImpl<DRT::Element::nurbs9>* cpn9;
-      if (cpn9 == NULL) cpn9 = new TemperBoundaryImpl<DRT::Element::nurbs9>(numdofpernode);
+      if (cpn9 == nullptr) cpn9 = new TemperBoundaryImpl<DRT::Element::nurbs9>(numdofpernode);
       return cpn9;
     }
     case DRT::Element::tri3:
     {
       static TemperBoundaryImpl<DRT::Element::tri3>* cp3;
-      if (cp3 == NULL) cp3 = new TemperBoundaryImpl<DRT::Element::tri3>(numdofpernode);
+      if (cp3 == nullptr) cp3 = new TemperBoundaryImpl<DRT::Element::tri3>(numdofpernode);
       return cp3;
     }
     /*  case DRT::Element::tri6:
     {
       static TemperBoundaryImpl<DRT::Element::tri6>* cp6;
-      if (cp6 == NULL)
+      if (cp6 == nullptr)
         cp6 = new TemperBoundaryImpl<DRT::Element::tri6>(numdofpernode);
       return cp6;
     }*/
     case DRT::Element::line2:
     {
       static TemperBoundaryImpl<DRT::Element::line2>* cl2;
-      if (cl2 == NULL) cl2 = new TemperBoundaryImpl<DRT::Element::line2>(numdofpernode);
+      if (cl2 == nullptr) cl2 = new TemperBoundaryImpl<DRT::Element::line2>(numdofpernode);
       return cl2;
     } /*
      case DRT::Element::line3:
      {
        static TemperBoundaryImpl<DRT::Element::line3>* cl3;
-       if (cl3 == NULL)
+       if (cl3 == nullptr)
          cl3 = new TemperBoundaryImpl<DRT::Element::line3>(numdofpernode);
        return cl3;
      }*/
@@ -90,7 +90,7 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
       dserror("Shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }  // Impl()
 
 
@@ -138,7 +138,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
   // get the material (of the parent element)
   DRT::Element* genericparent = ele->ParentElement();
   // make sure the static cast below is really valid
-  dsassert(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != NULL,
+  dsassert(dynamic_cast<DRT::ELEMENTS::Thermo*>(genericparent) != nullptr,
       "Parent element is no fluid element");
   DRT::ELEMENTS::Thermo* parentele = static_cast<DRT::ELEMENTS::Thermo*>(genericparent);
   Teuchos::RCP<MAT::Material> mat = parentele->Material();
@@ -332,9 +332,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         // and now check if there is a convection heat transfer boundary condition
         CalculateNlnConvectionFintCond(ele,  // current boundary element
             mydisp,
-            &etang,  // element-matrix k_TT
-            NULL,    // coupling matrix k_Td
-            &efext,  // element-rhs
+            &etang,   // element-matrix k_TT
+            nullptr,  // coupling matrix k_Td
+            &efext,   // element-rhs
             coeff, surtemp, *tempstate);
 
       }  // disp!=0
@@ -515,9 +515,9 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(DRT::ELEMENTS::ThermoBo
         // and now check if there is a convection heat transfer boundary condition
         CalculateNlnConvectionFintCond(ele,  // current boundary element
             mydisp,
-            NULL,         // element-matrix k_TT
+            nullptr,      // element-matrix k_TT
             &etangcoupl,  // coupling matrix k_Td
-            NULL,         // element-rhs
+            nullptr,      // element-rhs
             coeff, surtemp, *tempstate);
 
         // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
@@ -706,14 +706,14 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
     Ntemp.Update(-1.0, Tsurf, 1.0);
 
     // ---------------------------------------------- right-hand-side
-    if (efext != NULL)
+    if (efext != nullptr)
     {
       // fext^e = fext^e - N^T . coeff . (N . T - T_oo) . detJ * w(gp)
       // in energy balance: q_c positive, but fext = r^ + q^ + q^_c
       // we want to define q^_c = - q . n
       // q^_cr = k . Grad T = h (T - T_oo), vgl. Farhat(1992)
       efext->Multiply(coefffac_, funct_, Ntemp, 1.0);
-    }  // efext != NULL
+    }  // efext != nullptr
 
     // ------------------------------------------------------ tangent
     // if current temperature T_{n+1} is considered in boundary condition
@@ -723,11 +723,11 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateConvectionFintCond(
       // if the boundary condition shall be dependent on the current temperature
       // solution T_n+1 --> linearisation must be considered
       // ---------------------matrix
-      if (econd != NULL)
+      if (econd != nullptr)
       {
         // k_TT^e = k_TT^e + (N^T . coeff . N) * detJ * w(gp)
         econd->MultiplyNT((-1.0) * coefffac_, funct_, funct_, 1.0);
-      }  // econd != NULL
+      }  // econd != nullptr
 
     }  // Tempnp
 
@@ -886,7 +886,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     Ntemp.Update(-1.0, Tsurf, 1.0);
 
     // ---------------------------------------------- right-hand-side
-    if (efext != NULL)
+    if (efext != nullptr)
     {
       // efext = efext - N^T . coeff . ( N . T - T_surf) . sqrt( Normal^T . C^{-1} . Normal ) . detJ
       // * w(gp)
@@ -895,7 +895,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       // we want to define q_c^ = - q . n
       // q_c^ = k . Grad T = h (T - T_oo)
       efext->Multiply(coeffA, funct_, Ntemp, 1.0);
-    }  // efext != NULL
+    }  // efext != nullptr
 
     // ------------------------------------------------------ tangent
     // if current temperature T_{n+1} is considered in boundary condition
@@ -905,19 +905,19 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       // if the boundary condition shall be dependent on the current temperature
       // solution T_n+1 --> linearisation must be considered
       // ---------------------matrix
-      if (econd != NULL)
+      if (econd != nullptr)
       {
         // ke = ke + (N^T . coeff . N) . detJ . w(gp)
         // (nsd_xnsd_) = (4x4)
         econd->MultiplyNT((-1.0) * coeffA, funct_, funct_, 1.0);
-      }  // etang != NULL
+      }  // etang != nullptr
 
     }  // Tempnp
 
     // ke_Td = ke_Td + N^T . coeff . h . (N . T - T_oo) * dA/dd * detJ * w(gp)
     // (4x12)         (4X1)                  (1x1)        (1X12)
     // ke_Td = ke_Td + N^T . coeff . h . (N . T - T_oo) * Adiff * detJ * w(gp)
-    if (etangcoupl != NULL)
+    if (etangcoupl != nullptr)
     {
       // multiply fac_ * coeff
       // --> must be insert in balance equation as positive term,
@@ -1114,7 +1114,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(xcurr_T, deriv_,
       metrictensor_,  // metric tensor between coordinate space and AK
       detA
-      // normalvector==NULL // we don't need the unit normal vector, but the
+      // normalvector==nullptr // we don't need the unit normal vector, but the
   );
 
   // be aware: nsd_ corresponds to dimension of the boundary not of the simulation
@@ -1162,7 +1162,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
   // cast to nurbs discretization
   DRT::NURBS::NurbsDiscretization* nurbsdis =
       dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-  if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+  if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
   std::vector<CORE::LINALG::SerialDenseVector> parentknots(3);
   myknots_.resize(2);

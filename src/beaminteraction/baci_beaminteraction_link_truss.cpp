@@ -165,7 +165,7 @@ void BEAMINTERACTION::BeamLinkTruss::Unpack(const std::vector<char>& data)
   {
     DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Truss3* linkele = dynamic_cast<DRT::ELEMENTS::Truss3*>(object);
-    if (linkele == NULL) dserror("failed to unpack Truss3 object within BeamLinkTruss");
+    if (linkele == nullptr) dserror("failed to unpack Truss3 object within BeamLinkTruss");
     linkele_ = Teuchos::rcp(linkele);
   }
   else

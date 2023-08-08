@@ -249,7 +249,8 @@ namespace CONTACT
     struct ElementNormal
     {
       /// constructor
-      ElementNormal() : xi_{0.0, 0.0}, unit_n_(true), ele_(NULL), length_n_inv_(-1.0){/* empty */};
+      ElementNormal()
+          : xi_{0.0, 0.0}, unit_n_(true), ele_(nullptr), length_n_inv_(-1.0){/* empty */};
 
       /// destructor
       ~ElementNormal(){/* empty */};

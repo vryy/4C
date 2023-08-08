@@ -93,7 +93,7 @@ const STI::Monolithic& STI::STIResultTest::STIMonolithic() const
 {
   const STI::Monolithic* const sti_monolithic =
       dynamic_cast<const STI::Monolithic* const>(sti_algorithm_.get());
-  if (sti_monolithic == NULL)
+  if (sti_monolithic == nullptr)
     dserror("Couldn't access time integrator for monolithic scatra-thermo interaction!");
   return *sti_monolithic;
 }

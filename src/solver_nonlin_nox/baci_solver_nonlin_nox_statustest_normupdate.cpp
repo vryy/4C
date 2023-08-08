@@ -44,7 +44,7 @@ NOX::NLN::StatusTest::NormUpdate::NormUpdate(
       printCriteria2Info_(false),
       printCriteria3Info_(false)
 {
-  if (u != NULL) utils_ = *u;
+  if (u != nullptr) utils_ = *u;
 }
 
 
@@ -55,7 +55,7 @@ void NOX::NLN::StatusTest::NormUpdate::ComputeNorm(
 {
   // cast the nox_abstract_group to nox_nln_group
   const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*>(&grp);
-  if (nlngrp == NULL) throwError("ComputeNorm", "Dynamic cast to NOX::NLN::Group failed!");
+  if (nlngrp == nullptr) throwError("ComputeNorm", "Dynamic cast to NOX::NLN::Group failed!");
 
   // get the old solution vector
   const NOX::Abstract::Vector& xOld = problem.getPreviousSolutionGroup().getX();
@@ -128,9 +128,9 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormUpdate::checkStatus(
   // ---------------------------------------------------------
   // Determine if the Generic solver is a LineSearchBased solver
   // If it is not then return a "Converged" status
-  const NOX::Solver::Generic* test = NULL;
+  const NOX::Solver::Generic* test = nullptr;
   test = dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem);
-  if (test == NULL)
+  if (test == nullptr)
     criteria[1] = NOX::StatusTest::Converged;
   else
   {

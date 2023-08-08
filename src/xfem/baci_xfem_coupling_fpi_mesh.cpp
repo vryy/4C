@@ -888,7 +888,7 @@ double XFEM::MeshCouplingFPI::CalctrPermeability(DRT::Element* ele, double& poro
   DRT::FaceElement* fele = dynamic_cast<DRT::FaceElement*>(ele);
   if (!fele) dserror("Cast to Faceele failed!");
   DRT::Element* coupl_ele = fele->ParentElement();
-  if (coupl_ele == NULL) dserror("No coupl_ele!");
+  if (coupl_ele == nullptr) dserror("No coupl_ele!");
   Teuchos::RCP<MAT::FluidPoro> poromat;
   // access second material in structure element
   if (coupl_ele->NumMaterial() > 1)
@@ -913,7 +913,7 @@ double XFEM::MeshCouplingFPI::CalcPorosity(
   if (!fele) dserror("Cast to Faceele failed!");
 
   DRT::Element* coupl_ele = fele->ParentElement();
-  if (coupl_ele == NULL) dserror("No coupl_ele!");
+  if (coupl_ele == nullptr) dserror("No coupl_ele!");
 
   double pres = 0.0;
   J = ComputeJacobianandPressure(ele, rst_slave, pres);

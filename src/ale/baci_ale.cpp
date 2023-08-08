@@ -99,12 +99,12 @@ ALE::Ale::Ale(Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINAL
   if (msht_ == INPAR::ALE::meshsliding)
   {
     meshtying_ = Teuchos::rcp(
-        new Meshsliding(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
+        new Meshsliding(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), nullptr));
   }
   else if (msht_ == INPAR::ALE::meshtying)
   {
     meshtying_ = Teuchos::rcp(
-        new Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), NULL));
+        new Meshtying(discret_, *solver_, msht_, DRT::Problem::Instance()->NDim(), nullptr));
   }
 
   // ---------------------------------------------------------------------

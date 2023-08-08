@@ -110,7 +110,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostPartitionProblem()
         dynamic_cast<DRT::ELEMENTS::Beam3Base*>(DiscretPtr()->lColElement(i));
 
     // go to next element in case the current one is not a beam element
-    if (beamele_i == NULL) continue;
+    if (beamele_i == nullptr) continue;
 
     std::vector<double> eledisp;
     BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), beamele_i,
@@ -252,7 +252,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentTypes()
 
     // in case node (e.g. node of rigid sphere element) does not belong to a filament, go to next
     // node
-    if (cond == NULL) continue;
+    if (cond == nullptr) continue;
 
     // get filament type
     INPAR::BEAMINTERACTION::FilamentType filtype =
@@ -264,7 +264,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetFilamentTypes()
           dynamic_cast<DRT::ELEMENTS::Beam3Base*>(currnode->Elements()[i]);
 
 #ifdef DEBUG
-      if (beamele == NULL)
+      if (beamele == nullptr)
         dserror(" DESIGN LINE BEAM FILAMENT CONDITIONS only suitable for beam elements.");
 #endif
 
@@ -1733,7 +1733,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
               "is \nnot ghosted/owned on proc %i (owner of crosslinker)",
               cldata_i->GetNumberOfBonds(), elegid, GState().GetMyRank());
         // safety check
-        if (ele == NULL)
+        if (ele == nullptr)
           dserror("Dynamic cast of ele with gid %i failed on proc ", elegid, GState().GetMyRank());
 #endif
 
@@ -1783,7 +1783,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
 #ifdef DEBUG
         // safety check
-        if (ele == NULL)
+        if (ele == nullptr)
           dserror("Dynamic cast of ele with gid %i failed on proc ", elegid, GState().GetMyRank());
 #endif
 
@@ -1818,7 +1818,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
 
 #ifdef DEBUG
         // safety check
-        if (ele == NULL)
+        if (ele == nullptr)
           dserror("Dynamic cast of ele with gid %i failed on proc ", elegid, GState().GetMyRank());
 #endif
 
@@ -1860,7 +1860,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseUnboundCrosslinker
       dynamic_cast<CROSSLINKING::CrosslinkerNode*>(crosslinker_i);
 
 #ifdef DEBUG
-  if (crosslinker == NULL) dserror("Dynamic cast to CrosslinkerNode failed");
+  if (crosslinker == nullptr) dserror("Dynamic cast to CrosslinkerNode failed");
 #endif
 
   // get standard deviation and mean value for crosslinker that are free to
@@ -2136,7 +2136,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportBeamData(b
 
       // go to next element in case the current one is not a beam element
 #ifdef DEBUG
-      if (beamele_i == NULL) dserror("cast did not work");
+      if (beamele_i == nullptr) dserror("cast did not work");
 #endif
 
       std::vector<double> eledisp;
@@ -2283,7 +2283,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FindPotentialBindingEvent
     DRT::Node* currcrosslinker = BinDiscretPtr()->lColNode(icl);
 
 #ifdef DEBUG
-    if (currcrosslinker == NULL) dserror("Node not there");
+    if (currcrosslinker == nullptr) dserror("Node not there");
     if (currcrosslinker->NumElement() != 1) dserror("More than one element for this crosslinker");
 #endif
 
@@ -2672,7 +2672,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReturnFalseIfIdenticalBon
 
 #ifdef DEBUG
     // safety check
-    if (bonded_crosslinker_i == NULL)
+    if (bonded_crosslinker_i == nullptr)
       dserror(" Linker with gid %i not on rank %i", iter, GState().GetMyRank());
 #endif
 
@@ -2681,7 +2681,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::ReturnFalseIfIdenticalBon
 
 #ifdef DEBUG
     // safety check
-    if (bonded_crosslinker_i == NULL)
+    if (bonded_crosslinker_i == nullptr)
       dserror("Data for crosslinker %i not there on rank %i", bonded_crosslinker_i->Id(),
           GState().GetMyRank());
 #endif
@@ -3057,7 +3057,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyElementBindingSta
 
 #ifdef DEBUG
     // safety checks
-    if (linker == NULL) dserror("Crosslinker needs to be ghosted, but this isn't the case.");
+    if (linker == nullptr) dserror("Crosslinker needs to be ghosted, but this isn't the case.");
     if (colelelid < 0)
       dserror("element with gid %i not ghosted on proc %i", binevdata->GetEleId(),
           GState().GetMyRank());
@@ -3483,7 +3483,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateMyDoubleBondsRemote
 
   // find new host procs for double bonded crosslinker by communication
   int err = BinDiscretPtr()->NodeRowMap()->RemoteIDList(
-      size, unique_clgidlist.data(), unique_pidlist.data(), NULL);
+      size, unique_clgidlist.data(), unique_pidlist.data(), nullptr);
   if (err < 0) dserror("Epetra_BlockMap::RemoteIDList returned err=%d", err);
 
   std::map<int, std::vector<Teuchos::RCP<BEAMINTERACTION::BeamLink>>> dbcltosend;

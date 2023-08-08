@@ -299,7 +299,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::Unpack(const std::vector<ch
   {
     DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
-    if (linkele == NULL)
+    if (linkele == nullptr)
       dserror("failed to unpack Beam3r object within BeamLinkBeam3rLine2PinJointed");
     linkele_ = Teuchos::rcp(linkele);
   }
@@ -324,7 +324,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForce(
   CORE::LINALG::SerialDenseVector force(12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-      disp_totlag_centerline, Qnode, NULL, NULL, &force, NULL);
+      disp_totlag_centerline, Qnode, nullptr, nullptr, &force, nullptr);
 
   // Todo maybe we can avoid this copy by setting up 'force' as a view on the
   //      two separate force vectors ?
@@ -353,7 +353,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateStiff(
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-      disp_totlag_centerline, Qnode, &stiffmat, NULL, NULL, NULL);
+      disp_totlag_centerline, Qnode, &stiffmat, nullptr, nullptr, nullptr);
 
   // Todo the linearization is incomplete yet. fix this or delete related code and
   // resort to truss linker element
@@ -397,7 +397,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2PinJointed::EvaluateForceStiff(
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-      disp_totlag_centerline, Qnode, &stiffmat, NULL, &force, NULL);
+      disp_totlag_centerline, Qnode, &stiffmat, nullptr, &force, nullptr);
 
   std::copy(&force(0), &force(0) + 3, &forcevec1(0));
   std::copy(&force(0) + 6, &force(0) + 9, &forcevec2(0));

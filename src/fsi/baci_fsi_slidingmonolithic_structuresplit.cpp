@@ -1056,7 +1056,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::SlidingMonolithicStructureSplit::Cr
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  //  Teuchos::ParameterList* lsParams = NULL;
+  //  Teuchos::ParameterList* lsParams = nullptr;
   Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
   //  // in case of nonlinCG the linear solver list is somewhere else

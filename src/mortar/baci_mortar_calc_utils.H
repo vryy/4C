@@ -38,8 +38,8 @@ namespace MORTAR
     bool LocalToGlobal(MORTAR::MortarElement& ele, const double* xi, double* globcoord, int inttype)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
       static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
@@ -295,8 +295,8 @@ namespace MORTAR
     bool LocalToGlobal(DRT::Element& ele, const double* xi, double* globcoord)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
       static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim + 1;
@@ -348,8 +348,8 @@ namespace MORTAR
         const std::vector<double> edisp, double* globcoord)
     {
       // check input
-      if (!xi) dserror("ERROR: LocalToGlobal called with xi=NULL");
-      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+      if (!xi) dserror("ERROR: LocalToGlobal called with xi=nullptr");
+      if (!globcoord) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
       static const int n = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
       static const int ndim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;

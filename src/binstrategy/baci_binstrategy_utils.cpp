@@ -75,27 +75,27 @@ namespace BINSTRATEGY
     {
       // (Todo make this nicer and cheaper)
 
-      if (dynamic_cast<DRT::ELEMENTS::Transport const*>(eleptr) != NULL)
+      if (dynamic_cast<DRT::ELEMENTS::Transport const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Scatra;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Fluid const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Fluid const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Fluid;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Bele3 const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Bele3 const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::BELE3;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Beam;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::Rigidsphere const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::RigidSphere;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != NULL)
+      else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Solid;
       }
@@ -316,7 +316,7 @@ namespace BINSTRATEGY
       // fixme: should be do get position at xi with xi = 0.0?
       // if the node does not have position DoFs, we return the position of the first
       // node of the corresponding element
-      if (beamelement != NULL and not beamelement->IsCenterlineNode(*node))
+      if (beamelement != nullptr and not beamelement->IsCenterlineNode(*node))
       {
         node_with_position_Dofs = beamelement->Nodes()[0];
       }

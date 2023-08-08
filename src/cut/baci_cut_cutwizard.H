@@ -275,7 +275,7 @@ namespace CORE::GEO
 
     CORE::GEO::CUT::CombIntersection& Intersection()
     {
-      if (intersection_.is_null()) dserror("NULL pointer!");
+      if (intersection_.is_null()) dserror("nullptr pointer!");
 
       return *intersection_;
     }
@@ -310,7 +310,7 @@ namespace CORE::GEO
 
     //! Add this background mesh element to the intersection class
     void AddElement(const ::DRT::Element* ele, const CORE::LINALG::SerialDenseMatrix& xyze,
-        double* myphinp = NULL, bool ls_only_plus_domain = false);
+        double* myphinp = nullptr, bool ls_only_plus_domain = false);
 
     //@}
 

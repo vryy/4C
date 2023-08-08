@@ -105,10 +105,10 @@ void CORE::GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int
     const CORE::LINALG::SerialDenseMatrix& xyz, ::DRT::Element::DiscretizationType distype,
     const double* lsv, const bool lsv_only_plus_domain)
 {
-  CORE::GEO::CUT::ElementHandle* e = NULL;
+  CORE::GEO::CUT::ElementHandle* e = nullptr;
 
   // consider level-set values to decide whether the element has to be added or not
-  if (lsv != NULL)
+  if (lsv != nullptr)
   {
     // NOTE: dependent on whether one or two phases are used for the computation, the number of
     // degrees of freedom is determined via the cut status of elements, if both fluid phases have to
@@ -121,7 +121,7 @@ void CORE::GEO::CUT::CombIntersection::AddElement(int eid, const std::vector<int
   }
 
   // no check necessary if element lies within bounding box of cut surface
-  if (e != NULL) return;
+  if (e != nullptr) return;
 
   MeshIntersection::AddElement(eid, nids, xyz, distype, lsv);
 }

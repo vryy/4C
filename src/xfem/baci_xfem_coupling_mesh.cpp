@@ -2342,7 +2342,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
   if (coupl_ele->Shape() == DRT::Element::hex8)
   {
     DRT::ELEMENTS::So_hex8* solid_ele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(coupl_ele);
-    if (solid_ele == NULL)
+    if (solid_ele == nullptr)
       dserror(
           "XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress: Cast of coupl_ele to solid_ele "
           "failed!");
@@ -2409,7 +2409,7 @@ void XFEM::MeshCouplingFSI::EstimateNitscheTraceMaxEigenvalue(DRT::Element* ele)
 {
   DRT::ELEMENTS::StructuralSurface* solidfaceele =
       dynamic_cast<DRT::ELEMENTS::StructuralSurface*>(ele);
-  dsassert(solidfaceele != NULL, "Cast to StructuralSurface failed!");
+  dsassert(solidfaceele != nullptr, "Cast to StructuralSurface failed!");
 
   solidfaceele->SetParentMasterElement(
       coupl_dis_->gElement(solidfaceele->ParentElementId()), solidfaceele->FaceParentNumber());

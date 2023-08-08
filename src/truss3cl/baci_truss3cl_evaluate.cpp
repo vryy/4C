@@ -149,11 +149,11 @@ int DRT::ELEMENTS::Truss3CL::Evaluate(Teuchos::ParameterList& params,
       else if (act == Truss3CL::calc_struct_nlnstiff)
       {
         for (int i = 0; i < 24; i++)
-          t3_nlnstiffmass(params, myvel, mydisp, &elemat1, NULL, &elevec1);
+          t3_nlnstiffmass(params, myvel, mydisp, &elemat1, nullptr, &elevec1);
       }
 
       else if (act == Truss3CL::calc_struct_internalforce)
-        t3_nlnstiffmass(params, myvel, mydisp, NULL, NULL, &elevec1);
+        t3_nlnstiffmass(params, myvel, mydisp, nullptr, nullptr, &elevec1);
     }
     break;
     case calc_struct_update_istep:
@@ -537,7 +537,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
   // vector are non-zero Shouldn't only the original 12x12 matrix entries and 12x1 vector entries be
   // there? On that note, also check whether the NumDofPerNode function of the truss3cl element
   // should return 3 or 6...
-  if (stiffmatrix != NULL)
+  if (stiffmatrix != nullptr)
   {
     // Transform 12x12 stiffness matrix for fictitious nodal beam back to 24x24 stiffness matrix of
     // 4-noded beam
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass(Teuchos::ParameterList& params,
                         Ibp[nodei](2 * Ri + Rl) * Ibp[nodej](2 * Rj + Rr) *
                         fstiffmatrix(3 * nodei + i, 3 * nodej + j);
   }
-  if (force != NULL)
+  if (force != nullptr)
   {
     // Tranform 12x1 force vector for fictitious nodal beam to 24x1 force vector of the 4-noded beam
     for (int node = 0; node < fnnode; ++node)
@@ -673,7 +673,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_totlag(CORE::LINALG::Matrix<6, 1>&
       fstiffmatrix(i, j) += (ym * crosssec_ / pow(lrefe_, 3)) * aux(i) * aux(j);
 
   // calculating consistent mass matrix
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     for (int i = 0; i < 6; ++i)
     {
@@ -769,7 +769,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(const CORE::LINALG::Matrix<
       stiffmatrix(i, j) += (ym * crosssec_ / pow(lcurr, 3)) * aux(i) * aux(j);
 
   // calculating consistent mass matrix
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     for (int i = 0; i < 6; ++i)
     {
@@ -785,7 +785,7 @@ void DRT::ELEMENTS::Truss3CL::t3_nlnstiffmass_engstr(const CORE::LINALG::Matrix<
 void DRT::ELEMENTS::Truss3CL::t3_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (int c = 0; c < (*emass).numCols(); ++c)  // parse columns

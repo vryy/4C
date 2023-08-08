@@ -665,7 +665,7 @@ namespace NOX
             {
               return print(stream, 0, u);
             };
-            std::ostream& print(std::ostream& stream) const { return print(stream, 0, NULL); };
+            std::ostream& print(std::ostream& stream) const { return print(stream, 0, nullptr); };
 
             /// the point is a filter point
             bool is_filter_point_;

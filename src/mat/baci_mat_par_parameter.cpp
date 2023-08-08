@@ -134,7 +134,7 @@ MAT::PAR::ParameterAniso::ParameterAniso(Teuchos::RCP<const MAT::PAR::Material> 
   Teuchos::RCP<MAT::PAR::Material> mat_str_tens =
       DRT::Problem::Instance()->Materials()->ById(mat_id_structural_tensor);
   // construct parameter class
-  if (mat_str_tens->Parameter() == NULL)
+  if (mat_str_tens->Parameter() == nullptr)
     mat_str_tens->SetParameter(new MAT::ELASTIC::PAR::StructuralTensorParameter(mat_str_tens));
   MAT::ELASTIC::PAR::StructuralTensorParameter* params =
       static_cast<MAT::ELASTIC::PAR::StructuralTensorParameter*>(mat_str_tens->Parameter());

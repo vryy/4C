@@ -780,7 +780,7 @@ double CORE::GEO::CUT::KERNEL::getAreaTri(const double* p0_ptr, const double* p1
 
   double doubleareacrossprod;
   // Cross product way:
-  if (normalvec == NULL)
+  if (normalvec == nullptr)
   {
     CORE::LINALG::Matrix<3, 1> crossprod;
     crossprod.CrossProduct(v01, v02);  // Cross prod between two vectors of the triangle

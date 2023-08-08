@@ -50,7 +50,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
       return &*i->second;
     }
 
-    QuadraticSideHandle* qsh = NULL;
+    QuadraticSideHandle* qsh = nullptr;
     switch (distype)
     {
       case ::DRT::Element::quad4:
@@ -162,7 +162,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i1 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -188,7 +188,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i2 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -214,7 +214,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i3 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -236,7 +236,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i4 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -258,7 +258,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i5 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -288,7 +288,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i1 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -314,7 +314,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i2 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -340,7 +340,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i3 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -366,7 +366,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i4 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -392,7 +392,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i5 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -418,7 +418,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i6 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad8SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -450,7 +450,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i1 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -478,7 +478,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i2 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -506,7 +506,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i3 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -534,7 +534,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i4 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -562,7 +562,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i5 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -590,7 +590,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i6 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Quad9SideHandle(mesh_, -1, nodeids, false);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -616,7 +616,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i1 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -638,7 +638,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i2 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -660,7 +660,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i3 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -682,7 +682,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
           elementquadraticsides_.find(sidenodeids);
       if (i4 == elementquadraticsides_.end())
       {
-        QuadraticSideHandle* qsh = NULL;
+        QuadraticSideHandle* qsh = nullptr;
         qsh = new Tri6SideHandle(mesh_, -1, nodeids);
         elementquadraticsides_[sidenodeids] = Teuchos::rcp(qsh);
       }
@@ -740,7 +740,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
       {
         return &*i->second;
       }
-      QuadraticElementHandle* qeh = NULL;
+      QuadraticElementHandle* qeh = nullptr;
       switch (distype)
       {
         case ::DRT::Element::hex20:
@@ -806,7 +806,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::GetSide(int sid) const
     return &*j->second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -830,7 +830,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::GetElement(int eid) c
     return &*j->second;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 
@@ -856,7 +856,7 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::GetSide(std::vector<int>
   {
     return &*j->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 void CORE::GEO::CUT::MeshHandle::RemoveSubSide(CORE::GEO::CUT::Side* side)

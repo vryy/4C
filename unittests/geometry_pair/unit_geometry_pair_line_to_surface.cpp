@@ -68,7 +68,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -84,7 +84,7 @@ namespace
     // Project the point to the surface.
     CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
     CORE::LINALG::Matrix<3, 1, double> xi_result(true);
@@ -105,7 +105,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -143,7 +143,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -159,7 +159,7 @@ namespace
     // Project the point to the surface.
     CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
     CORE::LINALG::Matrix<3, 1, double> xi_result(true);
@@ -180,7 +180,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -218,7 +218,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the normals on the solid element.
@@ -235,7 +235,7 @@ namespace
     // Project the point to the surface.
     CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
     CORE::LINALG::Matrix<3, 1, double> xi_result(true);
@@ -256,7 +256,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -294,7 +294,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -310,7 +310,7 @@ namespace
     // Project the point to the surface.
     CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
     CORE::LINALG::Matrix<3, 1, double> xi_result(true);
@@ -331,7 +331,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -369,7 +369,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -385,7 +385,7 @@ namespace
     // Project the point to the surface.
     CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
     CORE::LINALG::Matrix<3, 1, double> xi_result(true);
@@ -406,7 +406,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
@@ -449,7 +449,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -459,7 +459,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
@@ -501,7 +501,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -554,7 +554,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -564,7 +564,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
@@ -606,7 +606,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -658,7 +658,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -668,7 +668,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
@@ -710,7 +710,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -763,7 +763,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -773,7 +773,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
@@ -815,7 +815,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -868,7 +868,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
@@ -878,7 +878,7 @@ namespace
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
     CORE::LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
@@ -920,7 +920,7 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.

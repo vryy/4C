@@ -83,35 +83,35 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
   CORE::LINALG::SerialDenseMatrix C(4, 4);
 
   // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
-  CORE::LINALG::SerialDenseMatrix* alphao = NULL;     // EAS alphas at t_{n}
-  CORE::LINALG::SerialDenseMatrix* alpha = NULL;      // EAS alphas at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix* oldfeas = NULL;    // EAS history
-  CORE::LINALG::SerialDenseMatrix* oldKaainv = NULL;  // EAS history
-  CORE::LINALG::SerialDenseMatrix* oldKda = NULL;     // EAS history
-  CORE::LINALG::SerialDenseMatrix* oldKad = NULL;     // EAS history
-  CORE::LINALG::SerialDenseMatrix Fenhvo;             // EAS matrix Fenhv
-  CORE::LINALG::SerialDenseMatrix Fenhv;              // EAS matrix Fenhv
-  CORE::LINALG::SerialDenseMatrix Fmo;                // total def.grad. matrix at t_{n}
-  CORE::LINALG::SerialDenseMatrix Fm;                 // total def.grad. matrix at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix& Fmm = Fmo;         // total mid-def.grad. matrix
-  CORE::LINALG::SerialDenseMatrix Pvmm;               // first Piola-Kirchhoff stress vector
-  CORE::LINALG::SerialDenseMatrix Xjm0;               // Jacobian Matrix (origin)
-  double Xjdet0;                                      // determinant of #Xjm0
-  CORE::LINALG::SerialDenseVector Fuv0o;              // deformation gradient at origin at t_{n}
-  CORE::LINALG::SerialDenseVector Fuv0;               // deformation gradient at origin at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix boplin0;            // B-operator (origin)
-  CORE::LINALG::SerialDenseMatrix W0o;                // W-operator (origin) at t_{n}
-  CORE::LINALG::SerialDenseMatrix W0;                 // W-operator (origin) at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix& W0m = W0o;         // mid-W-operator (origin)
-  CORE::LINALG::SerialDenseMatrix Go;                 // G-operator at t_{n}
-  CORE::LINALG::SerialDenseMatrix G;                  // G-operator at t_{n+1}
-  CORE::LINALG::SerialDenseMatrix& Gm = Go;           // mid-G-operator
-  CORE::LINALG::SerialDenseMatrix Z;                  // Z-operator
-  CORE::LINALG::SerialDenseMatrix FmCF;               // FCF^T
-  CORE::LINALG::SerialDenseMatrix Kda;                // EAS matrix Kda
-  CORE::LINALG::SerialDenseMatrix Kad;                // EAS matrix Kad
-  CORE::LINALG::SerialDenseMatrix Kaa;                // EAS matrix Kaa
-  CORE::LINALG::SerialDenseVector feas;               // EAS portion of internal forces
+  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;     // EAS alphas at t_{n}
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;      // EAS alphas at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix* oldfeas = nullptr;    // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKad = nullptr;     // EAS history
+  CORE::LINALG::SerialDenseMatrix Fenhvo;                // EAS matrix Fenhv
+  CORE::LINALG::SerialDenseMatrix Fenhv;                 // EAS matrix Fenhv
+  CORE::LINALG::SerialDenseMatrix Fmo;                   // total def.grad. matrix at t_{n}
+  CORE::LINALG::SerialDenseMatrix Fm;                    // total def.grad. matrix at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& Fmm = Fmo;            // total mid-def.grad. matrix
+  CORE::LINALG::SerialDenseMatrix Pvmm;                  // first Piola-Kirchhoff stress vector
+  CORE::LINALG::SerialDenseMatrix Xjm0;                  // Jacobian Matrix (origin)
+  double Xjdet0;                                         // determinant of #Xjm0
+  CORE::LINALG::SerialDenseVector Fuv0o;                 // deformation gradient at origin at t_{n}
+  CORE::LINALG::SerialDenseVector Fuv0;        // deformation gradient at origin at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix boplin0;     // B-operator (origin)
+  CORE::LINALG::SerialDenseMatrix W0o;         // W-operator (origin) at t_{n}
+  CORE::LINALG::SerialDenseMatrix W0;          // W-operator (origin) at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& W0m = W0o;  // mid-W-operator (origin)
+  CORE::LINALG::SerialDenseMatrix Go;          // G-operator at t_{n}
+  CORE::LINALG::SerialDenseMatrix G;           // G-operator at t_{n+1}
+  CORE::LINALG::SerialDenseMatrix& Gm = Go;    // mid-G-operator
+  CORE::LINALG::SerialDenseMatrix Z;           // Z-operator
+  CORE::LINALG::SerialDenseMatrix FmCF;        // FCF^T
+  CORE::LINALG::SerialDenseMatrix Kda;         // EAS matrix Kda
+  CORE::LINALG::SerialDenseMatrix Kad;         // EAS matrix Kad
+  CORE::LINALG::SerialDenseMatrix Kaa;         // EAS matrix Kaa
+  CORE::LINALG::SerialDenseVector feas;        // EAS portion of internal forces
 
   // element co-ordinates
   for (int k = 0; k < numnode; ++k)
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
         for (int i = 0; i < Wall1::numstr_; ++i) (*elestrain)(ip, i) = Ev(i);
       }
       break;
@@ -302,7 +302,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         (*elestress)(ip, 0) = Smm(0, 0);  // 2nd Piola-Kirchhoff stress S_{11}
         (*elestress)(ip, 1) = Smm(1, 1);  // 2nd Piola-Kirchhoff stress S_{22}
         (*elestress)(ip, 2) = Smm(0, 2);  // 2nd Piola-Kirchhoff stress S_{12}
@@ -310,7 +310,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         if (iseas_)
           StressCauchy(ip, Fm(0, 0), Fm(1, 1), Fm(1, 1), Fm(1, 2), Smm, elestress);
         else

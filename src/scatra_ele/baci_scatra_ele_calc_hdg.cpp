@@ -67,11 +67,11 @@ DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::Instance(
          i != instances.end(); ++i)
     {
       delete i->second;
-      i->second = NULL;
+      i->second = nullptr;
     }
 
     instances.clear();
-    return NULL;
+    return nullptr;
   }
 
   return instances[disname];
@@ -1279,10 +1279,10 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddReacMat(
 
   CORE::LINALG::SerialDenseMatrix tempMat3(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
   tempMat3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->BTAMmat_, tempMat2,
-      0.0);  // = NULL*y1 - (-B^T) AM^{-1} I'* (-x1)
+      0.0);  // = nullptr*y1 - (-B^T) AM^{-1} I'* (-x1)
   CORE::LINALG::SerialDenseMatrix tempMat4(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
   tempMat4.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invCondmat_, tempMat3,
-      0.0);  // = y2 = ( D - (-B^T) AM^{-1} B)^-1  (NULL*y1 - (-B^T) AM^{-1} I'* (-x1))
+      0.0);  // = y2 = ( D - (-B^T) AM^{-1} B)^-1  (nullptr*y1 - (-B^T) AM^{-1} I'* (-x1))
 
   tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Bmat_, tempMat4,
       1.0);  // = I'*(-x1) -B y2
@@ -1310,7 +1310,7 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeNeum
   TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::ScaTraHDGEleCalc::ComputeNeumannBC");
 
   DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-  if (condition == NULL) dserror("Cannot access Neumann boundary condition!");
+  if (condition == nullptr) dserror("Cannot access Neumann boundary condition!");
 
   // get actual time
   const double time = scatraparatimint_->Time();
@@ -1659,7 +1659,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       double phi;
       double gradphi[nsd_];
 
-      dsassert(start_func != NULL, "funct not set for initial value");
+      dsassert(start_func != nullptr, "funct not set for initial value");
       if (DRT::Problem::Instance()
                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(*start_func - 1)
                   .NumberComponents() != 1 &&

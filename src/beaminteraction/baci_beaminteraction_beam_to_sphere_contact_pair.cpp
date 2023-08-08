@@ -29,7 +29,7 @@
  *-----------------------------------------------------------------------------------------------*/
 template <unsigned int numnodes, unsigned int numnodalvalues>
 BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::BeamToSphereContactPair()
-    : beam_element_(NULL), sphere_element_(NULL), contactflag_(false)
+    : beam_element_(nullptr), sphere_element_(nullptr), contactflag_(false)
 {
   // empty constructor
 }
@@ -62,7 +62,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
   // cast first element to Beam3Base
   beam_element_ = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(Element1());
 
-  if (beam_element_ == NULL)
+  if (beam_element_ == nullptr)
     dserror(
         "cast to Beam3Base failed! first element in BeamToSphereContactPair pair"
         " must be a beam element!");
@@ -74,7 +74,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
   // cast second element to RigidSphere
   sphere_element_ = dynamic_cast<const DRT::ELEMENTS::Rigidsphere*>(Element2());
 
-  if (sphere_element_ == NULL)
+  if (sphere_element_ == nullptr)
     dserror(
         "cast to Rigidsphere failed! second element in BeamToSphereContactPair pair"
         " must be a Rigidsphere element!");
@@ -117,13 +117,13 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
   unsigned int dim2 = 3;
 
   // resize and initialize variables to zero
-  if (forcevec1 != NULL) forcevec1->size(dim1);
-  if (forcevec2 != NULL) forcevec2->size(dim2);
+  if (forcevec1 != nullptr) forcevec1->size(dim1);
+  if (forcevec2 != nullptr) forcevec2->size(dim2);
 
-  if (stiffmat11 != NULL) stiffmat11->shape(dim1, dim1);
-  if (stiffmat12 != NULL) stiffmat12->shape(dim1, dim2);
-  if (stiffmat21 != NULL) stiffmat21->shape(dim2, dim1);
-  if (stiffmat22 != NULL) stiffmat22->shape(dim2, dim2);
+  if (stiffmat11 != nullptr) stiffmat11->shape(dim1, dim1);
+  if (stiffmat12 != nullptr) stiffmat12->shape(dim1, dim2);
+  if (stiffmat21 != nullptr) stiffmat21->shape(dim2, dim1);
+  if (stiffmat22 != nullptr) stiffmat22->shape(dim2, dim2);
 
   //**********************************************************************
   // Evaluation of contact forces and stiffness
@@ -196,7 +196,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     //**********************************************************************
 
     // call function to evaluate contact forces
-    if (forcevec1 != NULL and forcevec2 != NULL)
+    if (forcevec1 != nullptr and forcevec2 != nullptr)
     {
       EvaluateFcContact(*forcevec1, *forcevec2,
           Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, N1_i,
@@ -204,7 +204,8 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
     }
 
     // call function to evaluate contact stiffness
-    if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+    if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+        stiffmat22 != nullptr)
     {
       EvaluateStiffcContact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
           Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, norm, x1,
@@ -282,7 +283,7 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         //**********************************************************************
 
         // call function to evaluate contact forces
-        if (forcevec1 != NULL and forcevec2 != NULL)
+        if (forcevec1 != nullptr and forcevec2 != nullptr)
         {
           EvaluateFcContact(*forcevec1, *forcevec2,
               Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, N1_i,
@@ -290,7 +291,8 @@ bool BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Evaluat
         }
 
         // call function to evaluate contact stiffness
-        if (stiffmat11 != NULL and stiffmat12 != NULL and stiffmat21 != NULL and stiffmat22 != NULL)
+        if (stiffmat11 != nullptr and stiffmat12 != nullptr and stiffmat21 != nullptr and
+            stiffmat22 != nullptr)
         {
           EvaluateStiffcContact(*stiffmat11, *stiffmat12, *stiffmat21, *stiffmat22,
               Params()->BeamToSphereContactParams()->BeamToSpherePenaltyParam(), gap, normal, norm,

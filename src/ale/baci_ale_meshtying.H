@@ -62,11 +62,11 @@ namespace ALE
   {
    public:
     //! Constructor
-    Meshtying(Teuchos::RCP<DRT::Discretization> dis,         ///> actual discretisation
-        CORE::LINALG::Solver& solver,                        ///> solver
-        int msht,                                            ///> meshting parameter list
-        int nsd,                                             ///> number space dimensions
-        const UTILS::MapExtractor* surfacesplitter = NULL);  ///> surface splitter
+    Meshtying(Teuchos::RCP<DRT::Discretization> dis,            ///> actual discretisation
+        CORE::LINALG::Solver& solver,                           ///> solver
+        int msht,                                               ///> meshting parameter list
+        int nsd,                                                ///> number space dimensions
+        const UTILS::MapExtractor* surfacesplitter = nullptr);  ///> surface splitter
 
     virtual ~Meshtying() { return; };
 

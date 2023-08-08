@@ -41,27 +41,27 @@ MAT::PAR::FluidPoroPhaseDof* MAT::PAR::FluidPoroPhaseDof::CreatePhaseDof(int pha
       DRT::Problem::Instance(probinst)->Materials()->ById(phasedofId);
 
   // phase law
-  MAT::PAR::FluidPoroPhaseDof* phasedof = NULL;
+  MAT::PAR::FluidPoroPhaseDof* phasedof = nullptr;
 
   switch (curmat->Type())
   {
     case INPAR::MAT::m_fluidporo_phasedof_diffpressure:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofDiffPressure(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofDiffPressure*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_phasedof_pressure:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofPressure(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofPressure*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_fluidporo_phasedof_saturation:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::FluidPoroPhaseDofSaturation(curmat));
       phasedof = static_cast<MAT::PAR::FluidPoroPhaseDofSaturation*>(curmat->Parameter());
       break;

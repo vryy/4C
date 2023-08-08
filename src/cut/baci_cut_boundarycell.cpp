@@ -178,7 +178,7 @@ void CORE::GEO::CUT::BoundaryCell::DumpGmsh(std::ofstream& file, int* value)
   int default_value = facet_->SideId();
   if (not value) value = &default_value;
 
-  OUTPUT::GmshCellDump(file, Shape(), xyz_, NULL, value);
+  OUTPUT::GmshCellDump(file, Shape(), xyz_, nullptr, value);
 }
 
 /*----------------------------------------------------------------------------*

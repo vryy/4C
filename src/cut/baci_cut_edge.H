@@ -175,7 +175,7 @@ namespace CORE::GEO
        *
        *  \param mesh       (in)  : cut mesh, necessary to add cut points to the point pool
        *  \param other      (in)  : pointer to the other edge object
-       *  \param side       (in)  : pointer to the other side object(can be NULL)
+       *  \param side       (in)  : pointer to the other side object(can be nullptr)
        *  \param cut_points (out) : if the cut was successful, this set will hold the new cut points
        *  \param tolerance  (out) : tolerance used for the intersection ( defined by the cut kernel
        * )
@@ -210,7 +210,7 @@ namespace CORE::GEO
       \brief Computes the points at which both the sides intersect
        */
       bool FindCutPointsMeshCut(
-          Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints = NULL);
+          Mesh& mesh, Element* element, Side& side, Side& other, PointSet* cutpoints = nullptr);
 
       /*!
       \brief Simplified version of the FindCutPoints as used by the function LevelSetCut
@@ -337,7 +337,7 @@ namespace CORE::GEO
        *
        *  \param mesh       (in)  : cut mesh, necessary to add cut points to the point pool
        *  \param other      (in)  : pointer to the other edge object
-       *  \param side       (in)  : pointer to the other side object(can be NULL)
+       *  \param side       (in)  : pointer to the other side object(can be nullptr)
        *  \param cut_points (out) : if the cut was successful, this set will hold the new cut points
        *  \param tolerance  (out) : tolerance used for the intersection ( defined by the cut kernel
        * )
@@ -420,7 +420,7 @@ namespace CORE::GEO
       template <::DRT::Element::DiscretizationType edgetype>
       Edge* CreateConcreteEdge(const std::vector<Node*>& nodes, int probdim) const
       {
-        Edge* e = NULL;
+        Edge* e = nullptr;
         switch (probdim)
         {
           case 2:

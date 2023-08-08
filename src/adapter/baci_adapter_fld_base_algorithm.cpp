@@ -564,7 +564,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // =================================================================================
   // Safety Check for usage of DESIGN SURF VOLUMETRIC FLOW CONDITIONS       AN 06/2014
   // =================================================================================
-  if (NULL != actdis->GetCondition("VolumetricSurfaceFlowCond"))
+  if (nullptr != actdis->GetCondition("VolumetricSurfaceFlowCond"))
   {
     if (not(ProblemType::fluid_redmodels == probtype or ProblemType::fsi_redmodels == probtype))
     {

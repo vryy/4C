@@ -110,9 +110,9 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::NormWRMS::checkStatus(
   // ---------------------------------------------------------
   // Determine if the Generic solver is a LineSearchBased solver
   // If it is not then return a "Converged" status
-  const NOX::Solver::Generic* test = NULL;
+  const NOX::Solver::Generic* test = nullptr;
   test = dynamic_cast<const NOX::Solver::LineSearchBased*>(&problem);
-  if (test == NULL)
+  if (test == nullptr)
     criteria[1] = NOX::StatusTest::Converged;
   else
   {

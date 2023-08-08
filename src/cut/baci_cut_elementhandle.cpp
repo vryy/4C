@@ -375,7 +375,7 @@ void CORE::GEO::CUT::ElementHandle::BoundaryCellGaussPointsLin(
     //
     //      // ask for level-set cutting side
     //      bool is_ls_side = wizard->HasLSCuttingSide( sid );
-    //      if ( side==NULL and !is_ls_side )
+    //      if ( side==nullptr and !is_ls_side )
     //      {
     //        throw std::runtime_error( "no side with given id available fo combined mesh and
     //        level-set cut" );
@@ -842,8 +842,8 @@ void CORE::GEO::CUT::QuadraticElementHandle::BuildCellSets(
       // maybe the vcs of one subelement are not connected within one subelement,
       // but within one global element, therefore more than one vc of one subelements
       // may be connected.
-      //        cell->Neighbors( NULL, cells_to_connect, done, connected, elements );
-      cell->Neighbors(NULL, cells_to_connect, done, connected);
+      //        cell->Neighbors( nullptr, cells_to_connect, done, connected, elements );
+      cell->Neighbors(nullptr, cells_to_connect, done, connected);
 
       if (connected.size() > 0)
       {
@@ -894,7 +894,7 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
     for (int i = 0; i < 8; ++i)
     {
       int localnodeid = CORE::DRT::UTILS::eleNodeNumbering_hex27_surfaces[localsideid][i];
-      Node* n = mesh.GetNode(nodes[localnodeid], static_cast<double*>(NULL));
+      Node* n = mesh.GetNode(nodes[localnodeid], static_cast<double*>(nullptr));
       side_nodes[i] = n;
       node_nids.insert(nodes[localnodeid]);
       n->Coordinates(&side_xyze(0, i));
@@ -932,7 +932,7 @@ CORE::GEO::CUT::Hex20ElementHandle::Hex20ElementHandle(
   nodes_.reserve(20);
   for (int i = 0; i < 20; ++i)
   {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
     n->Coordinates(&xyze(0, i));
     lsvs(i) = n->LSV();
@@ -1090,7 +1090,7 @@ CORE::GEO::CUT::Hex27ElementHandle::Hex27ElementHandle(
   nodes_.reserve(27);
   for (int i = 0; i < 27; ++i)
   {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
   }
 
@@ -1233,7 +1233,7 @@ CORE::GEO::CUT::Tet10ElementHandle::Tet10ElementHandle(
   nodes_.reserve(10);
   for (int i = 0; i < 10; ++i)
   {
-    Node* n = mesh.GetNode(nids[i], static_cast<double*>(NULL));
+    Node* n = mesh.GetNode(nids[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
   }
 
@@ -1371,7 +1371,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
     for (int i = 0; i < 8; ++i)
     {
       int localnodeid = CORE::DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[localsideid][i];
-      Node* n = mesh.GetNode(nodes[localnodeid], static_cast<double*>(NULL));
+      Node* n = mesh.GetNode(nodes[localnodeid], static_cast<double*>(nullptr));
       side_nodes[i] = n;
       node_nids.insert(nodes[localnodeid]);
       n->Coordinates(&side_xyze(0, i));
@@ -1399,7 +1399,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
     for (int i = 0; i < 6; ++i)
     {
       int localnodeid = CORE::DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[localsideid][i];
-      Node* n = mesh.GetNode(nodes[localnodeid], static_cast<double*>(NULL));
+      Node* n = mesh.GetNode(nodes[localnodeid], static_cast<double*>(nullptr));
       tb_side_nodes[i] = n;
       node_nids.insert(nodes[localnodeid]);
       n->Coordinates(&tb_side_xyze(0, i));
@@ -1422,7 +1422,7 @@ CORE::GEO::CUT::Wedge15ElementHandle::Wedge15ElementHandle(
   nodes_.reserve(15);
   for (int i = 0; i < 15; ++i)
   {
-    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(NULL));
+    Node* n = mesh.GetNode(nodes[i], static_cast<double*>(nullptr));
     nodes_.push_back(n);
     n->Coordinates(&xyze(0, i));
     lsvs(i) = n->LSV();

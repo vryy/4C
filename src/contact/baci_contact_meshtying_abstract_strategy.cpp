@@ -1002,7 +1002,7 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
     // processor 0 does all the work
     if (output && Comm().MyPID() == 0)
     {
-      FILE* MyFile = NULL;
+      FILE* MyFile = nullptr;
       std::ostringstream filename;
       filename << "interface.txt";
       MyFile = fopen(filename.str().c_str(), "at+");
@@ -1242,7 +1242,7 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(
 
     // find this node in interface discretizations
     bool found = false;
-    DRT::Node* node = NULL;
+    DRT::Node* node = nullptr;
     for (int k = 0; k < (int)interface_.size(); ++k)
     {
       found = interface_[k]->Discret().HaveGlobalNode(gid);

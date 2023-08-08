@@ -261,7 +261,7 @@ void XFEM::CouplingBase::SetElementConditions()
   cutterele_conds_.reserve(nummycolele);
 
   // initialize the vector invalid coupling-condition type "NONE"
-  EleCoupCond init_pair = EleCoupCond(INPAR::XFEM::CouplingCond_NONE, NULL);
+  EleCoupCond init_pair = EleCoupCond(INPAR::XFEM::CouplingCond_NONE, nullptr);
   for (int lid = 0; lid < nummycolele; lid++) cutterele_conds_.push_back(init_pair);
 
   //-----------------------------------------------------------------------------------
@@ -285,7 +285,7 @@ void XFEM::CouplingBase::SetElementConditions()
       std::vector<DRT::Condition*> mynewcond;
       GetConditionByCouplingId(mycond, coupling_id_, mynewcond);
 
-      DRT::Condition* cond_unique = NULL;
+      DRT::Condition* cond_unique = nullptr;
 
       // safety checks
       if (mynewcond.size() == 0)
@@ -532,7 +532,7 @@ void XFEM::CouplingBase::EvaluateNeumannFunction(CORE::LINALG::Matrix<6, 1>& itr
 void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, const double* x,
     const DRT::Condition* cond, const double time)
 {
-  if (cond == NULL) dserror("invalid condition");
+  if (cond == nullptr) dserror("invalid condition");
 
   const int numdof = cond->GetInt("numdof");
 
@@ -576,7 +576,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 
     // uniformly distributed noise
     double noise = 0.0;
-    if (percentage != NULL)
+    if (percentage != nullptr)
     {
       if (percentage->size() != 1) dserror("expect vector of length one!");
       const double perc = percentage->at(0);
@@ -596,7 +596,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
 void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const double* x,
     const double& val, const DRT::Condition* cond, const double time)
 {
-  if (cond == NULL) dserror("invalid condition");
+  if (cond == nullptr) dserror("invalid condition");
 
   const int numdof = 1;
 
@@ -637,7 +637,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
 
     // uniformly distributed noise
     double noise = 0.0;
-    if (percentage != NULL)
+    if (percentage != nullptr)
     {
       if (percentage->size() != 1) dserror("expect vector of length one!");
       const double perc = percentage->at(0);

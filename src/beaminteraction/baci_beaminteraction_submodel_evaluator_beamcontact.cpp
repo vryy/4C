@@ -888,7 +888,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     //    using FEMatrices and FEvectors -> || (*eiter)->Owner() != myrank not necessary)
     // note: as we are only looping over beam elements, only beam to beam contact needs id check
     // here
-    else if (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != NULL and
+    else if (dynamic_cast<DRT::ELEMENTS::Beam3Base*>(*eiter) != nullptr and
              not(currele->Id() < (*eiter)->Id()))
     {
       toerase = true;
@@ -929,7 +929,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::CreateBeamContactElementPa
     ele_ptrs[0] = DiscretPtr()->gElement(elegid);
 
 #ifdef DEBUG
-    if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[0]) == NULL)
+    if (dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[0]) == nullptr)
       dserror("first element of element pair must be a beam element");
 #endif
 

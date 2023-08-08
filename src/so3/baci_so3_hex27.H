@@ -282,7 +282,7 @@ namespace DRT
 
       Evaluate So_hex27 element stiffness, mass, internal forces, etc.
 
-      If NULL on input, the controling method does not expect the element
+      If nullptr on input, the controling method does not expect the element
       to fill these matrices or vectors.
 
       \return 0 if successful, negative otherwise
@@ -312,7 +312,7 @@ namespace DRT
       \param discretization (in): A reference to the underlying discretization
       \param condition (in)     : The condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       \return 0 if successful, negative otherwise
       */

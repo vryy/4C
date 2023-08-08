@@ -287,7 +287,7 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
       // find the node on current proc
       Node* n = mesh_.GetNode(nid);
 
-      if (n != NULL)  // node on this proc found
+      if (n != nullptr)  // node on this proc found
       {
         Point* p = n->point();
 
@@ -327,7 +327,7 @@ void CORE::GEO::CUT::Parallel::exportNodePositionData()
       // boundary or element itself)
       Node* n = mesh_.GetNode(nids);
 
-      if (n != NULL)  // node on this proc found
+      if (n != nullptr)  // node on this proc found
       {
         Point* p = n->point();
 
@@ -381,7 +381,7 @@ void CORE::GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
     Node* n = mesh_.GetNode(nid);
 
     // set the node position for the node and distribute it to facets, vcs ...
-    if (n != NULL)
+    if (n != nullptr)
     {
       setPositionForNode(n, received_pos);
     }
@@ -406,7 +406,7 @@ void CORE::GEO::CUT::Parallel::distributeMyReceivedNodePositionData()
     Node* n = mesh_.GetNode(nids);
 
     // set the node position for the node and distribute it to facets, vcs ...
-    if (n != NULL)
+    if (n != nullptr)
     {
       setPositionForNode(n, received_pos);
     }
@@ -641,10 +641,10 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
       int peid = (*vc_data)->peid_;
 
       // find the volumecell on myrank
-      VolumeCell* my_vc = NULL;
+      VolumeCell* my_vc = nullptr;
       double tol = PARALLEL_COORD_TOL;
       int step = 0;
-      while (my_vc == NULL && step < 10)
+      while (my_vc == nullptr && step < 10)
       {
         my_vc = findVolumeCell(*(*vc_data), tol);
         if (!my_vc)
@@ -656,7 +656,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
         ++step;
       }
 
-      if (my_vc == NULL) dserror("no corresponding volumecell for vc in element %d found", peid);
+      if (my_vc == nullptr) dserror("no corresponding volumecell for vc in element %d found", peid);
 
 
       for (std::map<int, int>::iterator node_dofsetnumber_it = node_dofsetnumber_map.begin();
@@ -685,9 +685,9 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
             // std::cout << "index for node " << nid << " is: " << index << std::endl;
 
             // get the right dofsetnumber for the node
-            if (my_vc != NULL)
+            if (my_vc != nullptr)
             {
-              // std::cout << "in my_vc != NULL" << std::endl;
+              // std::cout << "in my_vc != nullptr" << std::endl;
               const std::vector<int> nds = my_vc->NodalDofSet();
 
               if ((int)(nds.size()) == 0)
@@ -728,7 +728,7 @@ void CORE::GEO::CUT::Parallel::exportDofSetData(bool include_inner)
                 dserror("the new dofset number for node %d is not valid", nid);
             }
             else
-              dserror("Volumecell Pointer is NULL");
+              dserror("Volumecell Pointer is nullptr");
 
 
 
@@ -786,7 +786,7 @@ void CORE::GEO::CUT::Parallel::distributeDofSetData()
 
     std::vector<int> nds;
 
-    if (e != NULL)
+    if (e != nullptr)
     {
       if ((*data)->inside_cell_)
       {
@@ -844,11 +844,11 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Parallel::findVolumeCell(
 {
   bool vc_found = true;
 
-  VolumeCell* my_vc = NULL;
+  VolumeCell* my_vc = nullptr;
 
   ElementHandle* pele = parentintersection_.GetElement(vc_data.peid_);
 
-  if (pele == NULL) dserror("element with Id %i not found on proc %i", vc_data.peid_, myrank_);
+  if (pele == nullptr) dserror("element with Id %i not found on proc %i", vc_data.peid_, myrank_);
 
   plain_volumecell_set my_vcs;
 
@@ -1254,7 +1254,7 @@ int CORE::GEO::CUT::Parallel::getDofSetVecIndex(int nid, int eid)
 {
   ::DRT::Element* ele = discret_->gElement(eid);
 
-  if (ele == NULL) dserror("element %d not available on proc %d", eid, myrank_);
+  if (ele == nullptr) dserror("element %d not available on proc %d", eid, myrank_);
 
   int numnode = ele->NumNode();
 

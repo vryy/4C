@@ -66,7 +66,7 @@ namespace CORE::LINALG
      *
      *  \author hiermeier \date 01/2018 */
     bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const CORE::LINALG::SparseMatrix* trafo = NULL) const override;
+        const CORE::LINALG::SparseMatrix* trafo = nullptr) const override;
 
     //@}
 

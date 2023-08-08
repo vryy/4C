@@ -108,7 +108,7 @@ namespace ADAPTER
     virtual void WriteRestart(IO::DiscretizationWriter& output);
     virtual void ReadRestart(IO::DiscretizationReader& reader);
     void CreateActiveSlipToggle(Teuchos::RCP<Epetra_Vector>* active,
-        Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old = NULL);
+        Teuchos::RCP<Epetra_Vector>* slip, Teuchos::RCP<Epetra_Vector>* active_old = nullptr);
     void CreateForceVec(Teuchos::RCP<Epetra_Vector>& n, Teuchos::RCP<Epetra_Vector>& t);
     bool HasContact() { return contact_regularization_; }
     double ContactRes() { return contact_rhs_norm_; }

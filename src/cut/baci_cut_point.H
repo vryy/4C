@@ -99,7 +99,7 @@ namespace CORE::GEO
       /*! \brief Add this element to the list of elements that are cut by this point */
       void AddElement(Element* e)
       {
-        if (e != NULL)
+        if (e != nullptr)
         {
           cut_elements_.insert(e);
         }
@@ -305,8 +305,8 @@ namespace CORE::GEO
       const std::vector<Point*> GetMergedPoints() { return merged_points_; };
 
 #if CUT_CREATION_INFO
-      // Add merged pair. If the coord = NULL, it means it was inserted without actual computation
-      // of the coordinate, solely on topology e.g. in the InsertCut
+      // Add merged pair. If the coord = nullptr, it means it was inserted without actual
+      // computation of the coordinate, solely on topology e.g. in the InsertCut
       void AddMergedPair(const std::pair<Side*, Edge*>& inter, CORE::LINALG::Matrix<3, 1>* coord);
 
       const std::map<std::pair<Side*, Edge*>, std::pair<CORE::LINALG::Matrix<3, 1>, bool>>&
@@ -455,16 +455,16 @@ namespace CORE::GEO
         std::fill(this->x_ + probDim, this->x_ + 3, 0.0);
 
         // The x_ coordinate must be set, before these methods are called!
-        if (cut_edge != NULL)
+        if (cut_edge != nullptr)
         {
           AddEdge(cut_edge);
         }
-        if (cut_side != NULL)
+        if (cut_side != nullptr)
         {
           AddSide(cut_side);
         }
 
-        if ((cut_side != NULL) && (cut_edge != NULL)) this->AddPair(cut_side, cut_edge);
+        if ((cut_side != nullptr) && (cut_edge != nullptr)) this->AddPair(cut_side, cut_edge);
       };
 
       /// destructor

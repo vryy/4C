@@ -86,8 +86,8 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
       // ---------------------------------------------------------------
 
       // step (1) find both inlet and outlet nodes
-      DRT::Node* ndi = NULL;  // ith node
-      DRT::Node* ndl = NULL;  // last node
+      DRT::Node* ndi = nullptr;  // ith node
+      DRT::Node* ndl = nullptr;  // last node
 
       for (unsigned int n = 0; n < nodes->size(); n++)
       {
@@ -103,8 +103,8 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper(
         }
       }
 
-      if (ndl == NULL) dserror("artery %d has no outlet node!", Artery_Number);
-      if (ndi == NULL) dserror("artery %d has no inlet node!", Artery_Number);
+      if (ndl == nullptr) dserror("artery %d has no outlet node!", Artery_Number);
+      if (ndi == nullptr) dserror("artery %d has no inlet node!", Artery_Number);
 
 
       // loop over all nodes

@@ -217,7 +217,7 @@ void DRT::ELEMENTS::Spring3::TcurrBeam3r(
   if (eot_el1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
     DRT::ELEMENTS::Beam3r* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3r*>(Element1);
-    if (fil1 == NULL) return;
+    if (fil1 == nullptr) return;
     int nodenumber = 0;
     if (node1->Id() != fil1->NodeIds()[0]) nodenumber = 1;
     Tcurr1 = fil1->Tcurr((int)fil1->NodeIds()[nodenumber]);
@@ -227,7 +227,7 @@ void DRT::ELEMENTS::Spring3::TcurrBeam3r(
   if (Element2->ElementType() == DRT::ELEMENTS::Beam3rType::Instance())
   {
     DRT::ELEMENTS::Beam3r* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3r*>(Element2);
-    if (fil2 == NULL) return;
+    if (fil2 == nullptr) return;
     int nodenumber = 0;
     if (node1->Id() != fil2->NodeIds()[0]) nodenumber = 1;
     Tcurr2 = fil2->Tcurr((int)fil2->NodeIds()[nodenumber]);
@@ -245,7 +245,7 @@ void DRT::ELEMENTS::Spring3::TrefBeam3r(
   if (eot_el1 == DRT::ELEMENTS::Beam3rType::Instance())
   {
     DRT::ELEMENTS::Beam3r* fil1 = dynamic_cast<DRT::ELEMENTS::Beam3r*>(Element1);
-    if (fil1 == NULL) return;
+    if (fil1 == nullptr) return;
     Tref1 = fil1->Treffirst();
   }
   DRT::Node* node2 = this->Nodes()[1];
@@ -253,7 +253,7 @@ void DRT::ELEMENTS::Spring3::TrefBeam3r(
   if (Element2->ElementType() == DRT::ELEMENTS::Beam3rType::Instance())
   {
     DRT::ELEMENTS::Beam3r* fil2 = dynamic_cast<DRT::ELEMENTS::Beam3r*>(Element2);
-    if (fil2 == NULL) return;
+    if (fil2 == nullptr) return;
     Tref2 = fil2->Treffirst();
   }
   return;
@@ -572,7 +572,7 @@ int DRT::ELEMENTS::Spring3Type::Initialize(DRT::Discretization& dis)
     if (!currele) dserror("cast to Spring3* failed");
 
     // getting element's nodal coordinates and treating them as reference configuration
-    if (currele->Nodes()[0] == NULL || currele->Nodes()[1] == NULL)
+    if (currele->Nodes()[0] == nullptr || currele->Nodes()[1] == nullptr)
       dserror("Cannot get nodes in order to compute reference configuration'");
     else
     {
@@ -584,7 +584,7 @@ int DRT::ELEMENTS::Spring3Type::Initialize(DRT::Discretization& dis)
     DRT::Element* Element = currele->Nodes()[0]->Elements()[0];
     // Check via dynamic cast, if it's a beam3eb element
     DRT::ELEMENTS::Beam3eb* BeamElement = dynamic_cast<DRT::ELEMENTS::Beam3eb*>(Element);
-    if (BeamElement != NULL)
+    if (BeamElement != nullptr)
     {
       for (int k = 0; k < 2; k++)  // element has two nodes
         for (int l = 0; l < 3; l++)

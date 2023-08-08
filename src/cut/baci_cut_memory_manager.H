@@ -242,7 +242,7 @@ namespace CORE::GEO
 
       GenericMemoryPool& GetMemoryPoolAllocator()
       {
-        if (mem_ == NULL)
+        if (mem_ == nullptr)
           throw std::runtime_error("Memory pool allocator was not yet created");
         else
           return (*dynamic_cast<GenericMemoryPool*>(mem_));

@@ -224,8 +224,8 @@ void MAT::MultiplicativeSplitDefgrad_ElastHyper::Evaluate(
 
   // if cmat != nullptr, we are evaluating the structural residual and linearizations, so we need to
   // calculate the stresses and the cmat if you like to evaluate the off-diagonal block of your
-  // monolithic system (structural residual w.r.t. dofs of another field), you need to pass NULL as
-  // the cmat when you call Evaluate() in the element
+  // monolithic system (structural residual w.r.t. dofs of another field), you need to pass nullptr
+  // as the cmat when you call Evaluate() in the element
   if (cmat != nullptr)
   {
     // cmat = 2 dS/dC = 2 \frac{\partial S}{\partial C} + 2 \frac{\partial S}{\partial F_{in}^{-1}}

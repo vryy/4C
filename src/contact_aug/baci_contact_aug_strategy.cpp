@@ -1313,7 +1313,7 @@ void CONTACT::AUG::Strategy::EvalAugmentedForces()
   // scale the averaged weighted gap elementwise by cn
   MultiplyElementwise(Data().Cn(), Data().GActiveNodeRowMap(), awgapn, false);
 
-  std::array<double*, 2> values = {NULL, NULL};
+  std::array<double*, 2> values = {nullptr, nullptr};
 
   values[lm_term] = zn.Values();
   values[g_term] = awgapn.Values();
@@ -1321,7 +1321,7 @@ void CONTACT::AUG::Strategy::EvalAugmentedForces()
   const Epetra_MultiVector zn_awgapn(View, Data().GActiveNDofRowMap(), values.data(), 2);
 
   /*----------------- SLAVE SIDE ---------------------------------------------*/
-  std::array<double*, 2> f_values = {NULL, NULL};
+  std::array<double*, 2> f_values = {nullptr, nullptr};
   f_values[lm_term] = Data().SlForceLm().Values();
   f_values[g_term] = Data().SlForceG().Values();
 
@@ -1750,7 +1750,7 @@ Teuchos::RCP<const CORE::LINALG::SparseMatrix> CONTACT::AUG::Strategy::GetWeight
               Teuchos::rcp(new CORE::LINALG::SparseMatrix(*Data().GActiveNDofRowMapPtr(), 100));
 
           if (Data().DMatrixPtr().is_null() or Data().MMatrixPtr().is_null())
-            dserror("D-Matrix or/and M-Matrix are NULL!");
+            dserror("D-Matrix or/and M-Matrix are nullptr!");
 
           wgap_grad->Add(*Data().DMatrixPtr(), false, 1.0, 0.0);
           wgap_grad->Add(*Data().MMatrixPtr(), false, 1.0, 0.0);

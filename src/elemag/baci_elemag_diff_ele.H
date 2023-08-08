@@ -271,19 +271,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -461,7 +461,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentMasterElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != NULL,
+        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != nullptr,
             "Master element is no elemag_diff element");
         return static_cast<DRT::ELEMENTS::ElemagDiff*>(parent);
       }
@@ -473,7 +473,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentSlaveElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != NULL,
+        dsassert(dynamic_cast<DRT::ELEMENTS::ElemagDiff*>(parent) != nullptr,
             "Slave element is no elemag_diff element");
         return static_cast<DRT::ELEMENTS::ElemagDiff*>(parent);
       }

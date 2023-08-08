@@ -492,7 +492,7 @@ namespace DRT
     if (icurr != intdata_.end())
       return icurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a std::vector<double> specialization                   (public) |
@@ -506,7 +506,7 @@ namespace DRT
     if (dcurr != doubledata_.end())
       return dcurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a std::map<int,std::vector<double>> specialization     (public) |
@@ -520,7 +520,7 @@ namespace DRT
     if (mcurr != mapdata_.end())
       return mcurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a string specialization                                (public) |
@@ -533,7 +533,7 @@ namespace DRT
     if (scurr != stringdata_.end())
       return &(scurr->second);
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a Epetra_SerialDensMatrix specialization               (public) |
@@ -547,7 +547,7 @@ namespace DRT
     if (mcurr != matdata_.end())
       return mcurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a Epetra_MultiVector specialization                    (public) |
@@ -561,7 +561,7 @@ namespace DRT
     if (curr != evecdata_.end())
       return curr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a Epetra_MultiVector specialization                    (public) |
@@ -578,13 +578,13 @@ namespace DRT
       if (!fool)
       {
         dserror("Object in container is NOT Epetra_Vector");
-        return NULL;
+        return nullptr;
       }
       else
         return fool;
     }
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a std::vector<int> specialization                      (public) |
@@ -597,7 +597,7 @@ namespace DRT
     if (icurr != intdata_.end())
       return icurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a std::vector<double> specialization                   (public) |
@@ -611,7 +611,7 @@ namespace DRT
     if (dcurr != doubledata_.end())
       return dcurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a std::vector<double> specialization                   (public) |
@@ -625,7 +625,7 @@ namespace DRT
     if (mcurr != mapdata_.end())
       return mcurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a string specialization                                (public) |
@@ -638,7 +638,7 @@ namespace DRT
     if (scurr != stringdata_.end())
       return &(scurr->second);
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a Epetra_SerialDensMatrix specialization               (public) |
@@ -652,7 +652,7 @@ namespace DRT
     if (mcurr != matdata_.end())
       return mcurr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a Epetra_MultiVector specialization                    (public) |
@@ -666,7 +666,7 @@ namespace DRT
     if (curr != evecdata_.end())
       return curr->second.get();
     else
-      return NULL;
+      return nullptr;
   }
   /*----------------------------------------------------------------------*
    |  Get a Epetra_MultiVector specialization                    (public) |
@@ -686,8 +686,8 @@ namespace DRT
         return fool;
     }
     else
-      return NULL;
-    return NULL;
+      return nullptr;
+    return nullptr;
   }
 }  // end of namespace DRT
 
@@ -698,7 +698,7 @@ namespace DRT
 int DRT::Container::GetInt(const std::string& name) const
 {
   const std::vector<int>* vecptr = Get<std::vector<int>>(name);
-  if (vecptr == NULL) dserror("Integer %s cannot be read from the container.", name.c_str());
+  if (vecptr == nullptr) dserror("Integer %s cannot be read from the container.", name.c_str());
   if (vecptr->size() != 1) dserror("Trying to read integer from vector of wrong length.");
   return (*vecptr)[0];
 }
@@ -710,7 +710,7 @@ int DRT::Container::GetInt(const std::string& name) const
 double DRT::Container::GetDouble(const std::string& name) const
 {
   const std::vector<double>* vecptr = Get<std::vector<double>>(name);
-  if (vecptr == NULL) dserror("Double %s cannot be read from the container.", name.c_str());
+  if (vecptr == nullptr) dserror("Double %s cannot be read from the container.", name.c_str());
   if (vecptr->size() != 1) dserror("Trying to read double from vector of wrong length.");
   return (*vecptr)[0];
 }

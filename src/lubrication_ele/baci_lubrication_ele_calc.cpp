@@ -48,7 +48,7 @@ DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::LubricationEleCalc(const st
       lubricationvarmanager_(Teuchos::rcp(
           new LubricationEleInternalVariableManager<nsd_, nen_>())),  // internal variable manager
       eid_(0),
-      ele_(NULL),
+      ele_(nullptr),
       Dt_(0.0),
 
       // heightint_(0.0),
@@ -201,7 +201,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
 
   // get the global vector
   Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(ndsvel, "av_tang_vel");
-  if (vel.is_null()) dserror("got NULL pointer for \"av_tang_vel\"");
+  if (vel.is_null()) dserror("got nullptr pointer for \"av_tang_vel\"");
 
   const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 
@@ -219,7 +219,7 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::ExtractElementAndNodeV
     // 1.1 Extract the relative tangential velocity
     // get the global vector
     auto velrel = discretization.GetState(ndsvel, "rel_tang_vel");
-    if (velrel.is_null()) dserror("got NULL pointer for \"rel_tang_vel\"");
+    if (velrel.is_null()) dserror("got nullptr pointer for \"rel_tang_vel\"");
 
     const int numveldofpernode = la[ndsvel].lm_.size() / nen_;
 

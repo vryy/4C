@@ -173,7 +173,7 @@ void BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::Unpack(const std::vector<
   {
     DRT::ParObject* object = DRT::UTILS::Factory(dataele);  // Unpack is done here
     DRT::ELEMENTS::Beam3r* linkele = dynamic_cast<DRT::ELEMENTS::Beam3r*>(object);
-    if (linkele == NULL)
+    if (linkele == nullptr)
       dserror("failed to unpack Beam3r object within BeamLinkBeam3rLine2RigidJointed");
     linkele_ = Teuchos::rcp(linkele);
   }
@@ -198,7 +198,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForce(
   CORE::LINALG::SerialDenseVector force(12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-      disp_totlag_centerline, Qnode, NULL, NULL, &force, NULL);
+      disp_totlag_centerline, Qnode, nullptr, nullptr, &force, nullptr);
 
   // Todo maybe we can avoid this copy by setting up 'force' as a view on the
   //      two separate force vectors ?
@@ -227,7 +227,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateStiff(
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-      disp_totlag_centerline, Qnode, &stiffmat, NULL, NULL, NULL);
+      disp_totlag_centerline, Qnode, &stiffmat, nullptr, nullptr, nullptr);
 
   // Todo can we use std::copy here or even set up 'stiffmat' as a view on the
   //      four individual sub-matrices ?
@@ -261,7 +261,7 @@ bool BEAMINTERACTION::BeamLinkBeam3rLine2RigidJointed::EvaluateForceStiff(
   CORE::LINALG::SerialDenseMatrix stiffmat(12, 12, true);
 
   linkele_->CalcInternalAndInertiaForcesAndStiff<2, 2, 1>(
-      disp_totlag_centerline, Qnode, &stiffmat, NULL, &force, NULL);
+      disp_totlag_centerline, Qnode, &stiffmat, nullptr, &force, nullptr);
 
   std::copy(&force(0), &force(0) + 6, &forcevec1(0));
   std::copy(&force(0) + 6, &force(0) + 12, &forcevec2(0));

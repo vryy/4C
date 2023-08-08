@@ -20,9 +20,9 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::MatchingOctree::MatchingOctree()
-    : discret_(NULL),
+    : discret_(nullptr),
       tol_(-1.0),
-      masterentityids_(NULL),
+      masterentityids_(nullptr),
       maxtreenodesperleaf_(-1),
       issetup_(false),
       isinit_(false)
@@ -789,7 +789,7 @@ void DRT::UTILS::NodeMatchingOctree::CalcPointCoordinate(
 void DRT::UTILS::NodeMatchingOctree::CalcPointCoordinate(DRT::ParObject* entity, double* coord)
 {
   DRT::Node* actnode = dynamic_cast<DRT::Node*>(entity);
-  if (actnode == NULL) dserror("dynamic_cast failed");
+  if (actnode == nullptr) dserror("dynamic_cast failed");
 
   const int dim = 3;
 
@@ -840,7 +840,7 @@ int DRT::UTILS::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::ParOb
 {
   // cast ParObject to Node
   DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
-  if (actnode == NULL) dserror("unpack of invalid data");
+  if (actnode == nullptr) dserror("unpack of invalid data");
 
   return actnode->Id();
 }  // NodeMatchingOctree::CheckValidEntityType
@@ -898,10 +898,10 @@ void DRT::UTILS::ElementMatchingOctree::CalcPointCoordinate(
 void DRT::UTILS::ElementMatchingOctree::CalcPointCoordinate(DRT::ParObject* entity, double* coord)
 {
   DRT::Element* actele = dynamic_cast<DRT::Element*>(entity);
-  if (actele == NULL) dserror("dynamic_cast failed");
+  if (actele == nullptr) dserror("dynamic_cast failed");
 
   DRT::Node** nodes = actele->Nodes();
-  if (nodes == NULL) dserror("could not get pointer to nodes");
+  if (nodes == nullptr) dserror("could not get pointer to nodes");
 
   const int numnode = actele->NumNode();
   const int dim = 3;
@@ -974,7 +974,7 @@ int DRT::UTILS::ElementMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::Pa
 {
   // cast ParObject to element
   DRT::Element* actele = dynamic_cast<DRT::Element*>(o.get());
-  if (actele == NULL) dserror("unpack of invalid data");
+  if (actele == nullptr) dserror("unpack of invalid data");
 
   // set nodal pointers for this element
   actele->BuildNodalPointers(nodes_);
@@ -1079,7 +1079,7 @@ Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElementElement::Create
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 DRT::UTILS::OctreeElement::OctreeElement()
-    : discret_(NULL),
+    : discret_(nullptr),
       layer_(-1),
       maxtreenodesperleaf_(-1),
       tol_(-1.0),

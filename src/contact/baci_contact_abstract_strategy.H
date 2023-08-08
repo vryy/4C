@@ -951,7 +951,7 @@ namespace CONTACT
      *  \author hiermeier */
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt,
-        const CONTACT::ParamsInterface* cparams = NULL) const
+        const CONTACT::ParamsInterface* cparams = nullptr) const
     {
       dserror("Not yet implemented!");
       exit(EXIT_FAILURE);
@@ -1258,7 +1258,7 @@ namespace CONTACT
      *
      *  \date 03/2016
      *  \author hiermeier */
-    void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, NULL); }
+    void Evaluate(CONTACT::ParamsInterface& cparams) { Evaluate(cparams, nullptr); }
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class
      *
@@ -1268,7 +1268,7 @@ namespace CONTACT
     void Evaluate(CONTACT::ParamsInterface& cparams,
         const std::vector<Teuchos::RCP<const Epetra_Vector>>* eval_vec)
     {
-      Evaluate(cparams, eval_vec, NULL);
+      Evaluate(cparams, eval_vec, nullptr);
     }
 
     /*! \brief Global evaluation method called from STR::MODELEVALUATOR::Contact class

@@ -42,7 +42,7 @@ namespace FSI
         std::vector<double>& somega, std::vector<int>& siterations, std::vector<double>& fomega,
         std::vector<int>& fiterations, std::vector<double>& aomega, std::vector<int>& aiterations,
         int analyze, INPAR::FSI::LinearBlockSolver strategy, INPAR::FSI::Verbosity verbosity,
-        FILE* err = NULL, OverlappingBlockMatrixHybridSchwarz* hybridPrec = NULL);
+        FILE* err = nullptr, OverlappingBlockMatrixHybridSchwarz* hybridPrec = nullptr);
 
     /** \name Attribute access functions */
     //@{

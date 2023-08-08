@@ -390,7 +390,7 @@ namespace CORE::GEO
 
       // create paralle cut surface between two sides
       virtual bool CreateParallelCutSurface(Mesh& mesh, Element* element, Side& other,
-          const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out = NULL);
+          const PointSet& cut, std::vector<Point*>* cut_point_for_lines_out = nullptr);
 
       void GetBoundaryCells(plain_boundarycell_set& bcells);
 
@@ -412,7 +412,7 @@ namespace CORE::GEO
             return n;
           }
         }
-        return NULL;
+        return nullptr;
       }
 
       const std::vector<Edge*>& Edges() const { return edges_; }
@@ -1046,7 +1046,7 @@ namespace CORE::GEO
       CORE::GEO::CUT::Side* CreateConcreteSide(int sid, const std::vector<Node*>& nodes,
           const std::vector<Edge*>& edges, int probdim) const
       {
-        Side* s = NULL;
+        Side* s = nullptr;
         // sanity check
         if (probdim < CORE::DRT::UTILS::DisTypeToDim<sidetype>::dim)
           dserror("Problem dimension is smaller than the side dimension!");

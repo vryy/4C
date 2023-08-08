@@ -63,11 +63,11 @@ namespace CONTACT
         /// derived
         Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
             const enum DRT::UTILS::MatBlockType& bt,
-            const CONTACT::ParamsInterface* cparams = NULL) const override;
+            const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
         /// derived
         void AddContributionsToMatrixBlockDisplDispl(CORE::LINALG::SparseMatrix& kdd,
-            const CONTACT::ParamsInterface* cparams = NULL) const override;
+            const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
         /// derived
         void RunPostApplyJacobianInverse(const CONTACT::ParamsInterface& cparams,

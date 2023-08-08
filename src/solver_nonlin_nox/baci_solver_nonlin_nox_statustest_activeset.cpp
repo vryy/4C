@@ -60,7 +60,7 @@ NOX::StatusTest::StatusType NOX::NLN::StatusTest::ActiveSet::checkStatus(
       // try to cast the nox group
       const NOX::NLN::CONSTRAINT::Group* cnlngrp =
           dynamic_cast<const NOX::NLN::CONSTRAINT::Group*>(&grp);
-      if (cnlngrp == NULL) dserror("NOX::NLN::CONSTRAINT::Group cast failed");
+      if (cnlngrp == nullptr) dserror("NOX::NLN::CONSTRAINT::Group cast failed");
 
       // do the actual active set check
       status_ = cnlngrp->GetActiveSetInfo(qtype_, activesetsize_);

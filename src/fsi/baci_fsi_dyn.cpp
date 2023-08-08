@@ -325,7 +325,7 @@ void fsi_immersed_drt()
 
   // Redistribute beams in the case of point coupling conditions
 
-  if (structdis->GetCondition("PointCoupling") != NULL)
+  if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->FillComplete(false, false, false);
     DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);
@@ -422,7 +422,7 @@ void fsi_ale_drt()
   //
   // We rely on this ordering in certain non-intuitive places!
 
-  if (structdis->GetCondition("PointCoupling") != NULL)
+  if (structdis->GetCondition("PointCoupling") != nullptr)
   {
     structdis->FillComplete(false, false, false);
     DRT::UTILS::RedistributeDiscretizationsByBinning({structdis}, true);

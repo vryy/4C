@@ -141,7 +141,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
         {
           bool initial_elefound =
               false;  // true if the element for a point was found on the processor
-          DRT::Element* initial_ele = NULL;  // pointer to the element where start point lies in
+          DRT::Element* initial_ele = nullptr;  // pointer to the element where start point lies in
           CORE::LINALG::Matrix<nsd, 1> initial_xi(
               true);  // local transformed coordinates of x w.r.t found ele
 
@@ -178,7 +178,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
                 initial_ele, data->initialpoint_, nds_curr, data->last_valid_vc_, step_np);
 
             if (nds_curr.size() == 0) dserror("no valid nds-vector for initial point found");
-            if (data->last_valid_vc_ != NULL and  // not an uncut element
+            if (data->last_valid_vc_ != nullptr and  // not an uncut element
                 data->last_valid_vc_->Position() != CORE::GEO::CUT::Point::outside)
             {
               dserror("initial point does not lie in the fluid");
@@ -208,8 +208,8 @@ void XFEM::XFLUID_SemiLagrange::compute(
           //------------------------------------
 
           // Initialization
-          bool elefound = false;     // true if the element for a point was found on the processor
-          DRT::Element* ele = NULL;  // pointer to the element where start point lies in
+          bool elefound = false;  // true if the element for a point was found on the processor
+          DRT::Element* ele = nullptr;  // pointer to the element where start point lies in
           CORE::LINALG::Matrix<nsd, 1> xi(
               true);  // local transformed coordinates of x w.r.t found ele
           CORE::LINALG::Matrix<nsd, 1> vel(true);  // velocity of the start point approximation
@@ -227,7 +227,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
             IO::cout << "\n\t\t\t ... start point approximation found in element: " << ele->Id();
 #endif
             //----------------------------------------------
-            DRT::Element* initial_ele = NULL;
+            DRT::Element* initial_ele = nullptr;
 
             if (!discret_->HaveGlobalElement(data->initial_eid_))
             {
@@ -532,7 +532,7 @@ void XFEM::XFLUID_SemiLagrange::NewtonLoop(DRT::Element*& ele,  /// pointer to e
       IO::cout << "\n\t\t\t\t ... elefound " << ele->Id();
 #endif
 
-      DRT::Element* initial_ele = NULL;
+      DRT::Element* initial_ele = nullptr;
 
       if (!discret_->HaveGlobalElement(data->initial_eid_))
       {
@@ -856,7 +856,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 #endif
 
       // Initialization
-      DRT::Element* ele = NULL;  // pointer to the element where pseudo-Lagrangian origin lies in
+      DRT::Element* ele = nullptr;  // pointer to the element where pseudo-Lagrangian origin lies in
       CORE::LINALG::Matrix<nsd, 1> xi(true);   // local coordinates of pseudo-Lagrangian origin
       CORE::LINALG::Matrix<nsd, 1> vel(true);  // velocity at pseudo-Lagrangian origin
       bool elefound = false;  // true if an element for a point was found on the processor
@@ -962,7 +962,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 
     CORE::GEO::CUT::Node* n = wizard_new_->GetNode(node->Id());
 
-    if (n != NULL)
+    if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
       const std::set<CORE::GEO::CUT::plain_volumecell_set, CORE::GEO::CUT::Cmp>& cellset =
@@ -1002,7 +1002,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
     {
       CORE::GEO::CUT::ElementHandle* eh = wizard_new_->GetElement(eles[i]);
 
-      if (eh != NULL)
+      if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
 
       // if we are here, then the element is a standard uncut element
@@ -1381,7 +1381,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// poi
 
     CORE::GEO::CUT::Node* n = wizard_old_->GetNode(node->Id());
 
-    if (n != NULL)
+    if (n != nullptr)
     {
       // get the nodal dofset w.r.t the Lagrangean origin
       const std::set<CORE::GEO::CUT::plain_volumecell_set, CORE::GEO::CUT::Cmp>& cellset =
@@ -1422,7 +1422,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// poi
     {
       CORE::GEO::CUT::ElementHandle* eh = wizard_old_->GetElement(eles[i]);
 
-      if (eh != NULL)
+      if (eh != nullptr)
         continue;  // element and the right nds-vec should have been found using the for-loop before
 
       // if we are here, then the element is a standard uncut element
@@ -1548,7 +1548,7 @@ void XFEM::XFLUID_SemiLagrange::getNodalDofSet(DRT::Element* ele,  /// pointer t
 
   bool inside_structure = false;
 
-  if (e != NULL)  // element in cut involved
+  if (e != nullptr)  // element in cut involved
   {
     CORE::GEO::CUT::plain_volumecell_set cells;
     e->GetVolumeCells(cells);

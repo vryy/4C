@@ -183,8 +183,8 @@ void CORE::LINEAR_SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(Teuchos::RCP<Ep
 
 #if CHEAPSIMPLE_ALGORITHM
   {
-    Epetra_CrsMatrix* A00 = NULL;
-    Epetra_CrsMatrix* A11 = NULL;
+    Epetra_CrsMatrix* A00 = nullptr;
+    Epetra_CrsMatrix* A11 = nullptr;
     A00 = (*A_)(0, 0).EpetraMatrix().get();
     A11 = S_->EpetraMatrix().get();
 

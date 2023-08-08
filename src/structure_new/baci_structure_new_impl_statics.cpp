@@ -170,7 +170,7 @@ void STR::IMPLICIT::Statics::PreUpdate()
 {
   CheckInitSetup();
   const STR::TIMINT::Implicit* impl_ptr = dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
-  if (impl_ptr == NULL) return;
+  if (impl_ptr == nullptr) return;
 
   // get the time step size
   const double dt = (*GlobalState().GetDeltaTime())[0];

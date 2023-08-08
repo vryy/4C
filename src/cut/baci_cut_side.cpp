@@ -56,7 +56,7 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Side::FindEdge(Point* begin, Point* end)
       return e;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 bool CORE::GEO::CUT::Side::FindCutPointsDispatch(Mesh& mesh, Element* element, Side& side, Edge& e)
@@ -221,7 +221,7 @@ CORE::GEO::CUT::Facet* CORE::GEO::CUT::Side::FindFacet(const std::vector<Point*>
       return f;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -267,7 +267,8 @@ bool CORE::GEO::CUT::Side::IsTouched(Side& other, Point* p)
       std::ofstream file("touching_point_between_two_sides_is_not_on_edge.pos");
       CORE::GEO::CUT::OUTPUT::GmshSideDump(file, this, std::string("ThisSide"));
       CORE::GEO::CUT::OUTPUT::GmshSideDump(file, &other, std::string("OtherSide"));
-      CORE::GEO::CUT::OUTPUT::GmshPointDump(file, p, p->Id(), std::string("CutPoint"), false, NULL);
+      CORE::GEO::CUT::OUTPUT::GmshPointDump(
+          file, p, p->Id(), std::string("CutPoint"), false, nullptr);
       p->DumpConnectivityInfo();
       CORE::GEO::CUT::OUTPUT::GmshWriteSection(file, "Edge", p->CutEdges());
       file.close();
@@ -560,7 +561,7 @@ bool CORE::GEO::CUT::Side::FindAmbiguousCutLines(
           for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
           {
             CORE::GEO::CUT::OUTPUT::GmshPointDump(
-                file, (*it), (*it)->Id(), std::string("CutPoint"), false, NULL);
+                file, (*it), (*it)->Id(), std::string("CutPoint"), false, nullptr);
           }
           file.close();
           dserror("This case is not handled yet, generate GMSH output and look into it!");
@@ -871,13 +872,13 @@ bool CORE::GEO::CUT::Side::CreateParallelCutSurface(Mesh& mesh, Element* element
       {
         std::stringstream pname;
         pname << "Point_for_line" << (*it)->Id();
-        CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
+        CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, nullptr);
       }
       for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
       {
         std::stringstream pname;
         pname << "CutPoint" << (*it)->Id();
-        CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
+        CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, nullptr);
         (*it)->DumpConnectivityInfo();
       }
       CORE::GEO::CUT::OUTPUT::GmshSideDump(file, &other, std::string("OtherSide"));
@@ -916,7 +917,7 @@ void CORE::GEO::CUT::Side::SimplifyMixedParallelCutSurface(Mesh& mesh, Element* 
       {
         // we probably don't want to merge already merged-into or nodal points
         auto p_delete_it = std::find_if(common_points.begin(), common_points.end(),
-            [](Point* p) { return (p->CutNode() == NULL && p->GetMergedPoints().size() == 0); });
+            [](Point* p) { return (p->CutNode() == nullptr && p->GetMergedPoints().size() == 0); });
 
         if (p_delete_it == common_points.end()) dserror("Cannot decide which point to merge");
         Point* p_delete = *p_delete_it;
@@ -987,7 +988,7 @@ void CORE::GEO::CUT::Side::MakeOwnedSideFacets(
     const Cycle& points = *i;
 
     Facet* f = mesh.NewFacet(points(), this, IsCutSide());
-    if (f == NULL) dserror("failed to create owned facet");
+    if (f == nullptr) dserror("failed to create owned facet");
     facets_.push_back(f);
   }
 
@@ -1065,7 +1066,7 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
     return;
   }
 
-  Side* s = NULL;
+  Side* s = nullptr;
 
   plain_side_set sides(element->Sides().begin(), element->Sides().end());
   points.Intersection(sides);
@@ -1074,14 +1075,14 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
   if (sides.size() > 1)
   {
     {
-      Facet* f = NULL;
+      Facet* f = nullptr;
       for (plain_side_set::iterator it = sides.begin(); it != sides.end(); ++it)
       {
         f = (*it)->FindFacet(points());
-        if (f != NULL) break;
+        if (f != nullptr) break;
       }
 
-      if (f != NULL)
+      if (f != nullptr)
         f->ExchangeSide(this, true);
       else
         f = mesh.NewFacet(points(), this, true);
@@ -1103,10 +1104,10 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
     s = *sides.begin();
   }
 
-  if (s != NULL)
+  if (s != nullptr)
   {
     Facet* f = s->FindFacet(points());
-    if (f != NULL)
+    if (f != nullptr)
     {
       f->ExchangeSide(this, true);
       facets.insert(f);
@@ -1135,7 +1136,7 @@ void CORE::GEO::CUT::Side::MakeInternalFacets(
              ++it, ++counter)
         {
           file << "View \"ThisCycle" << counter << "\" {\n";
-          CUT::OUTPUT::GmshFacetDump(file, *it, "lines", true, false, NULL);
+          CUT::OUTPUT::GmshFacetDump(file, *it, "lines", true, false, nullptr);
           file << "};\n";
         }
 
@@ -1332,7 +1333,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Side::CommonElement(Side* other)
   switch (intersection.size())
   {
     case 0:
-      return NULL;
+      return nullptr;
     case 1:
       return *intersection.begin();
     default:
@@ -1863,7 +1864,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(
     ::DRT::Element::DiscretizationType sidetype, int sid, const std::vector<Node*>& nodes,
     const std::vector<Edge*>& edges) const
 {
-  Side* s = NULL;
+  Side* s = nullptr;
   const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (sidetype)
   {
@@ -1892,7 +1893,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::CreateLevelSetSide(const int& sid)
 {
-  Side* lvs_side_ptr = NULL;
+  Side* lvs_side_ptr = nullptr;
 
   const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (probdim)

@@ -136,9 +136,9 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
       else if (act == ELEMENTS::struct_calc_nlnstifflmass)
         t3_nlnstiffmass(mydisp, &elemat1, &elemat2, &elevec1);
       else if (act == ELEMENTS::struct_calc_nlnstiff)
-        t3_nlnstiffmass(mydisp, &elemat1, NULL, &elevec1);
+        t3_nlnstiffmass(mydisp, &elemat1, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_internalforce)
-        t3_nlnstiffmass(mydisp, NULL, NULL, &elevec1);
+        t3_nlnstiffmass(mydisp, nullptr, nullptr, &elevec1);
 
 
       /*
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::Torsion3::Evaluate(Teuchos::ParameterList& params,
             disp_aux[numdof*k + i] += h_rel;
             //vel_aux[numdof*k + i]  += h_rel / params.get<double>("delta time",0.01);
 
-            t3_nlnstiffmass(disp_aux,NULL,NULL,&force_aux);
+            t3_nlnstiffmass(disp_aux,nullptr,nullptr,&force_aux);
 
             //computing derivative d(fint)/du numerically by finite difference
             for(int u = 0 ; u < numdof*nnode ; u++ )
@@ -457,14 +457,14 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
       // zero)
 
       // internal forces (equation 3.17)
-      if (force != NULL)
+      if (force != nullptr)
       {
         for (int j = 0; j < 9; ++j) (*force)(j) = -spring * grtheta(j);
       }
 
 
       // stiffness matrix (equation 3.19)
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
       {
         for (int j = 0; j < 3; ++j)
         {
@@ -488,7 +488,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
     else
     {
       // internal forces (equation 3.6) (if the angle between the trusses is NOT almost zero)
-      if (force != NULL)
+      if (force != nullptr)
       {
         for (int j = 0; j < 9; ++j)
           (*force)(j) = -1 / sqrt(1 - s * s) * deltatheta * spring * grtheta(j);
@@ -496,7 +496,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
 
 
       // stiffness matrix (equation 3.8)
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
       {
         for (int i = 0; i < 9; ++i)
         {
@@ -539,14 +539,14 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>& disp,
     if (bendingpotential_ == cosine)
     {
       // internal forces (equation 3.16, same as for theta almost zero)
-      if (force != NULL)
+      if (force != nullptr)
       {
         for (int j = 0; j < 9; ++j) (*force)(j) = -spring * grtheta(j);
       }
 
 
       // stiffness matrix (equation 3.17, same as for theta almost zero)
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
       {
         for (int j = 0; j < 3; ++j)
         {

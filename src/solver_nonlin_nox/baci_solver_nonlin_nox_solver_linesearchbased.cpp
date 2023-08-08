@@ -191,7 +191,7 @@ const NOX::Utils& NOX::NLN::Solver::LineSearchBased::GetUtils() const { return *
  *----------------------------------------------------------------------------*/
 NOX::Direction::Generic& NOX::NLN::Solver::LineSearchBased::GetDirection() const
 {
-  if (directionPtr.is_null()) dserror("NULL ptr: The direction pointer is not yet initialized.");
+  if (directionPtr.is_null()) dserror("nullptr ptr: The direction pointer is not yet initialized.");
 
   return *directionPtr;
 }

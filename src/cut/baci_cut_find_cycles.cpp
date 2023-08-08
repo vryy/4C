@@ -56,7 +56,7 @@ namespace CORE::GEO
           }
           else if (intersection.size() == 0)
           {
-            return NULL;
+            return nullptr;
           }
 
           throw std::runtime_error("more than one cycle in common");
@@ -216,7 +216,7 @@ namespace CORE::GEO
           if (st_edges.count(std::make_pair(u, v)) > 0) continue;
 
           cycle_t* cycle_to_split = intersect(cycles[u], cycles[v]);
-          if (cycle_to_split == NULL)
+          if (cycle_to_split == nullptr)
           {
             cycle_t* path = find_path(u, v, st);
 

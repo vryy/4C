@@ -86,7 +86,7 @@ void CONTACT::CoNitscheStrategyPoro::SetParentState(
         std::vector<int> lmowner;
         std::vector<int> lmstride;
 
-        if (ele->ParentSlaveElement())  // if this pointer is NULL, this parent is impermeable
+        if (ele->ParentSlaveElement())  // if this pointer is nullptr, this parent is impermeable
         {
           // this gets values in local order
           ele->ParentSlaveElement()->LocationVector(*dis, lm, lmowner, lmstride);

@@ -1100,7 +1100,7 @@ namespace SCATRA
 
     //! Ptr to time integration wrapper.
     //! That wrapper holds a ptr to this time integrator in turn.
-    //! This Ptr is uneqal NULL only if a scatra adapter was constructed.
+    //! This Ptr is uneqal nullptr only if a scatra adapter was constructed.
     //! Class AdapterScatraWrapper sets this pointer during construction
     //! by calling \ref SetModelEvaluatroPtr .
     ADAPTER::AdapterScatraWrapper* additional_model_evaluator_;

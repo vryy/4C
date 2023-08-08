@@ -212,12 +212,12 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
   const DRT::NURBS::NurbsDiscretization* nurbsdis_ptr =
       dynamic_cast<const DRT::NURBS::NurbsDiscretization*>(&sourcedis);
 
-  if (nurbsdis_ptr != NULL)
+  if (nurbsdis_ptr != nullptr)
   {
     DRT::NURBS::NurbsDiscretization* targetnurbsdis_ptr =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&targetdis);
 
-    if (targetnurbsdis_ptr == NULL)
+    if (targetnurbsdis_ptr == nullptr)
     {
       dserror("Nurbs source discretization but no nurbs target discretization\n");
     }

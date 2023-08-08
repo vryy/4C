@@ -44,7 +44,7 @@ void DRT::INPUT::PrintEmptyConditionDefinitions(
 {
   for (unsigned i = 0; i < condlist.size(); ++i)
   {
-    condlist[i]->Print(stream, NULL);
+    condlist[i]->Print(stream, nullptr);
   }
 }
 

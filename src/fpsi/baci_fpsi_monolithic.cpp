@@ -1285,7 +1285,7 @@ void FPSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL) dserror("no ofile available");
+  if (ofile == nullptr) dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1412,7 +1412,7 @@ void FPSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL) dserror("no ofile available");
+  if (ofile == nullptr) dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now

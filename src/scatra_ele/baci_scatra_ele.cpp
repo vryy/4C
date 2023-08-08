@@ -843,7 +843,7 @@ int DRT::ELEMENTS::Transport::Initialize()
     Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> quadrature(
         CORE::DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
     int gp = quadrature->NumPoints();
-    if (actmat->Parameter() != NULL and
+    if (actmat->Parameter() != nullptr and
         !actmat->MyocardMat())  // in case we are not in post-process mode
     {
       actmat->SetGP(gp);

@@ -150,7 +150,7 @@ namespace CORE::GEO
       /// filter that selects all edges to a given marker
       struct edge_filter
       {
-        edge_filter() : g_(NULL), component_(NULL), c_(0) {}
+        edge_filter() : g_(nullptr), component_(nullptr), c_(0) {}
 
         edge_filter(graph_t& g, const std::vector<int>& component, int c)
             : g_(&g), component_(&component), c_(c)

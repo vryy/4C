@@ -19,7 +19,7 @@
 MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
 {
   // initialize null pointer
-  MAT::PAR::PoroDensityLaw* densitylaw = NULL;
+  MAT::PAR::PoroDensityLaw* densitylaw = nullptr;
 
   // retrieve problem instance to read from
   const int probinst = DRT::Problem::Instance()->Materials()->GetReadFromProblem();
@@ -39,14 +39,14 @@ MAT::PAR::PoroDensityLaw* MAT::PAR::PoroDensityLaw::CreateDensityLaw(int matID)
   {
     case INPAR::MAT::m_poro_densitylaw_constant:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroDensityLawConstant(curmat));
       densitylaw = static_cast<MAT::PAR::PoroDensityLawConstant*>(curmat->Parameter());
       break;
     }
     case INPAR::MAT::m_poro_densitylaw_exp:
     {
-      if (curmat->Parameter() == NULL)
+      if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::PoroDensityLawExp(curmat));
       densitylaw = static_cast<MAT::PAR::PoroDensityLawExp*>(curmat->Parameter());
       break;

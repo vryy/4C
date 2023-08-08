@@ -842,7 +842,7 @@ namespace FLD
   {
     // here we are using the interior velocity
     TimIntHDG* hdgfluid = dynamic_cast<TimIntHDG*>(&timeint);
-    if (hdgfluid == NULL) dserror("this should be a hdg time integer");
+    if (hdgfluid == nullptr) dserror("this should be a hdg time integer");
 
     // we want to use the interior velocity here
     intvelnp_ = hdgfluid->ReturnIntVelnp();

@@ -403,7 +403,7 @@ const Teuchos::RCP<NOX::Epetra::Interface::Jacobian> NOX::NLN::GlobalData::GetJa
 const Teuchos::RCP<NOX::Epetra::Interface::Preconditioner>
 NOX::NLN::GlobalData::GetPreconditionerInterface()
 {
-  /* We explicitly allow a return value of Teuchos::NULL, because the
+  /* We explicitly allow a return value of Teuchos::nullptr, because the
    * preconditioner interface is in many cases optional */
   return iPrecPtr_;
 }

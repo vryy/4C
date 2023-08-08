@@ -81,7 +81,7 @@ namespace DRT
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
           const int iquad,  ///< id of current Gauss point
           CORE::LINALG::Matrix<1 + nsd_, 1>* normalvec =
-              NULL  ///< normal vector at Gauss point(optional)
+              nullptr  ///< normal vector at Gauss point(optional)
       );
 
      private:

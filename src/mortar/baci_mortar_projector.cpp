@@ -83,7 +83,7 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& ele)
       dserror("Element shape %d (%d nodes) not activated. Just do it.", ele.Shape(), ele.NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*
@@ -412,7 +412,7 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
           "Element shape %d (%d nodes) not activated. Just do it.", sele.Shape(), sele.NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------*

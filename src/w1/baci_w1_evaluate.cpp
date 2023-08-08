@@ -147,14 +147,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == INPAR::STR::kinem_linear)
       {
-        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1, NULL,
-            NULL, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1,
+            nullptr, nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1, NULL,
-            NULL, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, &elemat2, &elevec1,
+            nullptr, nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
       break;
     }
@@ -182,21 +182,21 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == INPAR::STR::kinem_linear)
       {
-        w1_linstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1, NULL,
-            NULL, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_linstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1,
+            nullptr, nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1, NULL,
-            NULL, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_nlnstiffmass(lm, mydisp, mydispmat, myres, myknots, &elemat1, &elemat2, &elevec1,
+            nullptr, nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
 
       if (act == ELEMENTS::struct_calc_nlnstifflmass) w1_lumpmass(&elemat2);
       break;
     }
     //==================================================================================
-    // NULL-pointer for mass matrix in case of calculating only stiff matrix
+    // nullptr-pointer for mass matrix in case of calculating only stiff matrix
     case ELEMENTS::struct_calc_nlnstiff:
     {
       // need current displacement and residual forces
@@ -220,14 +220,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == INPAR::STR::kinem_linear)
       {
-        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, NULL, &elevec1, NULL, NULL,
-            actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, nullptr, &elevec1, nullptr,
+            nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, NULL, &elevec1, NULL, NULL,
-            actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &elemat1, nullptr, &elevec1, nullptr,
+            nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
       break;
     }
@@ -259,14 +259,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       // special case: geometrically linear
       if (kintype_ == INPAR::STR::kinem_linear)
       {
-        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, NULL, &elevec1, NULL, NULL,
-            actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, nullptr, &elevec1, nullptr,
+            nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
       // standard is: geometrically non-linear with Total Lagrangean approach
       else
       {
-        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, NULL, &elevec1, NULL, NULL,
-            actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
+        w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, &myemat, nullptr, &elevec1, nullptr,
+            nullptr, actmat, params, INPAR::STR::stress_none, INPAR::STR::strain_none);
       }
       break;
     }
@@ -285,8 +285,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      FintStiffMassGEMM(params, lm, mydispo, mydisp, myres, &elemat1, NULL, &elevec1, NULL, NULL,
-          actmat, INPAR::STR::stress_none, INPAR::STR::strain_none);
+      FintStiffMassGEMM(params, lm, mydispo, mydisp, myres, &elemat1, nullptr, &elevec1, nullptr,
+          nullptr, actmat, INPAR::STR::stress_none, INPAR::STR::strain_none);
       break;
     }
     //==================================================================================
@@ -394,14 +394,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         // special case: geometrically linear
         if (kintype_ == INPAR::STR::kinem_linear)
         {
-          w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, NULL, NULL, NULL, &stress, &strain,
-              actmat, params, iostress, iostrain);
+          w1_linstiffmass(lm, mydisp, myres, mydispmat, myknots, nullptr, nullptr, nullptr, &stress,
+              &strain, actmat, params, iostress, iostrain);
         }
         // standard is: geometrically non-linear with Total Lagrangean approach
         else
         {
-          w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, NULL, NULL, NULL, &stress, &strain,
-              actmat, params, iostress, iostrain);
+          w1_nlnstiffmass(lm, mydisp, myres, mydispmat, myknots, nullptr, nullptr, nullptr, &stress,
+              &strain, actmat, params, iostress, iostrain);
         }
 
         {
@@ -1097,8 +1097,8 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
     const std::vector<double>& residual)
 {
   // for eas
-  CORE::LINALG::SerialDenseMatrix* alpha = NULL;
-  CORE::LINALG::SerialDenseMatrix* eas_inc = NULL;
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;
+  CORE::LINALG::SerialDenseMatrix* eas_inc = nullptr;
   // get access to the interface parameters
   const double step_length = StrParamsInterface().GetStepLength();
 
@@ -1220,24 +1220,24 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   C.shape(4, 4);
 
   // for EAS, in any case declare variables, sizes etc. only in eascase
-  CORE::LINALG::SerialDenseMatrix* alpha = NULL;      // EAS alphas
-  CORE::LINALG::SerialDenseMatrix F_enh;              // EAS matrix F_enh
-  CORE::LINALG::SerialDenseMatrix F_tot;              // EAS vector F_tot
-  CORE::LINALG::SerialDenseMatrix p_stress;           // first piola-kirchhoff stress vector
-  CORE::LINALG::SerialDenseMatrix xjm0;               // Jacobian Matrix (origin)
-  CORE::LINALG::SerialDenseVector F0;                 // Deformation Gradient (origin)
-  CORE::LINALG::SerialDenseMatrix boplin0;            // B operator (origin)
-  CORE::LINALG::SerialDenseMatrix W0;                 // W operator (origin)
-  CORE::LINALG::SerialDenseMatrix G;                  // G operator
-  CORE::LINALG::SerialDenseMatrix Z;                  // Z operator
-  CORE::LINALG::SerialDenseMatrix FCF;                // FCF^T
-  CORE::LINALG::SerialDenseMatrix Kda;                // EAS matrix Kda
-  CORE::LINALG::SerialDenseMatrix Kaa;                // EAS matrix Kaa
-  CORE::LINALG::SerialDenseVector feas;               // EAS portion of internal forces
-  double detJ0;                                       // detJ(origin)
-  CORE::LINALG::SerialDenseMatrix* oldfeas = NULL;    // EAS history
-  CORE::LINALG::SerialDenseMatrix* oldKaainv = NULL;  // EAS history
-  CORE::LINALG::SerialDenseMatrix* oldKda = NULL;     // EAS history
+  CORE::LINALG::SerialDenseMatrix* alpha = nullptr;      // EAS alphas
+  CORE::LINALG::SerialDenseMatrix F_enh;                 // EAS matrix F_enh
+  CORE::LINALG::SerialDenseMatrix F_tot;                 // EAS vector F_tot
+  CORE::LINALG::SerialDenseMatrix p_stress;              // first piola-kirchhoff stress vector
+  CORE::LINALG::SerialDenseMatrix xjm0;                  // Jacobian Matrix (origin)
+  CORE::LINALG::SerialDenseVector F0;                    // Deformation Gradient (origin)
+  CORE::LINALG::SerialDenseMatrix boplin0;               // B operator (origin)
+  CORE::LINALG::SerialDenseMatrix W0;                    // W operator (origin)
+  CORE::LINALG::SerialDenseMatrix G;                     // G operator
+  CORE::LINALG::SerialDenseMatrix Z;                     // Z operator
+  CORE::LINALG::SerialDenseMatrix FCF;                   // FCF^T
+  CORE::LINALG::SerialDenseMatrix Kda;                   // EAS matrix Kda
+  CORE::LINALG::SerialDenseMatrix Kaa;                   // EAS matrix Kaa
+  CORE::LINALG::SerialDenseVector feas;                  // EAS portion of internal forces
+  double detJ0;                                          // detJ(origin)
+  CORE::LINALG::SerialDenseMatrix* oldfeas = nullptr;    // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKaainv = nullptr;  // EAS history
+  CORE::LINALG::SerialDenseMatrix* oldKda = nullptr;     // EAS history
 
   // arrays for structure with ale (fractional step strategy)
   CORE::LINALG::SerialDenseMatrix xmat;
@@ -1442,7 +1442,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == NULL) dserror("no strain data available");
+          if (elestrain == nullptr) dserror("no strain data available");
           (*elestrain)(ip, 0) = strain(0);
           (*elestrain)(ip, 1) = strain(1);
           (*elestrain)(ip, 2) = 0.0;
@@ -1462,7 +1462,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == NULL) dserror("no stress data available");
+          if (elestress == nullptr) dserror("no stress data available");
           (*elestress)(ip, 0) = stress(0, 0);
           (*elestress)(ip, 1) = stress(1, 1);
           (*elestress)(ip, 2) = 0.0;
@@ -1471,7 +1471,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == NULL) dserror("no stress data available");
+          if (elestress == nullptr) dserror("no stress data available");
           StressCauchy(ip, F_tot(0, 0), F_tot(1, 1), F_tot(0, 2), F_tot(1, 2), stress, elestress);
         }
         break;
@@ -1503,7 +1503,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::strain_gl:
         {
-          if (elestrain == NULL) dserror("no strain data available");
+          if (elestrain == nullptr) dserror("no strain data available");
           (*elestrain)(ip, 0) = strain(0);
           (*elestrain)(ip, 1) = strain(1);
           (*elestrain)(ip, 2) = 0.0;
@@ -1524,7 +1524,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == NULL) dserror("no stress data available");
+          if (elestress == nullptr) dserror("no stress data available");
           (*elestress)(ip, 0) = stress(0, 0);
           (*elestress)(ip, 1) = stress(1, 1);
           (*elestress)(ip, 2) = 0.0;
@@ -1533,7 +1533,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
         break;
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == NULL) dserror("no stress data available");
+          if (elestress == nullptr) dserror("no stress data available");
           StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
         }
         break;
@@ -1560,7 +1560,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
   // EAS technology: ------------------------------------------------------ EAS
   // subtract EAS matrices from disp-based Kdd to "soften" element
 
-  if (force != NULL && stiffmatrix != NULL)
+  if (force != nullptr && stiffmatrix != nullptr)
   {
     if (iseas_ == true)
     {
@@ -1737,7 +1737,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     {
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("no strain data available");
+        if (elestrain == nullptr) dserror("no strain data available");
         (*elestrain)(ip, 0) = strain(0);
         (*elestrain)(ip, 1) = strain(1);
         (*elestrain)(ip, 2) = 0.0;
@@ -1758,7 +1758,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         (*elestress)(ip, 0) = stress(0, 0);
         (*elestress)(ip, 1) = stress(1, 1);
         (*elestress)(ip, 2) = 0.0;
@@ -1767,7 +1767,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
       break;
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("no stress data available");
+        if (elestress == nullptr) dserror("no stress data available");
         StressCauchy(ip, F[0], F[1], F[2], F[3], stress, elestress);
       }
       break;
@@ -2092,7 +2092,7 @@ void DRT::ELEMENTS::Wall1::w1_fint(const CORE::LINALG::SerialDenseMatrix& stress
 void DRT::ELEMENTS::Wall1::w1_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (int c = 0; c < (*emass).numCols(); ++c)  // parse columns
@@ -2184,16 +2184,16 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
   CORE::LINALG::SerialDenseMatrix massmatrix(lm.size(), lm.size());
 
   // for EAS, in any case declare variables, sizes etc. only allocated in EAS version
-  CORE::LINALG::SerialDenseMatrix* alphao = NULL;  // EAS alphas at t_{n}
-  CORE::LINALG::SerialDenseMatrix Fenhv;           // EAS matrix Fenhv
-  CORE::LINALG::SerialDenseMatrix Fm;              // total def.grad. matrix at t_{n}
-  CORE::LINALG::SerialDenseMatrix Xjm0;            // Jacobian Matrix (origin)
-  double Xjdet0;                                   // determinant of #Xjm0
-  CORE::LINALG::SerialDenseVector Fuv0;            // deformation gradient at origin at t_{n}
-  CORE::LINALG::SerialDenseMatrix boplin0;         // B-operator (origin)
-  CORE::LINALG::SerialDenseMatrix W0;              // W-operator (origin) at t_{n}
-  CORE::LINALG::SerialDenseMatrix G;               // G-operator at t_{n}
-  CORE::LINALG::SerialDenseMatrix Z;               // Z-operator
+  CORE::LINALG::SerialDenseMatrix* alphao = nullptr;  // EAS alphas at t_{n}
+  CORE::LINALG::SerialDenseMatrix Fenhv;              // EAS matrix Fenhv
+  CORE::LINALG::SerialDenseMatrix Fm;                 // total def.grad. matrix at t_{n}
+  CORE::LINALG::SerialDenseMatrix Xjm0;               // Jacobian Matrix (origin)
+  double Xjdet0;                                      // determinant of #Xjm0
+  CORE::LINALG::SerialDenseVector Fuv0;               // deformation gradient at origin at t_{n}
+  CORE::LINALG::SerialDenseMatrix boplin0;            // B-operator (origin)
+  CORE::LINALG::SerialDenseMatrix W0;                 // W-operator (origin) at t_{n}
+  CORE::LINALG::SerialDenseMatrix G;                  // G-operator at t_{n}
+  CORE::LINALG::SerialDenseMatrix Z;                  // Z-operator
 
   // element co-ordinates
   for (int k = 0; k < numnode; ++k)

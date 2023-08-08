@@ -228,9 +228,9 @@ namespace BEAMINTERACTION
     */
     void GetActiveSmallAnglePairs(
         std::map<std::pair<int, int>, CORE::LINALG::Matrix<3, 1, double>>& closesmallanglesegments,
-        std::pair<int, int>* iminmax = NULL,
-        std::pair<bool, bool>* leftrightsolutionwithinsegment = NULL,
-        std::pair<double, double>* eta1_leftrightboundary = NULL);
+        std::pair<int, int>* iminmax = nullptr,
+        std::pair<bool, bool>* leftrightsolutionwithinsegment = nullptr,
+        std::pair<double, double>* eta1_leftrightboundary = nullptr);
 
     /*!
     \brief Evaluate active small angle pairs
@@ -238,9 +238,9 @@ namespace BEAMINTERACTION
     void EvaluateActiveSmallAnglePairs(CORE::LINALG::SerialDenseVector* forcevec1,
         CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
         CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
-        CORE::LINALG::SerialDenseMatrix* stiffmat22, std::pair<int, int>* iminmax = NULL,
-        std::pair<bool, bool>* leftrightsolutionwithinsegment = NULL,
-        std::pair<double, double>* eta1_leftrightboundary = NULL);
+        CORE::LINALG::SerialDenseMatrix* stiffmat22, std::pair<int, int>* iminmax = nullptr,
+        std::pair<bool, bool>* leftrightsolutionwithinsegment = nullptr,
+        std::pair<double, double>* eta1_leftrightboundary = nullptr);
 
     /*!
     \brief Get active endpoint pairs
@@ -343,8 +343,8 @@ namespace BEAMINTERACTION
         const CORE::LINALG::Matrix<3, 3 * numnodes * numnodalvalues, TYPE>& N2_xi,
         Teuchos::RCP<BeamToBeamContactVariables<numnodes, numnodalvalues>> variables,
         const double& intfac, bool cpp, bool gp, bool fixedendpointxi, bool fixedendpointeta,
-        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = NULL,
-        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = NULL);
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc1_FAD = nullptr,
+        CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE>* fc2_FAD = nullptr);
 
     /*!
     \brief Evaluate contact stiffness
@@ -587,7 +587,7 @@ namespace BEAMINTERACTION
     {
       const DRT::ELEMENTS::Beam3Base* ele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(element1);
 
-      if (ele == NULL) dserror("Dynamic cast to Beam3Base failed");
+      if (ele == nullptr) dserror("Dynamic cast to Beam3Base failed");
 
       return ele->GetJacobiFacAtXi(xi);
     }

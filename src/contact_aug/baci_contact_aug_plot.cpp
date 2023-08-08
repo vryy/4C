@@ -433,7 +433,7 @@ void CONTACT::AUG::Plot::Init(
   do_plot_.iter_ = iter;
 
   curr_step_np_ = plot_params.get<const int*>("CURRENT_STEP");
-  if (not curr_step_np_) dserror("The step pointer is NULL!");
+  if (not curr_step_np_) dserror("The step pointer is nullptr!");
 
   dir_.ReadInput(plot_params);
 }
@@ -914,7 +914,7 @@ void CONTACT::AUG::Plot::PlotVectorField2D(const NOX::NLN::CONSTRAINT::Group& re
   dir_.SplitIntoSurfaceDirections(dir, x_dir_ptr, y_dir_ptr);
 
   Epetra_Vector step(dir.Map(), true);
-  std::vector<const Epetra_Vector*> dirs(2, NULL);
+  std::vector<const Epetra_Vector*> dirs(2, nullptr);
   dirs[0] = x_dir_ptr.get();
   dirs[1] = y_dir_ptr.get();
 
@@ -992,7 +992,7 @@ void CONTACT::AUG::Plot::WriteLineDataToFile() const
       if (file_open_mode_ != (std::ios_base::out | std::ios_base::app) or nlines < 1)
         outputfile << std::setw(24) << "x" << std::setw(24) << "y\n";
 
-      std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(2, NULL);
+      std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(2, nullptr);
       columndata[0] = &X_;
       columndata[1] = &Y_;
 
@@ -1039,7 +1039,7 @@ void CONTACT::AUG::Plot::WriteVectorFieldToFile() const
       outputfile << std::setw(24) << "x" << std::setw(24) << "y" << std::setw(24) << "u"
                  << std::setw(24) << "v\n";
 
-      std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(4, NULL);
+      std::vector<const CORE::LINALG::SerialDenseMatrix*> columndata(4, nullptr);
       columndata[0] = &X_;
       columndata[1] = &Y_;
       columndata[2] = &Z_[0];
@@ -1065,7 +1065,7 @@ void CONTACT::AUG::WriteColumnDataToFile(
 {
   if (not outputfile.is_open()) dserror("The file must be open!");
 
-  if (columndata.size() < 1 or columndata[0] == NULL) return;
+  if (columndata.size() < 1 or columndata[0] == nullptr) return;
 
   outputfile << std::setprecision(p);
   for (unsigned i = 0; i < static_cast<unsigned>(columndata[0]->numRows()); ++i)
@@ -1117,7 +1117,7 @@ void CONTACT::AUG::Plot::WriteSurfaceDataToFile() const
 const NOX::NLN::CONSTRAINT::Group* CONTACT::AUG::Plot::GetReferenceGroup(
     const NOX::Solver::Generic& solver) const
 {
-  const NOX::NLN::CONSTRAINT::Group* ref_grp = NULL;
+  const NOX::NLN::CONSTRAINT::Group* ref_grp = nullptr;
 
   switch (reference_type_)
   {

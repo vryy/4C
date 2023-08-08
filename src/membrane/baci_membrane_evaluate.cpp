@@ -95,10 +95,10 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      CORE::LINALG::Matrix<numdof_, numdof_>* matptr = NULL;
+      CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      mem_nlnstiffmass(lm, mydisp, matptr, NULL, &elevec1, NULL, NULL, params,
+      mem_nlnstiffmass(lm, mydisp, matptr, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -113,10 +113,10 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       if (disp == Teuchos::null) dserror("Cannot get state vector 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
-      CORE::LINALG::Matrix<numdof_, numdof_>* matptr = NULL;
+      CORE::LINALG::Matrix<numdof_, numdof_>* matptr = nullptr;
       if (elemat1.IsInitialized()) matptr = &elemat1;
 
-      mem_nlnstiffmass(lm, mydisp, matptr, &elemat2, &elevec1, NULL, NULL, params,
+      mem_nlnstiffmass(lm, mydisp, matptr, &elemat2, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -132,7 +132,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
 
-      mem_nlnstiffmass(lm, mydisp, NULL, NULL, &elevec1, NULL, NULL, params,
+      mem_nlnstiffmass(lm, mydisp, nullptr, nullptr, &elevec1, nullptr, nullptr, params,
           INPAR::STR::stress_none, INPAR::STR::strain_none);
     }
     break;
@@ -208,7 +208,7 @@ int DRT::ELEMENTS::Membrane<distype>::Evaluate(Teuchos::ParameterList& params,
 
         // determine strains and/or stresses
         mem_nlnstiffmass(
-            lm, mydisp, NULL, NULL, NULL, &stress, &strain, params, iostress, iostrain);
+            lm, mydisp, nullptr, nullptr, nullptr, &stress, &strain, params, iostress, iostrain);
 
         // add data to pack
         {
@@ -590,7 +590,7 @@ int DRT::ELEMENTS::Membrane<distype>::EvaluateNeumann(Teuchos::ParameterList& pa
       elevec1_epetra[noddof_ * i + 2] += fac * xcurr_cross(2) * (shapefcts)(i);
 
       // evaluate external stiffness matrix if needed
-      if (elemat1_epetra != NULL)
+      if (elemat1_epetra != nullptr)
       {
         // determine P matrix for all 4 nodes, Gruttmann92 equation (41) and directly fill up
         // elemat1_epetra
@@ -804,7 +804,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
      | calculate force, stiffness matrix and mass matrix                             |
      *===============================================================================*/
     // evaluate just force vector (stiffness matrix not needed)
-    if (stiffmatrix == NULL && force != NULL)
+    if (stiffmatrix == nullptr && force != nullptr)
     {
       // determine B matrix for all 4 nodes, Gruttmann1992 equation (36)
       CORE::LINALG::Matrix<noddof_, numdof_> B_matrix(true);
@@ -834,7 +834,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     }
 
     // evaluate stiffness matrix and force vector if needed
-    if (stiffmatrix != NULL && force != NULL)
+    if (stiffmatrix != nullptr && force != nullptr)
     {
       // determine B matrix and G matrix for all 4 nodes, Gruttmann1992 equation (36) and (40)
       CORE::LINALG::Matrix<noddof_, numdof_> B_matrix(true);
@@ -886,7 +886,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
     }
 
     // evaluate massmatrix if needed, just valid for a constant density
-    if (massmatrix != NULL)
+    if (massmatrix != nullptr)
     {
       // get density
       double density = SolidMaterial()->Density();
@@ -925,7 +925,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Green-Lagrange strains
       case INPAR::STR::strain_gl:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
@@ -954,7 +954,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Euler-Almansi strains
       case INPAR::STR::strain_ea:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
 
         // transform local cauchygreen to global coordinates
         CORE::LINALG::Matrix<noddof_, noddof_> cauchygreen_glob(true);
@@ -987,7 +987,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Logarithmic strains
       case INPAR::STR::strain_log:
       {
-        if (elestrain == NULL) dserror("strain data not available");
+        if (elestrain == nullptr) dserror("strain data not available");
 
         // the Eularian logarithmic strain is defined as the natural logarithm of the left stretch
         // tensor [1,2]: e_{log} = e_{hencky} = ln (\mathbf{V}) = \sum_{i=1}^3 (ln \lambda_i)
@@ -1098,7 +1098,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // 2nd Piola-Kirchhoff stresses
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
 
         // 2nd Piola-Kirchhoff stress in tensor notation, plane stress meaning entries in 2i and i2
         // are zero for i=0,1,2
@@ -1123,7 +1123,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_nlnstiffmass(std::vector<int>& lm,  /
       // Cauchy stresses
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
 
         // 2nd Piola-Kirchhoff stress in tensor notation, plane stress meaning entries in 2i and i2
         // are zero for i=0,1,2

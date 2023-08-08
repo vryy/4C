@@ -330,19 +330,19 @@ namespace DRT
                               and elements
       \param discretization : pointer to discretization for de-assembly
       \param lm (in)        : location matrix for de-assembly
-      \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : (stiffness-)matrix to be filled by element. If nullptr on input,
                               the controlling method does not expect the element to fill
                               this matrix.
-      \param elemat2 (out)  : (mass-)matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : (mass-)matrix to be filled by element. If nullptr on input,
                               the controlling method does not expect the element to fill
                               this matrix.
-      \param elevec1 (out)  : (internal force-)vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : (internal force-)vector to be filled by element. If nullptr on input,
                               the controlling method does not expect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not expect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not expect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -365,7 +365,7 @@ namespace DRT
       \param discretization (in): A reference to the underlying discretization
       \param condition (in)     : The condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
                                   the controlling method does not expect the element
                                   to fill this vector
       \return 0 if successful, negative otherwise
@@ -373,7 +373,7 @@ namespace DRT
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
 
       //@}
@@ -718,7 +718,7 @@ namespace DRT
       {
         DRT::Element* parent = this->DRT::FaceElement::ParentElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent) != NULL,
+        dsassert(dynamic_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent) != nullptr,
             "Parent element is no membrane element");
         return static_cast<DRT::ELEMENTS::Membrane<distype2>*>(parent);
       }
@@ -762,14 +762,14 @@ namespace DRT
       \param discretization (in): A reference to the underlying discretization
       \param condition (in)     : The condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       //@}
 

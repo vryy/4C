@@ -151,7 +151,7 @@ const Epetra_Map* DRT::Discretization::NodeRowMap() const
     return noderowmap_.get();
   else
     dserror("FillComplete() must be called before call to NodeRowMap()");
-  return NULL;
+  return nullptr;
 #else
   return noderowmap_.get();
 #endif
@@ -166,7 +166,7 @@ const Epetra_Map* DRT::Discretization::NodeColMap() const
     return nodecolmap_.get();
   else
     dserror("FillComplete() must be called before call to NodeColMap()");
-  return NULL;
+  return nullptr;
 #else
   return nodecolmap_.get();
 #endif
@@ -181,7 +181,7 @@ const Epetra_Map* DRT::Discretization::ElementRowMap() const
     return elerowmap_.get();
   else
     dserror("FillComplete() must be called before call to ElementRowMap()");
-  return NULL;
+  return nullptr;
 #else
   return elerowmap_.get();
 #endif
@@ -196,7 +196,7 @@ const Epetra_Map* DRT::Discretization::ElementColMap() const
     return elecolmap_.get();
   else
     dserror("FillComplete() must be called before call to ElementColMap()");
-  return NULL;
+  return nullptr;
 #else
   return elecolmap_.get();
 #endif
@@ -299,7 +299,7 @@ DRT::Element* DRT::Discretization::gElement(const int gid) const
     dserror("Element with gobal id gid=%d not stored on this proc", gid);
   else
     return curr->second.get();
-  return NULL;
+  return nullptr;
 #else
   return element_.find(gid)->second.get();
 #endif
@@ -322,7 +322,7 @@ DRT::Node* DRT::Discretization::gNode(int gid) const
     dserror("Node with global id gid=%d not stored on this proc", gid);
   else
     return curr->second.get();
-  return NULL;
+  return nullptr;
 #else
   return node_.find(gid)->second.get();
 #endif

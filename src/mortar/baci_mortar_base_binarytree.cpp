@@ -256,7 +256,7 @@ void MORTAR::BaseBinaryTreeNode::PrintSlabs()
  *----------------------------------------------------------------------*/
 void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
 {
-  FILE* fp = NULL;
+  FILE* fp = nullptr;
   std::ostringstream currentfilename;
 
   if (dim_ == 2)
@@ -500,7 +500,7 @@ void MORTAR::BaseBinaryTreeNode::PrintDopsForGmsh(std::string filename)
  *----------------------------------------------------------------------*/
 void MORTAR::BaseBinaryTreeNode::PlotGmshPoint(std::string filename, double* position0, int nr)
 {
-  FILE* fp = NULL;
+  FILE* fp = nullptr;
   fp = fopen(filename.c_str(), "a");
   std::stringstream gmshfilecontent;
 
@@ -527,7 +527,7 @@ void MORTAR::BaseBinaryTreeNode::PlotGmshPoint(std::string filename, double* pos
 void MORTAR::BaseBinaryTreeNode::PlotGmshQuadrangle(std::string filename, double* position0,
     double* position1, double* position2, double* position3)
 {
-  FILE* fp = NULL;
+  FILE* fp = nullptr;
   fp = fopen(filename.c_str(), "a");
   std::stringstream gmshfilecontent;
 
@@ -551,7 +551,7 @@ void MORTAR::BaseBinaryTreeNode::PlotGmshQuadrangle(std::string filename, double
 void MORTAR::BaseBinaryTreeNode::PlotGmshTriangle(
     std::string filename, double* position0, double* position1, double* position2)
 {
-  FILE* fp = NULL;
+  FILE* fp = nullptr;
   fp = fopen(filename.c_str(), "a");
   std::stringstream gmshfilecontent;
 

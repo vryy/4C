@@ -2435,7 +2435,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateAdditionalSolutionDependingModels(
     Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix, Teuchos::RCP<Epetra_Vector> rhs)
 {
   // evaluate solution depending additional models
-  // this point is unequal NULL only if a scatra
+  // this point is unequal nullptr only if a scatra
   // adapter has been constructed.
   if (additional_model_evaluator_ != nullptr)
     additional_model_evaluator_->EvaluateAdditionalSolutionDependingModels(systemmatrix, rhs);

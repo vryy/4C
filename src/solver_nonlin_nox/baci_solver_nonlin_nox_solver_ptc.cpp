@@ -803,7 +803,7 @@ void NOX::NLN::LinSystem::PrePostOp::PseudoTransient::runPostComputeJacobian(
       // First cast the CORE::LINALG::SparseOperator and do an additional sanity
       // check.
       CORE::LINALG::SparseMatrix* jacPtr = dynamic_cast<CORE::LINALG::SparseMatrix*>(&jac);
-      if (jacPtr == NULL)
+      if (jacPtr == nullptr)
         dserror(
             "Something strange happened: The jacobian has not the "
             "operator type defined in the linear system object!");

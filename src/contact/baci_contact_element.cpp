@@ -18,7 +18,7 @@ CONTACT::CoElementType& CONTACT::CoElementType::Instance() { return instance_; }
 
 DRT::ParObject* CONTACT::CoElementType::Create(const std::vector<char>& data)
 {
-  CONTACT::CoElement* ele = new CONTACT::CoElement(0, 0, DRT::Element::dis_none, 0, NULL, false);
+  CONTACT::CoElement* ele = new CONTACT::CoElement(0, 0, DRT::Element::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }

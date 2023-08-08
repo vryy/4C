@@ -359,9 +359,9 @@ void CORE::GEO::CUT::Facet::CreateTriangulation(Mesh& mesh, const std::vector<Po
     // One could create a better approx for the "midpoint" here parsing information from the
     // levelset
     //  and thus finding the zero level set easier. Might be worthwhile testing.
-    Point* p_mid = mesh.NewPoint(
-        avg.A(), NULL, ParentSide(), 0.0);  // change tolerance here intelligently !!! - basically
-                                            // there is no reason why I'd like to merge here!
+    Point* p_mid = mesh.NewPoint(avg.A(), nullptr, ParentSide(),
+        0.0);  // change tolerance here intelligently !!! - basically
+               // there is no reason why I'd like to merge here!
     p_mid->Position(Position());
     p_mid->Register(this);
 
@@ -441,7 +441,7 @@ void CORE::GEO::CUT::Facet::GetNodalIds(
   {
     Point* p = *i;
     Node* n = p->CutNode();
-    if (n == NULL)
+    if (n == nullptr)
     {
       plain_int_set point_id;
       point_id.insert(p->Id());
@@ -925,7 +925,7 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Facet::Neighbor(VolumeCell* cell)
       return vc;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1283,7 +1283,7 @@ unsigned CORE::GEO::CUT::Facet::NumPoints()
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Point* CORE::GEO::CUT::Facet::OtherPoint(Point* p1, Point* p2)
 {
-  Point* result = NULL;
+  Point* result = nullptr;
   if (not HasHoles() and not IsTriangulated() and Points().size() == 3)
   {
     for (std::vector<Point*>::iterator i = points_.begin(); i != points_.end(); ++i)
@@ -1291,7 +1291,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Facet::OtherPoint(Point* p1, Point* p2)
       Point* p = *i;
       if (p != p1 and p != p2)
       {
-        if (result == NULL)
+        if (result == nullptr)
         {
           result = p;
         }

@@ -204,7 +204,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateXfluidFunctio
     else
     {
       dserror("How did you end up here :)?");
-      return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
+      return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
     }
   }
   else if (function_lin_def->HaveNamed("TAYLORCOUETTEFLOW"))
@@ -323,7 +323,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateXfluidFunctio
   }
   else
   {
-    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(NULL);
+    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
   }
 }
 

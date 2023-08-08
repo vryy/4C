@@ -85,7 +85,7 @@ int DRT::DiscretizationHDG::FillComplete(
 
     // check master/slave relation of current face in terms of the local trafo map
     dsassert(
-        f->second->ParentMasterElement() != NULL, "Unexpected topology between face and parent");
+        f->second->ParentMasterElement() != nullptr, "Unexpected topology between face and parent");
     const int* nodeIdsMaster = f->second->ParentMasterElement()->NodeIds();
     const int* nodeIds = f->second->NodeIds();
 
@@ -104,9 +104,9 @@ int DRT::DiscretizationHDG::FillComplete(
     {
       DRT::Element* faceMaster = f->second->ParentMasterElement();
       const int faceMasterNo = f->second->FaceMasterNumber();
-      // new master element might be NULL on MPI computations
+      // new master element might be nullptr on MPI computations
       f->second->SetParentMasterElement(f->second->ParentSlaveElement(),
-          f->second->ParentSlaveElement() != NULL ? f->second->FaceSlaveNumber() : -1);
+          f->second->ParentSlaveElement() != nullptr ? f->second->FaceSlaveNumber() : -1);
       f->second->SetParentSlaveElement(faceMaster, faceMasterNo);
     }
   }
@@ -409,7 +409,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
   DRT::UTILS::Dbc::ReadDirichletCondition(discret, cond, time, info, dbcgids, hierarchical_order);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == NULL) return;
+  if (discret.FaceRowMap() == nullptr) return;
 
   // get onoff toggles
   const std::vector<int>* onoff = cond.Get<std::vector<int>>("onoff");
@@ -520,10 +520,10 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
     const Epetra_IntVector& toggle) const
 {
   // call corresponding method from base class; safety checks inside
-  DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, NULL);
+  DRT::UTILS::Dbc::DoDirichletCondition(discret, cond, time, systemvectors, toggle, nullptr);
 
   // say good bye if there are no face elements
-  if (discret.FaceRowMap() == NULL) return;
+  if (discret.FaceRowMap() == nullptr) return;
 
   // get ids of conditioned nodes
   const std::vector<int>* nodeids = cond.Nodes();
@@ -569,7 +569,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
           "action", SCATRA::Action::project_dirich_field, initParams);
     // TODO: Introduce a general action type that is
     // valid for all problems
-    if (funct != NULL)
+    if (funct != nullptr)
     {
       Teuchos::Array<int> functarray(*funct);
       initParams.set("funct", functarray);
@@ -630,7 +630,7 @@ void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationFaces& di
       std::vector<int> dofs = discret.Dof(0, discret.lRowFace(i));
 
       bool do_evaluate = false;
-      if (funct != NULL)
+      if (funct != nullptr)
         for (unsigned int i = 0; i < component; ++i)
           if ((*funct)[i] > 0) do_evaluate = true;
 

@@ -16,7 +16,7 @@ DRT::NURBS::KnotvectorObjectType DRT::NURBS::KnotvectorObjectType::instance_;
 
 DRT::ParObject* DRT::NURBS::KnotvectorObjectType::Create(const std::vector<char>& data)
 {
-  return NULL;
+  return nullptr;
 }
 
 

@@ -50,7 +50,7 @@ DRT::ParObject* MAT::ParticleMaterialDEMType::Create(const std::vector<char>& da
 /*---------------------------------------------------------------------------*
  | constructor (empty material object)                        sfuchs 07/2018 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleMaterialDEM::ParticleMaterialDEM() : params_(NULL)
+MAT::ParticleMaterialDEM::ParticleMaterialDEM() : params_(nullptr)
 {
   // empty constructor
 }
@@ -78,7 +78,7 @@ void MAT::ParticleMaterialDEM::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -97,7 +97,7 @@ void MAT::ParticleMaterialDEM::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

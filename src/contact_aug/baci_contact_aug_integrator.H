@@ -123,7 +123,7 @@ namespace CONTACT
 
      protected:
       /// empty constructor for singleton construction
-      IntegratorGeneric() : cparams_(NULL), wrapper_(NULL)
+      IntegratorGeneric() : cparams_(nullptr), wrapper_(nullptr)
       { /* empty */
       }
 

@@ -108,7 +108,7 @@ bool STR::TIMINT::NoxInterface::computeJacobian(const Epetra_Vector& x, Epetra_O
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  dsassert(jac_ptr != NULL, "Dynamic cast failed.");
+  dsassert(jac_ptr != nullptr, "Dynamic cast failed.");
 
   if (not implint_ptr_->ApplyStiff(x, *jac_ptr)) return false;
 
@@ -128,7 +128,7 @@ bool STR::TIMINT::NoxInterface::computeFandJacobian(
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  dsassert(jac_ptr != NULL, "Dynamic cast failed!");
+  dsassert(jac_ptr != nullptr, "Dynamic cast failed!");
 
   if (not implint_ptr_->ApplyForceStiff(x, rhs, *jac_ptr)) return false;
 
@@ -154,7 +154,7 @@ bool STR::TIMINT::NoxInterface::computeCorrectionSystem(const enum NOX::NLN::Cor
   CheckInitSetup();
 
   CORE::LINALG::SparseOperator* jac_ptr = dynamic_cast<CORE::LINALG::SparseOperator*>(&jac);
-  dsassert(jac_ptr != NULL, "Dynamic cast failed!");
+  dsassert(jac_ptr != nullptr, "Dynamic cast failed!");
 
   std::vector<INPAR::STR::ModelType> constraint_models;
   FindConstraintModels(&grp, constraint_models);

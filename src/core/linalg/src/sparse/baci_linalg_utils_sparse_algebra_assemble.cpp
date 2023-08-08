@@ -283,7 +283,7 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVec
   Teuchos::RCP<Epetra_Map> dbcmap = Teuchos::null;
   {
     int nummyelements = 0;
-    int* myglobalelements = NULL;
+    int* myglobalelements = nullptr;
     if (dbcgids.size() > 0)
     {
       nummyelements = dbcgids.size();
@@ -296,7 +296,7 @@ Teuchos::RCP<CORE::LINALG::MapExtractor> CORE::LINALG::ConvertDirichletToggleVec
   Teuchos::RCP<Epetra_Map> freemap = Teuchos::null;
   {
     int nummyelements = 0;
-    int* myglobalelements = NULL;
+    int* myglobalelements = nullptr;
     if (freegids.size() > 0)
     {
       nummyelements = freegids.size();

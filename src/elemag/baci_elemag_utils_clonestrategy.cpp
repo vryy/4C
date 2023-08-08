@@ -46,7 +46,7 @@ void ELEMAG::UTILS::ScatraCloneStrategy<sft>::SetElementData(
     Teuchos::RCP<DRT::Element> newele, DRT::Element* oldele, const int matid, const bool nurbsdis)
 {
   auto Transport = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
-  if (Transport != NULL)
+  if (Transport != nullptr)
   {
     Transport->SetDisType(oldele->Shape());
     Transport->SetMaterial(matid);

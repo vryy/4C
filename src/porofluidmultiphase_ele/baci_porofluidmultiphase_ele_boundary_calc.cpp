@@ -153,7 +153,7 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvaluateAction(D
     {
       // check if the neumann conditions were set
       DRT::Condition* condition = params.get<DRT::Condition*>("condition");
-      if (condition == NULL) dserror("Cannot access Neumann boundary condition!");
+      if (condition == nullptr) dserror("Cannot access Neumann boundary condition!");
 
       // evaluate neumann loads
       EvaluateNeumann(ele, params, discretization, *condition, la, *elevec[0]);

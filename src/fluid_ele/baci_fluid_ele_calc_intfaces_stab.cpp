@@ -214,7 +214,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
   }
 
-  return NULL;
+  return nullptr;
 }
 
 template <DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType pdistype,
@@ -498,8 +498,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
   Fluid* pele = intface->ParentMasterElement();
   Fluid* nele = intface->ParentSlaveElement();
 
-  if (pele == NULL) dserror("pele is NULL");
-  if (nele == NULL) dserror("nele is NULL");
+  if (pele == nullptr) dserror("pele is nullptr");
+  if (nele == nullptr) dserror("nele is nullptr");
 
   //---------------------------------------------------
 

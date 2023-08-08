@@ -37,7 +37,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       for (int i = 0; i < dis->NumMyColElements(); ++i)
       {
         const DRT::Element* actele = dis->lColElement(i);
-        if (curr_pos == NULL)
+        if (curr_pos == nullptr)
           IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
           IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
@@ -49,7 +49,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
       for (int i = 0; i < dis->NumMyRowElements(); ++i)
       {
         const DRT::Element* actele = dis->lRowElement(i);
-        if (curr_pos == NULL)
+        if (curr_pos == nullptr)
           IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
         else
           IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
@@ -69,7 +69,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         const DRT::Node* actnode = dis->lColNode(i);
         CORE::LINALG::Matrix<3, 1> pos(true);
 
-        if (curr_pos != NULL)
+        if (curr_pos != nullptr)
         {
           const CORE::LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
           pos(0) = curr_x(0);
@@ -94,7 +94,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         const DRT::Node* actnode = dis->lRowNode(i);
         CORE::LINALG::Matrix<3, 1> pos(true);
 
-        if (curr_pos != NULL)
+        if (curr_pos != nullptr)
         {
           const CORE::LINALG::Matrix<3, 1>& curr_x = curr_pos->find(actnode->Id())->second;
           pos(0) = curr_x(0);
@@ -132,7 +132,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         for (int i = 0; i < xdis->NumMyColFaces(); ++i)
         {
           const DRT::Element* actele = xdis->lColFace(i);
-          if (curr_pos == NULL)
+          if (curr_pos == nullptr)
             IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
             IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
@@ -144,7 +144,7 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
         for (int i = 0; i < xdis->NumMyRowFaces(); ++i)
         {
           const DRT::Element* actele = xdis->lRowFace(i);
-          if (curr_pos == NULL)
+          if (curr_pos == nullptr)
             IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
           else
             IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
@@ -177,7 +177,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   if (!xdis->Filled()) xdis->FillComplete();
 
   const Epetra_Map* noderowmap = xdis->NodeRowMap();
-  if (noderowmap == NULL) dserror("we expect a fill-complete call before!");
+  if (noderowmap == nullptr) dserror("we expect a fill-complete call before!");
 
   // now we can reserve dofs for xfem discretization
   int nodeindexrange =
@@ -509,7 +509,7 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SplitDiscretizationByBoundaryCondit
   for (cit = src_cond_elements.begin(); cit != src_cond_elements.end(); ++cit)
   {
     DRT::FaceElement* src_face_element = dynamic_cast<DRT::FaceElement*>(cit->second.get());
-    if (src_face_element == NULL)
+    if (src_face_element == nullptr)
       dserror("Dynamic cast failed! The src element %d is no DRT::FaceElement!", cit->second->Id());
     // get the parent element
     DRT::Element* src_ele = src_face_element->ParentElement();

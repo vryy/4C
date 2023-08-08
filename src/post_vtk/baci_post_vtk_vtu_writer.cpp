@@ -110,7 +110,7 @@ void PostVtuWriter::WriteGeo()
     {
       WriteGeoNurbsEle(ele, celltypes, outNodeId, celloffset, coordinates);
     }
-    else if (beamele != NULL)
+    else if (beamele != nullptr)
     {
       WriteGeoBeamEle(beamele, celltypes, outNodeId, celloffset, coordinates);
     }
@@ -291,7 +291,7 @@ void PostVtuWriter::WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<E
     {
       WirteDofResultStepNurbsEle(ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
     }
-    else if (beamele != NULL)
+    else if (beamele != nullptr)
     {
       WriteDofResultStepBeamEle(
           beamele, ncomponents, numdf, solution, ghostedData, from, fillzeros);

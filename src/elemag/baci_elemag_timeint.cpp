@@ -828,7 +828,7 @@ namespace
     // create dofsets for electric and pressure at nodes
     // if there is no pressure vector it means that the vectors have not yet
     // been created and therefor it is needed to create them now.
-    if (electric.get() == NULL || electric->GlobalLength() != dis.NumGlobalNodes())
+    if (electric.get() == nullptr || electric->GlobalLength() != dis.NumGlobalNodes())
     {
       // The electric is a multivector because it is a vectorial field.
       // The multivector is based on the map of the node
@@ -1095,7 +1095,7 @@ void ELEMAG::ElemagTimeInt::SpySysmat(std::ostream &out)
   Epetra_CrsMatrix *matrix =
   Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_,true)->EpetraMatrix().get(); int r =
   matrix->NumMyRows(); int c = matrix->NumMyCols(); int numentries;
-  //double*& values = NULL;
+  //double*& values = nullptr;
   double* values;
   int* indices;
   //int ExtractMyRowView(int MyRow, int& NumEntries, double*& Values, int*& Indices) const;

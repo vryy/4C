@@ -98,7 +98,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*
@@ -138,7 +138,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
   else
     dserror("Defined problem type does not exist!!");
 
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*
@@ -190,7 +190,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
           DRT::DistypeToString(distype).c_str());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*--------------------------------------------------------------------------*
@@ -206,5 +206,5 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
   else
     dserror("Defined problem type does not exist!!");
 
-  return NULL;
+  return nullptr;
 }

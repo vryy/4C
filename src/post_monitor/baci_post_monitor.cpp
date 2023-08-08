@@ -83,7 +83,7 @@ void MonWriter::WriteMonFile(PostProblem& problem, std::string& infieldtype, int
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
-  if (field == NULL) dserror("Could not obtain field");
+  if (field == nullptr) dserror("Could not obtain field");
 
   CheckInfieldType(infieldtype);
 
@@ -246,7 +246,7 @@ void MonWriter::WriteMonStrFile(const std::string& filename, PostProblem& proble
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
-  if (field == NULL) dserror("Could not obtain field");
+  if (field == nullptr) dserror("Could not obtain field");
 
   CheckInfieldType(infieldtype);
 
@@ -389,7 +389,7 @@ void MonWriter::WriteMonThrFile(const std::string& filename, PostProblem& proble
 
   // get pointer to discretisation of actual field
   PostField* field = GetFieldPtr(problem);
-  if (field == NULL) dserror("Could not obtain field");
+  if (field == nullptr) dserror("Could not obtain field");
 
   CheckInfieldType(infieldtype);
 

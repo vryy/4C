@@ -77,7 +77,7 @@ DRT::ParObject* MAT::PlasticLinElastType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | constructor (public)                                      dano 04/11 |
  *----------------------------------------------------------------------*/
-MAT::PlasticLinElast::PlasticLinElast() : params_(NULL), plastic_step_(false) {}
+MAT::PlasticLinElast::PlasticLinElast() : params_(nullptr), plastic_step_(false) {}
 
 
 /*----------------------------------------------------------------------*
@@ -101,7 +101,7 @@ void MAT::PlasticLinElast::Pack(DRT::PackBuffer& data) const
   // matid
   int matid = -1;
   // in case we are in post-process mode
-  if (params_ != NULL) matid = params_->Id();
+  if (params_ != nullptr) matid = params_->Id();
   AddtoPack(data, matid);
 
   // pack history data
@@ -147,7 +147,7 @@ void MAT::PlasticLinElast::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

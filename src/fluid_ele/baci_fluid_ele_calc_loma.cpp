@@ -154,8 +154,9 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(DRT::ELEMENTS::Fluid* e
   if (ele->IsAle())
   {
     my::ExtractValuesFromGlobalVector(
-        discretization, lm, *my::rotsymmpbc_, &edispnp, NULL, "dispnp");
-    my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &egridv, NULL, "gridv");
+        discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
+    my::ExtractValuesFromGlobalVector(
+        discretization, lm, *my::rotsymmpbc_, &egridv, nullptr, "gridv");
   }
 
   // get node coordinates and number of elements per node
@@ -472,9 +473,9 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       double fac2 = 0.0;
       double fac3 = 0.0;
       double facMtau = 0.0;
-      double* saccn = NULL;
-      double* sveln = NULL;
-      double* svelnp = NULL;
+      double* saccn = nullptr;
+      double* sveln = nullptr;
+      double* svelnp = nullptr;
       my::ComputeSubgridScaleVelocity(
           eaccam, fac1, fac2, fac3, facMtau, *iquad, saccn, sveln, svelnp);
 

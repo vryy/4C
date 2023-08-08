@@ -30,8 +30,8 @@ IO::EveryIterationWriter::EveryIterationWriter()
       write_only_this_step_(-1),
       write_owner_each_newton_iteration_(false),
       base_filename_(),
-      parent_writer_(NULL),
-      interface_(NULL),
+      parent_writer_(nullptr),
+      interface_(nullptr),
       every_iter_writer_(Teuchos::null)
 {
   /* empty */

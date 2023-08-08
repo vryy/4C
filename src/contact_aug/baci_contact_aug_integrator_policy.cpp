@@ -638,7 +638,7 @@ void CONTACT::AUG::BaseIntPolicy<probdim, slavetype, mastertype>::Deriv1st_MXiGP
     // switch between the 1-st order derivative of the master parametric
     // coordinates and the 1-st order derivative of the projection length
     // parameter alpha.
-    Deriv1stMap* deriv_i_ptr = NULL;
+    Deriv1stMap* deriv_i_ptr = nullptr;
     if (i < MASTERDIM)
       deriv_i_ptr = &d_mxi[i];
     else

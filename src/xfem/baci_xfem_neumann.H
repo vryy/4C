@@ -47,7 +47,7 @@ namespace XFEM
 
   /// evaluate Neumann boundary conditions
   void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<DRT::Discretization> discret,
-      Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix = NULL);
+      Epetra_Vector& systemvector, CORE::LINALG::SparseOperator* systemmatrix = nullptr);
 
   /// evaluate standard Neumann boundary conditions
   void EvaluateNeumannStandard(std::multimap<std::string, DRT::Condition*>& condition,

@@ -29,7 +29,7 @@ IO::Pstream::Pstream()
       targetpid_(-2),
       writetoscreen_(false),
       writetofile_(false),
-      outfile_(NULL),
+      outfile_(nullptr),
       prefixgroupID_(false),
       groupID_(-2),
       buffer_(std::string()),
@@ -45,12 +45,12 @@ IO::Pstream::Pstream()
 IO::Pstream::~Pstream()
 {
   if (level_) delete level_;
-  level_ = NULL;
+  level_ = nullptr;
 
   if (blackholestream_) delete blackholestream_;
-  blackholestream_ = NULL;
+  blackholestream_ = nullptr;
 
-  mystream_ = NULL;
+  mystream_ = nullptr;
 
   this->close();
 }
@@ -71,7 +71,7 @@ void IO::Pstream::setup(const bool writetoscreen, const bool writetofile, const 
   targetpid_ = targetpid;
   writetoscreen_ = writetoscreen;
   writetofile_ = writetofile;
-  outfile_ = NULL;
+  outfile_ = nullptr;
   prefixgroupID_ = prefixgroupID;
   groupID_ = groupID;
 
@@ -133,7 +133,7 @@ void IO::Pstream::close()
     outfile_->close();
     delete outfile_;
   }
-  outfile_ = NULL;
+  outfile_ = nullptr;
 
   prefixgroupID_ = false;
   groupID_ = -2;

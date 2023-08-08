@@ -37,7 +37,7 @@ DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
     case DRT::Element::line3:
     {
       static RedAirBloodScatraLine3Impl<DRT::Element::line3>* acinus;
-      if (acinus == NULL)
+      if (acinus == nullptr)
       {
         acinus = new RedAirBloodScatraLine3Impl<DRT::Element::line3>;
       }
@@ -46,7 +46,7 @@ DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
     default:
       dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
   }
-  return NULL;
+  return nullptr;
 }
 
 

@@ -1004,7 +1004,7 @@ namespace CORE::GEO
       Element* CreateConcreteElement(int eid, const std::vector<Side*>& sides,
           const std::vector<Node*>& nodes, bool active, int probdim) const
       {
-        Element* e = NULL;
+        Element* e = nullptr;
         // sanity check
         if (probdim < CORE::DRT::UTILS::DisTypeToDim<elementtype>::dim)
           dserror("Problem dimension is smaller than the element dimension!");

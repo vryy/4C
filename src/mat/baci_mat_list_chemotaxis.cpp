@@ -70,7 +70,7 @@ DRT::ParObject* MAT::MatListChemotaxisType::Create(const std::vector<char>& data
 /*----------------------------------------------------------------------*
  | construct empty material object                           thon 06/15 |
  *----------------------------------------------------------------------*/
-MAT::MatListChemotaxis::MatListChemotaxis() : MatList(), paramschemo_(NULL) {}
+MAT::MatListChemotaxis::MatListChemotaxis() : MatList(), paramschemo_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -113,7 +113,7 @@ void MAT::MatListChemotaxis::SetupMatMap()
  *----------------------------------------------------------------------*/
 void MAT::MatListChemotaxis::Clear()
 {
-  paramschemo_ = NULL;
+  paramschemo_ = nullptr;
   return;
 }
 
@@ -132,7 +132,7 @@ void MAT::MatListChemotaxis::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (paramschemo_ != NULL) matid = paramschemo_->Id();  // in case we are in post-process mode
+  if (paramschemo_ != nullptr) matid = paramschemo_->Id();  // in case we are in post-process mode
 
   AddtoPack(data, matid);
 
@@ -158,7 +158,7 @@ void MAT::MatListChemotaxis::Unpack(const std::vector<char>& data)
   // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position, data, matid);
-  paramschemo_ = NULL;
+  paramschemo_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

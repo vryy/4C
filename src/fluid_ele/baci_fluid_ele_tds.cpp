@@ -124,9 +124,9 @@ void FLD::TDSEleData::ActivateTDS(
     svelnp_.shape(nsd, nquad);
   }
   // for what's this exactly?
-  if (saccn != NULL) *saccn = saccn_.values();
-  if (sveln != NULL) *sveln = sveln_.values();
-  if (svelnp != NULL) *svelnp = svelnp_.values();
+  if (saccn != nullptr) *saccn = saccn_.values();
+  if (sveln != nullptr) *sveln = sveln_.values();
+  if (svelnp != nullptr) *svelnp = svelnp_.values();
 }
 
 

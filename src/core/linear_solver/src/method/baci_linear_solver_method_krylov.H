@@ -79,7 +79,7 @@ namespace CORE::LINEAR_SOLVER
     //! (internal) parameter lists
     Teuchos::ParameterList& params_;
 
-    //! file to write output to (proc 0 only, can be NULL on input)
+    //! file to write output to (proc 0 only, can be nullptr on input)
     FILE* outfile_;
 
     //! initial guess and solution

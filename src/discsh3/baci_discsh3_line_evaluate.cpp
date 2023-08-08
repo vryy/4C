@@ -63,8 +63,8 @@ int DRT::ELEMENTS::DiscSh3Line::EvaluateEdges(const Teuchos::ParameterList& para
   DRT::Element* pele = edge->ParentMasterElement();  // Master element
   DRT::Element* nele = edge->ParentSlaveElement();   // Slave element
 
-  if (pele == NULL) dserror("pele is NULL");
-  if (nele == NULL) dserror("nele is NULL");
+  if (pele == nullptr) dserror("pele is nullptr");
+  if (nele == nullptr) dserror("nele is nullptr");
 
   DRT::ELEMENTS::DiscSh3* master_ele = dynamic_cast<DRT::ELEMENTS::DiscSh3*>(pele);
   DRT::ELEMENTS::DiscSh3* slave_ele = dynamic_cast<DRT::ELEMENTS::DiscSh3*>(nele);

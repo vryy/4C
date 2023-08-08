@@ -90,8 +90,8 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
   if (shape_ == ::DRT::Element::tet4)
   {
     // check input
-    if (!local) dserror("ERROR: LocalToGlobal called with xi=NULL");
-    if (!global) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+    if (!local) dserror("ERROR: LocalToGlobal called with xi=nullptr");
+    if (!global) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
     static const int n = 4;
     static const int ndim = 3;
@@ -113,8 +113,8 @@ void CORE::VOLMORTAR::Cell::LocalToGlobal(double* local, double* global)
   else if (shape_ == ::DRT::Element::hex8)
   {
     // check input
-    if (!local) dserror("ERROR: LocalToGlobal called with xi=NULL");
-    if (!global) dserror("ERROR: LocalToGlobal called with globcoord=NULL");
+    if (!local) dserror("ERROR: LocalToGlobal called with xi=nullptr");
+    if (!global) dserror("ERROR: LocalToGlobal called with globcoord=nullptr");
 
     static const int n = 8;
     static const int ndim = 3;

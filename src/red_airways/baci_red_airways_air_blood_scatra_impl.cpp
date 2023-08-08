@@ -40,7 +40,7 @@ DRT::ELEMENTS::RedAirBloodScatraImplInterface* DRT::ELEMENTS::RedAirBloodScatraI
     case DRT::Element::line2:
     {
       static RedAirBloodScatraImpl<DRT::Element::line2>* acinus;
-      if (acinus == NULL)
+      if (acinus == nullptr)
       {
         acinus = new RedAirBloodScatraImpl<DRT::Element::line2>;
       }
@@ -49,7 +49,7 @@ DRT::ELEMENTS::RedAirBloodScatraImplInterface* DRT::ELEMENTS::RedAirBloodScatraI
     default:
       dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -234,11 +234,11 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::SolveBloodAirTransport(RedAi
 
   for (unsigned int i = 0; i < lm.size(); i++)
   {
-    if (ele->Nodes()[i]->GetCondition("RedAirwayScatraAirCond") != NULL)
+    if (ele->Nodes()[i]->GetCondition("RedAirwayScatraAirCond") != nullptr)
     {
       ai.push_back(i);
     }
-    else if (ele->Nodes()[i]->GetCondition("RedAirwayScatraHemoglobinCond") != NULL)
+    else if (ele->Nodes()[i]->GetCondition("RedAirwayScatraHemoglobinCond") != nullptr)
     {
       ci.push_back(i);
     }

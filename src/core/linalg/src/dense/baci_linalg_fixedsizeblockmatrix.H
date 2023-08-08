@@ -18,7 +18,10 @@ namespace CORE::LINALG
    public:
     typedef typename value_type::scalar_type scalar_type;
 
-    BlockMatrix() { std::fill(blocks_, blocks_ + brows * bcols, static_cast<value_type*>(NULL)); }
+    BlockMatrix()
+    {
+      std::fill(blocks_, blocks_ + brows * bcols, static_cast<value_type*>(nullptr));
+    }
 
     ~BlockMatrix()
     {
@@ -28,15 +31,15 @@ namespace CORE::LINALG
       }
     }
 
-    bool IsUsed(unsigned row, unsigned col) const { return blocks_[Position(row, col)] != NULL; }
+    bool IsUsed(unsigned row, unsigned col) const { return blocks_[Position(row, col)] != nullptr; }
 
-    bool IsUsed(unsigned pos) const { return blocks_[pos] != NULL; }
+    bool IsUsed(unsigned pos) const { return blocks_[pos] != nullptr; }
 
     void Clear(unsigned row, unsigned col)
     {
       int p = Position(row, col);
       delete blocks_[p];
-      blocks_[p] = NULL;
+      blocks_[p] = nullptr;
     }
 
     void AddView(unsigned row, unsigned col, value_type& matrix)
@@ -50,7 +53,7 @@ namespace CORE::LINALG
     {
       int p = Position(row, col);
       value_type* b = blocks_[p];
-      if (b == NULL)
+      if (b == nullptr)
       {
         b = new value_type(true);
         blocks_[p] = b;
@@ -62,7 +65,7 @@ namespace CORE::LINALG
     {
       const value_type* b = blocks_[Position(row, col)];
 #ifdef DEBUG
-      if (b == NULL) dserror("null block access");
+      if (b == nullptr) dserror("null block access");
 #endif
       return b;
     }
@@ -70,7 +73,7 @@ namespace CORE::LINALG
     value_type* operator()(unsigned pos)
     {
       value_type* b = blocks_[pos];
-      if (b == NULL)
+      if (b == nullptr)
       {
         b = new value_type(true);
         blocks_[pos] = b;
@@ -85,7 +88,7 @@ namespace CORE::LINALG
 #endif
       const value_type* b = blocks_[pos];
 #ifdef DEBUG
-      if (b == NULL) dserror("null block access");
+      if (b == nullptr) dserror("null block access");
 #endif
       return b;
     }
@@ -118,7 +121,7 @@ namespace CORE::LINALG
     {
       for (unsigned i = 0; i < brows * bcols; ++i)
       {
-        if (blocks_[i] != NULL)
+        if (blocks_[i] != nullptr)
         {
           blocks_[i]->PutScalar(scalar);
         }
@@ -164,9 +167,9 @@ namespace CORE::LINALG
           int p = matrix.Position(ir, ic);
           value_type* b = matrix.blocks_[p];
           stream << "[" << ir << "," << ic << "] = ";
-          if (b == NULL)
+          if (b == nullptr)
           {
-            stream << "NULL\n";
+            stream << "nullptr\n";
           }
           else
           {

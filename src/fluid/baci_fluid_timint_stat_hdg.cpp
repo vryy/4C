@@ -46,7 +46,7 @@ FLD::TimIntStationaryHDG::TimIntStationaryHDG(const Teuchos::RCP<DRT::Discretiza
 void FLD::TimIntStationaryHDG::Init()
 {
   DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
-  if (hdgdis == NULL) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
 
   int elementndof = hdgdis->NumMyRowElements() > 0
                         ? dynamic_cast<DRT::ELEMENTS::FluidHDG*>(hdgdis->lRowElement(0))

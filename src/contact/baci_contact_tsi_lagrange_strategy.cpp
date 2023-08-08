@@ -64,7 +64,7 @@ void CONTACT::CoTSILagrangeStrategy::SetState(
         for (int i = 0; i < idiscr.NumMyColNodes(); ++i)
         {
           CONTACT::CoNode* node = dynamic_cast<CONTACT::CoNode*>(idiscr.lColNode(i));
-          if (node == NULL) dserror("cast failed");
+          if (node == nullptr) dserror("cast failed");
           std::vector<double> mytemp(1);
           std::vector<int> lm(1, node->Dofs()[0]);
 
@@ -227,11 +227,11 @@ void CONTACT::CoTSILagrangeStrategy::Evaluate(
     // linearized thermal contact (heat conduction)
     tsi_interface->AssembleLinConduct(dcTdd, dcTdT, dcTdLMt, dcTdLMc);
 
-    tsi_interface->AssembleDM_linDiss(NULL, &m_LinDissDISP, NULL, &m_LinDissContactLM, 1.);
+    tsi_interface->AssembleDM_linDiss(nullptr, &m_LinDissDISP, nullptr, &m_LinDissContactLM, 1.);
 
     tsi_interface->AssembleLinDM(linDcontactLM, linMcontactLM);
     tsi_interface->AssembleLinDM_X(
-        NULL, &linMdiss, 1., CONTACT::CoTSIInterface::LinDM_Diss, gsnoderowmap_);
+        nullptr, &linMdiss, 1., CONTACT::CoTSIInterface::LinDM_Diss, gsnoderowmap_);
     tsi_interface->AssembleLinDM_X(
         &linDThermoLM, &linMThermoLM, 1., CONTACT::CoTSIInterface::LinDM_ThermoLM, gsnoderowmap_);
   }
@@ -963,7 +963,7 @@ void CONTACT::CoTSILagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> di
       *gmdofrowmap_, 100, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX);
   for (unsigned i = 0; i < interface_.size(); ++i)
     dynamic_cast<CONTACT::CoTSIInterface*>(&(*interface_[i]))
-        ->AssembleDM_linDiss(NULL, NULL, NULL, &m_LinDissContactLM, 1.);
+        ->AssembleDM_linDiss(nullptr, nullptr, nullptr, &m_LinDissContactLM, 1.);
   m_LinDissContactLM.Complete(*gactivedofs_, *gmdofrowmap_);
   Teuchos::RCP<Epetra_Vector> z_act = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
   ;

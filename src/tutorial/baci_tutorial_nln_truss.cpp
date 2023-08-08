@@ -29,10 +29,10 @@ TUTORIAL::NonlinearTruss::NonlinearTruss()
   freact_.PutScalar(0.0);
   disp_.PutScalar(0.0);
 
-  /// initialize pointers with NULL
-  discretization_ = NULL;
-  neumannvalues_ = NULL;
-  dirichletvalues_ = NULL;
+  /// initialize pointers with nullptr
+  discretization_ = nullptr;
+  neumannvalues_ = nullptr;
+  dirichletvalues_ = nullptr;
 }
 
 

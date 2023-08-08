@@ -450,7 +450,7 @@ void FLD::UTILS::StressManager::CalcSepEnr(Teuchos::RCP<CORE::LINALG::SparseOper
     discret_->ComputeNullSpaceIfNecessary(solver->Params(), true);
 
     // get nullspace parameters
-    double* nullspace = mlparams.get("null space: vectors", (double*)NULL);
+    double* nullspace = mlparams.get("null space: vectors", (double*)nullptr);
     if (!nullspace) dserror("No nullspace supplied in parameter list");
     int nsdim = mlparams.get("null space: dimension", 1);
     if (nsdim != 4)

@@ -124,7 +124,7 @@ int DRT::ELEMENTS::Bele3::Evaluate(Teuchos::ParameterList& params,
           params.get<Teuchos::RCP<DRT::Condition>>("condition");
       const std::string* projtype = condition->Get<std::string>("projection");
 
-      if (projtype != NULL)
+      if (projtype != nullptr)
       {
         // call submethod to compute volume and its derivatives w.r.t. to current displ.
         if (*projtype == "yz")

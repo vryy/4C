@@ -448,8 +448,8 @@ CORE::GEO::ConcreteBoundaryIntCell<probDim, cellType, dim, numNodePerEle>::Concr
       xyz_center_(this->phys_center_.A(), true)
 {
   nodalpos_xi_domain_ = xfemEleDomainCoordinates;
-  nodalpos_xi_boundary_ = (eleBoundaryCoordinates != NULL ? *eleBoundaryCoordinates
-                                                          : CORE::LINALG::SerialDenseMatrix());
+  nodalpos_xi_boundary_ = (eleBoundaryCoordinates != nullptr ? *eleBoundaryCoordinates
+                                                             : CORE::LINALG::SerialDenseMatrix());
   nodalpos_xyz_domain_ = physDomainCoordinates;
   indomainplus_ = indomainplus;
   CORE::GEO::ComputePhysicalCenterPosition<probDim, cellType>(physDomainCoordinates, xyz_center_);

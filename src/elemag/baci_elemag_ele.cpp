@@ -569,7 +569,7 @@ DRT::ELEMENTS::ElemagIntFace::ElemagIntFace(int id,  // element id
   SetParentMasterElement(parent_master, lsurface_master);
   SetParentSlaveElement(parent_slave, lsurface_slave);
 
-  if (parent_slave != NULL)
+  if (parent_slave != nullptr)
     degree_ = std::max(parent_master->Degree(), parent_slave->Degree());
   else
     degree_ = parent_master->Degree();

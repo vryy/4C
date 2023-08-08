@@ -47,7 +47,7 @@ namespace CORE::LINEAR_SOLVER
     */
     explicit CheapSIMPLE_BlockPreconditioner(Teuchos::RCP<Epetra_Operator> A,
         const Teuchos::ParameterList& velocitylist, const Teuchos::ParameterList& pressurelist,
-        FILE* outfile = NULL);
+        FILE* outfile = nullptr);
 
     /*!
         \brief Destructor
@@ -240,7 +240,7 @@ namespace CORE::LINEAR_SOLVER
     void CheapSimple(CORE::LINALG::ANA::Vector& vx, CORE::LINALG::ANA::Vector& px,
         CORE::LINALG::ANA::Vector& vb, CORE::LINALG::ANA::Vector& pb) const;
 
-    FILE* outfile_;                              // error file to write output to or NULL
+    FILE* outfile_;                              // error file to write output to or nullptr
     Teuchos::ParameterList predictSolver_list_;  // list for primary solver
     Teuchos::ParameterList schurSolver_list_;    // list for secondary solver
     double alpha_;                               // pressure damping \in (0,1]

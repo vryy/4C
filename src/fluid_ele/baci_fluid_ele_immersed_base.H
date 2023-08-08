@@ -80,7 +80,7 @@ namespace DRT
       virtual DRT::Element* Clone() const
       {
         dserror("not implemented in base class");
-        return NULL;
+        return nullptr;
       };
 
       /*!

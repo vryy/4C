@@ -54,7 +54,7 @@ namespace CORE::GEO
         bool operator()(Line* line)
         {
           return line != line_ and line->IsCut(side_) and
-                 (element_ == NULL or line->IsCut(element_));
+                 (element_ == nullptr or line->IsCut(element_));
         }
 
        private:
@@ -68,13 +68,13 @@ namespace CORE::GEO
     template <class Filter>
     Line* Point::Find(Filter& filter, bool unique)
     {
-      Line* line_found = NULL;
+      Line* line_found = nullptr;
       for (plain_line_set::iterator i = lines_.begin(); i != lines_.end(); ++i)
       {
         Line* line = *i;
         if (filter(line))
         {
-          if (line_found == NULL)
+          if (line_found == nullptr)
           {
             line_found = line;
             if (not unique)

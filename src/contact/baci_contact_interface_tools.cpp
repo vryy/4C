@@ -80,9 +80,9 @@ void CONTACT::CoInterface::VisualizeGmsh(const int step, const int iter)
   filenamemaster << "_ma.pos";
 
   // do output to file in c-style
-  FILE* fp = NULL;
-  FILE* fps = NULL;
-  FILE* fpm = NULL;
+  FILE* fp = nullptr;
+  FILE* fps = nullptr;
+  FILE* fpm = nullptr;
 
   //**********************************************************************
   // Start GMSH output

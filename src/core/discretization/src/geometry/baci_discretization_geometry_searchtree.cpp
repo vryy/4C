@@ -21,7 +21,9 @@
 /*----------------------------------------------------------------------*
  | constructor SearchTree                                    u.may 07/08|
  *----------------------------------------------------------------------*/
-CORE::GEO::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), treeRoot_(NULL) {}
+CORE::GEO::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), treeRoot_(nullptr)
+{
+}
 
 /*----------------------------------------------------------------------*
  | destructor SearchTree                                     u.may 07/08|
@@ -36,7 +38,7 @@ void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nod
     const std::map<int, std::set<int>>& elementsByLabel, const TreeType treetype)
 {
   treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // insert element map into tree root node
   if (elementsByLabel.size() > 0) treeRoot_->setElementList(elementsByLabel);
@@ -52,7 +54,7 @@ void CORE::GEO::SearchTree::initializeTree(const CORE::LINALG::Matrix<3, 2>& nod
     const ::DRT::Discretization& dis, const TreeType treetype)
 {
   treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   // inserts all elements in a map with key -1 and global id
   for (int i = 0; i < dis.NumMyColElements(); i++)
@@ -67,7 +69,7 @@ void CORE::GEO::SearchTree::initializeTree(
     const CORE::LINALG::Matrix<3, 2>& nodeBox, const TreeType treetype)
 {
   treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 }
 
 /*----------------------------------------------------------------------*
@@ -86,7 +88,7 @@ void CORE::GEO::SearchTree::initializePointTree(const CORE::LINALG::Matrix<3, 2>
     const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, const TreeType treetype)
 {
   treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   for (std::map<int, CORE::LINALG::Matrix<3, 1>>::const_iterator mapit = currentpositions.begin();
        mapit != currentpositions.end(); mapit++)
@@ -100,7 +102,7 @@ void CORE::GEO::SearchTree::initializeTreeSlideALE(const CORE::LINALG::Matrix<3,
     std::map<int, Teuchos::RCP<::DRT::Element>>& elements, const TreeType treetype)
 {
   treeRoot_ = Teuchos::null;
-  treeRoot_ = Teuchos::rcp(new TreeNode(NULL, max_depth_, nodeBox, treetype));
+  treeRoot_ = Teuchos::rcp(new TreeNode(nullptr, max_depth_, nodeBox, treetype));
 
   std::map<int, Teuchos::RCP<::DRT::Element>>::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)

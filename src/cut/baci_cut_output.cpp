@@ -308,7 +308,7 @@ void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
 {
   if (to_local)
   {
-    if (ele == NULL) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
+    if (ele == nullptr) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
   }
 
   if (visualizationtype == "sides")
@@ -356,7 +356,7 @@ void CORE::GEO::CUT::OUTPUT::GmshFacetDump(std::ofstream& file, Facet* facet,
       for (unsigned int dim = 0; dim < 3; ++dim)
         xmid[dim] = xmid[dim] / facet->CornerPoints().size();
 
-      ConcretePoint<3> midpoint = ConcretePoint<3>(-1, xmid.data(), NULL, NULL, 0.0);
+      ConcretePoint<3> midpoint = ConcretePoint<3>(-1, xmid.data(), nullptr, nullptr, 0.0);
 
       std::vector<Point*> tri;
       for (unsigned int i = 0; i < facet->CornerPoints().size(); ++i)
@@ -514,13 +514,13 @@ void CORE::GEO::CUT::OUTPUT::GmshCutPairDump(
   std::stringstream side_section_name;
   side_section_name << "Side" << suffix << id;
   CORE::GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
-  CORE::GEO::CUT::OUTPUT::GmshSideDump(file, side, false, NULL);
+  CORE::GEO::CUT::OUTPUT::GmshSideDump(file, side, false, nullptr);
   CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 
   std::stringstream edge_section_name;
   edge_section_name << "Edge" << suffix << id;
   CORE::GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
-  CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, edge, false, NULL);
+  CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, edge, false, nullptr);
   CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 }
 
@@ -1015,12 +1015,12 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
 
   if (to_local)
   {
-    if (ele == NULL) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
+    if (ele == nullptr) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
     CORE::LINALG::Matrix<3, 1> rst(true);
 
     ele->LocalCoordinates(xyz, rst);
-    GmshWriteCoords(file, rst, false, NULL);  // rst are already local coords!
+    GmshWriteCoords(file, rst, false, nullptr);  // rst are already local coords!
     return;
   }
   file << std::setprecision(15) << xyz(0) << "," << xyz(1) << "," << xyz(2);
@@ -1034,7 +1034,7 @@ void CORE::GEO::CUT::OUTPUT::GmshWriteCoords(
 {
   if (to_local)
   {
-    if (ele == NULL) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
+    if (ele == nullptr) dserror("GmshWriteCoords: Didn't get a parent element for the Coordinate!");
 
     CORE::LINALG::Matrix<3, 1> xyz = coord;
     ele->LocalCoordinates(xyz, coord);
@@ -1424,12 +1424,12 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(
   file << "// Edge is " << e->BeginNode()->point() << "->" << e->EndNode()->point() << std::endl;
   CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, e, std::string("NotTouchedEdge"));
   CORE::GEO::CUT::OUTPUT::GmshPointDump(
-      file, p, p->Id(), std::string("NotTouchedPoint"), false, NULL);
+      file, p, p->Id(), std::string("NotTouchedPoint"), false, nullptr);
   for (PointSet::const_iterator it = cut.begin(); it != cut.end(); ++it)
   {
     std::stringstream point_name;
     point_name << "CutPoint" << std::distance(cut.begin(), it);
-    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, nullptr);
     (*it)->DumpConnectivityInfo();
   }
 
@@ -1439,7 +1439,7 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_ThreePointsOnEdge(
   {
     std::stringstream point_name;
     point_name << "EdgeCutPoint" << std::distance(edge_cut_points.begin(), it);
-    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), point_name.str(), false, nullptr);
   }
   file.close();
 }
@@ -1454,7 +1454,7 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_MoreThanTwoIntersectionPoints(
     std::stringstream section_name;
     section_name << "Point" << (*it)->Id();
     CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), false, nullptr);
     CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 #if CUT_CREATION_INFO
     const std::pair<Side*, Edge*>& cu_pair = std::make_pair(other, edge);
@@ -1499,7 +1499,7 @@ void CORE::GEO::CUT::OUTPUT::DebugDump_MultipleCutPointsSpecial(Side* first, Sid
   {
     std::stringstream pname;
     pname << "CutPoint" << std::distance(cut.begin(), it);
-    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, NULL);
+    CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *it, (*it)->Id(), pname.str(), false, nullptr);
     (*it)->DumpConnectivityInfo();
   }
   file.close();

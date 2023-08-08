@@ -494,7 +494,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
     // skip non dbc nodes
     if (not found) continue;
 
-    // skip NULL ptrs
+    // skip nullptr ptrs
     if (str_discret.HaveGlobalNode(snid))
     {
       const DRT::Node* node = str_discret.gNode(snid);

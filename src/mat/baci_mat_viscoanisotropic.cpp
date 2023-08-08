@@ -64,7 +64,7 @@ DRT::ParObject* MAT::ViscoAnisotropicType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)         05/08|
  *----------------------------------------------------------------------*/
-MAT::ViscoAnisotropic::ViscoAnisotropic() : params_(NULL) {}
+MAT::ViscoAnisotropic::ViscoAnisotropic() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -86,7 +86,7 @@ void MAT::ViscoAnisotropic::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   int numgp;
@@ -136,7 +136,7 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

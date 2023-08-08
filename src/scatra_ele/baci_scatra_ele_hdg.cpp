@@ -349,7 +349,7 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
           CORE::DRT::UTILS::GaussPointCache::Instance().Create(this->Shape(), deg));
       gp = quadrature_->NumPoints();
     }
-    if (actmat->Parameter() != NULL and
+    if (actmat->Parameter() != nullptr and
         !actmat->MyocardMat())  // in case we are not in post-process mode
     {
       actmat->SetGP(gp);
@@ -834,7 +834,7 @@ DRT::ELEMENTS::ScaTraHDGIntFace::ScaTraHDGIntFace(int id,  ///< element id
   SetParentMasterElement(parent_master, lsurface_master);
   SetParentSlaveElement(parent_slave, lsurface_slave);
 
-  if (parent_slave != NULL)
+  if (parent_slave != nullptr)
   {
     degree_ = std::max(parent_master->Degree(), parent_slave->Degree());
     degree_old_ = std::max(parent_master->DegreeOld(), parent_slave->DegreeOld());

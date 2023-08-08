@@ -61,7 +61,7 @@ STR::MODELEVALUATOR::Data::Data()
       comm_ptr_(Teuchos::null),
       beam_data_ptr_(Teuchos::null),
       contact_data_ptr_(Teuchos::null),
-      model_ptr_(NULL)
+      model_ptr_(nullptr)
 {
   // empty
 }
@@ -596,7 +596,7 @@ int STR::MODELEVALUATOR::Data::GetNlnIter() const
   Teuchos::RCP<const STR::NLN::SOLVER::Nox> nox_nln_ptr = Teuchos::null;
   const STR::TIMINT::Implicit* timint_impl_ptr =
       dynamic_cast<const STR::TIMINT::Implicit*>(&TimInt());
-  if (timint_impl_ptr != NULL)
+  if (timint_impl_ptr != nullptr)
   {
     Teuchos::RCP<const STR::NLN::SOLVER::Generic> nlnsolver_ptr =
         timint_impl_ptr->GetNlnSolverPtr();

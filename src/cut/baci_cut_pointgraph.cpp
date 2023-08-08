@@ -127,7 +127,7 @@ CORE::GEO::CUT::IMPL::PointGraph::PointGraph(
       section_name << "Cut_lines" << line_index;
       Line *l = *i;
       CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-      CORE::GEO::CUT::OUTPUT::GmshLineDump(file, l, false, NULL);
+      CORE::GEO::CUT::OUTPUT::GmshLineDump(file, l, false, nullptr);
       CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
       // output distance between points of the line
       file << "// Distance between points of the line is"
@@ -442,11 +442,11 @@ bool CORE::GEO::CUT::IMPL::FindCycles(graph_t &g, CORE::GEO::CUT::Cycle &cycle,
 
         CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "NewLine");
         CORE::GEO::CUT::OUTPUT::GmshLineDump(
-            file, first, second, first->Id(), second->Id(), false, NULL);
+            file, first, second, first->Id(), second->Id(), false, nullptr);
         CORE::GEO::CUT::OUTPUT::GmshEndSection(file);
         CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "OldLine");
         CORE::GEO::CUT::OUTPUT::GmshLineDump(
-            file, first, previous, first->Id(), previous->Id(), false, NULL);
+            file, first, previous, first->Id(), previous->Id(), false, nullptr);
         CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
 
         err_msg
@@ -1050,7 +1050,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
           CORE::GEO::CUT::OUTPUT::GmshSideDump(file, side, std::string("Side"));
           CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, ed, std::string("EdgeContainingPoint"));
           CORE::GEO::CUT::OUTPUT::GmshPointDump(
-              file, cut_point, cut_point->Id(), std::string("CutPoint"), false, NULL);
+              file, cut_point, cut_point->Id(), std::string("CutPoint"), false, nullptr);
 
 
           if (row.size() == 1)
@@ -1072,7 +1072,7 @@ bool CORE::GEO::CUT::IMPL::PointGraph::Graph::HasTouchingEdge(Element *element, 
             point_section_name << "Point" << (it->second)->Id();
             CORE::GEO::CUT::OUTPUT::GmshNewSection(file_pgraph, point_section_name.str());
             CORE::GEO::CUT::OUTPUT::GmshPointDump(
-                file_pgraph, (it->second), (it->second)->Id(), false, NULL);
+                file_pgraph, (it->second), (it->second)->Id(), false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file_pgraph, false);
             (it->second)->DumpConnectivityInfo();
           }
@@ -1163,7 +1163,7 @@ CORE::GEO::CUT::Point *CORE::GEO::CUT::IMPL::PointGraph::Graph::GetPoint(int i)
 {
   std::map<int, Point *>::iterator j = all_points_.find(i);
   if (j != all_points_.end()) return j->second;
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -1171,7 +1171,7 @@ CORE::GEO::CUT::Point *CORE::GEO::CUT::IMPL::PointGraph::Graph::GetPoint(int i)
 CORE::GEO::CUT::IMPL::PointGraph *CORE::GEO::CUT::IMPL::PointGraph::Create(Mesh &mesh,
     Element *element, Side *side, PointGraph::Location location, PointGraph::Strategy strategy)
 {
-  PointGraph *pg = NULL;
+  PointGraph *pg = nullptr;
   const unsigned dim = element->Dim();
   switch (dim)
   {

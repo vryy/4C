@@ -29,7 +29,7 @@ CONTACT::INTEGRATOR::UniqueProjInfoPair CONTACT::AUG::IntegrationWrapper::projIn
  *----------------------------------------------------------------------------*/
 CONTACT::AUG::IntegrationWrapper::IntegrationWrapper(Teuchos::ParameterList& params,
     DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm)
-    : CONTACT::CoIntegrator::CoIntegrator(params, eletype, comm), integrator_(NULL)
+    : CONTACT::CoIntegrator::CoIntegrator(params, eletype, comm), integrator_(nullptr)
 
 {
   // empty constructor body

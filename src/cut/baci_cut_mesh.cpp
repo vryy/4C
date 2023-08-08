@@ -68,7 +68,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateElement(
       dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -88,7 +88,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateSide(
       dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
       exit(EXIT_FAILURE);
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -275,7 +275,7 @@ void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* 
               std::stringstream section_name;
               section_name << "CutPoint" << (*jt)->Id();
               CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
-              CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *jt, (*jt)->Id(), false, NULL);
+              CORE::GEO::CUT::OUTPUT::GmshPointDump(file, *jt, (*jt)->Id(), false, nullptr);
               CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
               if ((*it) == (*jt)) file << " //Wrong point!!" << std::endl;
             }
@@ -289,14 +289,14 @@ void CORE::GEO::CUT::Mesh::NewLine(Point* p1, Point* p2, Side* cut_side1, Side* 
 
 
             CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CutSide1");
-            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side1, false, NULL);
+            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side1, false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
             CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CutSide2");
-            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side2, false, NULL);
+            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side2, false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 
             CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CommonEdge");
-            CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, e, false, NULL);
+            CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, e, false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file, true);
 
             // it = line_points.erase(it);
@@ -358,7 +358,7 @@ bool CORE::GEO::CUT::Mesh::NewLinesBetween(const std::vector<Point*>& line, Side
     {
       Point* ep = *i;
       Line* l = NewLineInternal(bp, ep, cut_side1, cut_side2, cut_element);
-      if (newlines != NULL) newlines->push_back(l);
+      if (newlines != nullptr) newlines->push_back(l);
       bp = ep;
     }
     hasnewlines = true;
@@ -1292,7 +1292,7 @@ void CORE::GEO::CUT::Mesh::FindFacetPositions()
         Facet* f = *i;
         {
           VolumeCell* nc = f->Neighbor(c);
-          if (nc != NULL)
+          if (nc != nullptr)
           {
             Point::PointPosition np = nc->Position();
             switch (np)
@@ -2587,7 +2587,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(int nid) const
   {
     return &*i->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 /*-------------------------------------------------------------------------------------*
@@ -2603,7 +2603,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(const plain_int_set& nids) c
   {
     return &*i->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -2619,10 +2619,10 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
   {
     return &*i->second;
   }
-  if (xyz == NULL) throw std::runtime_error("cannot create node without coordinates");
+  if (xyz == nullptr) throw std::runtime_error("cannot create node without coordinates");
 
-  //   Point * p = pp_->GetPoint( xyz, NULL, NULL, MINIMALTOL );
-  //   if ( p!=NULL )
+  //   Point * p = pp_->GetPoint( xyz, nullptr, nullptr, MINIMALTOL );
+  //   if ( p!=nullptr )
   //   {
   //     // We already have a point at this location. See if there is a node to
   //     // it. If so, that's the one.
@@ -2634,12 +2634,12 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Mesh::GetNode(
   //       if ( n->point()==p )
   //       {
   //         nodes_[nid] = n;
-  //         return NULL;
+  //         return nullptr;
   //       }
   //     }
   //   }
   pp_->SetMergeStrategy(Pointpool_MergeStrategy::InitialLoad);
-  Point* p = NewPoint(xyz, NULL, NULL, tolerance);
+  Point* p = NewPoint(xyz, nullptr, nullptr, tolerance);
   pp_->SetMergeStrategy(Pointpool_MergeStrategy::NormalCutLoad);
   Node* n = new Node(nid, p, lsv);
   nodes_[nid] = Teuchos::rcp(n);
@@ -2766,7 +2766,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(std::vector<int>& nids) cons
   {
     return &*i->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -2782,7 +2782,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::GetSide(
 
   for (unsigned i = 0; i < nc; ++i)
   {
-    nodes.push_back(GetNode(nids[i], static_cast<double*>(NULL)));
+    nodes.push_back(GetNode(nids[i], static_cast<double*>(nullptr)));
   }
 
   return GetSide(sid, nodes, top_data);
@@ -2859,7 +2859,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(int eid)
   {
     return &*ie->second;
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -2887,7 +2887,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement(
 
   for (unsigned i = 0; i < nc; ++i)
   {
-    nodes.push_back(GetNode(nids[i], static_cast<double*>(NULL)));
+    nodes.push_back(GetNode(nids[i], static_cast<double*>(nullptr)));
   }
 
   return GetElement(eid, nodes, top_data, active);
@@ -2934,7 +2934,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
   // --------------------------------------------------------------------------
   // prepare side (copy element topology information into side)
   // --------------------------------------------------------------------------
-  std::vector<Side*> sides(1, NULL);
+  std::vector<Side*> sides(1, nullptr);
   const CellTopologyData& side_topology = top_data;
 
   std::vector<Node*> side_nodes;
@@ -2950,7 +2950,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
   // --------------------------------------------------------------------------
   // create side edge (copy element topology information into edge)
   // --------------------------------------------------------------------------
-  std::vector<Edge*> side_edges(1, NULL);
+  std::vector<Edge*> side_edges(1, nullptr);
   const CellTopologyData& edge_topology = top_data;
 
   std::vector<Node*> edge_nodes;
@@ -2972,7 +2972,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<1>(
 
   sides[0] = GetSide(-1, side_nidset, side_nodes, side_edges, side_topology);
 
-  Element* e = NULL;
+  Element* e = nullptr;
   if (eid > -1)
   {
     elements_[eid] = CORE::GEO::CUT::Element::Create(top_data.key, eid, sides, nodes, active);
@@ -2996,7 +2996,7 @@ template <>
 CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
     int eid, const std::vector<Node*>& nodes, const CellTopologyData& top_data, bool active)
 {
-  std::vector<Side*> side(1, NULL);
+  std::vector<Side*> side(1, nullptr);
 
   // --------------------------------------------------------------------------
   // prepare side (copy element topology information into side)
@@ -3043,7 +3043,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<2>(
 
   side[0] = GetSide(-1, side_nidset, side_nodes, side_edges, side_topology);
 
-  Element* e = NULL;
+  Element* e = nullptr;
   if (eid > -1)
   {
     elements_[eid] = CORE::GEO::CUT::Element::Create(top_data.key, eid, side, nodes, active);
@@ -3117,7 +3117,7 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::GetElement<3>(
     sides.push_back(GetSide(-1, side_nidset, side_nodes, side_edges, side_topology));
   }
 
-  Element* e = NULL;
+  Element* e = nullptr;
   if (eid > -1)
   {
     elements_[eid] = CORE::GEO::CUT::Element::Create(top_data.key, eid, sides, nodes, active);
@@ -3216,7 +3216,7 @@ void CORE::GEO::CUT::Mesh::AssignOtherVolumeCells_CutTest(const Mesh& other)
       ++i;
       Side* s2 = *i;
       Element* e = s1->CommonElement(s2);
-      if (e == NULL) throw std::runtime_error("no common element on cut sides");
+      if (e == nullptr) throw std::runtime_error("no common element on cut sides");
       e->AssignOtherVolumeCell(vc);
     }
     else

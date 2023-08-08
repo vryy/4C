@@ -178,7 +178,7 @@ bool XFEM::Coupling_Comm_Manager::InsertMatrix(int transform_id, int idxA,
     {
       return GetTransform(transform_id)
           ->
-          operator()(matA, matA.RangeMap(), matA.DomainMap(), scale, NULL,
+          operator()(matA, matA.RangeMap(), matA.DomainMap(), scale, nullptr,
               GetCouplingConverter(idxA, idxB).getRawPtr(), matB, exactmatch, addmatrix);
       break;
     }
@@ -187,7 +187,7 @@ bool XFEM::Coupling_Comm_Manager::InsertMatrix(int transform_id, int idxA,
       return GetTransform(transform_id)
           ->
           operator()(matA, matA.RangeMap(), matA.DomainMap(), scale,
-              GetCouplingConverter(idxA, idxB).getRawPtr(), NULL, matB, true, addmatrix);
+              GetCouplingConverter(idxA, idxB).getRawPtr(), nullptr, matB, true, addmatrix);
       break;
     }
     case Coupling_Comm_Manager::row_and_col:

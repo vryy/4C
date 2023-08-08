@@ -44,7 +44,7 @@
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype, DRT::ELEMENTS::Fluid::EnrichmentType enrtype>
 DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::FluidEleCalc()
-    : rotsymmpbc_(NULL),
+    : rotsymmpbc_(nullptr),
       eid_(-1.0),
       is_higher_order_ele_(false),
       weights_(true),
@@ -251,7 +251,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   {
     static CORE::LINALG::Matrix<nsd_, nen_> interiorebofoaf;
     ExtractValuesFromGlobalVector(
-        discretization, lm, *rotsymmpbc_, &interiorebofoaf, NULL, "forcing");
+        discretization, lm, *rotsymmpbc_, &interiorebofoaf, nullptr, "forcing");
     ebofoaf_.Update(1.0, interiorebofoaf, 1.0);
   }
 
@@ -267,9 +267,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
 
   // if not available, the arrays for the subscale quantities have to be
   // resized and initialised to zero
-  double* saccn = NULL;
-  double* sveln = NULL;
-  double* svelnp = NULL;
+  double* saccn = nullptr;
+  double* sveln = nullptr;
+  double* svelnp = nullptr;
   if (fldpara_->Tds() == INPAR::FLUID::subscales_time_dependent)
   {
     ele->ActivateTDS(intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp);
@@ -338,13 +338,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   epredtam_ = escadtam_;
 
   escaaf_.Clear();
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &escaaf_, "scaaf");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, nullptr, &escaaf_, "scaaf");
 
   escaam_.Clear();
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &escaam_, "scaam");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, nullptr, &escaam_, "scaam");
 
   emhist_.Clear();
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &emhist_, NULL, "hist");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &emhist_, nullptr, "hist");
 
   if (fldpara_->IsReconstructDer())
   {
@@ -473,10 +473,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::Evaluate(DRT::ELEMENTS::Fluid
   if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv or
       fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
   {
-    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &fsevelaf_, NULL, "fsvelaf");
+    ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &fsevelaf_, nullptr, "fsvelaf");
     if (fldpara_->PhysicalType() == INPAR::FLUID::loma and
         fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, NULL, &fsescaaf_, "fsscaaf");
+      ExtractValuesFromGlobalVector(
+          discretization, lm, *rotsymmpbc_, nullptr, &fsescaaf_, "fsscaaf");
   }
 
 
@@ -1767,7 +1768,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispVelALE(
     default:
     {
       GetGridDispALE(discretization, lm, edispnp);
-      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridv, NULL, "gridv");
+      ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &egridv, nullptr, "gridv");
       break;
     }
   }
@@ -1781,7 +1782,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::GetGridDispALE(
     DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::Matrix<nsd_, nen_>& edispnp)
 {
-  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, NULL, "dispnp");
+  ExtractValuesFromGlobalVector(discretization, lm, *rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
   // add displacement when fluid nodes move in the ALE case
   xyze_ += edispnp;
@@ -4067,7 +4068,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::ComputeSubgridScaleVelocity(
     // some checking
     if (fldparatimint_->IsStationary())
       dserror("there is no time dependent subgrid scale closure for stationary problems\n");
-    if (saccn == NULL or sveln == NULL or svelnp == NULL) dserror("no subscale array provided");
+    if (saccn == nullptr or sveln == nullptr or svelnp == nullptr)
+      dserror("no subscale array provided");
 
     // parameter definitions
     double alphaF = fldparatimint_->AlphaF();

@@ -47,13 +47,13 @@ class PostWriterBase
   //! return the field specified at construction
   PostField* GetField()
   {
-    dsassert(field_ != NULL, "No field has been set");
+    dsassert(field_ != nullptr, "No field has been set");
     return field_;
   }
 
   const PostField* GetField() const
   {
-    dsassert(field_ != NULL, "No field has been set");
+    dsassert(field_ != nullptr, "No field has been set");
     return field_;
   }
 

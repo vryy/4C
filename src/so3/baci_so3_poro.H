@@ -171,7 +171,7 @@ namespace DRT
 
       Evaluate element stiffness, mass, internal forces, etc.
 
-      If NULL on input, the controlling method does not expect the element
+      If nullptr on input, the controlling method does not expect the element
       to fill these matrices or vectors.
 
       \return 0 if successful, negative otherwise
@@ -300,7 +300,7 @@ namespace DRT
       Evaluate So3_poro element stiffness, mass, internal forces, etc.
       Templated evaluate routine of element matrixes
 
-      If NULL on input, the controlling method does not expect the element
+      If nullptr on input, the controlling method does not expect the element
       to fill these matrices or vectors.
 
       \return 0 if successful, negative otherwise

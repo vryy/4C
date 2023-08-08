@@ -338,13 +338,13 @@ namespace CORE::GEO
     template <class T>
     inline Facet* FindFacet(const T& facets, const std::vector<Point*>& side)
     {
-      Facet* found = NULL;
+      Facet* found = nullptr;
       for (typename T::const_iterator i = facets.begin(); i != facets.end(); ++i)
       {
         Facet* f = *i;
         if (f->CornerEquals(side))
         {
-          if (found == NULL)
+          if (found == nullptr)
           {
             found = f;
           }

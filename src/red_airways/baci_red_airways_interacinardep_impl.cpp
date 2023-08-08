@@ -41,7 +41,7 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
     case DRT::Element::line2:
     {
       static InterAcinarDepImpl<DRT::Element::line2>* acinus;
-      if (acinus == NULL)
+      if (acinus == nullptr)
       {
         acinus = new InterAcinarDepImpl<DRT::Element::line2>;
       }
@@ -51,7 +51,7 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
       dserror("shape %d (%d nodes) not supported", red_acinus->Shape(), red_acinus->NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 

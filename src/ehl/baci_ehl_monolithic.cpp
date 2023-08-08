@@ -75,7 +75,7 @@ EHL::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
               .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),      // ADD INPUT PARAMETER
       printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(NULL),
+      errfile_(nullptr),
       zeros_(Teuchos::null),
       strmethodname_(
           DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP")),
@@ -1267,7 +1267,7 @@ void EHL::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL) dserror("no ofile available");
+  if (ofile == nullptr) dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1422,7 +1422,7 @@ void EHL::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL) dserror("no ofile available");
+  if (ofile == nullptr) dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now

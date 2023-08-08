@@ -35,10 +35,10 @@ CORE::ADAPTER::MortarVolCoupl::MortarVolCoupl()
       P21_(Teuchos::null),
       masterdis_(Teuchos::null),
       slavedis_(Teuchos::null),
-      coupleddof12_(NULL),
-      coupleddof21_(NULL),
-      dofsets12_(NULL),
-      dofsets21_(NULL),
+      coupleddof12_(nullptr),
+      coupleddof21_(nullptr),
+      dofsets12_(nullptr),
+      dofsets21_(nullptr),
       materialstrategy_(Teuchos::null)
 {
   // empty...
@@ -76,7 +76,7 @@ void CORE::ADAPTER::MortarVolCoupl::Init(
 
   if ((dis1->NumDofSets() == 1) and (dis2->NumDofSets() == 1) and createauxdofs)
   {
-    if (coupleddof12 == NULL or coupleddof21 == NULL)
+    if (coupleddof12 == nullptr or coupleddof21 == nullptr)
       dserror("ERROR: No coupling dofs for volmortar algorithm specified!");
 
     CreateAuxDofsets(dis1, dis2, coupleddof12, coupleddof21);
@@ -208,7 +208,7 @@ void CORE::ADAPTER::MortarVolCoupl::AssignMaterials(Teuchos::RCP<::DRT::Discreti
   // create coupling instance
   Teuchos::RCP<CORE::VOLMORTAR::VolMortarCoupl> coupdis =
       Teuchos::rcp(new CORE::VOLMORTAR::VolMortarCoupl(
-          dim, dis1, dis2, NULL, NULL, NULL, NULL, materialstrategy));
+          dim, dis1, dis2, nullptr, nullptr, nullptr, nullptr, materialstrategy));
 
   // assign materials from one discretization to the other
   coupdis->AssignMaterials();

@@ -41,7 +41,7 @@ void CORE::LINEAR_SOLVER::MLPreconditioner::Setup(
   if (create)
   {
     Epetra_CrsMatrix* A = dynamic_cast<Epetra_CrsMatrix*>(matrix);
-    if (A == NULL) dserror("CrsMatrix expected");
+    if (A == nullptr) dserror("CrsMatrix expected");
 
     // free old matrix first
     P_ = Teuchos::null;

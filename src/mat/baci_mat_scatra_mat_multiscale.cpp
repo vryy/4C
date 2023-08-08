@@ -47,7 +47,7 @@ DRT::ParObject* MAT::ScatraMatMultiScaleType::Create(const std::vector<char>& da
 /*--------------------------------------------------------------------*
  | construct empty material                                fang 11/15 |
  *--------------------------------------------------------------------*/
-MAT::ScatraMatMultiScale::ScatraMatMultiScale() : params_(NULL) { return; }
+MAT::ScatraMatMultiScale::ScatraMatMultiScale() : params_(nullptr) { return; }
 
 
 /*--------------------------------------------------------------------*
@@ -73,7 +73,7 @@ void MAT::ScatraMatMultiScale::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
 
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // pack base class material
@@ -98,7 +98,7 @@ void MAT::ScatraMatMultiScale::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

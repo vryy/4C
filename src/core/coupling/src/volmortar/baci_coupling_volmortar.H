@@ -77,9 +77,9 @@ namespace CORE::VOLMORTAR
 
      */
     VolMortarCoupl(int dim, Teuchos::RCP<::DRT::Discretization> dis1,
-        Teuchos::RCP<::DRT::Discretization> dis2, std::vector<int>* coupleddof12 = NULL,
-        std::vector<int>* coupleddof21 = NULL, std::pair<int, int>* dofsets12 = NULL,
-        std::pair<int, int>* dofsets21 = NULL,
+        Teuchos::RCP<::DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
+        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
+        std::pair<int, int>* dofsets21 = nullptr,
         Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 

@@ -102,7 +102,7 @@ void NOX::NLN::Group::computeX(
 {
   // Cast to appropriate type, then call the "native" computeX
   const NOX::NLN::Group* nlngrp = dynamic_cast<const NOX::NLN::Group*>(&grp);
-  if (nlngrp == NULL) throwError("computeX", "dyn_cast to nox_nln_group failed!");
+  if (nlngrp == nullptr) throwError("computeX", "dyn_cast to nox_nln_group failed!");
   const NOX::Epetra::Vector& epetrad = dynamic_cast<const NOX::Epetra::Vector&>(d);
 
   computeX(*nlngrp, epetrad, step);

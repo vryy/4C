@@ -73,7 +73,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
                                .get<double>("ADAPTCONV_BETTER")),
       printiter_(true),      // ADD INPUT PARAMETER
       printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
-      errfile_(NULL),
+      errfile_(nullptr),
       zeros_(Teuchos::null),
       strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams, "DYNAMICTYP")),
       tsidyn_(DRT::Problem::Instance()->TSIDynamicParams()),
@@ -100,7 +100,7 @@ TSI::Monolithic::Monolithic(const Epetra_Comm& comm, const Teuchos::ParameterLis
 
   // another setup of structural time integration with the correct initial temperature is required,
   // so get the temperature
-  if (ThermoField()->Tempnp() == Teuchos::null) dserror("this is NULL");
+  if (ThermoField()->Tempnp() == Teuchos::null) dserror("this is nullptr");
 
   if (matchinggrid_)
     StructureField()->Discretization()->SetState(1, "temperature", ThermoField()->Tempnp());
@@ -1695,7 +1695,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL) dserror("no ofile available");
+  if (ofile == nullptr) dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now
@@ -1869,7 +1869,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile == NULL) dserror("no ofile available");
+  if (ofile == nullptr) dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
   // print it, now

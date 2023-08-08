@@ -78,14 +78,14 @@ namespace NOX
         virtual NOX::StatusTest::StatusType getStatus() const;
 
         //! \brief Returns a pointer to one specific stopping test %T.
-        /** If there is no outer test of type T, a NULL pointer will be returned.
+        /** If there is no outer test of type T, a nullptr pointer will be returned.
          *
          *  \author hiermeier \date 04/17 */
         template <class T>
         NOX::StatusTest::Generic* GetOuterStatusTest() const;
 
         //! \brief Returns a pointer to one specific stopping test %T.
-        /** If there is no outer test of type T with quantity type qtype, a NULL
+        /** If there is no outer test of type T with quantity type qtype, a nullptr
          *  pointer will be returned.
          *
          *  \author hiermeier \date 08/18 */

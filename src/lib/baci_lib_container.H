@@ -381,7 +381,7 @@ namespace DRT
                             but will discover at link time that it is unable to generate
                             a definition other than one of the four specializations.
 
-    \return const Ptr to data if data with that name exists, NULL otherwise
+    \return const Ptr to data if data with that name exists, nullptr otherwise
     */
     template <typename T>
     const T* Get(const std::string& name) const;
@@ -449,7 +449,7 @@ namespace DRT
                             but will discover at link time that it is unable to generate
                             a definition other than one of the four specializations.
 
-    \return non-constant Ptr to data if data with that name exists, NULL otherwise
+    \return non-constant Ptr to data if data with that name exists, nullptr otherwise
     */
     template <typename T>
     T* GetMutable(const std::string& name);

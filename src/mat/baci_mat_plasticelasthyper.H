@@ -218,7 +218,7 @@ namespace MAT
     /// complementarity parameter
     virtual double cpl() const
     {
-      if (MatParams() != NULL)
+      if (MatParams() != nullptr)
         return MatParams()->cpl_;
       else
         return 0.;
@@ -227,7 +227,7 @@ namespace MAT
     /// stabilization parameter
     virtual double s() const
     {
-      if (MatParams() != NULL)
+      if (MatParams() != nullptr)
         return MatParams()->stab_s_;
       else
         return 0.;
@@ -270,13 +270,13 @@ namespace MAT
     /// set dissipation mode
     virtual void SetDissipationMode(INPAR::TSI::DissipationMode mode)
     {
-      if (MatParams() != NULL) MatParams()->dis_mode_ = mode;
+      if (MatParams() != nullptr) MatParams()->dis_mode_ = mode;
     }
 
     /// get dissipation mode
     virtual INPAR::TSI::DissipationMode DisMode() const
     {
-      if (MatParams() != NULL)
+      if (MatParams() != nullptr)
         return MatParams()->dis_mode_;
       else
         return (INPAR::TSI::DissipationMode)0;
@@ -326,10 +326,11 @@ namespace MAT
             dHdDp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
         const double dt,   ///< time step size
         const int eleGID,  ///< global ID of element
-        CORE::LINALG::Matrix<6, 1>* cauchy = NULL, CORE::LINALG::Matrix<6, 6>* d_cauchy_ddp = NULL,
-        CORE::LINALG::Matrix<6, 6>* d_cauchy_dC = NULL,
-        CORE::LINALG::Matrix<6, 9>* d_cauchy_dF = NULL,
-        CORE::LINALG::Matrix<6, 1>* d_cauchy_dT = NULL);
+        CORE::LINALG::Matrix<6, 1>* cauchy = nullptr,
+        CORE::LINALG::Matrix<6, 6>* d_cauchy_ddp = nullptr,
+        CORE::LINALG::Matrix<6, 6>* d_cauchy_dC = nullptr,
+        CORE::LINALG::Matrix<6, 9>* d_cauchy_dF = nullptr,
+        CORE::LINALG::Matrix<6, 1>* d_cauchy_dT = nullptr);
 
     /// evaluate everything needed for the condensation of the plastic deformation
     /// at element level. (with plastic spin)
@@ -353,16 +354,17 @@ namespace MAT
             dHdLp,         ///< derivative of Heating w.r.t. deltaLp (only in TSI case)
         const double dt,   ///< time step size
         const int eleGID,  ///< global ID of element
-        CORE::LINALG::Matrix<6, 1>* cauchy = NULL, CORE::LINALG::Matrix<6, 9>* d_cauchy_ddp = NULL,
-        CORE::LINALG::Matrix<6, 6>* d_cauchy_dC = NULL,
-        CORE::LINALG::Matrix<6, 9>* d_cauchy_dF = NULL,
-        CORE::LINALG::Matrix<6, 1>* d_cauchy_dT = NULL);
+        CORE::LINALG::Matrix<6, 1>* cauchy = nullptr,
+        CORE::LINALG::Matrix<6, 9>* d_cauchy_ddp = nullptr,
+        CORE::LINALG::Matrix<6, 6>* d_cauchy_dC = nullptr,
+        CORE::LINALG::Matrix<6, 9>* d_cauchy_dF = nullptr,
+        CORE::LINALG::Matrix<6, 1>* d_cauchy_dT = nullptr);
 
     virtual void EvaluateCauchyPlast(const CORE::LINALG::Matrix<3, 1>& dPI,
         const CORE::LINALG::Matrix<6, 1>& ddPII, const CORE::LINALG::Matrix<3, 3>* defgrd,
         CORE::LINALG::Matrix<6, 1>& cauchy, CORE::LINALG::Matrix<6, 9>& d_cauchy_dFpi,
         CORE::LINALG::Matrix<6, 6>& d_cauchy_dC, CORE::LINALG::Matrix<6, 9>& d_cauchy_dF,
-        CORE::LINALG::Matrix<6, 1>* d_cauchy_dT = NULL);
+        CORE::LINALG::Matrix<6, 1>* d_cauchy_dT = nullptr);
 
     /// hyperelastic stress response plus elasticity tensor
     /// (pure virtual in material base class. Not allowed here)
@@ -428,7 +430,7 @@ namespace MAT
     /// get plastic algorithm parameters
     virtual void GetParams(double s, double cpl)
     {
-      if (MatParams() == NULL) return;  // ... from post processor
+      if (MatParams() == nullptr) return;  // ... from post processor
       MatParams()->stab_s_ = s;
       MatParams()->cpl_ = cpl;
     };

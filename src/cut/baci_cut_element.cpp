@@ -478,7 +478,7 @@ void CORE::GEO::CUT::Element::FindNodePositions()
             {
               std::pair<Point*, Point*> line = line_it->first;
 
-              Point* cutpoint = NULL;
+              Point* cutpoint = nullptr;
 
               // find the right facet's line and the which endpoint is the cut-point
               if (line.first->Id() == p->Id() and line.second->IsCut(s))

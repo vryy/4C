@@ -175,7 +175,7 @@ namespace CORE::GEO
       // ---------------------------------------------------------------
       else
       {
-        if (normalvec1 == NULL)
+        if (normalvec1 == nullptr)
           dserror(
               "The normalvec1 is necessary to calculate the extended "
               "jacobian!");
@@ -209,7 +209,7 @@ namespace CORE::GEO
         // special case: 1D element embedded in 3D problem
         if (dim == 1 and probdim == 3)
         {
-          if (normalvec2 == NULL)
+          if (normalvec2 == nullptr)
             dserror(
                 "The normalvec2 is necessary to calculate the extended "
                 "jacobian for 1D elements embedded in 3D problems!");
@@ -384,7 +384,7 @@ namespace CORE::GEO
         unsigned numNodesElement =
             CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement,
         unsigned dim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim>
-    void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = NULL,
+    void EvalNormalVectors(const T1& xyze, const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr,
         bool unit_normal = true)
     {
       if (dim >= probdim) dserror("This function is only meaningful for the embedded case!");
@@ -413,14 +413,14 @@ namespace CORE::GEO
       {
         CORE::LINALG::Matrix<probdim, 1> normalvec2_linalg((*normalvec2).A(), true);
         EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
-            NULL, &normalvec1_linalg, &normalvec2_linalg, unit_normal);
+            nullptr, &normalvec1_linalg, &normalvec2_linalg, unit_normal);
 
         std::fill(normalvec2->A() + probdim, normalvec2->A() + normalvec2->M(), 0.0);
       }
       else
       {
-        EvalDerivsInParameterSpace<probdim, distype, double>(
-            xyze_linalg, rst_linalg, deriv1, xjm, NULL, &normalvec1_linalg, NULL, unit_normal);
+        EvalDerivsInParameterSpace<probdim, distype, double>(xyze_linalg, rst_linalg, deriv1, xjm,
+            nullptr, &normalvec1_linalg, nullptr, unit_normal);
       }
       std::fill(normalvec1.A() + probdim, normalvec1.A() + normalvec1.M(), 0.0);
     }
@@ -440,7 +440,7 @@ namespace CORE::GEO
      *  \author hiermeier \date 12/16 */
     template <unsigned probdim, class T1, class T2, class T3>
     void EvalNormalVectors(::DRT::Element::DiscretizationType distype, const T1& xyze,
-        const T2& rst, T3& normalvec1, T3* normalvec2 = NULL, bool unit_normal = true)
+        const T2& rst, T3& normalvec1, T3* normalvec2 = nullptr, bool unit_normal = true)
     {
       switch (distype)
       {

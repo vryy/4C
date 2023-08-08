@@ -28,7 +28,7 @@
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::PoroFluidMultiPhaseEleCalc<distype>::PoroFluidMultiPhaseEleCalc(
     const int numdofpernode, const std::string& disname)
-    : ele_(NULL),
+    : ele_(nullptr),
       totalnumdofpernode_(numdofpernode),
       numfluidphases_(0),
       para_(DRT::ELEMENTS::PoroFluidMultiPhaseEleParameter::Instance(

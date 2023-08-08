@@ -42,7 +42,7 @@ FLD::TimIntHDGWeakComp::TimIntHDGWeakComp(const Teuchos::RCP<DRT::Discretization
 void FLD::TimIntHDGWeakComp::Init()
 {
   DRT::DiscretizationHDG* hdgdis = dynamic_cast<DRT::DiscretizationHDG*>(discret_.get());
-  if (hdgdis == NULL) dserror("Did not receive an HDG discretization");
+  if (hdgdis == nullptr) dserror("Did not receive an HDG discretization");
 
   // get number of spatial dimensions
   const unsigned int nsd = params_->get<int>("number of velocity degrees of freedom");
@@ -653,7 +653,7 @@ namespace
     const int msd = ndim * (ndim + 1.0) / 2.0;
 
     // create dofsets for mixed variable, density and momentum at nodes
-    if (density.get() == NULL || density->GlobalLength() != dis.NumGlobalNodes())
+    if (density.get() == nullptr || density->GlobalLength() != dis.NumGlobalNodes())
     {
       mixedvar.reset(new Epetra_MultiVector(*dis.NodeRowMap(), msd));
       density.reset(new Epetra_Vector(*dis.NodeRowMap()));

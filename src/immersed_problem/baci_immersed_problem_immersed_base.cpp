@@ -85,7 +85,7 @@ void IMMERSED::ImmersedBase::BuildConditionDofMap(
     int nodeid = cond_nodes->at(node);
     // get node pointer
     DRT::Node* node_ptr = dis->gNode(nodeid);
-    if (node_ptr == NULL) dserror("Could not get node with id %d", nodeid);
+    if (node_ptr == nullptr) dserror("Could not get node with id %d", nodeid);
 
     if (dis->NodeRowMap()->LID(nodeid) != -1)
     {
@@ -270,7 +270,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersed(Teuchos::ParameterList& params,
 
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
-      if (immersedelebase == NULL)
+      if (immersedelebase == nullptr)
         dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
       // evaluate this element and fill vector with immersed dirichlets
@@ -325,7 +325,7 @@ void IMMERSED::ImmersedBase::EvaluateImmersedNoAssembly(Teuchos::ParameterList& 
 
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(ele);
-      if (immersedelebase == NULL)
+      if (immersedelebase == nullptr)
         dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
       // provide important objects to ParameterList
@@ -379,7 +379,7 @@ void IMMERSED::ImmersedBase::EvaluateScaTraWithInternalCommunication(
 
       DRT::ELEMENTS::FluidImmersedBase* immersedelebase =
           dynamic_cast<DRT::ELEMENTS::FluidImmersedBase*>(iele);
-      if (immersedelebase == NULL)
+      if (immersedelebase == nullptr)
         dserror("dynamic cast from DRT::Element* to DRT::ELEMENTS::FluidImmersedBase* failed");
 
       // evaluate this element and fill vector with immersed dirichlets

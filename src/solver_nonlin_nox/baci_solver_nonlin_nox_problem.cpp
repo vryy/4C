@@ -44,8 +44,8 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
     : isinit_(false),
       isjac_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
-      xVector_(NULL),
-      jac_(NULL),
+      xVector_(nullptr),
+      jac_(nullptr),
       precMat_(Teuchos::null)
 {
   /* intentionally left blank */
@@ -57,8 +57,8 @@ NOX::NLN::Problem::Problem(const Teuchos::RCP<NOX::NLN::GlobalData>& noxNlnGloba
     const Teuchos::RCP<NOX::Epetra::Vector>& x, const Teuchos::RCP<CORE::LINALG::SparseOperator>& A)
     : isinit_(false),
       noxNlnGlobalData_(noxNlnGlobalData),
-      xVector_(NULL),
-      jac_(NULL),
+      xVector_(nullptr),
+      jac_(nullptr),
       precMat_(Teuchos::null)
 {
   Initialize(x, A);

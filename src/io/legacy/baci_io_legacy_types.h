@@ -67,7 +67,7 @@ typedef enum _SYMBOL_TYPES
 
   Inside a map all symbols with the same key are linked by their next
   pointers. Thus a map node gives the first symbol and from there you
-  can follow the next pointer until you reach a NULL.
+  can follow the next pointer until you reach a nullptr.
 
   \warning String and map values are assumed to be allocated
   dynamically and are owned by the symbol. That is when a symbol is

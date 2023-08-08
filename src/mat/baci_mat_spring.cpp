@@ -42,7 +42,7 @@ DRT::ParObject* MAT::SpringType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::Spring::Spring() : params_(NULL) {}
+MAT::Spring::Spring() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -63,7 +63,7 @@ void MAT::Spring::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -81,7 +81,7 @@ void MAT::Spring::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

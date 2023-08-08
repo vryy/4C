@@ -34,7 +34,7 @@ IMMERSED::ImmersedPartitionedFSIDirichletNeumann::ImmersedPartitionedFSIDirichle
       structure_SearchTree_(Teuchos::null),
       myrank_(comm.MyPID()),
       numproc_(comm.NumProc()),
-      globalproblem_(NULL),
+      globalproblem_(nullptr),
       displacementcoupling_(false),
       multibodysimulation_(false),
       output_evry_nlniter_(false),

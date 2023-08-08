@@ -287,14 +287,14 @@ namespace DRT
       \param discretization (in): A reference to the underlying discretization
       \param condition (in)     : The condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       //@}
 
@@ -474,7 +474,7 @@ namespace DRT
       {
         DRT::Element* parent = DRT::FaceElement::ParentElement();
         // make sure the static cast below is really valid
-        dsassert(dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(parent) != NULL,
+        dsassert(dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(parent) != nullptr,
             "Master element is no PoroFluidMultiPhase element");
         return static_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(parent);
       }
@@ -586,14 +586,14 @@ namespace DRT
       \param discretization (in): A reference to the underlying discretization
       \param condition (in)     : The condition to be evaluated
       \param lm (in)            : location vector of this element
-      \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
 
       \return 0 if successful, negative otherwise
       */
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       //@}
 

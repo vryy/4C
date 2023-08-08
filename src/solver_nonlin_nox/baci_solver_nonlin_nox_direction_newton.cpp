@@ -35,7 +35,7 @@ bool NOX::NLN::Direction::Newton::compute(
   // dynamic cast of the nox_abstract_group
   NOX::NLN::Group* nlnSoln = dynamic_cast<NOX::NLN::Group*>(&soln);
 
-  if (nlnSoln == NULL)
+  if (nlnSoln == nullptr)
   {
     throwError("compute", "dynamic_cast to nox_nln_group failed!");
   }

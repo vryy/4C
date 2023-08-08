@@ -3340,13 +3340,13 @@ namespace CORE::LINALG
       You cannot test whether the matrix is empty using M() and N(),
       for they will always return the templated size. Instead this
       function can be used, it tests whether the data pointer is not
-      NULL.
+      nullptr.
 
       \note To actually get a matrix for which IsInitialized() returns
-      false you must construct a view to NULL, because the default
+      false you must construct a view to nullptr, because the default
       constructor already allocates memory.
      */
-    inline bool IsInitialized() const { return A() != NULL; }
+    inline bool IsInitialized() const { return A() != nullptr; }
 
     /// Set view
     /*!
@@ -4460,9 +4460,9 @@ namespace CORE::LINALG
     out << "Matrix<" << rows << ',' << cols << '>';
     if (isview_) out << " (view to memory only)";
     if (isreadonly_) out << "\n (read only)";
-    if (A() == NULL)
+    if (A() == nullptr)
     {
-      out << " with data_==NULL!\n";
+      out << " with data_==nullptr!\n";
       return;
     }
     if (cols > 1)
@@ -4760,9 +4760,9 @@ namespace CORE::LINALG
 
   template <unsigned int rows, unsigned int cols, unsigned int dim_rhs>
   FixedSizeSerialDenseSolver<rows, cols, dim_rhs>::FixedSizeSerialDenseSolver()
-      : matrix_(NULL),
-        vec_X_(NULL),
-        vec_B_(NULL),
+      : matrix_(nullptr),
+        vec_X_(nullptr),
+        vec_B_(nullptr),
         pivot_vec_(),
         r_(),
         c_(),
@@ -4788,7 +4788,7 @@ namespace CORE::LINALG
     r_.clear();
     pivot_vec_.clear();
     inverted_ = factored_ = solved_ = false;
-    // vec_B_ = vec_X_ = NULL;
+    // vec_B_ = vec_X_ = nullptr;
     matrix_ = &mat;
   }
 

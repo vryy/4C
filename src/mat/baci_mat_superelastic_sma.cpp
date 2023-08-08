@@ -148,7 +148,7 @@ DRT::ParObject* MAT::SuperElasticSMAType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | constructor (public)                                   hemmler 09/16 |
  *----------------------------------------------------------------------*/
-MAT::SuperElasticSMA::SuperElasticSMA() : params_(NULL) {}
+MAT::SuperElasticSMA::SuperElasticSMA() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -172,7 +172,7 @@ void MAT::SuperElasticSMA::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   // pack history data
@@ -217,7 +217,7 @@ void MAT::SuperElasticSMA::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

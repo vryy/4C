@@ -551,7 +551,7 @@ const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToML(
   mllist.set("null space: dimension", 1);
   mllist.set("null space: type", "pre-computed");
   mllist.set("null space: add default vectors", false);
-  mllist.set<double*>("null space: vectors", NULL);
+  mllist.set<double*>("null space: vectors", nullptr);
 
   return mllist;
 }

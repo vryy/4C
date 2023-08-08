@@ -96,7 +96,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
   {
     // read species ID
     std::string k_string = quantity.substr(3);
-    char* locator(NULL);
+    char* locator(nullptr);
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
 
     // safety checks
@@ -118,7 +118,7 @@ double SCATRA::ScaTraResultTest::ResultNode(
       suffix = quantity.substr(12);
     else
       suffix = quantity.substr(14);
-    char* locator(NULL);
+    char* locator(nullptr);
     int k = strtol(suffix.c_str(), &locator, 10) - 1;
 
     // safety checks
@@ -291,7 +291,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
       suffix = quantity.substr(7);
 
     const char* index(suffix.c_str());
-    char* locator(NULL);
+    char* locator(nullptr);
     int species(0), domain(-1);
 
     if (*index == '\0')
@@ -337,7 +337,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
     if (!quantity.compare(0, 8, "totalphi") or !quantity.compare(0, 7, "meanphi"))
     {
       // extract map with relevant result from scalar transport time integrator
-      const std::map<const int, std::vector<double>>* map(NULL);
+      const std::map<const int, std::vector<double>>* map(nullptr);
       if (!quantity.compare(0, 8, "totalphi"))
         map = &scatratimint_->TotalScalars();
       else
@@ -396,7 +396,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     // initialize auxiliary variables
     const char* index(suffix.substr(4).c_str());
-    char* locator(NULL);
+    char* locator(nullptr);
 
     // extract interface ID
     const int interface = strtol(index, &locator, 10);
@@ -437,7 +437,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   {
     // read parameter index
     std::string index_string = quantity.substr(5);
-    char* locator(NULL);
+    char* locator(nullptr);
     const unsigned index = strtol(index_string.c_str(), &locator, 10) - 1;
 
     // safety checks
@@ -457,7 +457,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   {
     std::string suffix = quantity.substr(15);
     const char* index(suffix.c_str());
-    char* locator(NULL);
+    char* locator(nullptr);
     // extract domain ID
     int domain = strtol(index, &locator, 10);
     if (domain < 0 || domain > (int)(scatratimint_->DomainIntegrals().size() - 1))
@@ -471,7 +471,7 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   {
     std::string suffix = quantity.substr(17);
     const char* index(suffix.c_str());
-    char* locator(NULL);
+    char* locator(nullptr);
     // extract boundary ID
     int boundary = strtol(index, &locator, 10);
     if (boundary < 0 || boundary > (int)(scatratimint_->BoundaryIntegrals().size() - 1))

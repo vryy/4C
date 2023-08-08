@@ -126,11 +126,11 @@ namespace STR
 
     //! Assemble the right hand side
     virtual bool AssembleForce(Epetra_Vector& f,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const = 0;
+        const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const = 0;
 
     //! Assemble Jacobian
     virtual bool AssembleJac(CORE::LINALG::SparseOperator& jac,
-        const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const
+        const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const
     {
       return false;
     };

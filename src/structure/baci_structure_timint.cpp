@@ -1003,7 +1003,7 @@ void STR::TimInt::EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> s
   Teuchos::RCP<Epetra_Vector> residual_col =
       CORE::LINALG::CreateVector(*(facediscret_->DofColMap()), true);
 
-  const Epetra_Map* rmap = NULL;
+  const Epetra_Map* rmap = nullptr;
 
   Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
   if (systemmatrix1 != Teuchos::null)
@@ -1013,7 +1013,7 @@ void STR::TimInt::EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> s
     sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
   }
   else
-    dserror("sysmat is NULL!");
+    dserror("sysmat is nullptr!");
 
   Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
       new CORE::LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
@@ -1029,7 +1029,7 @@ void STR::TimInt::EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> s
         DRT::ELEMENTS::DiscSh3LineType::Instance())  // Discrete Structural Shell
     {
       DRT::ELEMENTS::DiscSh3Line* ele = dynamic_cast<DRT::ELEMENTS::DiscSh3Line*>(actface);
-      if (ele == NULL) dserror("expect DiscSh3Line element");
+      if (ele == nullptr) dserror("expect DiscSh3Line element");
 
 
       // get the parent Shell elements
@@ -1681,8 +1681,8 @@ void STR::TimInt::UpdateStepContactVUM()
       Teuchos::RCP<Epetra_Vector> x = CORE::LINALG::CreateVector(*activenodemap, true);
       Teuchos::RCP<Epetra_Vector> f = CORE::LINALG::CreateVector(*activenodemap, true);
       int NumEntries = 0;
-      int* Indices = NULL;
-      double* Values = NULL;
+      int* Indices = nullptr;
+      double* Values = nullptr;
       double res = 1.0;
       double initres = 1.0;
       double dfik = 0;
@@ -2894,17 +2894,17 @@ void STR::TimInt::OutputContact()
         filename << filebase << ".energymomentum";
 
         // open file
-        FILE* MyFile = NULL;
+        FILE* MyFile = nullptr;
         if (timen < 2 * dt)
         {
           MyFile = fopen(filename.str().c_str(), "wt");
 
           // initialize file pointer for writing contact interface forces/moments
-          FILE* MyConForce = NULL;
+          FILE* MyConForce = nullptr;
           std::ostringstream filenameif;
           filenameif << filebase << ".energymomentum";
           MyConForce = fopen(filenameif.str().c_str(), "wt");
-          if (MyConForce != NULL)
+          if (MyConForce != nullptr)
             fclose(MyConForce);
           else
             dserror("File for writing contact interface forces/moments could not be generated.");
@@ -2913,7 +2913,7 @@ void STR::TimInt::OutputContact()
           MyFile = fopen(filename.str().c_str(), "at+");
 
         // add current values to file
-        if (MyFile != NULL)
+        if (MyFile != nullptr)
         {
           std::stringstream filec;
           fprintf(MyFile, "% e\t", timen);
@@ -3253,7 +3253,7 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
         "predictor possible for multiplicative Genalpha time integration!");
   }
 
-  if (sdynparams != NULL)
+  if (sdynparams != nullptr)
   {
     if (HaveNonlinearMass() == INPAR::STR::ml_rotations and
         DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(*sdynparams, "DYNAMICTYP") !=

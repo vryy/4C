@@ -437,7 +437,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(
 
   // Get coupling parameters in case of 3D/0D coupling
   coupledTo3D_ = CoupledTo3D;
-  if (CoupledTo3D && CouplingParams.get() == NULL)
+  if (CoupledTo3D && CouplingParams.get() == nullptr)
   {
     dserror(
         "Coupling parameter list is not allowed to be empty, If a 3-D/reduced-D coupling is "

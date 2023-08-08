@@ -162,7 +162,7 @@ bool STR::MODELEVALUATOR::LagPenConstraint::AssembleForce(
 
     if (block_vec_ptr.is_null())
       dserror(
-          "The constraint model vector is a NULL pointer, although \n"
+          "The constraint model vector is a nullptr pointer, although \n"
           "the structural part indicates, that constraint contributions \n"
           "are present!");
 

@@ -97,13 +97,13 @@ void CORE::GEO::CUT::VolumeCell::Neighbors(Point* p, const plain_volumecell_set&
     for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
     {
       Facet* f = *i;
-      if (p == NULL or f->Contains(p))
+      if (p == nullptr or f->Contains(p))
       {
         f->Neighbors(p, cells, done, connected, elements);
       }
     }
 
-    if (p != NULL)
+    if (p != nullptr)
     {
       for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
       {
@@ -136,13 +136,13 @@ void CORE::GEO::CUT::VolumeCell::Neighbors(Point* p, const plain_volumecell_set&
     {
       Facet* f = *i;
 
-      if (p == NULL or f->Contains(p))
+      if (p == nullptr or f->Contains(p))
       {
         f->Neighbors(p, cells, done, connected);
       }
     }
 
-    if (p != NULL)
+    if (p != nullptr)
     {
       for (plain_facet_set::const_iterator i = facets_.begin(); i != facets_.end(); ++i)
       {

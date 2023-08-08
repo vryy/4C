@@ -67,7 +67,7 @@ void CORE::GEO::CUT::Line::AddSide(Side* cut_side)
 
 void CORE::GEO::CUT::Line::AddElement(Element* cut_element)
 {
-  if (cut_element != NULL)
+  if (cut_element != nullptr)
   {
     if (not p1_->IsCut(cut_element) or not p2_->IsCut(cut_element))
     {

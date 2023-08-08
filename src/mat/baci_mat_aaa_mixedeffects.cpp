@@ -50,7 +50,7 @@ DRT::ParObject* MAT::AAA_mixedeffectsType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAA_mixedeffects::AAA_mixedeffects() : params_(NULL) {}
+MAT::AAA_mixedeffects::AAA_mixedeffects() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*
@@ -72,7 +72,7 @@ void MAT::AAA_mixedeffects::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -90,7 +90,7 @@ void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
 
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)

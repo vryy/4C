@@ -194,12 +194,12 @@ void DRT::ELEMENTS::ScaTraEleCalcLsReinit<distype, probDim>::EvalReinitializatio
         }
         case SCATRA::Action::calc_rhs:
         {
-          EllipticNewtonSystem(NULL, &elevec1_epetra, el2sysmat_diag_inv, boundaryIntCells);
+          EllipticNewtonSystem(nullptr, &elevec1_epetra, el2sysmat_diag_inv, boundaryIntCells);
           break;
         }
         case SCATRA::Action::calc_mat:
         {
-          EllipticNewtonSystem(&elemat1_epetra, NULL, el2sysmat_diag_inv, boundaryIntCells);
+          EllipticNewtonSystem(&elemat1_epetra, nullptr, el2sysmat_diag_inv, boundaryIntCells);
           break;
         }
         default:

@@ -204,7 +204,7 @@ namespace XFEM
                        ///< eid for levelset couplings)
     )
     {
-      return (coupl_dis_ != Teuchos::null) ? coupl_dis_->gElement(eid) : NULL;
+      return (coupl_dis_ != Teuchos::null) ? coupl_dis_->gElement(eid) : nullptr;
     }
 
     virtual const std::string& GetName() { return coupl_name_; }

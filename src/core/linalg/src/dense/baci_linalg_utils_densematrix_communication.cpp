@@ -108,7 +108,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceEMap(const Epetra_Map& emap, con
   else
   {
     rv.clear();
-    rmap = Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, emap.Comm()));
+    rmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, emap.Comm()));
     // check the map
     dsassert(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }
@@ -171,7 +171,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::AllreduceOverlappingEMap(
   else
   {
     rv.clear();
-    rmap = Teuchos::rcp(new Epetra_Map(-1, 0, NULL, 0, emap.Comm()));
+    rmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, emap.Comm()));
     // check the map
     dsassert(rmap->NumMyElements() == 0, "At least one proc will keep a map element");
   }

@@ -64,12 +64,12 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
   CORE::LINALG::Matrix<1, fluid::n_nodes_ * fluid::n_val_, double> N_fluid(true);
 
   // Resize and initialize the return variables.
-  if (forcevec1 != NULL) forcevec1->size(beam::n_dof_);
-  if (forcevec2 != NULL) forcevec2->size(fluid::n_dof_);
-  if (stiffmat11 != NULL) stiffmat11->shape(beam::n_dof_, beam::n_dof_);
-  if (stiffmat12 != NULL) stiffmat12->shape(beam::n_dof_, fluid::n_dof_);
-  if (stiffmat21 != NULL) stiffmat21->shape(fluid::n_dof_, beam::n_dof_);
-  if (stiffmat22 != NULL) stiffmat22->shape(fluid::n_dof_, fluid::n_dof_);
+  if (forcevec1 != nullptr) forcevec1->size(beam::n_dof_);
+  if (forcevec2 != nullptr) forcevec2->size(fluid::n_dof_);
+  if (stiffmat11 != nullptr) stiffmat11->shape(beam::n_dof_, beam::n_dof_);
+  if (stiffmat12 != nullptr) stiffmat12->shape(beam::n_dof_, fluid::n_dof_);
+  if (stiffmat21 != nullptr) stiffmat21->shape(fluid::n_dof_, beam::n_dof_);
+  if (stiffmat22 != nullptr) stiffmat22->shape(fluid::n_dof_, fluid::n_dof_);
 
   // Initialize scalar variables.
   double segment_jacobian, beam_segmentation_factor;
@@ -111,7 +111,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
           std::integral_constant<unsigned int, 3>{}, this->Element2());
 
       // assemble fluid mass matrix
-      if (stiffmat22 != NULL)
+      if (stiffmat22 != nullptr)
       {
         for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < fluid::n_nodes_; i_fluid_node1++)
           for (unsigned int i_fluid_val1 = 0; i_fluid_val1 < fluid::n_val_; i_fluid_val1++)
@@ -125,7 +125,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       }
 
       // assemble beam mass matrix
-      if (stiffmat11 != NULL)
+      if (stiffmat11 != nullptr)
       {
         for (unsigned int i_beam_node1 = 0; i_beam_node1 < beam::n_nodes_; i_beam_node1++)
           for (unsigned int i_beam_val1 = 0; i_beam_val1 < beam::n_val_; i_beam_val1++)
@@ -140,7 +140,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       }
 
       // assemble fluid beam coupling matrix
-      if (stiffmat21 != NULL)
+      if (stiffmat21 != nullptr)
       {
         for (unsigned int i_fluid_node1 = 0; i_fluid_node1 < fluid::n_nodes_; i_fluid_node1++)
           for (unsigned int i_fluid_val1 = 0; i_fluid_val1 < fluid::n_val_; i_fluid_val1++)
@@ -154,7 +154,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
       }
 
       // assemble fluid beam coupling matrix
-      if (stiffmat12 != NULL)
+      if (stiffmat12 != nullptr)
       {
         for (unsigned int i_beam_node1 = 0; i_beam_node1 < beam::n_nodes_; i_beam_node1++)
           for (unsigned int i_beam_val1 = 0; i_beam_val1 < beam::n_val_; i_beam_val1++)
@@ -171,7 +171,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
 
   // assemble structure force vector
   {
-    if (forcevec1 != NULL)
+    if (forcevec1 != nullptr)
     {
       for (unsigned int i_dof1 = 0; i_dof1 < beam::n_dof_; i_dof1++)
       {
@@ -185,7 +185,7 @@ bool BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<beam, fluid>::Evaluate(
     }
 
     // assemble fluid force vector
-    if (forcevec2 != NULL)
+    if (forcevec2 != nullptr)
     {
       if (!Teuchos::rcp_dynamic_cast<FBI::BeamToFluidMeshtyingParams>(this->Params(), true)
                ->GetWeakDirichletFlag())

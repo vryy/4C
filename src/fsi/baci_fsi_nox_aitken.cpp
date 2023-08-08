@@ -133,7 +133,7 @@ bool NOX::FSI::AitkenRelaxation::compute(
   {
     static int count;
     static std::ofstream* out;
-    if (out == NULL)
+    if (out == nullptr)
     {
       std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".omega");

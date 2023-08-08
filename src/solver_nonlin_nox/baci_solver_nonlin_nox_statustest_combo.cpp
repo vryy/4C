@@ -16,7 +16,7 @@
  *----------------------------------------------------------------------------*/
 NOX::NLN::StatusTest::Combo::Combo(ComboType t, const NOX::Utils* u) : NOX::StatusTest::Combo(t, u)
 {
-  if (u != NULL) utils_ = *u;
+  if (u != nullptr) utils_ = *u;
 }
 
 /*----------------------------------------------------------------------------*
@@ -24,7 +24,7 @@ NOX::NLN::StatusTest::Combo::Combo(ComboType t, const NOX::Utils* u) : NOX::Stat
 NOX::NLN::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a, const NOX::Utils* u)
     : NOX::StatusTest::Combo(t, a, u)
 {
-  if (u != NULL) utils_ = *u;
+  if (u != nullptr) utils_ = *u;
   // fill ghost vector
   tests_.push_back(a);
 }
@@ -35,7 +35,7 @@ NOX::NLN::StatusTest::Combo::Combo(ComboType t, const Teuchos::RCP<Generic>& a,
     const Teuchos::RCP<Generic>& b, const NOX::Utils* u)
     : NOX::StatusTest::Combo(t, a, b, u)
 {
-  if (u != NULL) utils_ = *u;
+  if (u != nullptr) utils_ = *u;
 
   // fill ghost vector
   tests_.push_back(a);
@@ -90,7 +90,7 @@ bool NOX::NLN::StatusTest::Combo::isSafe(NOX::StatusTest::Generic& a)
        i != tests_.end(); ++i)
   {
     NOX::NLN::StatusTest::Combo* ptr = dynamic_cast<NOX::NLN::StatusTest::Combo*>(i->get());
-    if (ptr != NULL)
+    if (ptr != nullptr)
       if (!ptr->isSafe(a)) return false;
   }
 

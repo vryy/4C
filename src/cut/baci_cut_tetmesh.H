@@ -485,7 +485,7 @@ namespace CORE::GEO
                 Entity<2>* l = *i;
                 Entity<3>* tri = FindUniqueTri(tm, facet, domain, l);
 
-                if (tri != NULL)
+                if (tri != nullptr)
                 {
 #ifdef TETMESH_EXTENDED_DEBUG_OUTPUT
                   std::cout << "ADDED tri!" << std::endl;
@@ -556,12 +556,12 @@ namespace CORE::GEO
          *      If NO  -> Check if the tri lies on the Facet (IsCut(..))
          *          If NO  -> Continue to next tri.
          *          If Yes -> Check if a tri has already been assigned for this line.
-         *              If Yes -> return NULL (i.e. no unique tri exists)
+         *              If Yes -> return nullptr (i.e. no unique tri exists)
          *              If NO  -> Add tri and continue loop over tris.
          */
         Entity<3>* FindUniqueTri(TetMesh* tm, Facet* facet, Domain<3>& domain, Entity<2>* l)
         {
-          Entity<3>* tri = NULL;
+          Entity<3>* tri = nullptr;
           const std::vector<Entity<3>*>& tris = l->Parents();  // TRIs connected to this line.
           for (std::vector<Entity<3>*>::const_iterator i = tris.begin(); i != tris.end(); ++i)
           {
@@ -570,7 +570,7 @@ namespace CORE::GEO
             {
               if (t->IsCut(tm->points_, facet))
               {
-                if (tri == NULL)
+                if (tri == nullptr)
                 {
                   tri = t;
                 }
@@ -600,7 +600,7 @@ namespace CORE::GEO
                   //                  tri->GetHandle()[2]: " << tri->GetHandle()[2] << std::endl;
 
                   // throw std::runtime_error( "double tri on cut facet" );
-                  return NULL;
+                  return nullptr;
                 }
               }
             }
@@ -652,7 +652,7 @@ namespace CORE::GEO
       void FixBrokenTets();
 
       void FindProperSides(const PlainEntitySet<3>& tris, std::vector<std::vector<int>>& sides,
-          const PlainEntitySet<4>* members = NULL);
+          const PlainEntitySet<4>* members = nullptr);
 
       void CollectCoordinates(
           const std::vector<std::vector<int>>& sides, std::vector<Point*>& side_coords);

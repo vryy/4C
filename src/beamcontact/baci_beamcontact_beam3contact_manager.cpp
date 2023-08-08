@@ -1526,8 +1526,8 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
       nodes1 = ele1->Nodes();
       nodes2 = ele2->Nodes();
 
-      dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
-      dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+      dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+      dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
       std::vector<DRT::Condition*> conds1;
       std::vector<DRT::Condition*> conds2;
@@ -1585,8 +1585,8 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
       nodes1 = ele1->Nodes();
       nodes2 = ele2->Nodes();
 
-      dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
-      dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+      dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+      dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
       std::vector<DRT::Condition*> conds1;
       std::vector<DRT::Condition*> conds2;
@@ -1964,8 +1964,8 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
     nodes1 = ele1->Nodes();
     nodes2 = ele2->Nodes();
 
-    dsassert(nodes1 != NULL and nodes2 != NULL, "pointer to nodes is NULL!");
-    dsassert(nodes1[0] != NULL and nodes2[0] != NULL, "pointer to nodes is NULL!");
+    dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
+    dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
 
     nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
@@ -2677,7 +2677,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
   ShiftDisMap(disrow, disccol);
 
   // do output to file in c-style
-  FILE* fp = NULL;
+  FILE* fp = nullptr;
 
   // The whole gmsh output is done by proc 0!
   if (btsoldiscret_->Comm().MyPID() == 0)
@@ -2685,7 +2685,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     // open file to write output data into
     fp = fopen(filename.str().c_str(), "w");
 
-    if (fp == NULL) dserror("can't write to specified gmsh output folder!");
+    if (fp == nullptr) dserror("can't write to specified gmsh output folder!");
 
     std::stringstream gmshfileheader;
     // write output to temporary std::stringstream;
@@ -3432,7 +3432,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
 // solids************************************
 #ifdef GMSHFORCE
   // Draw contact forces acting on solid element using an extra Gmsh output file
-  FILE* fp_fc2 = NULL;
+  FILE* fp_fc2 = nullptr;
 
   // Create filename
   std::ostringstream filename_fc2;
@@ -3851,7 +3851,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
              << ".txt";
 
     // do output to file in c-style
-    FILE* fp = NULL;
+    FILE* fp = nullptr;
     std::stringstream filecontent;
 
     // if(firststep_)
@@ -4031,7 +4031,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
       filename << "activecontacts_minmaxgapangle_statmech_37filaments_noendpoints.txt";
 
       // do output to file in c-style
-      FILE* fp = NULL;
+      FILE* fp = nullptr;
       std::stringstream filecontent;
 
       if (firststep_)
@@ -4068,7 +4068,7 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     filename << "gaps.txt";
 
     // do output to file in c-style
-    FILE* fp = NULL;
+    FILE* fp = nullptr;
     std::stringstream filecontent;
 
     if (firststep_)
@@ -4175,7 +4175,7 @@ void CONTACT::Beam3cmanager::Reactions(
   filename << "o/gmsh_output/reaction_forces_moments.csv";
 
   // do output to file in c-style
-  FILE* fp = NULL;
+  FILE* fp = nullptr;
 
   // open file to write output data into
   if (timestep == 1)
@@ -4580,7 +4580,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
   // get radius of element
   const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
 
-  if (thisbeam == NULL) dserror("cast to beam base failed!");
+  if (thisbeam == nullptr) dserror("cast to beam base failed!");
 
   double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
 
@@ -4781,7 +4781,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
   // get radius of element
   const DRT::ELEMENTS::Beam3Base* thisbeam = static_cast<const DRT::ELEMENTS::Beam3Base*>(thisele);
 
-  if (thisbeam == NULL) dserror("cast to beam base failed!");
+  if (thisbeam == nullptr) dserror("cast to beam base failed!");
 
   double eleradius = thisbeam->GetCircularCrossSectionRadiusForInteractions();
 

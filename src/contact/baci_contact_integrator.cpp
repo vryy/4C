@@ -4229,7 +4229,7 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
   int ndof = Dim();
   int nrow = 0;
 
-  DRT::Node** mynodes = NULL;
+  DRT::Node** mynodes = nullptr;
   nrow = sele.NumNode();
   mynodes = sele.Nodes();
 
@@ -4450,7 +4450,7 @@ void CONTACT::CoIntegrator::IntegrateD(
   int ndof = Dim();
   int nrow = 0;
 
-  DRT::Node** mynodes = NULL;
+  DRT::Node** mynodes = nullptr;
   nrow = sele.NumNode();
   mynodes = sele.Nodes();
 
@@ -4855,8 +4855,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
   if (Dim() != 2) dserror("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
+  DRT::Node** snodes = nullptr;
+  DRT::Node** mnodes = nullptr;
   int numsnode = sele.NumNode();
   int nummnode = mele.NumNode();
 
@@ -4919,8 +4919,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     std::vector<CORE::GEN::pairedvector<int, double>> derivN;
     dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxia, derivN);
 
-    CORE::LINALG::SerialDenseVector* mval = NULL;
-    CORE::LINALG::SerialDenseMatrix* mderiv = NULL;
+    CORE::LINALG::SerialDenseVector* mval = nullptr;
+    CORE::LINALG::SerialDenseMatrix* mderiv = nullptr;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
     {
       mval = &valmxib;
@@ -4998,8 +4998,8 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     std::vector<CORE::GEN::pairedvector<int, double>> derivN;
     dynamic_cast<CONTACT::CoElement*>(&sele)->DerivUnitNormalAtXi(psxib, derivN);
 
-    CORE::LINALG::SerialDenseVector* mval = NULL;
-    CORE::LINALG::SerialDenseMatrix* mderiv = NULL;
+    CORE::LINALG::SerialDenseVector* mval = nullptr;
+    CORE::LINALG::SerialDenseMatrix* mderiv = nullptr;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
     {
       mval = &valmxia;
@@ -5076,7 +5076,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     double fac_nx_a = 0.0;
     double fac_ny_a = 0.0;
 
-    CORE::LINALG::SerialDenseVector* mval = NULL;
+    CORE::LINALG::SerialDenseVector* mval = nullptr;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
       mval = &valmxib;
     else
@@ -5157,7 +5157,7 @@ void CONTACT::CoIntegrator::DerivXiAB2D(MORTAR::MortarElement& sele, double& sxi
     double fac_nx_b = 0.0;
     double fac_ny_b = 0.0;
 
-    CORE::LINALG::SerialDenseVector* mval = NULL;
+    CORE::LINALG::SerialDenseVector* mval = nullptr;
     if (sele.NormalFac() * mele.NormalFac() > 0.)
       mval = &valmxia;
     else
@@ -5237,8 +5237,8 @@ void CONTACT::CoIntegrator::DerivXiGP2D(MORTAR::MortarElement& sele, MORTAR::Mor
   if (Dim() != 2) dserror("2D integration method called for non-2D problem");
 
   // we need the participating slave and master nodes
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
+  DRT::Node** snodes = nullptr;
+  DRT::Node** mnodes = nullptr;
   int numsnode = sele.NumNode();
   int nummnode = mele.NumNode();
 
@@ -6112,8 +6112,8 @@ void CONTACT::CoIntegrator::GP_DM(MORTAR::MortarElement& sele, MORTAR::MortarEle
   int nrow;
   int ncol;
   // get slave element nodes themselves
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
+  DRT::Node** snodes = nullptr;
+  DRT::Node** mnodes = nullptr;
   nrow = sele.NumNode();
   snodes = sele.Nodes();
   ncol = mele.NumNode();
@@ -6457,7 +6457,7 @@ void inline CONTACT::CoIntegrator::GP_2D_wGap(MORTAR::MortarElement& sele,
     CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval, double* gap,
     double& jac, double& wgt)
 {
-  DRT::Node** mynodes = NULL;
+  DRT::Node** mynodes = nullptr;
   int nrow = 0;
   nrow = sele.NumNode();
   mynodes = sele.Nodes();
@@ -6930,8 +6930,8 @@ void CONTACT::CoIntegrator::Gap_2D(MORTAR::MortarElement& sele, MORTAR::MortarEl
   typedef CORE::GEN::pairedvector<int, double>::const_iterator _CI;
 
   // get slave element nodes themselves
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
+  DRT::Node** snodes = nullptr;
+  DRT::Node** mnodes = nullptr;
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
 
@@ -7472,7 +7472,7 @@ void inline CONTACT::CoIntegrator::GP_2D_G_Lin(int& iter, MORTAR::MortarElement&
     const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
   // get slave element nodes themselves
-  DRT::Node** snodes = NULL;
+  DRT::Node** snodes = nullptr;
   int nrow = sele.NumNode();
   snodes = sele.Nodes();
 
@@ -7959,7 +7959,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
         if (mymrtrnode2->IsOnBoundorCE())
         {
           // get the correct map pointer
-          std::map<int, double>* dmmap_jk = NULL;
+          std::map<int, double>* dmmap_jk = nullptr;
           double sign = 0.;
 
           // for boundary nodes, we assemble to M-matrix, since the corresponding nodes do not
@@ -8118,7 +8118,7 @@ void CONTACT::CoIntegrator::GP_3D_DM_Lin_bound(MORTAR::MortarElement& sele,
         if (mymrtrnode2->IsOnBoundorCE())
         {
           // get the correct map pointer
-          std::map<int, double>* dmmap_jk = NULL;
+          std::map<int, double>* dmmap_jk = nullptr;
           double sign = 0.;
 
           // for boundary nodes, we assemble to M-matrix, since the corresponding nodes do not
@@ -8559,8 +8559,8 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Ele_Lin(int& iter, bool& bound,
     const CORE::GEN::pairedvector<int, double>& derivjac,
     const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
+  DRT::Node** snodes = nullptr;
+  DRT::Node** mnodes = nullptr;
 
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
@@ -8709,8 +8709,8 @@ void inline CONTACT::CoIntegrator::GP_2D_DM_Lin(int& iter, bool& bound, bool& li
     const CORE::GEN::pairedvector<int, double>& derivjac,
     const CORE::GEN::pairedvector<int, CORE::LINALG::SerialDenseMatrix>& dualmap)
 {
-  DRT::Node** snodes = NULL;
-  DRT::Node** mnodes = NULL;
+  DRT::Node** snodes = nullptr;
+  DRT::Node** mnodes = nullptr;
   int nrow = sele.NumNode();
   int ncol = mele.NumNode();
   snodes = sele.Nodes();
@@ -12438,9 +12438,9 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
         sporosity,
         &sdphi_dp,  // linearization of phi w.r.t. pressure
         &sdphi_dJ,  // linearization of phi w.r.t. defo-grad determinant
-        NULL,       // dphi_dJdp not needed
-        NULL,       // dphi_dJJ not needed
-        NULL,       // dphi_dpp not needed
+        nullptr,    // dphi_dJdp not needed
+        nullptr,    // dphi_dJJ not needed
+        nullptr,    // dphi_dpp not needed
         false);
   }
 
@@ -12479,9 +12479,9 @@ void inline CONTACT::CoIntegrator::GP_NCOUP_DERIV(MORTAR::MortarElement& sele,
         mporosity,
         &mdphi_dp,  // linearization of phi w.r.t. pressure
         &mdphi_dJ,  // linearization of phi w.r.t. defo-grad determinant
-        NULL,       // dphi_dJdp not needed
-        NULL,       // dphi_dJJ not needed
-        NULL,       // dphi_dpp not needed
+        nullptr,    // dphi_dJdp not needed
+        nullptr,    // dphi_dJJ not needed
+        nullptr,    // dphi_dpp not needed
         false);
   }
   ////////////////////////////////!!!Calculate Porosity done!!!////////////////////////////

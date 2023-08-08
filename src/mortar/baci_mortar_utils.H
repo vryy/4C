@@ -107,7 +107,7 @@ namespace MORTAR
    *
    *  \author hiermeier \date 04/17  */
   void ReplaceColumnAndDomainMap(CORE::LINALG::SparseMatrix& mat, const Epetra_Map& newdomainmap,
-      Teuchos::RCP<Epetra_Map>* const newcolmap_ptr = NULL);
+      Teuchos::RCP<Epetra_Map>* const newcolmap_ptr = nullptr);
 
   /*! \brief Create a new column map
    *

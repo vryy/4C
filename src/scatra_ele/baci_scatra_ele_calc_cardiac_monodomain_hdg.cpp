@@ -62,11 +62,11 @@ DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Instance(
          i != instances.end(); ++i)
     {
       delete i->second;
-      i->second = NULL;
+      i->second = nullptr;
     }
 
     instances.clear();
-    return NULL;
+    return nullptr;
   }
 
   return instances[disname];

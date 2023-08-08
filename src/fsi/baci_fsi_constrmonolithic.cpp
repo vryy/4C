@@ -311,7 +311,7 @@ Teuchos::RCP<NOX::Epetra::LinearSystem> FSI::ConstrMonolithic::CreateLinearSyste
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList* lsParams = NULL;
+  Teuchos::ParameterList* lsParams = nullptr;
 
   // in case of nonlinCG the linear solver list is somewhere else
   if (dirParams.get("Method", "User Defined") == "User Defined")

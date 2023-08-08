@@ -29,7 +29,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::NewPoint(const double* x, Ed
 
   Point* p = GetPoint(x, cut_edge, cut_side, tolerance, merge_strategy);
 
-  if (p == NULL)
+  if (p == nullptr)
   {
     p = &*CreatePoint(points_.size(), x, cut_edge, cut_side, tolerance);  // create the point
 #if CUT_CREATION_INFO
@@ -78,12 +78,12 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
   if (not IsLeaf())
   {
     // stop finding the point when point is not included in the current bounding box
-    if (!bb_->Within(1.0, x)) return NULL;
+    if (!bb_->Within(1.0, x)) return nullptr;
 
     for (int i = 0; i < 8; ++i)
     {
       Point* p = nodes_[i]->GetPoint(x, cut_edge, cut_side, tolerance, merge_strategy);
-      if (p != NULL)
+      if (p != nullptr)
       {
         return p;
       }
@@ -111,11 +111,12 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
         tol = TOPOLOGICAL_TOLERANCE * norm_ * NODAL_POINT_TOLERANCE_SCALE;
         // safety check
 #ifdef NODAL_POINT_TOLERANCE_SCALE
-        // this should happen with both cut_side and cut_edge equal to NULL
+        // this should happen with both cut_side and cut_edge equal to nullptr
         // note: be carefull with other cases, apart from mesh loading
         if (cut_side and cut_edge)
         {
-          dserror("Scaling is %lf for non-NULL cut_side and cut_edge. This should not be possible!",
+          dserror(
+              "Scaling is %lf for non-nullptr cut_side and cut_edge. This should not be possible!",
               NODAL_POINT_TOLERANCE_SCALE);
         }
 #endif
@@ -152,7 +153,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
       // first consider topologically connnected points
       // and try to find any candidate there
       std::vector<Point*> topological_candidates;
-      Point* mymerge = NULL;
+      Point* mymerge = nullptr;
       int match_number = 0;
       // base tolerance, all the candidates should fit into that one
       for (unsigned int i = 0; i < merge_candidates.size(); ++i)
@@ -193,13 +194,13 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
         if (cut_side)
         {
           CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CurrentIntersectionSide");
-          CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side, false, NULL);
+          CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side, false, nullptr);
           CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
         }
         if (cut_edge)
         {
           CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "CurrentIntersectionEdge");
-          CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, cut_edge, false, NULL);
+          CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, cut_edge, false, nullptr);
           CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
         }
 
@@ -209,10 +210,10 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
 
       // if there are no points intersected by same side and edge but there  are still other points
       // that fit into the tolerance
-      if (mymerge == NULL)
+      if (mymerge == nullptr)
       {
         // there only unknown non-topologically connected case
-        if (merge_candidates.empty()) return NULL;
+        if (merge_candidates.empty()) return nullptr;
 
         // if nothing was intersected before return first matching point. else do nothing
         mymerge = merge_candidates[0];
@@ -237,13 +238,13 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
           if (cut_side)
           {
             CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "InterSides");
-            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side, false, NULL);
+            CORE::GEO::CUT::OUTPUT::GmshSideDump(file, cut_side, false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
           }
           if (cut_edge)
           {
             CORE::GEO::CUT::OUTPUT::GmshNewSection(file, "InterEdges");
-            CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, cut_edge, false, NULL);
+            CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, cut_edge, false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
           }
 
@@ -255,25 +256,25 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
       }
 
       // after this we found proper megin candidates
-      if (mymerge != NULL)
+      if (mymerge != nullptr)
       {  // just a safety check
 
         mymerge->Coordinates(nx.A());
         nx.Update(-1, px, 1);
         if (not mymerge->IsCut(cut_side, cut_edge))
         {
-          if (cut_edge != NULL)
+          if (cut_edge != nullptr)
           {
             // Here we need to set this point local coordinates on the edge, based on the unmerged
             // point, that it why "t" is called explicitely before AddEdge
             mymerge->t(cut_edge, px);
             mymerge->AddEdge(cut_edge);
           }
-          if (cut_side != NULL)
+          if (cut_side != nullptr)
           {
             mymerge->AddSide(cut_side);
           }
-          if ((cut_side != NULL) && (cut_edge != NULL))
+          if ((cut_side != nullptr) && (cut_edge != nullptr))
           {
             mymerge->AddPair(cut_side, cut_edge);
 #if CUT_CREATION_INFO
@@ -292,7 +293,7 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::OctTreeNode::GetPoint(const double* x, Ed
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 
@@ -609,11 +610,11 @@ CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::FindNode(const double*
     if (not IsLeaf())
     {
       // stop finding the point when point is not included in the current bounding box
-      if (!bb_->Within(1.0, coord)) return NULL;
+      if (!bb_->Within(1.0, coord)) return nullptr;
       for (int i = 0; i < 8; ++i)
       {
         CORE::GEO::CUT::OctTreeNode* node = (nodes_[i]->FindNode(coord, p));
-        if (node != NULL)
+        if (node != nullptr)
         {
           return node;
         }
@@ -634,14 +635,14 @@ CORE::GEO::CUT::OctTreeNode* CORE::GEO::CUT::OctTreeNode::FindNode(const double*
       }
       if (i == points_.end())
       {
-        return NULL;
+        return nullptr;
       }
     }
   }
   else
   {
     dserror("Invalid point");
-    return NULL;
+    return nullptr;
   }
-  return NULL;
+  return nullptr;
 }

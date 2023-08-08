@@ -51,7 +51,7 @@ namespace STR
 
       //! (derived)
       bool AssembleForce(Epetra_Vector& f,
-          const std::vector<INPAR::STR::ModelType>* without_these_models = NULL) const override;
+          const std::vector<INPAR::STR::ModelType>* without_these_models = nullptr) const override;
 
       //! (derived)
       void WriteRestart(

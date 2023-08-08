@@ -254,7 +254,7 @@ namespace DRT
           double& visc_s,                         ///< slave sided dynamic viscosity
           CORE::LINALG::Matrix<3, 1>& rst_slave,  ///< local coord of gp in slave element
           std::vector<double>& eledisp,           ///< slave element displacement vector
-          DRT::Element* coupl_ele = NULL          ///< slave coupling element
+          DRT::Element* coupl_ele = nullptr       ///< slave coupling element
       );
 
       //! get the interface jump vectors for velocity and traction at the Gaussian point for

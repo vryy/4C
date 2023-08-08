@@ -615,7 +615,7 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<probdim, 1>& xyz,
             INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double)
         {
-          return NULL;
+          return nullptr;
         }
       };
 
@@ -730,7 +730,7 @@ namespace CORE::GEO
             default:
               dserror("Unsupported floattype!");
           }
-          return NULL;
+          return nullptr;
         }
       };
 
@@ -762,7 +762,7 @@ namespace CORE::GEO
             default:
               dserror("Unsupported floattype!");
           }
-          return NULL;
+          return nullptr;
         }
       };
 

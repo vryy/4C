@@ -179,7 +179,7 @@ void DRT::Node::GetCondition(const std::string& name, std::vector<DRT::Condition
 DRT::Condition* DRT::Node::GetCondition(const std::string& name) const
 {
   std::multimap<std::string, Teuchos::RCP<Condition>>::const_iterator curr = condition_.find(name);
-  if (curr == condition_.end()) return NULL;
+  if (curr == condition_.end()) return nullptr;
   curr = condition_.lower_bound(name);
   return curr->second.get();
 }

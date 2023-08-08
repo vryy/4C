@@ -220,7 +220,7 @@ namespace CORE::LINALG
      *
      *  \author hiermeier \date 01/18 */
     virtual bool IsDbcApplied(const Epetra_Map& dbcmap, bool diagonalblock = true,
-        const CORE::LINALG::SparseMatrix* trafo = NULL) const = 0;
+        const CORE::LINALG::SparseMatrix* trafo = nullptr) const = 0;
 
     /// Returns the Epetra_Map object associated with the (full) domain of this operator.
     virtual const Epetra_Map& DomainMap() const = 0;

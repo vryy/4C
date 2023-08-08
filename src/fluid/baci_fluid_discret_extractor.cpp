@@ -56,7 +56,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     if (condition == "TurbulentInflowSection")
     {
       DRT::DiscretizationXWall* xwall = dynamic_cast<DRT::DiscretizationXWall*>(&*actdis);
-      if (NULL != xwall)
+      if (nullptr != xwall)
         childdiscret_ = Teuchos::rcp(new DRT::DiscretizationXWall(
             (std::string) "inflow", Teuchos::rcp(parentdiscret_->Comm().Clone())));
       else

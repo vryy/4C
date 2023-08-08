@@ -65,7 +65,7 @@ void STR::PREDICT::TangDis::Compute(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
   NOX::NLN::Group* grp_ptr = dynamic_cast<NOX::NLN::Group*>(&grp);
-  dsassert(grp_ptr != NULL, "Dynamic cast failed!");
+  dsassert(grp_ptr != nullptr, "Dynamic cast failed!");
   grp_ptr->ResetPrePostOperator(NoxParams().sublist("Group Options"));
 
   ImplInt().EvalData().SetPredictorType(INPAR::STR::pred_tangdis);

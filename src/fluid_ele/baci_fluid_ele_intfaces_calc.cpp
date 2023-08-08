@@ -62,7 +62,7 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
           "Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 template <DRT::Element::DiscretizationType distype>

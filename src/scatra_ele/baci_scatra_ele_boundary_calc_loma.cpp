@@ -152,7 +152,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::CalcLomaThermPr
   // try to get the pointer to the entry (and check if type is Teuchos::RCP<Epetra_MultiVector>)
   Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr<Teuchos::RCP<Epetra_MultiVector>>(name);
   // check: field has been set and is not of type Teuchos::null
-  if (f != NULL)
+  if (f != nullptr)
     DRT::UTILS::ExtractMyNodeBasedValues(peleptr, eflux, *f, 3);
   else
     dserror("MultiVector %s has not been found!", name.c_str());

@@ -138,7 +138,7 @@ namespace CONTACT
       /// function wrapper
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
           const enum DRT::UTILS::MatBlockType& bt,
-          const CONTACT::ParamsInterface* cparams = NULL) const override;
+          const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       /// function wrapper
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
@@ -427,7 +427,7 @@ namespace CONTACT
 
        private:
         /// output screen stream
-        std::ostream* oscreen_ = NULL;
+        std::ostream* oscreen_ = nullptr;
 
         /// blackhole stream. This kind of stream will prevent any output if set.
         const Teuchos::RCP<Teuchos::oblackholestream> blackhole_ =

@@ -39,7 +39,7 @@ DRT::ParObject* MAT::BeamElastHyperMaterialType<T>::Create(const std::vector<cha
 /*-----------------------------------------------------------------------------------------------*
  *-----------------------------------------------------------------------------------------------*/
 template <typename T>
-MAT::BeamElastHyperMaterial<T>::BeamElastHyperMaterial() : params_(NULL)
+MAT::BeamElastHyperMaterial<T>::BeamElastHyperMaterial() : params_(nullptr)
 {
   // empty constructor
 }
@@ -103,7 +103,7 @@ void MAT::BeamElastHyperMaterial<T>::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   this->AddtoPack(data, matid);
 }
 
@@ -121,7 +121,7 @@ void MAT::BeamElastHyperMaterial<T>::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   this->ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
 
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
@@ -163,7 +163,7 @@ template <typename T>
 const MAT::PAR::BeamElastHyperMaterialParameterGeneric& MAT::BeamElastHyperMaterial<T>::Params()
     const
 {
-  if (params_ == NULL) dserror("pointer to parameter class is not set!");
+  if (params_ == nullptr) dserror("pointer to parameter class is not set!");
 
   return *params_;
 }

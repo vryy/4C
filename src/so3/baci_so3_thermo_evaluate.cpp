@@ -251,9 +251,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
                 discretization,          // discr
                 mydisp,                  // current displacements
                 mytempnp,                // current temperature
-                NULL,                    // element stiffness matrix
+                nullptr,                 // element stiffness matrix
                 &elevec1,                // element internal force vector
-                NULL,                    // stresses at GP
+                nullptr,                 // stresses at GP
                 params,                  // algorithmic parameters e.g. time
                 INPAR::STR::stress_none  // stress output option
             );
@@ -263,9 +263,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
             nln_stifffint_tsi_fbar(la,   // location array
                 mydisp,                  // current displacements
                 mytempnp,                // current temperature
-                NULL,                    // element stiffness matrix
+                nullptr,                 // element stiffness matrix
                 &elevec1,                // element internal force vector
-                NULL,                    // stresses at GP
+                nullptr,                 // stresses at GP
                 params,                  // algorithmic parameters e.g. time
                 INPAR::STR::stress_none  // stress output option
             );
@@ -276,7 +276,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
         {
           // calculate the THERMOmechanical term for fint
-          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, NULL, params, INPAR::STR::stress_none);
+          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, INPAR::STR::stress_none);
         }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
       }
       break;
@@ -329,7 +329,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           CORE::LINALG::Matrix<numdofperelement_, numdofperelement_> elemat1(
               elemat1_epetra.values(), true);
 
-          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>* matptr = NULL;
+          CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>* matptr = nullptr;
           if (elemat1.IsInitialized()) matptr = &elemat1;
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
@@ -347,7 +347,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
                 mytempnp,                // current temperature
                 matptr,                  // element stiffness matrix
                 &elevec1,                // element internal force vector
-                NULL,                    // stresses at GP
+                nullptr,                 // stresses at GP
                 params,                  // algorithmic parameters e.g. time
                 INPAR::STR::stress_none  // stress output option
             );
@@ -359,7 +359,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
                 mytempnp,                // current temperature
                 matptr,                  // element stiffness matrix
                 &elevec1,                // element internal force vector
-                NULL,                    // stresses at GP
+                nullptr,                 // stresses at GP
                 params,                  // algorithmic parameters e.g. time
                 INPAR::STR::stress_none  // stress output option
             );
@@ -370,7 +370,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         else if (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
         {
           // calculate the THERMOmechanical term for fint
-          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, NULL, params, INPAR::STR::stress_none);
+          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, INPAR::STR::stress_none);
         }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
       }
 
@@ -441,7 +441,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
                 mytempnp,                // current temperature
                 &elemat1,                // element stiffness matrix
                 &elevec1,                // element internal force vector
-                NULL,                    // stresses at GP
+                nullptr,                 // stresses at GP
                 params,                  // algorithmic parameters e.g. time
                 INPAR::STR::stress_none  // stress output option
             );
@@ -453,7 +453,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
                 mytempnp,                // current temperature
                 &elemat1,                // element stiffness matrix
                 &elevec1,                // element internal force vector
-                NULL,                    // stresses at GP
+                nullptr,                 // stresses at GP
                 params,                  // algorithmic parameters e.g. time
                 INPAR::STR::stress_none  // stress output option
             );
@@ -467,7 +467,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           // build the current temperature vector
           CORE::LINALG::Matrix<nen_ * numdofpernode_, 1> etemp(&(mytempnp[1]), true);  // view only!
           // calculate the THERMOmechanical term for fint
-          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, NULL, params, INPAR::STR::stress_none);
+          lin_fint_tsi(la, mydisp, mytempnp, &elevec1, nullptr, params, INPAR::STR::stress_none);
         }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
       }
 
@@ -555,8 +555,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
                   discretization,    // discr
                   mydisp,            // current displacements
                   mytempnp,          // current temperature
-                  NULL,              // element stiffness matrix
-                  NULL,              // element internal force vector
+                  nullptr,           // element stiffness matrix
+                  nullptr,           // element internal force vector
                   &couplstress,      // stresses at GP
                   params,            // algorithmic parameters e.g. time
                   iocouplstress      // stress output option
@@ -567,8 +567,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
               nln_stifffint_tsi_fbar(la,  // location array
                   mydisp,                 // current displacements
                   mytempnp,               // current temperature
-                  NULL,                   // element stiffness matrix
-                  NULL,                   // element internal force vector
+                  nullptr,                // element stiffness matrix
+                  nullptr,                // element internal force vector
                   &couplstress,           // stresses at GP
                   params,                 // algorithmic parameters e.g. time
                   iocouplstress           // stress output option
@@ -588,7 +588,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
             // discretisation exists, i.e., --> we always have a temperature state
 
             // calculate the THERMOmechanical term for fint: temperature stresses
-            lin_fint_tsi(la, mydisp, mytempnp, NULL, &couplstress, params, iocouplstress);
+            lin_fint_tsi(la, mydisp, mytempnp, nullptr, &couplstress, params, iocouplstress);
           }  // (so3_ele::KinematicType() == INPAR::STR::kinem_linear)
 
 #ifdef TSIASOUTPUT
@@ -671,7 +671,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           // cast to nurbs discretization
           DRT::NURBS::NurbsDiscretization* nurbsdis =
               dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-          if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+          if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
           // zero-sized element
           if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return 1;
@@ -898,14 +898,14 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
 
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
         break;
       }
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
 
         // push forward of material stress to the spatial configuration
         CORE::LINALG::Matrix<nsd_, nsd_> cauchycouplstress;
@@ -928,12 +928,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_fint_tsi(
 
     // integrate internal force vector r_d
     // f = f + (B^T . sigma_temp) * detJ * w(gp)
-    if (force != NULL)
+    if (force != nullptr)
     {
       // old implementation hex8_thermo double detJ_w = detJ*gpweights[gp];
       double detJ_w = detJ * intpoints_.Weight(gp);  // gpweights[gp];
       force->MultiplyTN(detJ_w, boplin, couplstress, 1.0);
-    }  // if (force != NULL)
+    }  // if (force != nullptr)
 
     /* =========================================================================*/
   } /* ==================================================== end of Loop over GP */
@@ -1047,7 +1047,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
 
     double detJ_w = detJ * intpoints_.Weight(gp);
     // update linear coupling matrix K_dT
-    if (stiffmatrix_kdT != NULL)
+    if (stiffmatrix_kdT != nullptr)
     {
       // C_T . N_T
       CORE::LINALG::Matrix<numstr_, nen_> cn(false);
@@ -1068,7 +1068,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::lin_kdT_tsi(DRT::Element::Loca
       }
 
       // Be careful: scaling with time factor is done in tsi_monolithic!!
-    }  // (stiffmatrix_kdT != NULL)
+    }  // (stiffmatrix_kdT != nullptr)
        /* =========================================================================*/
   }    /* ==================================================== end of Loop over GP */
        /* =========================================================================*/
@@ -1136,7 +1136,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-    if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
     if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
@@ -1238,13 +1238,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     {
       case INPAR::STR::stress_2pk:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
         for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress(i);
         break;
       }
       case INPAR::STR::stress_cauchy:
       {
-        if (elestress == NULL) dserror("stress data not available");
+        if (elestress == nullptr) dserror("stress data not available");
 
         // push forward of material stress to the spatial configuration
         // sigma = 1/J . F . S_temp . F^T
@@ -1270,14 +1270,14 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // f = f + (B^T . sigma_temp) . detJ . w(gp)
     double detJ_w = detJ * intpoints_.Weight(gp);
     // update internal force vector
-    if (force != NULL)
+    if (force != nullptr)
     {
       // integrate internal force vector f = f + (B^T . sigma) . detJ . w(gp)
       force->MultiplyTN(detJ_w, bop, couplstress, 1.0);
     }
 
     // update stiffness matrix k_dd
-    if (stiffmatrix != NULL)
+    if (stiffmatrix != nullptr)
     {
       // integrate temperature-dependent `elastic' and `initial-displacement'
       // stiffness matrix
@@ -1401,7 +1401,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
-    if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
     if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;
@@ -1501,7 +1501,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
 
     double detJ_w = detJ * intpoints_.Weight(gp);
     // update linear coupling matrix K_dT
-    if (stiffmatrix_kdT != NULL)
+    if (stiffmatrix_kdT != nullptr)
     {
       // C_temp . N_temp
       CORE::LINALG::Matrix<numstr_, nen_> cn(false);
@@ -1733,13 +1733,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       {
         case INPAR::STR::stress_2pk:
         {
-          if (elestress == NULL) dserror("stress data not available");
+          if (elestress == nullptr) dserror("stress data not available");
           for (int i = 0; i < numstr_; ++i) (*elestress)(gp, i) = couplstress_bar(i);
           break;
         }
         case INPAR::STR::stress_cauchy:
         {
-          if (elestress == NULL) dserror("stress data not available");
+          if (elestress == nullptr) dserror("stress data not available");
           // push forward of material stress to the spatial configuration
           // sigma = 1/J . F . S_temp . F^T
           CORE::LINALG::Matrix<nsd_, nsd_> cauchycouplstress_bar;
@@ -1765,14 +1765,14 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
       // with detJ_bar = detJ/f_bar_factor
       double detJ_w = detJ * intpoints_.Weight(gp);
       // update internal force vector
-      if (force != NULL)
+      if (force != nullptr)
       {
         // integrate internal force vector f = f + (B^T . sigma) . detJ_bar . w(gp)
         force->MultiplyTN(detJ_w / f_bar_factor, bop, couplstress_bar, 1.0);
-      }  // (force != NULL)
+      }  // (force != nullptr)
 
       // update stiffness matrix k_dd
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
       {
         // --------------------------------------------------------------
         // integrate temperature-dependent `elastic' and `initial-displacement'
@@ -1872,7 +1872,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
           }
         }  // end of integrate additional `fbar' stiffness
 
-      }  // if (stiffmatrix != NULL), fill k_dd
+      }  // if (stiffmatrix != nullptr), fill k_dd
 
       /* =====================================================================*/
     } /* ================================================ end of Loop over GP */
@@ -2054,7 +2054,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
 
       double detJ_w = detJ * intpoints_.Weight(gp);
       // update linear coupling matrix K_dT
-      if (stiffmatrix_kdT != NULL)
+      if (stiffmatrix_kdT != nullptr)
       {
         // C_temp . N_temp
         CORE::LINALG::Matrix<numstr_, nen_> cn(false);
@@ -2073,7 +2073,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
 
           // Be careful: scaling with time factor is done in tsi_monolithic!!
         }
-      }  // (stiffmatrix_kdT != NULL)
+      }  // (stiffmatrix_kdT != nullptr)
 
       /* =====================================================================*/
     } /* ================================================ end of Loop over GP */
@@ -2211,7 +2211,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBop(
     CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
   // lump mass matrix
-  if (bop != NULL)
+  if (bop != nullptr)
   {
     /* non-linear B-operator (may so be called, meaning of B-operator is not so
     **  sharp in the non-linear realm) *
@@ -2325,7 +2325,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::CalculateBoplin(
     CORE::LINALG::Matrix<nsd_, nen_>* N_XYZ)
 {
   // lump mass matrix
-  if (boplin != NULL)
+  if (boplin != nullptr)
   {
     // linear B-operator B = N_XYZ
     // disperse global derivatives to bop-lines
@@ -2461,7 +2461,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(dis));
-    if (nurbsdis == NULL) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
+    if (nurbsdis == nullptr) dserror("So_nurbs27 appeared in non-nurbs discretisation\n");
 
     // zero-sized element
     if ((*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots, Id())) return;

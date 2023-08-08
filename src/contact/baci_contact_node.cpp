@@ -962,8 +962,8 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   //**************************************************
   //      CALC ADJACENT TANGENTS
   //**************************************************
-  CoNode* n1 = NULL;
-  CoNode* n2 = NULL;
+  CoNode* n1 = nullptr;
+  CoNode* n2 = nullptr;
 
   if (lineElementsS[dummy[0]]->Nodes()[0]->Id() != Id())
     n1 = dynamic_cast<CoNode*>(lineElementsS[dummy[0]]->Nodes()[0]);
@@ -1010,13 +1010,13 @@ void CONTACT::CoNode::BuildAveragedEdgeTangent()
   if ((int)CoData().GetDerivTangent().size() == 0) CoData().GetDerivTangent().resize(3, 2 * 100);
 
   std::vector<CORE::GEN::pairedvector<int, double>> lint(3, 100);  // added all sizes
-  if (n1 != NULL)
+  if (n1 != nullptr)
   {
     lint[0][n1->Dofs()[0]] += 1;
     lint[1][n1->Dofs()[1]] += 1;
     lint[2][n1->Dofs()[2]] += 1;
   }
-  if (n2 != NULL)
+  if (n2 != nullptr)
   {
     lint[0][n2->Dofs()[0]] -= 1;
     lint[1][n2->Dofs()[1]] -= 1;

@@ -77,15 +77,15 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       }
       else if (act == ELEMENTS::struct_calc_linstiff or act == ELEMENTS::struct_calc_nlnstiff)
       {
-        nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, NULL, &elevec1, NULL);
+        nlnstiffmass(params, myacc, myvel, mydisp, &elemat1, nullptr, &elevec1, nullptr);
       }
       else if (act == ELEMENTS::struct_calc_internalforce)
       {
-        nlnstiffmass(params, myacc, myvel, mydisp, NULL, NULL, &elevec1, NULL);
+        nlnstiffmass(params, myacc, myvel, mydisp, nullptr, nullptr, &elevec1, nullptr);
       }
       else if (act == ELEMENTS::struct_calc_internalinertiaforce)
       {
-        nlnstiffmass(params, myacc, myvel, mydisp, NULL, NULL, &elevec1, &elevec2);
+        nlnstiffmass(params, myacc, myvel, mydisp, nullptr, nullptr, &elevec1, &elevec2);
       }
     }
     break;
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::Rigidsphere::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*vel, myvel, lm);
 
       if (act == ELEMENTS::struct_calc_brownianforce)
-        CalcBrownianForcesAndStiff(params, myvel, mydisp, NULL, &elevec1);
+        CalcBrownianForcesAndStiff(params, myvel, mydisp, nullptr, &elevec1);
       else if (act == ELEMENTS::struct_calc_brownianstiff)
         CalcBrownianForcesAndStiff(params, myvel, mydisp, &elemat1, &elevec1);
       else
@@ -166,27 +166,27 @@ void DRT::ELEMENTS::Rigidsphere::nlnstiffmass(Teuchos::ParameterList& params,
     CORE::LINALG::SerialDenseVector* force, CORE::LINALG::SerialDenseVector* inertia_force)
 {
   // assemble internal force vector if requested
-  if (force != NULL)
+  if (force != nullptr)
   {
     for (int i = 0; i < 3; ++i) (*force)(i) = 0.0;
   }
 
   // assemble stiffmatrix if requested
-  if (stiffmatrix != NULL)
+  if (stiffmatrix != nullptr)
   {
     for (int i = 0; i < 3; ++i)
       for (int j = 0; j < 3; ++j) (*stiffmatrix)(i, j) = 0.0;
   }
 
   // assemble massmatrix if requested
-  if (massmatrix != NULL)
+  if (massmatrix != nullptr)
   {
     double m = rho_ * 4.0 / 3.0 * M_PI * radius_ * radius_ * radius_;
     for (int i = 0; i < 3; ++i) (*massmatrix)(i, i) = m;
   }
 
   //    //assemble inertia force vector if requested
-  //    if ( inertia_force != NULL and massmatrix != NULL )
+  //    if ( inertia_force != nullptr and massmatrix != nullptr )
   //    {
   //      for ( int i = 0; i < 3; ++i )
   //        (*inertia_force)(i) = acc[i] * (*massmatrix)(i,i);
@@ -229,14 +229,14 @@ void DRT::ELEMENTS::Rigidsphere::CalcDragForce(Teuchos::ParameterList& params,
   GetBackgroundVelocity(params, velbackground, velbackgroundgrad);
 
   // Drag force contribution
-  if (force != NULL)
+  if (force != nullptr)
     for (int i = 0; i < 3; ++i) (*force)(i) += gamma * (vel[i] - velbackground(i));
 
 
   // contribution to stiffness matrix
   // depends on TIME INTEGRATION SCHEME (so far, damping is allowed for StatMech only => Backward
   // Euler) GenAlpha would require scaling with gamma_genalpha/beta_genalpha
-  if (stiffmatrix != NULL)
+  if (stiffmatrix != nullptr)
   {
     // StatMech: Backward Euler
     for (int l = 0; l < 3; l++)
@@ -400,7 +400,7 @@ void DRT::ELEMENTS::Rigidsphere::CalcStochasticForce(
   Teuchos::RCP<Epetra_MultiVector> randomnumbers =
       ParamsInterface().GetBrownianDynParamInterface()->GetRandomForces();
 
-  if (force != NULL)
+  if (force != nullptr)
   {
     for (unsigned int k = 0; k < 3; ++k)
     {

@@ -34,7 +34,7 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
       dserror("shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
       break;
   }
-  return NULL;
+  return nullptr;
 }
 
 template <DRT::Element::DiscretizationType distype>

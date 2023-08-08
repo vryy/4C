@@ -796,7 +796,7 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
 
       // write info to error file
       if (myrank_ == 0)
-        if (errfile_ != NULL)
+        if (errfile_ != nullptr)
           fprintf(errfile_, "solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,
               itemax, ittol, preresnorm, incprenorm_L2 / prenorm_L2);
 
@@ -826,7 +826,7 @@ bool LUBRICATION::TimIntImpl::AbortNonlinIter(const int itnum, const int itemax,
       std::cout << "+---------------------------------------------------------------+" << std::endl
                 << std::endl;
 
-      if (errfile_ != NULL)
+      if (errfile_ != nullptr)
       {
         fprintf(errfile_,
             "divergent solve:   %3d/%3d  tol=%10.3E[L_2 ]  pres=%10.3E  pinc=%10.3E\n", itnum,

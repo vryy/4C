@@ -540,7 +540,7 @@ void EHL::Base::SetupUnprojectableDBC()
   {
     DRT::Node* node = mortaradapter_->Interface()->Discret().gNode(
         mortaradapter_->Interface()->SlaveRowNodes()->GID(i));
-    if (!node) dserror("gnode returned NULL");
+    if (!node) dserror("gnode returned nullptr");
     CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(node);
     if (!cnode) dserror("dynamic cast failed");
     if (cnode->CoData().Getg() > 1.e11)

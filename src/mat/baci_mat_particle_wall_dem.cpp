@@ -53,7 +53,7 @@ DRT::ParObject* MAT::ParticleWallMaterialDEMType::Create(const std::vector<char>
 /*---------------------------------------------------------------------------*
  | constructor (empty material object)                        sfuchs 08/2019 |
  *---------------------------------------------------------------------------*/
-MAT::ParticleWallMaterialDEM::ParticleWallMaterialDEM() : params_(NULL)
+MAT::ParticleWallMaterialDEM::ParticleWallMaterialDEM() : params_(nullptr)
 {
   // empty constructor
 }
@@ -81,7 +81,7 @@ void MAT::ParticleWallMaterialDEM::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -100,7 +100,7 @@ void MAT::ParticleWallMaterialDEM::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

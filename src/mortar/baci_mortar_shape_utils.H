@@ -111,7 +111,7 @@ namespace MORTAR
     template <class V>
     void EvaluateShape_Displ(const double* xi, V& val, MORTAR::MortarElement& ele, bool dualquad)
     {
-      if (!xi) dserror("EvaluateShape called with xi=NULL");
+      if (!xi) dserror("EvaluateShape called with xi=nullptr");
 
       //! ns_: number of element nodes
       int nnode = ele.NumNode();
@@ -251,7 +251,7 @@ namespace MORTAR
     void EvaluateShape_LM(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi, V& val,
         MORTAR::MortarElement& ele, const int& valdim)
     {
-      if (!xi) dserror("EvaluateShapeLagMult called with xi=NULL");
+      if (!xi) dserror("EvaluateShapeLagMult called with xi=nullptr");
 
       // dual LM shape functions or not
       bool dual = false;
@@ -423,7 +423,7 @@ namespace MORTAR
     void EvaluateShape_LM_Lin(const INPAR::MORTAR::ShapeFcn& lmtype, const double* xi, V& val,
         MORTAR::MortarElement& ele, const int& valdim)
     {
-      if (!xi) dserror("EvaluateShapeLagMultLin called with xi=NULL");
+      if (!xi) dserror("EvaluateShapeLagMultLin called with xi=nullptr");
       if (!ele.IsSlave()) dserror("EvaluateShapeLagMultLin called for master element");
 
       // check for feasible element types (line3,tri6, quad8 or quad9)

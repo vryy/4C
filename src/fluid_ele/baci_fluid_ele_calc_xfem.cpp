@@ -209,7 +209,7 @@ namespace DRT
       {
         CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
         this->ExtractValuesFromGlobalVector(
-            discretization, lm, *my::rotsymmpbc_, &edispnp, NULL, "dispnp");
+            discretization, lm, *my::rotsymmpbc_, &edispnp, nullptr, "dispnp");
 
         // get new node positions for isale
         my::xyze_ += edispnp;
@@ -917,7 +917,7 @@ namespace DRT
         DRT::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        DRT::Element* side = NULL;
+        DRT::Element* side = nullptr;
 
         // location array of element to couple with (only used for embedded fluid problems)
         DRT::Element::LocationArray coupl_la(1);
@@ -933,7 +933,7 @@ namespace DRT
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<distype>> ci;
 
         // pointer to coupling element
-        DRT::Element* coupl_ele = NULL;
+        DRT::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
         CORE::LINALG::SerialDenseMatrix coupl_xyze;
@@ -1556,7 +1556,7 @@ namespace DRT
         DRT::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        DRT::Element* side = NULL;
+        DRT::Element* side = nullptr;
 
         // coordinates of boundary element
         CORE::LINALG::SerialDenseMatrix side_xyze;
@@ -1565,7 +1565,7 @@ namespace DRT
         // only used for couplings:
 
         // pointer to coupling element
-        DRT::Element* coupl_ele = NULL;
+        DRT::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
         CORE::LINALG::SerialDenseMatrix coupl_xyze;
@@ -3354,7 +3354,7 @@ namespace DRT
         DRT::Element::LocationArray cutla(1);
 
         // pointer to boundary element
-        DRT::Element* side = NULL;
+        DRT::Element* side = nullptr;
 
         // coordinates of boundary element
         CORE::LINALG::SerialDenseMatrix side_xyze;
@@ -3367,7 +3367,7 @@ namespace DRT
         Teuchos::RCP<DRT::ELEMENTS::XFLUID::NitscheInterface<distype>> ci;
 
         // pointer to coupling element
-        DRT::Element* coupl_ele = NULL;
+        DRT::Element* coupl_ele = nullptr;
 
         // coupling element coordinates
         CORE::LINALG::SerialDenseMatrix coupl_xyze;
@@ -3479,7 +3479,7 @@ namespace DRT
                 !cond_manager->IsCoupling(coup_sid, my::eid_)))  // not level-set-WDBC case
         {
           coupl_ele = cond_manager->GetCouplingElement(coup_sid, ele);
-          if (coupl_ele == NULL)
+          if (coupl_ele == nullptr)
             dserror("Failed to obtain coupling element for global coup_sid %d", coup_sid);
           CORE::GEO::InitialPositionArray(coupl_xyze, coupl_ele);
         }

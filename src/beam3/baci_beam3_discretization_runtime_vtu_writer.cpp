@@ -96,7 +96,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
     // check for beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
-    if (beamele != NULL) local_row_indices_beam_elements_.push_back(iele);
+    if (beamele != nullptr) local_row_indices_beam_elements_.push_back(iele);
   }
 
   num_cells_per_element_.clear();
@@ -138,7 +138,8 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
     std::vector<double> beamelement_displacement_vector;
 
@@ -277,7 +278,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
     // get the displacement state vector for this element
@@ -371,7 +373,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
     // get the displacement state vector for this element
@@ -453,7 +456,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
 #ifdef DEBUG
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) owner.push_back(ele->Owner());
@@ -485,7 +489,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
 #ifdef DEBUG
     // cast to beam element
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i) gid.push_back(ele->Id());
@@ -527,7 +532,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementInternalEnergy()
 
 #ifdef DEBUG
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -563,7 +569,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementKineticEnergy()
 
 #ifdef DEBUG
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 #endif
 
     for (int i = 0; i < num_cells_per_element_[ibeamele]; ++i)
@@ -598,11 +605,13 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementFilamentIdAndType()
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
     // get filament number (note so far only one filament for each element and node)
     DRT::Condition* cond = ele->Nodes()[0]->GetCondition("BeamLineFilamentCondition");
-    if (cond == NULL) dserror(" No filament number assigned to element with gid %i .", ele->Id());
+    if (cond == nullptr)
+      dserror(" No filament number assigned to element with gid %i .", ele->Id());
 
     double current_id = cond->GetInt("FilamentId");
     double current_type =
@@ -645,7 +654,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
     // this needs to be done for all cells that make up a cut element
@@ -699,7 +709,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
     const double circular_cross_section_radius =
@@ -800,7 +811,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
     axial_strain_GPs_current_element.clear();
@@ -972,7 +984,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
     material_axial_force_GPs_current_element.clear();
@@ -1157,7 +1170,8 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStre
     const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
 
     // Todo safety check for now, may be removed when better tested
-    if (beamele == NULL) dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
+    if (beamele == nullptr)
+      dserror("BeamDiscretizationRuntimeVtuWriter expects a beam element here!");
 
 
     spatial_axial_force_GPs_current_element.clear();
@@ -1527,7 +1541,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementElasticEnergy()
   //    DRT::ELEMENTS::Beam3Base*>(ele);
   //
   //    // Todo for now, simply skip all other elements
-  //    if ( beamele == NULL )
+  //    if ( beamele == nullptr )
   //      continue;
   //
   //

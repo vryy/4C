@@ -665,7 +665,7 @@ void STR::MODELEVALUATOR::Contact::OutputStepState(IO::DiscretizationWriter& iow
     std::cout << "resultnor= " << resultnor[0] << std::endl;
     std::cout << "resulttan= " << resulttan[0] << std::endl;
 
-    FILE* MyFile = NULL;
+    FILE* MyFile = nullptr;
     std::ostringstream filename;
     const std::string filebase =
         DRT::Problem::Instance()->OutputControlFile()->FileNameOnlyPrefix();
@@ -1053,5 +1053,5 @@ void STR::MODELEVALUATOR::Contact::RemoveCondensedContributionsFromRhs(Epetra_Ve
   EvalContact().SetActionType(MORTAR::remove_condensed_contributions_from_str_rhs);
 
   std::vector<Teuchos::RCP<Epetra_Vector>> mutable_vec(1, Teuchos::rcpFromRef(rhs));
-  Strategy().Evaluate(EvalContact(), NULL, &mutable_vec);
+  Strategy().Evaluate(EvalContact(), nullptr, &mutable_vec);
 }

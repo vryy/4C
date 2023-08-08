@@ -37,7 +37,7 @@ NOX::NLN::StatusTest::NormF::NormF(const std::vector<NOX::NLN::StatusTest::Quant
       trueTolerance_(tolerance),
       normF_(Teuchos::null)
 {
-  if (u != NULL) utils_ = *u;
+  if (u != nullptr) utils_ = *u;
 }
 
 /*----------------------------------------------------------------------------*

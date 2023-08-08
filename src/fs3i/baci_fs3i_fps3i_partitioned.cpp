@@ -173,7 +173,7 @@ void FS3I::PartFPS3I::Init()
     {
       DRT::ELEMENTS::Transport* element =
           dynamic_cast<DRT::ELEMENTS::Transport*>(fluidscatradis->lColElement(i));
-      if (element == NULL)
+      if (element == nullptr)
         dserror("Invalid element type!");
       else
         element->SetImplType(impltype_fluid);

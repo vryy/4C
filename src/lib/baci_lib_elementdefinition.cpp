@@ -203,5 +203,5 @@ DRT::INPUT::LineDefinition* DRT::INPUT::ElementDefinition::ElementLines(
       return &i->second;
     }
   }
-  return NULL;
+  return nullptr;
 }

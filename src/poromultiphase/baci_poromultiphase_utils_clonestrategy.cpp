@@ -57,7 +57,7 @@ void POROMULTIPHASE::UTILS::PoroFluidMultiPhaseCloneStrategy::SetElementData(
   // note: SetMaterial() was reimplemented by the PoroFluidMultiPhase element!
   DRT::ELEMENTS::PoroFluidMultiPhase* porofluidele =
       dynamic_cast<DRT::ELEMENTS::PoroFluidMultiPhase*>(newele.get());
-  if (porofluidele != NULL)
+  if (porofluidele != nullptr)
   {
     porofluidele->SetMaterial(matid);
     porofluidele->SetDisType(oldele->Shape());  // set distype as well!

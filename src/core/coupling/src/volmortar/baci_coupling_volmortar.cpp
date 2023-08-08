@@ -67,12 +67,12 @@ CORE::VOLMORTAR::VolMortarCoupl::VolMortarCoupl(int dim,  // problem dimension
   myrank_ = comm_->MyPID();
 
   // define dof sets
-  if (dofset21 == NULL)
+  if (dofset21 == nullptr)
     dofset21_ = std::pair<int, int>(1, 0);
   else
     dofset21_ = *dofset21;
 
-  if (dofset12 == NULL)
+  if (dofset12 == nullptr)
     dofset12_ = std::pair<int, int>(1, 0);
   else
     dofset12_ = *dofset12;
@@ -132,7 +132,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::BuildMaps(Teuchos::RCP<::DRT::Discretizati
   std::vector<int> dofmapvec;
   std::map<int, std::vector<int>> dofs;
 
-  const bool couplalldofs = (coupleddof == NULL);
+  const bool couplalldofs = (coupleddof == nullptr);
 
   unsigned numcoupleddofs = 0;
   if (not couplalldofs)
@@ -1639,7 +1639,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
     CORE::GEO::CUT::ElementHandle* em = wizard->GetElement(mele);
 
     // is mele in cut involved?
-    if (em != NULL)
+    if (em != nullptr)
     {
       em->CollectVolumeCells(mcells_in, mcells_out);
 
@@ -1702,7 +1702,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::PerformCut(
 
     // for safety
     volcell_.clear();
-    if (em != NULL)
+    if (em != nullptr)
     {
       em->CollectVolumeCells(volcell_, mcells_out);
 
@@ -3017,7 +3017,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::Integrate3DCell_DirectDivergence(
   for (CORE::GEO::CUT::plain_volumecell_set::iterator i = volcell_.begin(); i != volcell_.end();
        i++)
   {
-    if (*i == NULL) continue;
+    if (*i == nullptr) continue;
 
     CORE::GEO::CUT::VolumeCell* vc = *i;
 
@@ -3740,7 +3740,7 @@ void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesSlave(
 
     // store into vertex data structure
     SlaveVertices.push_back(MORTAR::Vertex(
-        vertices, MORTAR::Vertex::slave, snodeids, NULL, NULL, false, false, NULL, -1.0));
+        vertices, MORTAR::Vertex::slave, snodeids, nullptr, nullptr, false, false, nullptr, -1.0));
   }
   return;
 }
@@ -3769,8 +3769,8 @@ void CORE::VOLMORTAR::VolMortarCoupl::DefineVerticesMaster(
     snodeids[0] = mynodes[i]->Id();
 
     // store into vertex data structure
-    SlaveVertices.push_back(MORTAR::Vertex(
-        vertices, MORTAR::Vertex::projmaster, snodeids, NULL, NULL, false, false, NULL, -1.0));
+    SlaveVertices.push_back(MORTAR::Vertex(vertices, MORTAR::Vertex::projmaster, snodeids, nullptr,
+        nullptr, false, false, nullptr, -1.0));
   }
   return;
 }
@@ -4056,7 +4056,7 @@ bool CORE::VOLMORTAR::VolMortarCoupl::PolygonClippingConvexHull(std::vector<MORT
 
           // store intersection points
           intersec.push_back(MORTAR::Vertex(ip, MORTAR::Vertex::lineclip, lcids, poly1[i].Next(),
-              &poly1[i], true, false, NULL, alphap));
+              &poly1[i], true, false, nullptr, alphap));
         }
       }
     }

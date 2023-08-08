@@ -192,7 +192,7 @@ DRT::ParObject* MAT::FluidPoroMultiPhaseType::Create(const std::vector<char>& da
 /*----------------------------------------------------------------------*
  | construct empty material object                          vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroMultiPhase::FluidPoroMultiPhase() : MatList(), paramsporo_(NULL) {}
+MAT::FluidPoroMultiPhase::FluidPoroMultiPhase() : MatList(), paramsporo_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  | construct the material object given material parameter   vuong 08/16 |
@@ -207,7 +207,7 @@ MAT::FluidPoroMultiPhase::FluidPoroMultiPhase(MAT::PAR::FluidPoroMultiPhase* par
  *----------------------------------------------------------------------*/
 void MAT::FluidPoroMultiPhase::Clear()
 {
-  paramsporo_ = NULL;
+  paramsporo_ = nullptr;
   return;
 }
 
@@ -218,7 +218,7 @@ void MAT::FluidPoroMultiPhase::Initialize()
 {
   std::map<int, Teuchos::RCP<MAT::Material>>* materials;
 
-  if (Parameter() != NULL)  // params is null pointer in post-process mode
+  if (Parameter() != nullptr)  // params is null pointer in post-process mode
   {
     if (Parameter()->local_)
       materials = MaterialMapWrite();
@@ -252,7 +252,7 @@ void MAT::FluidPoroMultiPhase::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (paramsporo_ != NULL) matid = paramsporo_->Id();  // in case we are in post-process mode
+  if (paramsporo_ != nullptr) matid = paramsporo_->Id();  // in case we are in post-process mode
 
   AddtoPack(data, matid);
 
@@ -277,7 +277,7 @@ void MAT::FluidPoroMultiPhase::Unpack(const std::vector<char>& data)
   // matid and recover paramsporo_
   int matid(-1);
   ExtractfromPack(position, data, matid);
-  paramsporo_ = NULL;
+  paramsporo_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

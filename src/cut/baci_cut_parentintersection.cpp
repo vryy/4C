@@ -75,7 +75,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
         // get its elementhandle
         CORE::GEO::CUT::ElementHandle* e = GetElement(adj_eid);
 
-        if (e != NULL)
+        if (e != nullptr)
         {
           sourrounding_elements.push_back(adj_eid);
         }
@@ -166,7 +166,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     // get the element via discret
     ::DRT::Element* e = dis.gElement(eid);
 
-    if (e == NULL) dserror(" element not found, this should not be! ");
+    if (e == nullptr) dserror(" element not found, this should not be! ");
 
     // get the nodes of this element
     int numnode = e->NumNode();
@@ -177,7 +177,7 @@ void CORE::GEO::CUT::ParentIntersection::CreateNodalDofSet(
     {
       Node* node = GetNode(nids[i]);
 
-      if (node == NULL) dserror("node not found!");
+      if (node == nullptr) dserror("node not found!");
 
       nodes[i] = node;
     }
@@ -229,7 +229,7 @@ void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
     int eid = ele->Id();
     CORE::GEO::CUT::ElementHandle* e = GetElement(eid);
 
-    if (e != NULL)
+    if (e != nullptr)
     {
       if (include_inner)
       {
@@ -253,7 +253,7 @@ void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
             // first vc in set
             VolumeCell* cell = *(ele_vc_sets_inside[set_index].begin());
 
-            if (cell == NULL) dserror("pointer to first Volumecell of set is NULL!");
+            if (cell == nullptr) dserror("pointer to first Volumecell of set is nullptr!");
 
             CreateParallelDofSetDataVC(parallel_dofSetData, eid, set_index, true, cell, *set_it);
           }
@@ -284,7 +284,7 @@ void CORE::GEO::CUT::ParentIntersection::FillParallelDofSetData(
             // first vc in set
             VolumeCell* cell = *(ele_vc_sets_outside[set_index].begin());
 
-            if (cell == NULL) dserror("pointer to first Volumecell of set is NULL!");
+            if (cell == nullptr) dserror("pointer to first Volumecell of set is nullptr!");
 
             CreateParallelDofSetDataVC(parallel_dofSetData, eid, set_index, false, cell, *set_it);
           }
@@ -782,7 +782,7 @@ void CORE::GEO::CUT::ParentIntersection::DumpGmshNumDOFSets(
 
     ElementHandle* eh = GetElement(eid);
 
-    if (eh != NULL)
+    if (eh != nullptr)
     {
       // get inside and outside cell_sets connected within current element
       const std::vector<plain_volumecell_set>& ele_vc_sets_inside = eh->GetVcSetsInside();

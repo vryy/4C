@@ -273,19 +273,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -317,7 +317,7 @@ namespace DRT
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -675,19 +675,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -719,7 +719,7 @@ namespace DRT
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1078,19 +1078,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -1122,7 +1122,7 @@ namespace DRT
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1454,19 +1454,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -1498,7 +1498,7 @@ namespace DRT
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -1837,19 +1837,19 @@ namespace DRT
 
       \param params (in/out): ParameterList for communication between control routine
                               and elements
-      \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat1 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
+      \param elemat2 (out)  : matrix to be filled by element. If nullptr on input,
                               the controling method does not epxect the element to fill
                               this matrix.
-      \param elevec1 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec1 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec2 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec2 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
-      \param elevec3 (out)  : vector to be filled by element. If NULL on input,
+      \param elevec3 (out)  : vector to be filled by element. If nullptr on input,
                               the controlling method does not epxect the element
                               to fill this vector
       \return 0 if successful, negative otherwise
@@ -1881,7 +1881,7 @@ namespace DRT
       virtual int EvaluateNeumann(Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = NULL);
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr);
 
       /*!
       \brief Evaluate a Neumann boundary condition

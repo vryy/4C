@@ -92,7 +92,7 @@ bool NOX::FSI::SDRelaxation::compute(NOX::Abstract::Group& newgrp, double& step,
   {
     static int count;
     static std::ofstream* out;
-    if (out == NULL)
+    if (out == nullptr)
     {
       std::string s = DRT::Problem::Instance()->OutputControlFile()->FileName();
       s.append(".omega");

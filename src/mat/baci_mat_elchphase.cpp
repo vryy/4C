@@ -61,7 +61,7 @@ DRT::ParObject* MAT::ElchPhaseType::Create(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-MAT::ElchPhase::ElchPhase() : params_(NULL) {}
+MAT::ElchPhase::ElchPhase() : params_(nullptr) {}
 
 
 /*----------------------------------------------------------------------*/
@@ -103,7 +103,7 @@ void MAT::ElchPhase::SetupMatMap()
 /*----------------------------------------------------------------------*/
 void MAT::ElchPhase::Clear()
 {
-  params_ = NULL;
+  params_ = nullptr;
   mat_.clear();
   return;
 }
@@ -122,13 +122,13 @@ void MAT::ElchPhase::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 
   if (params_->local_)
   {
     // loop map of associated local materials
-    if (params_ != NULL)
+    if (params_ != nullptr)
     {
       // std::map<int, Teuchos::RCP<MAT::Material> >::const_iterator m;
       std::vector<int>::const_iterator n;
@@ -154,7 +154,7 @@ void MAT::ElchPhase::Unpack(const std::vector<char>& data)
   // matid and recover params_
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -168,7 +168,7 @@ void MAT::ElchPhase::Unpack(const std::vector<char>& data)
             MaterialType());
     }
 
-  if (params_ != NULL)  // params_ are not accessible in postprocessing mode
+  if (params_ != nullptr)  // params_ are not accessible in postprocessing mode
   {
     std::vector<int>::const_iterator n;
     for (n = params_->MatIds().begin(); n != params_->MatIds().end(); n++)
@@ -193,5 +193,5 @@ void MAT::ElchPhase::Unpack(const std::vector<char>& data)
     // -> position check cannot be done in this case
     if (position != data.size())
       dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-  }  // if (params_ != NULL)
+  }  // if (params_ != nullptr)
 }

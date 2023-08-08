@@ -838,7 +838,7 @@ namespace CONTACT
       //! Return the desired matrix block pointer
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
           const enum DRT::UTILS::MatBlockType& bt,
-          const CONTACT::ParamsInterface* cparams = NULL) const override;
+          const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
       //! Return the condensed matrix block pointer (currently unsupported!)
       Teuchos::RCP<CORE::LINALG::SparseMatrix> GetCondensedMatrixBlockPtr(
@@ -929,7 +929,7 @@ namespace CONTACT
        *  part as well as into its active and inactive normal Lagrange multiplier
        *  parts
        *
-       *  \note If NULL pointers are used as input arguments, the pointers are
+       *  \note If nullptr pointers are used as input arguments, the pointers are
        *  initialized automatically with the correct maps.
        *
        *  \author hiermeier \date 08/17 */
@@ -1111,7 +1111,7 @@ namespace CONTACT
 
        private:
         /// constructor
-        FD_Debug() : strat_(NULL), delta_(0.0), is_fd_check_(false)
+        FD_Debug() : strat_(nullptr), delta_(0.0), is_fd_check_(false)
         { /*empty*/
         }
 
@@ -1284,7 +1284,7 @@ namespace CONTACT
        *
        *  \author hiermeier \date 03/17 */
       virtual void AddContributionsToMatrixBlockDisplDispl(
-          CORE::LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams = NULL) const;
+          CORE::LINALG::SparseMatrix& kdd, const CONTACT::ParamsInterface* cparams = nullptr) const;
 
       /** \brief All contributions to the final system matrix block:
        *  ROW => Displacement, COLUMN => Lagrange Multiplier

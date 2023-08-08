@@ -130,7 +130,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
     // -----------------------------------------------------------------
-    if (CoupledTo3DParams.get() == NULL)
+    if (CoupledTo3DParams.get() == nullptr)
     {
       dserror(
           "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed "
@@ -434,7 +434,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(Teuchos::RCP<DRT::Discretization> act
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
     // -----------------------------------------------------------------
-    if (CoupledTo3DParams.get() == NULL)
+    if (CoupledTo3DParams.get() == nullptr)
     {
       dserror(
           "Cannot prescribe a boundary condition from 3D to reduced D, if the parameters passed "

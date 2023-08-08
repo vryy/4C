@@ -25,7 +25,7 @@ CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::LevelSetIntersection::LevelSetIntersection(int myrank, bool create_side)
-    : ParentIntersection(myrank), side_(Teuchos::null), comm_(NULL)
+    : ParentIntersection(myrank), side_(Teuchos::null), comm_(nullptr)
 {
   if (create_side) AddCutSide(1);
 }
@@ -80,7 +80,7 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::LevelSetIntersection::AddElement(
     return mesh_.CreateElement(eid, nids, distype);
   }
 
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*

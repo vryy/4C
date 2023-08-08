@@ -31,7 +31,7 @@ NOX::NLN::LineSearch::Backtrack::Backtrack(const Teuchos::RCP<NOX::GlobalData>& 
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
     Teuchos::ParameterList& params)
     : lsIters_(0),
-      stepPtr_(NULL),
+      stepPtr_(nullptr),
       defaultStep_(0.0),
       reductionFactor_(0.0),
       checkType_(NOX::StatusTest::Complete),
@@ -268,7 +268,7 @@ const NOX::Abstract::Vector& NOX::NLN::LineSearch::Backtrack::GetSearchDirection
  *----------------------------------------------------------------------*/
 const double& NOX::NLN::LineSearch::Backtrack::GetStepLength() const
 {
-  if (stepPtr_ == NULL) throwError("GetStepLength", "Step pointer is NULL!");
+  if (stepPtr_ == nullptr) throwError("GetStepLength", "Step pointer is nullptr!");
 
   return *stepPtr_;
 }
@@ -277,7 +277,7 @@ const double& NOX::NLN::LineSearch::Backtrack::GetStepLength() const
  *----------------------------------------------------------------------*/
 void NOX::NLN::LineSearch::Backtrack::SetStepLength(double step)
 {
-  if (stepPtr_ == NULL) throwError("GetMutableStepLength", "Step pointer is NULL!");
+  if (stepPtr_ == nullptr) throwError("GetMutableStepLength", "Step pointer is nullptr!");
 
   *stepPtr_ = step;
 }

@@ -78,15 +78,15 @@ CORE::GEO::CUT::Point* CORE::GEO::CUT::Point::InsertCut(Edge* cut_edge, Side* cu
     Edge* e = *i;
     p->AddEdge(e);
   }
-  if (cut_edge != NULL) p->AddEdge(cut_edge);
-  if (cut_side != NULL) p->AddSide(cut_side);
+  if (cut_edge != nullptr) p->AddEdge(cut_edge);
+  if (cut_side != nullptr) p->AddSide(cut_side);
 
-  if ((cut_side != NULL) && (cut_edge != NULL)) p->AddPair(cut_side, cut_edge);
+  if ((cut_side != nullptr) && (cut_edge != nullptr)) p->AddPair(cut_side, cut_edge);
   p->Position(Point::oncutsurface);
 
 #if CUT_CREATION_INFO
   std::pair<Side*, Edge*> cut_pair = std::make_pair(cut_side, cut_edge);
-  p->AddMergedPair(cut_pair, NULL);
+  p->AddMergedPair(cut_pair, nullptr);
 #endif
 
   return p;
@@ -100,7 +100,7 @@ CORE::GEO::CUT::Point::Point(unsigned pid, double tolerance)
       tol_(tolerance)
 #if CUT_CREATION_INFO
       ,
-      merged_to_(NULL)
+      merged_to_(nullptr)
 #endif
 {
   /* intentionally left blank */
@@ -197,13 +197,13 @@ void CORE::GEO::CUT::Point::CutEdge(Side* side, Line* other_line, std::vector<Ed
 CORE::GEO::CUT::Line* CORE::GEO::CUT::Point::CutLine(
     const IMPL::PointLineFilter& filter, bool unique)
 {
-  Line* line_found = NULL;
+  Line* line_found = nullptr;
   for (plain_line_set::iterator i = lines_.begin(); i != lines_.end(); ++i)
   {
     Line* line = *i;
     if (filter(line))
     {
-      if (line_found == NULL)
+      if (line_found == nullptr)
       {
         line_found = line;
         if (not unique)
@@ -338,7 +338,7 @@ double CORE::GEO::CUT::Point::t(Edge* edge, const CORE::LINALG::Matrix<3, 1>& co
       ;
       CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, edge, std::string("Edge"));
       CORE::GEO::CUT::OUTPUT::GmshPointDump(
-          file, this, this->Id(), std::string("Point"), false, NULL);
+          file, this, this->Id(), std::string("Point"), false, nullptr);
       file.close();
 
       std::stringstream str;
@@ -513,7 +513,7 @@ CORE::GEO::CUT::Node* CORE::GEO::CUT::Point::CutNode()
       }
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*
@@ -571,13 +571,13 @@ bool CORE::GEO::CUT::Point::HasAssociatedBoundaryCellFacet()
  *----------------------------------------------------------------------------*/
 CORE::GEO::CUT::Side* CORE::GEO::CUT::Point::CutSide(Side* side, Point* other)
 {
-  Side* found_side = NULL;
+  Side* found_side = nullptr;
   for (plain_side_set::iterator i = cut_sides_.begin(); i != cut_sides_.end(); ++i)
   {
     Side* s = *i;
     if (s != side and other->IsCut(s))
     {
-      if (found_side == NULL)
+      if (found_side == nullptr)
       {
         found_side = s;
       }
@@ -695,7 +695,7 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
   file << "// This point coordinates" << std::endl;
   std::stringstream point_name;
   point_name << "Point" << Id();
-  CORE::GEO::CUT::OUTPUT::GmshPointDump(file, this, Id(), point_name.str(), false, NULL);
+  CORE::GEO::CUT::OUTPUT::GmshPointDump(file, this, Id(), point_name.str(), false, nullptr);
 
   if (merged_to_)
   {
@@ -719,7 +719,7 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
           if (p_next != this) prefix << "->";
           p_from = p_next;
           p_next = p_next->merged_to_;
-        } while (p_next != NULL);
+        } while (p_next != nullptr);
 
 
         prefix << "_";
@@ -743,13 +743,13 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
         std::stringstream side_section_name;
         side_section_name << "OriginalSide" << pre << counter;
         CORE::GEO::CUT::OUTPUT::GmshNewSection(file, side_section_name.str());
-        CORE::GEO::CUT::OUTPUT::GmshSideDump(file, original_connection.first, false, NULL);
+        CORE::GEO::CUT::OUTPUT::GmshSideDump(file, original_connection.first, false, nullptr);
         CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
 
         std::stringstream edge_section_name;
         edge_section_name << "OriginalEdge" << pre << counter;
         CORE::GEO::CUT::OUTPUT::GmshNewSection(file, edge_section_name.str());
-        CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, original_connection.second, false, NULL);
+        CORE::GEO::CUT::OUTPUT::GmshEdgeDump(file, original_connection.second, false, nullptr);
         CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
         or_cut = original_connection;
         file << "// " << GetCreationInfo(or_cut) << "\n";
@@ -777,7 +777,7 @@ void CORE::GEO::CUT::Point::DumpConnectivityInfo()
           file << "// original point coordinates from real intersection \n";
           file << "View \"MergedPoint" << Id() << "_" << counter << "\"{\n";
           file << "SP (";
-          CORE::GEO::CUT::OUTPUT::GmshWriteCoords(file, merged_coord.first, false, NULL);
+          CORE::GEO::CUT::OUTPUT::GmshWriteCoords(file, merged_coord.first, false, nullptr);
           file << "){";
           file << 0;
           CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
@@ -889,7 +889,7 @@ void CORE::GEO::CUT::Point::Replace(Point* p)
     Point* other = existing_line->OtherPoint(this);
     Line* replace_line = other->CommonLine(p);
     // no such line exist, modify current to include new endpoint
-    if (replace_line == NULL)
+    if (replace_line == nullptr)
     {
       existing_line->Replace(this, p);
       ++it;
@@ -1042,7 +1042,7 @@ CORE::GEO::CUT::Edge* CORE::GEO::CUT::Point::CommonCutEdge(Side* side)
       return e;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 /*----------------------------------------------------------------------------*

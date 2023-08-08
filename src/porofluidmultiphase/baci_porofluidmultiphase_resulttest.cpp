@@ -144,7 +144,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
   {
     // read species ID
     std::string k_string = quantity.substr(3);
-    char* locator(NULL);
+    char* locator(nullptr);
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
     if (locator == k_string.c_str()) dserror("Couldn't read species ID!");
 
@@ -164,7 +164,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
   {
     // read species ID
     std::string k_string = quantity.substr(8);
-    char* locator(NULL);
+    char* locator(nullptr);
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
     if (locator == k_string.c_str()) dserror("Couldn't read pressure ID!");
 
@@ -185,7 +185,7 @@ double POROFLUIDMULTIPHASE::ResultTest::ResultNode(
   {
     // read species ID
     std::string k_string = quantity.substr(10);
-    char* locator(NULL);
+    char* locator(nullptr);
     int k = strtol(k_string.c_str(), &locator, 10) - 1;
     if (locator == k_string.c_str()) dserror("Couldn't read saturation ID!");
 

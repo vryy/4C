@@ -893,14 +893,14 @@ void CORE::GEO::CUT::SelfCut::DetermineSelfCutPosition()
     {
       Side* selfcutside = *i;
       const std::vector<Node*>& selfcutsidenodes = selfcutside->Nodes();
-      Node* undecidednode = NULL;
-      Node* onselfcutedgenode = NULL;
+      Node* undecidednode = nullptr;
+      Node* onselfcutedgenode = nullptr;
       for (std::vector<Node*>::const_iterator i = selfcutsidenodes.begin();
            i != selfcutsidenodes.end(); ++i)
       {
         Node* selfcutsidenode = *i;
         if ((selfcutsidenode->SelfCutPosition() == Point::oncutsurface) &&
-            (onselfcutedgenode == NULL))
+            (onselfcutedgenode == nullptr))
         {
           onselfcutedgenode = selfcutsidenode;
         }
@@ -909,7 +909,7 @@ void CORE::GEO::CUT::SelfCut::DetermineSelfCutPosition()
           undecidednode = selfcutsidenode;
         }
       }
-      Side* otherselfcutside = NULL;
+      Side* otherselfcutside = nullptr;
       for (plain_side_set::iterator i = cutsides.begin(); i != cutsides.end(); ++i)
       {
         Side* anotherselfcutside = *i;
@@ -931,7 +931,7 @@ void CORE::GEO::CUT::SelfCut::DetermineSelfCutPosition()
           }
         }
       }
-      if (otherselfcutside == NULL or undecidednode == NULL)
+      if (otherselfcutside == nullptr or undecidednode == nullptr)
       {
         continue;
       }
@@ -1058,7 +1058,7 @@ void CORE::GEO::CUT::SelfCut::PropagateSelfCutPosition()
         {
           Edge* undecidedcutsideedge = *i;
           const plain_side_set& undecidedcutsideedgesides = undecidedcutsideedge->Sides();
-          Side* siblingside = NULL;
+          Side* siblingside = nullptr;
           for (plain_side_set::const_iterator i = undecidedcutsideedgesides.begin();
                i != undecidedcutsideedgesides.end(); ++i)
           {
@@ -1071,7 +1071,7 @@ void CORE::GEO::CUT::SelfCut::PropagateSelfCutPosition()
               break;
             }
           }
-          if (siblingside != NULL)
+          if (siblingside != nullptr)
           {
             Point::PointPosition siblingsideposition = siblingside->SelfCutPosition();
             switch (siblingsideposition)
@@ -1996,7 +1996,7 @@ void CORE::GEO::CUT::SelfCut::WallGmsh(const std::string& name)
     for (std::vector<Point*>::iterator i = selfcuttriangle.begin(); i != selfcuttriangle.end(); ++i)
     {
       Point* elementfacetpoint1 = *i;
-      Point* elementfacetpoint2 = NULL;
+      Point* elementfacetpoint2 = nullptr;
       if (i + 1 != selfcuttriangle.end())
       {
         elementfacetpoint2 = *(i + 1);
@@ -2682,7 +2682,7 @@ void CORE::GEO::CUT::SelfCut::SCmgmGmsh(const std::string& name)
     for (std::vector<Point*>::iterator i = selfcuttriangle.begin(); i != selfcuttriangle.end(); ++i)
     {
       Point* elementfacetpoint1 = *i;
-      Point* elementfacetpoint2 = NULL;
+      Point* elementfacetpoint2 = nullptr;
       if (i + 1 != selfcuttriangle.end())
       {
         elementfacetpoint2 = *(i + 1);
@@ -3092,7 +3092,7 @@ void CORE::GEO::CUT::SelfCut::ErrorGmsh(const std::string& name, Side& cutside)
     for (std::vector<Point*>::iterator i = selfcuttriangle.begin(); i != selfcuttriangle.end(); ++i)
     {
       Point* elementfacetpoint1 = *i;
-      Point* elementfacetpoint2 = NULL;
+      Point* elementfacetpoint2 = nullptr;
       if (i + 1 != selfcuttriangle.end())
       {
         elementfacetpoint2 = *(i + 1);
@@ -3136,7 +3136,7 @@ void CORE::GEO::CUT::SelfCut::PerformSelfCut(
   {
     Edge* cutsideedge = *i;
     PointSet sidepairselfcutpoints;
-    cutsideedge->FindCutPointsMeshCut(mesh_, NULL, cutside, otherside, &sidepairselfcutpoints);
+    cutsideedge->FindCutPointsMeshCut(mesh_, nullptr, cutside, otherside, &sidepairselfcutpoints);
     for (PointSet::iterator i = sidepairselfcutpoints.begin(); i != sidepairselfcutpoints.end();
          ++i)
     {

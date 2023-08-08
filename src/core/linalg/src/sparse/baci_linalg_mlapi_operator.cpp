@@ -71,7 +71,7 @@ void CORE::LINALG::AMG_Operator::SetupNonSymStab()
   //------------------------------------------------- get some parameters
   int maxlevels = Params().get<int>("max levels", 10);
   int maxcoarsesize = Params().get<int>("coarse: max size", 1);
-  double* nullspace = Params().get<double*>("null space: vectors", (double*)NULL);
+  double* nullspace = Params().get<double*>("null space: vectors", (double*)nullptr);
   if (!nullspace) dserror("No nullspace supplied in parameter list");
   int nsdim = Params().get<int>("null space: dimension", 1);
   double damping = Params().get<double>("aggregation: damping factor", 1.33);

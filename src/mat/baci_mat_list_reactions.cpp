@@ -69,7 +69,7 @@ DRT::ParObject* MAT::MatListReactionsType::Create(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  | construct empty material object                           thon 11/14 |
  *----------------------------------------------------------------------*/
-MAT::MatListReactions::MatListReactions() : MatList(), paramsreac_(NULL) {}
+MAT::MatListReactions::MatListReactions() : MatList(), paramsreac_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  | construct the material object given material parameter    thon 11/14 |
@@ -89,7 +89,7 @@ MAT::MatListReactions::MatListReactions(MAT::PAR::MatListReactions* params)
  *----------------------------------------------------------------------*/
 void MAT::MatListReactions::Initialize()
 {
-  if (paramsreac_ != NULL)
+  if (paramsreac_ != nullptr)
   {
     std::vector<int>::const_iterator m;
     for (m = paramsreac_->ReacIds()->begin(); m != paramsreac_->ReacIds()->end(); ++m)
@@ -130,7 +130,7 @@ void MAT::MatListReactions::SetupMatMap()
  *----------------------------------------------------------------------*/
 void MAT::MatListReactions::Clear()
 {
-  paramsreac_ = NULL;
+  paramsreac_ = nullptr;
   return;
 }
 
@@ -148,14 +148,14 @@ void MAT::MatListReactions::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (paramsreac_ != NULL) matid = paramsreac_->Id();  // in case we are in post-process mode
+  if (paramsreac_ != nullptr) matid = paramsreac_->Id();  // in case we are in post-process mode
 
   AddtoPack(data, matid);
 
   // Pack base class material
   MAT::MatList::Pack(data);
 
-  if (paramsreac_ != NULL)
+  if (paramsreac_ != nullptr)
   {
     if (paramsreac_->local_)
     {
@@ -185,7 +185,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
   // matid and recover paramsreac_
   int matid(-1);
   ExtractfromPack(position, data, matid);
-  paramsreac_ = NULL;
+  paramsreac_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -208,7 +208,7 @@ void MAT::MatListReactions::Unpack(const std::vector<char>& data)
   MAT::MatList::ExtractfromPack(position, data, basedata);
   MAT::MatList::Unpack(basedata);
 
-  if (paramsreac_ != NULL)  // paramsreac_ are not accessible in postprocessing mode
+  if (paramsreac_ != nullptr)  // paramsreac_ are not accessible in postprocessing mode
   {
     // make sure the referenced materials in material list have quick access parameters
     std::vector<int>::const_iterator m;

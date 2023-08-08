@@ -261,7 +261,7 @@ FAD DRT::ELEMENTS::DiscSh3Line::GetEdgeLengthPrevTimeStep()
   // 2 nodes, 3 dimensions
   DRT::Element* pele = this->ParentMasterElement();  // Master element
 
-  if (pele == NULL) dserror("pele is NULL");
+  if (pele == nullptr) dserror("pele is nullptr");
 
   DRT::ELEMENTS::DiscSh3* master_ele = dynamic_cast<DRT::ELEMENTS::DiscSh3*>(pele);
 

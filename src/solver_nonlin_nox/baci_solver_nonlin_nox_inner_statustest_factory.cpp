@@ -297,7 +297,7 @@ bool NOX::NLN::INNER::StatusTest::Factory::CheckAndTagTest(const Teuchos::Parame
     const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& test,
     std::map<std::string, Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>>* tagged_tests) const
 {
-  if ((Teuchos::isParameterType<std::string>(p, "Tag")) && (tagged_tests != NULL))
+  if ((Teuchos::isParameterType<std::string>(p, "Tag")) && (tagged_tests != nullptr))
   {
     (*tagged_tests)[Teuchos::getParameter<std::string>(p, "Tag")] = test;
     return true;

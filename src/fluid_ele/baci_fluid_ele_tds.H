@@ -28,7 +28,7 @@ namespace FLD
     static TDSEleDataType& Instance() { return instance_; };
 
     /// Create ParObject from packed data
-    virtual DRT::ParObject* Create(const std::vector<char>& data) { return NULL; }
+    virtual DRT::ParObject* Create(const std::vector<char>& data) { return nullptr; }
 
     /// internal name of this ParObjectType.
     virtual std::string Name() const { return "TDSEleData"; }
@@ -82,8 +82,8 @@ namespace FLD
     /*!
     \brief Memory allocation for subgrid-scale arrays
     */
-    void ActivateTDS(
-        int nquad, int nsd, double** saccn = NULL, double** sveln = NULL, double** svelnp = NULL);
+    void ActivateTDS(int nquad, int nsd, double** saccn = nullptr, double** sveln = nullptr,
+        double** svelnp = nullptr);
 
 
     /*!

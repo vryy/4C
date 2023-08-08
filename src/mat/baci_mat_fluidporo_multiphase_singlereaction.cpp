@@ -366,7 +366,7 @@ DRT::ParObject* MAT::FluidPoroSingleReactionType::Create(const std::vector<char>
 /*----------------------------------------------------------------------*
  *   Create empty material                                  vuong 08/16 |
  *----------------------------------------------------------------------*/
-MAT::FluidPoroSingleReaction::FluidPoroSingleReaction() : params_(NULL) {}
+MAT::FluidPoroSingleReaction::FluidPoroSingleReaction() : params_(nullptr) {}
 
 /*----------------------------------------------------------------------*
  *   Create material with parameters                         vuong 08/16 |
@@ -390,7 +390,7 @@ void MAT::FluidPoroSingleReaction::Pack(DRT::PackBuffer& data) const
 
   // matid
   int matid = -1;
-  if (params_ != NULL) matid = params_->Id();  // in case we are in post-process mode
+  if (params_ != nullptr) matid = params_->Id();  // in case we are in post-process mode
   AddtoPack(data, matid);
 }
 
@@ -408,7 +408,7 @@ void MAT::FluidPoroSingleReaction::Unpack(const std::vector<char>& data)
   // matid
   int matid;
   ExtractfromPack(position, data, matid);
-  params_ = NULL;
+  params_ = nullptr;
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {

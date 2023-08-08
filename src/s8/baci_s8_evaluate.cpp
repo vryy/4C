@@ -156,7 +156,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      s8_nlnstiffmass(lm, mydisp, myres, &elemat1, NULL, &elevec1, actmat);
+      s8_nlnstiffmass(lm, mydisp, myres, &elemat1, nullptr, &elevec1, actmat);
     }
     break;
     case struct_calc_internalforce:  // do internal force
@@ -170,7 +170,7 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList& params,
       DRT::UTILS::ExtractMyValues(*disp, mydisp, lm);
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res, myres, lm);
-      s8_nlnstiffmass(lm, mydisp, myres, NULL, NULL, &elevec1, actmat);
+      s8_nlnstiffmass(lm, mydisp, myres, nullptr, nullptr, &elevec1, actmat);
     }
     break;
     case struct_calc_linstiffmass:
@@ -996,8 +996,8 @@ void DRT::ELEMENTS::Shell8::s8_recover(
     std::vector<int>& lm, std::vector<double>& disp, std::vector<double>& residual)
 {
   // for eas
-  std::vector<double>* alfa = NULL;
-  std::vector<double>* alfa_inc = NULL;
+  std::vector<double>* alfa = nullptr;
+  std::vector<double>* alfa_inc = nullptr;
   // get access to the interface parameters
   const double step_length = ParamsInterface().GetStepLength();
 
@@ -1183,18 +1183,18 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
   double amkovc0[3][3];
   double amkonc0[3][3];
   double detc0;
-  std::vector<double>* alfa = NULL;
-  std::vector<double>* alfa_inc = NULL;
-  CORE::LINALG::SerialDenseMatrix* oldDtildinv = NULL;
-  CORE::LINALG::SerialDenseMatrix* oldLt = NULL;
-  std::vector<double>* oldRtild = NULL;
+  std::vector<double>* alfa = nullptr;
+  std::vector<double>* alfa_inc = nullptr;
+  CORE::LINALG::SerialDenseMatrix* oldDtildinv = nullptr;
+  CORE::LINALG::SerialDenseMatrix* oldLt = nullptr;
+  std::vector<double>* oldRtild = nullptr;
 
 
   // gaussian points
   S8_DATA s8data;
   s8_integration_points(s8data);
 
-  const std::vector<double>* thick = NULL;
+  const std::vector<double>* thick = nullptr;
   thick = data_.Get<std::vector<double>>("thick");
   if (!thick) dserror("Cannot find nodal thicknesses");
 
@@ -1395,7 +1395,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
       }  // for (int lt=0; lt<nit; ++lt)
       /*------------ product of all weights and jacobian of mid surface */
       double weight = facr * facs * da;
-      if (stiffmatrix != NULL)
+      if (stiffmatrix != nullptr)
       {
         /*--------------------------------- elastic stiffness matrix ke */
         s8BtDB(*stiffmatrix, bop, D, iel, numdf, weight);
@@ -1458,7 +1458,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
     /*------------------------------------------- make Ltrans * Dtildinv */
     s8mattrnmatdense(workeas, Lt, Dtildinv, nd, nhyb_, nhyb_, 0, 0.0);
     /*---------------------------------- make estif -= Lt * Dtildinv * L */
-    if (stiffmatrix != NULL) s8matmatdense(*stiffmatrix, workeas, Lt, nd, nhyb_, nd, 1, -1.0);
+    if (stiffmatrix != nullptr) s8matmatdense(*stiffmatrix, workeas, Lt, nd, nhyb_, nd, 1, -1.0);
     /*===================================================================*/
     /* R(nd) = R(nd) - Ltrans(nhyb,nd) * Dtilde^-1(nhyb,nhyb) * Rtilde(nhyb) */
     /*===================================================================*/
@@ -1475,7 +1475,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
     }
   }  // if (nhyb_)
   /*------------------------------------- make estif absolute symmetric */
-  if (stiffmatrix != NULL)
+  if (stiffmatrix != nullptr)
   {
     for (int i = 0; i < nd; ++i)
       for (int j = i + 1; j < nd; ++j)
@@ -1501,7 +1501,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
 void DRT::ELEMENTS::Shell8::s8_lumpmass(CORE::LINALG::SerialDenseMatrix* emass)
 {
   // lump mass matrix
-  if (emass != NULL)
+  if (emass != nullptr)
   {
     // we assume #elemat2 is a square matrix
     for (int c = 0; c < (*emass).numCols(); ++c)  // parse columns

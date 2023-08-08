@@ -136,7 +136,7 @@ namespace CONTACT
      *  \param cparams (in): contact parameter interface (read-only) */
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt,
-        const CONTACT::ParamsInterface* cparams = NULL) const;
+        const CONTACT::ParamsInterface* cparams = nullptr) const;
 
     /*! \brief Apply modifications (e.g. condensation) directly before linear solve
      *

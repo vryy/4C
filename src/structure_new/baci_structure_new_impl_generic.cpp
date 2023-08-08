@@ -259,7 +259,7 @@ Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVector(
     NOX::Abstract::Vector& vec) const
 {
   NOX::Epetra::Vector* epetra_vec = dynamic_cast<NOX::Epetra::Vector*>(&vec);
-  dsassert(epetra_vec != NULL, "The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
+  dsassert(epetra_vec != nullptr, "The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
 
   return epetra_vec->getEpetraVector();
 }
@@ -270,7 +270,7 @@ const Epetra_Vector& NOX::NLN::PrePostOp::IMPLICIT::Generic::convert2EpetraVecto
     const NOX::Abstract::Vector& vec) const
 {
   const NOX::Epetra::Vector* epetra_vec = dynamic_cast<const NOX::Epetra::Vector*>(&vec);
-  dsassert(epetra_vec != NULL, "The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
+  dsassert(epetra_vec != nullptr, "The given NOX::Abstract::Vector is no NOX::Epetra::Vector!");
 
   return epetra_vec->getEpetraVector();
 }

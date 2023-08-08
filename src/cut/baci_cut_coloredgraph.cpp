@@ -416,7 +416,7 @@ namespace CORE::GEO
             CORE::GEO::CUT::OUTPUT::GmshNewSection(file, section_name.str());
             CORE::GEO::CUT::OUTPUT::GmshFacetDump(file,
                 static_cast<CORE::GEO::CUT::Facet*>(graph.GetPointer(facet_id)), "lines", true,
-                false, NULL);
+                false, nullptr);
             CORE::GEO::CUT::OUTPUT::GmshEndSection(file, false);
           }
           file.close();
@@ -425,7 +425,7 @@ namespace CORE::GEO
           CORE::GEO::CUT::OUTPUT::GmshNewSection(filenext, "Facets");
           CORE::GEO::CUT::OUTPUT::GmshFacetDump(filenext,
               static_cast<CORE::GEO::CUT::Facet*>(graph.GetPointer(facet)), "lines", true, false,
-              NULL);
+              nullptr);
           CORE::GEO::CUT::OUTPUT::GmshEndSection(filenext, true);
 
 
@@ -442,7 +442,7 @@ namespace CORE::GEO
               CORE::GEO::CUT::OUTPUT::GmshNewSection(filevisited, "Facets");
               CORE::GEO::CUT::OUTPUT::GmshFacetDump(filevisited,
                   static_cast<CORE::GEO::CUT::Facet*>(graph.GetPointer(facet)), "lines", true,
-                  false, NULL);
+                  false, nullptr);
               CORE::GEO::CUT::OUTPUT::GmshEndSection(filevisited, false);
             }
           }
@@ -652,8 +652,8 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
 {
   // find lhs and rhs starting from split trace
 
-  plain_int_set* facet_row = NULL;
-  plain_int_set* facet_tmp_row = NULL;
+  plain_int_set* facet_row = nullptr;
+  plain_int_set* facet_tmp_row = nullptr;
   for (const int& line : split_trace)
   {
     facet_tmp_row = &at(line);
@@ -662,7 +662,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
       facet_row = facet_tmp_row;
     }
   }
-  if (facet_row == NULL) facet_row = facet_tmp_row;  // last passed
+  if (facet_row == nullptr) facet_row = facet_tmp_row;  // last passed
 
   if (facet_row->size() != 2)
   {
@@ -709,8 +709,8 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
       unsigned c1_connected_facets = c1[line].size();
       unsigned c2_connected_facets = c2[line].size();
 
-      Graph* fine_cycle = NULL;
-      Graph* open_cycle = NULL;
+      Graph* fine_cycle = nullptr;
+      Graph* open_cycle = nullptr;
 
       if (c1_connected_facets > 1 and c2_connected_facets > 1)
       {
@@ -731,7 +731,7 @@ void CORE::GEO::CUT::COLOREDGRAPH::Graph::Split(Graph& used, plain_int_set& free
         dserror("open line after graph split");
       }
 
-      if (open_cycle != NULL)
+      if (open_cycle != nullptr)
       {
 #if EXTENDED_CUT_DEBUG_OUTPUT
         std::cout << "NOTICE: One of the graph split results is open" << std::endl;

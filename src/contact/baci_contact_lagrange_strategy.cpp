@@ -1467,7 +1467,7 @@ void CONTACT::CoLagrangeStrategy::ComputeContactStresses()
 
     if (Comm().MyPID() == 0)
     {
-      FILE* MyFile = NULL;
+      FILE* MyFile = nullptr;
       std::ostringstream filename;
       const std::string filebase = "xxx";
       filename << filebase << ".fric";
@@ -5170,7 +5170,7 @@ void CONTACT::CoLagrangeStrategy::Update(Teuchos::RCP<const Epetra_Vector> dis)
   //  }
   //
   //
-  //  FILE* MyFile = NULL;
+  //  FILE* MyFile = nullptr;
   //  std::ostringstream filename;
   //  const std::string filebase = "xxx";
   //  filename << filebase <<".lmom";

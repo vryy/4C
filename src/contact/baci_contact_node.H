@@ -518,7 +518,7 @@ namespace CONTACT
         if (d_wgap_sl_complete_.is_null())
           dserror(
               "The complete 1-st order derivative of the weighted gap "
-              "(slave) is not initialized! [NULL pointer]");
+              "(slave) is not initialized! [nullptr pointer]");
         return *d_wgap_sl_complete_;
       }
 
@@ -527,7 +527,7 @@ namespace CONTACT
         if (d_wgap_sl_complete_.is_null())
           dserror(
               "The complete 1-st order derivative of the weighted gap "
-              "(slave) is not initialized! [NULL pointer]");
+              "(slave) is not initialized! [nullptr pointer]");
         return *d_wgap_sl_complete_;
       }
 
@@ -541,7 +541,7 @@ namespace CONTACT
         if (d_wgap_ma_complete_.is_null())
           dserror(
               "The complete 1-st order derivative of the weighted gap "
-              "(master) is not initialized! [NULL pointer]");
+              "(master) is not initialized! [nullptr pointer]");
         return *d_wgap_ma_complete_;
       }
 
@@ -550,7 +550,7 @@ namespace CONTACT
         if (d_wgap_ma_complete_.is_null())
           dserror(
               "The complete 1-st order derivative of the weighted gap "
-              "(master) is not initialized! [NULL pointer]");
+              "(master) is not initialized! [nullptr pointer]");
         return *d_wgap_ma_complete_;
       }
 

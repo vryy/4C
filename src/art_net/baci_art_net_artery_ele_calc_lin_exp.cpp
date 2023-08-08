@@ -1357,7 +1357,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateTerminalBC(Artery* ele
       // break the for loop if the boundary condition is a junction,
       // since it will be solved later
       // -----------------------------------------------------------------------------
-      if (ele->Nodes()[i]->GetCondition("ArtJunctionCond") == NULL)
+      if (ele->Nodes()[i]->GetCondition("ArtJunctionCond") == nullptr)
       {
         Wf = Cparams.get<double>("forward characteristic wave speed");
         Wb = Cparams.get<double>("backward characteristic wave speed");
