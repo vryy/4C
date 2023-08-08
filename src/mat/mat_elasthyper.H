@@ -241,11 +241,11 @@ namespace MAT
     /// evaluate for GEMM
     void EvaluateGEMM(LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
         LINALG::Matrix<6, 6>* cmat,                  ///< Constitutive matrix
-        LINALG::Matrix<6, 1>* glstrain_m,            ///< Green-Lagrange strain at t_{n+1/2}
-        LINALG::Matrix<6, 1>* glstrain_new,          ///< Green-Lagrange strain at t_{n+1}
-        LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
-        LINALG::Matrix<3, 3>* rcg_new,               ///< Right Cauchy-Green tensor at t_{n+1}
-        LINALG::Matrix<3, 3>* rcg_old,               ///< Right Cauchy-Green tensor at t_{n}
+        const LINALG::Matrix<6, 1>* glstrain_m,      ///< Green-Lagrange strain at t_{n+1/2}
+        const LINALG::Matrix<6, 1>* glstrain_new,    ///< Green-Lagrange strain at t_{n+1}
+        const LINALG::Matrix<6, 1>* glstrain_old,    ///< Green-Lagrange strain at t_{n}
+        const LINALG::Matrix<3, 3>* rcg_new,         ///< Right Cauchy-Green tensor at t_{n+1}
+        const LINALG::Matrix<3, 3>* rcg_old,         ///< Right Cauchy-Green tensor at t_{n}
         int gp,                                      ///< Gauss point
         int eleGID) override;                        ///< Element GID
 

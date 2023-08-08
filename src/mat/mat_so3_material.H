@@ -67,10 +67,11 @@ namespace MAT
     /// Evaluate material law for GEMM
     virtual void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
         LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, LINALG::Matrix<3, 3>* rcg_new,
-        LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+        const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+        const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+        const LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+        const LINALG::Matrix<3, 3>* rcg_new, const LINALG::Matrix<3, 3>* rcg_old, const int gp,
+        const int eleGID)
     {
       dserror("Material does not support evaluation for GEMM");
     };
