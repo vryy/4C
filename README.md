@@ -9,6 +9,11 @@ particle methods and mesh-free methods have also been successfully integrated.
 The research software is implemented throughout in object-oriented programming (C++)
 using modern software design and is parallelized with MPI for distributed memory hardware architectures.
 
+**Disclaimer**: BACI is developed for research purposes in the field of numerical method development.
+It is not intended for any use beyond this purpose, and generally should not be used for any form of 
+safety-relevant or safety-critical calculations, 
+or for an application in association with physical products in particular.
+
 ## Contents
 
 1. [Getting Up and Running with BACI](#getting-up-and-running-with-baci)
