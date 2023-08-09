@@ -82,14 +82,6 @@ void STR::TimIntImpl::NoxSetup(const Teuchos::ParameterList& noxparams)
   if (printParams.get<bool>("Linear Solver Details"))
     outputinformationlevel += NOX::Utils::LinearSolverDetails;
   if (printParams.get<bool>("Test Details")) outputinformationlevel += NOX::Utils::TestDetails;
-  /*  // for LOCA
-  if (printParams.get<bool>("Stepper Iteration"))
-    outputinformationlevel += NOX::Utils::StepperIteration;
-  if (printParams.get<bool>("Stepper Details"))
-    outputinformationlevel += NOX::Utils::StepperDetails;
-  if (printParams.get<bool>("Stepper Parameters"))
-    outputinformationlevel += NOX::Utils::StepperParameters;
-  */
   if (printParams.get<bool>("Debug")) outputinformationlevel += NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
   noxutils_ = Teuchos::rcp(new NOX::Utils(printParams));

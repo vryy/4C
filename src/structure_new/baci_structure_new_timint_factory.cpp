@@ -18,7 +18,6 @@
 #include "baci_structure_new_timint_basedatasdyn.H"
 #include "baci_structure_new_timint_explicit.H"
 #include "baci_structure_new_timint_implicit.H"
-#include "baci_structure_new_timint_loca_continuation.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -51,9 +50,6 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildStrategy(
       if (ti_strategy.is_null()) ti_strategy = BuildExplicitStrategy(sdyn);
       break;
     }
-    case INPAR::STR::int_loca:
-      ti_strategy = Teuchos::rcp(new STR::TIMINT::LOCAContinuation());
-      break;
     default:
       dserror("Unknown integration strategy!");
       break;

@@ -341,11 +341,6 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
     BoolParameter("Outer Iteration StatusTest", "Yes", "", &printing);
     BoolParameter("Linear Solver Details", "No", "", &printing);
     BoolParameter("Test Details", "No", "", &printing);
-    /*  // for LOCA
-    BoolParameter("Stepper Iteration","No","",&printing);
-    BoolParameter("Stepper Details","No","",&printing);
-    BoolParameter("Stepper Parameters","Yes","",&printing);
-     */
     BoolParameter("Debug", "No", "", &printing);
   }
 

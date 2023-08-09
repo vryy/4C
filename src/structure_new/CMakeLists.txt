@@ -16,7 +16,6 @@ set(_structure_new_dependencies
     inpar
     io
     lib
-    loca_continuation
     mat
     so3
     solver_nonlin_nox

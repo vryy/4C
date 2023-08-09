@@ -81,9 +81,8 @@ namespace INPAR
       Teuchos::ParameterList& sdyn = list->sublist("STRUCTURAL DYNAMIC", false, "");
 
       setStringToIntegralParameter<int>("INT_STRATEGY", "Old",
-          "global type of the used integration strategy",
-          tuple<std::string>("Old", "Standard", "LOCA"),
-          tuple<int>(int_old, int_standard, int_loca), &sdyn);
+          "global type of the used integration strategy", tuple<std::string>("Old", "Standard"),
+          tuple<int>(int_old, int_standard), &sdyn);
 
       setStringToIntegralParameter<int>("DYNAMICTYP", "GenAlpha",
           "type of the specific dynamic time integration scheme",

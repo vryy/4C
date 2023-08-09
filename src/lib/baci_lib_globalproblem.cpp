@@ -338,16 +338,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--STRUCT NOX/Status Test", *list);
   reader.ReadSection("--STRUCT NOX/Solver Options", *list);
 
-  reader.ReadSection("--LOCA", *list);
-  reader.ReadSection("--LOCA/Stepper", *list);
-  reader.ReadSection("--LOCA/Stepper/Eigensolver", *list);
-  reader.ReadSection("--LOCA/Bifurcation", *list);
-  reader.ReadSection("--LOCA/Predictor", *list);
-  reader.ReadSection("--LOCA/Predictor/First Step Predictor", *list);
-  reader.ReadSection("--LOCA/Predictor/Last Step Predictor", *list);
-  reader.ReadSection("--LOCA/Step Size", *list);
-  reader.ReadSection("--LOCA/Constraints", *list);
-
   // read in solver sections
   // Note: the maximum number of solver blocks in dat files is hardwired here.
   // If you change this do not forget to edit the corresponding parts in

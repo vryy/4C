@@ -52,14 +52,6 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox, const E
     outputinformationlevel += NOX::Utils::LinearSolverDetails;
   if (printParams.get<bool>("Test Details", false))
     outputinformationlevel += NOX::Utils::TestDetails;
-  /*  // for LOCA
-  if (printParams.get<bool>("Stepper Iteration"))
-    outputinformationlevel += NOX::Utils::StepperIteration;
-  if (printParams.get<bool>("Stepper Details"))
-    outputinformationlevel += NOX::Utils::StepperDetails;
-  if (printParams.get<bool>("Stepper Parameters"))
-    outputinformationlevel += NOX::Utils::StepperParameters;
-  */
   if (printParams.get<bool>("Debug", false)) outputinformationlevel += NOX::Utils::Debug;
   printParams.set("Output Information", outputinformationlevel);
 
