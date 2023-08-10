@@ -416,28 +416,6 @@ void CORE::GEO::CutWizard::AddMeshCuttingSide(Teuchos::RCP<::DRT::Discretization
         x.Update(1, disp, 1);
       }
 
-      if (1)
-      {
-        std::vector<::DRT::Condition*> conds;
-        cutterdis->GetCondition("XFEMSurfCutOffset", conds);
-        if (conds.size())
-        {
-          // static const double offset_idx;
-          static const int offset_idx = 0;
-          // static double offset;
-          static double offset = 0;
-          for (std::size_t cidx = 0; cidx < conds.size(); ++cidx)
-          {
-            if (conds[cidx]->ContainsNode(node.Id()))
-            {
-              offset = conds[cidx]->GetDouble("xoffset");
-              x(offset_idx, 0) += offset;
-              break;
-            }
-          }
-        }
-      }
-
       std::copy(x.A(), x.A() + 3, &xyze(0, i));
     }
 
@@ -482,32 +460,6 @@ void CORE::GEO::CutWizard::AddBackgroundElements()
     CORE::LINALG::SerialDenseMatrix xyze;
 
     GetPhysicalNodalCoordinates(element, xyze);
-
-    std::vector<::DRT::Condition*> conds;
-    back_mesh_->Get().GetCondition("XFEMVolCutOffset", conds);
-
-    if (conds.size())
-    {
-      // static const double offset_idx;
-      static const int offset_idx = 0;
-      // static double offset;
-      static double offset = 0;
-      for (std::size_t cidx = 0; cidx < conds.size(); ++cidx)
-      {
-        if (conds[cidx]->ContainsNode(element->Nodes()[0]->Id()))
-        {
-          offset = conds[cidx]->GetDouble("xoffset");
-          if (xyze.numCols() != 8 || xyze.numRows() != 3)
-            dserror("Please implement here for other element type than hex8!");
-          else
-          {
-            CORE::LINALG::Matrix<3, 8> xyze_mat(xyze, true);
-            for (int nidx = 0; nidx < 8; ++nidx) xyze_mat(offset_idx, nidx) += offset;
-          }
-          break;
-        }
-      }
-    }
 
     if (back_mesh_->IsLevelSet())
     {
@@ -690,8 +642,6 @@ void CORE::GEO::CutWizard::Run_Cut(
   }
 
   intersection_->Status(VCellgausstype_);
-
-  Post_Run_Cut(include_inner);
 }
 
 
@@ -1005,90 +955,4 @@ int CORE::GEO::CutWizard::Get_BC_Cubaturedegree() const
   else
     dserror("Get_BC_Cubaturedegree: Options are not set!");
   return -1;  // dummy to make compiler happy :)
-}
-
-
-
-/// run after the Run_Cut routine has been called
-void CORE::GEO::CutWizard::Post_Run_Cut(bool include_inner) { Post_UpdateBC_Offset(); }
-
-void CORE::GEO::CutWizard::Post_UpdateBC_Offset()
-{
-  // std::cout << "==| Start Post_UpdateBC_Offset |==" << std::endl;
-  // Move the boundary cells back from offset!
-  for (std::map<int, Teuchos::RCP<CutterMesh>>::iterator cmit = cutter_meshes_.begin();
-       cmit != cutter_meshes_.end(); ++cmit)
-  {
-    Teuchos::RCP<::DRT::Discretization> cutterdis = (cmit->second)->cutterdis_;
-    std::vector<::DRT::Condition*> conds;
-    cutterdis->GetCondition("XFEMSurfCutOffset", conds);
-    if (conds.size())
-    {
-      int numcutelements = cutterdis->NumMyColElements();
-      for (int lid = 0; lid < numcutelements; ++lid)
-      {
-        ::DRT::Element* element = cutterdis->lColElement(lid);
-        ::DRT::Node** nodes = element->Nodes();
-
-        static const int offset_idx = 0;
-        static double offset = 0;
-        for (std::size_t cidx = 0; cidx < conds.size(); ++cidx)  // loop offset conditions
-        {
-          if (conds[cidx]->ContainsNode(nodes[0]->Id()))
-          {
-            offset = -conds[cidx]->GetDouble(
-                "xoffset");  // negative offset as we move the coordinate back ...
-            CORE::GEO::CUT::SideHandle* sh =
-                GetCutSide(element->Id() + (*cmit->second).start_ele_gid_);
-            if (!sh) dserror("Couldn't get sidehandle!");
-            CORE::GEO::CUT::plain_side_set subsides;
-            sh->CollectSides(subsides);
-            for (std::size_t ssidx = 0; ssidx < subsides.size(); ++ssidx)  // loop subsides
-            {
-              CORE::GEO::CUT::Side* side = subsides[ssidx];
-              for (std::vector<CORE::GEO::CUT::Facet*>::const_iterator fit = side->Facets().begin();
-                   fit != side->Facets().end(); ++fit)  // loop facets on subside
-              {
-                CORE::GEO::CUT::Facet* facet = *fit;
-                for (CORE::GEO::CUT::plain_volumecell_set::const_iterator vit =
-                         facet->Cells().begin();
-                     vit != facet->Cells().end(); ++vit)  // loop volumecells on facet
-                {
-                  CORE::GEO::CUT::VolumeCell* vc = *vit;
-                  for (CORE::GEO::CUT::plain_boundarycell_set::const_iterator bcit =
-                           vc->BoundaryCells().begin();
-                       bcit != vc->BoundaryCells().end();
-                       ++bcit)  // loop boundarycells in volumecell
-                  {
-                    CORE::GEO::CUT::BoundaryCell* bc = *bcit;
-                    if (bc->GetFacet() != facet)
-                      continue;  // is this the boundarycell we are looking for
-                    switch (bc->Shape())
-                    {
-                      case ::DRT::Element::tri3:
-                      {
-                        bc->AssignOffset<::DRT::Element::tri3>(offset_idx, offset);
-                        break;
-                      }
-                      case ::DRT::Element::quad4:
-                      {
-                        bc->AssignOffset<::DRT::Element::quad4>(offset_idx, offset);
-                        break;
-                      }
-                      default:
-                        dserror("Add your shape here!");
-                    }
-                    break;
-                  }
-                }
-              }
-            }
-            break;
-          }
-        }
-      }
-    }
-  }
-  // std::cout << "==| End Post_UpdateBC_Offset |==" << std::endl;
-  return;
 }

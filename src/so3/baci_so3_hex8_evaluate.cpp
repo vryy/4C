@@ -3604,7 +3604,6 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
 #ifdef MATERIALFDCHECK
   static CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> stiffmatrix_analytical;
   static CORE::LINALG::Matrix<NUMDOF_SOH8, NUMDOF_SOH8> stiffmatrix_fd;
-  bool success = true;
   if (gp == 0)
   {
     stiffmatrix_analytical.PutScalar(0.0);
@@ -3784,29 +3783,18 @@ void DRT::ELEMENTS::So_hex8::EvaluateFiniteDifferenceMaterialTangent(
     {
       for (int j = 0; j < NUMDOF_SOH8; ++j)
       {
-        if (1)
+        double relerror = abs(errormatrix(i, j)) / abs((stiffmatrix_analytical)(i, j));
+        if (std::min(abs(errormatrix(i, j)), relerror) > delta * 1000.0)
         {
-          double relerror = abs(errormatrix(i, j)) / abs((stiffmatrix_analytical)(i, j));
-          if (std::min(abs(errormatrix(i, j)), relerror) > delta * 1000.0)
-          {
-            std::cout << "ELEGID:" << this->Id() << "  gp: " << gp << "  ROW: " << i
-                      << "  COL: " << j << "    REL. ERROR: " << relerror
-                      << "    ABS. ERROR: " << abs(errormatrix(i, j))
-                      << "    stiff. val: " << stiffmatrix_analytical(i, j)
-                      << "    approx. val: " << stiffmatrix_fd(i, j) << std::endl;
-            success = false;
-          }
+          std::cout << "ELEGID:" << this->Id() << "  gp: " << gp << "  ROW: " << i << "  COL: " << j
+                    << "    REL. ERROR: " << relerror
+                    << "    ABS. ERROR: " << abs(errormatrix(i, j))
+                    << "    stiff. val: " << stiffmatrix_analytical(i, j)
+                    << "    approx. val: " << stiffmatrix_fd(i, j) << std::endl;
         }
       }
     }  // check errors
-
-    /*  if (!success)
-      {
-        std::cout<<"FDCHECK FAILED!"<<std::endl;
-        dserror("encountered errors checking the elastic stiffness matrix");
-      }*/
-
-  }  // if last gp of element is reached
+  }    // if last gp of element is reached
 #endif
 }
 
