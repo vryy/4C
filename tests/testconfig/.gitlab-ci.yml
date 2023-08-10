@@ -183,6 +183,7 @@ before_script:
     commit  \<a 
     href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
+  after_script:
   - *post-process-log-files
     # update (push) the cache of the coverage report:
     # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
