@@ -81,18 +81,19 @@ void DRT::ELEMENTS::So_tet10Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET10"]
-      .AddIntVector("TET10", 10)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("GROWTHTRIG");
+  defs["TET10"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("TET10", 10)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("KINEM")
+                      .AddOptionalNamedDoubleVector("RAD", 3)
+                      .AddOptionalNamedDoubleVector("AXI", 3)
+                      .AddOptionalNamedDoubleVector("CIR", 3)
+                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .AddOptionalNamedDoubleVector("FIBER2", 3)
+                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .AddOptionalNamedDouble("STRENGTH")
+                      .AddOptionalNamedDouble("GROWTHTRIG")
+                      .Build();
 }
 
 

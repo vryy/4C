@@ -70,8 +70,16 @@ void DRT::ELEMENTS::FluidXWallType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defsxwall = definitions["FLUIDXW"];
 
-  defsxwall["HEX8"].AddIntVector("HEX8", 8).AddNamedInt("MAT").AddNamedString("NA");
-  defsxwall["TET4"].AddIntVector("TET4", 4).AddNamedInt("MAT").AddNamedString("NA");
+  defsxwall["HEX8"] = INPUT::LineDefinition::Builder()
+                          .AddIntVector("HEX8", 8)
+                          .AddNamedInt("MAT")
+                          .AddNamedString("NA")
+                          .Build();
+  defsxwall["TET4"] = INPUT::LineDefinition::Builder()
+                          .AddIntVector("TET4", 4)
+                          .AddNamedInt("MAT")
+                          .AddNamedString("NA")
+                          .Build();
 }
 
 

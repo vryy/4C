@@ -67,18 +67,19 @@ void DRT::ELEMENTS::Membrane_tri3Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE3"];
 
-  defs["TRI3"]
-      .AddIntVector("TRI3", 3)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedDouble("THICK")
-      .AddNamedString("STRESS_STRAIN")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defs["TRI3"] = DRT::INPUT::LineDefinition::Builder()
+                     .AddIntVector("TRI3", 3)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .AddNamedDouble("THICK")
+                     .AddNamedString("STRESS_STRAIN")
+                     .AddOptionalNamedDoubleVector("RAD", 3)
+                     .AddOptionalNamedDoubleVector("AXI", 3)
+                     .AddOptionalNamedDoubleVector("CIR", 3)
+                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .AddOptionalNamedDoubleVector("FIBER2", 3)
+                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -134,18 +135,19 @@ void DRT::ELEMENTS::Membrane_tri6Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE6"];
 
-  defs["TRI6"]
-      .AddIntVector("TRI6", 6)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedDouble("THICK")
-      .AddNamedString("STRESS_STRAIN")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defs["TRI6"] = DRT::INPUT::LineDefinition::Builder()
+                     .AddIntVector("TRI6", 6)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .AddNamedDouble("THICK")
+                     .AddNamedString("STRESS_STRAIN")
+                     .AddOptionalNamedDoubleVector("RAD", 3)
+                     .AddOptionalNamedDoubleVector("AXI", 3)
+                     .AddOptionalNamedDoubleVector("CIR", 3)
+                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .AddOptionalNamedDoubleVector("FIBER2", 3)
+                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -204,18 +206,19 @@ void DRT::ELEMENTS::Membrane_quad4Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE4"];
 
-  defs["QUAD4"]
-      .AddIntVector("QUAD4", 4)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedDouble("THICK")
-      .AddNamedString("STRESS_STRAIN")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defs["QUAD4"] = DRT::INPUT::LineDefinition::Builder()
+                      .AddIntVector("QUAD4", 4)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("KINEM")
+                      .AddNamedDouble("THICK")
+                      .AddNamedString("STRESS_STRAIN")
+                      .AddOptionalNamedDoubleVector("RAD", 3)
+                      .AddOptionalNamedDoubleVector("AXI", 3)
+                      .AddOptionalNamedDoubleVector("CIR", 3)
+                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .AddOptionalNamedDoubleVector("FIBER2", 3)
+                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -274,16 +277,17 @@ void DRT::ELEMENTS::Membrane_quad9Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANE9"];
 
-  defs["QUAD9"]
-      .AddIntVector("QUAD9", 9)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedDouble("THICK")
-      .AddNamedString("STRESS_STRAIN")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defs["QUAD9"] = DRT::INPUT::LineDefinition::Builder()
+                      .AddIntVector("QUAD9", 9)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("KINEM")
+                      .AddNamedDouble("THICK")
+                      .AddNamedString("STRESS_STRAIN")
+                      .AddOptionalNamedDoubleVector("RAD", 3)
+                      .AddOptionalNamedDoubleVector("AXI", 3)
+                      .AddOptionalNamedDoubleVector("CIR", 3)
+                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .AddOptionalNamedDoubleVector("FIBER2", 3)
+                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .Build();
 }

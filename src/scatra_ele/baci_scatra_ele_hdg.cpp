@@ -124,26 +124,13 @@ void DRT::ELEMENTS::ScaTraHDGType ::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["TRANSPHDG"];
 
-  // 3D
-  defs["HEX8"] = defs_scatra["HEX8"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["HEX20"] = defs_scatra["HEX20"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["HEX27"] = defs_scatra["HEX27"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["TET4"] = defs_scatra["TET4"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["TET10"] = defs_scatra["TET10"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["WEDGE6"] = defs_scatra["WEDGE6"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["WEDGE15"] = defs_scatra["WEDGE15"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["PYRAMID5"] = defs_scatra["PYRAMID5"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["NURBS8"] = defs_scatra["NURBS8"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["NURBS27"] = defs_scatra["NURBS27"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-
-  // 2D
-  defs["QUAD4"] = defs_scatra["QUAD4"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["QUAD8"] = defs_scatra["QUAD8"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["QUAD9"] = defs_scatra["QUAD9"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["TRI3"] = defs_scatra["TRI3"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["TRI6"] = defs_scatra["TRI6"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["NURBS4"] = defs_scatra["NURBS4"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
-  defs["NURBS9"] = defs_scatra["NURBS9"].AddNamedInt("DEG").AddOptionalNamedInt("SPC");
+  for (const auto& [key, scatra_line_def] : defs_scatra)
+  {
+    defs[key] = DRT::INPUT::LineDefinition::Builder(scatra_line_def)
+                    .AddNamedInt("DEG")
+                    .AddOptionalNamedInt("SPC")
+                    .Build();
+  }
 }
 
 

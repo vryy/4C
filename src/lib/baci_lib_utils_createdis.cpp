@@ -262,11 +262,12 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
 Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
 {
   // this defines the valid input line
-  DRT::INPUT::LineDefinition structure;
-  structure.AddNamedString("SRC_FIELD")
-      .AddNamedInt("SRC_MAT")
-      .AddNamedString("TAR_FIELD")
-      .AddNamedInt("TAR_MAT");
+  DRT::INPUT::LineDefinition structure = DRT::INPUT::LineDefinition::Builder()
+                                             .AddNamedString("SRC_FIELD")
+                                             .AddNamedInt("SRC_MAT")
+                                             .AddNamedString("TAR_FIELD")
+                                             .AddNamedInt("TAR_MAT")
+                                             .Build();
   Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CLONING MATERIAL MAP",
       "This section is used for multi physics simulations, "
       "in which a discretization is used for more than one physics. "

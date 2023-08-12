@@ -65,9 +65,9 @@ void DRT::ELEMENTS::Bele2Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BELE2"];
 
-  defs["LINE2"].AddIntVector("LINE2", 2);
+  defs["LINE2"] = INPUT::LineDefinition::Builder().AddIntVector("LINE2", 2).Build();
 
-  defs["LINE3"].AddIntVector("LINE3", 3);
+  defs["LINE3"] = INPUT::LineDefinition::Builder().AddIntVector("LINE3", 3).Build();
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

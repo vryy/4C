@@ -29,13 +29,17 @@ The functions in this file are not problem-specific and may be useful for a numb
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
-  DRT::INPUT::LineDefinition fastpolynomial_funct;
-  fastpolynomial_funct.AddTag("FASTPOLYNOMIAL")
-      .AddNamedInt("NUMCOEFF")
-      .AddNamedDoubleVector("COEFF", "NUMCOEFF");
+  using namespace DRT::INPUT;
 
-  DRT::INPUT::LineDefinition cubicsplinefromcsv_funct;
-  cubicsplinefromcsv_funct.AddTag("CUBIC_SPLINE_FROM_CSV").AddNamedString("CSV");
+  LineDefinition fastpolynomial_funct =
+      LineDefinition::Builder()
+          .AddTag("FASTPOLYNOMIAL")
+          .AddNamedInt("NUMCOEFF")
+          .AddNamedDoubleVector("COEFF", LengthFromIntNamed("NUMCOEFF"))
+          .Build();
+
+  LineDefinition cubicsplinefromcsv_funct =
+      LineDefinition::Builder().AddTag("CUBIC_SPLINE_FROM_CSV").AddNamedString("CSV").Build();
 
   lines->Add(fastpolynomial_funct);
   lines->Add(cubicsplinefromcsv_funct);

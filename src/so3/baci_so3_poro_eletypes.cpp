@@ -56,15 +56,14 @@ void DRT::ELEMENTS::So_hex8PoroType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"] = defs_hex8["HEX8"];
-
-  defs["HEX8"]
-      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
-      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
-      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
-      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8);
+  defs["HEX8"] = DRT::INPUT::LineDefinition::Builder(defs_hex8["HEX8"])
+                     .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+                     .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+                     .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
+                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 8)
+                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 8)
+                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 8)
+                     .Build();
 }
 
 int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
@@ -126,15 +125,14 @@ void DRT::ELEMENTS::So_tet4PoroType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET4"] = defs_tet4["TET4"];
-
-  defs["TET4"]
-      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
-      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 4)
-      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 4)
-      .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 4);
+  defs["TET4"] = DRT::INPUT::LineDefinition::Builder(defs_tet4["TET4"])
+                     .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+                     .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+                     .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
+                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS1", 4)
+                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS2", 4)
+                     .AddOptionalNamedDoubleVector("POROANISONODALCOEFFS3", 4)
+                     .Build();
 }
 
 int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
@@ -195,12 +193,11 @@ void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX27"] = defs_hex27["HEX27"];
-
-  defs["HEX27"]
-      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
+  defs["HEX27"] = DRT::INPUT::LineDefinition::Builder(defs_hex27["HEX27"])
+                      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+                      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+                      .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
+                      .Build();
 }
 
 int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
@@ -261,12 +258,11 @@ void DRT::ELEMENTS::So_tet10PoroType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET10"] = defs_tet10["TET10"];
-
-  defs["TET10"]
-      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
+  defs["TET10"] = DRT::INPUT::LineDefinition::Builder(defs_tet10["TET10"])
+                      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+                      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+                      .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
+                      .Build();
 }
 
 int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
@@ -334,12 +330,11 @@ void DRT::ELEMENTS::So_nurbs27PoroType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["NURBS27"] = defs_nurbs27["NURBS27"];
-
-  defs["NURBS27"]
-      .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
-      .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
+  defs["NURBS27"] = DRT::INPUT::LineDefinition::Builder(defs_nurbs27["NURBS27"])
+                        .AddOptionalNamedDoubleVector("POROANISODIR1", 3)
+                        .AddOptionalNamedDoubleVector("POROANISODIR2", 3)
+                        .AddOptionalNamedDoubleVector("POROANISODIR3", 3)
+                        .Build();
 }
 
 int DRT::ELEMENTS::So_nurbs27PoroType::Initialize(DRT::Discretization& dis)

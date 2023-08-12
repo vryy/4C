@@ -52,12 +52,13 @@ void DRT::ELEMENTS::ArteryType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["ART"];
 
-  defs["LINE2"]
-      .AddIntVector("LINE2", 2)
-      .AddNamedInt("MAT")
-      .AddNamedInt("GP")
-      .AddNamedString("TYPE")
-      .AddNamedDouble("DIAM");
+  defs["LINE2"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE2", 2)
+                      .AddNamedInt("MAT")
+                      .AddNamedInt("GP")
+                      .AddNamedString("TYPE")
+                      .AddNamedDouble("DIAM")
+                      .Build();
 }
 
 /*----------------------------------------------------------------------*

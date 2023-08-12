@@ -34,14 +34,17 @@ namespace
 /*----------------------------------------------------------------------*/
 void STR::AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure;
-  weaklycompressibleetiennefsistructure.AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
-      .AddNamedInt("MAT_STRUC");
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure =
+      DRT::INPUT::LineDefinition::Builder()
+          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
+          .AddNamedInt("MAT_STRUC")
+          .Build();
 
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructureforce;
-  weaklycompressibleetiennefsistructureforce
-      .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
-      .AddNamedInt("MAT_STRUC");
+  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructureforce =
+      DRT::INPUT::LineDefinition::Builder()
+          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
+          .AddNamedInt("MAT_STRUC")
+          .Build();
 
   lines->Add(weaklycompressibleetiennefsistructure);
   lines->Add(weaklycompressibleetiennefsistructureforce);

@@ -76,17 +76,18 @@ void DRT::ELEMENTS::So_weg6Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["WEDGE6"]
-      .AddIntVector("WEDGE6", 6)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("GROWTHTRIG");
+  defs["WEDGE6"] = INPUT::LineDefinition::Builder()
+                       .AddIntVector("WEDGE6", 6)
+                       .AddNamedInt("MAT")
+                       .AddNamedString("KINEM")
+                       .AddOptionalNamedDoubleVector("RAD", 3)
+                       .AddOptionalNamedDoubleVector("AXI", 3)
+                       .AddOptionalNamedDoubleVector("CIR", 3)
+                       .AddOptionalNamedDoubleVector("FIBER1", 3)
+                       .AddOptionalNamedDoubleVector("FIBER2", 3)
+                       .AddOptionalNamedDoubleVector("FIBER3", 3)
+                       .AddOptionalNamedDouble("GROWTHTRIG")
+                       .Build();
 }
 
 

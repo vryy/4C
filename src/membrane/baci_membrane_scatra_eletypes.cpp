@@ -62,12 +62,8 @@ void DRT::ELEMENTS::MembraneScatra_tri3Type::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA3"];
 
-  defs["TRI3"] = defs_membrane["TRI3"];
-
-  // add scalar transport impltype
-  defs["TRI3"].AddNamedString("TYPE");
-
-  return;
+  defs["TRI3"] =
+      DRT::INPUT::LineDefinition::Builder(defs_membrane["TRI3"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -119,12 +115,8 @@ void DRT::ELEMENTS::MembraneScatra_tri6Type::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA6"];
 
-  defs["TRI6"] = defs_membrane["TRI6"];
-
-  // add scalar transport impltype
-  defs["TRI6"].AddNamedString("TYPE");
-
-  return;
+  defs["TRI6"] =
+      DRT::INPUT::LineDefinition::Builder(defs_membrane["TRI6"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -176,12 +168,8 @@ void DRT::ELEMENTS::MembraneScatra_quad4Type::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA4"];
 
-  defs["QUAD4"] = defs_membrane["QUAD4"];
-
-  // add scalar transport impltype
-  defs["QUAD4"].AddNamedString("TYPE");
-
-  return;
+  defs["QUAD4"] =
+      DRT::INPUT::LineDefinition::Builder(defs_membrane["QUAD4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -233,10 +221,6 @@ void DRT::ELEMENTS::MembraneScatra_quad9Type::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["MEMBRANESCATRA9"];
 
-  defs["QUAD9"] = defs_membrane["QUAD9"];
-
-  // add scalar transport impltype
-  defs["QUAD9"].AddNamedString("TYPE");
-
-  return;
+  defs["QUAD9"] =
+      DRT::INPUT::LineDefinition::Builder(defs_membrane["QUAD9"]).AddNamedString("TYPE").Build();
 }

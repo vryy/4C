@@ -15,11 +15,11 @@
 
 void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
-  DRT::INPUT::LineDefinition zalesaksdisk;
-  zalesaksdisk.AddTag("ZALESAKSDISK");
+  DRT::INPUT::LineDefinition zalesaksdisk =
+      DRT::INPUT::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
 
-  DRT::INPUT::LineDefinition collapsingwatercolumn;
-  collapsingwatercolumn.AddTag("COLLAPSINGWATERCOLUMN");
+  DRT::INPUT::LineDefinition collapsingwatercolumn =
+      DRT::INPUT::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
 
   lines->Add(zalesaksdisk);
   lines->Add(collapsingwatercolumn);

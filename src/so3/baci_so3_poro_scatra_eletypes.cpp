@@ -60,10 +60,8 @@ void DRT::ELEMENTS::So_hex8PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"] = defs_hex8["HEX8"];
-
-  // add scalar transport ImplType
-  defs["HEX8"].AddNamedString("TYPE");
+  defs["HEX8"] =
+      DRT::INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -116,10 +114,8 @@ void DRT::ELEMENTS::So_tet4PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET4"] = defs_tet4["TET4"];
-
-  // add scalar transport ImplType
-  defs["TET4"].AddNamedString("TYPE");
+  defs["TET4"] =
+      DRT::INPUT::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -173,10 +169,8 @@ void DRT::ELEMENTS::So_hex27PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX27"] = defs_hex27["HEX27"];
-
-  // add scalar transport ImplType
-  defs["HEX27"].AddNamedString("TYPE");
+  defs["HEX27"] =
+      DRT::INPUT::LineDefinition::Builder(defs_hex27["HEX27"]).AddNamedString("TYPE").Build();
 }
 
 
@@ -231,10 +225,8 @@ void DRT::ELEMENTS::So_tet10PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET10"] = defs_tet10["TET10"];
-
-  // add scalar transport ImplType
-  defs["TET10"].AddNamedString("TYPE");
+  defs["TET10"] =
+      DRT::INPUT::LineDefinition::Builder(defs_tet10["TET10"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -291,8 +283,6 @@ void DRT::ELEMENTS::So_nurbs27PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["NURBS27"] = defs_nurbs27["NURBS27"];
-
-  // add scalar transport ImplType
-  defs["NURBS27"].AddNamedString("TYPE");
+  defs["NURBS27"] =
+      DRT::INPUT::LineDefinition::Builder(defs_nurbs27["NURBS27"]).AddNamedString("TYPE").Build();
 }

@@ -185,17 +185,18 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET4"]
-      .AddIntVector("TET4", 4)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("GROWTHTRIG");
+  defs["TET4"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("TET4", 4)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .AddOptionalNamedDoubleVector("RAD", 3)
+                     .AddOptionalNamedDoubleVector("AXI", 3)
+                     .AddOptionalNamedDoubleVector("CIR", 3)
+                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .AddOptionalNamedDoubleVector("FIBER2", 3)
+                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .AddOptionalNamedDouble("GROWTHTRIG")
+                     .Build();
 }
 
 

@@ -35,7 +35,11 @@ void DRT::ELEMENTS::FluidTypeImmersed::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defsimmersed = definitions["FLUIDIMMERSED"];
 
-  defsimmersed["HEX8"].AddIntVector("HEX8", 8).AddNamedInt("MAT").AddNamedString("NA");
+  defsimmersed["HEX8"] = INPUT::LineDefinition::Builder()
+                             .AddIntVector("HEX8", 8)
+                             .AddNamedInt("MAT")
+                             .AddNamedString("NA")
+                             .Build();
 }
 
 /*----------------------------------------------------------------------*

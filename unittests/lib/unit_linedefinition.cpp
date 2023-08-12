@@ -11,326 +11,330 @@
 
 #include "baci_lib_linedefinition.H"
 
+#include <sstream>
+
 namespace
 {
-  class LineDefinitionTest : public testing::Test
-  {
-   public:
-    LineDefinitionTest() { lineDefinition = Teuchos::rcp(new DRT::INPUT::LineDefinition()); }
 
-    void ExpectReadReturnsTrue(std::istringstream& input)
-    {
-      EXPECT_TRUE(lineDefinition->Read(input));
-    }
-
-    void ExpectReadReturnsFalse(std::istringstream& input)
-    {
-      EXPECT_TRUE(not lineDefinition->Read(input));
-    }
-
-    void ExpectThrowsError(std::istringstream& input)
-    {
-      EXPECT_ANY_THROW(lineDefinition->Read(input));
-    }
-
-   protected:
-    Teuchos::RCP<DRT::INPUT::LineDefinition> lineDefinition;
-  };
-
-  TEST_F(LineDefinitionTest, AddTag)
+  using namespace DRT::INPUT;
+  TEST(LineDefinitionTest, AddTag)
   {
     std::istringstream input("OMEGA");
-    lineDefinition->AddTag("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddTag("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenTagRequiredButNothingGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenTagRequiredButNothingGiven)
   {
     std::istringstream input("");
-    lineDefinition->AddTag("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddTag("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenTagRequiredButIntGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenTagRequiredButIntGiven)
   {
     std::istringstream input("1");
-    lineDefinition->AddTag("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddTag("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenTagRequiredButDoubleGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenTagRequiredButDoubleGiven)
   {
     std::istringstream input("1.23");
-    lineDefinition->AddTag("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddTag("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // String
-  TEST_F(LineDefinitionTest, AddString)
+  TEST(LineDefinitionTest, AddString)
   {
     std::istringstream input("OMEGA");
-    lineDefinition->AddString("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddString("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenStringRequiredButNothingGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenStringRequiredButNothingGiven)
   {
     std::istringstream input("");
-    lineDefinition->AddString("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddString("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // Int
-  TEST_F(LineDefinitionTest, AddInt)
+  TEST(LineDefinitionTest, AddInt)
   {
     std::istringstream input("1");
-    lineDefinition->AddInt("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddInt("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenIntRequiredButNothingGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenIntRequiredButNothingGiven)
   {
     std::istringstream input("");
-    lineDefinition->AddInt("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddInt("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenIntRequiredButDoubleGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenIntRequiredButDoubleGiven)
   {
     std::istringstream input("1.23");
-    lineDefinition->AddInt("OMEGA");
-    ExpectThrowsError(input);
+    auto line_definition = LineDefinition::Builder().AddInt("OMEGA").Build();
+    EXPECT_ANY_THROW(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenIntConcatenatedWithSomething)
+  TEST(LineDefinitionTest, ReadFalseWhenIntConcatenatedWithSomething)
   {
     std::istringstream input("1*8e+2");
-    lineDefinition->AddInt("OMEGA");
-    ExpectThrowsError(input);
+    auto line_definition = LineDefinition::Builder().AddInt("OMEGA").Build();
+    EXPECT_ANY_THROW(line_definition.Read(input));
   }
 
   // Int Vector
-  TEST_F(LineDefinitionTest, AddIntVector)
+  TEST(LineDefinitionTest, AddIntVector)
   {
     std::istringstream input("1 2 3");
-    lineDefinition->AddIntVector("OMEGA", 3);
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddIntVector("OMEGA", 3).Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButTooFewVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButTooFewVectorEntriesGiven)
   {
     std::istringstream input("1 2");
-    lineDefinition->AddIntVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddIntVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButTooManyVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButTooManyVectorEntriesGiven)
   {
     std::istringstream input("1 2 3 4");
-    lineDefinition->AddIntVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddIntVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButDoubleVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenIntVectorRequiredButDoubleVectorEntriesGiven)
   {
     std::istringstream input("1.23 2.34 3.45");
-    lineDefinition->AddIntVector("OMEGA", 3);
-    ExpectThrowsError(input);
+    auto line_definition = LineDefinition::Builder().AddIntVector("OMEGA", 3).Build();
+    EXPECT_ANY_THROW(line_definition.Read(input));
   }
 
   // Double Vector
-  TEST_F(LineDefinitionTest, AddDoubleVector)
+  TEST(LineDefinitionTest, AddDoubleVector)
   {
     std::istringstream input("1 2 3");
-    lineDefinition->AddDoubleVector("OMEGA", 3);
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddDoubleVector("OMEGA", 3).Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenDoubleVectorRequiredButTooFewVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenDoubleVectorRequiredButTooFewVectorEntriesGiven)
   {
     std::istringstream input("1 2");
-    lineDefinition->AddDoubleVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddDoubleVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenDoubleVectorRequiredButTooManyVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenDoubleVectorRequiredButTooManyVectorEntriesGiven)
   {
     std::istringstream input("1 2 3 4");
-    lineDefinition->AddDoubleVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddDoubleVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // Named String
-  TEST_F(LineDefinitionTest, AddNamedString)
+  TEST(LineDefinitionTest, AddNamedString)
   {
     std::istringstream input("OMEGA TEST");
-    lineDefinition->AddNamedString("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddNamedString("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedStringRequiredButNothingGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedStringRequiredButNothingGiven)
   {
     std::istringstream input("OMEGA ");
-    lineDefinition->AddNamedString("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedString("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedStringRequiredButNoNameGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedStringRequiredButNoNameGiven)
   {
     std::istringstream input("TEST");
-    lineDefinition->AddNamedString("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedString("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // Named Int
-  TEST_F(LineDefinitionTest, AddNamedInt)
+  TEST(LineDefinitionTest, AddNamedInt)
   {
     std::istringstream input("OMEGA 1");
-    lineDefinition->AddNamedInt("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddNamedInt("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedIntRequiredButNothingGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedIntRequiredButNothingGiven)
   {
     std::istringstream input("OMEGA");
-    lineDefinition->AddNamedInt("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedInt("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedIntRequiredButDoubleGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedIntRequiredButDoubleGiven)
   {
     std::istringstream input("OMEGA 1.23");
-    lineDefinition->AddNamedInt("OMEGA");
-    ExpectThrowsError(input);
+    auto line_definition = LineDefinition::Builder().AddNamedInt("OMEGA").Build();
+    EXPECT_ANY_THROW(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedIntRequiredButNoNameGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedIntRequiredButNoNameGiven)
   {
     std::istringstream input("1");
-    lineDefinition->AddNamedInt("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedInt("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // Named Int Vector
-  TEST_F(LineDefinitionTest, AddNamedIntVector)
+  TEST(LineDefinitionTest, AddNamedIntVector)
   {
     std::istringstream input("OMEGA 1 2 3");
-    lineDefinition->AddNamedIntVector("OMEGA", 3);
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddNamedIntVector("OMEGA", 3).Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButTooFewVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButTooFewVectorEntriesGiven)
   {
     std::istringstream input("OMEGA 1 2");
-    lineDefinition->AddNamedIntVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedIntVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButTooManyVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButTooManyVectorEntriesGiven)
   {
     std::istringstream input("OMEGA 1 2 3 4");
-    lineDefinition->AddNamedIntVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedIntVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButDoubleVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButDoubleVectorEntriesGiven)
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45");
-    lineDefinition->AddNamedIntVector("OMEGA", 3);
-    ExpectThrowsError(input);
+    auto line_definition = LineDefinition::Builder().AddNamedIntVector("OMEGA", 3).Build();
+    EXPECT_ANY_THROW(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButNoNameGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedIntVectorRequiredButNoNameGiven)
   {
     std::istringstream input("1.23 2.34 3.45");
-    lineDefinition->AddNamedIntVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedIntVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // Named Double
-  TEST_F(LineDefinitionTest, AddNamedDouble)
+  TEST(LineDefinitionTest, AddNamedDouble)
   {
     std::istringstream input("OMEGA 1.23");
-    lineDefinition->AddNamedDouble("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDouble("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedDoubleRequiredButNothingGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedDoubleRequiredButNothingGiven)
   {
     std::istringstream input("OMEGA");
-    lineDefinition->AddNamedDouble("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDouble("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedDoubleConcatenatedWithSomething)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedDoubleConcatenatedWithSomething)
   {
     std::istringstream input("OMEGA 123.45*893");
-    lineDefinition->AddNamedDouble("OMEGA");
-    ExpectThrowsError(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDouble("OMEGA").Build();
+    EXPECT_ANY_THROW(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedDoubleRequiredButNoNameGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedDoubleRequiredButNoNameGiven)
   {
     std::istringstream input("1.23");
-    lineDefinition->AddNamedDouble("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDouble("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // Named Double Vector
-  TEST_F(LineDefinitionTest, AddNamedDoubleVector)
+  TEST(LineDefinitionTest, AddNamedDoubleVector)
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45");
-    lineDefinition->AddNamedDoubleVector("OMEGA", 3);
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedDoubleVectorRequiredButTooFewVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedDoubleVectorRequiredButTooFewVectorEntriesGiven)
   {
     std::istringstream input("OMEGA 1.23 2.34");
-    lineDefinition->AddNamedDoubleVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedDoubleVectorRequiredButTooManyVectorEntriesGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedDoubleVectorRequiredButTooManyVectorEntriesGiven)
   {
     std::istringstream input("OMEGA 1.23 2.34 3.45 4.56");
-    lineDefinition->AddNamedDoubleVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadFalseWhenNamedDoubleVectorRequiredButNoNameGiven)
+  TEST(LineDefinitionTest, ReadFalseWhenNamedDoubleVectorRequiredButNoNameGiven)
   {
     std::istringstream input("1.23 2.34 3.45");
-    lineDefinition->AddNamedDoubleVector("OMEGA", 3);
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddNamedDoubleVector("OMEGA", 3).Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
   // Too much in stream except from comments and whitespaces
-  TEST_F(LineDefinitionTest, ReadFalseWhenStreamHasTooMuch)
+  TEST(LineDefinitionTest, ReadFalseWhenStreamHasTooMuch)
   {
     std::istringstream input("OMEGA More data that is not in lineDefinition.");
-    lineDefinition->AddTag("OMEGA");
-    ExpectReadReturnsFalse(input);
+    auto line_definition = LineDefinition::Builder().AddTag("OMEGA").Build();
+    EXPECT_FALSE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadTrueWhenStreamHasTooMuchButOnlyComments)
+  TEST(LineDefinitionTest, ReadTrueWhenStreamHasTooMuchButOnlyComments)
   {
     std::istringstream input("OMEGA // Comment");
-    lineDefinition->AddTag("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddTag("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
-  TEST_F(LineDefinitionTest, ReadTrue_When_StreamHasTooMuchButOnlyWhitespaces)
+  TEST(LineDefinitionTest, ReadTrue_When_StreamHasTooMuchButOnlyWhitespaces)
   {
     std::istringstream input("OMEGA           ");
-    lineDefinition->AddTag("OMEGA");
-    ExpectReadReturnsTrue(input);
+    auto line_definition = LineDefinition::Builder().AddTag("OMEGA").Build();
+    EXPECT_TRUE(line_definition.Read(input));
   }
 
   // Empty stream
-  TEST_F(LineDefinitionTest, ReadTrueWhenEmptyStreamIntoEmptyDefinition)
+  TEST(LineDefinitionTest, ReadTrueWhenEmptyStreamIntoEmptyDefinition)
   {
     std::istringstream input("");
-    ExpectReadReturnsTrue(input);
+    LineDefinition line_definition;
+    EXPECT_TRUE(line_definition.Read(input));
+  }
+
+  TEST(LineDefinitionPrinting, Empty)
+  {
+    std::ostringstream out;
+    LineDefinition().Print(out);
+    EXPECT_EQ(out.str(), "");
+  }
+
+  TEST(LineDefinitionPrinting, ComplicatedLine)
+  {
+    std::ostringstream out;
+    LineDefinition::Builder()
+        .AddTag("abc")
+        .AddInt("i")
+        .AddNamedDouble("d")
+        .AddNamedIntVector("iv", 3)
+        .AddOptionalNamedStringVector("s", 2)
+        .AddOptionalNamedPairOfStringAndDoubleVector("pairs", LengthFromIntNamed("i"))
+        .Build()
+        .Print(out);
+
+    EXPECT_EQ(out.str(), "abc 0 d 0 iv 0 0 0  [ pairs [...] s '' ''  ] ");
   }
 }  // namespace

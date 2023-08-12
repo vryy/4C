@@ -89,19 +89,20 @@ void DRT::ELEMENTS::So_hex8Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"]
-      .AddIntVector("HEX8", 8)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedString("EAS")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("GROWTHTRIG");
+  defs["HEX8"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("HEX8", 8)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .AddNamedString("EAS")
+                     .AddOptionalNamedDoubleVector("RAD", 3)
+                     .AddOptionalNamedDoubleVector("AXI", 3)
+                     .AddOptionalNamedDoubleVector("CIR", 3)
+                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .AddOptionalNamedDoubleVector("FIBER2", 3)
+                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .AddOptionalNamedDouble("STRENGTH")
+                     .AddOptionalNamedDouble("GROWTHTRIG")
+                     .Build();
 }
 
 // initialization of static gauss point rule for the so_hex8 element

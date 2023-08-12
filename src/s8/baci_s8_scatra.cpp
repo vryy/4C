@@ -57,18 +57,10 @@ void DRT::ELEMENTS::Shell8ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["SHELL8SCATRA"];
 
-  defs["QUAD4"] = defs_shell["QUAD4"];
-  defs["QUAD8"] = defs_shell["QUAD8"];
-  defs["QUAD9"] = defs_shell["QUAD9"];
-  defs["TRI3"] = defs_shell["TRI3"];
-  defs["TRI6"] = defs_shell["TRI6"];
-
-  // add scalar transport impltype
-  defs["QUAD4"].AddNamedString("TYPE");
-  defs["QUAD8"].AddNamedString("TYPE");
-  defs["QUAD9"].AddNamedString("TYPE");
-  defs["TRI3"].AddNamedString("TYPE");
-  defs["TRI6"].AddNamedString("TYPE");
+  for (const auto& [key, shell_line_def] : defs_shell)
+  {
+    defs[key] = DRT::INPUT::LineDefinition::Builder(shell_line_def).AddNamedString("TYPE").Build();
+  }
 }
 
 /*----------------------------------------------------------------------*
