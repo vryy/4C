@@ -13,6 +13,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_line.H"
 #include "baci_utils_exceptions.H"
@@ -121,7 +122,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList& param
             {
               // calculate reference position of GP
               CORE::LINALG::SerialDenseMatrix gp_coord(1, numdim);
-              gp_coord.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, shapefcts, x, 0.0);
+              CORE::LINALG::multiplyTN(gp_coord, shapefcts, x);
 
               // write coordinates in another datatype
               double gp_coord2[numdim];
@@ -162,7 +163,7 @@ void DRT::ELEMENTS::StructuralLine::LineIntegration(double& dL,
 {
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(1, 3);
-  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
+  CORE::LINALG::multiply(dxyzdrs, deriv, x);
   dL = 0.0;
   for (int i = 0; i < 3; ++i) dL += dxyzdrs(0, i) * dxyzdrs(0, i);
   dL = sqrt(dL);

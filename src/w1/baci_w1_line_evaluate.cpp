@@ -16,6 +16,7 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_structporo.H"
 #include "baci_nurbs_discret.H"
@@ -471,7 +472,7 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
   // compute derivative of parametrization
   double dr = 0.0;
   CORE::LINALG::SerialDenseMatrix der_par(1, 2);
-  int err = der_par.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xye, 0.0);
+  int err = CORE::LINALG::multiplyNT(der_par, deriv, xye);
   if (err != 0) dserror("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != nullptr)
@@ -771,9 +772,9 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
         // get Jacobian matrix and determinant w.r.t. spatial configuration
         //! transposed jacobian "dx/ds"
         CORE::LINALG::SerialDenseMatrix xjm(numdim, numdim);
-        xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xcurr, 0.0);
+        CORE::LINALG::multiplyNT(xjm, deriv, xcurr);
         CORE::LINALG::SerialDenseMatrix Jmat(numdim, numdim);
-        Jmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xrefe, 0.0);
+        CORE::LINALG::multiplyNT(Jmat, deriv, xrefe);
 
         double det = 0.0;
         double detJ = 0.0;

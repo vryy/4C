@@ -16,6 +16,7 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_aaaraghavanvorp_damage.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_micromaterial.H"
@@ -1736,7 +1737,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(
   CORE::LINALG::SerialDenseMatrix v(NUMDIM_SOH8, NUMDIM_SOH8);
   SVD(defgrd, u, s, v);  // Singular Value Decomposition
   CORE::LINALG::SerialDenseMatrix rot(NUMDIM_SOH8, NUMDIM_SOH8);
-  rot.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, v, 0.0);
+  CORE::LINALG::multiply(rot, u, v);
   // temp.Multiply('N','N',1.0,v,s,0.0);
   // CORE::LINALG::SerialDenseMatrix stretch_disp(NUMDIM_SOH8,NUMDIM_SOH8);
   // stretch_disp.Multiply('N','T',1.0,temp,v,0.0);
@@ -1758,12 +1759,12 @@ void DRT::ELEMENTS::So_sh8::sosh8_Cauchy(
   CORE::LINALG::SerialDenseMatrix U_mod(NUMDIM_SOH8, NUMDIM_SOH8);
   for (int i = 0; i < NUMDIM_SOH8; ++i) s(i, i) = sqrt(s(i, i));
   CORE::LINALG::SerialDenseMatrix temp2(NUMDIM_SOH8, NUMDIM_SOH8);
-  temp2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, s, 0.0);
-  U_mod.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, temp2, v, 0.0);
+  CORE::LINALG::multiply(temp2, u, s);
+  CORE::LINALG::multiply(U_mod, temp2, v);
 
   // F^mod = RU^mod
   CORE::LINALG::SerialDenseMatrix defgrd_consistent(NUMDIM_SOH8, NUMDIM_SOH8);
-  defgrd_consistent.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, rot, U_mod, 0.0);
+  CORE::LINALG::multiply(defgrd_consistent, rot, U_mod);
   defgrd.SetView(defgrd_consistent.A());
 
   /*

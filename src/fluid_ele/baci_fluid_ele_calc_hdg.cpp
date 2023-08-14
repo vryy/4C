@@ -17,6 +17,7 @@
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_fluid_functions.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_fluid_murnaghantait.H"
 #include "baci_mat_newtonianfluid.H"
 
@@ -496,8 +497,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectField(DRT::ELEMENTS::Fluid* 
     // Instead of computing the integral of the product here we are multiplying
     // the previously compute part of the integral to give the same result
     // In this way we avoid a cycle through the shape functions
-    localSolver_->massMat.multiply(
-        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    CORE::LINALG::multiplyNT(
+        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
 
     // Creating and solving a system of the form Ax = b where
     // A is a matrix and x and b are vectors
@@ -1009,8 +1010,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectForceOnDofVecForHIT(DRT::ELE
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    localSolver_->massMat.multiply(
-        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    CORE::LINALG::multiplyNT(
+        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
@@ -1120,8 +1121,8 @@ int DRT::ELEMENTS::FluidEleCalcHDG<distype>::ProjectInitialFieldForHIT(DRT::ELEM
           localMat(i, nsd_ * nsd_ + d) += shapes_->shfunct(i, q) * f(d) * fac;
       }
     }
-    localSolver_->massMat.multiply(
-        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    CORE::LINALG::multiplyNT(
+        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
 
     // solve mass matrix system, return values in localMat = elevec2 correctly ordered
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
@@ -1836,10 +1837,10 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
   if (!evaluateOnlyNonlinear)
   {
     // multiplication of the shapes functions times the shapes functions weighted
-    massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
+    CORE::LINALG::multiplyNT(massMat, massPart, massPartW);
     // multiplication of the shapes functions derivatices
     // times the shapes functions weighted
-    guMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., gradPart, massPartW, 0.);
+    CORE::LINALG::multiplyNT(guMat, gradPart, massPartW);
     ugMat = guMat;
     // scalar multiplication of the matrix times the viscosity
     ugMat.scale(viscosity);
@@ -1847,7 +1848,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::ComputeInteriorMatric
   if (!stokes)
   {
     // this matrix is the nonlinear part of the problem
-    uuconv.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., gradPart, uPart, 0.);
+    CORE::LINALG::multiplyNT(uuconv, gradPart, uPart);
 
     // compute convection: Need to add diagonal part and transpose off-diagonal blocks
     // (same trick as done when eliminating the velocity gradient)
@@ -2240,7 +2241,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGrad
   // create UG * diag(M^{-1}) * GU,
 
   // compute UG * M^{-1}, store result in tmpMatGrad
-  tmpMatGrad.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, ugMat, massMat, 0.);
+  CORE::LINALG::multiply(tmpMatGrad, ugMat, massMat);
 
   // GU and UG are not fully generated, instead, only three different blocks are kept
   // to compute UG * M^{-1} * GU, therefore compute the product of reduced matrices
@@ -2251,7 +2252,7 @@ void DRT::ELEMENTS::FluidEleCalcHDG<distype>::LocalSolver::EliminateVelocityGrad
   // diagonal blocks.
 
   // compute (UG * M^{-1}) * GU
-  tmpMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., tmpMatGrad, guMat, 0.);
+  CORE::LINALG::multiplyNT(tmpMat, tmpMatGrad, guMat);
   for (unsigned int i = 0; i < ndofs_; ++i)
     for (unsigned int j = 0; j < ndofs_; ++j)
     {

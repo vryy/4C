@@ -18,6 +18,7 @@
 #include "baci_lib_exporter.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_utils_exceptions.H"
@@ -186,11 +187,11 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
   // Q1ET4
   //    A = det(J_o)/det(J) * J_o . sum_i^neas ( M_i alpha_i ) . J_o^{-T}
   CORE::LINALG::SerialDenseMatrix A(2, 2);  // A operator
-  M_temp.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, M, xjm_inv0, 0.0);
+  CORE::LINALG::multiplyNT(M_temp, M, xjm_inv0);
   if (eastype_ == eas_q1e4)
-    A.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, detJ0 / det, xjm0, M_temp, 0.0);
+    CORE::LINALG::multiplyTN(0.0, A, detJ0 / det, xjm0, M_temp);
   else if (eastype_ == eas_q1et4)
-    A.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, detJ0 / det, xjm0, M_temp, 0.0);
+    CORE::LINALG::multiply(0.0, A, detJ0 / det, xjm0, M_temp);
   else
     dserror("Cannot handle EAS type=%d", eastype_);
 
@@ -219,7 +220,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
   // multiplication A_big x boplin0
 
-  W0.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, A_big, boplin0, 0.0);
+  CORE::LINALG::multiply(W0, A_big, boplin0);
 
   // calculation operators G and Z, therfore matrices A are needed
   // without alphas
@@ -270,11 +271,11 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
   for (int i = 0; i < Wall1::neas_; i++)  // loop over eas-parameter
   {
-    M_temp.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, M_ges[i], xjm_inv0, 0.0);
+    CORE::LINALG::multiplyNT(M_temp, M_ges[i], xjm_inv0);
     if (eastype_ == eas_q1e4)
-      A_ges[i].multiply(Teuchos::TRANS, Teuchos::NO_TRANS, detJ0 / det, xjm0, M_temp, 0.0);
+      CORE::LINALG::multiplyTN(0.0, A_ges[i], detJ0 / det, xjm0, M_temp);
     else if (eastype_ == eas_q1et4)
-      A_ges[i].multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, detJ0 / det, xjm0, M_temp, 0.0);
+      CORE::LINALG::multiply(0.0, A_ges[i], detJ0 / det, xjm0, M_temp);
     else
       dserror("Cannot handle EAS type=%d", eastype_);
 
@@ -299,7 +300,7 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(CORE::LINALG::SerialDenseMatrix& 
 
     // calculate operator W0wa without eas-parameters alpha
 
-    W0wa.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Awa_big, boplin0, 0.0);
+    CORE::LINALG::multiply(W0wa, Awa_big, boplin0);
 
     // fill Z-operator
 
@@ -358,7 +359,7 @@ void DRT::ELEMENTS::Wall1::w1_stress_eas(const CORE::LINALG::SerialDenseMatrix& 
   stress_red(2, 0) = stress(0, 2);  // S_12 (=S_21)
 
   /*-first piola-kirchhoff stress vector--------------------------------------*/
-  p_stress.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, F_tot, stress_red, 0.0);
+  CORE::LINALG::multiply(p_stress, F_tot, stress_red);
 
   return;
 }  // end of w1_p_stress
@@ -391,23 +392,23 @@ void DRT::ELEMENTS::Wall1::w1_kdd(const CORE::LINALG::SerialDenseMatrix& boplin,
 
   // Temp (4x3) = F*C
   CORE::LINALG::SerialDenseMatrix Temp(4, 3, true);
-  Temp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, F_tot, C_red, 0.0);
+  CORE::LINALG::multiply(Temp, F_tot, C_red);
 
   // FCF^T (4x4) = Temp*F^T
   FCF.putScalar(0.0);
-  FCF.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, Temp, F_tot, 0.0);
+  CORE::LINALG::multiplyNT(FCF, Temp, F_tot);
 
   // Temp1 (4x8) = FCF^T * (B+W0)
   CORE::LINALG::SerialDenseMatrix Temp1(4, 2 * NumNode(), true);
-  Temp1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FCF, BplusW, 0.0);
+  CORE::LINALG::multiply(Temp1, FCF, BplusW);
 
   // Temp3 (4x8) = S*(B+W0)
   CORE::LINALG::SerialDenseMatrix Temp3(4, 2 * NumNode(), true);
-  Temp3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, stress, BplusW, 0.0);
+  CORE::LINALG::multiply(Temp3, stress, BplusW);
 
   // Kdd = (B+W0)^T*FCF^T*(B+W0) + (B+W0)^T*S*(B+W0)
-  estif.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, fac, BplusW, Temp1, 1.0);
-  estif.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, fac, BplusW, Temp3, 1.0);
+  CORE::LINALG::multiplyTN(1.0, estif, fac, BplusW, Temp1);
+  CORE::LINALG::multiplyTN(1.0, estif, fac, BplusW, Temp3);
 
   return;
 }  // DRT::ELEMENTS::Wall1::w1_kdd
@@ -429,15 +430,15 @@ void DRT::ELEMENTS::Wall1::w1_kda(const CORE::LINALG::SerialDenseMatrix& FCF,
 
   // Temp1 = FCF^T*G
   CORE::LINALG::SerialDenseMatrix Temp1(4, Wall1::neas_, true);
-  Temp1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FCF, G, 0.0);
+  CORE::LINALG::multiply(Temp1, FCF, G);
 
   // Temp3 = S*(G)
   CORE::LINALG::SerialDenseMatrix Temp3(4, Wall1::neas_, true);
-  Temp3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, stress, G, 0.0);
+  CORE::LINALG::multiply(Temp3, stress, G);
 
   // Kda (8x4) = (B+W0)^T*FCF^T*G) + (B+W0)^T*S*G + PZ
-  Kda.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, fac, BplusW, Temp1, 1.0);
-  Kda.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, fac, BplusW, Temp3, 1.0);
+  CORE::LINALG::multiplyTN(1.0, Kda, fac, BplusW, Temp1);
+  CORE::LINALG::multiplyTN(1.0, Kda, fac, BplusW, Temp3);
   // Temp5 = fac * P*Z
   for (int i = 0; i < NumNode(); i++)
   {
@@ -463,15 +464,15 @@ void DRT::ELEMENTS::Wall1::w1_kaa(const CORE::LINALG::SerialDenseMatrix& FCF,
 {
   // Temp1 = FCF*G
   CORE::LINALG::SerialDenseMatrix Temp1(4, Wall1::neas_, true);
-  Temp1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FCF, G, 0.0);
+  CORE::LINALG::multiply(Temp1, FCF, G);
 
   // Temp3 = S*G
   CORE::LINALG::SerialDenseMatrix Temp3(4, Wall1::neas_, true);
-  Temp3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, stress, G, 0.0);
+  CORE::LINALG::multiply(Temp3, stress, G);
 
   // Kaa = G^T*FCF^T*G + G^T*S*G
-  Kaa.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, fac, G, Temp1, 1.0);
-  Kaa.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, fac, G, Temp3, 1.0);
+  CORE::LINALG::multiplyTN(1.0, Kaa, fac, G, Temp1);
+  CORE::LINALG::multiplyTN(1.0, Kaa, fac, G, Temp3);
 
   return;
 }  // DRT::ELEMENTS::Wall1::w1_kaa
@@ -493,13 +494,13 @@ void DRT::ELEMENTS::Wall1::w1_fint_eas(const CORE::LINALG::SerialDenseMatrix& W0
 
   // Temp1 (8x1) = (BL+W0)^T*p_stress
   CORE::LINALG::SerialDenseMatrix Temp1(2 * NumNode(), 1, true);
-  Temp1.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, BplusW, p_stress, 0.0);
+  CORE::LINALG::multiplyTN(Temp1, BplusW, p_stress);
 
   for (int i = 0; i < 2 * NumNode(); i++) intforce(i) += fac * Temp1(i, 0);
 
   // Temp2 = G^T*p_stress
   CORE::LINALG::SerialDenseMatrix Temp2(Wall1::neas_, 1, true);
-  Temp2.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, G, p_stress, 0.0);
+  CORE::LINALG::multiplyTN(Temp2, G, p_stress);
 
   for (int i = 0; i < Wall1::neas_; i++) feas(i) += fac * Temp2(i, 0);
 

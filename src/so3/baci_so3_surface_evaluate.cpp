@@ -21,6 +21,7 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_structporo.H"
 #include "baci_nurbs_discret.H"
@@ -274,9 +275,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
         }
 
         CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-        dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
+        CORE::LINALG::multiply(dxyzdrs, deriv, x);
         CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
-        metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, dxyzdrs, dxyzdrs, 0.0);
+        CORE::LINALG::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
         const double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
 
@@ -293,7 +294,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
             if (functnum > 0)
             {
               // Calculate reference position of GP
-              gp_coord.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, funct, x, 0.0);
+              CORE::LINALG::multiplyTN(gp_coord, funct, x);
               // write coordinates in another datatype
               double gp_coord2[numdim];
               for (int i = 0; i < numdim; i++)
@@ -340,7 +341,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
 
         if (functnum > 0)
         {
-          gp_coord.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, funct, xc, 0.0);
+          CORE::LINALG::multiplyTN(gp_coord, funct, xc);
           // write coordinates in another datatype
           double gp_coord2[numdim];
           for (int i = 0; i < numdim; i++)
@@ -416,7 +417,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
         {
           if (functnum > 0)
           {
-            gp_coord.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, funct, xc, 0.0);
+            CORE::LINALG::multiplyTN(gp_coord, funct, xc);
             // write coordinates in another datatype
             double gp_coord2[numdim];
             for (int i = 0; i < numdim; i++)
@@ -461,8 +462,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(std::vector<double>& n
 
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-  if (dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0))
-    dserror("multiply failed");
+  if (CORE::LINALG::multiply(dxyzdrs, deriv, x)) dserror("multiply failed");
 
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
   normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -479,8 +479,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA, std::vec
 {
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-  if (dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0))
-    dserror("multiply failed");
+  if (CORE::LINALG::multiply(dxyzdrs, deriv, x)) dserror("multiply failed");
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
@@ -493,7 +492,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA, std::vec
   **        dr     dr            dr     ds            ds     ds
   */
   CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
-  metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, dxyzdrs, dxyzdrs, 0.0);
+  CORE::LINALG::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
   detA = sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
   normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);
@@ -585,7 +584,7 @@ void DRT::ELEMENTS::StructuralSurface::analytical_DSurfaceIntegration(
 
   // compute dXYZ / drs (defining the two local basis vectors)
   CORE::LINALG::SerialDenseMatrix dxyzdrs(numsurfdim, numdim);
-  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
+  CORE::LINALG::multiply(dxyzdrs, deriv, x);
 
   // basis vectors (just ouf of laziness)
   std::vector<double> g1(numdim);
@@ -1886,9 +1885,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         }
 
         CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-        dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
+        CORE::LINALG::multiply(dxyzdrs, deriv, x);
         CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
-        metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, dxyzdrs, dxyzdrs, 0.0);
+        CORE::LINALG::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
         const double detA =
             sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
 
@@ -2179,7 +2178,7 @@ double DRT::ELEMENTS::StructuralSurface::ComputeConstrVols(
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th
       // column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, 3);
-      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
+      CORE::LINALG::multiply(metrictensor, deriv, ab);
       // CORE::LINALG::SerialDenseMatrix metrictensor(2,2);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
@@ -2257,7 +2256,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv(const CORE::LINALG::Seria
       // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd
       // column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, numdim);
-      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
+      CORE::LINALG::multiply(metrictensor, deriv, ab);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);
@@ -2358,7 +2357,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const CORE::LINALG::Seri
     CORE::LINALG::SerialDenseMatrix ddet2(3 * ndof, ndof, true);
     CORE::LINALG::SerialDenseVector jacobi_deriv(ndof, true);
 
-    dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
+    CORE::LINALG::multiply(dxyzdrs, deriv, x);
 
     /*--------------- derivation of minor determiants of the Jacobian
      *----------------------------- with respect to the displacements */
@@ -2583,9 +2582,9 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
     // get Jacobian matrix and determinant w.r.t. spatial configuration
     //! transposed jacobian "dx/ds"
     CORE::LINALG::SerialDenseMatrix xjm(numdim, numdim);
-    xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xcurr, 0.0);
+    CORE::LINALG::multiplyNT(xjm, deriv, xcurr);
     CORE::LINALG::SerialDenseMatrix Jmat(numdim, numdim);
-    Jmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xrefe, 0.0);
+    CORE::LINALG::multiplyNT(Jmat, deriv, xrefe);
 
     double det = 0.0;
     double detJ = 0.0;

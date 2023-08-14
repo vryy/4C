@@ -8,6 +8,7 @@
 
 #include "baci_porofluidmultiphase_ele_porofluid_phasemanager.H"
 
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_fluidporo_multiphase_reactions.H"
 #include "baci_mat_fluidporo_multiphase_singlereaction.H"
@@ -697,8 +698,7 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-  saturationderiv_->multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, *pressurederiv_, 0.0);
+  CORE::LINALG::multiply(*saturationderiv_, deriv, *pressurederiv_);
 
   // calculate 2nd derivatives of saturation w.r.t. pressure
   // TODO: this should work for pressure und diffpressure DOFs, however not for
@@ -709,9 +709,8 @@ void DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerDeriv::EvaluateGPState(
   multiphasemat.EvaluateSecondDerivOfSaturationWrtPressure(*dummyderiv, pressure);
   for (int i = 0; i < numfluidphases; i++)
   {
-    deriv.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, *pressurederiv_, (*dummyderiv)[i], 0.0);
-    (*saturationderivderiv_)[i].multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, *pressurederiv_, 0.0);
+    CORE::LINALG::multiplyTN(deriv, *pressurederiv_, (*dummyderiv)[i]);
+    CORE::LINALG::multiply((*saturationderivderiv_)[i], deriv, *pressurederiv_);
   }
 
   // compute derivative of solid pressure w.r.t. dofs with product rule

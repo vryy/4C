@@ -10,6 +10,7 @@
 
 #include "baci_linalg_utils_densematrix_svd.H"
 
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_unittest_utils_assertions.h"
 
 namespace
@@ -32,7 +33,7 @@ namespace
   {
     CORE::LINALG::SerialDenseMatrix MHM(M.numRows(), M.numCols(), false);
 
-    MHM.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, M, M, 0.0);
+    CORE::LINALG::multiplyTN(MHM, M, M);
 
     for (int i = 0; i < M.numRows(); ++i)
       for (int j = 0; j < M.numCols(); ++j) EXPECT_NEAR(MHM(i, j), i == j, 1e-9);
@@ -76,8 +77,8 @@ namespace
     // check whether SVD fulfills: A = Q * S * VT
     CORE::LINALG::SerialDenseMatrix QS(rows, cols, false);
     CORE::LINALG::SerialDenseMatrix A_result(rows, cols, false);
-    QS.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Q, S, 0.0);
-    A_result.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, QS, VT, 0.0);
+    CORE::LINALG::multiply(QS, Q, S);
+    CORE::LINALG::multiply(A_result, QS, VT);
 
     BACI_EXPECT_NEAR(A, A_result, 1e-9);
 

@@ -15,6 +15,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
 #include "baci_lib_utils.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_nurbs_discret.H"
@@ -301,9 +302,9 @@ void DRT::ELEMENTS::Ale2::ale2_torsional(int i, int j, int k,
   /*----------------------------------- perform matrix multiplications ---*/
 
 
-  int err = A.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, R, C, 0.0);  // A = R^t * C
+  int err = CORE::LINALG::multiplyTN(A, R, C);  // A = R^t * C
   if (err != 0) dserror("Multiply failed");
-  err = k_torsion->multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, A, R, 0.0);  // stiff = A * R
+  err = CORE::LINALG::multiply(*k_torsion, A, R);  // stiff = A * R
   if (err != 0) dserror("Multiply failed");
 }
 
@@ -694,7 +695,7 @@ void DRT::ELEMENTS::Ale2::static_ke_nonlinear(const std::vector<int>& lm,
     displacements.resize(nd);
     for (int i = 0; i < nd; ++i) displacements(i) = disp[i];
 
-    force->multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *stiffmatrix, displacements, 0.0);
+    CORE::LINALG::multiply(*force, *stiffmatrix, displacements);
   }
 
   return;

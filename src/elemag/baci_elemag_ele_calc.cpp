@@ -15,6 +15,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_electromagnetic.H"
 
@@ -476,7 +477,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
     }
   }
   // The integration is made by computing the matrix product
-  massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
+  CORE::LINALG::multiplyNT(massMat, massPart, massPartW);
   {
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -524,7 +525,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectField(DRT::ELEMEN
 
 
       // The integration is made by computing the matrix product
-      massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
+      CORE::LINALG::multiplyNT(massMat, massPart, massPartW);
       {
         using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
         using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -686,7 +687,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTest(DRT::EL
       }
     }
     // The integration is made by computing the matrix product
-    massMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
+    CORE::LINALG::multiplyNT(massMat, massPart, massPartW);
     {
       using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
       using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -802,7 +803,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectFieldTestTrace(
           transformatrix(shapesface_->nfdofs_ * q + i, shapesface_->nfdofs_ * d + i) =
               shapesface_->tangent(d, q);
 
-    faceVec.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempVec, 0.0);
+    CORE::LINALG::multiplyTN(faceVec, transformatrix, tempVec);
 
     // Filling the vector of trace values
     for (unsigned int d = 0; d < nsd_ - 1; ++d)
@@ -895,7 +896,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectDirichField(
         transformatrix(shapesface_->nfdofs_ * q + i, shapesface_->nfdofs_ * d + i) =
             shapesface_->tangent(d, q);
 
-  elevec1.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempVec, 0.0);
+  CORE::LINALG::multiplyTN(elevec1, transformatrix, tempVec);
 
   return 0;
 }
@@ -1078,7 +1079,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::InterpolateSolutionToNodes(DRT::ELEME
             ele->elenodeTrace2d_[f * (nsd_ - 1) * shapesface_->nfdofs_ + shapesface_->nfdofs_ * d +
                                  i];
 
-    temptrace.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, facetrace, 0);
+    CORE::LINALG::multiplyTN(temptrace, transformatrix, facetrace);
 
     // EVALUATE SHAPE POLYNOMIALS IN NODE
     // Now that we have an ordered coordinates vector we can easily compute the
@@ -1230,47 +1231,39 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 
   if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm1_,
-        0.0);  //  4/3AH^{n-1} - 1/3AH^{n-2}
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, localSolver_->Amat,
-        ele.eleinteriorMagnetic_, 1.0);  //  4/3AH^{n-1}
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm1_,
-        -1.0);  // -1/3EE^{n-2} - I_s
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, localSolver_->Emat,
-        ele.eleinteriorElectric_,
-        1.0);  // 4/3EE^{n-1} - 1/3EE^{n-2} - I_s
+    CORE::LINALG::multiply(0.0, tempVec1, -1.0 / 3.0, localSolver_->Amat,
+        ele.eleinteriorMagneticnm1_);  //  4/3AH^{n-1} - 1/3AH^{n-2}
+    CORE::LINALG::multiply(
+        1.0, tempVec1, 4.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagnetic_);  //  4/3AH^{n-1}
+    CORE::LINALG::multiply(-1.0, tempVec2, -1.0 / 3.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm1_);  // -1/3EE^{n-2} - I_s
+    CORE::LINALG::multiply(1.0, tempVec2, 4.0 / 3.0, localSolver_->Emat,
+        ele.eleinteriorElectric_);  // 4/3EE^{n-1} - 1/3EE^{n-2} - I_s
   }
   else if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm3_,
-        0.0);  // (1/3)E E^{n} + I_s
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm2_,
-        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm1_, 1.0);
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagnetic_, 1.0);
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm3_,
-        -1.0);  // (1/3)E E^{n} + I_s
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm2_,
-        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm1_, 1.0);
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectric_, 1.0);
+    CORE::LINALG::multiply(0.0, tempVec1, -3.0 / 25.0, localSolver_->Amat,
+        ele.eleinteriorMagneticnm3_);  // (1/3)E E^{n} + I_s
+    CORE::LINALG::multiply(1.0, tempVec1, 16.0 / 25.0, localSolver_->Amat,
+        ele.eleinteriorMagneticnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    CORE::LINALG::multiply(
+        1.0, tempVec1, -36.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_);
+    CORE::LINALG::multiply(
+        1.0, tempVec1, 48.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagnetic_);
+    CORE::LINALG::multiply(-1.0, tempVec2, -3.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm3_);  // (1/3)E E^{n} + I_s
+    CORE::LINALG::multiply(1.0, tempVec2, 16.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    CORE::LINALG::multiply(
+        1.0, tempVec2, -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(
+        1.0, tempVec2, 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_);
   }
   else
   {
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Amat,
-        ele.eleinteriorMagnetic_, 0.0);  //  AH^{n-1}
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Emat,
-        ele.eleinteriorElectric_, -1.0);  // EE^{n-1} - I_s
+    CORE::LINALG::multiply(tempVec1, localSolver_->Amat, ele.eleinteriorMagnetic_);  //  AH^{n-1}
+    CORE::LINALG::multiply(
+        -1.0, tempVec2, 1.0, localSolver_->Emat, ele.eleinteriorElectric_);  // EE^{n-1} - I_s
   }
   ele.eleinteriorMagneticnm3_ = ele.eleinteriorMagneticnm2_;
   ele.eleinteriorMagneticnm2_ = ele.eleinteriorMagneticnm1_;
@@ -1280,18 +1273,14 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
   ele.eleinteriorElectricnm1_ = ele.eleinteriorElectric_;
 
   // Add the trace component
-  tempVec1.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Dmat, ele.elenodeTrace2d_, 1.0);
-  tempVec2.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Hmat, ele.elenodeTrace2d_, 1.0);
+  CORE::LINALG::multiply(1.0, tempVec1, -1.0, localSolver_->Dmat, ele.elenodeTrace2d_);
+  CORE::LINALG::multiply(1.0, tempVec2, -1.0, localSolver_->Hmat, ele.elenodeTrace2d_);
 
-  tempMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Fmat,
-      localSolver_->invAmat, 0.0);  // FA^{-1}
+  CORE::LINALG::multiply(tempMat, localSolver_->Fmat, localSolver_->invAmat);  // FA^{-1}
 
   tempMat2 += localSolver_->Emat;
   tempMat2 += localSolver_->Gmat;
-  tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat, localSolver_->Cmat,
-      1.0);  //(E + G) - FA^{-1}C
+  CORE::LINALG::multiply(1.0, tempMat2, -1.0, tempMat, localSolver_->Cmat);  //(E + G) - FA^{-1}C
   {
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -1300,19 +1289,17 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
     invert.invert();  //  [(E + G) - FA^{-1}C]^{-1}
   }
 
-  tempVec2.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat, tempVec1, 1.0);  //  e - FA^{-1}h
+  CORE::LINALG::multiply(1.0, tempVec2, -1.0, tempMat, tempVec1);  //  e - FA^{-1}h
 
   //  E^{n} = [(E + G) - FA^{-1}C]^{-1} (e - FA^{-1}h)
-  interiorElectricnp_.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, tempVec2, 0.0);
+  CORE::LINALG::multiply(interiorElectricnp_, tempMat2, tempVec2);
 
 
-  tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Cmat,
-      interiorElectricnp_, 1.0);  //  h - CE^{n}
+  CORE::LINALG::multiply(
+      1.0, tempVec1, -1.0, localSolver_->Cmat, interiorElectricnp_);  //  h - CE^{n}
 
   //  = A^{-1}(h - CE^{n})
-  interiorMagneticnp_.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->invAmat, tempVec1, 0.0);
+  CORE::LINALG::multiply(interiorMagneticnp_, localSolver_->invAmat, tempVec1);
 
   ele.eleinteriorMagnetic_ = interiorMagneticnp_;
   ele.eleinteriorElectric_ = interiorElectricnp_;
@@ -1321,79 +1308,60 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::UpdateInteriorVariablesAndComputeRes
 
   if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, localSolver_->Emat,
-        ele.eleinteriorElectric_,
-        -1.0);  //  = 4/3EE^{n} - I_s
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm1_,
-        1.0);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -4.0 / 3.0, localSolver_->Fmat,
-        ele.eleinteriorMagnetic_,
-        1.0);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s - 4/3FH^{n}
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0 / 3.0, localSolver_->Fmat,
-        ele.eleinteriorMagneticnm1_,
-        1.0);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s - 4/3FH^{n} + 1/3FH^{n-1}
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, localSolver_->Amat,
-        ele.eleinteriorMagnetic_, 0.0);  //  = 4/3AH^{n}
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm1_,
-        1.0);  //  = 4/3AH^{n} - 1/3AH^{n-1}
+    CORE::LINALG::multiply(
+        -1.0, xVec, 4.0 / 3.0, localSolver_->Emat, ele.eleinteriorElectric_);  //  = 4/3EE^{n} - I_s
+    CORE::LINALG::multiply(1.0, xVec, -1.0 / 3.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm1_);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s
+    CORE::LINALG::multiply(1.0, xVec, -4.0 / 3.0, localSolver_->Fmat,
+        ele.eleinteriorMagnetic_);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s - 4/3FH^{n}
+    CORE::LINALG::multiply(1.0, xVec, 1.0 / 3.0, localSolver_->Fmat,
+        ele.eleinteriorMagneticnm1_);  //  = 4/3EE^{n} -1/3EE^{n-1} - I_s - 4/3FH^{n} + 1/3FH^{n-1}
+    CORE::LINALG::multiply(
+        0.0, tempVec1, 4.0 / 3.0, localSolver_->Amat, ele.eleinteriorMagnetic_);  //  = 4/3AH^{n}
+    CORE::LINALG::multiply(1.0, tempVec1, -1.0 / 3.0, localSolver_->Amat,
+        ele.eleinteriorMagneticnm1_);  //  = 4/3AH^{n} - 1/3AH^{n-1}
   }
   else if (localSolver_->dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm3_,
-        -1.0);  // (1/3)E E^{n} + I_s
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm2_,
-        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectricnm1_, 1.0);
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, localSolver_->Emat,
-        ele.eleinteriorElectric_, 1.0);
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 3.0 / 25.0, localSolver_->Fmat,
-        ele.eleinteriorMagneticnm3_,
-        1.0);  // (1/3)E E^{n} + I_s
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -16.0 / 25.0, localSolver_->Fmat,
-        ele.eleinteriorMagneticnm2_,
-        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 36.0 / 25.0, localSolver_->Fmat,
-        ele.eleinteriorMagneticnm1_, 1.0);
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -48.0 / 25.0, localSolver_->Fmat,
-        ele.eleinteriorMagnetic_, 1.0);
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm3_,
-        0.0);  // (1/3)E E^{n} + I_s
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm2_,
-        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagneticnm1_, 1.0);
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, localSolver_->Amat,
-        ele.eleinteriorMagnetic_, 1.0);
+    CORE::LINALG::multiply(-1.0, xVec, -3.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm3_);  // (1/3)E E^{n} + I_s
+    CORE::LINALG::multiply(1.0, xVec, 16.0 / 25.0, localSolver_->Emat,
+        ele.eleinteriorElectricnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    CORE::LINALG::multiply(
+        1.0, xVec, -36.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(1.0, xVec, 48.0 / 25.0, localSolver_->Emat, ele.eleinteriorElectric_);
+    CORE::LINALG::multiply(1.0, xVec, 3.0 / 25.0, localSolver_->Fmat,
+        ele.eleinteriorMagneticnm3_);  // (1/3)E E^{n} + I_s
+    CORE::LINALG::multiply(1.0, xVec, -16.0 / 25.0, localSolver_->Fmat,
+        ele.eleinteriorMagneticnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    CORE::LINALG::multiply(1.0, xVec, 36.0 / 25.0, localSolver_->Fmat, ele.eleinteriorMagneticnm1_);
+    CORE::LINALG::multiply(1.0, xVec, -48.0 / 25.0, localSolver_->Fmat, ele.eleinteriorMagnetic_);
+    CORE::LINALG::multiply(0.0, tempVec1, -3.0 / 25.0, localSolver_->Amat,
+        ele.eleinteriorMagneticnm3_);  // (1/3)E E^{n} + I_s
+    CORE::LINALG::multiply(1.0, tempVec1, 16.0 / 25.0, localSolver_->Amat,
+        ele.eleinteriorMagneticnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    CORE::LINALG::multiply(
+        1.0, tempVec1, -36.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagneticnm1_);
+    CORE::LINALG::multiply(
+        1.0, tempVec1, 48.0 / 25.0, localSolver_->Amat, ele.eleinteriorMagnetic_);
     // dserror("Not implemented");
   }
   else
   {
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Fmat,
-        ele.eleinteriorMagnetic_, -1.0);  //  = -FH^{n} - I_s
-    xVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Emat,
-        ele.eleinteriorElectric_,
-        1.0);  //  = EE^{n} -I_s - FH^{n}
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Amat,
-        ele.eleinteriorMagnetic_, 0.0);  //  = AH^{n}
+    CORE::LINALG::multiply(
+        -1.0, xVec, -1.0, localSolver_->Fmat, ele.eleinteriorMagnetic_);  //  = -FH^{n} - I_s
+    CORE::LINALG::multiply(
+        1.0, xVec, 1.0, localSolver_->Emat, ele.eleinteriorElectric_);  //  = EE^{n} -I_s - FH^{n}
+    CORE::LINALG::multiply(tempVec1, localSolver_->Amat, ele.eleinteriorMagnetic_);  //  = AH^{n}
   }
 
-  yVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, xVec,
-      0.0);  //  = [(E + G) - FA^{-1}C]^{-1}(EE^{n} - I_s^{n} - FH^{n})
-  elevec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->Jmat, yVec, 0.0);
-  tempVec1.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Cmat, yVec, 1.0);  //  = AH^{n} - Cy
-  yVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->invAmat, tempVec1,
-      0.0);  //  = A^{-1}(AH^{n} - Cy)
+  CORE::LINALG::multiply(
+      yVec, tempMat2, xVec);  //  = [(E + G) - FA^{-1}C]^{-1}(EE^{n} - I_s^{n} - FH^{n})
+  CORE::LINALG::multiply(elevec, localSolver_->Jmat, yVec);
+  CORE::LINALG::multiply(1.0, tempVec1, -1.0, localSolver_->Cmat, yVec);  //  = AH^{n} - Cy
+  CORE::LINALG::multiply(yVec, localSolver_->invAmat, tempVec1);          //  = A^{-1}(AH^{n} - Cy)
 
-  elevec.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->Imat, yVec, -1.0);  //  = -Ix -Jy
+  CORE::LINALG::multiply(-1.0, elevec, -1.0, localSolver_->Imat, yVec);  //  = -Ix -Jy
 
   return;
 }  // UpdateInteriorVariablesAndComputeResidual
@@ -1466,7 +1434,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
         }
       }
       // The integration is made by computing the matrix product
-      tempMassMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., tempMat, tempMatW, 0.);
+      CORE::LINALG::multiplyNT(tempMassMat, tempMat, tempMatW);
       {
         using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
         using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -1537,16 +1505,16 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeAbsorbingBC(
         shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
     CORE::LINALG::SerialDenseMatrix electricMat(
         shapesface_->nfdofs_ * (nsd_ - 1), shapesface_->nfdofs_ * nsd_);
-    magneticMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempI, 0.0);
-    electricMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempJ, 0.0);
+    CORE::LINALG::multiply(magneticMat, transformatrix, tempI);
+    CORE::LINALG::multiply(electricMat, transformatrix, tempJ);
 
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, impedance, electricMat, tempVec1, 0.0);
+    CORE::LINALG::multiply(0.0, tempVec2, impedance, electricMat, tempVec1);
 
     for (unsigned int r = 0; r < shapesface_->nfdofs_; ++r)
       for (unsigned int d = 0; d < nsd_; ++d)
         tempVec1(d * shapesface_->nfdofs_ + r) = localMat(r, d + nsd_);  // magnetic
 
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, magneticMat, tempVec1, 1.0);
+    CORE::LINALG::multiply(1.0, tempVec2, 1.0, magneticMat, tempVec1);
 
     for (int i = 0; i < tempVec2.numRows(); ++i) elevec1(newindex + i) = tempVec2(i);
   }
@@ -1642,7 +1610,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeInteriorMatrices
   // to have the matrix multiplication to obtain directly the correct matrices
   // but it would mean to compute three time sthe same value for each shape
   // function instead of computing it only omnce and then directly copying it.
-  tmpMat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPart, massPartW, 0.0);
+  CORE::LINALG::multiplyNT(tmpMat, massPart, massPartW);
   // A, E and part of G
   for (unsigned int j = 0; j < ndofs_; ++j)
     for (unsigned int i = 0; i < ndofs_; ++i)
@@ -1746,57 +1714,47 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeResidual(
 
   if (dyna_ == INPAR::ELEMAG::elemag_bdf2)
   {
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, Amat,
-        ele.eleinteriorMagnetic_, 0.0);  // 4/3AH^{n-1}
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, Amat,
-        ele.eleinteriorMagneticnm1_,
-        1.0);  // 4/3AH^{n-1} - 1/3AH^{n-2}
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 4.0 / 3.0, Emat,
-        ele.eleinteriorElectric_, -1.0);  // 4/3E E^{n-1} - I_s^{n-1}
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0 / 3.0, Emat,
-        ele.eleinteriorElectricnm1_,
-        1.0);  // 4/3E E^{n-1} - 1/3EE^{n-2} - I_s^{n-1}
+    CORE::LINALG::multiply(
+        0.0, tempVec1, 4.0 / 3.0, Amat, ele.eleinteriorMagnetic_);  // 4/3AH^{n-1}
+    CORE::LINALG::multiply(
+        1.0, tempVec1, -1.0 / 3.0, Amat, ele.eleinteriorMagneticnm1_);  // 4/3AH^{n-1} - 1/3AH^{n-2}
+    CORE::LINALG::multiply(
+        -1.0, tempVec2, 4.0 / 3.0, Emat, ele.eleinteriorElectric_);  // 4/3E E^{n-1} - I_s^{n-1}
+    CORE::LINALG::multiply(1.0, tempVec2, -1.0 / 3.0, Emat,
+        ele.eleinteriorElectricnm1_);  // 4/3E E^{n-1} - 1/3EE^{n-2} - I_s^{n-1}
   }
   else if (dyna_ == INPAR::ELEMAG::elemag_bdf4)
   {
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, Amat,
-        ele.eleinteriorMagneticnm3_, 0.0);  // (1/3)E E^{n} + I_s
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, Amat,
-        ele.eleinteriorMagneticnm2_,
-        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    tempVec1.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, Amat, ele.eleinteriorMagneticnm1_, 1.0);
-    tempVec1.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, Amat, ele.eleinteriorMagnetic_, 1.0);
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -3.0 / 25.0, Emat,
-        ele.eleinteriorElectricnm3_, -1.0);  // (1/3)E E^{n} + I_s
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 16.0 / 25.0, Emat,
-        ele.eleinteriorElectricnm2_,
-        1.0);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
-    tempVec2.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, -36.0 / 25.0, Emat, ele.eleinteriorElectricnm1_, 1.0);
-    tempVec2.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 48.0 / 25.0, Emat, ele.eleinteriorElectric_, 1.0);
+    CORE::LINALG::multiply(
+        0.0, tempVec1, -3.0 / 25.0, Amat, ele.eleinteriorMagneticnm3_);  // (1/3)E E^{n} + I_s
+    CORE::LINALG::multiply(1.0, tempVec1, 16.0 / 25.0, Amat,
+        ele.eleinteriorMagneticnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    CORE::LINALG::multiply(1.0, tempVec1, -36.0 / 25.0, Amat, ele.eleinteriorMagneticnm1_);
+    CORE::LINALG::multiply(1.0, tempVec1, 48.0 / 25.0, Amat, ele.eleinteriorMagnetic_);
+    CORE::LINALG::multiply(
+        -1.0, tempVec2, -3.0 / 25.0, Emat, ele.eleinteriorElectricnm3_);  // (1/3)E E^{n} + I_s
+    CORE::LINALG::multiply(1.0, tempVec2, 16.0 / 25.0, Emat,
+        ele.eleinteriorElectricnm2_);  // ^E = (4/3)EE^{n+1} - (1/3)EE^{n} - I_s
+    CORE::LINALG::multiply(1.0, tempVec2, -36.0 / 25.0, Emat, ele.eleinteriorElectricnm1_);
+    CORE::LINALG::multiply(1.0, tempVec2, 48.0 / 25.0, Emat, ele.eleinteriorElectric_);
   }
   else
   {
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Amat, ele.eleinteriorMagnetic_,
-        0.0);  // AH^{n-1}
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Emat, ele.eleinteriorElectric_,
-        -1.0);  // E E^{n-1} - I_s^{n-1}
+    CORE::LINALG::multiply(tempVec1, Amat, ele.eleinteriorMagnetic_);  // AH^{n-1}
+    CORE::LINALG::multiply(
+        -1.0, tempVec2, 1.0, Emat, ele.eleinteriorElectric_);  // E E^{n-1} - I_s^{n-1}
   }
 
   CORE::LINALG::SerialDenseMatrix tempMat1(intdofs, intdofs);
-  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Fmat, invAmat, 0.0);  // F A^{-1}
-  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, tempVec1,
-      1.0);  // ((E E^{n-1} - I_s^{n-1}) - F A^{-1} A H^{n-1})
+  CORE::LINALG::multiply(tempMat1, Fmat, invAmat);  // F A^{-1}
+  CORE::LINALG::multiply(
+      1.0, tempVec2, -1.0, tempMat1, tempVec1);  // ((E E^{n-1} - I_s^{n-1}) - F A^{-1} A H^{n-1})
 
   CORE::LINALG::SerialDenseMatrix tempMat2(intdofs, intdofs);
   // Gmat already contains Emat in it
   tempMat2 += Emat;
   tempMat2 += Gmat;
-  tempMat2.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, Cmat, 1.0);  // = (E + G) - F A^{-1} C
+  CORE::LINALG::multiply(1.0, tempMat2, -1.0, tempMat1, Cmat);  // = (E + G) - F A^{-1} C
   {
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -1808,14 +1766,12 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeResidual(
   }
   // tempMat2 = ((E + G) - F A^{-1} C)^{-1}
 
-  tempVec3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, tempVec2, 0.0);  // y
-  elevec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Jmat, tempVec3, 0.0);       //  -Jy
+  CORE::LINALG::multiply(tempVec3, tempMat2, tempVec2);       // y
+  CORE::LINALG::multiply(0.0, elevec, -1.0, Jmat, tempVec3);  //  -Jy
 
-  tempVec1.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Cmat, tempVec3, 1.0);  // AH^{n-1} - Cy
-  tempVec3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, invAmat, tempVec1,
-      0.0);  //  x = A^{-1} (AH^{n-1} - Cy)
-  elevec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Imat, tempVec3, 1.0);  //  -Ix - Jy
+  CORE::LINALG::multiply(1.0, tempVec1, -1.0, Cmat, tempVec3);  // AH^{n-1} - Cy
+  CORE::LINALG::multiply(tempVec3, invAmat, tempVec1);          //  x = A^{-1} (AH^{n-1} - Cy)
+  CORE::LINALG::multiply(1.0, elevec, -1.0, Imat, tempVec3);    //  -Ix - Jy
 
   return;
 }  // ComputeResidual
@@ -1939,10 +1895,10 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeFaceMatrices(con
     CORE::LINALG::SerialDenseMatrix tempMat2(ndofs_ * nsd_, shapesface_->nfdofs_ * (nsd_ - 1));
     CORE::LINALG::SerialDenseMatrix tempMat3(shapesface_->nfdofs_ * (nsd_ - 1), ndofs_ * nsd_);
     CORE::LINALG::SerialDenseMatrix tempMat4(shapesface_->nfdofs_ * (nsd_ - 1), ndofs_ * nsd_);
-    tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, tempD, transformatrix, 0.0);
-    tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, tempH, transformatrix, 0.0);
-    tempMat3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempI, 0.0);
-    tempMat4.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, transformatrix, tempJ, 0.0);
+    CORE::LINALG::multiplyNT(tempMat1, tempD, transformatrix);
+    CORE::LINALG::multiplyNT(tempMat2, tempH, transformatrix);
+    CORE::LINALG::multiply(tempMat3, transformatrix, tempI);
+    CORE::LINALG::multiply(tempMat4, transformatrix, tempJ);
 
     for (unsigned int i = 0; i < ndofs_ * nsd_; ++i)
       for (unsigned int j = 0; j < shapesface_->nfdofs_ * (nsd_ - 1); ++j)
@@ -2046,7 +2002,7 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::CondenseLocalPart(
   // int 	Multiply (char TransA, char TransB, double ScalarAB, Matrix &A, Matrix &B, double
   // ScalarThis) this = ScalarThis*this + ScalarAB*A*B
   CORE::LINALG::SerialDenseMatrix tempMat1(intdofs, intdofs);
-  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Fmat, invAmat, 0.0);  // =  F A^{-1}
+  CORE::LINALG::multiply(tempMat1, Fmat, invAmat);  // =  F A^{-1}
 
   CORE::LINALG::SerialDenseMatrix tempMat2(intdofs, intdofs);
 
@@ -2054,13 +2010,11 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::CondenseLocalPart(
   tempMat2 += Emat;  // = E
   tempMat2 += Gmat;  // = E + G
 
-  tempMat2.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, Cmat, 1.0);  // = (E+G) - F A^{-1} C
+  CORE::LINALG::multiply(1.0, tempMat2, -1.0, tempMat1, Cmat);  // = (E+G) - F A^{-1} C
 
   CORE::LINALG::SerialDenseMatrix tempMat3(intdofs, onfdofs);
-  tempMat3 += Hmat;  // = H
-  tempMat3.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, Dmat, 1.0);  // = H - F A^{-1} D
+  tempMat3 += Hmat;                                             // = H
+  CORE::LINALG::multiply(1.0, tempMat3, -1.0, tempMat1, Dmat);  // = H - F A^{-1} D
 
   // Inverting the first part of the Y matrix
   {
@@ -2077,20 +2031,18 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::CondenseLocalPart(
   eleMat = Lmat;  // = L
   // reusing matrix that are not needed
   tempMat1.shape(intdofs, onfdofs);
-  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, tempMat3,
-      0.0);  //  Y = [(E+G) - F A^{-1} C]^{-1}(H - F A^{-1} D)
-  eleMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Jmat, tempMat1, 1.0);  // = L - J Y
+  CORE::LINALG::multiply(
+      tempMat1, tempMat2, tempMat3);  //  Y = [(E+G) - F A^{-1} C]^{-1}(H - F A^{-1} D)
+  CORE::LINALG::multiply(1.0, eleMat, -1.0, Jmat, tempMat1);  // = L - J Y
 
   tempMat2.shape(intdofs, onfdofs);
   tempMat2 = Dmat;
-  tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Cmat, tempMat1, 1.0);  // = D - C Y
+  CORE::LINALG::multiply(1.0, tempMat2, -1.0, Cmat, tempMat1);  // = D - C Y
 
   tempMat3.shape(intdofs, onfdofs);
-  tempMat3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, invAmat, tempMat2,
-      0.0);  // = X = A^{-1} ( D - C Y )
+  CORE::LINALG::multiply(tempMat3, invAmat, tempMat2);  // = X = A^{-1} ( D - C Y )
 
-  eleMat.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Imat, tempMat3, 1.0);  // = K = L - I X - J y
+  CORE::LINALG::multiply(1.0, eleMat, -1.0, Imat, tempMat3);  // = K = L - I X - J y
 
   return;
 }  // CondenseLocalPart

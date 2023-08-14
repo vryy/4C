@@ -12,6 +12,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_fluidporo_multiphase.H"
@@ -1424,7 +1425,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ComputeSolPressureDeriv(
 
   // chain rule: the derivative of saturation w.r.t. dof =
   // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-  satderiv.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, helpderiv, pressderiv, 0.0);
+  CORE::LINALG::multiply(satderiv, helpderiv, pressderiv);
 
   // compute derivative of solid pressure w.r.t. dofs with product rule
   // standard derivative: no volume fractions present

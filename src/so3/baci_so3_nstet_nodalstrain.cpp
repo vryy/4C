@@ -12,6 +12,7 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_determinant.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mat_aaaneohooke.H"
 #include "baci_mat_elasthyper.H"
@@ -791,7 +792,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(CORE::LINALG::SerialDenseMatrix*
   if (force)
   {
     CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
-    force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, stress_epetra, 0.0);  // bop
+    CORE::LINALG::multiplyTN(0.0, *force, VnodeL, bop, stress_epetra);  // bop
   }
 
   //--------------------------------------------------- elastic stiffness
@@ -800,8 +801,8 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(CORE::LINALG::SerialDenseMatrix*
     CORE::LINALG::SerialDenseMatrix cmat_epetra(
         Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
-    cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
-    stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, cb, 0.0);  // bop
+    CORE::LINALG::multiply(cb, cmat_epetra, bopbar);
+    CORE::LINALG::multiplyTN(0.0, *stiff, VnodeL, bop, cb);  // bop
   }
 
   //----------------------------------------------------- geom. stiffness
@@ -1084,7 +1085,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(CORE::LINALG::SerialDenseMatr
   if (force)
   {
     CORE::LINALG::SerialDenseVector stress_epetra(Teuchos::View, stress.A(), stress.numRows());
-    force->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, stress_epetra, 0.0);
+    CORE::LINALG::multiplyTN(0.0, *force, VnodeL, bop, stress_epetra);
   }
 
   //--------------------------------------------------- elastic stiffness
@@ -1093,8 +1094,8 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(CORE::LINALG::SerialDenseMatr
     CORE::LINALG::SerialDenseMatrix cmat_epetra(
         Teuchos::View, cmat.A(), cmat.numRows(), cmat.numRows(), cmat.numCols());
     CORE::LINALG::SerialDenseMatrix cb(6, ndofinpatch);
-    cb.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, cmat_epetra, bopbar, 0.0);
-    stiff->multiply(Teuchos::TRANS, Teuchos::NO_TRANS, VnodeL, bop, cb, 0.0);
+    CORE::LINALG::multiply(cb, cmat_epetra, bopbar);
+    CORE::LINALG::multiplyTN(0.0, *stiff, VnodeL, bop, cb);
   }
 
   //----------------------------------------------------- geom. stiffness

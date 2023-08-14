@@ -15,6 +15,7 @@
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_fluid_functions.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_fluid_weakly_compressible.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
@@ -298,20 +299,18 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::UpdateLocalSolution(DRT::EL
 
   // compute local solver vector
   CORE::LINALG::SerialDenseVector LocalSolverVec((msd_ + 1 + nsd_) * shapes_->ndofs_);
-  LocalSolverVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, localSolver_->KlocallocalInv,
-      localSolver_->Rlocal, 0.0);
+  CORE::LINALG::multiply(LocalSolverVec, localSolver_->KlocallocalInv, localSolver_->Rlocal);
 
   // compute local solver matrix
   CORE::LINALG::SerialDenseMatrix LocalSolverMat(
       (msd_ + 1 + nsd_) * shapes_->ndofs_, nfaces_ * (1 + nsd_) * shapesface_->nfdofs_);
-  LocalSolverMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, localSolver_->KlocallocalInv,
-      localSolver_->Klocalglobal, 0.0);
+  CORE::LINALG::multiply(
+      0.0, LocalSolverMat, -1.0, localSolver_->KlocallocalInv, localSolver_->Klocalglobal);
 
   // compute local increments
   interiorinc.size((msd_ + 1 + nsd_) * shapes_->ndofs_);
   interiorinc = LocalSolverVec;
-  interiorinc.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, LocalSolverMat, localtraceinc, 1.0);
+  CORE::LINALG::multiply(1.0, interiorinc, 1.0, LocalSolverMat, localtraceinc);
 
   return 0;
 }
@@ -503,8 +502,8 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::ProjectField(DRT::ELEMENTS:
       }
     }
     // The integration is made by computing the matrix product
-    localSolver_->massMat.multiply(
-        Teuchos::NO_TRANS, Teuchos::TRANS, 1., localSolver_->massPart, localSolver_->massPartW, 0.);
+    CORE::LINALG::multiplyNT(
+        localSolver_->massMat, localSolver_->massPart, localSolver_->massPartW);
     using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
     using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
     Teuchos::SerialDenseSolver<ordinalType, scalarType> inverseMass;
@@ -1072,7 +1071,7 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::ComputeMateri
       Dw(nsd_ + s, nsd_ + s) = std::pow(mu, 1.0 / 2.0);
 
     // evaluate DL
-    DL.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., Dw, D_fac, 0.);
+    CORE::LINALG::multiply(DL, Dw, D_fac);
   }
   else  // variable viscosity
   {
@@ -2052,9 +2051,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
   eleVecAux.size((msd_ + 1 + nsd_) * ndofs_);
 
   // compute element vector
-  eleVecAux.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, KlocallocalInv, Rlocal, 0.0);
+  CORE::LINALG::multiply(eleVecAux, KlocallocalInv, Rlocal);
   eleVec = Rglobal;
-  eleVec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Kgloballocal, eleVecAux, 1.0);
+  CORE::LINALG::multiply(1.0, eleVec, -1.0, Kgloballocal, eleVecAux);
 }
 
 
@@ -2071,9 +2070,9 @@ void DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::LocalSolver::CondenseLocal
   eleMatAux.shape((msd_ + 1 + nsd_) * ndofs_, (1 + nsd_) * ndofsfaces_);
 
   // compute element matrix
-  eleMatAux.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, KlocallocalInv, Klocalglobal, 0.0);
+  CORE::LINALG::multiply(eleMatAux, KlocallocalInv, Klocalglobal);
   eleMat = Kglobalglobal;
-  eleMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, Kgloballocal, eleMatAux, 1.0);
+  CORE::LINALG::multiply(1.0, eleMat, -1.0, Kgloballocal, eleMatAux);
 }
 
 

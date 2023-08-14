@@ -19,6 +19,7 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mortar_element.H"
 
 /*----------------------------------------------------------------------*
@@ -809,7 +810,7 @@ namespace MORTAR
             for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
           // get solution matrix with dual parameters
-          ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+          CORE::LINALG::multiply(ae, de, invme);
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[1] = {r};
@@ -896,7 +897,7 @@ namespace MORTAR
 
           // get solution matrix with dual parameters
           CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-          ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
+          CORE::LINALG::multiply(ae, de, me);
 
           // evaluate dual shape functions at loc. coord. r
           double xi[1] = {r};
@@ -966,7 +967,7 @@ namespace MORTAR
 
           // get solution matrix with dual parameters
           CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-          ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
+          CORE::LINALG::multiply(ae, de, me);
 
           // evaluate dual shape functions at loc. coord. r
           double xi[1] = {r};
@@ -1723,7 +1724,7 @@ namespace MORTAR
 
           // get solution matrix with dual parameters
           CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
-          ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+          CORE::LINALG::multiply(ae, de, invme);
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
@@ -1793,7 +1794,7 @@ namespace MORTAR
 
           // get solution matrix with dual parameters
           CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
-          ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+          CORE::LINALG::multiply(ae, de, invme);
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};
@@ -1860,7 +1861,7 @@ namespace MORTAR
 
           // get solution matrix with dual parameters
           CORE::LINALG::SerialDenseMatrix ae(nnodes, nnodes);
-          ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+          CORE::LINALG::multiply(ae, de, invme);
 
           // evaluate dual shape functions at loc. coord. xi
           double xi[2] = {xi0, xi1};

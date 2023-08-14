@@ -9,6 +9,7 @@
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 
 
 /* compute kovariant metric tensor G for surface element     gammi 04/07
@@ -78,7 +79,7 @@ void CORE::DRT::UTILS::ComputeMetricTensorForSurface(const CORE::LINALG::SerialD
   */
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
 
-  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xyze, 0.0);
+  CORE::LINALG::multiplyNT(dxyzdrs, deriv, xyze);
 
   /*
   |
@@ -94,7 +95,7 @@ void CORE::DRT::UTILS::ComputeMetricTensorForSurface(const CORE::LINALG::SerialD
   |
   | the calculation of g21 is redundant since g21=g12
   */
-  metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, dxyzdrs, dxyzdrs, 0.0);
+  CORE::LINALG::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
 
   /*
                             +--------------+
