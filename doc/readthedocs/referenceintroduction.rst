@@ -37,11 +37,11 @@ as required.
   If you don't want to change it, you don't have to give it here (but it does not hurt as well).
 - The parameters in each section are single words, 
   and they are separated from the value by a whitespace.
-- However, there are two blocks, namely the `LOCA` section (and its subsections),
-  and the `STRUCT NOX` section (again including subsections), where the  parameters
-  are made up of more than one word. There one has to separate the parameter name and its value
-  by an equal sign (=). These sections are the only ones, which use lower case letters in the 
-  parameter names.
+- However, there is one block, namely the `STRUCT NOX` section (including subsections),
+  where the parameters are made up of more than one word.
+  There, one has to separate the parameter name and its value by an equal sign (=).
+  This section is the only one, which uses lower case letters in the parameter names.
+  (It will be changed in the future, so that the equal signs will be obsolete)
 
 Comments
 --------

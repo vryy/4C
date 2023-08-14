@@ -40,7 +40,6 @@
 #include "baci_inpar_IO_runtime_vtk_output_structure_beams.H"
 #include "baci_inpar_IO_runtime_vtp_output_structure.H"
 #include "baci_inpar_levelset.H"
-#include "baci_inpar_loca_continuation.H"
 #include "baci_inpar_lubrication.H"
 #include "baci_inpar_mor.H"
 #include "baci_inpar_mortar.H"
@@ -401,7 +400,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::BEAMINTERACTION::SetValidParameters(list);
   INPAR::BROWNIANDYN::SetValidParameters(list);
 
-  INPAR::LOCA::SetValidParameters(list);
   INPAR::PLASTICITY::SetValidParameters(list);
 
   INPAR::THR::SetValidParameters(list);

@@ -11,10 +11,9 @@
 
 #include "baci_adapter_str_factory.H"
 
+#include "baci_adapter_str_structure_new.H"
+#include "baci_inpar_structure.H"
 #include "baci_utils_exceptions.H"
-
-// supported structural adapters
-#include "baci_adapter_str_loca.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
@@ -37,9 +36,6 @@ Teuchos::RCP<ADAPTER::StructureBaseAlgorithmNew> ADAPTER::STR::Factory::BuildStr
   {
     case INPAR::STR::int_standard:
       adapterbase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithmNew());
-      break;
-    case INPAR::STR::int_loca:
-      adapterbase = Teuchos::rcp(new ADAPTER::StructureLocaAlgorithm());
       break;
     default:
       dserror("Unknown integration strategy!");

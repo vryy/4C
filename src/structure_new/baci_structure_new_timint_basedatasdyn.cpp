@@ -50,7 +50,6 @@ STR::TIMINT::BaseDataSDyn::BaseDataSDyn()
       mid_time_energy_type_(INPAR::STR::midavg_vague),
       maxdivconrefinementlevel_(-1),
       noxparams_(Teuchos::null),
-      locaparams_(Teuchos::null),
       ptc_delta_init_(0.0),
       linsolvers_(Teuchos::null),
       normtype_(INPAR::STR::norm_vague),
@@ -193,10 +192,6 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::DiscretizationInter
         DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdynparams, "MIDTIME_ENERGY_TYPE");
     maxdivconrefinementlevel_ = sdynparams.get<int>("MAXDIVCONREFINEMENTLEVEL");
     noxparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("NOX")));
-    if (xparams.isSublist("LOCA"))
-    {
-      locaparams_ = Teuchos::rcp(new Teuchos::ParameterList(xparams.sublist("LOCA")));
-    }
     ptc_delta_init_ = sdynparams.get<double>("PTCDT");
   }
   // ---------------------------------------------------------------------------
