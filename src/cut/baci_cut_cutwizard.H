@@ -267,12 +267,6 @@ namespace CORE::GEO
     virtual void GetPhysicalNodalCoordinates(
         const ::DRT::Element* element, CORE::LINALG::SerialDenseMatrix& xyze) const;
 
-    /// run after the Run_Cut routine has been called
-    virtual void Post_Run_Cut(bool include_inner);
-
-    /// If Cut Offset is used, reposition boundary cells for subsequent interface integration
-    virtual void Post_UpdateBC_Offset();
-
     CORE::GEO::CUT::CombIntersection& Intersection()
     {
       if (intersection_.is_null()) dserror("nullptr pointer!");
