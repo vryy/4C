@@ -193,8 +193,6 @@ lib/baci_particlereader*   @baci/team_particle
 
 linalg/                    @baci/team_solvers
 
-loca_continuation/         @baci/team_solvers
-
 loma/                      @baci/team_fluid
 
 lubrication/               @baci/team_scatra
