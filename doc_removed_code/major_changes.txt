@@ -1,5 +1,10 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+LOCA Bifurcation tracking
+- removed in commit be368fb01964fc1a07e7f1298b963a895f9df964 on 11/08/2023
+- resons: it is not completely implemented, and not tested (0% coverage)
+- removed by Ingo Scheider
+
 Inverse analysis
 - removed in commit 23c53cb7a65b4a584eb18718641e0136f98d3c59 on 26/07/2023
 - reasons: QUEENS provides all the necessary methods for inverse analysis
