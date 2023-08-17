@@ -57,24 +57,24 @@
 # Note: stick to alphabetical order
 
 adapter/                                    @baci/team_discretization
-adapter/adapter_ale*                        @baci/team_fluid
-adapter/adapter_ale_wear*                   @baci/team_contact
-adapter/adapter_algorithmbase*              @baci/team_discretization
-adapter/adapter_art_net.H                   @baci/team_reduced_fluid_models
-adapter/adapter_coupling*                   @baci/team_contact
-adapter/adapter_coupling_poro_mortar*       @baci/team_poro
-adapter/adapter_field.H                     @baci/team_discretization
-adapter/adapter_field_wrapper*              @baci/team_discretization
-adapter/adapter_fld_*                       @baci/team_fluid
-adapter/adapter_fld_poro*                   @baci/team_poro
-adapter/adapter_lubrication*                @baci/team_scatra
-adapter/adapter_poro*                       @baci/team_poro
-adapter/adapter_scatra_*                    @baci/team_scatra
-adapter/adapter_str_*                       @baci/team_structure
-adapter/adapter_str_fpsiwrapper*            @baci/team_poro @baci/team_fluid
-adapter/adapter_str_poro_wrapper*           @baci/team_poro
-adapter/adapter_structure_scatra_ele*       @baci/team_scatra
-adapter/adapter_thermo*                     @baci/team_thermo
+adapter/baci_adapter_ale*                        @baci/team_fluid
+adapter/baci_adapter_ale_wear*                   @baci/team_contact
+adapter/baci_adapter_algorithmbase*              @baci/team_discretization
+adapter/baci_adapter_art_net.H                   @baci/team_reduced_fluid_models
+adapter/baci_adapter_coupling*                   @baci/team_contact
+adapter/baci_adapter_coupling_poro_mortar*       @baci/team_poro
+adapter/baci_adapter_field.H                     @baci/team_discretization
+adapter/baci_adapter_field_wrapper*              @baci/team_discretization
+adapter/baci_adapter_fld_*                       @baci/team_fluid
+adapter/baci_adapter_fld_poro*                   @baci/team_poro
+adapter/baci_adapter_lubrication*                @baci/team_scatra
+adapter/baci_adapter_poro*                       @baci/team_poro
+adapter/baci_adapter_scatra_*                    @baci/team_scatra
+adapter/baci_adapter_str_*                       @baci/team_structure
+adapter/baci_adapter_str_fpsiwrapper*            @baci/team_poro @baci/team_fluid
+adapter/baci_adapter_str_poro_wrapper*           @baci/team_poro
+adapter/baci_adapter_structure_scatra_ele*       @baci/team_scatra
+adapter/baci_adapter_thermo*                     @baci/team_thermo
 
 ale/                       @baci/team_fluid
 
@@ -101,19 +101,19 @@ config/                    @baci/team_infrastructure
 constraint/                @baci/team_discretization
 
 contact/                   @baci/team_contact
-contact/contact_meshtying_poro_*          @baci/team_poro @baci/team_contact
-contact/contact_nitsche_integrator_poro*  @baci/team_poro @baci/team_contact
-contact/contact_nitsche_strategy_poro*    @baci/team_poro @baci/team_contact
-contact/contact_poro_*                    @baci/team_poro @baci/team_contact
+contact/baci_contact_meshtying_poro_*          @baci/team_poro @baci/team_contact
+contact/baci_contact_nitsche_integrator_poro*  @baci/team_poro @baci/team_contact
+contact/baci_contact_nitsche_strategy_poro*    @baci/team_poro @baci/team_contact
+contact/baci_contact_poro_*                    @baci/team_poro @baci/team_contact
 
 contact_aug/               @baci/team_contact
 
 contact_constitutivelaw/   @baci/team_contact
 
-core/                  @baci/team_infrastructure
-core/coupling          @baci/team_discretization
-core/discretization    @baci/team_discretization
-core/utils             @baci/team_infrastructure
+core/                      @baci/team_infrastructure
+core/coupling              @baci/team_discretization
+core/discretization        @baci/team_discretization
+core/utils                 @baci/team_infrastructure
 
 create_rtdfiles/           @baci/team_infrastructure
 
@@ -132,13 +132,13 @@ fbi/                       @baci/team_fsi
 fiber/                     @baci/team_discretization
 
 fluid/                     @baci/team_fluid
-fluid/fluid_timint_poro*   @baci/team_poro @baci/team_fluid
+fluid/baci_fluid_timint_poro*   @baci/team_poro @baci/team_fluid
 
 fluid_ele/                 @baci/team_fluid
-fluid_ele/fluid_ele_boundary_calc_poro*  @baci/team_poro @baci/team_fluid
-fluid_ele/fluid_ele_calc_poro*           @baci/team_poro @baci/team_fluid
-fluid_ele/fluid_ele_parameter_poro*      @baci/team_poro @baci/team_fluid
-fluid_ele/fluid_ele_poro*                @baci/team_poro @baci/team_fluid
+fluid_ele/baci_fluid_ele_boundary_calc_poro*  @baci/team_poro @baci/team_fluid
+fluid_ele/baci_fluid_ele_calc_poro*           @baci/team_poro @baci/team_fluid
+fluid_ele/baci_fluid_ele_parameter_poro*      @baci/team_poro @baci/team_fluid
+fluid_ele/baci_fluid_ele_poro*                @baci/team_poro @baci/team_fluid
 
 fluid_turbulence/          @baci/team_fluid
 
@@ -165,37 +165,33 @@ headers/                   @baci/team_discretization
 immersed_problem/          @baci/team_fsi
 
 inpar/                     @baci/team_input
-inpar/inpar_ale*           @baci/team_fsi
-inpar/inpar_beam*          @baci/team_input @baci/team_structure
-inpar/inpar_bio*           @baci/team_reduced_fluid_models
-inpar/inpar_contact*       @baci/team_contact
-inpar/inpar_fbi*           @baci/team_fsi
-inpar/inpar_fluid*         @baci/team_fluid
-inpar/inpar_fpsi*          @baci/team_poro @baci/team_fluid
-inpar/inpar_fsi*           @baci/team_fsi
-inpar/inpar_IO_runtime_vt*_output*                  @baci/team_input @baci/team_output
-inpar/inpar_material*      @baci/team_material
-inpar/inpar_particle*      @baci/team_particle
-inpar/inpar_pasi*          @baci/team_particle
-inpar/inpar_poro*          @baci/team_poro
-inpar/inpar_solver*        @baci/team_solvers
-inpar/inpar_validcontactconstitutivelaw*            @baci/team_contact
-inpar/inpar_validmaterials*                         @baci/team_material
-
-inv_analysis/              @baci/team_queens
+inpar/baci_inpar_ale*           @baci/team_fsi
+inpar/baci_inpar_beam*          @baci/team_input @baci/team_structure
+inpar/baci_inpar_bio*           @baci/team_reduced_fluid_models
+inpar/baci_inpar_contact*       @baci/team_contact
+inpar/baci_inpar_fbi*           @baci/team_fsi
+inpar/baci_inpar_fluid*         @baci/team_fluid
+inpar/baci_inpar_fpsi*          @baci/team_poro @baci/team_fluid
+inpar/baci_inpar_fsi*           @baci/team_fsi
+inpar/baci_inpar_IO_runtime_vt*_output*                  @baci/team_input @baci/team_output
+inpar/baci_inpar_material*      @baci/team_material
+inpar/baci_inpar_particle*      @baci/team_particle
+inpar/baci_inpar_pasi*          @baci/team_particle
+inpar/baci_inpar_poro*          @baci/team_poro
+inpar/baci_inpar_solver*        @baci/team_solvers
+inpar/baci_inpar_validcontactconstitutivelaw*            @baci/team_contact
+inpar/baci_inpar_validmaterials*                         @baci/team_material
 
 io/                        @baci/team_input @baci/team_output
 
 levelset/                  @baci/team_fluid
 
 lib/                       @baci/team_discretization
-lib/material*              @baci/team_material
-lib/parobject*             @baci/team_infrastructure
-lib/particlereader*        @baci/team_particle
+lib/baci_material*         @baci/team_material
+lib/baci_parobject*        @baci/team_infrastructure
+lib/baci_particlereader*   @baci/team_particle
 
 linalg/                    @baci/team_solvers
-
-loca_continuation/         @baci/team_solvers
 
 loma/                      @baci/team_fluid
 
@@ -204,15 +200,15 @@ lubrication/               @baci/team_scatra
 lubrication_ele/           @baci/team_scatra
 
 mat/                       @baci/team_material
-mat/mat_anisotropy*            @baci/team_structure @baci/team_material
-mat/mat_beam*                  @baci/team_structure @baci/team_material
-mat/mat_cnst_1d_art*           @baci/team_reduced_fluid_models
-mat/mat_fluidporo*             @baci/team_poro
-mat/mat_membrane_elasthyper*   @baci/team_structure @baci/team_material
-mat/mat_poro*                  @baci/team_poro
-mat/mat_scatra_mat_multiporo*  @baci/team_poro @baci/team_scatra
-mat/mat_scatra_mat_poro*       @baci/team_poro @baci/team_scatra
-mat/mat_structporo*            @baci/team_poro
+mat/baci_mat_anisotropy*            @baci/team_structure @baci/team_material
+mat/baci_mat_beam*                  @baci/team_structure @baci/team_material
+mat/baci_mat_cnst_1d_art*           @baci/team_reduced_fluid_models
+mat/baci_mat_fluidporo*             @baci/team_poro
+mat/baci_mat_membrane_elasthyper*   @baci/team_structure @baci/team_material
+mat/baci_mat_poro*                  @baci/team_poro
+mat/baci_mat_scatra_mat_multiporo*  @baci/team_poro @baci/team_scatra
+mat/baci_mat_scatra_mat_poro*       @baci/team_poro @baci/team_scatra
+mat/baci_mat_structporo*            @baci/team_poro
 
 matelast/                  @baci/team_material
 
@@ -275,18 +271,18 @@ rigidsphere/               @baci/team_structure
 s8/                        @baci/team_structure
 
 scatra/                    @baci/team_scatra
-scatra/scatra_timint_meshtying_strategy_artery*  @baci/team_scatra @baci/team_reduced_fluid_models
-scatra/scatra_timint_poro*                       @baci/team_scatra @baci/team_poro
+scatra/baci_scatra_timint_meshtying_strategy_artery*  @baci/team_scatra @baci/team_reduced_fluid_models
+scatra/baci_scatra_timint_poro*                       @baci/team_scatra @baci/team_poro
 
 
 scatra_ele/                @baci/team_scatra
-scatra_ele/scatra_ele_boundary_calc_poro*  @baci/team_scatra @baci/team_poro
-scatra_ele/scatra_ele_calc_artery*         @baci/team_scatra @baci/team_reduced_fluid_models
-scatra_ele/scatra_ele_calc_multiporo*      @baci/team_scatra @baci/team_poro
-scatra_ele/scatra_ele_calc_poro*           @baci/team_scatra @baci/team_poro
+scatra_ele/baci_scatra_ele_boundary_calc_poro*  @baci/team_scatra @baci/team_poro
+scatra_ele/baci_scatra_ele_calc_artery*         @baci/team_scatra @baci/team_reduced_fluid_models
+scatra_ele/baci_scatra_ele_calc_multiporo*      @baci/team_scatra @baci/team_poro
+scatra_ele/baci_scatra_ele_calc_poro*           @baci/team_scatra @baci/team_poro
 
 so3/                       @baci/team_structure
-so3/so3_poro*              @baci/team_structure @baci/team_poro
+so3/baci_so3_poro*         @baci/team_structure @baci/team_poro
 
 solid_ele/                 @baci/team_structure
 
@@ -329,7 +325,7 @@ tutorial/                  @baci/team_infrastructure
 two_phase_flow/            @baci/team_fluid
 
 w1/                        @baci/team_structure
-w1/wall1_poro*             @baci/team_structure @baci/team_poro
+w1/baci_wall1_poro*        @baci/team_structure @baci/team_poro
 
 wear/                      @baci/team_contact
 

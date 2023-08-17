@@ -4,7 +4,6 @@ set(_s8_dependencies
     # cmake-format: sortable
     inpar
     lib
-    linalg
     mat
     matelast
     structure_new

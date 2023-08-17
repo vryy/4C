@@ -8,7 +8,6 @@ set(_ehl_dependencies
     inpar
     io
     lib
-    linalg
     lubrication
     lubrication_ele
     mat

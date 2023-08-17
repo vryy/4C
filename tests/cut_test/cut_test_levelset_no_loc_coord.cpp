@@ -10,31 +10,29 @@
 // Sheared elements needs to be tested separately
 // m.w. 05.2015
 
-#include "cut_options.H"
-#include "cut_mesh.H"
-#include "cut_element.H"
-#include "cut_levelsetintersection.H"
+#include "baci_cut_element.H"
+#include "baci_cut_levelsetintersection.H"
+#include "baci_cut_mesh.H"
+#include "baci_cut_options.H"
 
 // Added
-#include "cut_volumecell.H"
-#include "cut_facet.H"
-#include "cut_integrationcell.H"
-#include "cut_utils.H"
-#include "cut_sorted_vector.H"
-#include "cut_combintersection.H"
-
-
-
-#include "cut_test_utils.H"
+#include "baci_cut_combintersection.H"
+#include "baci_cut_facet.H"
+#include "baci_cut_integrationcell.H"
+#include "baci_cut_sorted_vector.H"
+#include "baci_cut_utils.H"
+#include "baci_cut_volumecell.H"
 
 #include <iterator>
 
-#define PRECISION24
-//#define GMSH_OUTPUT_LSNOLOC_CUT_TEST
+#include "cut_test_utils.H"
 
-Epetra_SerialDenseMatrix GetLocalHex8Coords()
+#define PRECISION24
+// #define GMSH_OUTPUT_LSNOLOC_CUT_TEST
+
+CORE::LINALG::SerialDenseMatrix GetLocalHex8Coords()
 {
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   xyze(0, 0) = -1;
   xyze(1, 0) = -1;
@@ -72,11 +70,11 @@ Epetra_SerialDenseMatrix GetLocalHex8Coords()
 }
 
 
-GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids, std::vector<double> lsvs,
-    Epetra_SerialDenseMatrix xyze, std::string testname)
+CORE::GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
+    std::vector<double> lsvs, CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
+  CORE::GEO::CUT::CombIntersection ci(-1);
   ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
@@ -101,11 +99,11 @@ GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids, std::vect
   return ci;
 }
 
-GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids,
-    std::vector<double> lsvs, Epetra_SerialDenseMatrix xyze, std::string testname)
+CORE::GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids,
+    std::vector<double> lsvs, CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
+  CORE::GEO::CUT::CombIntersection ci(-1);
   ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
@@ -132,12 +130,12 @@ GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids,
 
 
 void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<double> lsvs,
-    Epetra_SerialDenseMatrix xyze, std::string testname)
+    CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
   // non-planar cut surface
-  GEO::CUT::CombIntersection ci(-1);
+  CORE::GEO::CUT::CombIntersection ci(-1);
   ci.GetOptions().Init_for_Cuttests();
-  GEO::CUT::CombIntersection cidd(-1);
+  CORE::GEO::CUT::CombIntersection cidd(-1);
   cidd.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
   cidd.AddLevelSetSide(1);
@@ -173,17 +171,18 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
 
 
   // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
-  //###########################################################
+  // ###########################################################
   std::vector<double> tessVol, dirDivVol;
 
   // Sum Tessellation volume of test
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = ci.NormalMesh().VolumeCells();
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells =
+      ci.NormalMesh().VolumeCells();
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
 
     // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
@@ -191,7 +190,7 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
     iteration_VC++;
     std::cout << "VC(" << iteration_VC << "):" << std::endl;
 
-    const GEO::CUT::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
+    const CORE::GEO::CUT::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
     std::cout << "Has #IC=" << integrationcells.size() << std::endl;
 
     if (integrationcells.size() == 0)
@@ -203,13 +202,14 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
   //------------------------------------------------------
 
   // Sum Direct Divergence of test
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cellsdd =
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cellsdd =
       cidd.NormalMesh().VolumeCells();
   std::cout << "# Volume Cells Direct Divergence: " << other_cellsdd.size() << std::endl;
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator idd = other_cellsdd.begin();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator idd =
+           other_cellsdd.begin();
        idd != other_cellsdd.end(); ++idd)
   {
-    GEO::CUT::VolumeCell* vc = &**idd;
+    CORE::GEO::CUT::VolumeCell* vc = &**idd;
     dirDivVol.push_back(vc->Volume());
   }
   //------------------------------------------------------
@@ -229,28 +229,29 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
     throw std::runtime_error("Volume predicted by one of the methods is wrong.");
   }
   //------------------------------------------------------
-  //###########################################################
+  // ###########################################################
 }
 
 
 void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vector<double> lsvs,
-    Epetra_SerialDenseMatrix xyze, std::string testname)
+    CORE::LINALG::SerialDenseMatrix xyze, std::string testname)
 {
-  GEO::CUT::CombIntersection ci = Cut_With_Tesselation(nids, lsvs, xyze, testname);
+  CORE::GEO::CUT::CombIntersection ci = Cut_With_Tesselation(nids, lsvs, xyze, testname);
 
   // TEST IF VOLUMES PREDICTED OF CELLS ARE SAME:
-  //###########################################################
+  // ###########################################################
   std::vector<double> tessVol, dirDivVol;
   double diff_tol = BASICTOL;  // 1e-20; //How sharp to test for.
 
   // Sum Tessellation volume of test
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = ci.NormalMesh().VolumeCells();
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells =
+      ci.NormalMesh().VolumeCells();
   std::cout << "# Volume Cells Tesselation: " << other_cells.size() << std::endl;
   int iteration_VC = 0;
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
 
     // TEST THAT TESSELATION DOES NOT HAVE EMPTY VolumeCells.
@@ -258,7 +259,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
     iteration_VC++;
     std::cout << "VC(" << iteration_VC << "):" << std::endl;
 
-    const GEO::CUT::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
+    const CORE::GEO::CUT::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
     std::cout << "Has #IC=" << integrationcells.size() << std::endl;
 
     if (integrationcells.size() == 0)
@@ -271,10 +272,10 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
 
   // Cut with DirectDivergence as well
   int counter = 1;
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     //    std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL #" << counter <<  ".....!" << std::endl;
     //    std::cout << "Volumecell Position: " << vc->Position() << std::endl;
     vc->DirectDivergenceGaussRule(
@@ -313,7 +314,7 @@ void Test_LevelSetCut_Tesselation_and_DD_same_VC(std::vector<int> nids, std::vec
     throw std::runtime_error("Volume predicted by one of the methods is wrong.");
   }
   //------------------------------------------------------
-  //###########################################################
+  // ###########################################################
 }
 
 void test_ls_hex8_magnus1()
@@ -321,8 +322,8 @@ void test_ls_hex8_magnus1()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
-  // Epetra_SerialDenseMatrix xyze_local( 3, 8 );
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  // CORE::LINALG::SerialDenseMatrix xyze_local( 3, 8 );
 
 
   for (int i = 0; i < 8; ++i)
@@ -438,7 +439,7 @@ void test_ls_hex8_magnus2()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -550,7 +551,7 @@ void test_ls_hex8_magnus3()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -661,7 +662,7 @@ void test_ls_hex8_magnus4()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -773,7 +774,7 @@ void test_ls_hex8_magnus5()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -886,8 +887,8 @@ void test_ls_hex8_magnus12()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
-  Epetra_SerialDenseMatrix xyze_local(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze_local(3, 8);
 
 
   for (int i = 0; i < 8; ++i)
@@ -1026,7 +1027,7 @@ void test_ls_hex8_magnus12()
   double delh = 0.05;
 
   // Stupid-projection to "local coordinates".
-  Epetra_SerialDenseMatrix xyze_scaled(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze_scaled(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1040,11 +1041,11 @@ void test_ls_hex8_magnus12()
   // Only works for Tesselation as in this config the VC is undefined.
   // Cut_With_Tesselation(nids, lsvs, xyze_local, testname);
 
-  //#ifdef LOCAL_COORDS
-  //  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze_local, testname);
-  //#else
-  //  Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze_local, testname);
-  //#endif
+  // #ifdef LOCAL_COORDS
+  //   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze_local, testname);
+  // #else
+  //   Test_LevelSetCut_Tesselation_and_DD_same_VC(nids, lsvs, xyze_local, testname);
+  // #endif
 }
 
 // From variable surface tension problem in Combust!
@@ -1053,7 +1054,7 @@ void test_ls_hex8_magnus6()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1161,7 +1162,7 @@ void test_ls_hex8_tes_dd_simple()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1235,16 +1236,16 @@ void test_ls_mesh_hex8_simple()
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8, -1);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
 
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids_mesh;
 
   int sidecount = 0;
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 2) = -1.0;
     tri3_xyze(1, 2) = 0.0;
@@ -1275,20 +1276,20 @@ void test_ls_mesh_hex8_simple()
 
   std::vector<double> tessVol, dirDivVol;
 
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  CORE::GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
   }
 
   int counter = 1;
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     std::cout << "DIRCETDIVERGENCE CUTTING VOLUMECELL USING MESH #" << counter << ".....!"
               << std::endl;
     std::cout << "Volumecell Position: " << vc->Position() << std::endl;
@@ -1316,7 +1317,7 @@ void test_ls_mesh_hex8_simple()
     // dserror("volume predicted by either one of the method is wrong");
   }
   //------------------------------------------------------
-  //###########################################################
+  // ###########################################################
 
   // CUT WITH LEVELSET in similar configuration.
 
@@ -1334,14 +1335,14 @@ void test_ls_mesh_hex8_simple()
 // See what happens
 void test_ls_hex8_experiment_magnus()
 {
-  GEO::CUT::CombIntersection ci(-1);
+  CORE::GEO::CUT::CombIntersection ci(-1);
   ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
   // simple hex8 element
   std::vector<int> nids(8);
   std::vector<double> lsvs(8);
-  Epetra_SerialDenseMatrix xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix xyze(3, 8);
 
   for (int i = 0; i < 8; ++i)
   {
@@ -1421,25 +1422,26 @@ void test_ls_hex8_experiment_magnus()
   // INPAR::CUT::BCellGaussPts_Tessellation, false, true );
 
 
-  //#ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
-  // Gmsh-output
+  // #ifdef GMSH_OUTPUT_LSNOLOC_CUT_TEST
+  //  Gmsh-output
   ci.NormalMesh().DumpGmsh("xxx_cut_test_ls_hex8_magnus6.CUT.pos");
   ci.NormalMesh().DumpGmshVolumeCells("xxx_cut_test_ls_hex8_magnus6.CUT_volumecells.pos", true);
   ci.DumpGmshIntegrationCells("xxx_cut_test_ls_hex8_magnus6.CUT_integrationcells.pos");
-  //#endif
+  // #endif
 
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = ci.NormalMesh().VolumeCells();
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells =
+      ci.NormalMesh().VolumeCells();
   std::cout << "# Volume Cells: " << other_cells.size() << std::endl;
 
   int iteration_VC = 0;
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
     iteration_VC++;
     std::cout << "VC(" << iteration_VC << "):" << std::endl;
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
 
-    const GEO::CUT::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
+    const CORE::GEO::CUT::plain_integrationcell_set& integrationcells = vc->IntegrationCells();
     std::cout << "Has #IC=" << integrationcells.size() << std::endl;
 
     if (integrationcells.size() == 0)
@@ -1464,7 +1466,7 @@ void test_ls_hex8_magnus7()
   lsvs[6] = -8.6e-09;
   lsvs[7] = -8.6e-09;
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   nids.clear();
   hex8_xyze(0, 0) = -0.34;
@@ -1521,7 +1523,7 @@ void test_ls_hex8_magnus7()
 //  // simple hex8 element
 //  std::vector<int> nids( 8 );
 //  std::vector<double> lsvs( 8 );
-//  Epetra_SerialDenseMatrix xyze( 3, 8 );
+//  CORE::LINALG::SerialDenseMatrix xyze( 3, 8 );
 //
 //  for ( int i=0; i<8; ++i )
 //  {

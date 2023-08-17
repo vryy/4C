@@ -20,7 +20,7 @@ Academic test case for multi-scale electrochemistry:
 DIM           3
 -------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 STRUCT_STRESS                   2PK
 ------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
@@ -31,7 +31,7 @@ PREDICT                         TangDis
 ---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         0.95
-------------------------------------------------STRUCT NOX/Printing
+-----------------------------------------------STRUCT NOX/Printing
 Outer Iteration StatusTest      = No
 ------------------------------------------SCALAR TRANSPORT DYNAMIC
 SOLVERTYPE                      nonlinear
@@ -45,7 +45,7 @@ STABTYPE                        no_stabilization
 DEFINITION_TAU                  Zero
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
----------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          20
 CONVTOL                         1.0e-10
 ITEMAX_OUTER                    20
@@ -65,7 +65,7 @@ NUMSTEP                         10
 TIMESTEP                        0.1
 COUPALGO                        ssi_IterStagg
 SCATRATIMINTTYPE                Elch
---------------------------------------------SSI CONTROL/PARTITIONED
+-------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         5.0e-06
 ----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
@@ -133,17 +133,17 @@ E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 1.2e3 0.0 0.0 FUNCT none none none
 DPOINT 1
 // set electrical potential at anode side to 0
 E 1 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.0 FUNCT none none
---------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
+-------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT 1
 // apply flux to cathode
 E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 -1.0e-3 FUNCT none none 5
---------------------DESIGN SSI INTERFACE MESHTYING POINT CONDITIONS
+-------------------DESIGN SSI INTERFACE MESHTYING POINT CONDITIONS
 DPOINT  2
 // anode_side_of_an-el_interface
 E 3 - 0 Slave S2I_KINETICS_ID  0
 // electrolyte_side_of_an-el_interf
 E 4 - 0 Master S2I_KINETICS_ID  0
--------------------------------DESIGN S2I KINETICS POINT CONDITIONS
+------------------------------DESIGN S2I KINETICS POINT CONDITIONS
 DPOINT  2
 // anode_side_of_an-el_interface
 E 3 - 0 Slave KINETIC_MODEL Butler-VolmerReduced NUMSCAL 1 STOICHIOMETRIES -1  E- 1  K_R  1.0e-3 ALPHA_A 0.5 ALPHA_C 0.5 IS_PSEUDO_CONTACT 0
@@ -163,7 +163,7 @@ E 1 - ScaTra 1
 E 2 - ScaTra 2
 // cathode
 E 3 - ScaTra 3
------------------------DESIGN TOTAL AND MEAN SCALAR LINE CONDITIONS
+----------------------DESIGN TOTAL AND MEAN SCALAR LINE CONDITIONS
 DLINE  3
 // anode
 E 1 - ID 0
@@ -171,7 +171,7 @@ E 1 - ID 0
 E 2 - ID 1
 // cathode
 E 3 - ID 2
--------------------DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS
+------------------DESIGN ELECTRODE STATE OF CHARGE LINE CONDITIONS
 DLINE   1
 // cathode
 E 3 - ID 3 C_0% 4.5536e4 C_100% 1.6776e4 ONE_HOUR 3600000

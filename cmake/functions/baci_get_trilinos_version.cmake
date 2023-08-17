@@ -6,12 +6,10 @@ function(baci_get_trilinos_version)
       "${Trilinos_VERSION}"
       PARENT_SCOPE
       )
-  #message(STATUS "found Trilinos Version: ${TrilinosVersion}")
 
   # get Trilinos git hash
   if(EXISTS "${Trilinos_DIR}/../../../TrilinosRepoVersion.txt")
     file(STRINGS "${Trilinos_DIR}/../../../TrilinosRepoVersion.txt" TrilinosRepoVersionFile)
-    #message(STATUS "found Trilinos repo version file: ${TrilinosRepoVersionFile}")
 
     list(GET TrilinosRepoVersionFile 1 TrilinosRepoVersionFileLine2)
     separate_arguments(TrilinosRepoVersionFileLine2)
@@ -21,7 +19,6 @@ function(baci_get_trilinos_version)
         "${TrilinosSHA}"
         PARENT_SCOPE
         )
-    #message(STATUS "found Trilinos SHA: ${TrilinosSHA}")
   else()
     set(TrilinosGitHash
         "Unable to determine Trilinos git hash!"

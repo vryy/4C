@@ -1,0 +1,84 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+
+ \brief evaluation class containing routines for calculation of scalar transport
+        within porous medium including advanced reactions
+
+\level 2
+
+*----------------------------------------------------------------------*/
+
+
+#ifndef BACI_SCATRA_ELE_CALC_PORO_REAC_H
+#define BACI_SCATRA_ELE_CALC_PORO_REAC_H
+
+#include "baci_scatra_ele_calc.H"
+#include "baci_scatra_ele_calc_advanced_reaction.H"
+#include "baci_scatra_ele_calc_poro.H"
+
+namespace DRT
+{
+  namespace ELEMENTS
+  {
+    template <DRT::Element::DiscretizationType distype>
+    class ScaTraEleCalcPoroReac : virtual public ScaTraEleCalcPoro<distype>,
+                                  virtual public ScaTraEleCalcAdvReac<distype>
+    {
+     protected:
+      /// protected constructor, since we are a Singleton.
+      ScaTraEleCalcPoroReac(const int numdofpernode, const int numscal, const std::string& disname);
+
+      typedef ScaTraEleCalc<distype> my;
+      typedef ScaTraEleCalcPoro<distype> poro;
+      typedef ScaTraEleCalcAdvReac<distype> advreac;
+
+     public:
+      virtual ~ScaTraEleCalcPoroReac() {}
+
+      /// Singleton access method
+      static ScaTraEleCalcPoroReac<distype>* Instance(
+          const int numdofpernode, const int numscal, const std::string& disname);
+
+
+     protected:
+      //! evaluate material
+      virtual void Materials(
+          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
+          const int k,                                       //!< id of current scalar
+          double& densn,                                     //!< density at t_(n)
+          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,       //!< density at t_(n+alpha_M)
+          double& visc,         //!< fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
+      );
+
+      //! get the material parameters
+      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                          //!< density at t_(n)
+          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
+          double& visc,                 //!< fluid viscosity
+          const int iquad = -1          //!< id of current gauss point (default = -1)
+      );
+
+      //! material ScaTra
+      virtual void MatScaTra(
+          const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
+          const int k,                                       //!< id of current scalar
+          double& densn,                                     //!< density at t_(n)
+          double& densnp,       //!< density at t_(n+1) or t_(n+alpha_F)
+          double& densam,       //!< density at t_(n+alpha_M)
+          double& visc,         //!< fluid viscosity
+          const int iquad = -1  //!< id of current gauss point (default = -1)
+      );
+
+      //! extract element based or nodal values
+      //  return extracted values of phinp
+      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+    };
+  }  // namespace ELEMENTS
+}  // namespace DRT
+
+
+#endif  // SCATRA_ELE_CALC_PORO_REAC_H

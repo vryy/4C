@@ -5,7 +5,8 @@
 */
 /*---------------------------------------------------------------------------*/
 #include <gtest/gtest.h>
-#include "particle_interaction_sph_density_correction.H"
+
+#include "baci_particle_interaction_sph_density_correction.H"
 
 
 namespace

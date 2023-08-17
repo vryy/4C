@@ -9,7 +9,6 @@ set(_contact_dependencies
     inpar
     io
     lib
-    linalg
     mat
     mortar
     rebalance

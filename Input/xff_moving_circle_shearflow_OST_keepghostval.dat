@@ -16,9 +16,7 @@ NUMFLUIDDIS                     1
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 FILESTEPS                       1
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1

@@ -8,7 +8,8 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "lib_functionvariables.H"
+
+#include "baci_lib_functionvariables.H"
 
 namespace
 {

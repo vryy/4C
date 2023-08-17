@@ -1,35 +1,33 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 3D finite deformation contact test
 // - second-order interpolation (hex27 elements)
 // - penalty solution scheme
 // - standard Lagrange multiplier interpolation (lin)
 // - generalized alpha time integration
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        129
 NODES                           1472
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -47,37 +45,37 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         1.0
--------------------------------------------------------------CONTACT DYNAMIC
+---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Penalty
 PENALTYPARAM                    20000
--------------------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Standard
 LM_QUAD                         lin
 LM_DUAL_CONSISTENT              none
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
 NDLINE                          24
 NDSURF                          12
 NDVOL                           2
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 FUNCT 0 0 1
------------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
+--------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master Inactive
 E 7 - 1 Slave Inactive
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 1082 DNODE 2
 NODE 1468 DNODE 3
@@ -94,7 +92,7 @@ NODE 1019 DNODE 13
 NODE 1153 DNODE 14
 NODE 764 DNODE 15
 NODE 636 DNODE 16
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 10 DLINE 1
 NODE 3 DLINE 1
@@ -287,7 +285,7 @@ NODE 764 DLINE 23
 NODE 414 DLINE 24
 NODE 509 DLINE 24
 NODE 636 DLINE 24
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 1082 DSURFACE 1
 NODE 1468 DSURFACE 1
@@ -1260,7 +1258,7 @@ NODE 931 DSURFACE 12
 NODE 677 DSURFACE 12
 NODE 812 DSURFACE 12
 NODE 850 DSURFACE 12
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOLUME 1
 NODE 1082 DVOLUME 1
 NODE 1468 DVOLUME 1
@@ -2733,7 +2731,7 @@ NODE 559 DVOLUME 2
 NODE 691 DVOLUME 2
 NODE 850 DVOLUME 2
 NODE 730 DVOLUME 2
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 1.999999911791123e+00 1.999999911791123e+00 0.000000000000000e+00
 NODE 2 COORD 1.999999911791123e+00 1.749999922817233e+00 0.000000000000000e+00
 NODE 3 COORD 1.749999922817232e+00 1.999999911791123e+00 0.000000000000000e+00
@@ -4206,7 +4204,7 @@ NODE 1469 COORD -1.999999911791123e+00 -1.999999911791122e+00 2.500000000000000e
 NODE 1470 COORD -1.999999911791123e+00 -1.999999911791122e+00 5.000000000000000e-01
 NODE 1471 COORD -1.999999911791123e+00 -1.999999911791122e+00 7.500000000000000e-01
 NODE 1472 COORD -1.999999911791123e+00 -1.999999911791122e+00 1.000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH27 HEX27 869 1118 1099 845 848 1102 1083 829 991 1108 971 852 855 1112 1085 832 976 1087 954 835 977 980 1091 959 840 964 966 MAT 1 KINEM nonlinear
 2 SOLIDH27 HEX27 643 869 845 624 627 848 829 600 749 852 732 630 633 855 832 605 736 835 711 607 741 743 840 719 613 723 728 MAT 1 KINEM nonlinear
 3 SOLIDH27 HEX27 455 643 624 434 438 627 600 416 542 630 522 440 443 633 605 420 525 607 506 423 532 535 613 511 432 513 519 MAT 1 KINEM nonlinear
@@ -4336,17 +4334,17 @@ NODE 1472 COORD -1.999999911791123e+00 -1.999999911791122e+00 1.000000000000000e
 127 SOLIDH27 HEX27 1174 1209 1172 1117 919 970 918 870 1195 1192 1142 1145 1047 1088 1046 992 939 937 890 894 1167 1066 1065 1015 1018 915 1037 MAT 1 KINEM nonlinear
 128 SOLIDH27 HEX27 1156 1174 1117 1101 907 919 870 847 1162 1145 1111 1127 1026 1047 992 975 911 894 854 875 1133 1034 1018 979 999 883 1005 MAT 1 KINEM nonlinear
 129 SOLIDH27 HEX27 1153 764 546 930 1019 636 414 811 931 641 724 1028 1068 677 469 849 812 509 592 902 813 850 559 642 948 691 730 MAT 2 KINEM nonlinear
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.5 VALUES 0.0 1.0
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 642 QUANTITY dispx VALUE 0.0000000000000000e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 642 QUANTITY dispy VALUE 0.0000000000000000e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 642 QUANTITY dispz VALUE -3.67648261183740110e-01 TOLERANCE 1e-8
--------------------------------------------------------------------------END
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 642 QUANTITY dispx VALUE  3.15380373895474728e-15 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 642 QUANTITY dispy VALUE  1.33822183599718975e-15 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 642 QUANTITY dispz VALUE -3.67648261183739833e-01 TOLERANCE 1e-8
+---------------------------------------------------------------END
 //                              END

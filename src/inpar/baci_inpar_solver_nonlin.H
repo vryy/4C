@@ -1,0 +1,29 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+\brief Input parameters for nonlinear solvers
+
+
+\level 1
+*/
+
+/*----------------------------------------------------------------------*/
+
+#ifndef BACI_INPAR_SOLVER_NONLIN_H
+#define BACI_INPAR_SOLVER_NONLIN_H
+
+#include <Teuchos_ParameterList.hpp>
+#include <Teuchos_RCPDecl.hpp>
+
+/*----------------------------------------------------------------------*/
+namespace INPAR
+{
+  namespace NLNSOL
+  {
+    /// set the nonlinear solver parameters
+    void SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list);
+
+  }  // namespace NLNSOL
+}  // namespace INPAR
+
+/*----------------------------------------------------------------------*/
+#endif  // INPAR_SOLVER_NONLIN_H

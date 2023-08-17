@@ -3,25 +3,25 @@
 ==================================================================
 General Data File C_CARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Test nurbs 9 with poroelasticity
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        100
 NODES                           144
 DIM                             2
 MATERIALS                       1
 NUMDF                           3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Poroelasticity
 SHAPEFCT                        Nurbs
 RESTART                         0
----------------------------------------------------------------FLUID DYNAMIC
+-----------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 TIMEINTEGR                      One_Step_Theta
 THETA                           0.66
 INITIALFIELD                    zero_field
 PREDICTOR                       steady_state
-----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+---------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
@@ -35,14 +35,14 @@ SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
-------------------------------------------------------POROELASTICITY DYNAMIC
+--------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          40
@@ -60,49 +60,49 @@ RESULTSEVRY                           1
 LINEAR_SOLVER                   3
 SECONDORDER                     no
 CONTIPARTINT                    yes
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 NAME                            Struct_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
+----------------------------------------------------------SOLVER 3
 NAME                            Poro_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
 NDSURF                          1
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
 // E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0
 // E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
 // E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
 // E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 E 3 - NUMDOF 2 ONOFF 1 0 VAL -0.1 0.0 FUNCT 1 0
 // E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none
 // E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
 E 4 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
------------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+--------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           1
 //E 3 - NUMDOF 2 ONOFF 1 0 VAL -0.1 0.0 FUNCT 0 0
 // E 2 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 CURVE 1 none none
 // E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0
 E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-----------------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
+------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
 DLINE                           2
 E 1 -
 E 2 -
----------------------------------------DESIGN LINE PORO PRESSURE INTEGRATION
+-----------------------------DESIGN LINE PORO PRESSURE INTEGRATION
 DLINE                           1
 E 3 -
----------------------------------------DESIGN SURFACE POROCOUPLING CONDITION
+-----------------------------DESIGN SURFACE POROCOUPLING CONDITION
 DSURF                           1
 //                              Surface
 E 1 -
------------------------------------------------------------STRUCTURE KNOTVECTORS
+---------------------------------------------STRUCTURE KNOTVECTORS
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        15
@@ -142,7 +142,7 @@ TYPE                            Interpolated
 1
 1
 END NURBSPATCH
------------------------------------------------------------FLUID KNOTVECTORS
+-------------------------------------------------FLUID KNOTVECTORS
 BEGIN                           NURBSPATCH
 ID                              1
 NUMKNOTS                        15
@@ -182,7 +182,7 @@ TYPE                            Interpolated
 1
 1
 END NURBSPATCH
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 CP 1 COORD 0.000000e+00 0.000000e+00 0.000000e+00 1.000000e+00
 CP 2 COORD 5.000000e-02 0.000000e+00 0.000000e+00 1.000000e+00
 CP 3 COORD 1.500000e-01 0.000000e+00 0.000000e+00 1.000000e+00
@@ -327,12 +327,12 @@ CP 141 COORD 7.500000e-01 1.000000e+00 0.000000e+00 1.000000e+00
 CP 142 COORD 8.500000e-01 1.000000e+00 0.000000e+00 1.000000e+00
 CP 143 COORD 9.500000e-01 1.000000e+00 0.000000e+00 1.000000e+00
 CP 144 COORD 1.000000e+00 1.000000e+00 0.000000e+00 1.000000e+00
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 12 DNODE 2
 NODE 133 DNODE 3
 NODE 144 DNODE 4
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 2 DLINE 1
 NODE 3 DLINE 1
@@ -381,7 +381,7 @@ NODE 108 DLINE 4
 NODE 120 DLINE 4
 NODE 132 DLINE 4
 NODE 144 DLINE 4
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURF 1
 NODE 2 DSURF 1
 NODE 3 DSURF 1
@@ -526,7 +526,7 @@ NODE 141 DSURF 1
 NODE 142 DSURF 1
 NODE 143 DSURF 1
 NODE 144 DSURF 1
---------------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 WALLN9PORO NURBS9 1 2 3 13 14 15 25 26 27 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 2 WALLN9PORO NURBS9 2 3 4 14 15 16 26 27 28 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 3 WALLN9PORO NURBS9 3 4 5 15 16 17 27 28 29 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
@@ -627,29 +627,29 @@ NODE 144 DSURF 1
 98 WALLN9PORO NURBS9 116 117 118 128 129 130 140 141 142 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 99 WALLN9PORO NURBS9 117 118 119 129 130 131 141 142 143 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
 100 WALLN9PORO NURBS9 118 119 120 130 131 132 142 143 144 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.4
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.001 DENSITY 1.0 PERMEABILITY 1.0e-4 TYPE Darcy
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
--------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION -1.0*0.5*(1-cos((t*pi/2.0))) -1.0*0.5*(1-cos((2*pi/2.0)))
-----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 4 QUANTITY velx VALUE 1.95888537331915039e-03 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 34 QUANTITY vely VALUE -6.03294281871014863e-03 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 65 QUANTITY pressure VALUE 3.99398169632069824e-02 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 5.84537408288781355e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE 5.22573808919249319e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 4.61016935949160045e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE 9.05586503655328445e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -1.36869240328385116e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 5.84537408288781355e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 93 QUANTITY dispx VALUE 1.36049637957444424e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 94 QUANTITY dispx VALUE 7.70562109201118091e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 94 QUANTITY velx VALUE 1.51469922462119685e-03 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 95 QUANTITY dispy VALUE 6.38159828275521154e-06 TOLERANCE 1e-8
--------------------------------------------------------------------------END
+------------------------------------------------RESULT DESCRIPTION
+FLUID DIS porofluid NODE 4 QUANTITY velx VALUE  1.95729829793778003e-03 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 34 QUANTITY vely VALUE -5.97614383401564014e-03 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 65 QUANTITY pressure VALUE  3.99209521720148564e-02 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE  5.84536917078852069e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE  5.22572574183287407e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE  4.61015348955323299e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE  9.05573275424487525e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE -1.36866767474048777e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE  5.84536917078852069e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 93 QUANTITY dispx VALUE  1.36049388666501040e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 94 QUANTITY dispx VALUE  7.70561284985011620e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 94 QUANTITY velx VALUE  1.51460753096761824e-03 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 95 QUANTITY dispy VALUE  6.38149983876964321e-06 TOLERANCE 1e-8
+---------------------------------------------------------------END

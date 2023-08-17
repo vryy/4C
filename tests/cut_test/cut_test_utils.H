@@ -8,16 +8,14 @@
 #ifndef CUT_TEST_UTILS_H
 #define CUT_TEST_UTILS_H
 
-#include <vector>
+#include "baci_lib_element.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_serialdensematrix.H"
+
 #include <map>
+#include <vector>
 
-#include <Epetra_SerialDenseMatrix.h>
-
-#include "lib_element.H"
-
-#include "linalg_fixedsizematrix.H"
-
-namespace GEO
+namespace CORE::GEO
 {
   namespace CUT
   {
@@ -26,7 +24,7 @@ namespace GEO
     class Element;
     class Side;
   }  // namespace CUT
-}  // namespace GEO
+}  // namespace CORE::GEO
 
 class SimpleWrapper
 {
@@ -35,18 +33,18 @@ class SimpleWrapper
 
   ~SimpleWrapper();
 
-  void CreateHex8(const Epetra_SerialDenseMatrix& xyze);
-  void CreateTet4(const Epetra_SerialDenseMatrix& xyze);
-  void CreatePyramid5(const Epetra_SerialDenseMatrix& xyze);
-  void CreateWedge6(const Epetra_SerialDenseMatrix& xyze);
+  void CreateHex8(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateTet4(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreatePyramid5(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateWedge6(const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateHex8Sides(const Epetra_SerialDenseMatrix& xyze);
-  void CreateTet4Sides(const Epetra_SerialDenseMatrix& xyze);
-  void CreatePyramid5Sides(const Epetra_SerialDenseMatrix& xyze);
-  void CreateWedge6Sides(const Epetra_SerialDenseMatrix& xyze);
+  void CreateHex8Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateTet4Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreatePyramid5Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateWedge6Sides(const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateTri3(const Epetra_SerialDenseMatrix& xyze);
-  void CreateQuad4(const Epetra_SerialDenseMatrix& xyze);
+  void CreateTri3(const CORE::LINALG::SerialDenseMatrix& xyze);
+  void CreateQuad4(const CORE::LINALG::SerialDenseMatrix& xyze);
 
   void CreateHex8(double dx = 0, double dy = 0, double dz = 0);
 
@@ -63,53 +61,60 @@ class SimpleWrapper
 
  private:
   void CreateElement(
-      DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze);
+      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
   void CreateElementSides(
-      DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze);
+      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  void CreateSide(DRT::Element::DiscretizationType distype, const Epetra_SerialDenseMatrix& xyze);
+  void CreateSide(
+      DRT::Element::DiscretizationType distype, const CORE::LINALG::SerialDenseMatrix& xyze);
 
-  int GetId(const LINALG::Matrix<3, 1>& x, std::vector<LINALG::Matrix<3, 1>>& points);
+  int GetId(const CORE::LINALG::Matrix<3, 1>& x, std::vector<CORE::LINALG::Matrix<3, 1>>& points);
 
   SimpleWrapper(const SimpleWrapper&);
   SimpleWrapper& operator=(const SimpleWrapper&);
 
-  GEO::CUT::MeshIntersection* mesh_;
+  CORE::GEO::CUT::MeshIntersection* mesh_;
 
   std::map<DRT::Element::DiscretizationType, int> element_count_;
 
   // std::map<DRT::Element::DiscretizationType, int> side_count_;
   int side_count_;
 
-  std::vector<LINALG::Matrix<3, 1>> element_points_;
+  std::vector<CORE::LINALG::Matrix<3, 1>> element_points_;
 
-  std::vector<LINALG::Matrix<3, 1>> side_points_;
+  std::vector<CORE::LINALG::Matrix<3, 1>> side_points_;
 };
 
-GEO::CUT::Element* create_hex8(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
-// GEO::CUT::Element* create_hex20( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
-// GEO::CUT::Element* create_hex27( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
-GEO::CUT::Element* create_tet4(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
-GEO::CUT::Element* create_wedge6(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
-GEO::CUT::Element* create_pyramid5(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
+CORE::GEO::CUT::Element* create_hex8(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
+// GEO::CUT::Element* create_hex20( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
+// GEO::CUT::Element* create_hex27( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
+CORE::GEO::CUT::Element* create_tet4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
+CORE::GEO::CUT::Element* create_wedge6(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
+CORE::GEO::CUT::Element* create_pyramid5(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
 
-GEO::CUT::Side* create_quad4(GEO::CUT::Mesh& mesh, Epetra_SerialDenseMatrix& xyze);
-// GEO::CUT::Side* create_quad8( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
-// GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, Epetra_SerialDenseMatrix & xyze );
+CORE::GEO::CUT::Side* create_quad4(
+    CORE::GEO::CUT::Mesh& mesh, CORE::LINALG::SerialDenseMatrix& xyze);
+// GEO::CUT::Side* create_quad8( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
+// GEO::CUT::Side* create_quad9( GEO::CUT::Mesh & mesh, CORE::LINALG::SerialDenseMatrix & xyze );
 
-void create_hex8(Epetra_SerialDenseMatrix& xyze, double dx, double dy, double dz);
+void create_hex8(CORE::LINALG::SerialDenseMatrix& xyze, double dx, double dy, double dz);
 
-GEO::CUT::Element* create_hex8(GEO::CUT::Mesh& mesh, double dx = 0, double dy = 0, double dz = 0);
+CORE::GEO::CUT::Element* create_hex8(
+    CORE::GEO::CUT::Mesh& mesh, double dx = 0, double dy = 0, double dz = 0);
 
-void create_hex8_mesh(GEO::CUT::Mesh& mesh, int rows, int cols, int depth);
+void create_hex8_mesh(CORE::GEO::CUT::Mesh& mesh, int rows, int cols, int depth);
 
 void create_quad4_mesh(
-    GEO::CUT::Mesh& mesh, int rows, int cols, std::vector<GEO::CUT::Side*>& sides);
+    CORE::GEO::CUT::Mesh& mesh, int rows, int cols, std::vector<CORE::GEO::CUT::Side*>& sides);
 
 void create_quad4_cylinder_mesh(
-    GEO::CUT::MeshIntersection& intersection, double x, double y, int rows, int cols);
+    CORE::GEO::CUT::MeshIntersection& intersection, double x, double y, int rows, int cols);
 
-void cutmesh(GEO::CUT::Mesh& mesh);
+void cutmesh(CORE::GEO::CUT::Mesh& mesh);
 
 #endif

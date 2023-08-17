@@ -3,11 +3,9 @@ baci_auto_define_module()
 set(_particle_interaction_dependencies
     # cmake-format: sortable
     core
-    geometry
     inpar
     io
     lib
-    linalg
     mat
     particle_algorithm
     particle_engine

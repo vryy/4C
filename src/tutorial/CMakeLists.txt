@@ -5,6 +5,5 @@ set(_tutorial_dependencies
     core
     inpar
     lib
-    linalg
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_tutorial_dependencies})

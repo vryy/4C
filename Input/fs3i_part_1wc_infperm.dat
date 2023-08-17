@@ -1,13 +1,13 @@
 ==================================================================
 General Data File BACI
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 created by pre_exodus
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      400
 //NODES                         924
 DIM                             3
------------------------------------------------------------------ALE DYNAMIC
+-------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        solid
 MAXTIME                         4
 NUMSTEP                         41
@@ -15,7 +15,7 @@ NUM_INITSTEP                    0
 RESULTSEVRY                     1
 TIMESTEP                        0.1
 LINEAR_SOLVER                   7
---------------------------------------------------------------------SOLVER 7
+----------------------------------------------------------SOLVER 7
 NAME ALE SOLVER
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -46,11 +46,11 @@ ML_SMOTIMES                     6 6 6 6 1
 ML_DAMPFINE                     1.0
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
----------------------------------------------------------------FLUID DYNAMIC
+-----------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 ALPHA_F                         1
@@ -77,12 +77,12 @@ START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1.0
------------------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
+-------------------------FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES
 TOL_VEL_RES	  1e-05
 TOL_VEL_INC	  1e-05
 TOL_PRES_RES	  1e-05
 TOL_PRES_INC	  1e-05
-----------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
@@ -96,7 +96,7 @@ SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 NAME                            FLUID_SOLVER
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -127,7 +127,7 @@ ML_SMOTIMES                     10 10 10 10 1
 ML_DAMPFINE                     0.6
 ML_DAMPMED                      0.6
 ML_DAMPCOARSE                   1.0
------------------------------------------------------------------FSI DYNAMIC
+-------------------------------------------------------FSI DYNAMIC
 COUPALGO                        iter_monolithicstructuresplit
 MAXTIME                         10000.0
 TIMESTEP                        25.0
@@ -135,7 +135,7 @@ NUMSTEP                         10
 RESTARTEVRY                     100
 SECONDORDER                     yes
 RESULTSEVRY                           1
------------------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
+-------------------------------------FSI DYNAMIC/MONOLITHIC SOLVER
 BASETOL                         1.0e-06
 CONVTOL                         1.0e-06
 INFNORMSCALING                  yes
@@ -146,28 +146,25 @@ PCOMEGA                         1.0 1.0 1.0
 PRECONDREUSE                    0
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                no
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
 STRUCT_STRAIN                   Yes
 STRUCT_STRESS                   2PK
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Gas_Fluid_Structure_Interaction
 RESTART                         0
 //!RESTART                      10
 SHAPEFCT                        Polynomial
-----------------------------------------------------------------FS3I DYNAMIC
+------------------------------------------------------FS3I DYNAMIC
 MAXTIME                         10000.0
 TIMESTEP                        12.5
 NUMSTEP                         20
@@ -180,7 +177,7 @@ LINEAR_SOLVER1                  4
 LINEAR_SOLVER2                  3
 STRUCTSCAL_INITFUNCNO           1
 STRUCTSCAL_INITIALFIELD         field_by_function
-----------------------------------------------------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
+-----------------------FS3I DYNAMIC/STRUCTURE SCALAR STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
@@ -189,7 +186,7 @@ EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 STABTYPE                        no_stabilization
 SUGRVEL                         no
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 CALCERROR                       No
 CONVFORM                        conservative
 GAMMA                           0.5
@@ -208,14 +205,14 @@ RESULTSEVRY                           1
 VELFUNCNO                       -1
 VELOCITYFIELD                   Navier_Stokes
 LINEAR_SOLVER                   6
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ABSTOLRES                       1e-06
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVTOL                         1e-06
 EXPLPREDICT                     no
 ITEMAX                          10
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_ASSGD                artificial_linear
@@ -224,10 +221,10 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 STABTYPE                        no_stabilization
 SUGRVEL                         no
---------------------------------------------------------------------SOLVER 6
+----------------------------------------------------------SOLVER 6
 NAME                            NURBS_SOLVER
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            COUPLED_FS3I_SOLVER
 SOLVER                          Belos
 AZOUTPUT                        1
@@ -243,7 +240,7 @@ AZOMEGA                         1.0
 AZGRAPH                         1
 IFPACKOVERLAP                   0
 AZSCAL                          infnorm
---------------------------------------------------------------------SOLVER 4
+----------------------------------------------------------SOLVER 4
 NAME                            SCAT_FLUID
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -273,7 +270,7 @@ ML_SMOTIMES                     2 0 0 0 1
 ML_DAMPFINE                     0.67
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
---------------------------------------------------------------------SOLVER 3
+----------------------------------------------------------SOLVER 3
 NAME                            SCAT_STRUCT
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -303,7 +300,7 @@ ML_SMOTIMES                     2 0 0 0 1
 ML_DAMPFINE                     0.67
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
---------------------------------------------------------------------SOLVER 5
+----------------------------------------------------------SOLVER 5
 NAME                            STRUCT
 SOLVER                          Belos
 AZOUTPUT                        0
@@ -334,7 +331,7 @@ ML_SMOTIMES                     4 0 0 0 1
 ML_DAMPFINE                     0.49
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 DAMPING                         No
@@ -364,13 +361,13 @@ TOLCONSTR                       1e-05
 TOLDISP                         1e-05
 TOLRES                          1e-05
 LINEAR_SOLVER                   5
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra1 TAR_MAT 3
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra2 TAR_MAT 4
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 10
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.01983 DENSITY 0.0000012 GAMMA 1
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 7 DENS 0.001
 MAT 7 ELAST_CoupNeoHooke YOUNG 525.0 NUE 0.0
@@ -379,26 +376,26 @@ MAT 4 MAT_matlist LOCAL No NUMMAT 1 MATIDS 6 END
 MAT 5 MAT_scatra DIFFUSIVITY 1.6
 MAT 6 MAT_scatra DIFFUSIVITY 1.0
 MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 2000.0 NUE 0.3 DENS 0.001
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.9-0.01*z
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 500 10000 DESCRIPTION 0.5*(1+sin(pi*(t-250)/500)) 1
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          3
 NDSURF                          19
 NDVOL                           1
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 // solid fsi lines
 E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // fluid fsi lines
 E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           8
 // solid fsi
 E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
@@ -416,15 +413,15 @@ E 6 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // fluid front/back
 E 8 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
-------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+--------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            1
 //                              solid
 E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
--------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
+---------------------------------DESIGN LINE ALE DIRICH CONDITIONS
 DLINE                           1
 // fluid fsi lines
 E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
--------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+---------------------------------DESIGN SURF ALE DIRICH CONDITIONS
 DSURF                           5
 // fluid fsi
 E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
@@ -436,19 +433,19 @@ E 6 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
 // fluid front/back
 E 8 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0
------------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+-------------------------------DESIGN FSI COUPLING SURF CONDITIONS
 DSURF                           2
 // solid fsi
 E 1 - 1
 // fluid fsi
 E 4 - 1
---------------------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
+----------------------------DESIGN SCATRA COUPLING SURF CONDITIONS
 DSURF                           2
 // solid fsi
 E 1 - NUMSCAL 1 ONOFF 1 COUPID 1 PERMCOEF 1.0 CONDUCT 0.0 FILTR 0.0 WSSONOFF 0 WSSCOEFFS 0.0 0.0
 // fluid fsi
 E 4 - NUMSCAL 1 ONOFF 1 COUPID 1 PERMCOEF 1.0 CONDUCT 0.0 FILTR 0.0 WSSONOFF 0 WSSCOEFFS 0.0 0.0
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1 DNODE 1
 NODE 4 DNODE 1
 NODE 5 DNODE 1
@@ -491,7 +488,7 @@ NODE 191 DNODE 1
 NODE 194 DNODE 1
 NODE 201 DNODE 1
 NODE 204 DNODE 1
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
 NODE 201 DLINE 1
@@ -500,7 +497,7 @@ NODE 275 DLINE 2
 NODE 276 DLINE 2
 NODE 923 DLINE 2
 NODE 924 DLINE 2
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 4 DSURFACE 1
 NODE 5 DSURFACE 1
@@ -1323,7 +1320,7 @@ NODE 885 DSURFACE 8
 NODE 886 DSURFACE 8
 NODE 887 DSURFACE 8
 NODE 888 DSURFACE 8
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1
 NODE 3 DVOL 1
@@ -1534,7 +1531,7 @@ NODE 207 DVOL 1
 NODE 208 DVOL 1
 NODE 209 DVOL 1
 NODE 210 DVOL 1
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e+01 -2.5000000000000000e+00 1.0000000000000000e+01
 NODE 2 COORD -5.0000000000000000e+01 -2.5000000000000000e+00 5.0000000000000000e+00
 NODE 3 COORD -5.0000000000000000e+01 2.5000000000000000e+00 5.0000000000000000e+00
@@ -2459,7 +2456,7 @@ NODE 921 COORD 5.0000000000000000e+01 -2.5000000000000000e+00 1.5000000000000000
 NODE 922 COORD 5.0000000000000000e+01 2.5000000000000000e+00 1.5000000000000000e+01
 NODE 923 COORD 5.0000000000000000e+01 -2.5000000000000000e+00 1.0000000000000000e+01
 NODE 924 COORD 5.0000000000000000e+01 2.5000000000000000e+00 1.0000000000000000e+01
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8SCATRA HEX8 1 2 3 4 5 6 7 8 MAT 2 KINEM nonlinear EAS none TYPE Std
 2 SOLIDH8SCATRA HEX8 2 9 10 3 6 11 12 7 MAT 2 KINEM nonlinear EAS none TYPE Std
 3 SOLIDH8SCATRA HEX8 9 13 14 10 11 15 16 12 MAT 2 KINEM nonlinear EAS none TYPE Std
@@ -2540,7 +2537,7 @@ NODE 924 COORD 5.0000000000000000e+01 2.5000000000000000e+00 1.0000000000000000e
 78 SOLIDH8SCATRA HEX8 192 195 196 193 202 205 206 203 MAT 2 KINEM nonlinear EAS none TYPE Std
 79 SOLIDH8SCATRA HEX8 195 197 198 196 205 207 208 206 MAT 2 KINEM nonlinear EAS none TYPE Std
 80 SOLIDH8SCATRA HEX8 197 199 200 198 207 209 210 208 MAT 2 KINEM nonlinear EAS none TYPE Std
---------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
 81 FLUID HEX8 211 212 213 214 215 216 217 218 MAT 1 NA ALE
 82 FLUID HEX8 212 219 220 213 216 221 222 217 MAT 1 NA ALE
 83 FLUID HEX8 219 223 224 220 221 225 226 222 MAT 1 NA ALE
@@ -2861,9 +2858,9 @@ NODE 924 COORD 5.0000000000000000e+01 2.5000000000000000e+00 1.0000000000000000e
 398 FLUID HEX8 883 885 886 884 917 919 920 918 MAT 1 NA ALE
 399 FLUID HEX8 885 887 888 886 919 921 922 920 MAT 1 NA ALE
 400 FLUID HEX8 887 889 890 888 921 923 924 922 MAT 1 NA ALE
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra2 NODE 206 QUANTITY phi VALUE 7.82925311253586997e-01 TOLERANCE 1e-8
-SCATRA DIS scatra1 NODE 910 QUANTITY phi VALUE 4.60280622699111908e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 910 QUANTITY velx VALUE 9.79854973052283196e-02 TOLERANCE 1e-8
--------------------------------------------------------------------------END
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra2 NODE 206 QUANTITY phi VALUE  7.76960863431335857e-01 TOLERANCE 1e-8
+SCATRA DIS scatra1 NODE 910 QUANTITY phi VALUE  4.59907796419186499e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 910 QUANTITY velx VALUE  9.79854965780269094e-02 TOLERANCE 1e-8
+---------------------------------------------------------------END
 //                              END

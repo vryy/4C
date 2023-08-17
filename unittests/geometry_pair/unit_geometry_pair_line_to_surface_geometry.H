@@ -17,8 +17,8 @@ namespace
   /**
    * Setup the surface geometry for the tri4 tests.
    */
-  void XtestSetupTri3(
-      LINALG::Matrix<9, 1, double>& q_solid, LINALG::Matrix<9, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupTri3(CORE::LINALG::Matrix<9, 1, double>& q_solid,
+      CORE::LINALG::Matrix<9, 1, double>* nodal_normals_ptr = nullptr)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -30,7 +30,7 @@ namespace
     q_solid(7) = 0.95;
     q_solid(8) = 0.;
 
-    if (nodal_normals_ptr != NULL)
+    if (nodal_normals_ptr != nullptr)
     {
       auto& nodal_normals = *nodal_normals_ptr;
       nodal_normals(0) = -0.2627627396383057;
@@ -48,8 +48,8 @@ namespace
   /**
    * Setup the surface geometry for the tri6 tests.
    */
-  void XtestSetupTri6(LINALG::Matrix<18, 1, double>& q_solid,
-      LINALG::Matrix<18, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupTri6(CORE::LINALG::Matrix<18, 1, double>& q_solid,
+      CORE::LINALG::Matrix<18, 1, double>* nodal_normals_ptr = nullptr)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -70,7 +70,7 @@ namespace
     q_solid(16) = 0.4;
     q_solid(17) = 0.;
 
-    if (nodal_normals_ptr != NULL)
+    if (nodal_normals_ptr != nullptr)
     {
       auto& nodal_normals = *nodal_normals_ptr;
       nodal_normals(0) = 0.4647142046388283;
@@ -97,8 +97,8 @@ namespace
   /**
    * Setup the surface geometry for the quad4 tests.
    */
-  void XtestSetupQuad4(LINALG::Matrix<12, 1, double>& q_solid,
-      LINALG::Matrix<12, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupQuad4(CORE::LINALG::Matrix<12, 1, double>& q_solid,
+      CORE::LINALG::Matrix<12, 1, double>* nodal_normals_ptr = nullptr)
   {
     q_solid(0) = 0;
     q_solid(1) = 0;
@@ -113,7 +113,7 @@ namespace
     q_solid(10) = 0.95;
     q_solid(11) = 0;
 
-    if (nodal_normals_ptr != NULL)
+    if (nodal_normals_ptr != nullptr)
     {
       auto& nodal_normals = *nodal_normals_ptr;
       nodal_normals(0) = -0.2627627396383057;
@@ -134,8 +134,8 @@ namespace
   /**
    * Setup the surface geometry for the quad8 tests.
    */
-  void XtestSetupQuad8(LINALG::Matrix<24, 1, double>& q_solid,
-      LINALG::Matrix<24, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupQuad8(CORE::LINALG::Matrix<24, 1, double>& q_solid,
+      CORE::LINALG::Matrix<24, 1, double>* nodal_normals_ptr = nullptr)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -162,7 +162,7 @@ namespace
     q_solid(22) = 0.4;
     q_solid(23) = 0.;
 
-    if (nodal_normals_ptr != NULL)
+    if (nodal_normals_ptr != nullptr)
     {
       auto& nodal_normals = *nodal_normals_ptr;
       nodal_normals(0) = 0.4647142046388283;
@@ -195,8 +195,8 @@ namespace
   /**
    * Setup the surface geometry for the quad9 tests.
    */
-  void XtestSetupQuad9(LINALG::Matrix<27, 1, double>& q_solid,
-      LINALG::Matrix<27, 1, double>* nodal_normals_ptr = NULL)
+  void XtestSetupQuad9(CORE::LINALG::Matrix<27, 1, double>& q_solid,
+      CORE::LINALG::Matrix<27, 1, double>* nodal_normals_ptr = nullptr)
   {
     q_solid(0) = 0.;
     q_solid(1) = 0.;
@@ -226,7 +226,7 @@ namespace
     q_solid(25) = 0.5;
     q_solid(26) = 0.2;
 
-    if (nodal_normals_ptr != NULL)
+    if (nodal_normals_ptr != nullptr)
     {
       auto& nodal_normals = *nodal_normals_ptr;
       nodal_normals(0) = 0.4647142046388283;
@@ -262,7 +262,8 @@ namespace
   /**
    * Setup the beam geometry for the tests.
    */
-  void XtestSetupBeam(Teuchos::RCP<DRT::Element>& element_1, LINALG::Matrix<12, 1, double>& q_beam)
+  void XtestSetupBeam(
+      Teuchos::RCP<DRT::Element>& element_1, CORE::LINALG::Matrix<12, 1, double>& q_beam)
   {
     // Set up the beam.
     const int dummy_node_ids[2] = {0, 1};

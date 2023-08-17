@@ -8,7 +8,6 @@ set(_mat_dependencies
     inpar
     io
     lib
-    linalg
     matelast
     mixture
     porofluidmultiphase_ele

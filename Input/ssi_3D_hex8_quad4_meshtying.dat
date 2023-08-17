@@ -10,30 +10,28 @@ transport on structural boundary
 //ELEMENTS    1617
 //NODES       2232
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 INT_STRATEGY                    Standard
---------------------------------------------------------STRUCT NOX/Printing
+-----------------------------------------------STRUCT NOX/Printing
 Error                           = No
 Warning                         = Yes
 Outer Iteration                 = Yes
@@ -46,9 +44,9 @@ Test Details                    = No
 Debug                           = No
 --------------------------------------------STRUCT NOX/Status Test
 XML File                        = ssi_part_struct_solver.xml
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
@@ -60,11 +58,11 @@ INITFUNCNO                      1
 FSSUGRDIFF                      No
 CONVFORM                        conservative
 SKIPINITDER                     no
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 STABTYPE                        SUPG
 DEFINITION_TAU                  Franca_Valentin
 CHARELELENGTH                   root_of_volume
------------------------------------------------------------------SSI CONTROL
+-------------------------------------------------------SSI CONTROL
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTEP                         3
@@ -75,34 +73,33 @@ ITEMAX                          10
 SCATRA_FROM_RESTART_FILE        No
 SCATRATIMINTTYPE                Standard
 FIELDCOUPLING                   boundary_nonmatching
--------------------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     dual
 SEARCH_ALGORITHM                Binarytree
 SEARCH_PARAM                    0.3
 MESH_RELOCATION                 initial
 INTTYPE                         elements
--------------------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
+---------------------------MORTAR COUPLING/PARALLEL REDISTRIBUTION
 PARALLEL_REDIST                 none
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 10.00
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.35 DENS 0.1
 MAT 3 MAT_scatra DIFFUSIVITY 5.00
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 2 TAR_FIELD scatra TAR_MAT 1
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 2139 QUANTITY dispz VALUE 2.60828498167937316e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2154 QUANTITY dispz VALUE 2.37974014831854250e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2145 QUANTITY velz VALUE 9.96232556636067201e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2153 QUANTITY dispz VALUE 2.37974014831857303e-02 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 10 QUANTITY phi VALUE 1.01525329112170470e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 55 QUANTITY phi VALUE 1.63185368475413939e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 2225 QUANTITY phi VALUE 1.39710301289586836e+00 TOLERANCE 1e-8
-
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 2139 QUANTITY dispz VALUE  2.60828498167937593e-02 TOLERANCE 2.6e-10
+STRUCTURE DIS structure NODE 2154 QUANTITY dispz VALUE  2.37974014831853833e-02 TOLERANCE 2.4e-10
+STRUCTURE DIS structure NODE 2145 QUANTITY velz VALUE  9.96232556636054412e+00 TOLERANCE 1.0e-05
+STRUCTURE DIS structure NODE 2153 QUANTITY dispz VALUE  2.37974014831857303e-02 TOLERANCE 2.4e-10
+SCATRA DIS scatra NODE 10 QUANTITY phi VALUE  1.01525329112170448e+00 TOLERANCE 1.0e-08
+SCATRA DIS scatra NODE 55 QUANTITY phi VALUE  1.63185368475413961e+00 TOLERANCE 1.6e-08
+SCATRA DIS scatra NODE 2225 QUANTITY phi VALUE  1.39710301289586791e+00 TOLERANCE 1.4e-08
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 0
 NDLINE  1

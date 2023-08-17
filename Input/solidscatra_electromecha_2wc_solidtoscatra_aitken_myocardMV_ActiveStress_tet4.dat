@@ -3,19 +3,19 @@
 // Two way electromechanics
 // Testing: 2wc partioned scalar-structure interaction with fixed relaxated displacements
 //
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Test for SolidScatra Material with Tet4 Elements
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4153
 //NODES                         928
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Rayleigh
 DYNAMICTYP                      OneStepTheta
 INT_STRATEGY                    Old
@@ -37,9 +37,9 @@ TOLDISP                         1e-03
 TOLINCO                         1e-03
 TOLPRE                          1e-03
 TOLRES                          1e-05
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
@@ -56,15 +56,15 @@ FSSUGRDIFF                      No
 MATID                           1
 SKIPINITDER                     yes
 CONVFORM                        conservative
-------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+--------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
 ITEMAX                          10
 ABSTOLRES                       1e-3
 CONVTOL                         1e-3
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Zero
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  integration_point
------------------------------------------------------------------SSI CONTROL
+-------------------------------------------------------SSI CONTROL
 RESULTSEVRY                           1
 RESTARTEVRY                     1
 NUMSTEP                         10000
@@ -73,12 +73,12 @@ TIMESTEP                        0.1
 COUPALGO                        ssi_IterStaggAitken_SolidToScatra
 ITEMAX                          10
 SCATRATIMINTTYPE                Cardiac_Monodomain
---------------------------------------------------------SSI CONTROL/PARTITIONED
+-------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1e-08
 STARTOMEGA                      0.8
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 101
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 10 20 DENS 0.001
 MAT 10 ELAST_CoupMooneyRivlin C1 1.0E-2 C2 0.0 C3 1.0E1
 MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 1.0E-1 TAUC0 0.0 MAX_ACTIVATION 0.02 MIN_ACTIVATION -0.03 SOURCE_ACTIVATION -1 ACTIVATION_THRES 0.0 STR_TENS_ID 100
@@ -86,29 +86,29 @@ MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 
 MAT 102 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
 MAT 103 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.00314 PERTUBATION_DERIV 1e-6 MODEL FHN TISSUE M TIME_SCALE 1.0
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.5*tanh((t)/0.01)+0.5)*tanh((t)/0.1)*exp(-(((t)/500.0)^10))
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
--------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 2 500000.0 DESCRIPTION (0.15*t) (-0.15*(t-1.0)+0.15) 0
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          0
 NDSURF                          3
 NDVOL                           0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF                         2
 //                              up
 //E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 //                              down
 //E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
+-------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT 1
 // Apex
 E 2 - NUMDOF 1 ONOFF 1 VAL 1.0 FUNCT 3 Live Mid
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 184 DNODE 1
 NODE 185 DNODE 1
 NODE 186 DNODE 1
@@ -197,7 +197,7 @@ NODE 893 DNODE 2
 NODE 897 DNODE 2
 NODE 910 DNODE 2
 NODE 917 DNODE 2
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 184 DSURFACE 1
 NODE 185 DSURFACE 1
 NODE 186 DSURFACE 1
@@ -666,7 +666,7 @@ NODE 925 DSURFACE 3
 NODE 926 DSURFACE 3
 NODE 927 DSURFACE 3
 NODE 928 DSURFACE 3
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 2.1411536261439323e-02 1.6365489959716797e+00 3.2438712120056152e+00
 NODE 2 COORD 2.5182405114173889e-01 1.5349605083465576e+00 3.7772884368896484e+00
 NODE 3 COORD 3.1286893008046185e-01 1.9753766811902753e+00 3.3743330393019217e+00
@@ -1595,7 +1595,7 @@ NODE 925 COORD -1.9020314951641473e+00 6.1828487884116823e-01 2.8240854023982092
 NODE 926 COORD 1.9753766811902753e+00 -3.1286893008046163e-01 -3.3743330393019209e+00
 NODE 927 COORD -1.9753766811902753e+00 3.1286893008046152e-01 -3.3743330393019209e+00
 NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.3743330393019217e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDT4SCATRA TET4 1 2 3 4 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 2 SOLIDT4SCATRA TET4 5 6 7 8 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 3 SOLIDT4SCATRA TET4 5 7 6 9 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
@@ -5749,9 +5749,9 @@ NODE 928 COORD -1.7820130483767356e+00 -9.0798099947909394e-01 -3.37433303930192
 4151 SOLIDT4SCATRA TET4 360 141 364 361 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 4152 SOLIDT4SCATRA TET4 121 627 626 373 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
 4153 SOLIDT4SCATRA TET4 633 705 287 570 MAT 1 KINEM nonlinear TYPE CardMono FIBER1 0.0 0.0 1.0
-----------------------------------------------------------RESULT DESCRIPTION
+------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
-STRUCTURE DIS structure NODE 659 QUANTITY dispx VALUE 1.59010617335700755e-03 TOLERANCE 1e-2
-SCATRA DIS scatra NODE 659 QUANTITY phi VALUE 2.28737657728178445e-01 TOLERANCE 1e-2
--------------------------------------------------------------------------END
+STRUCTURE DIS structure NODE 659 QUANTITY dispx VALUE  1.58185326262887832e-03 TOLERANCE 1e-2
+SCATRA DIS scatra NODE 659 QUANTITY phi VALUE  2.32537736615211987e-01 TOLERANCE 1e-2
+---------------------------------------------------------------END
 //                              END

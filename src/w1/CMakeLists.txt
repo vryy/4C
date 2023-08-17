@@ -6,7 +6,6 @@ set(_w1_dependencies
     core
     inpar
     lib
-    linalg
     mat
     nurbs_discret
     poroelast

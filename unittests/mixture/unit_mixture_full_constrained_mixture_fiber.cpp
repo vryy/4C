@@ -5,19 +5,18 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <memory>
 #include <gtest/gtest.h>
+
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_mat_par_material.H"
+#include "baci_mixture_constituent_remodelfiber_material_exponential.H"
+#include "baci_mixture_full_constrained_mixture_fiber.H"
+#include "baci_mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
+#include "baci_mixture_remodelfiber-internal.H"
 
 #include <Sacado.hpp>
 
-#include "mat_par_material.H"
-#include "mixture_growth_evolution_linear_cauchy_poisson_turnover.H"
-#include "mixture_constituent_remodelfiber_material_exponential.H"
-#include "mixture_full_constrained_mixture_fiber.H"
-
-#include "linalg_fixedsizematrix.H"
-
-#include "mixture_remodelfiber-internal.H"
+#include <memory>
 
 namespace
 {
@@ -259,7 +258,7 @@ namespace
     // evaluate local newton
     const auto local_newton_evaluator = cm_fiber.GetLocalNewtonEvaluator();
 
-    LINALG::Matrix<2, 1, FADdouble> x;
+    CORE::LINALG::Matrix<2, 1, FADdouble> x;
     x(0) = FADdouble(2, 0, 1.5);
     x(1) = FADdouble(2, 1, 0.453);
 
@@ -286,7 +285,7 @@ namespace
       // evaluate local newton
       const auto local_newton_evaluator = cm_fiber.GetLocalNewtonEvaluator();
 
-      LINALG::Matrix<2, 1, FADdouble> x;
+      CORE::LINALG::Matrix<2, 1, FADdouble> x;
       x(0) = FADdouble(2, 0, cm_fiber.computed_growth_scalar_.val());
       x(1) = FADdouble(2, 1, cm_fiber.computed_sigma_.val());
 
@@ -340,7 +339,7 @@ namespace
     cm_fiber.computed_growth_scalar_ = cm_fiber.computed_growth_scalar_.val();
     cm_fiber.computed_sigma_ = cm_fiber.computed_sigma_.val();
 
-    LINALG::Matrix<2, 1, FADdouble> x;
+    CORE::LINALG::Matrix<2, 1, FADdouble> x;
     x(0) = cm_fiber.computed_growth_scalar_;
     x(1) = cm_fiber.computed_sigma_;
 

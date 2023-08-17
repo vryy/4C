@@ -27,9 +27,7 @@ OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
 STRUCT_STRAIN                   No
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
@@ -1034,9 +1032,9 @@ NODE 220 COORD 0.37600000000000e+00 -3.000000000000000e-01 -3.000000000000000e-0
 89 FLUID HEX8 153 155 159 157 169 171 175 173 MAT 1 NA Euler
 90 FLUID HEX8 155 156 160 159 171 172 176 175 MAT 1 NA Euler
 ----------------------------------------------------------RESULT DESCRIPTION
-XFLUID DIS fluid NODE 118 QUANTITY velx VALUE 6.38363040514701940e-01 TOLERANCE 1e-8
+XFLUID DIS fluid NODE 118 QUANTITY velx VALUE  6.38996960004305392e-01 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 118 QUANTITY vely VALUE 0.0e00 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 118 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
-XFLUID DIS fluid NODE 118 QUANTITY pressure VALUE 1.26747849677539310e+01 TOLERANCE 1e-8
+XFLUID DIS fluid NODE 118 QUANTITY pressure VALUE  1.26790818944800474e+01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

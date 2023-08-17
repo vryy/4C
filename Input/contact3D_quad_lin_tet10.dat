@@ -1,35 +1,33 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 3D finite deformation contact test
 // - second-order interpolation (tet10 elements)
 // - semi-smooth Newton solution scheme
 // - dual Lagrange multiplier interpolation (quad)
 // - generalized alpha time integration
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        134
 NODES                           864
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -47,36 +45,36 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
--------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+---------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 RHO_INF                         1.0
--------------------------------------------------------------CONTACT DYNAMIC
+---------------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER                   2
 STRATEGY                        Lagrange
--------------------------------------------------------------MORTAR COUPLING
+---------------------------------------------------MORTAR COUPLING
 LM_SHAPEFCN                     Dual
 LM_QUAD                         lin
 LM_DUAL_CONSISTENT              none
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
 NDLINE                          24
 NDSURF                          12
 NDVOL                           2
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 12 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 -1.0 FUNCT 0 0 1
------------------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
+--------------------------DESIGN SURF MORTAR CONTACT CONDITIONS 3D
 DSURF                           2
 E 6 - 1 Master Inactive
 E 7 - 1 Slave Inactive
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 620 DNODE 1
 NODE 1 DNODE 2
 NODE 619 DNODE 3
@@ -93,7 +91,7 @@ NODE 368 DNODE 13
 NODE 588 DNODE 14
 NODE 667 DNODE 15
 NODE 439 DNODE 16
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 620 DLINE 1
 NODE 473 DLINE 1
 NODE 557 DLINE 1
@@ -286,7 +284,7 @@ NODE 667 DLINE 23
 NODE 320 DLINE 24
 NODE 369 DLINE 24
 NODE 439 DLINE 24
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 620 DSURFACE 1
 NODE 1 DSURFACE 1
 NODE 619 DSURFACE 1
@@ -1067,7 +1065,7 @@ NODE 616 DSURFACE 12
 NODE 542 DSURFACE 12
 NODE 393 DSURFACE 12
 NODE 491 DSURFACE 12
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 620 DVOLUME 1
 NODE 1 DVOLUME 1
 NODE 619 DVOLUME 1
@@ -1932,7 +1930,7 @@ NODE 553 DVOLUME 2
 NODE 470 DVOLUME 2
 NODE 491 DVOLUME 2
 NODE 424 DVOLUME 2
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -1.999999911791123e+00 1.999999911791123e+00 0.000000000000000e+00
 NODE 2 COORD -1.749999922817233e+00 1.999999911791123e+00 0.000000000000000e+00
 NODE 3 COORD -1.999999911791123e+00 1.749999922817233e+00 0.000000000000000e+00
@@ -2797,7 +2795,7 @@ NODE 861 COORD 1.999999911791122e+00 -1.999999911791124e+00 2.500000000000000e-0
 NODE 862 COORD 1.999999911791122e+00 -1.999999911791124e+00 5.000000000000000e-01
 NODE 863 COORD 1.999999911791122e+00 -1.999999911791124e+00 7.500000000000000e-01
 NODE 864 COORD 1.999999911791122e+00 -1.999999911791124e+00 1.000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 129 SOLIDT10 TET10 233 320 439 541 270 369 321 370 423 470 MAT 2 KINEM nonlinear
 130 SOLIDT10 TET10 541 667 439 233 597 542 470 370 424 321 MAT 2 KINEM nonlinear
 131 SOLIDT10 TET10 368 439 667 233 393 542 491 301 321 424 MAT 2 KINEM nonlinear
@@ -2932,17 +2930,17 @@ NODE 864 COORD 1.999999911791122e+00 -1.999999911791124e+00 1.000000000000000e+0
 126 SOLIDH20 HEX20 76 127 95 44 86 138 108 54 106 114 67 61 81 134 100 50 115 123 79 71 MAT 1 KINEM nonlinear
 127 SOLIDH20 HEX20 47 76 44 15 56 86 54 23 64 61 27 29 52 81 50 20 73 71 38 39 MAT 1 KINEM nonlinear
 128 SOLIDH20 HEX20 32 47 15 7 46 56 23 16 41 29 13 22 40 52 20 12 53 39 21 28 MAT 1 KINEM nonlinear
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 7.8e-6
 MAT 3 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 7.8e-6
 MAT 4 ELAST_CoupNeoHooke YOUNG 2100.0 NUE 0.3
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 0.5 VALUES 0.0 1.0
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 370 QUANTITY dispx VALUE 6.56752736874561508e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 370 QUANTITY dispy VALUE -3.75950900277706066e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 370 QUANTITY dispz VALUE -1.34702533109109956e-01 TOLERANCE 1e-8
--------------------------------------------------------------------------END
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 370 QUANTITY dispx VALUE  6.56752736874404081e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 370 QUANTITY dispy VALUE -3.75950900277899922e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 370 QUANTITY dispz VALUE -1.34702533109109873e-01 TOLERANCE 1e-8
+---------------------------------------------------------------END
 //                              END

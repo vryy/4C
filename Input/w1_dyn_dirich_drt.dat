@@ -7,23 +7,23 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Default_title
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        400
 NODES                           441
 DIM                             2
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 //ENRONOFF                      no
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMALEDIS                       0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
 //STRUCT_DISP_GID               Yes
@@ -35,7 +35,7 @@ STRUCT_STRESS                   No
 //FLUID_VIS_FILE                No
 //ALE_DISP_FILE                 No
 //ALE_DISP_GID                  No
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
 RESULTSEVRY                     1
@@ -59,25 +59,25 @@ MAXITER                         50
 //NPP                           1.0E+06
 //TPP                           1.0E+06
 //FR_COEF                       0.4
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         4
 NDLINE                          4
 NDSURF                          1
 NDVOL                           0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           2
 E 1 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0
 E 3 - NUMDOF 2 ONOFF 0 1 VAL 0.0 0.5 FUNCT 0 2
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 332 DNODE 1
 NODE 1 DNODE 2
 NODE 333 DNODE 3
 NODE 441 DNODE 4
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 332 DLINE 1
 NODE 302 DLINE 1
 NODE 271 DLINE 1
@@ -162,7 +162,7 @@ NODE 343 DLINE 4
 NODE 338 DLINE 4
 NODE 337 DLINE 4
 NODE 332 DLINE 4
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 332 DSURFACE 1
 NODE 1 DSURFACE 1
 NODE 333 DSURFACE 1
@@ -604,7 +604,7 @@ NODE 19 DSURFACE 1
 NODE 13 DSURFACE 1
 NODE 8 DSURFACE 1
 NODE 4 DSURFACE 1
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 1.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
 NODE 2 COORD 1.000000000000000e+00 5.000000000000000e-02 0.000000000000000e+00
 NODE 3 COORD 9.500000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
@@ -1046,7 +1046,7 @@ NODE 438 COORD 9.999999999999998e-02 1.000000000000000e+00 0.000000000000000e+00
 NODE 439 COORD 5.000000000000004e-02 1.000000000000000e+00 0.000000000000000e+00
 NODE 440 COORD 0.000000000000000e+00 9.500000000000000e-01 0.000000000000000e+00
 NODE 441 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 WALL QUAD4 440 436 439 441 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 2 WALL QUAD4 437 432 436 440 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 3 WALL QUAD4 435 429 432 437 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
@@ -1447,18 +1447,18 @@ NODE 441 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 398 WALL QUAD4 8 6 10 13 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 399 WALL QUAD4 4 2 6 8 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
 400 WALL QUAD4 3 1 2 4 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_strain GP 2 2
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000.0 NUE 0.2 DENS 1.0
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 104*(((1-0)*x+(1-1))*y+(0-0)*z/(1)-0.5)^2
-----------------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1-cos(2*pi*1*t)
-----------------------------------------------------------RESULT DESCRIPTION
+------------------------------------------------RESULT DESCRIPTION
 // for 3 steps with IMR-like mid-internal force
 // with numerically differentiated Dirichlet BCs
-STRUCTURE DIS structure NODE 441 QUANTITY dispx VALUE 2.93186696210011276e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 441 QUANTITY dispy VALUE 2.0610737385376349e-01 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 333 QUANTITY dispx VALUE -2.93186696210010825e-02 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 333 QUANTITY dispy VALUE 2.0610737385376349e-01 TOLERANCE 1e-9
--------------------------------------------------------------------------END
+STRUCTURE DIS structure NODE 441 QUANTITY dispx VALUE  2.93186918305002216e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 441 QUANTITY dispy VALUE  2.06107373853763487e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 333 QUANTITY dispx VALUE -2.93186918305002910e-02 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 333 QUANTITY dispy VALUE  2.06107373853763487e-01 TOLERANCE 1e-9
+---------------------------------------------------------------END
 //                              END

@@ -7,10 +7,9 @@ lxml
 numpy
 vtk
 xmlformatter==0.2.4
-yamlfmt==1.1.0
+yamlfmt
 # for readthedocs:
-pytest
-sphinx
+sphinx-multibuild
 sphinx-rtd-theme
 myst-parser
 nbsphinx

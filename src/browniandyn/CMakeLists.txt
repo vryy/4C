@@ -6,7 +6,6 @@ set(_browniandyn_dependencies
     beaminteraction
     io
     lib
-    linalg
     rigidsphere
     structure_new
     )

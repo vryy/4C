@@ -7,11 +7,9 @@ set(_binstrategy_dependencies
     bele
     comm
     fluid_ele
-    geometry
     inpar
     io
     lib
-    linalg
     mortar
     rebalance
     rigidsphere

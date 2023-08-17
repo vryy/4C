@@ -7,7 +7,6 @@ set(_sti_dependencies
     inpar
     io
     lib
-    linalg
     mat
     scatra
     scatra_ele

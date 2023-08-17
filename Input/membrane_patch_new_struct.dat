@@ -18,7 +18,7 @@ STRUCT_STRAIN                   GL
 STRUCT_OPTIONAL_QUANTITY        membranethickness
 -------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
-DYNAMICTYP                      GenAlpha
+DYNAMICTYP                      OneStepTheta
 RESULTSEVRY                     2
 RESEVRYERGY                     2
 RESTARTEVRY                     5
@@ -33,6 +33,8 @@ TOLINCO                         1e-08
 NLNSOL                          fullnewton
 LOADLIN                         yes
 LINEAR_SOLVER                   1
+------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           1.0
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS

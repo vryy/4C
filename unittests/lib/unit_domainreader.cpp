@@ -7,9 +7,11 @@
 */
 /*----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
+
+#include "baci_lib_discret.H"
+#include "baci_lib_domainreader.H"
+
 #include <Epetra_SerialComm.h>
-#include "lib_discret.H"
-#include "lib_domainreader.H"
 
 namespace
 {

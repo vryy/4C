@@ -16,7 +16,6 @@ DYNAMICTYP                      VelocityVerlet
 INTERACTION                     None
 RESULTSEVRY                     10
 RESTARTEVRY                     100
-OUTPUT_DATA_FORMAT              Binary
 WRITE_GHOSTED_PARTICLES         no
 TIMESTEP                        1e-3
 NUMSTEP                         400

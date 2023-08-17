@@ -1,12 +1,12 @@
 set(OBJS_PRE_EXODUS
     # cmake-format: sortable
-    pre_exodus.cpp
-    pre_exodus_centerline.cpp
-    pre_exodus_readbc.cpp
-    pre_exodus_reader.cpp
-    pre_exodus_soshextrusion.cpp
-    pre_exodus_validate.cpp
-    pre_exodus_writedat.cpp
+    baci_pre_exodus.cpp
+    baci_pre_exodus_centerline.cpp
+    baci_pre_exodus_readbc.cpp
+    baci_pre_exodus_reader.cpp
+    baci_pre_exodus_soshextrusion.cpp
+    baci_pre_exodus_validate.cpp
+    baci_pre_exodus_writedat.cpp
     )
 
 add_executable(pre_exodus EXCLUDE_FROM_ALL ${OBJS_PRE_EXODUS})

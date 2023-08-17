@@ -6,8 +6,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "unittest_utils_assertions.h"
-#include "particle_engine_container.H"
+
+#include "baci_particle_engine_container.H"
+#include "baci_unittest_utils_assertions.h"
 
 
 namespace

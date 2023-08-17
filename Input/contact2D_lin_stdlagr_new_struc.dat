@@ -26,9 +26,7 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 INT_STRATEGY                    Standard
@@ -412,8 +410,7 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 0 6
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 1.2 1.2
 ----------------------------------------------------------RESULT DESCRIPTION
-// note that these are the unmodified result from the augmented version
-STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE 5.88558588991432541e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE -1.07366432951395496e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 59 QUANTITY dispx VALUE  5.88562514738167675e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 59 QUANTITY dispy VALUE -1.07366168803178041e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

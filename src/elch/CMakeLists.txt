@@ -8,7 +8,6 @@ set(_elch_dependencies
     inpar
     io
     lib
-    linalg
     scatra
     scatra_ele
     )

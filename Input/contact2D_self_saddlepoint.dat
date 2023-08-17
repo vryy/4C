@@ -25,9 +25,7 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ---------------------------------------------------------IO/EVERY ITERATION
 OUTPUT_EVERY_ITER               no
@@ -5005,10 +5003,10 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 15000.0 NUE 0.125
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 3 VALUES 0 7 10
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 329 QUANTITY dispx VALUE 1.64287231176420356e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 329 QUANTITY dispy VALUE -4.15899019305031548e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 329 QUANTITY dispx VALUE  1.63844165101184130e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 329 QUANTITY dispy VALUE -4.15717429186358522e+00 TOLERANCE 1e-8
 STRUCTURE SPECIAL QUANTITY num_iter_step_80 VALUE 5.0 TOLERANCE 1.0e-20
-STRUCTURE SPECIAL QUANTITY num_iter_step_81 VALUE 4.0 TOLERANCE 1.0e-20
-STRUCTURE SPECIAL QUANTITY num_iter_step_82 VALUE 5.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_81 VALUE  5.0 TOLERANCE 1.0e-20
+STRUCTURE SPECIAL QUANTITY num_iter_step_82 VALUE  7.0 TOLERANCE 1.0e-20
 -------------------------------------------------------------------------END
 //                              END

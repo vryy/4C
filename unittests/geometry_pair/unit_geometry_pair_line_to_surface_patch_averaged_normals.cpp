@@ -10,10 +10,12 @@
 
 #include <gtest/gtest.h>
 
+#include "baci_geometry_pair_element.H"
+#include "baci_geometry_pair_element_faces.H"
+#include "baci_geometry_pair_scalar_types.H"
+
 #include <Epetra_SerialComm.h>
-#include "geometry_pair_element_faces.H"
-#include "geometry_pair_element.H"
-#include "geometry_pair_scalar_types.H"
+
 #include "unit_geometry_pair_line_to_surface_patch_geometry.H"
 #include "unit_geometry_pair_line_to_surface_patch_results.H"
 
@@ -153,40 +155,40 @@ namespace
       // Check the values of the averaged normals.
       for (unsigned int i_dof = 0; i_dof < 3 * surface::n_nodes_; i_dof++)
       {
-        EXPECT_NEAR(FADUTILS::CastToDouble((*face_element->GetCurrentNormals())(i_dof)),
+        EXPECT_NEAR(CORE::FADUTILS::CastToDouble((*face_element->GetCurrentNormals())(i_dof)),
             current_normals[i_dof], eps);
         for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
         {
-          EXPECT_NEAR(FADUTILS::CastToDouble(
+          EXPECT_NEAR(CORE::FADUTILS::CastToDouble(
                           (*face_element->GetCurrentNormals())(i_dof).dx(beam_dof_offset + i_der)),
               current_normals_derivative[i_dof][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
           {
-            EXPECT_NEAR(FADUTILS::CastToDouble((*face_element->GetCurrentNormals())(i_dof)
-                                                   .dx(beam_dof_offset + i_der)
-                                                   .dx(beam_dof_offset + i_der_2)),
+            EXPECT_NEAR(CORE::FADUTILS::CastToDouble((*face_element->GetCurrentNormals())(i_dof)
+                                                         .dx(beam_dof_offset + i_der)
+                                                         .dx(beam_dof_offset + i_der_2)),
                 current_normals_derivative_2[i_dof][i_der][i_der_2], eps);
           }
         }
       }
 
       // Check an surface position on the element.
-      LINALG::Matrix<3, 1, double> xi;
+      CORE::LINALG::Matrix<3, 1, double> xi;
       xi(0) = 0.2;
       xi(1) = -0.8;
       xi(2) = 0.69;
-      LINALG::Matrix<3, 1, scalar_type> r;
+      CORE::LINALG::Matrix<3, 1, scalar_type> r;
       GEOMETRYPAIR::EvaluateSurfacePosition<surface>(xi, face_element->GetFacePosition(), r,
           face_element->GetDrtFaceElement(), face_element->GetCurrentNormals());
       for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
       {
-        EXPECT_NEAR(FADUTILS::CastToDouble(r(i_dim)), position[i_dim], eps);
+        EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim)), position[i_dim], eps);
         for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
         {
-          EXPECT_NEAR(FADUTILS::CastToDouble(r(i_dim).dx(beam_dof_offset + i_der)),
+          EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim).dx(beam_dof_offset + i_der)),
               position_derivative[i_dim][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
-            EXPECT_NEAR(FADUTILS::CastToDouble(
+            EXPECT_NEAR(CORE::FADUTILS::CastToDouble(
                             r(i_dim).dx(beam_dof_offset + i_der).dx(beam_dof_offset + i_der_2)),
                 position_derivative_2[i_dim][i_der][i_der_2], eps);
         }

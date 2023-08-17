@@ -10,12 +10,12 @@
 
 #include <gtest/gtest.h>
 
-#include "lib_globalproblem.H"
-#include "lib_discret.H"
-#include "lib_gridgenerator.H"
-#include "mat_par_material.H"
-#include "mat_par_bundle.H"
-#include "io_pstream.H"
+#include "baci_io_pstream.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_lib_gridgenerator.H"
+#include "baci_mat_par_bundle.H"
+#include "baci_mat_par_material.H"
 
 #include <Epetra_SerialComm.h>
 

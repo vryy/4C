@@ -1,29 +1,27 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 growth of quadratic block
 tests dynamic simulation (one step theta) with growth and changing mass:
 - MASSLIN in STRUCTURAL DYNAMIC section is set to 'yes'
 - MAT_GROWTH material (returns different density in each gauss point)
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        125
 NODES                           216
 DIM                             3
 MATERIALS                       2
 NUMDF                           6
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRAIN                   No
@@ -32,11 +30,11 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
 SHAPEFCT                        Polynomial
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -74,9 +72,9 @@ UZAWAALGO                       uzawa
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 AZBDIAG                         0
 AZCONV                          AZ_r0
@@ -108,23 +106,23 @@ ML_SMOOTHERFINE                 ILU
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES                     1 1 1 1 1
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_GrowthVolumetric GROWTHLAW 4 IDMATELASTIC 2 STARTTIME 0.1 ENDTIME 100.0
 MAT 4 MAT_GrowthIsoStress THETAPLUS 1.5 KPLUS 1.0 MPLUS 2.0 THETAMINUS 0.5 KMINUS 2.0 MMINUS 3.0 HOMMANDEL 0.0 TOL 1.0e-10
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.0001
 MAT 3 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.3
--------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.1 100.0 VALUES 0.0 1.0 1.0
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE 1.7586914039811e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE 4.0725754775365e-02 TOLERANCE 1e-6
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE  1.75809921430119115e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE  4.07275625127521065e-02 TOLERANCE 1e-6
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8
 NDSURF                          2
 NDVOL                           0
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // front upper left
 E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -142,7 +140,7 @@ E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
 // back lower right
 E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           8
 // right upper
 E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
@@ -160,13 +158,13 @@ E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 7 - NUMDOF 3 ONOFF 1 1 00 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // left front
 E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // left surface
 E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // right surface
 E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.25 0.0 FUNCT 0 1 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 181 DNODE 1
 NODE 1 DNODE 2
 NODE 191 DNODE 3
@@ -175,7 +173,7 @@ NODE 212 DNODE 5
 NODE 62 DNODE 6
 NODE 216 DNODE 7
 NODE 71 DNODE 8
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 62 DLINE 1
 NODE 64 DLINE 1
 NODE 104 DLINE 1
@@ -224,7 +222,7 @@ NODE 185 DLINE 8
 NODE 187 DLINE 8
 NODE 189 DLINE 8
 NODE 191 DLINE 8
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
 NODE 5 DSURFACE 1
@@ -297,7 +295,7 @@ NODE 213 DSURFACE 2
 NODE 214 DSURFACE 2
 NODE 215 DSURFACE 2
 NODE 216 DSURFACE 2
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.00000000e+00 0.00000000e+00 1.00000000e+00
 NODE 2 COORD 0.00000000e+00 0.00000000e+00 8.00000012e-01
 NODE 3 COORD 0.00000000e+00 2.00000003e-01 8.00000012e-01
@@ -514,7 +512,7 @@ NODE 213 COORD 1.00000000e+00 1.00000000e+00 6.00000024e-01
 NODE 214 COORD 1.00000000e+00 1.00000000e+00 4.00000006e-01
 NODE 215 COORD 1.00000000e+00 1.00000000e+00 2.00000003e-01
 NODE 216 COORD 1.00000000e+00 1.00000000e+00 0.00000000e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0
 2 SOLIDH8 HEX8 2 9 10 3 6 11 12 7 MAT 1 KINEM nonlinear EAS none RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0
 3 SOLIDH8 HEX8 9 13 14 10 11 15 16 12 MAT 1 KINEM nonlinear EAS none RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0
@@ -640,5 +638,5 @@ NODE 216 COORD 1.00000000e+00 1.00000000e+00 0.00000000e+00
 123 SOLIDH8 HEX8 171 172 178 177 207 208 214 213 MAT 1 KINEM nonlinear EAS none RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0
 124 SOLIDH8 HEX8 172 173 179 178 208 209 215 214 MAT 1 KINEM nonlinear EAS none RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0
 125 SOLIDH8 HEX8 173 174 180 179 209 210 216 215 MAT 1 KINEM nonlinear EAS none RAD 0.0 0.0 1.0 CIR 1. 0.0 0.0 AXI 0.0 1.0 0.0
--------------------------------------------------------------------------END
+---------------------------------------------------------------END
 //                              END

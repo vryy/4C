@@ -5,7 +5,6 @@ set(_torsion3_dependencies
     core
     inpar
     lib
-    linalg
     mat
     structure_new
     )
