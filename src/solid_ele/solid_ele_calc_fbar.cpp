@@ -1,12 +1,12 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief main file containing routines for calculation of solid element
-       simple displacement based
+\brief main file containing routines for calculation of solid element with fbar
 \level 1
 */
 /*----------------------------------------------------------------------*/
 
+#include "lib_element.H"
 #include "solid_ele_calc_lib.H"
 #include "solid_ele_calc_fbar.H"
 #include <Teuchos_ParameterList.hpp>
@@ -29,7 +29,6 @@
 
 #include "structure_new_gauss_point_data_output_manager.H"
 #include "so3_element_service.H"
-#include "utils_singleton_owner.H"
 
 namespace
 {
@@ -46,55 +45,6 @@ namespace
     return fbar_factor;
   }
 
-  /*!
-   * @brief Evaluates the parameter coordinate of at the element centroid
-   *
-   * Currently this returns a zero-filled matrix, i.e. xi_i = 0. It is valid for HEXes but not
-   * necessarily for other element types.
-   *
-   * @tparam distype : Discretization type
-   * @return LINALG::Matrix<DETAIL::nsd<distype>, 1> : Coordinates of the centroid in the parameter
-   * space
-   */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::is_hex_v<distype>, int> = 0>
-  LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, 1> EvaluateParameterCoordinateCentroid()
-  {
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, 1> xi;
-    for (int d = 0; d < DRT::ELEMENTS::DETAIL::nsd<distype>; ++d) xi(d) = 0;
-
-    return xi;
-  }
-
-  /*!
-   * @brief Evaluate the strain measures at the element centroid
-   *
-   * @tparam distype : Discretization type
-   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
-   * @return double : Determinant of the deformation gradient at the centroid
-   */
-  template <DRT::Element::DiscretizationType distype,
-      std::enable_if_t<DRT::ELEMENTS::DETAIL::nsd<distype> == 3, int> = 0>
-  double EvaluateDeformationGradientDeterminantCentroid(
-      DRT::ELEMENTS::NodalCoordinates<distype> nodal_coordinates)
-  {
-    // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, 1> xi_centroid =
-        EvaluateParameterCoordinateCentroid<distype>();
-
-    // shape functions and derivatives evaluated at element centroid
-    const DRT::ELEMENTS::ShapeFunctionsAndDerivatives<distype> shape_functions_centroid =
-        DRT::ELEMENTS::EvaluateShapeFunctionsAndDerivs<distype>(xi_centroid);
-
-    // jacobian mapping evaluated at centroid
-    const DRT::ELEMENTS::JacobianMapping<distype> jacobian_mapping_centroid =
-        DRT::ELEMENTS::EvaluateJacobianMapping(shape_functions_centroid, nodal_coordinates);
-
-    const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping_centroid =
-        EvaluateSpatialMaterialMapping(jacobian_mapping_centroid, nodal_coordinates);
-
-    return spatial_material_mapping_centroid.determinant_deformation_gradient_;
-  }
 
   /*!
    * @brief Evaluates the H-Operator used in F-bar of the specified element
@@ -214,19 +164,6 @@ namespace
 }  // namespace
 
 template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::SolidEleCalcFbar<distype>* DRT::ELEMENTS::SolidEleCalcFbar<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
-{
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
-      []()
-      {
-        return std::unique_ptr<DRT::ELEMENTS::SolidEleCalcFbar<distype>>(
-            new DRT::ELEMENTS::SolidEleCalcFbar<distype>());
-      });
-  return singleton_owner.Instance(action);
-}
-
-template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalcFbar<distype>::SolidEleCalcFbar()
     : DRT::ELEMENTS::SolidEleCalcInterface::SolidEleCalcInterface(),
       stiffness_matrix_integration_(
@@ -261,16 +198,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
   // initialize element density
   double mean_density = 0.0;
 
-  // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
-  LINALG::Matrix<nsd_, 1> xi_centroid = EvaluateParameterCoordinateCentroid<distype>();
-
-  // shape functions and derivatives evaluated at element centroid
-  const ShapeFunctionsAndDerivatives<distype> shape_functions_centroid =
-      EvaluateShapeFunctionsAndDerivs<distype>(xi_centroid);
-
   // jacobian mapping evaluated at element centroid
   const JacobianMapping<distype> jacobian_mapping_centroid =
-      EvaluateJacobianMapping(shape_functions_centroid, nodal_coordinates);
+      EvaluateJacobianMappingCentroid(nodal_coordinates);
 
   // deformation gradient at element centroid
   const SpatialMaterialMapping<distype> spatial_material_mapping_centroid =
@@ -308,8 +238,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
             EvaluateGreenLagrangeStrain(cauchygreen_bar);
 
         // stress stress_bar evaluated using strains_bar
-        const Stress<distype> stress_bar = EvaluateMaterialStress(
-            solid_material, spatial_material_mapping_bar, gl_strain_bar, params, gp, ele.Id());
+        const Stress<distype> stress_bar = EvaluateMaterialStress<distype>(solid_material,
+            spatial_material_mapping_bar.deformation_gradient_, gl_strain_bar, params, gp,
+            ele.Id());
 
         // evaluate internal force vector using only the deviatoric component
         if (force.has_value())
@@ -425,13 +356,14 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, detF_centroid);
 
-        const Stress<distype> stress_bar = EvaluateMaterialStress(
-            solid_material, spatial_material_mapping_bar, gl_strains_bar, params, gp, ele.Id());
+        const Stress<distype> stress_bar = EvaluateMaterialStress<distype>(solid_material,
+            spatial_material_mapping_bar.deformation_gradient_, gl_strains_bar, params, gp,
+            ele.Id());
 
-        AssembleStrainTypeToMatrixRow(
-            gl_strains_bar, spatial_material_mapping_bar, strainIO.type, strain_data, gp);
-        AssembleStressTypeToMatrixRow(
-            spatial_material_mapping_bar, stress_bar, stressIO.type, stress_data, gp);
+        AssembleStrainTypeToMatrixRow<distype>(gl_strains_bar,
+            spatial_material_mapping_bar.deformation_gradient_, strainIO.type, strain_data, gp);
+        AssembleStressTypeToMatrixRow(spatial_material_mapping_bar.deformation_gradient_,
+            stress_bar, stressIO.type, stress_data, gp);
       });
 
   Serialize(stress_data, serialized_stress_data);

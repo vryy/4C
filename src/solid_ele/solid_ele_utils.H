@@ -12,10 +12,13 @@
 
 #include "discretization_fem_general_utils_integration.H"
 #include "lib_element.H"
-#include "linalg_utils_densematrix_eigen.H"
 #include "inpar_structure.H"
-#include "solid_ele_eas_utils.H"
-#include "solid_ele.H"
+#include "solid_ele_calc_eas.H"
+
+namespace STR::ELEMENTS
+{
+  enum class EasType;
+}
 
 namespace STR::UTILS
 {
@@ -76,55 +79,6 @@ namespace STR::UTILS
   LINALG::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
       const LINALG::Matrix<6, 1>& gl, const LINALG::Matrix<3, 3>& defgrd);
 
-  template <unsigned dim>
-  void CalcConsistentDefgrd(const LINALG::Matrix<dim, dim>& defgrd_disp,
-      const LINALG::Matrix<dim*(dim + 1) / 2, 1>& glstrain_mod,
-      LINALG::Matrix<dim, dim>& defgrd_mod)
-  {
-    LINALG::Matrix<dim, dim> R;       // rotation tensor
-    LINALG::Matrix<dim, dim> U_mod;   // modified right stretch tensor
-    LINALG::Matrix<dim, dim> U_disp;  // displacement-based right stretch tensor
-    LINALG::Matrix<dim, dim> EW;      // temporarily store eigenvalues
-    LINALG::Matrix<dim, dim> tmp;     // temporary matrix for matrix matrix matrix products
-    LINALG::Matrix<dim, dim> tmp2;    // temporary matrix for matrix matrix matrix products
-
-    // ******************************************************************
-    // calculate modified right stretch tensor
-    // ******************************************************************
-    if (dim != 3) dserror("stop: this currently only works for 3D");
-    for (unsigned i = 0; i < dim; i++) U_mod(i, i) = 2. * glstrain_mod(i) + 1.;
-    U_mod(0, 1) = glstrain_mod(dim);
-    U_mod(1, 0) = glstrain_mod(dim);
-    U_mod(1, 2) = glstrain_mod(4);
-    U_mod(2, 1) = glstrain_mod(4);
-    U_mod(0, 2) = glstrain_mod(5);
-    U_mod(2, 0) = glstrain_mod(5);
-
-    LINALG::SYEV(U_mod, EW, U_mod);
-    for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.Multiply(U_mod, EW);
-    tmp2.MultiplyNT(tmp, U_mod);
-    U_mod.Update(tmp2);
-
-    // ******************************************************************
-    // calculate displacement-based right stretch tensor
-    // ******************************************************************
-    U_disp.MultiplyTN(defgrd_disp, defgrd_disp);
-
-    LINALG::SYEV(U_disp, EW, U_disp);
-    for (unsigned i = 0; i < dim; ++i) EW(i, i) = sqrt(EW(i, i));
-    tmp.Multiply(U_disp, EW);
-    tmp2.MultiplyNT(tmp, U_disp);
-    U_disp.Update(tmp2);
-
-    // ******************************************************************
-    // compose consistent deformation gradient
-    // ******************************************************************
-    U_disp.Invert();
-    R.Multiply(defgrd_disp, U_disp);
-    defgrd_mod.Multiply(R, U_mod);
-  }
-
 
   namespace ELEMENTDEFINITION
   {
@@ -152,7 +106,7 @@ namespace STR::UTILS
 
     INPAR::STR::KinemType ReadElementKinematicType(DRT::INPUT::LineDefinition* linedef);
 
-    void ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef, ::STR::ELEMENTS::EASType& eastype,
+    void ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef, ::STR::ELEMENTS::EasType& eastype,
         std::set<INPAR::STR::EleTech>& eletech);
 
 

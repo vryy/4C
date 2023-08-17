@@ -19,9 +19,7 @@ and Gauss point loop as well as some additional service routines.
 #include "inpar_structure.H"
 #include "lib_element.H"
 #include "structure_new_elements_paramsinterface.H"
-#include "solid_ele_calc.H"
-#include "solid_ele_calc_fbar.H"
-#include "solid_ele_eas_utils.H"
+#include "solid_ele_calc_eas.H"
 
 namespace MAT
 {
@@ -104,7 +102,6 @@ namespace DRT::ELEMENTS
     \brief Pack this class so it can be communicated
 
     \ref Pack and \ref Unpack are used to communicate this element
-
     */
     void Pack(DRT::PackBuffer& data) const override;
 
@@ -112,7 +109,6 @@ namespace DRT::ELEMENTS
     \brief Unpack data from a char vector into this class
 
     \ref Pack and \ref Unpack are used to communicate this element
-
     */
     void Unpack(const std::vector<char>& data) override;
 
@@ -250,53 +246,51 @@ namespace DRT::ELEMENTS
 
     //@}
 
-    /** \brief get access to the parameter interface pointer
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief get access to the parameter interface pointer
+     */
     Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override
     {
       return interface_ptr_;
     }
 
-    /** \brief returns true if the parameter interface is defined and initialized, otherwise false
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief returns true if the parameter interface is defined and initialized, otherwise false
+     */
     [[nodiscard]] inline bool IsParamsInterface() const override
     {
       return (not interface_ptr_.is_null());
     }
 
-    /** \brief get access to the interface
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief get access to the interface
+     */
     [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
     {
       if (not IsParamsInterface()) dserror("The interface ptr is not set!");
       return *interface_ptr_;
     }
 
-    /** \brief set the parameter interface ptr for the solid elements
+    /*! \brief set the parameter interface ptr for the solid elements
      *
      *  \param p (in): Parameter list coming from the time integrator.
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+     */
     void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
-    virtual void SetEAStype(::STR::ELEMENTS::EASType type) { eastype_ = type; }
+    void SetEASType(STR::ELEMENTS::EasType type) { eastype_ = type; }
 
-    virtual ::STR::ELEMENTS::EASType GetEAStype() { return eastype_; }
-    virtual ::INPAR::STR::KinemType GetKinemType() { return kintype_; }
-    virtual const std::set<INPAR::STR::EleTech>& GetEleTech() { return eletech_; }
+    [[nodiscard]] STR::ELEMENTS::EasType GetEASType() const { return eastype_; }
+
+    [[nodiscard]] INPAR::STR::KinemType GetKinemType() const { return kintype_; }
+
+    [[nodiscard]] const std::set<INPAR::STR::EleTech>& GetEleTech() const { return eletech_; }
+
     void VisNames(std::map<std::string, int>& names) override;
+
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
    protected:
-    /*!
-    \brief Anything that needs to be done before the standard Evaluate.
+    /*! \brief Anything that needs to be done before the standard Evaluate.
     Empty function in the base class that may be overloaded in derived elements.
     */
     virtual int PreEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
@@ -325,19 +319,19 @@ namespace DRT::ELEMENTS
     //! kinematic type
     INPAR::STR::KinemType kintype_;
 
-    //! element techonology
+    //! element technology
     std::set<INPAR::STR::EleTech> eletech_;
 
     //! specify EAS type in case contains EAS
-    ::STR::ELEMENTS::EASType eastype_;
+    STR::ELEMENTS::EasType eastype_;
 
-    /** \brief interface ptr
+    /*! \brief interface ptr
      *
      *  data exchange between the element and the time integrator. */
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! element calculation interface
-    std::unique_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
+    std::shared_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

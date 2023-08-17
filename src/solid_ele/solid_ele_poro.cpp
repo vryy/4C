@@ -17,7 +17,28 @@
 #include "solid_ele_factory.H"
 #include "linalg_utils_nullspace.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "solid_ele_interface_serializable.H"
 
+namespace
+{
+  template <typename Interface>
+  void TryPackInterface(const Interface& interface, DRT::PackBuffer& data)
+  {
+    std::shared_ptr<DRT::ELEMENTS::Serializable> serializable_interface =
+        std::dynamic_pointer_cast<DRT::ELEMENTS::Serializable>(interface);
+    if (serializable_interface != nullptr) serializable_interface->Pack(data);
+  }
+
+  template <typename Interface>
+  void TryUnpackInterface(
+      Interface& interface, std::size_t& position, const std::vector<char>& data)
+  {
+    std::shared_ptr<DRT::ELEMENTS::Serializable> serializable_solid_interface =
+        std::dynamic_pointer_cast<DRT::ELEMENTS::Serializable>(interface);
+    if (serializable_solid_interface != nullptr)
+      serializable_solid_interface->Unpack(position, data);
+  }
+}  // namespace
 
 
 DRT::ELEMENTS::SolidPoroType DRT::ELEMENTS::SolidPoroType::instance_;
@@ -139,7 +160,7 @@ DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner)
     : DRT::Element(id, owner),
       distype_(DRT::Element::dis_none),
       kintype_(INPAR::STR::kinem_vague),
-      eastype_(STR::ELEMENTS::EASType::eastype_undefined),
+      eastype_(STR::ELEMENTS::EasType::eastype_undefined),
       porotype_(INPAR::PORO::PoroType::porotype_undefined),
       impltype_(INPAR::SCATRA::impltype_undefined),
       interface_ptr_(Teuchos::null),
@@ -332,18 +353,18 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
     impltype_ = INPAR::SCATRA::impltype_undefined;
   }
 
+  ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
+  ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(linedef);
+
   solid_interface_ =
-      SolidFactory::ProvideImpl(this, GetEleTech(), GetEleKinematicType(), GetEAStype());
-  solidporo_interface_ = DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(this, this->GetElePoroType());
+      CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
+  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
   // setup solid material
   solid_interface_->Setup(StructPoroMaterial(), linedef);
 
   // setup poro material
   solidporo_interface_->PoroSetup(StructPoroMaterial(), linedef);
-
-  ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
-  ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(linedef);
 
   return true;
 }
@@ -418,6 +439,10 @@ void DRT::ELEMENTS::SolidPoro::Pack(DRT::PackBuffer& data) const
   size = static_cast<int>(anisotropic_permeability_nodal_coeffs_.size());
   AddtoPack(data, size);  // TODO:: necessary?
   for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_nodal_coeffs_[i]);
+
+  // optional data, e.g., EAS data
+  TryPackInterface(solid_interface_, data);
+  TryPackInterface(solidporo_interface_, data);
 }
 
 
@@ -439,7 +464,7 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   // element technology
   DRT::ParObject::ExtractfromPack(position, data, eletech_);
   // eas type
-  eastype_ = static_cast<::STR::ELEMENTS::EASType>(ExtractInt(position, data));
+  eastype_ = static_cast<::STR::ELEMENTS::EasType>(ExtractInt(position, data));
   // poro implementation type
   porotype_ = static_cast<INPAR::PORO::PoroType>(ExtractInt(position, data));
   // scalar transport implementation type
@@ -460,6 +485,15 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(this->NumNode(), 0.0));
   for (int i = 0; i < size; ++i)
     ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
+
+
+  // reset solid and poro interfaces
+  solid_interface_ =
+      CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
+  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
+
+  TryUnpackInterface(solid_interface_, position, data);
+  TryUnpackInterface(solidporo_interface_, position, data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

@@ -16,8 +16,6 @@ Pack, Unpack, NumDofPerNode etc.
 #include "inpar_structure.H"
 #include "lib_element.H"
 #include "structure_new_elements_paramsinterface.H"
-#include "solid_ele_calc.H"
-#include "solid_ele_eas_utils.H"
 #include "inpar_scatra.H"
 #include "inpar_poro.H"
 #include "solid_ele_poro_calc_interface.H"
@@ -28,6 +26,11 @@ namespace MAT
   class StructPoro;
   class FluidPoroMultiPhase;
 }  // namespace MAT
+
+namespace STR::ELEMENTS
+{
+  enum class EasType;
+}
 namespace DRT::ELEMENTS
 {
   // forward declaration
@@ -323,7 +326,7 @@ namespace DRT::ELEMENTS
     INPAR::PORO::PoroType GetElePoroType() { return porotype_; }
     std::set<INPAR::STR::EleTech> GetEleTech() { return eletech_; }
     INPAR::STR::KinemType GetEleKinematicType() { return kintype_; }
-    ::STR::ELEMENTS::EASType GetEAStype() { return eastype_; }
+    ::STR::ELEMENTS::EasType GetEAStype() { return eastype_; }
     INPAR::SCATRA::ImplType GetImplType() { return impltype_; }
     void VisNames(std::map<std::string, int>& names) override;
     bool VisData(const std::string& name, std::vector<double>& data) override;
@@ -348,7 +351,7 @@ namespace DRT::ELEMENTS
     std::set<INPAR::STR::EleTech> eletech_;
 
     //! specify EAS type in case  contains EAS
-    ::STR::ELEMENTS::EASType eastype_;
+    ::STR::ELEMENTS::EasType eastype_;
 
     //! scalar transport implementation type (physics)
     INPAR::PORO::PoroType porotype_;
@@ -368,10 +371,10 @@ namespace DRT::ELEMENTS
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! element calculation interface
-    std::unique_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
+    std::shared_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
 
     //! element calculation interface
-    std::unique_ptr<SolidPoroEleCalcInterface> solidporo_interface_ = nullptr;
+    std::shared_ptr<SolidPoroEleCalcInterface> solidporo_interface_ = nullptr;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

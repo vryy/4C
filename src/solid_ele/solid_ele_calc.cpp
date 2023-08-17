@@ -29,24 +29,11 @@
 #include "discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "discretization_fem_general_utils_gauss_point_extrapolation.H"
 #include "so3_element_service.H"
-#include "utils_singleton_owner.H"
 
 namespace
 {
 }  // namespace
 
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::SolidEleCalc<distype>* DRT::ELEMENTS::SolidEleCalc<distype>::Instance(
-    CORE::UTILS::SingletonAction action)
-{
-  static auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
-      []()
-      {
-        return std::unique_ptr<DRT::ELEMENTS::SolidEleCalc<distype>>(
-            new DRT::ELEMENTS::SolidEleCalc<distype>());
-      });
-  return singleton_owner.Instance(action);
-}
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
@@ -97,8 +84,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
         LINALG::Matrix<numstr_, numdofperelement_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
-        const Stress<distype> stress = EvaluateMaterialStress(
-            solid_material, spatial_material_mapping, gl_strain, params, gp, ele.Id());
+        const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
+            spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());
 
         if (force.has_value()) AddInternalForceVector(Bop, stress, integration_factor, *force);
 
@@ -334,13 +321,13 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
         const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
 
-        const Stress<distype> stress = EvaluateMaterialStress(
-            solid_material, spatial_material_mapping, gl_strain, params, gp, ele.Id());
+        const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
+            spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());
 
-        AssembleStrainTypeToMatrixRow(
-            gl_strain, spatial_material_mapping, strainIO.type, strain_data, gp);
+        AssembleStrainTypeToMatrixRow<distype>(gl_strain,
+            spatial_material_mapping.deformation_gradient_, strainIO.type, strain_data, gp);
         AssembleStressTypeToMatrixRow(
-            spatial_material_mapping, stress, stressIO.type, stress_data, gp);
+            spatial_material_mapping.deformation_gradient_, stress, stressIO.type, stress_data, gp);
       });
 
 

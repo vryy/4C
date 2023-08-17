@@ -10,32 +10,28 @@
 #ifndef SOLID_ELE_FACTORY_H
 #define SOLID_ELE_FACTORY_H
 
-#include "lib_element.H"
 #include "inpar_structure.H"
-#include "solid_ele.H"
+#include "lib_element.H"
 
+namespace STR::ELEMENTS
+{
+  enum class EasType;
+}
 namespace DRT::ELEMENTS
 {
   // forward declaration
   class SolidEleCalcInterface;
   class Solid;
 
-  class SolidFactory
-  {
-   public:
-    //! ctor
-    SolidFactory() = default;
+  std::unique_ptr<SolidEleCalcInterface> CreateSolidCalculationInterface(const DRT::Element& ele,
+      const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
+      STR::ELEMENTS::EasType eastype);
 
+  template <DRT::Element::DiscretizationType distype>
+  std::unique_ptr<SolidEleCalcInterface> CreateSolidCalculationInterface(const DRT::Element& ele,
+      const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
+      STR::ELEMENTS::EasType eastype);
 
-    static std::unique_ptr<SolidEleCalcInterface> ProvideImpl(DRT::Element* ele,
-        std::set<INPAR::STR::EleTech> eletech, ::INPAR::STR::KinemType kinemtype,
-        ::STR::ELEMENTS::EASType eastype);
-
-    template <DRT::Element::DiscretizationType distype>
-    static std::unique_ptr<SolidEleCalcInterface> ProvideImpl(std::set<INPAR::STR::EleTech> eletech,
-        ::INPAR::STR::KinemType kinemtype, ::STR::ELEMENTS::EASType eastype);
-
-  };  // class SolidFactory
 }  // namespace DRT::ELEMENTS
 
 
