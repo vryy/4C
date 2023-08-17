@@ -7,11 +7,11 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_FACTORY_H
-#define SOLID_ELE_FACTORY_H
+#ifndef BACI_SOLID_ELE_FACTORY_H
+#define BACI_SOLID_ELE_FACTORY_H
 
-#include "inpar_structure.H"
-#include "lib_element.H"
+#include "baci_inpar_structure.H"
+#include "baci_lib_element.H"
 
 namespace STR::ELEMENTS
 {

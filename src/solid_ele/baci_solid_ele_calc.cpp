@@ -7,28 +7,30 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "solid_ele_calc.H"
+#include "baci_solid_ele_calc.H"
+
+#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_fiber_nodal_fiber_holder.H"
+#include "baci_fiber_node.H"
+#include "baci_fiber_utils.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_utils.H"
+#include "baci_lib_voigt_notation.H"
+#include "baci_mat_so3_material.H"
+#include "baci_so3_element_service.H"
+#include "baci_solid_ele.H"
+#include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_utils.H"
+#include "baci_structure_new_gauss_point_data_output_manager.H"
+#include "baci_utils_exceptions.H"
+
 #include <Teuchos_ParameterList.hpp>
+
 #include <memory>
 #include <optional>
-#include "utils_exceptions.H"
-#include "discretization_fem_general_utils_integration.H"
-#include "lib_utils.H"
-#include "lib_voigt_notation.H"
-#include "solid_ele.H"
-#include "lib_discret.H"
-#include "mat_so3_material.H"
-#include "solid_ele_calc_lib.H"
-#include "solid_ele_utils.H"
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "fiber_node.H"
-#include "fiber_utils.H"
-#include "fiber_nodal_fiber_holder.H"
-
-#include "structure_new_gauss_point_data_output_manager.H"
-#include "discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
-#include "so3_element_service.H"
 
 namespace
 {
@@ -48,13 +50,13 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
-    Epetra_SerialDenseMatrix* stiffness_matrix, Epetra_SerialDenseMatrix* mass_matrix)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
+    CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
-  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
-  std::optional<LINALG::Matrix<numdofperelement_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -69,7 +71,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   double mean_density = 0.0;
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -78,10 +80,10 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
         const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
 
-        LINALG::Matrix<numstr_, numdofperelement_> Bop =
+        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
@@ -113,7 +115,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   {  // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -124,16 +126,16 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGEMM(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
-    Epetra_SerialDenseMatrix* stiffness_matrix, Epetra_SerialDenseMatrix* mass_matrix)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
+    CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
   const double gemmalphaf = params.get<double>("alpha f");
   const double gemmxi = params.get<double>("xi");
 
   // Create views to SerialDenseMatrices
-  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
-  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
-  std::optional<LINALG::Matrix<numdofperelement_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -151,7 +153,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
   double mean_density = 0.0;
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -161,29 +163,29 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
         SpatialMaterialMapping<distype> spatial_material_mapping_old =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates_old);
 
-        LINALG::Matrix<numstr_, numdofperelement_> Bop =
+        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
-        LINALG::Matrix<numstr_, numdofperelement_> Bop_old =
+        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop_old =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping_old);
 
         CauchyGreen<distype> cauchy_green = EvaluateCauchyGreen(spatial_material_mapping);
         CauchyGreen<distype> cauchy_green_old = EvaluateCauchyGreen(spatial_material_mapping_old);
 
-        LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchy_green);
-        LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_old =
+        CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_old =
             EvaluateGreenLagrangeStrain(cauchy_green_old);
 
         // computed averaged mid-point quantities
         // 1. non-linear mid-B-operator from Bop and Bop_old
         // B_{m} = (1.0-gemmalphaf)*B_{n+1} + gemmalphaf*B_{n}
-        LINALG::Matrix<numstr_, numdofperelement_> BopM(true);
+        CORE::LINALG::Matrix<numstr_, numdofperelement_> BopM(true);
         BopM.Update(1.0 - gemmalphaf, Bop, gemmalphaf, Bop_old);
 
         // 2. mid-strain GL-vector from gl_strains and gl_strains_old
         // E_{m} = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_{n}
-        LINALG::Matrix<numstr_, 1> gl_strains_m(true);
+        CORE::LINALG::Matrix<numstr_, 1> gl_strains_m(true);
         gl_strains_m.Update(
             1.0 - gemmalphaf + gemmxi, gl_strain, gemmalphaf - gemmxi, gl_strain_old);
 
@@ -218,7 +220,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
   {  // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -246,7 +248,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -269,7 +271,7 @@ double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -278,7 +280,7 @@ double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::
 
         const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
 
         double psi = 0.0;
@@ -302,14 +304,14 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
 
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  Epetra_SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
-  Epetra_SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
+  CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
+  CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
 
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -318,7 +320,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
 
         const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
@@ -353,13 +355,14 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(
     // Interpolate fibers to the Gauss points and pass them to the material
 
     // Get shape functions
-    const static std::vector<LINALG::Matrix<nen_, 1>> shapefcts = std::invoke(
+    const static std::vector<CORE::LINALG::Matrix<nen_, 1>> shapefcts = std::invoke(
         [&]
         {
-          std::vector<LINALG::Matrix<nen_, 1>> shapefcns(stiffness_matrix_integration_.NumPoints());
+          std::vector<CORE::LINALG::Matrix<nen_, 1>> shapefcns(
+              stiffness_matrix_integration_.NumPoints());
           for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
           {
-            LINALG::Matrix<nsd_, 1> xi(stiffness_matrix_integration_.Point(gp), true);
+            CORE::LINALG::Matrix<nsd_, 1> xi(stiffness_matrix_integration_.Point(gp), true);
             CORE::DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
           }
           return shapefcns;
@@ -414,7 +417,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(const DR
     const int quantity_size = quantity.second;
 
     // Step 1: Collect the data for each Gauss point for the material
-    LINALG::SerialDenseMatrix gp_data(
+    CORE::LINALG::SerialDenseMatrix gp_data(
         stiffness_matrix_integration_.NumPoints(), quantity_size, true);
     bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
 

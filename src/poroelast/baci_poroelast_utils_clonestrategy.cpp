@@ -18,6 +18,7 @@
 #include "baci_so3_element_service.H"
 #include "baci_so3_poro.H"
 #include "baci_so3_poro_p1_eletypes.H"
+#include "baci_solid_ele_poro.H"
 #include "baci_w1_poro.H"
 
 std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()

@@ -8,17 +8,19 @@ Pack, Unpack, NumDofPerNode etc.
 \level 1
 */
 
-#ifndef SOLID_ELE_PORO_H
-#define SOLID_ELE_PORO_H
+#ifndef BACI_SOLID_ELE_PORO_H
+#define BACI_SOLID_ELE_PORO_H
+
+#include "baci_inpar_poro.H"
+#include "baci_inpar_scatra.H"
+#include "baci_inpar_structure.H"
+#include "baci_lib_element.H"
+#include "baci_lib_elementtype.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_solid_ele_poro_calc_interface.H"
+#include "baci_structure_new_elements_paramsinterface.H"
 
 #include <memory>
-#include "lib_elementtype.H"
-#include "inpar_structure.H"
-#include "lib_element.H"
-#include "structure_new_elements_paramsinterface.H"
-#include "inpar_scatra.H"
-#include "inpar_poro.H"
-#include "solid_ele_poro_calc_interface.H"
 
 
 namespace MAT
@@ -59,7 +61,7 @@ namespace DRT::ELEMENTS
 
     void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    Teuchos::SerialDenseMatrix<int, double> ComputeNullSpace(
+    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
         DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
     static SolidPoroType& Instance();
@@ -235,9 +237,10 @@ namespace DRT::ELEMENTS
     \return 0 if successful, negative otherwise
     */
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Element::LocationArray& la, Epetra_SerialDenseMatrix& elemat1,
-        Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-        Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3) override;
+        DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2,
+        CORE::LINALG::SerialDenseVector& elevec3) override;
 
     /*!
     \brief Evaluate Neumann boundary condition
@@ -252,8 +255,8 @@ namespace DRT::ELEMENTS
     \return 0 if successful, negative otherwise
     */
     int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        DRT::Condition& condition, std::vector<int>& lm, Epetra_SerialDenseVector& elevec1,
-        Epetra_SerialDenseMatrix* elemat1 = nullptr) override;
+        DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
     //! read anisotropic permeability directions in the element definition
     void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
@@ -336,9 +339,9 @@ namespace DRT::ELEMENTS
     Empty function in the base class that may be overloaded in derived elements.
     */
     virtual int PostEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-        Epetra_SerialDenseVector& elevec3);
+        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
    private:
     //! discretization type

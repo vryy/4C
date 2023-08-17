@@ -362,7 +362,7 @@ template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     const ::CORE::DRT::UTILS::IntegrationPoints3D& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
     ::DRT::Element::DiscretizationType::hex8, CORE::DRT::UTILS::GaussIntegration>(
-    const ::DRT::Element& ele, const LINALG::SerialDenseMatrix& gp_data,
+    const ::DRT::Element& ele, const CORE::LINALG::SerialDenseMatrix& gp_data,
     Epetra_MultiVector& global_data, bool nodal_average,
     const ::CORE::DRT::UTILS::GaussIntegration& integration);
 template void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<

@@ -7,10 +7,12 @@
     */
 /*--------------------------------------------------------------------------*/
 
-#include "solid_ele_poro_factory.H"
-#include "solid_ele_poro_calc_pressure_based.H"
+#include "baci_solid_ele_poro_factory.H"
+
+#include "baci_inpar_structure.H"
+#include "baci_solid_ele_poro_calc_pressure_based.H"
+
 #include <memory>
-#include "inpar_structure.H"
 
 
 

@@ -7,11 +7,12 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_NEUMANN_EVALUATOR_H
-#define SOLID_ELE_NEUMANN_EVALUATOR_H
-#include <Epetra_SerialDenseVector.h>
+#ifndef BACI_SOLID_ELE_NEUMANN_EVALUATOR_H
+#define BACI_SOLID_ELE_NEUMANN_EVALUATOR_H
+#include "baci_lib_element.H"
+#include "baci_linalg_serialdensevector.H"
+
 #include <vector>
-#include "lib_element.H"
 
 namespace DRT
 {
@@ -53,7 +54,7 @@ namespace DRT::ELEMENTS
    */
   void EvaluateNeumannByElement(DRT::Element& element, const DRT::Discretization& discretization,
       DRT::Condition& condition, const std::vector<int>& dof_index_array,
-      Epetra_SerialDenseVector& element_force_vector, double total_time);
+      CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);
 
   /*!
    * @brief Evaluates a Neumann condition @p condition for the element @p element with the
@@ -87,7 +88,7 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void EvaluateNeumann(DRT::Element& element, const DRT::Discretization& discretization,
       DRT::Condition& condition, const std::vector<int>& dof_index_array,
-      Epetra_SerialDenseVector& element_force_vector, double total_time);
+      CORE::LINALG::SerialDenseVector& element_force_vector, double total_time);
 
 }  // namespace DRT::ELEMENTS
 

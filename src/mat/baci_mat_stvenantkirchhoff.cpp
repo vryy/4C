@@ -241,10 +241,11 @@ void MAT::StVenantKirchhoff::StrainEnergy(
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, CORE::LINALG::Matrix<3, 3>* rcg_new,
-    CORE::LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+    const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
+    const int gp, const int eleGID)
 {
 #ifdef DEBUG
   if (!stress) dserror("No stress vector supplied");

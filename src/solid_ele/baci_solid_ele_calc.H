@@ -1,22 +1,24 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief main file containing routines for calculation of solid element with fbar
+\brief main file containing routines for calculation of solid element
+       simple displacement based
 \level 1
 
 *----------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_CALC_FBAR_H
-#define SOLID_ELE_CALC_FBAR_H
+#ifndef BACI_SOLID_ELE_CALC_H
+#define BACI_SOLID_ELE_CALC_H
+
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_lib_element.H"
+#include "baci_lib_element_integration_select.H"
+#include "baci_solid_ele_calc_interface.H"
+#include "baci_solid_ele_utils.H"
 
 #include <memory>
 #include <string>
 #include <unordered_map>
-#include "solid_ele_calc_interface.H"
-#include "lib_element.H"
-#include "discretization_fem_general_utils_gausspoints.H"
-#include "solid_ele_utils.H"
-#include "lib_element_integration_select.H"
 
 
 namespace DRT
@@ -32,10 +34,10 @@ namespace DRT
   namespace ELEMENTS
   {
     template <DRT::Element::DiscretizationType distype>
-    class SolidEleCalcFbar : public virtual SolidEleCalcInterface
+    class SolidEleCalc : public virtual SolidEleCalcInterface
     {
      public:
-      SolidEleCalcFbar();
+      SolidEleCalc();
 
       void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef) override;
 
@@ -44,17 +46,16 @@ namespace DRT
       void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
-          Epetra_SerialDenseMatrix* mass_matrix) override;
+          CORE::LINALG::SerialDenseVector* force_vector,
+          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
+          CORE::LINALG::SerialDenseMatrix* mass_matrix) override;
 
       void EvaluateNonlinearForceStiffnessMassGEMM(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
-          Epetra_SerialDenseMatrix* mass_matrix) override
-      {
-        dserror("GEMM is not implemented for F-bar elements.");
-      };
+          CORE::LINALG::SerialDenseVector* force_vector,
+          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
+          CORE::LINALG::SerialDenseMatrix* mass_matrix) override;
 
       void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) override;
@@ -94,8 +95,9 @@ namespace DRT
 
       CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
       CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;
-    };  // class SolidEleCalcFbar
+
+    };  // class SolidEleCalc
   }     // namespace ELEMENTS
 }  // namespace DRT
 
-#endif  // SOLID_ELE_CALC_FBAR_H
+#endif  // SOLID_ELE_CALC_H

@@ -9,18 +9,18 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "solid_ele_poro.H"
-#include "solid_ele_poro_factory.H"
-#include "solid_ele.H"
-#include "solid_ele_factory.H"
-#include "solid_ele_calc_lib.H"
+#include "baci_solid_ele.H"
+#include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_factory.H"
+#include "baci_solid_ele_poro.H"
+#include "baci_solid_ele_poro_factory.H"
 
 
 int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-    Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-    Epetra_SerialDenseVector& elevec3)
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   if (!material_post_setup_)
   {
@@ -172,7 +172,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
 
 int DRT::ELEMENTS::SolidPoro::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   dserror("not implemented");
   return 1;

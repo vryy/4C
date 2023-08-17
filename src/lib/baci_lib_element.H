@@ -1163,9 +1163,9 @@ doing the original Evaluate(...)
 \return 0 if successful, negative otherwise
 */
     virtual int PostEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        LocationArray& la, Epetra_SerialDenseMatrix& elemat1, Epetra_SerialDenseMatrix& elemat2,
-        Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseVector& elevec2,
-        Epetra_SerialDenseVector& elevec3)
+        LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
+        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
+        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
     {
       return 0;
     }

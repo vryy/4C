@@ -6,8 +6,8 @@
 
 *------------------------------------------------------------------------------------------------*/
 
-#ifndef INPAR_PORO_H
-#define INPAR_PORO_H
+#ifndef BACI_INPAR_PORO_H
+#define BACI_INPAR_PORO_H
 
 namespace INPAR::PORO
 {

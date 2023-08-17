@@ -5,20 +5,22 @@
 
 *----------------------------------------------------------------------*/
 
-#include "solid_ele.H"
+#include "baci_solid_ele.H"
+
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_lib_utils_factory.H"
+#include "baci_mat_so3_material.H"
+#include "baci_so3_line.H"
+#include "baci_so3_nullspace.H"
+#include "baci_so3_surface.H"
+#include "baci_solid_ele_calc_interface.H"
+#include "baci_solid_ele_factory.H"
+#include "baci_solid_ele_interface_serializable.H"
+#include "baci_solid_ele_utils.H"
+#include "baci_structure_new_elements_paramsinterface.H"
+
 #include <memory>
-#include "solid_ele_utils.H"
-#include "lib_linedefinition.H"
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "lib_utils_factory.H"
-#include "so3_line.H"
-#include "so3_surface.H"
-#include "linalg_utils_nullspace.H"
-#include "structure_new_elements_paramsinterface.H"
-#include "mat_so3_material.H"
-#include "solid_ele_factory.H"
-#include "solid_ele_calc_interface.H"
-#include "solid_ele_interface_serializable.H"
 
 DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 
@@ -178,15 +180,15 @@ void DRT::ELEMENTS::SolidType::NodalBlockInformation(
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::SolidType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
   switch (numdof)
   {
     case 3:
-      return LINALG::ComputeSolid3DNullSpace(node, x0);
+      return ComputeSolid3DNullSpace(node, x0);
     case 2:
-      return LINALG::ComputeSolid2DNullSpace(node, x0);
+      return ComputeSolid2DNullSpace(node, x0);
     default:
       dserror(
           "The null space computation of a solid element of dimension %d is not yet implemented",
@@ -440,9 +442,10 @@ bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>&
 }  // VisData()
 
 int DRT::ELEMENTS::Solid::PostEvaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   return 0;
 }

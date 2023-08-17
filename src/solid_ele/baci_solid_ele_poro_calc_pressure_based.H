@@ -7,16 +7,16 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
-#define SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
+#ifndef BACI_SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
+#define BACI_SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
 
 
-#include "solid_ele_poro_calc_interface.H"
-#include "lib_element.H"
-#include "utils_singleton_owner.H"
-#include "lib_element_integration_select.H"
-#include "discretization_fem_general_utils_gausspoints.H"
-#include "solid_ele_utils.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_lib_element.H"
+#include "baci_lib_element_integration_select.H"
+#include "baci_solid_ele_poro_calc_interface.H"
+#include "baci_solid_ele_utils.H"
+#include "baci_utils_singleton_owner.H"
 
 namespace STR::ELEMENTS
 {
@@ -48,13 +48,14 @@ namespace DRT
       void EvaluateNonlinearForceStiffness(const DRT::Element& ele, MAT::StructPoro& porostructmat,
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
-          Epetra_SerialDenseMatrix* stiffness_matrix) override;
+          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
+          CORE::LINALG::SerialDenseMatrix* stiffness_matrix) override;
 
       void CouplingPoroelast(const DRT::Element& ele, MAT::StructPoro& porostructmat,
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& stiffness_matrix) override;
+          Teuchos::ParameterList& params,
+          CORE::LINALG::SerialDenseMatrix& stiffness_matrix) override;
 
       void CouplingStress(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) override;

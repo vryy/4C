@@ -48,6 +48,7 @@
 #include "baci_so3_plast_ssn_sosh18.H"
 #include "baci_so3_plast_ssn_sosh8.H"
 #include "baci_so3_sh8p8.H"
+#include "baci_solid_ele.H"
 #include "baci_solver_nonlin_nox_group.H"
 #include "baci_solver_nonlin_nox_group_prepostoperator.H"
 #include "baci_structure_new_model_evaluator.H"

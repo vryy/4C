@@ -6,29 +6,31 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "lib_element.H"
-#include "solid_ele_calc_lib.H"
-#include "solid_ele_calc_fbar.H"
+#include "baci_solid_ele_calc_fbar.H"
+
+#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
+#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_fiber_nodal_fiber_holder.H"
+#include "baci_fiber_node.H"
+#include "baci_fiber_utils.H"
+#include "baci_lib_discret.H"
+#include "baci_lib_element.H"
+#include "baci_lib_utils.H"
+#include "baci_lib_voigt_notation.H"
+#include "baci_mat_so3_material.H"
+#include "baci_so3_element_service.H"
+#include "baci_solid_ele.H"
+#include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_utils.H"
+#include "baci_structure_new_gauss_point_data_output_manager.H"
+#include "baci_utils_exceptions.H"
+
 #include <Teuchos_ParameterList.hpp>
+
 #include <memory>
 #include <optional>
-#include "utils_exceptions.H"
-#include "discretization_fem_general_utils_integration.H"
-#include "lib_utils.H"
-#include "lib_voigt_notation.H"
-#include "solid_ele.H"
-#include "lib_discret.H"
-#include "mat_so3_material.H"
-#include "solid_ele_utils.H"
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "fiber_node.H"
-#include "fiber_utils.H"
-#include "fiber_nodal_fiber_holder.H"
-#include "discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "discretization_fem_general_utils_gauss_point_extrapolation.H"
-
-#include "structure_new_gauss_point_data_output_manager.H"
-#include "so3_element_service.H"
 
 namespace
 {
@@ -59,27 +61,27 @@ namespace
    * @param spatial_material_mapping_centroid (in) : An object holding quantities of the spatial
    * material mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient) evaluated at the element centroid
-   * @return LINALG::Matrix<DETAIL:numdofperelement<distype>, 1> : H-Operator
+   * @return CORE::LINALG::Matrix<DETAIL:numdofperelement<distype>, 1> : H-Operator
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DRT::ELEMENTS::DETAIL::nsd<distype> == 3, int> = 0>
-  const LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> EvaluateFbarHOperator(
-      const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping,
+  const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1>
+  EvaluateFbarHOperator(const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping,
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping_centroid,
       const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping,
       const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping_centroid)
   {
     // inverse deformation gradient at centroid
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, DRT::ELEMENTS::DETAIL::nsd<distype>>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, DRT::ELEMENTS::DETAIL::nsd<distype>>
         invdefgrd_centroid;
     invdefgrd_centroid.Invert(spatial_material_mapping_centroid.deformation_gradient_);
 
     // inverse deformation gradient at gp
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, DRT::ELEMENTS::DETAIL::nsd<distype>>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, DRT::ELEMENTS::DETAIL::nsd<distype>>
         invdefgrd;
     invdefgrd.Invert(spatial_material_mapping.deformation_gradient_);
 
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> Hop(true);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> Hop(true);
     for (int idof = 0; idof < DRT::ELEMENTS::DETAIL::numdofperelement<distype>; idof++)
     {
       for (int idim = 0; idim < DRT::ELEMENTS::DETAIL::nsd<distype>; idim++)
@@ -110,26 +112,26 @@ namespace
    * @param stiffness_matrix (in/out) : stiffness matrix where the local contribution is added to
    */
   template <DRT::Element::DiscretizationType distype>
-  void AddFbarStiffnessMatrix(const LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
+  void AddFbarStiffnessMatrix(const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
                                   DRT::ELEMENTS::DETAIL::numdofperelement<distype>>& Bop,
-      const LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1>& Hop,
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1>& Hop,
       const double f_bar_factor, const double integration_fac,
       const DRT::ELEMENTS::CauchyGreen<distype> cauchyGreen,
       const DRT::ELEMENTS::Stress<distype> stress_bar,
-      LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>,
+      CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>,
           DRT::ELEMENTS::DETAIL::numdofperelement<distype>>& stiffness_matrix)
   {
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> rcg_bar_voigt;
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> rcg_bar_voigt;
     ::UTILS::VOIGT::Strains::MatrixToVector(cauchyGreen.right_cauchy_green_, rcg_bar_voigt);
 
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> ccg;
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> ccg;
     ccg.MultiplyNN(stress_bar.cmat_, rcg_bar_voigt);
 
     // auxiliary integrated stress_bar
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> bopccg(false);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> bopccg(false);
     bopccg.MultiplyTN(integration_fac * f_bar_factor / 3.0, Bop, ccg);
 
-    LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> bops(false);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> bops(false);
     bops.MultiplyTN(-integration_fac / f_bar_factor / 3.0, Bop, stress_bar.pk2_);
 
     for (int idof = 0; idof < DRT::ELEMENTS::DETAIL::numdofperelement<distype>; idof++)
@@ -142,7 +144,7 @@ namespace
   }
 
   template <DRT::Element::DiscretizationType distype>
-  LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> EvaluateStrainsBar(
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> EvaluateStrainsBar(
       const DRT::ELEMENTS::NodalCoordinates<distype>& nodal_coordinates,
       const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_mapping, double detF_centroid)
   {
@@ -176,13 +178,13 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMass(
     const DRT::Element& ele, MAT::So3Material& solid_material,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
-    Teuchos::ParameterList& params, Epetra_SerialDenseVector* force_vector,
-    Epetra_SerialDenseMatrix* stiffness_matrix, Epetra_SerialDenseMatrix* mass_matrix)
+    Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
+    CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
-  std::optional<LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
-  std::optional<LINALG::Matrix<numdofperelement_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
+  std::optional<CORE::LINALG::Matrix<numdofperelement_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -207,7 +209,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
       EvaluateSpatialMaterialMapping(jacobian_mapping_centroid, nodal_coordinates);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -216,7 +218,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
 
         const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        LINALG::Matrix<numstr_, numdofperelement_> Bop =
+        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
         // factor (detF0/detF)^1/3
@@ -224,8 +226,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
             EvaluateFbarFactor(spatial_material_mapping_centroid.determinant_deformation_gradient_,
                 spatial_material_mapping.determinant_deformation_gradient_);
 
-        const LINALG::Matrix<numdofperelement_, 1> Hop = EvaluateFbarHOperator(jacobian_mapping,
-            jacobian_mapping_centroid, spatial_material_mapping, spatial_material_mapping_centroid);
+        const CORE::LINALG::Matrix<numdofperelement_, 1> Hop =
+            EvaluateFbarHOperator(jacobian_mapping, jacobian_mapping_centroid,
+                spatial_material_mapping, spatial_material_mapping_centroid);
 
         // deformation gradient F_bar and resulting strains: F_bar = (detF_0/detF)^1/3 F
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
@@ -234,7 +237,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
         const CauchyGreen<distype> cauchygreen_bar =
             EvaluateCauchyGreen(spatial_material_mapping_bar);
 
-        LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_bar =
+        CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_bar =
             EvaluateGreenLagrangeStrain(cauchygreen_bar);
 
         // stress stress_bar evaluated using strains_bar
@@ -278,7 +281,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -309,7 +312,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
 
   // Loop over all Gauss points
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -335,8 +338,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
 
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  Epetra_SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
-  Epetra_SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
+  CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
+  CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
 
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
@@ -346,11 +349,11 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
 
   // Loop over all Gauss points
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> gl_strains_bar =
+        const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> gl_strains_bar =
             EvaluateStrainsBar(nodal_coordinates, jacobian_mapping, detF_centroid);
 
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
@@ -383,11 +386,11 @@ double DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateInternalEnergy(const D
   auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> gl_strains_bar =
+        const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> gl_strains_bar =
             EvaluateStrainsBar(nodal_coordinates, jacobian_mapping, detF_centroid);
 
         double psi = 0.0;
@@ -417,13 +420,14 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::MaterialPostSetup(
     // Interpolate fibers to the Gauss points and pass them to the material
 
     // Get shape functions
-    const static std::vector<LINALG::Matrix<nen_, 1>> shapefcts = std::invoke(
+    const static std::vector<CORE::LINALG::Matrix<nen_, 1>> shapefcts = std::invoke(
         [&]
         {
-          std::vector<LINALG::Matrix<nen_, 1>> shapefcns(stiffness_matrix_integration_.NumPoints());
+          std::vector<CORE::LINALG::Matrix<nen_, 1>> shapefcns(
+              stiffness_matrix_integration_.NumPoints());
           for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
           {
-            LINALG::Matrix<nsd_, 1> xi(stiffness_matrix_integration_.Point(gp), true);
+            CORE::LINALG::Matrix<nsd_, 1> xi(stiffness_matrix_integration_.Point(gp), true);
             CORE::DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
           }
           return shapefcns;
@@ -478,7 +482,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateGaussPointDataOutput(cons
     const int quantity_size = quantity.second;
 
     // Step 1: Collect the data for each Gauss point for the material
-    LINALG::SerialDenseMatrix gp_data(
+    CORE::LINALG::SerialDenseMatrix gp_data(
         stiffness_matrix_integration_.NumPoints(), quantity_size, true);
     bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
 

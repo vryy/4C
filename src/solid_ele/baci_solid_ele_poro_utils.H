@@ -7,14 +7,14 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_PORO_UTILS_H
-#define SOLID_ELE_PORO_UTILS_H
+#ifndef BACI_SOLID_ELE_PORO_UTILS_H
+#define BACI_SOLID_ELE_PORO_UTILS_H
 
-#include "discretization_fem_general_utils_integration.H"
-#include "linalg_utils_densematrix_eigen.H"
-#include "lib_element.H"
-#include "lib_linedefinition.H"
-#include "solid_ele_poro.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_element.H"
+#include "baci_lib_linedefinition.H"
+#include "baci_linalg_utils_densematrix_eigen.H"
+#include "baci_solid_ele_poro.H"
 
 namespace STR::UTILS
 {

@@ -7,15 +7,16 @@
 */
 /*----------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_CALC_INTERFACE_H
-#define SOLID_ELE_CALC_INTERFACE_H
+#ifndef BACI_SOLID_ELE_CALC_INTERFACE_H
+#define BACI_SOLID_ELE_CALC_INTERFACE_H
+
+#include "baci_lib_element.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_mat_so3_material.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
-#include "utils_exceptions.H"
-#include "lib_element.H"
-#include "mat_so3_material.H"
 
 namespace STR::MODELEVALUATOR
 {
@@ -92,8 +93,9 @@ namespace DRT
       virtual void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
-          Epetra_SerialDenseMatrix* mass_matrix) = 0;
+          CORE::LINALG::SerialDenseVector* force_vector,
+          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
+          CORE::LINALG::SerialDenseMatrix* mass_matrix) = 0;
 
       /*!
        * @brief Evaluate the force vector, stiffness matrix and mass matrix of the element with GEMM
@@ -111,8 +113,9 @@ namespace DRT
       virtual void EvaluateNonlinearForceStiffnessMassGEMM(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix,
-          Epetra_SerialDenseMatrix* mass_matrix) = 0;
+          CORE::LINALG::SerialDenseVector* force_vector,
+          CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
+          CORE::LINALG::SerialDenseMatrix* mass_matrix) = 0;
 
       virtual void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) = 0;

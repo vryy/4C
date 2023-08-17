@@ -155,6 +155,8 @@
 #include "baci_so3_tet4av.H"
 #include "baci_so3_thermo_eletypes.H"
 #include "baci_so3_weg6.H"
+#include "baci_solid_ele.H"
+#include "baci_solid_ele_poro.H"
 #include "baci_thermo_element.H"
 #include "baci_torsion3.H"
 #include "baci_truss3.H"

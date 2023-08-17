@@ -6,21 +6,24 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_PORO_CALC_LIB_H
-#define SOLID_ELE_PORO_CALC_LIB_H
+#ifndef BACI_SOLID_ELE_PORO_CALC_LIB_H
+#define BACI_SOLID_ELE_PORO_CALC_LIB_H
 
+
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
+#include "baci_lib_utils.H"
+#include "baci_lib_voigt_notation.H"
+#include "baci_mat_fluidporo_multiphase.H"
+#include "baci_mat_structporo.H"
+#include "baci_solid_ele.H"
+#include "baci_solid_ele_calc_lib.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
+#include <Teuchos_SerialDenseSolver.hpp>
+
 #include <numeric>
-#include "lib_element.H"
-#include "solid_ele_calc_lib.H"
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "solid_ele.H"
-#include "lib_utils.H"
-#include "lib_voigt_notation.H"
-#include "mat_fluidporo_multiphase.H"
-#include "mat_structporo.H"
 
 
 
@@ -38,8 +41,8 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void ExtractValuesFromGlobalVector(const DRT::Discretization& discretization, const int& dofset,
       const std::vector<int>& lm,
-      LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>>* matrixtofill,
-      LINALG::Matrix<DETAIL::nen<distype>, 1>* vectortofill, const std::string& state,
+      CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>>* matrixtofill,
+      CORE::LINALG::Matrix<DETAIL::nen<distype>, 1>* vectortofill, const std::string& state,
       const DRT::Element& ele)
   {
     // get state of the global vector
@@ -128,11 +131,11 @@ namespace DRT::ELEMENTS
       // for linear kinematics the volume change is the trace of the linearized strains
 
       // gradient of displacements
-      LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> mydisp(true);
+      CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> mydisp(true);
       ExtractValuesFromGlobalVector<distype>(
           discretization, 0, lm, &mydisp, nullptr, "displacement", ele);
 
-      LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> dispgrad;
+      CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> dispgrad;
       dispgrad.Clear();
       // gradient of displacements
       dispgrad.MultiplyNT(mydisp, jacobian_mapping.N_XYZ_);
@@ -167,11 +170,12 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  LINALG::Matrix<1, DETAIL::numdofperelement<distype>> ComputeLinearizationOfDetDefGradWrtDisp(
+  CORE::LINALG::Matrix<1, DETAIL::numdofperelement<distype>>
+  ComputeLinearizationOfDetDefGradWrtDisp(
       const SpatialMaterialMapping<distype> spatial_material_mapping,
       const JacobianMapping<distype> jacobian_mapping, const INPAR::STR::KinemType& kinematictype)
   {
-    LINALG::Matrix<1, DETAIL::numdofperelement<distype>> dDetDefGrad_dDisp;
+    CORE::LINALG::Matrix<1, DETAIL::numdofperelement<distype>> dDetDefGrad_dDisp;
 
     if (kinematictype == INPAR::STR::kinem_linear)
     {
@@ -180,7 +184,7 @@ namespace DRT::ELEMENTS
     }
     else
     {
-      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nsd<distype>, 1> defgrd_inv_vec;
+      CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nsd<distype>, 1> defgrd_inv_vec;
       defgrd_inv_vec(0) = spatial_material_mapping.inverse_deformation_gradient_(0, 0);
       defgrd_inv_vec(1) = spatial_material_mapping.inverse_deformation_gradient_(0, 1);
       defgrd_inv_vec(2) = spatial_material_mapping.inverse_deformation_gradient_(0, 2);
@@ -192,7 +196,7 @@ namespace DRT::ELEMENTS
       defgrd_inv_vec(8) = spatial_material_mapping.inverse_deformation_gradient_(2, 2);
 
       //--------------------------- build N_X operator (wrt material config)
-      LINALG::Matrix<9, DETAIL::numdofperelement<distype>> N_X(true);  // set to zero
+      CORE::LINALG::Matrix<9, DETAIL::numdofperelement<distype>> N_X(true);  // set to zero
       for (int i = 0; i < DETAIL::nen<distype>; ++i)
       {
         N_X(0, 3 * i + 0) = jacobian_mapping.N_XYZ_(0, i);
@@ -232,14 +236,14 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>>
+  CORE::LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>>
   ComputeLinearizationOfVolchangeWrtDisp(
-      const LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>> dDetDefGrad_dDisp,
+      const CORE::LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>> dDetDefGrad_dDisp,
       const JacobianMapping<distype>& jacobian_mapping, const INPAR::STR::KinemType& kinematictype)
   {
     if (kinematictype == INPAR::STR::kinem_linear)
     {
-      LINALG::Matrix<1, DETAIL::numdofperelement<distype>> dVolchange_dDisp;
+      CORE::LINALG::Matrix<1, DETAIL::numdofperelement<distype>> dVolchange_dDisp;
 
       for (int i = 0; i < DETAIL::nsd<distype>; ++i)
         for (int j = 0; j < DETAIL::nen<distype>; ++j)
@@ -275,8 +279,8 @@ namespace DRT::ELEMENTS
   void ComputePorosityAndLinearization(MAT::StructPoro& porostructmat,
       Teuchos::ParameterList& params, const double solidpressure, const int gp,
       const double volchange, double& porosity,
-      const LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dDetDefGrad_dDisp,
-      LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dPorosity_dDisp)
+      const CORE::LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dDetDefGrad_dDisp,
+      CORE::LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dPorosity_dDisp)
   {
     double dphi_dJ = 0.0;
 
@@ -337,8 +341,8 @@ namespace DRT::ELEMENTS
   void RecalculateLinearizationOfSolPressWrtDisp(const double fluidpress, const double porosity,
       const int nummultifluiddofpernode, const int numfluidphases, const int numvolfrac,
       const std::vector<double>& fluidmultiphase_phiAtGP,
-      const LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>>& dPorosity_dDisp,
-      LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>>& dSolidpressure_dDisp)
+      const CORE::LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>>& dPorosity_dDisp,
+      CORE::LINALG::Matrix<1, DETAIL::nsd<distype> * DETAIL::nen<distype>>& dSolidpressure_dDisp)
   {
     // get volume fraction primary variables
     std::vector<double> volfracphi(&fluidmultiphase_phiAtGP[numfluidphases],
@@ -410,10 +414,11 @@ namespace DRT::ELEMENTS
 
 
   template <DRT::Element::DiscretizationType distype>
-  LINALG::Matrix<DETAIL::numstr<distype>, 1> TransformMatrixInVectorVoigtNotation(
-      const LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>& InverseRightCauchyGreen)
+  CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> TransformMatrixInVectorVoigtNotation(
+      const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>&
+          InverseRightCauchyGreen)
   {
-    LINALG::Matrix<DETAIL::numstr<distype>, 1> C_inv_vec(true);
+    CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> C_inv_vec(true);
     for (int i = 0, k = 0; i < DETAIL::nsd<distype>; i++)
       for (int j = 0; j < DETAIL::nsd<distype> - i; j++, k++)
         C_inv_vec(k) = InverseRightCauchyGreen(i + j, j);
@@ -437,8 +442,8 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void UpdateInternalForceVectorMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
-      const LINALG::Matrix<DETAIL::numdofperelement<distype>, 1>& BopCinv,
-      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>, 1>& force_vector)
+      const CORE::LINALG::Matrix<DETAIL::numdofperelement<distype>, 1>& BopCinv,
+      CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>, 1>& force_vector)
   {
     // additional fluid stress- stiffness term RHS -(B^T .  C^-1  * J * p^f * detJ * w(gp))
     double factor = -detJ_w * solidpressure * DetDefGrad;
@@ -468,16 +473,16 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void UpdateElasticStiffnessMatrixMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
-      const LINALG::Matrix<DETAIL::numdofperelement<distype>, 1>& BopCinv,
-      const LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::numdofperelement<distype>>& Bop,
-      const LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dDetDefGrad_dDisp,
-      const LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dSolidpressure_dDisp,
-      const LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::numdofperelement<distype>>&
+      const CORE::LINALG::Matrix<DETAIL::numdofperelement<distype>, 1>& BopCinv,
+      const CORE::LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::numdofperelement<distype>>& Bop,
+      const CORE::LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dDetDefGrad_dDisp,
+      const CORE::LINALG::Matrix<1, DETAIL::numdofperelement<distype>>& dSolidpressure_dDisp,
+      const CORE::LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::numdofperelement<distype>>&
           dInverseRightCauchyGreen_dDisp,
-      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
+      CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
           DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
-    LINALG::Matrix<DETAIL::numdofperelement<distype>, DETAIL::numdofperelement<distype>> tmp;
+    CORE::LINALG::Matrix<DETAIL::numdofperelement<distype>, DETAIL::numdofperelement<distype>> tmp;
 
     // additional fluid stress- stiffness term -(B^T . C^-1 . dJ/d(us) * p^f * detJ * w(gp))
     tmp.Multiply((-detJ_w * solidpressure), BopCinv, dDetDefGrad_dDisp);
@@ -508,13 +513,14 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void UpdateGeometricStiffnessMatrixMultiPhasePressureBased(const double detJ_w,
       const double solidpressure, const double DetDefGrad,
-      const LINALG::Matrix<DETAIL::numstr<distype>, 1>& C_inv_vec,
-      const LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>>& N_XYZ_,
-      LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
+      const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1>& C_inv_vec,
+      const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>>& N_XYZ_,
+      CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
           DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
     // integrate `geometric' stiffness matrix and add to keu *****************
-    LINALG::Matrix<DETAIL::numstr<distype>, 1> sfac(C_inv_vec);  // auxiliary integrated stress
+    CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> sfac(
+        C_inv_vec);  // auxiliary integrated stress
 
     // scale
     sfac.Scale((-detJ_w * solidpressure * DetDefGrad));
@@ -560,9 +566,9 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void UpdateStiffnessMatrixCouplingMultiPhasePressureBased(const double detJ_w,
       const std::vector<double>& solidpressurederiv,
-      const LINALG::Matrix<DETAIL::numdofperelement<distype>, 1>& BopCinv,
+      const CORE::LINALG::Matrix<DETAIL::numdofperelement<distype>, 1>& BopCinv,
       ShapeFunctionsAndDerivatives<distype> shape_functions, const double DetDefGrad,
-      const int nummultifluiddofpernode, Epetra_SerialDenseMatrix& stiffness_matrix)
+      const int nummultifluiddofpernode, CORE::LINALG::SerialDenseMatrix& stiffness_matrix)
   {
     for (int i = 0; i < DETAIL::nen<distype>; i++)
     {
@@ -641,9 +647,9 @@ namespace DRT::ELEMENTS
     std::vector<double> genpress(numfluidphases);
     std::vector<double> press(numfluidphases);
     std::vector<double> sat(numfluidphases);
-    Epetra_SerialDenseMatrix helpderiv(numfluidphases, numfluidphases, true);
-    Epetra_SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
-    Epetra_SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
+    CORE::LINALG::SerialDenseMatrix helpderiv(numfluidphases, numfluidphases, true);
+    CORE::LINALG::SerialDenseMatrix satderiv(numfluidphases, numfluidphases, true);
+    CORE::LINALG::SerialDenseMatrix pressderiv(numfluidphases, numfluidphases, true);
     std::vector<double> fluidphi(
         &fluidmultiphase_phiAtGP[0], &fluidmultiphase_phiAtGP[numfluidphases]);
 
@@ -662,9 +668,10 @@ namespace DRT::ELEMENTS
     // now invert the derivatives of the dofs w.r.t. pressure to get the derivatives
     // of the pressure w.r.t. the dofs
     {
-      Epetra_SerialDenseSolver inverse;
-      inverse.SetMatrix(pressderiv);
-      int err = inverse.Invert();
+      Teuchos::SerialDenseSolver<int, double> inverse;
+
+      inverse.setMatrix(Teuchos::rcpFromRef(pressderiv));
+      int err = inverse.invert();
       if (err != 0)
         dserror("Inversion of matrix for pressure derivative failed with error code %d.", err);
     }
@@ -674,7 +681,7 @@ namespace DRT::ELEMENTS
 
     // chain rule: the derivative of saturation w.r.t. dof =
     // (derivative of saturation w.r.t. pressure) * (derivative of pressure w.r.t. dof)
-    satderiv.Multiply('N', 'N', 1.0, helpderiv, pressderiv, 0.0);
+    satderiv.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, helpderiv, pressderiv, 0.0);
 
     // compute derivative of solid pressure w.r.t. dofs with product rule
     // standard derivative: no volume fractions present
@@ -789,13 +796,13 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>
+  CORE::LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>
   EvaluateInverseCauchyGreenLinearization(CauchyGreen<distype> cauchygreen,
       JacobianMapping<distype> jacobian_mapping,
       SpatialMaterialMapping<distype> spatial_material_mapping)
   {
     // dC^-1/dDisp
-    LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>
+    CORE::LINALG::Matrix<DETAIL::numstr<distype>, DETAIL::nsd<distype> * DETAIL::nen<distype>>
         dInverseCauchyGreen_dDisp(true);
 
     for (int n = 0; n < DETAIL::nen<distype>; ++n)

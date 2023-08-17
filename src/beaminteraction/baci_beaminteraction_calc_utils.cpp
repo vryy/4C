@@ -25,6 +25,7 @@
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_rigidsphere.H"
 #include "baci_so3_base.H"
+#include "baci_solid_ele.H"
 
 #include <Epetra_FEVector.h>
 

@@ -19,7 +19,7 @@
 #include "baci_rigidsphere.H"
 #include "baci_scatra_ele.H"
 #include "baci_so3_base.H"
-
+#include "baci_solid_ele.H"
 namespace BINSTRATEGY
 {
   namespace UTILS

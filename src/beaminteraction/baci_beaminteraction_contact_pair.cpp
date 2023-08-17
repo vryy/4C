@@ -20,6 +20,7 @@
 #include "baci_lib_element.H"
 #include "baci_rigidsphere.H"
 #include "baci_so3_base.H"
+#include "baci_solid_ele.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>

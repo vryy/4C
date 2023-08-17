@@ -5,19 +5,21 @@
 
 *----------------------------------------------------------------------*/
 
-#include "solid_ele_poro.H"
+#include "baci_solid_ele_poro.H"
+
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_mat_fluidporo_multiphase.H"
+#include "baci_mat_structporo.H"
+#include "baci_so3_line.H"
+#include "baci_so3_nullspace.H"
+#include "baci_so3_surface.H"
+#include "baci_solid_ele_factory.H"
+#include "baci_solid_ele_interface_serializable.H"
+#include "baci_solid_ele_poro_factory.H"
+#include "baci_solid_ele_poro_utils.H"
+#include "baci_solid_ele_utils.H"
+
 #include <memory>
-#include "solid_ele_utils.H"
-#include "so3_surface.H"
-#include "so3_line.H"
-#include "mat_structporo.H"
-#include "mat_fluidporo_multiphase.H"
-#include "solid_ele_poro_factory.H"
-#include "solid_ele_poro_utils.H"
-#include "solid_ele_factory.H"
-#include "linalg_utils_nullspace.H"
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "solid_ele_interface_serializable.H"
 
 namespace
 {
@@ -149,10 +151,10 @@ void DRT::ELEMENTS::SolidPoroType::NodalBlockInformation(
   STR::UTILS::NodalBlockInformationSolid(dwele, numdf, dimns, nv, np);
 }
 
-Teuchos::SerialDenseMatrix<int, double> DRT::ELEMENTS::SolidPoroType::ComputeNullSpace(
+CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidPoroType::ComputeNullSpace(
     DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
 {
-  return LINALG::ComputeSolid3DNullSpace(node, x0);
+  return ComputeSolid3DNullSpace(node, x0);
 }
 
 
@@ -551,9 +553,10 @@ MAT::FluidPoroMultiPhase& DRT::ELEMENTS::SolidPoro::FluidPoroMultiMaterial(int n
 }
 
 int DRT::ELEMENTS::SolidPoro::PostEvaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   return 0;
 }

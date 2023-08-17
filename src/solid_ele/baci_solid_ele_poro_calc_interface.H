@@ -7,17 +7,17 @@
     */
 /*----------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_PORO_CALC_INTERFACE_H
-#define SOLID_ELE_PORO_CALC_INTERFACE_H
+#ifndef BACI_SOLID_ELE_PORO_CALC_INTERFACE_H
+#define BACI_SOLID_ELE_PORO_CALC_INTERFACE_H
+
+#include "baci_lib_element.H"
+#include "baci_linalg_serialdensematrix.H"
+#include "baci_linalg_serialdensevector.H"
+#include "baci_mat_fluidporo_multiphase.H"
+#include "baci_mat_structporo.H"
+#include "baci_utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
-
-#include "lib_element.H"
-#include "utils_exceptions.H"
-#include "mat_structporo.H"
-#include "mat_fluidporo_multiphase.H"
 
 namespace DRT
 {
@@ -61,7 +61,8 @@ namespace DRT
           MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
           const INPAR::STR::KinemType& kinematictype, const DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, Teuchos::ParameterList& params,
-          Epetra_SerialDenseVector* force_vector, Epetra_SerialDenseMatrix* stiffness_matrix) = 0;
+          CORE::LINALG::SerialDenseVector* force_vector,
+          CORE::LINALG::SerialDenseMatrix* stiffness_matrix) = 0;
 
       /*!
        * @brief Calculate coupling terms in nonlinear stiffness and internal force for
@@ -80,7 +81,7 @@ namespace DRT
       virtual void CouplingPoroelast(const DRT::Element& ele, MAT::StructPoro& porostructmat,
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Teuchos::ParameterList& params, Epetra_SerialDenseMatrix& stiffness_matrix) = 0;
+          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix) = 0;
 
       //! Calculate coupling stress for poroelasticity problems
       virtual void CouplingStress(const DRT::Element& ele,

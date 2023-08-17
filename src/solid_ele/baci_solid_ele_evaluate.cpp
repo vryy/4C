@@ -9,22 +9,21 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "lib_elements_paramsinterface.H"
-#include "structure_new_elements_paramsinterface.H"
-#include "lib_elements_paramsinterface.H"
-#include "solid_ele_neumann_evaluator.H"
-#include "structure_new_elements_paramsinterface.H"
-#include "utils_exceptions.H"
-#include "solid_ele.H"
-#include "solid_ele_factory.H"
-#include "solid_ele_calc_interface.H"
-#include "solid_ele_calc_lib.H"
+#include "baci_lib_elements_paramsinterface.H"
+#include "baci_solid_ele.H"
+#include "baci_solid_ele_calc_interface.H"
+#include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_factory.H"
+#include "baci_solid_ele_neumann_evaluator.H"
+#include "baci_structure_new_elements_paramsinterface.H"
+#include "baci_utils_exceptions.H"
 
 
 int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
-    Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
-    Epetra_SerialDenseVector& elevec2, Epetra_SerialDenseVector& elevec3)
+    DRT::Discretization& discretization, std::vector<int>& lm,
+    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
+    CORE::LINALG::SerialDenseVector& elevec3)
 {
   if (!material_post_setup_)
   {
@@ -107,7 +106,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       {
         // old structural time integration
         // check length of elevec1
-        if (elevec1.Length() < 1) dserror("The given result vector is too short.");
+        if (elevec1.length() < 1) dserror("The given result vector is too short.");
 
         elevec1(0) = int_energy;
       }
@@ -147,7 +146,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 }
 int DRT::ELEMENTS::Solid::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-    Epetra_SerialDenseVector& elevec1, Epetra_SerialDenseMatrix* elemat1)
+    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1)
 {
   SetParamsInterfacePtr(params);
 

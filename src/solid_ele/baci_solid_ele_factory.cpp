@@ -7,14 +7,15 @@
 */
 /*--------------------------------------------------------------------------*/
 
-#include "solid_ele_factory.H"
+#include "baci_solid_ele_factory.H"
+
+#include "baci_lib_element.H"
+#include "baci_solid_ele_calc.H"
+#include "baci_solid_ele_calc_eas.H"
+#include "baci_solid_ele_calc_fbar.H"
+#include "baci_utils_exceptions.H"
+
 #include <memory>
-#include "utils_exceptions.H"
-#include "lib_element.H"
-#include "utils_exceptions.H"
-#include "solid_ele_calc_eas.H"
-#include "solid_ele_calc_fbar.H"
-#include "solid_ele_calc.H"
 
 namespace
 {

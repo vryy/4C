@@ -180,7 +180,8 @@ before_script:
     coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_coverage.log
     # add repo link to the commit that the report is based on
   - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
-    commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
+    commit  \<a 
+    href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
   after_script:
   - *post-process-log-files

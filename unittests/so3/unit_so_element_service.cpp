@@ -8,7 +8,11 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
+#include "baci_lib_element_integration_select.H"
 #include "baci_so3_element_service.H"
 
 #include <vector>
@@ -90,7 +94,7 @@ namespace
 
     // save default integration rule
     CORE::DRT::UTILS::GaussIntegration integration(gp);
-    LINALG::SerialDenseMatrix m =
+    CORE::LINALG::SerialDenseMatrix m =
         CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
   }
 

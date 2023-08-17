@@ -7,13 +7,13 @@
 
 *----------------------------------------------------------------------*/
 
-#ifndef SOLID_ELE_UTILS_H
-#define SOLID_ELE_UTILS_H
+#ifndef BACI_SOLID_ELE_UTILS_H
+#define BACI_SOLID_ELE_UTILS_H
 
-#include "discretization_fem_general_utils_integration.H"
-#include "lib_element.H"
-#include "inpar_structure.H"
-#include "solid_ele_calc_eas.H"
+#include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_inpar_structure.H"
+#include "baci_lib_element.H"
+#include "baci_solid_ele_calc_eas.H"
 
 namespace STR::ELEMENTS
 {
@@ -73,11 +73,11 @@ namespace STR::UTILS
 
   void NodalBlockInformationSolid(DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
-  void Pk2ToCauchy(const LINALG::Matrix<6, 1>& pk2, const LINALG::Matrix<3, 3>& defgrd,
-      LINALG::Matrix<6, 1>& cauchy);
+  void Pk2ToCauchy(const CORE::LINALG::Matrix<6, 1>& pk2, const CORE::LINALG::Matrix<3, 3>& defgrd,
+      CORE::LINALG::Matrix<6, 1>& cauchy);
 
-  LINALG::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
-      const LINALG::Matrix<6, 1>& gl, const LINALG::Matrix<3, 3>& defgrd);
+  CORE::LINALG::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
+      const CORE::LINALG::Matrix<6, 1>& gl, const CORE::LINALG::Matrix<3, 3>& defgrd);
 
 
   namespace ELEMENTDEFINITION

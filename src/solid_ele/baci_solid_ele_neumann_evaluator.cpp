@@ -5,18 +5,19 @@
 \level 1
 */
 /*--------------------------------------------------------------------------*/
-#include "solid_ele_neumann_evaluator.H"
-#include "lib_element.H"
-#include "lib_element_integration_select.H"
-#include "lib_function.H"
-#include "lib_globalproblem.H"
-#include "solid_ele_calc_lib.H"
-#include "discretization_fem_general_utils_gausspoints.H"
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_solid_ele_neumann_evaluator.H"
+
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_element.H"
+#include "baci_lib_element_integration_select.H"
+#include "baci_lib_function.H"
+#include "baci_lib_globalproblem.H"
+#include "baci_solid_ele_calc_lib.H"
 
 void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
-    const std::vector<int>& dof_index_array, Epetra_SerialDenseVector& element_force_vector,
+    const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
 {
   switch (element.Shape())
@@ -64,7 +65,7 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
     const DRT::Discretization& discretization, DRT::Condition& condition,
-    const std::vector<int>& dof_index_array, Epetra_SerialDenseVector& element_force_vector,
+    const std::vector<int>& dof_index_array, CORE::LINALG::SerialDenseVector& element_force_vector,
     double total_time)
 {
   constexpr auto numdim = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -98,7 +99,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
       EvaluateNodalCoordinates<distype>(element, discretization, dof_index_array);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, gauss_integration,
-      [&](const LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -109,7 +110,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
               jacobian_mapping.determinant_, element.Id());
 
         // material/reference co-ordinates of Gauss point
-        LINALG::Matrix<numdim, 1> gauss_point_reference_coordinates;
+        CORE::LINALG::Matrix<numdim, 1> gauss_point_reference_coordinates;
         gauss_point_reference_coordinates.MultiplyTN(
             nodal_coordinates.reference_, shape_functions.shapefunctions_);
 
