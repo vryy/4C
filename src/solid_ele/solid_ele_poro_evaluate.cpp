@@ -24,9 +24,7 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
 {
   if (!material_post_setup_)
   {
-    DRT::ELEMENTS::SolidFactory::ProvideImpl(
-        this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-        ->MaterialPostSetup(*this, this->StructPoroMaterial());
+    solid_interface_->MaterialPostSetup(*this, this->StructPoroMaterial());
     material_post_setup_ = true;
   }
 
@@ -46,48 +44,40 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
   {
     case DRT::ELEMENTS::struct_calc_nlnstiff:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(), discretization,
-              la[0].lm_, params, &elevec1, &elemat1, nullptr);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(),
+          discretization, la[0].lm_, params, &elevec1, &elemat1, nullptr);
 
       if (la.Size() > 2 and this->NumMaterial() > 1)
       {
         if (discretization.HasState(1, "porofluid"))
         {
-          DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(this, this->GetElePoroType())
-              ->EvaluateNonlinearForceStiffness(*this, this->StructPoroMaterial(),
-                  this->FluidPoroMultiMaterial(), this->GetEleKinematicType(), discretization, la,
-                  params, &elevec1, &elemat1);
+          solidporo_interface_->EvaluateNonlinearForceStiffness(*this, this->StructPoroMaterial(),
+              this->FluidPoroMultiMaterial(), this->GetEleKinematicType(), discretization, la,
+              params, &elevec1, &elemat1);
         }
       }
       return 0;
     }
     case struct_calc_internalforce:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(), discretization,
-              la[0].lm_, params, &elevec1, nullptr, nullptr);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(),
+          discretization, la[0].lm_, params, &elevec1, nullptr, nullptr);
 
       if (la.Size() > 2 and this->NumMaterial() > 1)
       {
         if (discretization.HasState(1, "porofluid"))
         {
-          DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(this, this->GetElePoroType())
-              ->EvaluateNonlinearForceStiffness(*this, this->StructPoroMaterial(),
-                  this->FluidPoroMultiMaterial(), this->GetEleKinematicType(), discretization, la,
-                  params, &elevec1, nullptr);
+          solidporo_interface_->EvaluateNonlinearForceStiffness(*this, this->StructPoroMaterial(),
+              this->FluidPoroMultiMaterial(), this->GetEleKinematicType(), discretization, la,
+              params, &elevec1, nullptr);
         }
       }
       return 0;
     }
     case struct_calc_nlnstiffmass:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(), discretization,
-              la[0].lm_, params, &elevec1, &elemat1, &elemat2);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(),
+          discretization, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
 
       // we skip this evaluation if the coupling is not setup yet, i.e.
       // if the secondary dofset or the secondary material was not set
@@ -98,20 +88,17 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       {
         if (discretization.HasState(1, "porofluid"))
         {
-          DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(this, this->GetElePoroType())
-              ->EvaluateNonlinearForceStiffness(*this, this->StructPoroMaterial(),
-                  this->FluidPoroMultiMaterial(), this->GetEleKinematicType(), discretization, la,
-                  params, &elevec1, &elemat1);
+          solidporo_interface_->EvaluateNonlinearForceStiffness(*this, this->StructPoroMaterial(),
+              this->FluidPoroMultiMaterial(), this->GetEleKinematicType(), discretization, la,
+              params, &elevec1, &elemat1);
         }
       }
       return 0;
     }
     case struct_calc_nlnstifflmass:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(), discretization,
-              la[0].lm_, params, &elevec1, &elemat1, &elemat2);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(*this, this->StructPoroMaterial(),
+          discretization, la[0].lm_, params, &elevec1, &elemat1, &elemat2);
       DRT::ELEMENTS::LumpMatrix(elemat2);
       return 0;
     }
@@ -126,60 +113,49 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
       {
         if (discretization.HasState(1, "porofluid"))
         {
-          DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(this, this->GetElePoroType())
-              ->CouplingPoroelast(*this, this->StructPoroMaterial(), this->FluidPoroMultiMaterial(),
-                  this->GetEleKinematicType(), discretization, la, params, elemat1);
+          solidporo_interface_->CouplingPoroelast(*this, this->StructPoroMaterial(),
+              this->FluidPoroMultiMaterial(), this->GetEleKinematicType(), discretization, la,
+              params, elemat1);
         }
       }
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_update_istep:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->Update(*this, SolidPoroMaterial(), discretization, la[0].lm_, params);
+      solid_interface_->Update(*this, SolidPoroMaterial(), discretization, la[0].lm_, params);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_recover:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->Recover(*this, discretization, la[0].lm_, params);
+      solid_interface_->Recover(*this, discretization, la[0].lm_, params);
       return 0;
     }
     case struct_calc_stress:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->CalculateStress(*this, this->StructPoroMaterial(),
-              StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
-              StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
-              discretization, la[0].lm_, params);
+      solid_interface_->CalculateStress(*this, this->StructPoroMaterial(),
+          StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
+          StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
+          discretization, la[0].lm_, params);
 
       if (la.Size() > 2)
       {
         if (discretization.HasState(1, "porofluid"))
         {
-          DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(this, this->GetElePoroType())
-              ->CouplingStress(*this, discretization, la[0].lm_, params);
+          solidporo_interface_->CouplingStress(*this, discretization, la[0].lm_, params);
         }
       }
       return 0;
     }
     case struct_init_gauss_point_data_output:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->InitializeGaussPointDataOutput(*this, SolidPoroMaterial(),
-              *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+      solid_interface_->InitializeGaussPointDataOutput(
+          *this, SolidPoroMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
       return 0;
     }
     case struct_gauss_point_data_output:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, GetEleTech(), GetEleKinematicType(), GetEAStype())
-          ->EvaluateGaussPointDataOutput(*this, SolidPoroMaterial(),
-              *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+      solid_interface_->EvaluateGaussPointDataOutput(
+          *this, SolidPoroMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_predict:

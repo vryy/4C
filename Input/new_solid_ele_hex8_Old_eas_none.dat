@@ -3,7 +3,7 @@ Test of the new solid elements in BACI
 
 Time Integration: Old
 Shape: hex8
-Element-Technology:
+Element-Technology: none
 Fibers: none
 ----------------------------------------------------------------------------IO
 STRUCT_STRAIN                   gl
@@ -35,6 +35,7 @@ NUMSTEP                         2
 MAXTIME                         1
 TOLRES                          1.0E-12
 TOLDISP                         1.0E-12
+MAXITER                         6
 ---------------------------------------------------------------------MATERIALS
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 10 DENS 0.1
 MAT 10   ELAST_CoupNeoHooke YOUNG 10 NUE 0.25
@@ -90,5 +91,5 @@ NODE 6 COORD 1.0 1.0 0.0
 NODE 7 COORD 1.0 0.0 1.0
 NODE 8 COORD 1.0 1.0 1.0
 ------------------------------------------------------------STRUCTURE ELEMENTS
-1 SOLID HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear EAS none
+1 SOLID HEX8 1 5 6 2 3 7 8 4 MAT 1 KINEM nonlinear
 ---------------------------------------------------------------------------END

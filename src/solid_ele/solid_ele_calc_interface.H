@@ -21,16 +21,17 @@ namespace STR::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
 }
+namespace CORE::UTILS
+{
+  class GaussIntegration;
+}
 
 namespace DRT
 {
   // forward declaration
   class Discretization;
   class Condition;
-  namespace UTILS
-  {
-    class GaussIntegration;
-  }
+
   namespace INPUT
   {
     class LineDefinition;

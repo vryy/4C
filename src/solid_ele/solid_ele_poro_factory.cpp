@@ -15,30 +15,31 @@
 
 
 std::unique_ptr<DRT::ELEMENTS::SolidPoroEleCalcInterface>
-DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(DRT::Element* ele, INPAR::PORO::PoroType porotype)
+DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
+    DRT::Element& ele, INPAR::PORO::PoroType porotype)
 {
-  switch (ele->Shape())
+  switch (ele.Shape())
   {
     case DRT::Element::hex8:
-      return ProvideImpl<DRT::Element::hex8>(porotype);
+      return CreateSolidPoroCalculationInterface<DRT::Element::hex8>(porotype);
       break;
     case DRT::Element::hex27:
-      return ProvideImpl<DRT::Element::hex27>(porotype);
+      return CreateSolidPoroCalculationInterface<DRT::Element::hex27>(porotype);
       break;
     case DRT::Element::hex20:
-      return ProvideImpl<DRT::Element::hex20>(porotype);
+      return CreateSolidPoroCalculationInterface<DRT::Element::hex20>(porotype);
       break;
     case DRT::Element::hex18:
-      return ProvideImpl<DRT::Element::hex18>(porotype);
+      return CreateSolidPoroCalculationInterface<DRT::Element::hex18>(porotype);
       break;
     case DRT::Element::pyramid5:
-      return ProvideImpl<DRT::Element::pyramid5>(porotype);
+      return CreateSolidPoroCalculationInterface<DRT::Element::pyramid5>(porotype);
       break;
     case DRT::Element::tet4:
-      return ProvideImpl<DRT::Element::tet4>(porotype);
+      return CreateSolidPoroCalculationInterface<DRT::Element::tet4>(porotype);
       break;
     case DRT::Element::tet10:
-      return ProvideImpl<DRT::Element::tet10>(porotype);
+      return CreateSolidPoroCalculationInterface<DRT::Element::tet10>(porotype);
       break;
     default:
       dserror("unknown distype provided");
@@ -49,7 +50,7 @@ DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(DRT::Element* ele, INPAR::PORO::Por
 
 template <DRT::Element::DiscretizationType distype>
 std::unique_ptr<DRT::ELEMENTS::SolidPoroEleCalcInterface>
-DRT::ELEMENTS::SolidPoroFactory::ProvideImpl(INPAR::PORO::PoroType porotype)
+DRT::ELEMENTS::CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotype)
 {
   // here we go into the different cases for element type
   switch (porotype)

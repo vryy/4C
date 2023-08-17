@@ -18,7 +18,6 @@
 #include "discretization_fem_general_utils_gausspoints.H"
 #include "solid_ele_utils.H"
 #include "lib_element_integration_select.H"
-#include "utils_singleton_owner.H"
 
 
 namespace DRT
@@ -39,11 +38,8 @@ namespace DRT
      public:
       SolidEleCalc();
 
-      /// Singleton access method
-      static SolidEleCalc<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
-
       void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef) override;
+
       void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material) override;
 
       void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,

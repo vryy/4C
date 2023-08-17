@@ -28,9 +28,7 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 {
   if (!material_post_setup_)
   {
-    DRT::ELEMENTS::SolidFactory::ProvideImpl(
-        this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-        ->MaterialPostSetup(*this, *SolidMaterial());
+    solid_interface_->MaterialPostSetup(*this, *SolidMaterial());
     material_post_setup_ = true;
   }
 
@@ -50,73 +48,55 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
   {
     case DRT::ELEMENTS::struct_calc_nlnstiff:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(
-              *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_nlnstiff_gemm:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMassGEMM(
-              *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
+      solid_interface_->EvaluateNonlinearForceStiffnessMassGEMM(
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, nullptr);
       return 0;
     }
     case struct_calc_internalforce:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(
-              *this, *SolidMaterial(), discretization, lm, params, &elevec1, nullptr, nullptr);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, nullptr, nullptr);
       return 0;
     }
     case struct_calc_nlnstiffmass:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(
-              *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
       return 0;
     }
     case struct_calc_nlnstifflmass:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->EvaluateNonlinearForceStiffnessMass(
-              *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
-      DRT::ELEMENTS::LumpMatrix(elemat2);
+      solid_interface_->EvaluateNonlinearForceStiffnessMass(
+          *this, *SolidMaterial(), discretization, lm, params, &elevec1, &elemat1, &elemat2);
+      LumpMatrix(elemat2);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_update_istep:
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->Update(*this, *SolidMaterial(), discretization, lm, params);
+      solid_interface_->Update(*this, *SolidMaterial(), discretization, lm, params);
       return 0;
     case DRT::ELEMENTS::struct_calc_recover:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->Recover(*this, discretization, lm, params);
+      solid_interface_->Recover(*this, discretization, lm, params);
       return 0;
     }
     case struct_calc_stress:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->CalculateStress(*this, *SolidMaterial(),
-              StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
-              StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
-              discretization, lm, params);
+      solid_interface_->CalculateStress(*this, *SolidMaterial(),
+          StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
+          StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
+          discretization, lm, params);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_energy:
     {
-      double int_energy =
-          DRT::ELEMENTS::SolidFactory::ProvideImpl(
-              this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-              ->CalculateInternalEnergy(*this, *SolidMaterial(), discretization, lm, params);
+      double int_energy = solid_interface_->CalculateInternalEnergy(
+          *this, *SolidMaterial(), discretization, lm, params);
 
       if (IsParamsInterface())
       {
@@ -135,30 +115,26 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     }
     case struct_init_gauss_point_data_output:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->InitializeGaussPointDataOutput(
-              *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+      solid_interface_->InitializeGaussPointDataOutput(
+          *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
       return 0;
     }
     case struct_gauss_point_data_output:
     {
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->EvaluateGaussPointDataOutput(
-              *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+      solid_interface_->EvaluateGaussPointDataOutput(
+          *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
       return 0;
     }
     case ELEMENTS::struct_calc_reset_all:
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->ResetAll(*this, *SolidMaterial());
+    {
+      solid_interface_->ResetAll(*this, *SolidMaterial());
       return 0;
+    }
     case ELEMENTS::struct_calc_reset_istep:
-      DRT::ELEMENTS::SolidFactory::ProvideImpl(
-          this, this->GetEleTech(), this->GetKinemType(), this->GetEAStype())
-          ->ResetToLastConverged(*this, *SolidMaterial());
+    {
+      solid_interface_->ResetToLastConverged(*this, *SolidMaterial());
       return 0;
+    }
     case DRT::ELEMENTS::struct_calc_predict:
       // do nothing for now
       return 0;

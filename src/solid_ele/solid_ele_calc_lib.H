@@ -15,12 +15,11 @@
 #include "lib_element.H"
 #include "discretization_fem_general_utils_gausspoints.H"
 #include "discretization_fem_general_utils_local_connectivity_matrices.H"
-#include "solid_ele.H"
-#include "mat_fluidporo_multiphase.H"
-#include "mat_structporo.H"
 #include "lib_utils.H"
 #include "mat_so3_material.H"
 #include "lib_voigt_notation.H"
+#include "lib_discret.H"
+#include "solid_ele_utils.H"
 
 
 namespace DRT::ELEMENTS::DETAIL
@@ -226,6 +225,26 @@ namespace DRT::ELEMENTS
     return xi;
   }
 
+  /*!
+   * @brief Evaluates the parameter coordinate of at the element centroid
+   *
+   * Currently this returns a zero-filled matrix, i.e. xi_i = 0. It is valid for HEXes but not
+   * necessarily for other element types.
+   *
+   * @tparam distype : Discretization type
+   * @return LINALG::Matrix<DETAIL::nsd<distype>, 1> : Coordinates of the centroid in the parameter
+   * space
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::is_hex_v<distype>, int> = 0>
+  LINALG::Matrix<DETAIL::nsd<distype>, 1> EvaluateParameterCoordinateCentroid()
+  {
+    LINALG::Matrix<DETAIL::nsd<distype>, 1> xi;
+    for (int d = 0; d < DETAIL::nsd<distype>; ++d) xi(d) = 0;
+
+    return xi;
+  }
+
   template <DRT::Element::DiscretizationType distype>
   struct ShapeFunctionsAndDerivatives
   {
@@ -257,6 +276,7 @@ namespace DRT::ELEMENTS
   struct JacobianMapping
   {
     double determinant_;
+    LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> jacobian_;
     LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> inverse_jacobian_;
     LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> N_XYZ_;
   };
@@ -291,7 +311,8 @@ namespace DRT::ELEMENTS
   {
     JacobianMapping<distype> jacobian;
 
-    jacobian.inverse_jacobian_.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_);
+    jacobian.jacobian_.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_);
+    jacobian.inverse_jacobian_ = jacobian.jacobian_;
     jacobian.determinant_ = jacobian.inverse_jacobian_.Invert();
     jacobian.N_XYZ_.Multiply(jacobian.inverse_jacobian_, shapefcns.derivatives_);
 
@@ -306,6 +327,33 @@ namespace DRT::ELEMENTS
     jacobian.Multiply(shapefcns.derivatives_, nodal_coordinates.reference_);
 
     return jacobian.Determinant();
+  }
+
+  /*!
+   * @brief Evaluate the jacobian mapping at the element centroid
+   *
+   * @tparam distype : Discretization type
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @return JacobianMapping<distype> : jacobian mapping at the element centroid
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
+  JacobianMapping<distype> EvaluateJacobianMappingCentroid(
+      NodalCoordinates<distype> nodal_coordinates)
+  {
+    // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
+    LINALG::Matrix<DETAIL::nsd<distype>, 1> xi_centroid =
+        EvaluateParameterCoordinateCentroid<distype>();
+
+    // shape functions and derivatives evaluated at element centroid
+    const ShapeFunctionsAndDerivatives<distype> shape_functions_centroid =
+        EvaluateShapeFunctionsAndDerivs<distype>(xi_centroid);
+
+    // jacobian mapping evaluated at centroid
+    const JacobianMapping<distype> jacobian_mapping_centroid =
+        EvaluateJacobianMapping(shape_functions_centroid, nodal_coordinates);
+
+    return jacobian_mapping_centroid;
   }
 
   template <DRT::Element::DiscretizationType distype>
@@ -408,6 +456,28 @@ namespace DRT::ELEMENTS
 
 
   /*!
+   * @brief Evaluate the determinant of the deformation gradient at the element centroid
+   *
+   * @tparam distype : Discretization type
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @return double : Determinant of the deformation gradient at the centroid
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
+  double EvaluateDeformationGradientDeterminantCentroid(NodalCoordinates<distype> nodal_coordinates)
+  {
+    // jacobian mapping at centroid of element
+    const JacobianMapping<distype> jacobian_mapping_centroid =
+        EvaluateJacobianMappingCentroid(nodal_coordinates);
+
+    // deformation gradient and strains at centroid of element
+    const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping_centroid =
+        EvaluateSpatialMaterialMapping(jacobian_mapping_centroid, nodal_coordinates);
+
+    return spatial_material_mapping_centroid.determinant_deformation_gradient_;
+  }
+
+  /*!
    * @brief Evaluates the strain gradient (B-Operator) of the specified element
    *
    * @tparam distype
@@ -491,14 +561,13 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype>
   Stress<distype> EvaluateMaterialStress(MAT::So3Material& material,
-      const SpatialMaterialMapping<distype> spatial_material_mapping,
-      const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain, Teuchos::ParameterList& params,
+      const LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>& defgrd,
+      const LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strain, Teuchos::ParameterList& params,
       int gp, int eleGID)
   {
     Stress<distype> stress;
 
-    material.Evaluate(&spatial_material_mapping.deformation_gradient_, &gl_strain, params,
-        &stress.pk2_, &stress.cmat_, gp, eleGID);
+    material.Evaluate(&defgrd, &gl_strain, params, &stress.pk2_, &stress.cmat_, gp, eleGID);
     return stress;
   }
 
@@ -685,8 +754,8 @@ namespace DRT::ELEMENTS
   }
 
   template <DRT::Element::DiscretizationType distype>
-  void AssembleStrainTypeToMatrixRow(const LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain,
-      const SpatialMaterialMapping<distype> spatial_material_mapping,
+  void AssembleStrainTypeToMatrixRow(const LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strain,
+      const LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>& defgrd,
       INPAR::STR::StrainType strain_type, Epetra_SerialDenseMatrix& data, int row)
   {
     switch (strain_type)
@@ -701,8 +770,7 @@ namespace DRT::ELEMENTS
       case INPAR::STR::strain_ea:
       {
         const LINALG::Matrix<DETAIL::numstr<distype>, 1> ea =
-            STR::UTILS::GreenLagrangeToEulerAlmansi(
-                gl_strain, spatial_material_mapping.deformation_gradient_);
+            STR::UTILS::GreenLagrangeToEulerAlmansi(gl_strain, defgrd);
         LINALG::Matrix<DETAIL::numstr<distype>, 1> ea_stress_like;
         ::UTILS::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
         AssembleVectorToMatrixRow(ea_stress_like, data, row);
@@ -718,8 +786,9 @@ namespace DRT::ELEMENTS
 
 
   template <DRT::Element::DiscretizationType distype>
-  void AssembleStressTypeToMatrixRow(const SpatialMaterialMapping<distype> spatial_material_mapping,
-      const Stress<distype> stress, INPAR::STR::StressType stress_type,
+  void AssembleStressTypeToMatrixRow(
+      const LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>& defgrd,
+      const Stress<distype>& stress, INPAR::STR::StressType stress_type,
       Epetra_SerialDenseMatrix& data, int row)
   {
     switch (stress_type)
@@ -732,8 +801,7 @@ namespace DRT::ELEMENTS
       case INPAR::STR::stress_cauchy:
       {
         LINALG::Matrix<DETAIL::numstr<distype>, 1> cauchy;
-        STR::UTILS::Pk2ToCauchy(
-            stress.pk2_, spatial_material_mapping.deformation_gradient_, cauchy);
+        STR::UTILS::Pk2ToCauchy(stress.pk2_, defgrd, cauchy);
         AssembleVectorToMatrixRow(cauchy, data, row);
         return;
       }

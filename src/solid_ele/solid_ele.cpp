@@ -18,7 +18,7 @@
 #include "mat_so3_material.H"
 #include "solid_ele_factory.H"
 #include "solid_ele_calc_interface.H"
-
+#include "solid_ele_interface_serializable.H"
 
 DRT::ELEMENTS::SolidType DRT::ELEMENTS::SolidType::instance_;
 
@@ -199,7 +199,7 @@ DRT::ELEMENTS::Solid::Solid(int id, int owner)
     : DRT::Element(id, owner),
       distype_(DRT::Element::dis_none),
       kintype_(INPAR::STR::kinem_vague),
-      eastype_(STR::ELEMENTS::EASType::eastype_undefined),
+      eastype_(STR::ELEMENTS::EasType::eastype_undefined),
       interface_ptr_(Teuchos::null)
 {
 }
@@ -211,9 +211,12 @@ DRT::ELEMENTS::Solid::Solid(const DRT::ELEMENTS::Solid& old)
       eastype_(old.eastype_),
       interface_ptr_(old.interface_ptr_)
 {
+  // reset solid interface
+  solid_interface_ =
+      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
 }
 
-DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new DRT::ELEMENTS::Solid(*this); }
+DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
 
 int DRT::ELEMENTS::Solid::NumLine() const
 {
@@ -330,6 +333,11 @@ void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
 
   // Setup flag
   data.AddtoPack(material_post_setup_);
+
+  // optional data, e.g., EAS data
+  std::shared_ptr<Serializable> serializable_interface =
+      std::dynamic_pointer_cast<Serializable>(solid_interface_);
+  if (serializable_interface != nullptr) serializable_interface->Pack(data);
 }
 
 void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
@@ -350,9 +358,16 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   // element technology
   DRT::ParObject::ExtractfromPack(position, data, eletech_);
   // eas type
-  eastype_ = static_cast<::STR::ELEMENTS::EASType>(ExtractInt(position, data));
+  eastype_ = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
   // Setup flag
   DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
+
+  // reset solid interface
+  solid_interface_ =
+      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
+  std::shared_ptr<Serializable> serializable_interface =
+      std::dynamic_pointer_cast<Serializable>(solid_interface_);
+  if (serializable_interface != nullptr) serializable_interface->Unpack(position, data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -375,7 +390,6 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 {
   // set discretization type
   distype_ = DRT::StringToDistype(distype);
-  solid_interface_ = SolidFactory::ProvideImpl(this, GetEleTech(), GetKinemType(), GetEAStype());
 
   // read number of material model
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
@@ -399,8 +413,9 @@ bool DRT::ELEMENTS::Solid::ReadElement(
     if (Shape() == DRT::Element::hex8) eletech_.insert(INPAR::STR::EleTech::fbar);
   }
 
-  DRT::ELEMENTS::SolidFactory::ProvideImpl(this, GetEleTech(), GetKinemType(), GetEAStype())
-      ->Setup(*SolidMaterial(), linedef);
+  solid_interface_ =
+      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
+  solid_interface_->Setup(*SolidMaterial(), linedef);
   return true;
 }
 
@@ -423,6 +438,7 @@ bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>&
   return SolidMaterial()->VisData(name, data, Id());
 
 }  // VisData()
+
 int DRT::ELEMENTS::Solid::PostEvaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2, Epetra_SerialDenseVector& elevec1,
