@@ -42,10 +42,7 @@ namespace INPAR
 namespace STR
 {
   class Dbc;
-  namespace IMPLICIT
-  {
-    class Generic;
-  }  // namespace IMPLICIT
+  class Integrator;
   namespace TIMINT
   {
     class Base;
@@ -63,8 +60,7 @@ namespace STR
 
       //! Init function
       virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,
-          const Teuchos::RCP<STR::IMPLICIT::Generic>& implint_ptr,
-          const Teuchos::RCP<STR::Dbc>& dbc_ptr,
+          const Teuchos::RCP<STR::Integrator>& int_ptr, const Teuchos::RCP<STR::Dbc>& dbc_ptr,
           const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
       virtual void Setup();
@@ -158,7 +154,7 @@ namespace STR
           override;
 
       //! Access the implicit integrator
-      STR::IMPLICIT::Generic& ImplInt();
+      STR::Integrator& ImplInt();
 
      protected:
       //! Returns the init state
@@ -197,7 +193,7 @@ namespace STR
 
       Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
 
-      Teuchos::RCP<STR::IMPLICIT::Generic> implint_ptr_;
+      Teuchos::RCP<STR::Integrator> int_ptr_;
 
       Teuchos::RCP<STR::Dbc> dbc_ptr_;
     };  // class NoxInterface

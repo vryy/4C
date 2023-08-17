@@ -481,7 +481,8 @@ void STR::IMPLICIT::GenAlpha::ReadRestart(IO::DiscretizationReader& ioreader)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::GenAlpha::CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type)
+double STR::IMPLICIT::GenAlpha::CalcRefNormForce(
+    const enum NOX::Abstract::Vector::NormType& type) const
 {
   CheckInitSetup();
   dserror("Not yet implemented! (see the Statics integration for an example)");

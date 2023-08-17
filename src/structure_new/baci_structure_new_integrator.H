@@ -30,7 +30,8 @@ namespace IO
 namespace CORE::LINALG
 {
   class SparseOperator;
-}
+  class SparseMatrix;
+}  // namespace CORE::LINALG
 
 namespace Teuchos
 {
@@ -123,6 +124,46 @@ namespace STR
 
     //! Apply the right hand side only
     virtual bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) = 0;
+
+    /*! \brief Apply the stiffness only
+     *
+     * Normally this one is unnecessary, since it makes more sense
+     * to evaluate the stiffness and right hand side at once, because of
+     * the lower computational overhead. */
+    virtual bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) = 0;
+
+    /*! \brief Apply force and stiff at once
+     *
+     *  Only one loop over all elements. Especially in the contact case,
+     *  the difference between this call and first call ApplyForce and
+     *  then ApplyStiff is mentionable because of the projection operations. */
+    virtual bool ApplyForceStiff(
+        const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) = 0;
+
+    /*! \brief Modify the right hand side and Jacobian corresponding to the requested correction
+     * action of one (or several) second order constraint (SOC) model(s)
+     */
+    virtual bool ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
+        const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
+        Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) = 0;
+
+    /*! \brief Remove contributions from the structural right-hand side stemming
+     *  from any condensation operations (typical example is contact)
+     */
+    virtual void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const = 0;
+
+    /*! \brief Calculate characteristic/reference norms for forces
+     *
+     *  The reference norms are used to scale the calculated iterative
+     *  displacement norm and/or the residual force norm. For this
+     *  purpose we only need the right order of magnitude, so we don't
+     *  mind evaluating the corresponding norms at possibly different
+     *  points within the time-step (end point, generalized midpoint). */
+    virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const = 0;
+
+    //! compute the scaling operator for element based scaling using PTC
+    virtual void ComputeJacobianContributionsFromElementLevelForPTC(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) = 0;
 
     //! Assemble the right hand side
     virtual bool AssembleForce(Epetra_Vector& f,
@@ -305,8 +346,7 @@ namespace STR
     void CheckInitSetup() const;
 
     /*! \brief Equilibriate system at initial state and identify consistent accelerations
-     *
-     *  \author hiermeier */
+     */
     void EquilibrateInitialState();
 
     /*! \brief Check if current state is equilibrium (with respect to
