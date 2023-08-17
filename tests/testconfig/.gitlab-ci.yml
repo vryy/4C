@@ -467,7 +467,7 @@ buildtest_coverage:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
     # increase the global test timeout
-    GLOBAL_TEST_TIMEOUT_SCALE: '30'
+    GLOBAL_TEST_TIMEOUT_SCALE: '50'
     # increase the unit test timeout
     UNITTEST_TIMEOUT: '50'
     # enable coverage option of ctest
