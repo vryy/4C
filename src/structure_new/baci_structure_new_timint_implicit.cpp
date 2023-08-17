@@ -63,6 +63,11 @@ void STR::TIMINT::Implicit::Setup()
   // build non-linear solver
   // ---------------------------------------------------------------------------
   const enum INPAR::STR::NonlinSolTech& nlnSolverType = DataSDyn().GetNlnSolverType();
+  if (nlnSolverType == INPAR::STR::soltech_singlestep)
+    std::cout << "WARNING!!! You are trying to solve implicitly using the \"singlestep\" nonlinear "
+                 "solver. This is not encouraged, since it only works for linear statics analysis. "
+                 "Please use NLNSOL as \"fullnewton\" for reliable result."
+              << std::endl;
   nlnsolver_ptr_ = STR::NLN::SOLVER::BuildNlnSolver(nlnSolverType);
   nlnsolver_ptr_->Init(DataGlobalStatePtr(), DataSDynPtr(), noxinterface_ptr, implint_ptr_,
       Teuchos::rcp(this, false));
