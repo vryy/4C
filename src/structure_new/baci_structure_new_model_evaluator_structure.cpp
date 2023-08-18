@@ -77,7 +77,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
   stiff_ptc_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
-  dsassert(stiff_ptr_ != NULL, "Dynamic cast to CORE::LINALG::SparseMatrix failed!");
+  dsassert(stiff_ptr_ != nullptr, "Dynamic cast to CORE::LINALG::SparseMatrix failed!");
 
   // get the structural dynamic content
   {

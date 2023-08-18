@@ -1172,8 +1172,8 @@ namespace BEAMINTERACTION
         {
           eletypeset[1].insert(eleptr->Id());
         }
-        else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != NULL ||
-                 dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != NULL)
+        else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != nullptr ||
+                 dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != nullptr)
         {
           eletypeset[2].insert(eleptr->Id());
         }
