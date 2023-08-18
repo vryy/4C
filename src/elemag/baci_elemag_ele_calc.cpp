@@ -896,7 +896,7 @@ int DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ProjectDirichField(
         transformatrix(shapesface_->nfdofs_ * q + i, shapesface_->nfdofs_ * d + i) =
             shapesface_->tangent(d, q);
 
-  CORE::LINALG::multiplyTN(elevec1, transformatrix, tempVec);
+  CORE::LINALG::multiply(elevec1, transformatrix, tempVec);
 
   return 0;
 }
