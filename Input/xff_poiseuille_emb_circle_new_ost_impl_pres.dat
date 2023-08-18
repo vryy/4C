@@ -20,7 +20,6 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 FILESTEPS                       1
-FLUID_SOL                       Yes
 WRITE_TO_SCREEN                 yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              0

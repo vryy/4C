@@ -25,9 +25,7 @@ NUMTHERMDIS             0
 OUTPUT_BIN              Yes
 STRUCT_DISP             Yes
 STRUCT_STRESS           Cauchy
-FLUID_SOL               No
 FLUID_STRESS            No
-FLUID_VIS               No
 FILESTEPS               100
 OUTPUT_EVERY_ITER       No
 OEI_FILE_COUNTER        0

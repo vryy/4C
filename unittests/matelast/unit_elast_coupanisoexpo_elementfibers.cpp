@@ -11,17 +11,18 @@
 
 
 #include <gtest/gtest.h>
-#include "unittest_utils_assertions.h"
 
-#include <Teuchos_RCPDecl.hpp>
+#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_mat_anisotropy.H"
+#include "baci_matelast_aniso_structuraltensor_strategy.H"
+#include "baci_matelast_coupanisoexpo.H"
+#include "baci_unittest_utils_assertions.h"
+
 #include <boost/mpl/protect.hpp>
-#include <tuple>
+#include <Teuchos_RCPDecl.hpp>
 
-#include "linalg_fixedsizematrix.H"
-#include "matelast_coupanisoexpo.H"
-#include "mat_anisotropy.H"
-#include "matelast_aniso_structuraltensor_strategy.H"
-#include "lib_voigt_notation.H"
+#include <tuple>
 
 
 
@@ -76,9 +77,9 @@ namespace
     MAT::Anisotropy anisotropy_;
     std::unique_ptr<MAT::ELASTIC::CoupAnisoExpoAnisotropyExtension> anisotropyExtension_;
 
-    std::vector<LINALG::Matrix<3, 1>> eleFibers_;
-    std::vector<LINALG::Matrix<3, 3>> eleTensors_;
-    std::vector<LINALG::Matrix<6, 1>> eleTensors_stress_;
+    std::vector<CORE::LINALG::Matrix<3, 1>> eleFibers_;
+    std::vector<CORE::LINALG::Matrix<3, 3>> eleTensors_;
+    std::vector<CORE::LINALG::Matrix<6, 1>> eleTensors_stress_;
   };
 
   TEST_P(CoupAnisoExpoAnisotropyExtensionElementFiberTest, GetScalarProduct)

@@ -1,0 +1,49 @@
+/*-----------------------------------------------------------*/
+/*! \file
+
+\brief stationary two-phase flow problems
+
+
+\level 2
+
+*/
+/*-----------------------------------------------------------*/
+
+#ifndef BACI_FLUID_TIMINT_TWO_PHASE_STAT_H
+#define BACI_FLUID_TIMINT_TWO_PHASE_STAT_H
+
+
+#include "baci_fluid_timint_stat.H"
+#include "baci_fluid_timint_two_phase.H"
+#include "baci_linalg_utils_sparse_algebra_math.H"
+
+
+namespace FLD
+{
+  class TimIntTwoPhaseStat : public TimIntStationary, public TimIntTwoPhase
+  {
+   public:
+    /// Standard Constructor
+    TimIntTwoPhaseStat(const Teuchos::RCP<DRT::Discretization>& actdis,
+        const Teuchos::RCP<CORE::LINALG::Solver>& solver,
+        const Teuchos::RCP<Teuchos::ParameterList>& params,
+        const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
+
+    /// Destructor
+    virtual ~TimIntTwoPhaseStat();
+
+    /*!
+    \brief initialization
+
+     */
+    virtual void Init();
+
+
+   protected:
+   private:
+  };  // class TimIntTwoPhaseStat
+
+}  // namespace FLD
+
+
+#endif  // FLUID_TIMINT_TWO_PHASE_STAT_H

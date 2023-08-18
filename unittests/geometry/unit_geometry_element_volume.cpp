@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "geometry_element_volume.H"
+#include "baci_discretization_geometry_element_volume.H"
 
 namespace
 {
@@ -26,7 +26,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementLength_line2)
   {
-    LINALG::Matrix<3, 2> xyz(true);
+    CORE::LINALG::Matrix<3, 2> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -34,7 +34,7 @@ namespace
     xyz(1, 1) = 1.0;
     xyz(2, 1) = 2.0;  // node 2
 
-    double length = GEO::ElementLengthT<DRT::Element::line2>(xyz);
+    double length = CORE::GEO::ElementLengthT<DRT::Element::line2>(xyz);
 
     double correct_length = 3.0;
     EXPECT_NEAR(length, correct_length, ElementVolumeTest::TOL);
@@ -42,7 +42,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementLength_line3)
   {
-    LINALG::Matrix<3, 3> xyz(true);
+    CORE::LINALG::Matrix<3, 3> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -53,7 +53,7 @@ namespace
     xyz(1, 2) = 0.5;
     xyz(2, 2) = 1.0;  // node 3
 
-    double length = GEO::ElementLengthT<DRT::Element::line3>(xyz);
+    double length = CORE::GEO::ElementLengthT<DRT::Element::line3>(xyz);
 
     double correct_length = 3.0;
     EXPECT_NEAR(length, correct_length, ElementVolumeTest::TOL);
@@ -61,7 +61,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementArea_tri3)
   {
-    LINALG::Matrix<3, 3> xyz(true);
+    CORE::LINALG::Matrix<3, 3> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -72,7 +72,7 @@ namespace
     xyz(1, 2) = 1.0;
     xyz(2, 2) = 0.0;  // node 3
 
-    double area = GEO::ElementAreaT<DRT::Element::tri3>(xyz);
+    double area = CORE::GEO::ElementAreaT<DRT::Element::tri3>(xyz);
 
     double correct_area = 0.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -80,7 +80,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementArea_tri6)
   {
-    LINALG::Matrix<3, 6> xyz(true);
+    CORE::LINALG::Matrix<3, 6> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -100,7 +100,7 @@ namespace
     xyz(1, 5) = 0.5;
     xyz(2, 5) = 0.0;  // node 6
 
-    double area = GEO::ElementAreaT<DRT::Element::tri6>(xyz);
+    double area = CORE::GEO::ElementAreaT<DRT::Element::tri6>(xyz);
 
     double correct_area = 0.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -108,7 +108,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementArea_quad4)
   {
-    LINALG::Matrix<3, 4> xyz(true);
+    CORE::LINALG::Matrix<3, 4> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -122,7 +122,7 @@ namespace
     xyz(1, 3) = 1.0;
     xyz(2, 3) = 0.0;  // node 4
 
-    double area = GEO::ElementAreaT<DRT::Element::quad4>(xyz);
+    double area = CORE::GEO::ElementAreaT<DRT::Element::quad4>(xyz);
 
     double correct_area = 1.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -130,7 +130,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementArea_quad8)
   {
-    LINALG::Matrix<3, 8> xyz(true);
+    CORE::LINALG::Matrix<3, 8> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -156,7 +156,7 @@ namespace
     xyz(1, 7) = 0.5;
     xyz(2, 7) = 0.0;  // node 8
 
-    double area = GEO::ElementAreaT<DRT::Element::quad8>(xyz);
+    double area = CORE::GEO::ElementAreaT<DRT::Element::quad8>(xyz);
 
     double correct_area = 1.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -164,7 +164,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementArea_quad9)
   {
-    LINALG::Matrix<3, 9> xyz(true);
+    CORE::LINALG::Matrix<3, 9> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -193,7 +193,7 @@ namespace
     xyz(1, 8) = 0.5;
     xyz(2, 8) = 0.0;  // node 9
 
-    double area = GEO::ElementAreaT<DRT::Element::quad9>(xyz);
+    double area = CORE::GEO::ElementAreaT<DRT::Element::quad9>(xyz);
 
     double correct_area = 1.5;
     EXPECT_NEAR(area, correct_area, ElementVolumeTest::TOL);
@@ -201,7 +201,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementVolume_tet4)
   {
-    LINALG::Matrix<3, 4> xyz(true);
+    CORE::LINALG::Matrix<3, 4> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -215,7 +215,7 @@ namespace
     xyz(1, 3) = 0.0;
     xyz(2, 3) = 1.0;  // node 4
 
-    double volume = GEO::ElementVolumeT<DRT::Element::tet4>(xyz);
+    double volume = CORE::GEO::ElementVolumeT<DRT::Element::tet4>(xyz);
 
     double correct_volume = 0.5 / 3;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -223,7 +223,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementVolume_tet10)
   {
-    LINALG::Matrix<3, 10> xyz(true);
+    CORE::LINALG::Matrix<3, 10> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -255,7 +255,7 @@ namespace
     xyz(1, 9) = 0.5;
     xyz(2, 9) = 0.5;  // node 10
 
-    double volume = GEO::ElementVolumeT<DRT::Element::tet10>(xyz);
+    double volume = CORE::GEO::ElementVolumeT<DRT::Element::tet10>(xyz);
 
     double correct_volume = 0.5 / 3;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -263,7 +263,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementVolume_hex8)
   {
-    LINALG::Matrix<3, 8> xyz(true);
+    CORE::LINALG::Matrix<3, 8> xyz(true);
     xyz(0, 0) = 0.0;
     xyz(1, 0) = 0.0;
     xyz(2, 0) = 0.0;  // node 1
@@ -289,7 +289,7 @@ namespace
     xyz(1, 7) = 1.0;
     xyz(2, 7) = 1.0;  // node 8
 
-    double volume = GEO::ElementVolumeT<DRT::Element::hex8>(xyz);
+    double volume = CORE::GEO::ElementVolumeT<DRT::Element::hex8>(xyz);
 
     double correct_volume = 1.25;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -297,7 +297,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementVolume_hex20)
   {
-    LINALG::Matrix<3, 20> xyz(true);
+    CORE::LINALG::Matrix<3, 20> xyz(true);
 
     double x1 = xyz(0, 0) = 0.0;
     double y1 = xyz(1, 0) = 0.0;
@@ -364,7 +364,7 @@ namespace
     xyz(1, 19) = 0.5 * (y8 + y5);
     xyz(2, 19) = 0.5 * (z8 + z5);  // node 20
 
-    double volume = GEO::ElementVolumeT<DRT::Element::hex20>(xyz);
+    double volume = CORE::GEO::ElementVolumeT<DRT::Element::hex20>(xyz);
 
     double correct_volume = 1.25;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);
@@ -372,7 +372,7 @@ namespace
 
   TEST_F(ElementVolumeTest, TestElementVolume_hex27)
   {
-    LINALG::Matrix<3, 27> xyz(true);
+    CORE::LINALG::Matrix<3, 27> xyz(true);
 
     double x1 = xyz(0, 0) = 0.0;
     double y1 = xyz(1, 0) = 0.0;
@@ -462,7 +462,7 @@ namespace
     xyz(1, 26) = 0.125 * (y1 + y2 + y3 + y4 + y5 + y6 + y7 + y8);
     xyz(2, 26) = 0.125 * (z1 + z2 + z3 + z4 + z5 + z6 + z7 + z8);  // node 27
 
-    double volume = GEO::ElementVolumeT<DRT::Element::hex27>(xyz);
+    double volume = CORE::GEO::ElementVolumeT<DRT::Element::hex27>(xyz);
 
     double correct_volume = 1.25;
     EXPECT_NEAR(volume, correct_volume, ElementVolumeTest::TOL);

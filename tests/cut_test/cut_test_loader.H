@@ -9,10 +9,10 @@
 #ifndef CUT_TEST_LOADER_H
 #define CUT_TEST_LOADER_H
 
+#include "baci_cut_meshintersection.H"
+
 #include <map>
 #include <vector>
-
-#include "cut_meshintersection.H"
 
 class MeshLoader
 {
@@ -38,7 +38,7 @@ class MeshLoader
  private:
   void Fill(std::map<int, std::vector<double>>& nodes, int nid, double* values);
 
-  GEO::CUT::MeshIntersection mesh_;
+  CORE::GEO::CUT::MeshIntersection mesh_;
   std::map<int, std::vector<double>> nodes_;
   std::map<int, std::vector<double>> cut_nodes_;
 };

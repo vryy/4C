@@ -1,0 +1,382 @@
+/*----------------------------------------------------------------------*/
+/*! \file
+ \brief Managing and evaluating of (reaction) functions for poromultiphase_scatra
+        problems
+        Contains hard-coded derivatives and evaluation routines for the most commonly
+        used reaction functions to speed up calculation as opposed to the
+        SymbolicFunctionOfAnything, which use FAD
+
+\level 3
+
+    *----------------------------------------------------------------------*/
+
+#include "baci_lib_function.H"
+
+#include <Sacado.hpp>
+
+
+#ifndef BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
+#define BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
+
+namespace POROMULTIPHASESCATRA
+{
+  /*!
+   * @brief abstract class derived from FunctionOfAnything since reaction functions are cast to
+   * FunctionOfAnything in scatra_reaction_coupling and fluidporo_multiphase_singlereaction
+   */
+  template <int dim>
+  class PoroMultiPhaseScaTraFunction : public DRT::UTILS::FunctionOfAnything
+  {
+   public:
+    PoroMultiPhaseScaTraFunction();
+
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override = 0;
+
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override = 0;
+
+    //! only one component possible for PoroMultiPhaseScatraFunction so far
+    [[nodiscard]] std::size_t NumberComponents() const override { return 1; }
+
+    /*!
+     * \brief check for correct order of input parameters variables and constants this check is
+     * performed only once
+     *
+     * \param variables (i) A vector containing a pair (variablename, value) for each variable
+     * \param constants (i) A vector containing a pair (variablename, value) for each constant
+     */
+    virtual void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) = 0;
+
+   protected:
+    /// function parameters for the specific POROMULTIPHASESCATRA_FUNCTION (have to be read in from
+    /// input file)
+    std::vector<double> myfunct_params_;
+    /// indicating if the order has already been check for this function
+    bool order_checked_;
+  };
+
+  /// add valid poro-specific function lines
+  void AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+
+  /// try to create poro-specific functions from a given line definition
+  template <int dim>
+  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> TryCreatePoroFunction(
+      const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+
+  //! create poro-specific functions from a given line definition
+  template <int dim>
+  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> CreatePoroFunction(
+      const std::string& type, const std::vector<std::pair<std::string, double>>& params);
+
+  /*!
+   * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:
+   * TUMOR_GROWTH_LAW_HEAVISIDE
+   *
+   * (gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)*porosity*S2
+   * - lambda*phi2*porosity*S2
+   *
+   * with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells
+   * Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF
+   *
+   * (possible) INPUT DEFINITION: POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE NUMPARAMS
+   * 5 PARAMS gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+   */
+  template <int dim>
+  class TumorGrowthLawHeaviside : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    TumorGrowthLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+  };
+
+  /*!
+   * @brief standard necrosis law for tumor growth model: NECROSIS_LAW_HEAVISIDE
+   *
+   * (1-phi2)*porosity*S2*(-gamma_t_necr*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside(-(phi1-w_nl_crit)/(w_nl_env-w_nl_crit))+
+   * delta_a_t*heaviside(p2-p_t_crit) )
+   *
+   * with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells,
+   * S2: volume fraction of tumor cells
+   *
+   * Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF
+   *
+   * (possible) INPUT DEFINITION with exactly 5 function parameters:
+   * POROMULTIPHASESCATRA_FUNCTION NECROSIS_LAW_HEAVISIDE NUMPARAMS 5 PARAMS gamma_t_necr 9.6e-6
+   * w_nl_crit 2.0e-6 w_nl_env 4.2e-6 delta_a_t 0.0 p_t_crit 1.0e9
+   */
+  template <int dim>
+  class NecrosisLawHeaviside : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    NecrosisLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+  };
+
+  /*!
+   * @brief standard oxygen consumption law for tumor growth model: OXYGEN_CONSUMPTION_LAW_HEAVISIDE
+   *
+   * porosity*(1-phi2)*S2*(gamma_nl_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2)+
+   * gamma_0_nl*sin(pi/2.0*phi1/w_nl_env))
+   *
+   * with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume
+   * fraction of tumor cells
+   *
+   * Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF
+   *
+   * (possible) INPUT DEFINITION with exactly 5 function parameters:
+   * POROMULTIPHASESCATRA_FUNCTION OXYGEN_CONSUMPTION_LAW_HEAVISIDE NUMPARAMS 5 PARAMS
+   * gamma_nl_growth 2.4e-7 gamma_0_nl 6e-7 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 p_t_crit 1.0e9
+   */
+  template <int dim>
+  class OxygenConsumptionLawHeaviside : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    OxygenConsumptionLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
+
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+  };
+
+  /*!
+   * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as
+   * introduced: TUMOR_GROWTH_LAW_HEAVISIDE_OXY
+   *
+   * phi1*S2*porosity*((gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)-
+   * lambda*phi2)
+   *
+   * with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells, S2: volume
+   * fraction of tumor cells
+   *
+   * Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF
+   *
+   * (possible) INPUT DEFINITION:
+   * POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_OXY NUMPARAMS 5 PARAMS
+   * gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9
+   */
+  template <int dim>
+  class TumorGrowthLawHeavisideOxy : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    TumorGrowthLawHeavisideOxy(std::vector<std::pair<std::string, double>> funct_params);
+
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+  };
+
+  /*!
+   * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency as
+   * introduced into balance of mass of necrotic cells: TUMOR_GROWTH_LAW_HEAVISIDE_NECRO
+   *
+   * porosity*S2*(((gamma_T_growth*(phi1-w_nl_crit)/(w_nl_env-w_nl_crit)*heaviside((phi1-w_nl_crit)/(w_nl_env-w_nl_crit))*heaviside(p_t_crit-p2))*(1-phi2)
+   * - lambda*phi2)*phi2 + lambda*phi2)
+   *
+   * with phi1: mass fraction of oxygen, phi2: mass fraction of necrotic tumor cells
+   *
+   * Furthermore, we assume that phase 1: healthy cells, phase2: tumor cells, phase3: IF
+   *
+   * (possible) INPUT DEFINITION:
+   * POROMULTIPHASESCATRA_FUNCTION TUMOR_GROWTH_LAW_HEAVISIDE_NECRO NUMPARAMS 5 PARAMS
+   * gamma_T_growth 9.6e-6 w_nl_crit 2.0e-6 w_nl_env 4.2e-6 lambda 0.0 p_t_crit 1.0e9 |
+   */
+  template <int dim>
+  class TumorGrowthLawHeavisideNecro : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    TumorGrowthLawHeavisideNecro(std::vector<std::pair<std::string, double>> funct_params);
+
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+  };
+
+  /*!
+   * @brief transvascular exchange of oxygen from neovasculature into interstitial fluid:
+   * OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT
+   *
+   * based on: Welter M, Fredrich T, Rinneberg H, Rieger H (2016) Computational Model for Tumor
+   * Oxygenation Applied to Clinical Data on Breast Tumor Hemoglobin Concentrations Suggests
+   * Vascular Dilatation and Compression. PLoS ONE 11(8)
+   *
+   * S/V*gamma*rho*(P_nv-P_if)*heaviside(P_nv-P_if)*VF1 with partial pressures of oxygen in
+   * neovasculature P_nv and in IF P_if
+   */
+  template <int dim>
+  class OxygenTransvascularExchangeLawCont : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    OxygenTransvascularExchangeLawCont(std::vector<std::pair<std::string, double>> funct_params);
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const std::size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+  };
+
+  /*!
+   * @brief transvascular exchange of oxygen from pre-existing (1D) vasculature into interstitial
+   * fluid: OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC
+   *
+   * based on: Welter M, Fredrich T, Rinneberg H, Rieger H (2016) Computational Model for Tumor
+   * Oxygenation Applied to Clinical Data on Breast Tumor Hemoglobin Concentrations Suggests
+   * Vascular Dilatation and Compression. PLoS ONE 11(8)
+   *
+   * pi*D*gamma*rho*(P_v-P_if)*VF1*heaviside(S2_max-S2) with partial pressures of oxygen in
+   * vasculature P_v and in IF P_if
+   */
+  template <int dim>
+  class OxygenTransvascularExchangeLawDisc : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    OxygenTransvascularExchangeLawDisc(std::vector<std::pair<std::string, double>> funct_params);
+
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t componnet) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+
+   private:
+    int pos_oxy_art_;
+    int pos_diam_;
+  };
+
+  /*!
+   * @brief exchange of oxygen between air (phase in multiphase pore space) and blood (additional
+   * porous network) in the lung: LUNG_OXYGEN_EXCHANGE_LAW
+   *
+   * rho_oxy*alpha_oxy*Diff_oxy*(1/d)*(A/V_TLC)*(P_oA - P_oB)
+   *
+   * with P_oA: partial pressures of oxygen in air, P_oB: partial pressures of oxygen in blood
+   *
+   * (possible) INPUT DEFINITION:
+   * POROMULTIPHASESCATRA_FUNCTION LUNG_OXYGEN_EXCHANGE_LAW NUMPARAMS 9 PARAMS rho_oxy 1.429e-9
+   * DiffAdVTLC 5.36 alpha_oxy 2.1e-4 rho_air 1.0e-9 rho_bl 1.03e-6 n 3 P_oB50 3.6 NC_Hb 0.25
+   * P_atmospheric 101.3
+   */
+  template <int dim>
+  class LungOxygenExchangeLaw : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    LungOxygenExchangeLaw(const std::vector<std::pair<std::string, double>>& funct_params);
+
+
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) override;
+
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) override;
+
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) override;
+  };
+
+}  // namespace POROMULTIPHASESCATRA
+
+#endif

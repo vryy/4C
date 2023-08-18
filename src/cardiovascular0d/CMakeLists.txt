@@ -7,7 +7,6 @@ set(_cardiovascular0d_dependencies
     inpar
     io
     lib
-    linalg
     mor
     so3
     solver_nonlin_nox

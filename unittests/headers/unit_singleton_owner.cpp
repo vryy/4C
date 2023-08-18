@@ -8,8 +8,10 @@
 *-----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include <gmock/gmock.h>
-#include "utils_singleton_owner.H"
+
+#include "baci_utils_singleton_owner.H"
 
 namespace
 {

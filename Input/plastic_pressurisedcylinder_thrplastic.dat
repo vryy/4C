@@ -28,7 +28,6 @@ NUMTHERMDIS                     1
 FILESTEPS                       1000
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_SE                       No
 STRUCT_STRAIN                   EA
 STRUCT_PLASTIC_STRAIN           EA
 STRUCT_STRESS                   Cauchy

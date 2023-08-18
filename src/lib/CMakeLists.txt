@@ -8,16 +8,13 @@ set(_lib_dependencies
     comm
     contact_constitutivelaw
     core
-    create_rtdfiles
     elemag
     fiber
     fluid
     fluid_ele
     fluid_xfluid
-    immersed_problem
     inpar
     io
-    linalg
     mat
     nurbs_discret
     particle_engine
@@ -25,6 +22,5 @@ set(_lib_dependencies
     rebalance
     scatra_ele
     structure_new
-    xfem
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_lib_dependencies})

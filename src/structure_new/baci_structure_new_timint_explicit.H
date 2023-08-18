@@ -1,0 +1,103 @@
+/*-----------------------------------------------------------*/
+/*! \file
+
+\brief explicit structural time integration
+
+
+\level 3
+
+*/
+/*-----------------------------------------------------------*/
+
+
+#ifndef BACI_STRUCTURE_NEW_TIMINT_EXPLICIT_H
+#define BACI_STRUCTURE_NEW_TIMINT_EXPLICIT_H
+
+
+#include "baci_structure_new_timint_base.H"
+
+namespace STR
+{
+  namespace TIMINT
+  {
+    /** \brief Explicit time integration strategy
+     *
+     * \author Michael Hiermeier */
+    class Explicit : public Base
+    {
+     public:
+      //! constructor
+      Explicit();
+
+      //! destructor
+      ~Explicit() override = default;
+
+      void Setup() override;
+
+      int Integrate() override;
+
+      int IntegrateStep() override;
+
+      //! Prepare time step
+      void PrepareTimeStep() override;
+
+      //!  Update state incrementally for coupled problems with monolithic approach
+      void UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+
+      //!  Evaluate routine for coupled problems with monolithic approach
+      void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
+
+      /// set the state of the nox group and the global state data container
+      /// see class \ref ADAPTER::StructureNew for detailed documentation.
+      void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
+
+      /*! Do the nonlinear solve, i.e. (multiple) corrector,
+       *  for the time step. All boundary conditions have
+       *  been set. */
+      INPAR::STR::ConvergenceStatus Solve() override;
+
+      //! prepare partition step
+      void PreparePartitionStep() override;
+
+      //! Update routine for coupled problems with monolithic approach with time adaptivity
+      void Update(double endtime) override;
+
+      //! print summary after step
+      void PrintStep() override;
+
+      //! Get type of thickness scaling for thin shell structures
+      INPAR::STR::STC_Scale GetSTCAlgo() override;
+
+      //! Access to scaling matrix for STC
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override;
+
+      /// @name Access linear system of equation via adapter (implicit only!)
+      ///@{
+      /// initial guess of Newton's method
+      Teuchos::RCP<const Epetra_Vector> InitialGuess() override;
+
+      /// right-hand-side of Newton's method
+      Teuchos::RCP<const Epetra_Vector> GetF() const override;
+
+      /// Return reaction forces at \f$t_{n+1}\f$ (read and write)
+      Teuchos::RCP<Epetra_Vector> Freact() override;
+
+      //! Return stiffness,
+      //! i.e. force residual differentiated by displacements
+      //!      (structural block only)
+      Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
+
+      /// Return stiffness,
+      /// i.e. force residual differentiated by displacements
+      Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
+
+      ///! FixMe switch structure field to block matrix in fsi simulations
+      void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+          Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override;
+
+      ///@}
+    };
+  }  // namespace TIMINT
+}  // namespace STR
+
+#endif  // STRUCTURE_NEW_TIMINT_EXPLICIT_H

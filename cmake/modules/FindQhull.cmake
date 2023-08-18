@@ -27,7 +27,7 @@ find_library(
   NO_DEFAULT_PATH
   )
 
-message("II use QHULL in ${QHULL_LIBRARY}")
+message(STATUS "Use QHULL in ${QHULL_LIBRARY}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Qhull DEFAULT_MSG QHULL_LIBRARY QHULL_INCLUDE_DIR)

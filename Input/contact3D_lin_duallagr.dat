@@ -25,9 +25,7 @@ NUMTHERMDIS                     0
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
@@ -1156,8 +1154,8 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.5 0.6 1 VALUES 
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 1 VALUES 0 1 1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE 2.01549143076005494e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE 1.97001280103978549e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.76562789671415410e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispx VALUE  2.01564729179116331e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispy VALUE  1.97016859285391449e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 67 QUANTITY dispz VALUE -9.76543776127697827e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

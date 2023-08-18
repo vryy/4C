@@ -6,6 +6,13 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_cut_meshintersection.H"
+#include "baci_cut_options.H"
+#include "baci_cut_side.H"
+#include "baci_cut_tetmeshintersection.H"
+#include "baci_cut_volumecell.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+
 #include <iostream>
 #include <map>
 #include <string>
@@ -13,23 +20,15 @@
 
 #include "cut_test_utils.H"
 
-#include "cut_side.H"
-#include "cut_meshintersection.H"
-#include "cut_tetmeshintersection.H"
-#include "cut_options.H"
-#include "cut_volumecell.H"
-
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
-
 void test_alex42()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids;
 
   int sidecount = 0;
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 9.792e-01;
     tri3_xyze(1, 0) = 2.604e-01;
@@ -47,7 +46,7 @@ void test_alex42()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 9.906e-01;
     tri3_xyze(1, 0) = 2.897e-01;
@@ -65,7 +64,7 @@ void test_alex42()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 9.906e-01;
     tri3_xyze(1, 0) = 2.896e-01;
@@ -83,7 +82,7 @@ void test_alex42()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 9.792e-01;
     tri3_xyze(1, 0) = 2.603e-01;
@@ -101,7 +100,7 @@ void test_alex42()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 9.906e-01;
     tri3_xyze(1, 0) = 2.896e-01;
@@ -119,7 +118,7 @@ void test_alex42()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 1.002e+00;
     tri3_xyze(1, 0) = 3.190e-01;
@@ -137,7 +136,7 @@ void test_alex42()
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
   {
-    Epetra_SerialDenseMatrix tri3_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
 
     tri3_xyze(0, 0) = 9.906e-01;
     tri3_xyze(1, 0) = 2.897e-01;
@@ -154,7 +153,7 @@ void test_alex42()
     nids.push_back(735);
     intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
   }
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.000e+00;
   hex8_xyze(1, 0) = 3.000e-01;

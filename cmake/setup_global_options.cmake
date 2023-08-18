@@ -2,7 +2,7 @@
 # Process global options so they are added to BACI_GLOBAL_COMPILE_DEFINITIONS
 #
 baci_process_global_option(
-  TRILINOS_DEVELOP
+  BACI_WITH_TRILINOS_DEVELOP
   "Select Trilinos installation based on current develop branch (highly experimental!)"
   OFF
   )

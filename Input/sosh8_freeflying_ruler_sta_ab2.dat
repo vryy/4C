@@ -18,9 +18,7 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes

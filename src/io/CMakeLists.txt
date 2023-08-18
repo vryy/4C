@@ -6,10 +6,8 @@ set(_io_dependencies
     config
     core
     fluid_ele
-    geometry
     inpar
     lib
-    linalg
     nurbs_discret
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_io_dependencies})

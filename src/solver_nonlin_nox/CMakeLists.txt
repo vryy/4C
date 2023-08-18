@@ -6,10 +6,9 @@ set(_solver_nonlin_nox_dependencies
     constraint
     contact
     contact_aug
-    geometry
+    core
     inpar
     lib
-    linalg
     scatra
     structure_new
     )

@@ -8,7 +8,6 @@ set(_constraint_dependencies
     inpar
     io
     lib
-    linalg
     solver_nonlin_nox
     structure_new
     truss3

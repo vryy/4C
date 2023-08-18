@@ -27,16 +27,13 @@ RANDSEED                        -1
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
 STRUCT_STRESS                   Cauchy
 STRUCT_COUPLING_STRESS          No
 STRUCT_STRAIN                   gl
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
-FLUID_SOL                       Yes
 FLUID_STRESS                    Yes
 FLUID_WALL_SHEAR_STRESS         Yes
-FLUID_VIS                       No
 FILESTEPS                       1000
 //STDOUTEVRY                      0 //25
 WRITE_TO_SCREEN                 Yes
@@ -278,7 +275,6 @@ TOL_VEL_RES_L2                  1e-06
 TOL_VEL_RES_INF                 1e-06
 TOL_VEL_INC_L2                  1e-06
 TOL_VEL_INC_INF                 1e-06
-FSIAMGANALYZE                   No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 //SOLVER                          UMFPACK

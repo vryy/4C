@@ -8,12 +8,13 @@
 *-----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
+
 #include <Epetra_SerialComm.h>
 
 #ifdef BACI_WITH_ARBORX
 
-#include "discretization_geometric_search.H"
-#include "discretization_geometric_search_utils.H"
+#include "baci_discretization_geometric_search.H"
+#include "baci_discretization_geometric_search_utils.H"
 
 const double testTolerance = 1e-14;
 
@@ -46,19 +47,19 @@ namespace
 
     // setting up bounding volume 1
     {
-      LINALG::Matrix<3, 1, double> coord1(true);
+      CORE::LINALG::Matrix<3, 1, double> coord1(true);
       coord1(0) = 0.0;
       coord1(1) = 0.0;
       coord1(2) = 0.0;
       boundingVolume1.AddPoint(coord1);
 
-      LINALG::Matrix<3, 1, double> coord2(true);
+      CORE::LINALG::Matrix<3, 1, double> coord2(true);
       coord2(0) = 1.0;
       coord2(1) = 1.0;
       coord2(2) = 0.0;
       boundingVolume1.AddPoint(coord2);
 
-      LINALG::Matrix<3, 1, double> coord3(true);
+      CORE::LINALG::Matrix<3, 1, double> coord3(true);
       coord3(0) = 0.5;
       coord3(1) = 0.0;
       coord3(2) = 0.0;
@@ -69,19 +70,19 @@ namespace
 
     // setting up bounding volume 2
     {
-      LINALG::Matrix<3, 1, double> coord1(true);
+      CORE::LINALG::Matrix<3, 1, double> coord1(true);
       coord1(0) = 1.0;
       coord1(1) = -1.0;
       coord1(2) = 0.0;
       boundingVolume2.AddPoint(coord1);
 
-      LINALG::Matrix<3, 1, double> coord2(true);
+      CORE::LINALG::Matrix<3, 1, double> coord2(true);
       coord2(0) = 1.0;
       coord2(1) = 0.25;
       coord2(2) = 0.0;
       boundingVolume2.AddPoint(coord2);
 
-      LINALG::Matrix<3, 1, double> coord3(true);
+      CORE::LINALG::Matrix<3, 1, double> coord3(true);
       coord3(0) = 0.75;
       coord3(1) = 0.0;
       coord3(2) = 0.0;
@@ -92,19 +93,19 @@ namespace
 
     // setting up bounding volume 3
     {
-      LINALG::Matrix<3, 1, double> coord1(true);
+      CORE::LINALG::Matrix<3, 1, double> coord1(true);
       coord1(0) = 0.5;
       coord1(1) = 0.25;
       coord1(2) = 0.0;
       boundingVolume3.AddPoint(coord1);
 
-      LINALG::Matrix<3, 1, double> coord2(true);
+      CORE::LINALG::Matrix<3, 1, double> coord2(true);
       coord2(0) = 0.8;
       coord2(1) = 0.25;
       coord2(2) = 0.0;
       boundingVolume3.AddPoint(coord2);
 
-      LINALG::Matrix<3, 1, double> coord3(true);
+      CORE::LINALG::Matrix<3, 1, double> coord3(true);
       coord3(0) = 0.75;
       coord3(1) = 0.125;
       coord3(2) = 0.0;

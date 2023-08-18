@@ -8,12 +8,10 @@ set(_fluid_dependencies
     core
     fluid_ele
     fluid_turbulence
-    geometry
     inpar
     io
     levelset
     lib
-    linalg
     mat
     mortar
     nurbs_discret

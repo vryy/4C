@@ -10,7 +10,7 @@
 
 #include <gtest/gtest.h>
 
-#include "contact_constitutivelaw_brokenrational_contactconstitutivelaw.H"
+#include "baci_contact_constitutivelaw_brokenrational_contactconstitutivelaw.H"
 
 namespace
 {

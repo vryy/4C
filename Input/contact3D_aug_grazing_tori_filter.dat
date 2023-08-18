@@ -43,7 +43,6 @@ OUTPUT_SPRING                   No
 OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
 STRUCT_STRESS                   no
 STRUCT_STRAIN                   no
 STRUCT_CURRENT_VOLUME           yes

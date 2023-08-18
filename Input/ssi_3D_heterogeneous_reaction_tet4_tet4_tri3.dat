@@ -11,15 +11,15 @@ scatra uses advanced reactions framework
 //ELEMENTS    562
 //NODES       200
 DIM           3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure_Scalar_Interaction
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     No
 STRUCT_STRESS                   No
@@ -27,7 +27,7 @@ STRUCT_STRAIN                   No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
 LINEAR_SOLVER                   1
 LOADLIN                         no
@@ -36,9 +36,9 @@ NORM_RESF                       Abs
 TOLDISP                         1.000e-04
 PREDICT                         ConstDis
 INT_STRATEGY                    Old
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0
-----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   1
 SOLVERTYPE                      nonlinear
 TIMEINTEGR                      One_Step_Theta
@@ -52,7 +52,7 @@ CALCERROR                       No
 CALCERRORNO                     2
 CONVFORM                        conservative
 SKIPINITDER                     no
---------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 ASSUGRDIFF                      no
 CONSISTENCY                     no
 DEFINITION_TAU                  Franca_Valentin
@@ -61,7 +61,7 @@ EVALUATION_TAU                  integration_point
 STABTYPE                        SUPG
 SUGRVEL                         no
 CHARELELENGTH                   root_of_volume
------------------------------------------------------------------SSI CONTROL
+-------------------------------------------------------SSI CONTROL
 RESULTSEVRY                     1
 RESTARTEVRY                     1
 NUMSTEP                         30
@@ -72,12 +72,12 @@ ITEMAX                          5
 SCATRA_FROM_RESTART_FILE        No
 SCATRATIMINTTYPE                Standard
 FIELDCOUPLING                   volumeboundary_matching
------------------------------------------------------------------SSI CONTROL/PARTITIONED
+-------------------------------------------SSI CONTROL/PARTITIONED
 CONVTOL                         1.000e-02
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_matlist LOCAL No NUMMAT 1 MATIDS 11 END
 MAT 3 MAT_matlist LOCAL No NUMMAT 2 MATIDS 10 10 END
 // first slave dofs and then master dofs in reaction list
@@ -87,14 +87,14 @@ MAT 10 MAT_scatra DIFFUSIVITY 0.1
 MAT 11 MAT_scatra DIFFUSIVITY 0.1
 // first slave dofs and then master dofs in reaction list
 MAT 20 MAT_scatra_reaction NUMSCAL 3 STOICH 1 0 -1 REACCOEFF 0.1 COUPLING simple_multiplicative ROLE 0 0 1
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD scatra SRC_MAT 1 TAR_FIELD scatra TAR_MAT 4
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 10.0
-----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 40 QUANTITY phi VALUE 2.30465158895883215e+00 TOLERANCE 1e-8
-SCATRA DIS scatra NODE 145 QUANTITY phi2 VALUE 6.87626254659050762e+00 TOLERANCE 1e-8
+------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 40 QUANTITY phi VALUE  2.30465158895883215e+00 TOLERANCE 2.3e-08
+SCATRA DIS scatra NODE 145 QUANTITY phi2 VALUE  6.87626254659050673e+00 TOLERANCE 6.9e-08
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 2
 NDLINE  0
@@ -118,25 +118,25 @@ E 1 -
 DSURF  1
 // surface
 E 2 -
------------------------DESIGN SSI COUPLING SOLIDTOSCATRA VOL CONDITIONS
+------------------DESIGN SSI COUPLING SOLIDTOSCATRA VOL CONDITIONS
 DVOL   2
 // volume_scatra
 E 1 - 1
 // volume
 E 2 - 1
-----------------------DESIGN SSI COUPLING SOLIDTOSCATRA SURF CONDITIONS
+-----------------DESIGN SSI COUPLING SOLIDTOSCATRA SURF CONDITIONS
 DSURF  2
 // surface
 E 2 - 2
 // surface_structure
 E 3 - 2
------------------------DESIGN SSI COUPLING SCATRATOSOLID VOL CONDITIONS
+------------------DESIGN SSI COUPLING SCATRATOSOLID VOL CONDITIONS
 DVOL   2
 // volume_scatra
 E 1 - 1
 // volume
 E 2 - 1
-----------------------DESIGN SSI COUPLING SCATRATOSOLID SURF CONDITIONS
+-----------------DESIGN SSI COUPLING SCATRATOSOLID SURF CONDITIONS
 DSURF  2
 // surface
 E 2 - 2

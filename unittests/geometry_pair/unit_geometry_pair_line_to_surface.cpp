@@ -10,13 +10,13 @@
 
 #include <gtest/gtest.h>
 
-#include "geometry_pair_line_to_surface.H"
-#include "geometry_pair_line_to_surface_evaluation_data.H"
-#include "geometry_pair_element_functions.H"
-#include "geometry_pair_utility_classes.H"
-#include "so3_surface.H"
-#include "beam3_reissner.H"
-#include "inpar_beam_to_solid.H"
+#include "baci_beam3_reissner.H"
+#include "baci_geometry_pair_element_functions.H"
+#include "baci_geometry_pair_line_to_surface.H"
+#include "baci_geometry_pair_line_to_surface_evaluation_data.H"
+#include "baci_geometry_pair_utility_classes.H"
+#include "baci_inpar_beam_to_solid.H"
+#include "baci_so3_surface.H"
 
 #include "unit_geometry_pair_line_to_surface_geometry.H"
 
@@ -68,26 +68,26 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<9, 1, double> q_solid;
+    CORE::LINALG::Matrix<9, 1, double> q_solid;
     XtestSetupTri3(q_solid);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.3;
     point(1) = 0.1;
     point(2) = 0.2;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.3436484045755569;
     xi_result(1) = 0.2877784467188441;
     xi_result(2) = 0.03189763881277458;
@@ -105,27 +105,27 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
-    LINALG::Matrix<9, 1, double> q_solid;
-    LINALG::Matrix<9, 1, double> nodal_normals(true);
+    CORE::LINALG::Matrix<9, 1, double> q_solid;
+    CORE::LINALG::Matrix<9, 1, double> nodal_normals(true);
     XtestSetupTri3(q_solid, &nodal_normals);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.3;
     point(1) = 0.1;
     point(2) = 0.2;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
     pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.3457692493957274;
     xi_result(1) = 0.2853120425437799;
     xi_result(2) = 0.03218342274405913;
@@ -143,26 +143,26 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<18, 1, double> q_solid;
+    CORE::LINALG::Matrix<18, 1, double> q_solid;
     XtestSetupTri6(q_solid);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.3;
     point(1) = 0.1;
     point(2) = 0.2;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.1935801417994475;
     xi_result(1) = 0.1678155116663445;
     xi_result(2) = 0.236826220497202;
@@ -180,27 +180,27 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
-    LINALG::Matrix<18, 1, double> q_solid;
-    LINALG::Matrix<18, 1, double> nodal_normals(true);
+    CORE::LINALG::Matrix<18, 1, double> q_solid;
+    CORE::LINALG::Matrix<18, 1, double> nodal_normals(true);
     XtestSetupTri6(q_solid, &nodal_normals);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.3;
     point(1) = 0.1;
     point(2) = 0.2;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
     pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.3274411842809972;
     xi_result(1) = 0.1649919700896869;
     xi_result(2) = 0.2749865824042791;
@@ -218,27 +218,27 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the normals on the solid element.
     // Define the coordinates for the solid element.
-    LINALG::Matrix<12, 1, double> q_solid(true);
+    CORE::LINALG::Matrix<12, 1, double> q_solid(true);
     XtestSetupQuad4(q_solid);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.8;
     point(1) = 0.2;
     point(2) = 0.5;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.5856297224156624;
     xi_result(1) = -0.2330351551569786;
     xi_result(2) = 0.1132886291998745;
@@ -256,27 +256,27 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
-    LINALG::Matrix<12, 1, double> q_solid(true);
-    LINALG::Matrix<12, 1, double> nodal_normals(true);
+    CORE::LINALG::Matrix<12, 1, double> q_solid(true);
+    CORE::LINALG::Matrix<12, 1, double> nodal_normals(true);
     XtestSetupQuad4(q_solid, &nodal_normals);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.8;
     point(1) = 0.2;
     point(2) = 0.5;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
     pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.6306816217205055;
     xi_result(1) = -0.2391123963538002;
     xi_result(2) = 0.1168739495183324;
@@ -294,26 +294,26 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<24, 1, double> q_solid;
+    CORE::LINALG::Matrix<24, 1, double> q_solid;
     XtestSetupQuad8(q_solid);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.8;
     point(1) = 0.2;
     point(2) = 0.5;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.4869140501387866;
     xi_result(1) = -0.6545313748232923;
     xi_result(2) = 0.4772682324027889;
@@ -331,27 +331,27 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<24, 1, double> q_solid;
-    LINALG::Matrix<24, 1, double> nodal_normals;
+    CORE::LINALG::Matrix<24, 1, double> q_solid;
+    CORE::LINALG::Matrix<24, 1, double> nodal_normals;
     XtestSetupQuad8(q_solid, &nodal_normals);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.8;
     point(1) = 0.2;
     point(2) = 0.5;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
     pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = -0.167932271257968;
     xi_result(1) = 0.1593451990533972;
     xi_result(2) = 0.6729448863050194;
@@ -369,26 +369,26 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<27, 1, double> q_solid;
+    CORE::LINALG::Matrix<27, 1, double> q_solid;
     XtestSetupQuad9(q_solid);
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.8;
     point(1) = 0.2;
     point(2) = 0.5;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
-    pair.ProjectPointToOther(point, q_solid, xi, projection_result, NULL);
+    pair.ProjectPointToOther(point, q_solid, xi, projection_result, nullptr);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.4374951399531939;
     xi_result(1) = -0.4006486973745378;
     xi_result(2) = 0.2412946023554158;
@@ -406,28 +406,28 @@ namespace
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(beam.get(), NULL);
+    pair.Init(beam.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates and normals for the solid element.
-    LINALG::Matrix<27, 1, double> q_solid;
-    LINALG::Matrix<27, 1, double> nodal_normals;
+    CORE::LINALG::Matrix<27, 1, double> q_solid;
+    CORE::LINALG::Matrix<27, 1, double> nodal_normals;
     XtestSetupQuad9(q_solid, &nodal_normals);
 
 
     // Point to project to.
-    LINALG::Matrix<3, 1, double> point(true);
+    CORE::LINALG::Matrix<3, 1, double> point(true);
     point(0) = 0.8;
     point(1) = 0.2;
     point(2) = 0.5;
 
     // Project the point to the surface.
-    LINALG::Matrix<3, 1, double> xi(true);
+    CORE::LINALG::Matrix<3, 1, double> xi(true);
     ProjectionResult projection_result;
     pair.ProjectPointToOther(point, q_solid, xi, projection_result, &nodal_normals);
 
     // Check the results.
-    LINALG::Matrix<3, 1, double> xi_result(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_result(true);
     xi_result(0) = 0.3784195771508677;
     xi_result(1) = -0.436333510864013;
     xi_result(2) = 0.2483249147920992;
@@ -442,29 +442,29 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<9, 1, double> q_solid;
+    CORE::LINALG::Matrix<9, 1, double> q_solid;
     XtestSetupTri3(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.0;
     xi_result(0, 1) = 0.5442036547500066;
     xi_result(1, 0) = 0.1074351908646558;
@@ -472,7 +472,7 @@ namespace
     xi_result(2, 0) = 0.1140198081425712;
     xi_result(2, 1) = 0.00817486544751219;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.959558791949879;
     eta_result(1) = -0.2755154609844958;
 
@@ -494,30 +494,30 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri3>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<9, 1, double> q_solid;
-    LINALG::Matrix<9, 1, double> nodal_normals;
+    CORE::LINALG::Matrix<9, 1, double> q_solid;
+    CORE::LINALG::Matrix<9, 1, double> nodal_normals;
     XtestSetupTri3(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.;
     xi_result(0, 1) = 0.5449417178907668;
     xi_result(1, 0) = 0.0892959494780295;
@@ -525,7 +525,7 @@ namespace
     xi_result(2, 0) = 0.1071885022364286;
     xi_result(2, 1) = 0.00847913923973852;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.933144945731849;
     eta_result(1) = -0.2769426498640102;
 
@@ -547,29 +547,29 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<18, 1, double> q_solid;
+    CORE::LINALG::Matrix<18, 1, double> q_solid;
     XtestSetupTri6(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.0;
     xi_result(0, 1) = 0.6613364114808006;
     xi_result(1, 0) = 0.1351609040799041;
@@ -577,7 +577,7 @@ namespace
     xi_result(2, 0) = 0.1130261935455847;
     xi_result(2, 1) = 0.133359925421189;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.845578728729394;
     eta_result(1) = -0.1960488586704193;
 
@@ -599,30 +599,30 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tri6>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<18, 1, double> q_solid;
-    LINALG::Matrix<18, 1, double> nodal_normals;
+    CORE::LINALG::Matrix<18, 1, double> q_solid;
+    CORE::LINALG::Matrix<18, 1, double> nodal_normals;
     XtestSetupTri6(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = 0.0;
     xi_result(0, 1) = 0.6584930664718799;
     xi_result(1, 0) = 0.1326645539292272;
@@ -630,7 +630,7 @@ namespace
     xi_result(2, 0) = 0.1167653982105834;
     xi_result(2, 1) = 0.1176127305359125;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.835011952021638;
     eta_result(1) = -0.1706930518170407;
     for (unsigned int i_intersection = 0; i_intersection < 2; i_intersection++)
@@ -651,29 +651,29 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<12, 1, double> q_solid;
+    CORE::LINALG::Matrix<12, 1, double> q_solid;
     XtestSetupQuad4(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
     xi_result(1, 0) = -0.7859873421054778;
@@ -681,7 +681,7 @@ namespace
     xi_result(2, 0) = 0.1131078893969968;
     xi_result(2, 1) = 0.1177634472685727;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.957101099360353;
     eta_result(1) = 0.4601648421155885;
 
@@ -703,30 +703,30 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad4>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<12, 1, double> q_solid;
-    LINALG::Matrix<12, 1, double> nodal_normals;
+    CORE::LINALG::Matrix<12, 1, double> q_solid;
+    CORE::LINALG::Matrix<12, 1, double> nodal_normals;
     XtestSetupQuad4(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
     xi_result(1, 0) = -0.825477582092077;
@@ -734,7 +734,7 @@ namespace
     xi_result(2, 0) = 0.1073378316553475;
     xi_result(2, 1) = 0.11957685229373;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.932642561926223;
     eta_result(1) = 0.4203246988865186;
 
@@ -756,29 +756,29 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<24, 1, double> q_solid;
+    CORE::LINALG::Matrix<24, 1, double> q_solid;
     XtestSetupQuad8(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
     xi_result(1, 0) = -0.7289250572942389;
@@ -786,7 +786,7 @@ namespace
     xi_result(2, 0) = 0.1150995008049619;
     xi_result(2, 1) = 0.3986046875693287;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.839447041376278;
     eta_result(1) = 0.5612360819815785;
 
@@ -808,30 +808,30 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad8>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<24, 1, double> q_solid;
-    LINALG::Matrix<24, 1, double> nodal_normals;
+    CORE::LINALG::Matrix<24, 1, double> q_solid;
+    CORE::LINALG::Matrix<24, 1, double> nodal_normals;
     XtestSetupQuad8(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
     xi_result(1, 0) = -0.684038067025361;
@@ -839,7 +839,7 @@ namespace
     xi_result(2, 0) = 0.1455461215481048;
     xi_result(2, 1) = 0.5364549622511008;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.7800927748816529;
     eta_result(1) = 0.273043123755964;
 
@@ -861,29 +861,29 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<27, 1, double> q_solid;
+    CORE::LINALG::Matrix<27, 1, double> q_solid;
     XtestSetupQuad9(q_solid);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
-    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, NULL);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
+    pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, nullptr);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
     xi_result(1, 0) = -0.7318086192269153;
@@ -891,7 +891,7 @@ namespace
     xi_result(2, 0) = 0.107995627440907;
     xi_result(2, 1) = 0.3188379218922715;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.865652166867077;
     eta_result(1) = 0.92684679887125;
 
@@ -913,30 +913,30 @@ namespace
   {
     // Set up the beam.
     Teuchos::RCP<DRT::Element> element_1;
-    LINALG::Matrix<12, 1, double> q_beam;
+    CORE::LINALG::Matrix<12, 1, double> q_beam;
     XtestSetupBeam(element_1, q_beam);
 
     // Set up the pair.
     GEOMETRYPAIR::GeometryPairLineToSurface<double, GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_quad9>
         pair(evaluation_data_);
     SetIsUnitTest(pair, true);
-    pair.Init(element_1.get(), NULL);
+    pair.Init(element_1.get(), nullptr);
     pair.Setup();
 
     // Define the coordinates for the solid element.
-    LINALG::Matrix<27, 1, double> q_solid;
-    LINALG::Matrix<27, 1, double> nodal_normals;
+    CORE::LINALG::Matrix<27, 1, double> q_solid;
+    CORE::LINALG::Matrix<27, 1, double> nodal_normals;
     XtestSetupQuad9(q_solid, &nodal_normals);
 
     // Intersect the beam with the surface.
     std::vector<ProjectionPoint1DTo3D<double>> intersection_points;
-    LINALG::Matrix<3, 1, double> xi_start(true);
+    CORE::LINALG::Matrix<3, 1, double> xi_start(true);
     pair.IntersectLineWithOther(q_beam, q_solid, intersection_points, 0., xi_start, &nodal_normals);
 
     // Check the results.
     EXPECT_EQ(intersection_points.size(), 2);
 
-    LINALG::Matrix<3, 2, double> xi_result;
+    CORE::LINALG::Matrix<3, 2, double> xi_result;
     xi_result(0, 0) = -1.;
     xi_result(0, 1) = 1.;
     xi_result(1, 0) = -0.6516666236508463;
@@ -944,7 +944,7 @@ namespace
     xi_result(2, 0) = 0.1114178909512789;
     xi_result(2, 1) = 0.3320135883392168;
 
-    LINALG::Matrix<2, 1, double> eta_result;
+    CORE::LINALG::Matrix<2, 1, double> eta_result;
     eta_result(0) = -0.869880338147344;
     eta_result(1) = 0.808094949905998;
 

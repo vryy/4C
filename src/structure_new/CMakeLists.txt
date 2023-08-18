@@ -13,12 +13,9 @@ set(_structure_new_dependencies
     contact
     contact_aug
     core
-    geometry
     inpar
     io
     lib
-    linalg
-    loca_continuation
     mat
     so3
     solver_nonlin_nox

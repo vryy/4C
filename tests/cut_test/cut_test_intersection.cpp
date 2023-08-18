@@ -6,21 +6,20 @@
 
 *----------------------------------------------------------------------*/
 
+#include "baci_cut_intersection.H"
+#include "baci_cut_meshintersection.H"
+#include "baci_cut_options.H"
+#include "baci_cut_side.H"
+#include "baci_cut_tetmeshintersection.H"
+#include "baci_cut_volumecell.H"
+#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
 
 #include "cut_test_utils.H"
-
-#include "cut_side.H"
-#include "cut_intersection.H"
-#include "cut_meshintersection.H"
-#include "cut_tetmeshintersection.H"
-#include "cut_options.H"
-#include "cut_volumecell.H"
-
-#include "discretization_fem_general_utils_local_connectivity_matrices.H"
 
 #define nxyz(x, y, z)                     \
   {                                       \
@@ -57,24 +56,24 @@
 
 void test_quad4_line2(double x1, double y1, double x2, double y2)
 {
-  GEO::CUT::Options options;
+  CORE::GEO::CUT::Options options;
   options.Init_for_Cuttests();  // use cln
-  GEO::CUT::Mesh mesh(options);
+  CORE::GEO::CUT::Mesh mesh(options);
 
   std::vector<double> xyz(3);
 
   xyz[0] = x1;
   xyz[1] = y1;
   xyz[2] = 0;
-  GEO::CUT::Node* n1 = mesh.GetNode(1, &xyz[0]);
+  CORE::GEO::CUT::Node* n1 = mesh.GetNode(1, &xyz[0]);
 
   xyz[0] = x2;
   xyz[1] = y2;
-  GEO::CUT::Node* n2 = mesh.GetNode(2, &xyz[0]);
+  CORE::GEO::CUT::Node* n2 = mesh.GetNode(2, &xyz[0]);
 
-  GEO::CUT::Edge* edge = mesh.GetEdge(n1, n2);
+  CORE::GEO::CUT::Edge* edge = mesh.GetEdge(n1, n2);
 
-  std::vector<GEO::CUT::Node*> nodes;
+  std::vector<CORE::GEO::CUT::Node*> nodes;
   xyz[0] = 0;
   xyz[1] = 0;
   nodes.push_back(mesh.GetNode(3, &xyz[0]));
@@ -88,14 +87,14 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
   xyz[1] = 1;
   nodes.push_back(mesh.GetNode(6, &xyz[0]));
 
-  GEO::CUT::Side* side =
+  CORE::GEO::CUT::Side* side =
       mesh.GetSide(1, nodes, shards::getCellTopologyData<shards::Quadrilateral<4>>());
 
-  Teuchos::RCP<GEO::CUT::IntersectionBase> intersection =
-      GEO::CUT::IntersectionBase::Create(DRT::Element::line2, DRT::Element::quad4);
+  Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersection =
+      CORE::GEO::CUT::IntersectionBase::Create(DRT::Element::line2, DRT::Element::quad4);
   intersection->Init(&mesh, edge, side, false, false, false);
 
-  GEO::CUT::PointSet cuts;
+  CORE::GEO::CUT::PointSet cuts;
   intersection->Intersect(cuts);
 
   mesh.Status();
@@ -104,7 +103,7 @@ void test_quad4_line2(double x1, double y1, double x2, double y2)
   {
     std::stringstream str;
     str << "two cuts expected but got " << cuts.size() << ": ";
-    std::copy(cuts.begin(), cuts.end(), std::ostream_iterator<GEO::CUT::Point*>(str, " "));
+    std::copy(cuts.begin(), cuts.end(), std::ostream_iterator<CORE::GEO::CUT::Point*>(str, " "));
     throw std::runtime_error(str.str());
   }
 }
@@ -120,12 +119,12 @@ void test_quad4_line2()
 
 void test_hex8_quad4_qhull1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -143,7 +142,7 @@ void test_hex8_quad4_qhull1()
 
   intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.75;
   hex8_xyze(1, 0) = 0.416666657;
@@ -184,12 +183,12 @@ void test_hex8_quad4_qhull1()
 // restrictions of this method!
 void test_hex8_quad4_alex1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -214,7 +213,7 @@ void test_hex8_quad4_alex1()
 
   intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.70729452400000003554;
   hex8_xyze(1, 0) = 0.39701718099999999678;
@@ -252,11 +251,11 @@ void test_hex8_quad4_alex1()
 
 void test_hex8_quad4_alex2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -288,7 +287,7 @@ void test_hex8_quad4_alex2()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.16999995999999995;
   hex8_xyze(1, 0) = 0.11428571499999999606;
@@ -327,11 +326,11 @@ void test_hex8_quad4_alex2()
 
 void test_hex8_quad4_alex3()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -377,7 +376,7 @@ void test_hex8_quad4_alex3()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.86956518900000001615;
   hex8_xyze(1, 0) = 0;
@@ -415,11 +414,11 @@ void test_hex8_quad4_alex3()
 
 void test_hex8_quad4_alex4()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -465,7 +464,7 @@ void test_hex8_quad4_alex4()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.86956518900000001615;
   hex8_xyze(1, 0) = 0;
@@ -503,11 +502,11 @@ void test_hex8_quad4_alex4()
 
 void test_hex8_quad4_alex5()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -539,7 +538,7 @@ void test_hex8_quad4_alex5()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.83333333333333348136;
   hex8_xyze(1, 0) = 0.32000000000000000666;
@@ -577,11 +576,11 @@ void test_hex8_quad4_alex5()
 
 void test_hex8_quad4_alex6()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -613,7 +612,7 @@ void test_hex8_quad4_alex6()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.888889;
   hex8_xyze(1, 0) = 0.16;
@@ -651,11 +650,11 @@ void test_hex8_quad4_alex6()
 
 void test_hex8_quad4_alex7()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -687,7 +686,7 @@ void test_hex8_quad4_alex7()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.889;
   hex8_xyze(1, 0) = 0.693;
@@ -725,11 +724,11 @@ void test_hex8_quad4_alex7()
 
 void test_hex8_quad4_alex8()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -761,7 +760,7 @@ void test_hex8_quad4_alex8()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.94444444444444441977;
   hex8_xyze(1, 0) = 0.16000000000000014211;
@@ -799,11 +798,11 @@ void test_hex8_quad4_alex8()
 
 void test_tet4_quad4_alex9()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -812,30 +811,34 @@ void test_tet4_quad4_alex9()
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s1 = intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s1 =
+      intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.1372558011327500438, 0.43786377186006097961, 1.3891340300000000002e-19);
   nxyz2(1.1373961924222799613, 0.43783278790287999405, -0.015000075099999999467);
   nxyz3(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s2 = intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s2 =
+      intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz2(1.0862518404856800203, 0.54179921727229496398, 0.015000075099999999467);
   nxyz3(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s3 = intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s3 =
+      intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0862518404756100754, 0.54179921727284197086, -0.015000075099999999467);
   nxyz2(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s4 = intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s4 =
+      intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix tet4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix tet4_xyze(3, 4);
 
   tet4_xyze(0, 0) = 1.1271155608629783718;
   tet4_xyze(1, 0) = 0.52928799201809972885;
@@ -853,9 +856,10 @@ void test_tet4_quad4_alex9()
   nids.clear();
   for (int i = 0; i < 4; ++i) nids.push_back(i);
 
-  GEO::CUT::ElementHandle* e = intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
+  CORE::GEO::CUT::ElementHandle* e =
+      intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
 
-  GEO::CUT::plain_side_set cut_sides;
+  CORE::GEO::CUT::plain_side_set cut_sides;
   s1->CollectSides(cut_sides);
   s2->CollectSides(cut_sides);
   s3->CollectSides(cut_sides);
@@ -866,12 +870,12 @@ void test_tet4_quad4_alex9()
   tet.reserve(4);
   std::vector<int> accept_tets(1, true);
 
-  const std::vector<GEO::CUT::Node*>& nodes = e->Nodes();
-  std::vector<GEO::CUT::Point*> points;
+  const std::vector<CORE::GEO::CUT::Node*>& nodes = e->Nodes();
+  std::vector<CORE::GEO::CUT::Point*> points;
   points.reserve(4);
-  for (std::vector<GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
+  for (std::vector<CORE::GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
-    GEO::CUT::Node* n = *i;
+    CORE::GEO::CUT::Node* n = *i;
     tet.push_back(points.size());
     points.push_back(n->point());
   }
@@ -883,11 +887,11 @@ void test_tet4_quad4_alex9()
 
 void test_tet4_quad4_alex10()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -896,30 +900,34 @@ void test_tet4_quad4_alex10()
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s1 = intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s1 =
+      intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.1372558011327500438, 0.43786377186006097961, 1.3891340300000000002e-19);
   nxyz2(1.1373961924222799613, 0.43783278790287999405, -0.015000075099999999467);
   nxyz3(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s2 = intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s2 =
+      intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz2(1.0862518404856800203, 0.54179921727229496398, 0.015000075099999999467);
   nxyz3(1.1633580248937700485, 0.51825684289835904917, 0.015000075099999999467);
   nxyz4(1.1633039901419599538, 0.51827976384601803783, 0);
 
-  GEO::CUT::SideHandle* s3 = intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s3 =
+      intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
 
   nxyz1(1.0862518404756100754, 0.54179921727284197086, -0.015000075099999999467);
   nxyz2(1.0863570485981299818, 0.54164967699933597167, 5.1690185600000003046e-19);
   nxyz3(1.1633039901419599538, 0.51827976384601803783, 0);
   nxyz4(1.1633580249045900601, 0.5182568428569539476, -0.015000075099999999467);
 
-  GEO::CUT::SideHandle* s4 = intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
+  CORE::GEO::CUT::SideHandle* s4 =
+      intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix tet4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix tet4_xyze(3, 4);
 
   tet4_xyze(0, 0) = 1.1530126441231649537;
   tet4_xyze(1, 0) = 0.4864087957581522681;
@@ -937,9 +945,10 @@ void test_tet4_quad4_alex10()
   nids.clear();
   for (int i = 0; i < 4; ++i) nids.push_back(i);
 
-  GEO::CUT::ElementHandle* e = intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
+  CORE::GEO::CUT::ElementHandle* e =
+      intersection.AddElement(1, nids, tet4_xyze, DRT::Element::tet4);
 
-  GEO::CUT::plain_side_set cut_sides;
+  CORE::GEO::CUT::plain_side_set cut_sides;
   s1->CollectSides(cut_sides);
   s2->CollectSides(cut_sides);
   s3->CollectSides(cut_sides);
@@ -950,12 +959,12 @@ void test_tet4_quad4_alex10()
   tet.reserve(4);
   std::vector<int> accept_tets(1, true);
 
-  const std::vector<GEO::CUT::Node*>& nodes = e->Nodes();
-  std::vector<GEO::CUT::Point*> points;
+  const std::vector<CORE::GEO::CUT::Node*>& nodes = e->Nodes();
+  std::vector<CORE::GEO::CUT::Point*> points;
   points.reserve(4);
-  for (std::vector<GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
+  for (std::vector<CORE::GEO::CUT::Node*>::const_iterator i = nodes.begin(); i != nodes.end(); ++i)
   {
-    GEO::CUT::Node* n = *i;
+    CORE::GEO::CUT::Node* n = *i;
     tet.push_back(points.size());
     points.push_back(n->point());
   }
@@ -967,7 +976,7 @@ void test_tet4_quad4_alex10()
 
 void test_tet4_quad4_alex11()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::map<std::string, int> nodeids;
@@ -975,7 +984,7 @@ void test_tet4_quad4_alex11()
   {
     std::vector<int> nids(4);
 
-    Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
     nxyz1(0.89075394384624373423, 0.094851207190588718299, 0.31907718246312877231);
     nxyz2(0.91085589872612870987, 0.09462691177514795382, 0.31915342860180828666);
@@ -988,7 +997,7 @@ void test_tet4_quad4_alex11()
   {
     std::vector<int> nids(3);
 
-    Epetra_SerialDenseMatrix quad4_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 3);
 
     nxyz1(0.90127599046596340582, 0.12378087657319215842, 0.31909880503242982197);
     nxyz2(0.91110590805399416237, 0.11396906901062973938, 0.31913932938821898411);
@@ -1015,7 +1024,7 @@ void test_tet4_quad4_alex11()
     intersection.AddCutSide(5, nids, quad4_xyze, DRT::Element::tri3);
   }
 
-  Epetra_SerialDenseMatrix tet4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix tet4_xyze(3, 4);
 
   tet4_xyze(0, 0) = 0.90127599046596340582;
   tet4_xyze(1, 0) = 0.12378087657319215842;
@@ -1041,12 +1050,12 @@ void test_tet4_quad4_alex11()
 
 void test_hex8_quad4_alex12()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1099,7 +1108,7 @@ void test_hex8_quad4_alex12()
 
   intersection.AddCutSide(7, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.91304349900000003615;
   hex8_xyze(1, 0) = 0.13636364000000000818;
@@ -1137,12 +1146,12 @@ void test_hex8_quad4_alex12()
 
 void test_hex8_quad4_alex13()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1188,7 +1197,7 @@ void test_hex8_quad4_alex13()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.91304349900000003615;
   hex8_xyze(1, 0) = 0.18181818699999999223;
@@ -1226,12 +1235,12 @@ void test_hex8_quad4_alex13()
 
 void test_hex8_quad4_alex14()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1277,7 +1286,7 @@ void test_hex8_quad4_alex14()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 8.846154e-01;
   hex8_xyze(1, 0) = 4.190476e-01;
@@ -1315,12 +1324,12 @@ void test_hex8_quad4_alex14()
 
 void test_hex8_quad4_alex15()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1408,7 +1417,7 @@ void test_hex8_quad4_alex15()
 
   intersection.AddCutSide(12, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 8.846154e-01;
   hex8_xyze(1, 0) = 4.190476e-01;
@@ -1446,7 +1455,7 @@ void test_hex8_quad4_alex15()
 
 void test_tet4_quad4_alex16()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::map<std::string, int> nodeids;
@@ -1454,7 +1463,7 @@ void test_tet4_quad4_alex16()
   //   {
   //     std::vector<int> nids( 4 );
 
-  //     Epetra_SerialDenseMatrix quad4_xyze( 3, 4 );
+  //     CORE::LINALG::SerialDenseMatrix quad4_xyze( 3, 4 );
 
   //     nxyz1(0.89075394384624373423,0.094851207190588718299,0.31907718246312877231);
   //     nxyz2(0.91085589872612870987,0.09462691177514795382,0.31915342860180828666);
@@ -1467,7 +1476,7 @@ void test_tet4_quad4_alex16()
   {
     std::vector<int> nids(3);
 
-    Epetra_SerialDenseMatrix quad4_xyze(3, 3);
+    CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 3);
 
     nxyz1(0.899594, 0.3799, 0.016);
     nxyz2(0.9103, 0.3799, -8.26403e-20);
@@ -1536,7 +1545,7 @@ void test_tet4_quad4_alex16()
     intersection.AddCutSide(11, nids, quad4_xyze, DRT::Element::tri3);
   }
 
-  Epetra_SerialDenseMatrix tet4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix tet4_xyze(3, 4);
 
   tet4_xyze(0, 0) = 0.9103;
   tet4_xyze(1, 0) = 0.4201;
@@ -1563,12 +1572,12 @@ void test_tet4_quad4_alex16()
 
 void test_hex8_quad4_alex17()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1628,7 +1637,7 @@ void test_hex8_quad4_alex17()
 
   intersection.AddCutSide(8, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.944444;
   hex8_xyze(1, 0) = 0.426667;
@@ -1666,12 +1675,12 @@ void test_hex8_quad4_alex17()
 
 void test_hex8_quad4_alex18()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1703,7 +1712,7 @@ void test_hex8_quad4_alex18()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.253731e-01;
   hex8_xyze(1, 0) = 3.703704e-01;
@@ -1741,12 +1750,12 @@ void test_hex8_quad4_alex18()
 
 void test_hex8_quad4_alex19()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1778,7 +1787,7 @@ void test_hex8_quad4_alex19()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.701493e-01;
   hex8_xyze(1, 0) = 4.296296e-01;
@@ -1816,12 +1825,12 @@ void test_hex8_quad4_alex19()
 
 void test_hex8_quad4_alex20()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1853,7 +1862,7 @@ void test_hex8_quad4_alex20()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.850746e-01;
   hex8_xyze(1, 0) = 3.259259e-01;
@@ -1891,12 +1900,12 @@ void test_hex8_quad4_alex20()
 
 void test_hex8_quad4_alex21()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -1942,7 +1951,7 @@ void test_hex8_quad4_alex21()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.975;
   hex8_xyze(1, 0) = 0.55;
@@ -1980,12 +1989,12 @@ void test_hex8_quad4_alex21()
 
 void test_hex8_quad4_alex22()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2017,7 +2026,7 @@ void test_hex8_quad4_alex22()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.701493e-01;
   hex8_xyze(1, 0) = 3.407407e-01;
@@ -2055,12 +2064,12 @@ void test_hex8_quad4_alex22()
 
 void test_hex8_quad4_alex23()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2120,7 +2129,7 @@ void test_hex8_quad4_alex23()
 
   intersection.AddCutSide(8, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.944444;
   hex8_xyze(1, 0) = 0.426667;
@@ -2158,12 +2167,12 @@ void test_hex8_quad4_alex23()
 
 void test_hex8_quad4_alex24()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2195,7 +2204,7 @@ void test_hex8_quad4_alex24()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.93617;
   hex8_xyze(1, 0) = 0.421053;
@@ -2233,12 +2242,12 @@ void test_hex8_quad4_alex24()
 
 void test_hex8_quad4_alex25()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2284,7 +2293,7 @@ void test_hex8_quad4_alex25()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 8.936170e-01;
   hex8_xyze(1, 0) = 4.210526e-01;
@@ -2322,12 +2331,12 @@ void test_hex8_quad4_alex25()
 
 void test_hex8_quad4_alex26()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2373,7 +2382,7 @@ void test_hex8_quad4_alex26()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 8.936170e-01;
   hex8_xyze(1, 0) = 4.210526e-01;
@@ -2411,12 +2420,12 @@ void test_hex8_quad4_alex26()
 
 void test_hex8_quad4_alex27()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2448,7 +2457,7 @@ void test_hex8_quad4_alex27()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.850746e-01;
   hex8_xyze(1, 0) = 3.259259e-01;
@@ -2486,12 +2495,12 @@ void test_hex8_quad4_alex27()
 
 void test_hex8_quad4_alex28()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2537,7 +2546,7 @@ void test_hex8_quad4_alex28()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.925;
   hex8_xyze(1, 0) = 0.0889;
@@ -2575,12 +2584,12 @@ void test_hex8_quad4_alex28()
 
 void test_hex8_quad4_alex29()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2612,7 +2621,7 @@ void test_hex8_quad4_alex29()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.701493e-01;
   hex8_xyze(1, 0) = 4.592593e-01;
@@ -2650,12 +2659,12 @@ void test_hex8_quad4_alex29()
 
 void test_hex8_quad4_alex30()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2687,7 +2696,7 @@ void test_hex8_quad4_alex30()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.701493e-01;
   hex8_xyze(1, 0) = 4.592593e-01;
@@ -2726,12 +2735,12 @@ void test_hex8_quad4_alex30()
 
 void test_hex8_quad4_alex31()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2763,7 +2772,7 @@ void test_hex8_quad4_alex31()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.250e-01;
   hex8_xyze(1, 0) = 3.750e-01;
@@ -2801,12 +2810,12 @@ void test_hex8_quad4_alex31()
 
 void test_hex8_quad4_alex32()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2838,7 +2847,7 @@ void test_hex8_quad4_alex32()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.250000e-01;
   hex8_xyze(1, 0) = 3.750000e-01;
@@ -2876,12 +2885,12 @@ void test_hex8_quad4_alex32()
 
 void test_hex8_quad4_alex33()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2913,7 +2922,7 @@ void test_hex8_quad4_alex33()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.552239e-01;
   hex8_xyze(1, 0) = 4.444444e-01;
@@ -2951,12 +2960,12 @@ void test_hex8_quad4_alex33()
 
 void test_hex8_quad4_alex34()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -2988,7 +2997,7 @@ void test_hex8_quad4_alex34()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.750000e-01;
   hex8_xyze(1, 0) = 3.750000e-01;
@@ -3026,12 +3035,12 @@ void test_hex8_quad4_alex34()
 
 void test_hex8_quad4_alex35()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3063,7 +3072,7 @@ void test_hex8_quad4_alex35()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.615385e-01;
   hex8_xyze(1, 0) = 3.809524e-01;
@@ -3101,12 +3110,12 @@ void test_hex8_quad4_alex35()
 
 void test_hex8_quad4_alex36()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3166,7 +3175,7 @@ void test_hex8_quad4_alex36()
 
   intersection.AddCutSide(8, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.063830e+00;
   hex8_xyze(1, 0) = 5.052632e-01;
@@ -3204,12 +3213,12 @@ void test_hex8_quad4_alex36()
 
 void test_hex8_quad4_alex37()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 3);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 3);
 
   std::map<std::string, int> nodeids;
 
@@ -3249,7 +3258,7 @@ void test_hex8_quad4_alex37()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::tri3);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 9.104478e-01;
   hex8_xyze(1, 0) = 2.518519e-01;
@@ -3287,12 +3296,12 @@ void test_hex8_quad4_alex37()
 
 void test_hex8_quad4_alex38()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3338,7 +3347,7 @@ void test_hex8_quad4_alex38()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.000000e+00;
   hex8_xyze(1, 0) = 4.266667e-01;
@@ -3376,12 +3385,12 @@ void test_hex8_quad4_alex38()
 
 void test_hex8_tri3_ursula1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 3);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 3);
 
   std::map<std::string, int> nodeids;
 
@@ -3409,7 +3418,7 @@ void test_hex8_tri3_ursula1()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::tri3);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = -1;
   hex8_xyze(1, 0) = -1;
@@ -3447,12 +3456,12 @@ void test_hex8_tri3_ursula1()
 
 void test_hex8_quad4_axel7()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 3);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 3);
 
   std::map<std::string, int> nodeids;
 
@@ -3530,7 +3539,7 @@ void test_hex8_quad4_axel7()
 
   intersection.AddCutSide(++sideid, nids, quad4_xyze, DRT::Element::tri3);
 
-  Epetra_SerialDenseMatrix tet4_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix tet4_xyze(3, 8);
 
   tet4_xyze(0, 0) = 1.0992740341033049312;
   tet4_xyze(1, 0) = 0.23760272423331274538;
@@ -3557,12 +3566,12 @@ void test_hex8_quad4_axel7()
 
 void test_hex8_quad4_axel6()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3594,7 +3603,7 @@ void test_hex8_quad4_axel6()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.72727274900000005164;
   hex8_xyze(1, 0) = 0.54545456199999997615;
@@ -3632,12 +3641,12 @@ void test_hex8_quad4_axel6()
 
 void test_hex8_quad4_axel5()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3669,7 +3678,7 @@ void test_hex8_quad4_axel5()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.818181813;
   hex8_xyze(1, 0) = 0.545454562;
@@ -3707,12 +3716,12 @@ void test_hex8_quad4_axel5()
 
 void test_hex8_quad4_axel4()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3744,7 +3753,7 @@ void test_hex8_quad4_axel4()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.727272749;
   hex8_xyze(1, 0) = 0.545454562;
@@ -3782,12 +3791,12 @@ void test_hex8_quad4_axel4()
 
 void test_hex8_quad4_axel3()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3819,7 +3828,7 @@ void test_hex8_quad4_axel3()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.818181813;
   hex8_xyze(1, 0) = 0.545454562;
@@ -3857,12 +3866,12 @@ void test_hex8_quad4_axel3()
 
 void test_hex8_quad4_axel2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3894,7 +3903,7 @@ void test_hex8_quad4_axel2()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.18181813;
   hex8_xyze(1, 0) = 0.545454562;
@@ -3932,12 +3941,12 @@ void test_hex8_quad4_axel2()
 
 void test_hex8_quad4_axel1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -3969,7 +3978,7 @@ void test_hex8_quad4_axel1()
 
   intersection.AddCutSide(4, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1.27272725;
   hex8_xyze(1, 0) = 0.545454562;
@@ -4008,12 +4017,12 @@ void test_hex8_quad4_axel1()
 
 void test_hex8_quad4_shadan5()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
   int sideid = 0;
@@ -4074,7 +4083,7 @@ void test_hex8_quad4_shadan5()
 
   intersection.AddCutSide(++sideid, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = -0.125;
   hex8_xyze(1, 0) = -0.125;
@@ -4112,12 +4121,12 @@ void test_hex8_quad4_shadan5()
 
 void test_hex8_quad4_shadan4()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
   int sideid = 0;
@@ -4199,7 +4208,7 @@ void test_hex8_quad4_shadan4()
 
   intersection.AddCutSide(++sideid, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0;
   hex8_xyze(1, 0) = -0.125;
@@ -4237,12 +4246,12 @@ void test_hex8_quad4_shadan4()
 
 void test_hex8_quad4_shadan3()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -4302,7 +4311,7 @@ void test_hex8_quad4_shadan3()
 
   intersection.AddCutSide(8, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.916666687;
   hex8_xyze(1, 0) = 0.25;
@@ -4340,12 +4349,12 @@ void test_hex8_quad4_shadan3()
 
 void test_hex8_quad4_shadan2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -4391,7 +4400,7 @@ void test_hex8_quad4_shadan2()
 
   intersection.AddCutSide(6, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 1;
   hex8_xyze(1, 0) = 0.333333343;
@@ -4429,12 +4438,12 @@ void test_hex8_quad4_shadan2()
 
 void test_hex8_quad4_shadan1()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -4564,7 +4573,7 @@ void test_hex8_quad4_shadan1()
 
   intersection.AddCutSide(18, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = -0.125;
   hex8_xyze(1, 0) = -0.125;
@@ -4605,12 +4614,12 @@ void test_hex8_quad4_shadan1()
 // restrictions of this method!
 void test_hex8_quad4_mesh_many()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   nids.clear();
   nids.push_back(0);
@@ -4712,7 +4721,7 @@ void test_hex8_quad4_mesh_many()
 
   intersection.AddCutSide(5, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.707126021;
   hex8_xyze(1, 0) = 0.885084629;
@@ -4751,12 +4760,12 @@ void test_hex8_quad4_mesh_many()
 // restrictions of this method!
 void test_hex8_quad4_mesh_edgecut()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   nids.clear();
   nids.push_back(0);
@@ -4818,7 +4827,7 @@ void test_hex8_quad4_mesh_edgecut()
 
   intersection.AddCutSide(3, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.53135645399999997807;
   hex8_xyze(1, 0) = 0.75096273400000002063;
@@ -4857,12 +4866,12 @@ void test_hex8_quad4_mesh_edgecut()
 // restrictions of this method!
 void test_hex8_quad4_mesh_edgecut2()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   nids.clear();
   nids.push_back(0);
@@ -4884,7 +4893,7 @@ void test_hex8_quad4_mesh_edgecut2()
 
   intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.53135645399999997807;
   hex8_xyze(1, 0) = 0.75096273400000002063;
@@ -4921,12 +4930,12 @@ void test_hex8_quad4_mesh_edgecut2()
 
 void test_hex8_quad4_mesh_inner()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   nids.clear();
   nids.push_back(0);
@@ -4948,7 +4957,7 @@ void test_hex8_quad4_mesh_inner()
 
   intersection.AddCutSide(1, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix hex8_xyze(3, 8);
+  CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
 
   hex8_xyze(0, 0) = 0.0833333;
   hex8_xyze(1, 0) = -0.0833333;
@@ -4985,13 +4994,13 @@ void test_hex8_quad4_mesh_inner()
 
 void test_hex27_quad9_simple()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad9_xyze(3, 9);
-  Epetra_SerialDenseMatrix hex27_xyze(3, 27);
+  CORE::LINALG::SerialDenseMatrix quad9_xyze(3, 9);
+  CORE::LINALG::SerialDenseMatrix hex27_xyze(3, 27);
 
   nids.reserve(9);
   for (int i = 0; i < 9; ++i)
@@ -5034,13 +5043,13 @@ void test_hex27_quad9_simple()
 
 void test_hex20_quad9_simple()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad9_xyze(3, 9);
-  Epetra_SerialDenseMatrix hex20_xyze(3, 20);
+  CORE::LINALG::SerialDenseMatrix quad9_xyze(3, 9);
+  CORE::LINALG::SerialDenseMatrix hex20_xyze(3, 20);
 
   nids.reserve(9);
   for (int i = 0; i < 9; ++i)
@@ -5083,13 +5092,13 @@ void test_hex20_quad9_simple()
 
 void test_hex20_quad9_moved()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad9_xyze(3, 9);
-  Epetra_SerialDenseMatrix hex20_xyze(3, 20);
+  CORE::LINALG::SerialDenseMatrix quad9_xyze(3, 9);
+  CORE::LINALG::SerialDenseMatrix hex20_xyze(3, 20);
 
   nids.reserve(9);
   for (int i = 0; i < 9; ++i)
@@ -5141,13 +5150,13 @@ void test_hex20_quad9_moved()
 
 void test_tet10_quad9_simple()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad9_xyze(3, 9);
-  Epetra_SerialDenseMatrix tet10_xyze(3, 10);
+  CORE::LINALG::SerialDenseMatrix quad9_xyze(3, 9);
+  CORE::LINALG::SerialDenseMatrix tet10_xyze(3, 10);
 
   nids.reserve(9);
   for (int i = 0; i < 9; ++i)
@@ -5191,13 +5200,13 @@ void test_tet10_quad9_simple()
 
 void test_tet10_quad9_moved()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids;
 
-  Epetra_SerialDenseMatrix quad9_xyze(3, 9);
-  Epetra_SerialDenseMatrix tet10_xyze(3, 10);
+  CORE::LINALG::SerialDenseMatrix quad9_xyze(3, 9);
+  CORE::LINALG::SerialDenseMatrix tet10_xyze(3, 10);
 
   nids.reserve(9);
   for (int i = 0; i < 9; ++i)
@@ -5249,12 +5258,12 @@ void test_tet10_quad9_moved()
 
 void test_tet4_quad4_double()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(4);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 4);
 
   std::map<std::string, int> nodeids;
 
@@ -5274,7 +5283,7 @@ void test_tet4_quad4_double()
   // GEO::CUT::SideHandle * s2 =
   intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::quad4);
 
-  Epetra_SerialDenseMatrix tet4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix tet4_xyze(3, 4);
 
   tet4_xyze(0, 0) = 0;
   tet4_xyze(1, 0) = 0;
@@ -5303,12 +5312,12 @@ void test_tet4_quad4_double()
 
 void test_tet4_tri3_double()
 {
-  GEO::CUT::MeshIntersection intersection;
+  CORE::GEO::CUT::MeshIntersection intersection;
   intersection.GetOptions().Init_for_Cuttests();  // use full cln
 
   std::vector<int> nids(3);
 
-  Epetra_SerialDenseMatrix quad4_xyze(3, 3);
+  CORE::LINALG::SerialDenseMatrix quad4_xyze(3, 3);
 
   std::map<std::string, int> nodeids;
 
@@ -5326,7 +5335,7 @@ void test_tet4_tri3_double()
   // GEO::CUT::SideHandle * s2 =
   intersection.AddCutSide(2, nids, quad4_xyze, DRT::Element::tri3);
 
-  Epetra_SerialDenseMatrix tet4_xyze(3, 4);
+  CORE::LINALG::SerialDenseMatrix tet4_xyze(3, 4);
 
   tet4_xyze(0, 0) = 0;
   tet4_xyze(1, 0) = 0;
@@ -5353,12 +5362,12 @@ void test_tet4_tri3_double()
   std::cout << __LINE__ << std::endl;
   std::vector<double> tessVol, momFitVol, dirDivVol;
 
-  GEO::CUT::Mesh mesh = intersection.NormalMesh();
-  const std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
-  for (std::list<Teuchos::RCP<GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
+  CORE::GEO::CUT::Mesh mesh = intersection.NormalMesh();
+  const std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>& other_cells = mesh.VolumeCells();
+  for (std::list<Teuchos::RCP<CORE::GEO::CUT::VolumeCell>>::const_iterator i = other_cells.begin();
        i != other_cells.end(); ++i)
   {
-    GEO::CUT::VolumeCell* vc = &**i;
+    CORE::GEO::CUT::VolumeCell* vc = &**i;
     tessVol.push_back(vc->Volume());
   }
 

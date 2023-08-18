@@ -21,7 +21,6 @@ FILESTEPS                       1000000
 STDOUTEVRY                      100
 VERBOSITY                       standard
 ----------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
-OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  10
 EVERY_ITERATION                 No
 OWNER                           Yes

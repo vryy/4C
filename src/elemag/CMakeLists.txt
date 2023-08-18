@@ -6,11 +6,9 @@ set(_elemag_dependencies
     comm
     core
     cut
-    geometry
     inpar
     io
     lib
-    linalg
     mat
     scatra
     scatra_ele

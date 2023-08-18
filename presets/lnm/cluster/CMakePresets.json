@@ -50,23 +50,18 @@
         ".lnm_cluster"
       ],
       "cacheVariables": {
-        "CMAKE_C_FLAGS": "-Wall -Wno-unknown-pragmas -mfpmath=sse -msse3",
         "CMAKE_BUILD_TYPE": "RELEASE",
-        "CMAKE_CXX_COMPILER": "/opt/openmpi/4.0.1/gcc/bin/mpic++",
-        "CMAKE_C_COMPILER": "/opt/openmpi/4.0.1/gcc/bin/mpicc",
-        "CMAKE_Fortran_COMPILER": "/opt/openmpi/4.0.1/gcc/bin/mpif90",
-        "INCLUDE_INSTALL_DIR": "/lnm/include",
-        "LIB_INSTALL_DIR": "/lnm/lib",
-        "Trilinos_PREFIX": "/lnm/2022_Q1/trilinos/trilinos_release",
-        "QHULL_LIBRARY_DIR": "/lnm/lib",
-        "QHULL_INCLUDE_DIR": "/lnm/include/qhull",
-        "BLAS_LIBRARIES": "/lnm/lib/libopenblas.a",
-        "LAPACK_LIBRARIES": "/lnm/lib/libopenblas.a",
-        "BLA_VENDOR": "openBLAS.0.3.6",
-        "MPI_RUN": "/opt/openmpi/4.0.1/gcc/bin/mpirun",
-        "PVPYTHON": "/lnm/programs64/ParaView-5.5.2-Qt5-MPI-Linux-64bit/bin/pvpython",
-        "BOOST_INCLUDEDIR": "/lnm/boost/gcc9/include",
-        "BOOST_LIBRARYDIR": "/lnm/boost/gcc9/lib"
+        "CMAKE_C_FLAGS": "-Wall -Wno-unknown-pragmas -mfpmath=sse -msse3",
+        "CMAKE_CXX_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpic++",
+        "CMAKE_C_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpicc",
+        "CMAKE_Fortran_COMPILER": "/opt/openmpi/4.1.5/gcc/bin/mpif90",
+	"CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=gold",
+	"CLN_INCLUDE_DIR": "/lnm/packages/cln/1-3-4/include",
+	"SEARCH_CLN_LIBRARY_DIR": "/lnm/packages/cln/1-3-4/lib",
+	"MPI_RUN": "/opt/openmpi/4.1.5/gcc/bin/mpirun",
+        "QHULL_LIBRARY_DIR": "/lnm/packages/qhull/2012-1/lib",
+        "QHULL_INCLUDE_DIR": "/lnm/packages/qhull/2012-1/include/libqhull",
+	"Trilinos_PREFIX": "/lnm/packages/trilinos/2022_Q1"
       }
     },
     {

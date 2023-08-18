@@ -3,24 +3,24 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Test for hex 27 poro elements
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      27
 //NODES                         343
 DIM                             3
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
 NUMALEDIS                       0
 NUMARTNETDIS                    0
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     0
----------------------------------------------------------------FLUID DYNAMIC
+-----------------------------------------------------FLUID DYNAMIC
 CALCERROR                       no
 CONVFORM                        convective
 GRIDVEL                         BE
@@ -29,7 +29,7 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 RESULTSEVRY                           1
 LINEAR_SOLVER                   3
-----------------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
+---------------------------FLUID DYNAMIC/POROUS-FLOW STABILIZATION
 CROSS-STRESS                    no_cross
 GRAD_DIV                        no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
@@ -43,15 +43,12 @@ SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 FILESTEPS                       1000
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
-STRUCT_SE                       No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   Cauchy
 STRUCT_COUPLING_STRESS          Cauchy
@@ -59,7 +56,7 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  None
-------------------------------------------------------POROELASTICITY DYNAMIC
+--------------------------------------------POROELASTICITY DYNAMIC
 COUPALGO                        poro_monolithic
 PHYSICAL_TYPE                   Poro
 ITEMAX                          20
@@ -85,44 +82,44 @@ RESULTSEVRY                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    no
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
+----------------------------------------------------------SOLVER 2
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
+----------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 DAMPING                         Material
 DIVERCONT                       stop
 DYNAMICTYP                      OneStepTheta
 PREDICT                         ConstDis
 LINEAR_SOLVER                   2
----------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+-----------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
---------------------------------------------------------CLONING MATERIAL MAP
+----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3
--------------------------------------------------------------------MATERIALS
+---------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 10 INITPOROSITY 0.2
 MAT 10 MAT_PoroLawNeoHooke BULKMODULUS 1.0e8 PENALTYPARAMETER 0.0001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 2.0
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e3 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.001 DENSITY 1.0 PERMEABILITY 1.0e-4 TYPE Darcy
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 8 500000.0 DESCRIPTION -(1-exp(-2.0*t*t)) -1
-----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS porofluid NODE 100 QUANTITY velx VALUE -1.03717921840374115e-02 TOLERANCE 1e-8
-FLUID DIS porofluid NODE 115 QUANTITY pressure VALUE 2.25641439331708726e+00 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE 7.38465356205971317e-07 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE -1.11107357609442345e-05 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -7.38674790924365019e-05 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 100 QUANTITY dispx VALUE -6.40643797735274064e-05 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------RESULT DESCRIPTION
+FLUID DIS porofluid NODE 100 QUANTITY velx VALUE -9.65716783243120332e-03 TOLERANCE 1e-8
+FLUID DIS porofluid NODE 115 QUANTITY pressure VALUE  3.49538154352353247e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE  6.81808569735282129e-07 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE -9.46265170659306959e-06 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -6.24356951200862417e-05 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 100 QUANTITY dispx VALUE -5.49820202850330559e-05 TOLERANCE 1e-8
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // Node x+y+z+
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
@@ -140,7 +137,7 @@ E 6 - NUMDOF 3 ONOFF 1 0 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 E 7 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Node x-y-z-
 E 8 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
------------------------------------------------DESIGN LINE DIRICH CONDITIONS
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           11
 // Line x+z+
 E 1 - NUMDOF 3 ONOFF 1 0 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
@@ -166,7 +163,7 @@ E 10 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 E 11 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Line x+y+
 E 12 - NUMDOF 3 ONOFF 1 1 0 VAL 1.0 0.0 0.0 FUNCT 1 0 0
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 // Surface x-
 E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -180,17 +177,17 @@ E 5 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // Surface z-
 //E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-------------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+--------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE                           1
 // Line x-y+
 E 11 - NUMDOF 4 ONOFF 1 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
+--------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF                           2
 // Surface x-
 E 4 - NUMDOF 4 ONOFF 1 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 // Surface y+
 E 5 - NUMDOF 4 ONOFF 0 1 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-------------------------------DESIGN SURFACE NORMAL NO PENETRATION CONDITION
+--------------------DESIGN SURFACE NORMAL NO PENETRATION CONDITION
 DSURF                           1
 // Surface z-
 //E 2 - 2
@@ -204,10 +201,10 @@ DSURF                           1
 //E 4 - 1
 // Surface x+
 E 6 - 0
-----------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
+------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 317 DNODE 1
 NODE 107 DNODE 2
 NODE 136 DNODE 3
@@ -216,7 +213,7 @@ NODE 276 DNODE 5
 NODE 246 DNODE 6
 NODE 1 DNODE 7
 NODE 46 DNODE 8
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 246 DLINE 1
 NODE 249 DLINE 1
 NODE 257 DLINE 1
@@ -301,7 +298,7 @@ NODE 328 DLINE 12
 NODE 331 DLINE 12
 NODE 336 DLINE 12
 NODE 339 DLINE 12
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 4 DSURFACE 1
 NODE 5 DSURFACE 1
@@ -596,7 +593,7 @@ NODE 336 DSURFACE 6
 NODE 338 DSURFACE 6
 NODE 339 DSURFACE 6
 NODE 341 DSURFACE 6
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 1 DVOL 1
 NODE 2 DVOL 1
 NODE 3 DVOL 1
@@ -940,7 +937,7 @@ NODE 340 DVOL 1
 NODE 341 DVOL 1
 NODE 342 DVOL 1
 NODE 343 DVOL 1
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 5.0000000000000000e+00
 NODE 2 COORD -5.0000000000000000e+00 -5.0000000000000000e+00 1.6666666666666665e+00
 NODE 3 COORD -5.0000000000000000e+00 -1.6666666666666663e+00 1.6666666666666670e+00
@@ -1284,7 +1281,7 @@ NODE 340 COORD 3.3333333333333330e+00 3.3333333333333330e+00 -3.3333333333333339
 NODE 341 COORD 5.0000000000000000e+00 3.3333333333333335e+00 -3.3333333333333339e+00
 NODE 342 COORD 3.3333333333333330e+00 3.3333333333333330e+00 -5.0000000000000000e+00
 NODE 343 COORD 3.3333333333333326e+00 5.0000000000000000e+00 -3.3333333333333339e+00
-----------------------------------------------------------STRUCTURE ELEMENTS
+------------------------------------------------STRUCTURE ELEMENTS
 1 SOLIDH27PORO HEX27 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 22 26 25 27 24 23 21 MAT 1 KINEM nonlinear
 2 SOLIDH27PORO HEX27 2 28 29 3 6 30 31 7 32 33 34 10 14 35 36 15 37 38 39 18 41 44 43 45 25 42 40 MAT 1 KINEM nonlinear
 3 SOLIDH27PORO HEX27 28 46 47 29 30 48 49 31 50 51 52 33 35 53 54 36 55 56 57 38 59 62 61 63 43 60 58 MAT 1 KINEM nonlinear
@@ -1312,5 +1309,5 @@ NODE 343 COORD 3.3333333333333326e+00 5.0000000000000000e+00 -3.3333333333333339
 25 SOLIDH27PORO HEX27 191 190 218 219 289 288 316 317 195 222 223 224 291 290 318 319 293 320 321 322 226 299 326 327 325 324 323 MAT 1 KINEM nonlinear
 26 SOLIDH27PORO HEX27 190 202 230 218 288 300 328 316 205 232 233 222 290 301 329 318 303 330 331 320 235 307 334 335 326 333 332 MAT 1 KINEM nonlinear
 27 SOLIDH27PORO HEX27 202 210 238 230 300 308 336 328 213 240 241 232 301 309 337 329 311 338 339 330 243 315 342 343 334 341 340 MAT 1 KINEM nonlinear
--------------------------------------------------------------------------END
+---------------------------------------------------------------END
 //                              END

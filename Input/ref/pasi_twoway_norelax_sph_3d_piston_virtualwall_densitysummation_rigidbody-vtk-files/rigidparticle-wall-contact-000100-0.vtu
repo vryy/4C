@@ -1,0 +1,46 @@
+<?xml version="1.0" ?> 
+<!-- 
+# vtk DataFile Version 3.0
+-->
+<VTKFile type="UnstructuredGrid" version="0.1" compressor="vtkZLibDataCompressor" byte_order="LittleEndian">
+  <UnstructuredGrid>
+    <FieldData>
+      <DataArray type="Float64" Name="TIME" NumberOfTuples="1" format="ascii">
+2.500000000000002e-01 
+      </DataArray>
+    </FieldData>
+
+    <Piece NumberOfPoints="4" NumberOfCells="0" >
+      <Points>
+        <DataArray type="Float64" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAAMgAAAA==eNqz0GM9l7748H5zKP1fKfL5nNJ39sYQvj1MnEEZIm4EFYfJw9RbQNUZoYkDAHkTLY8=
+        </DataArray>
+      </Points>
+      
+      <Cells>
+        <DataArray type="Int32" Name="connectivity" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+        <DataArray type="Int32" Name="offsets" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+        <DataArray type="UInt8" Name="types" format="binary">
+AQAAAAAAAAAAAAAACAAAAA==eNoDAAAAAAE=
+
+        </DataArray>
+      </Cells>
+
+  <PointData>
+        <DataArray type="Float64" Name="contact force" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAANgAAAA==eNqLq9qxwqY8c38clH4Q/sCijn/p/ohqMN9eFkLvL4iAikPU2cPo21D1MP0qUHGYOQDlES6a
+        </DataArray>
+        <DataArray type="Float64" Name="normal direction" NumberOfComponents="3" format="binary">
+AQAAAGAAAABgAAAAMgAAAA==eNrbLnZs23abzfbbofSpuxlacy6+t38P4e8/DBU/ARWHqtsPo0+hitt3o4kDAE8CNtc=
+        </DataArray>
+      </PointData>
+
+    </Piece>
+  </UnstructuredGrid>
+</VTKFile>

@@ -1,31 +1,29 @@
 ==================================================================
 General Data File CCARAT
 ==================================================================
------------------------------------------------------------------------TITLE
+-------------------------------------------------------------TITLE
 Default_title
-----------------------------------------------------------------PROBLEM SIZE
+------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        8
 NODES                           27
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
------------------------------------------------------------------PROBLEM TYP
+-------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 RESTART                         0
---------------------------------------------------------------DISCRETISATION
+----------------------------------------------------DISCRETISATION
 NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
+----------------------------------------------------------------IO
 OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Yes
-FLUID_SOL                       No
 FLUID_STRESS                    No
-FLUID_VIS                       No
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
+------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      GEMM
 RESULTSEVRY                     1
@@ -43,20 +41,20 @@ ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
---------------------------------------------------------------------SOLVER 1
+----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
+------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
 NDSURF                          6
 NDVOL                           1
------------------------------------------------DESIGN SURF DIRICH CONDITIONS
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 0 0 VAL 0.3 0.0 0.0 FUNCT 1 0 0
 E 3 - NUMDOF 3 ONOFF 1 0 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
----------------------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DNODE-NODE TOPOLOGY
 NODE 9 DNODE 1
 NODE 21 DNODE 2
 NODE 10 DNODE 3
@@ -65,7 +63,7 @@ NODE 22 DNODE 5
 NODE 27 DNODE 6
 NODE 11 DNODE 7
 NODE 23 DNODE 8
----------------------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
 NODE 9 DLINE 1
 NODE 12 DLINE 1
 NODE 21 DLINE 1
@@ -102,7 +100,7 @@ NODE 11 DLINE 11
 NODE 23 DLINE 12
 NODE 26 DLINE 12
 NODE 27 DLINE 12
----------------------------------------------------------DSURF-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
 NODE 21 DSURFACE 1
 NODE 10 DSURFACE 1
 NODE 27 DSURFACE 1
@@ -157,7 +155,7 @@ NODE 4 DSURFACE 6
 NODE 16 DSURFACE 6
 NODE 17 DSURFACE 6
 NODE 6 DSURFACE 6
-----------------------------------------------------------DVOL-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
 NODE 9 DVOLUME 1
 NODE 21 DVOLUME 1
 NODE 10 DVOLUME 1
@@ -185,7 +183,7 @@ NODE 5 DVOLUME 1
 NODE 19 DVOLUME 1
 NODE 6 DVOLUME 1
 NODE 8 DVOLUME 1
------------------------------------------------------------------NODE COORDS
+-------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 1.000000000000000e+00
 NODE 2 COORD 5.000000000000000e-01 0.000000000000000e+00 1.000000000000000e+00
 NODE 3 COORD 0.000000000000000e+00 0.000000000000000e+00 5.000000000000000e-01
@@ -225,12 +223,12 @@ NODE 27 COORD 1.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 2 DENS 1.0
 MAT 2 ELAST_CoupNeoHooke YOUNG 1000.0 NUE 0.3
-----------------------------------------------------------------------FUNCT1
+------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION sin(t/2*pi/2) 1
-----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.50021470818222424e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -1.296593242983814389e-14 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 3.008829487932236096e-14 TOLERANCE 1e-12
--------------------------------------------------------------------------END
+------------------------------------------------RESULT DESCRIPTION
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE  1.50021758424933011e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -1.45448686504756794e-14 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE  3.39864329974819944e-14 TOLERANCE 1e-12
+---------------------------------------------------------------END
 //                              END

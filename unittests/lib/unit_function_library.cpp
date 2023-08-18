@@ -7,11 +7,13 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include <fstream>
 #include <gtest/gtest.h>
-#include "lib_function.H"
-#include "lib_function_library.H"
-#include "lib_cubic_spline_interpolation.H"
+
+#include "baci_lib_cubic_spline_interpolation.H"
+#include "baci_lib_function.H"
+#include "baci_lib_function_library.H"
+
+#include <fstream>
 
 namespace
 {

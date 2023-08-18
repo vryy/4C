@@ -9,6 +9,7 @@ set(SOURCE_LIST
     unit_function_library.cpp
     unit_functionvariables.cpp
     unit_gridgenerator.cpp
+    unit_inputreader.cpp
     unit_linedefinition.cpp
     unit_symbolic_expression.cpp
     unit_tensor_transformation.cpp

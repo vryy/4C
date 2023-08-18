@@ -29,7 +29,7 @@ find_library(
   /usr/lib64
   )
 
-message("II use CLN in ${CLN_LIBRARY}")
+message(STATUS "Use CLN in ${CLN_LIBRARY}")
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(CLN DEFAULT_MSG CLN_LIBRARY CLN_INCLUDE_DIR)

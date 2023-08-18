@@ -6,8 +6,9 @@
 /*---------------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "unittest_utils_assertions.h"
-#include "particle_rigidbody_utils.H"
+
+#include "baci_particle_rigidbody_utils.H"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {

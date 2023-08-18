@@ -26,9 +26,7 @@ OUTPUT_BIN                      yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   Cauchy
 STRUCT_STRAIN                   ea
-FLUID_SOL                       Yes
 FLUID_STRESS                    No
-FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000

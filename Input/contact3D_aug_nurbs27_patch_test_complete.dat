@@ -41,7 +41,6 @@ STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_STRAIN                   No
 STRUCT_VEL_ACC                  No
-STRUCT_SE                       No
 STRUCT_COUPLING_STRESS          No
 STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No

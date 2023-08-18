@@ -10,10 +10,10 @@
 /*----------------------------------------------------------------------*/
 
 #include <gtest/gtest.h>
-#include "unittest_utils_assertions.h"
 
-#include "matelast_isoogden.H"
-#include "mat_par_material.H"
+#include "baci_mat_par_material.H"
+#include "baci_matelast_isoogden.H"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {
@@ -54,14 +54,14 @@ namespace
         28.615778605, 688.214269644, 25322.480278435, 0.0, 0.0, 0.0};
 
     // define modified principal strains
-    LINALG::Matrix<3, 1> modstr(true);
+    CORE::LINALG::Matrix<3, 1> modstr(true);
     modstr(0) = 0.9;
     modstr(1) = 0.8;
     modstr(2) = 0.7;
 
     // initialize resulting coefficients
-    LINALG::Matrix<3, 1> modgamma(true);
-    LINALG::Matrix<6, 1> moddelta(true);
+    CORE::LINALG::Matrix<3, 1> modgamma(true);
+    CORE::LINALG::Matrix<6, 1> moddelta(true);
 
     // call AddCoefficientsStretchesModified function with test modified principal strains
     isoogden_.AddCoefficientsStretchesModified(modgamma, moddelta, modstr);

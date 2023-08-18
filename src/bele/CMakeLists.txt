@@ -4,7 +4,6 @@ set(_bele_dependencies
     # cmake-format: sortable
     core
     lib
-    linalg
     mat
     so3
     )

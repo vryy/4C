@@ -7,7 +7,6 @@ set(_beam3_dependencies
     inpar
     io
     lib
-    linalg
     mat
     structure_new
     )

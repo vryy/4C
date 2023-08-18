@@ -6,11 +6,9 @@ set(_ale_dependencies
     contact
     core
     fluid_ele
-    geometry
     inpar
     io
     lib
-    linalg
     mat
     mortar
     nurbs_discret

@@ -103,10 +103,6 @@ STRUCT_DISP                     Yes
 //     Yes,No,yes,no,YES,NO
 STRUCT_VEL_ACC                  No
 //
-// Output of strain energy
-//     Yes,No,yes,no,YES,NO
-STRUCT_SE                       No
-//
 // Output of stress
 //     No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_STRESS                   No
@@ -125,9 +121,6 @@ STRUCT_PLASTIC_STRAIN           No
 STRUCT_SURFACTANT               No
 //
 //     Yes,No,yes,no,YES,NO
-FLUID_SOL                       Yes
-//
-//     Yes,No,yes,no,YES,NO
 FLUID_STRESS                    No
 //
 //     Yes,No,yes,no,YES,NO
@@ -135,9 +128,6 @@ FLUID_WALL_SHEAR_STRESS         No
 //
 //     Yes,No,yes,no,YES,NO
 FLUID_ELEDATA_EVRY_STEP         No
-//
-//     Yes,No,yes,no,YES,NO
-FLUID_VIS                       No
 //
 //     Yes,No,yes,no,YES,NO
 THERM_TEMPERATURE               No

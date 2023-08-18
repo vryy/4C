@@ -26,7 +26,6 @@ PRECISION_SCREEN       5
 FILE_TYPE              csv
 WRITE_HEADER           no
 ----------------------------------------------------------IO/RUNTIME VTP OUTPUT STRUCTURE
-OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
 EVERY_ITERATION                 No
 OWNER                           Yes

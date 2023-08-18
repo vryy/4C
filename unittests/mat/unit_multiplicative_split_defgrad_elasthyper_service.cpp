@@ -8,14 +8,11 @@
 
 #include <gtest/gtest.h>
 
-#include "mat_par_material.H"
-#include "mat_multiplicative_split_defgrad_elasthyper_service.H"
-
-#include "matelast_isoneohooke.H"
-
-#include "linalg_fixedsizematrix.H"
-
-#include "unittest_utils_assertions.h"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
+#include "baci_mat_par_material.H"
+#include "baci_matelast_isoneohooke.H"
+#include "baci_unittest_utils_assertions.h"
 
 namespace
 {
@@ -42,16 +39,16 @@ namespace
       iCinM_.MultiplyNT(iFinM_, iFinM_);
     }
 
-    LINALG::Matrix<3, 3> FM_;
-    LINALG::Matrix<3, 3> iFinM_;
+    CORE::LINALG::Matrix<3, 3> FM_;
+    CORE::LINALG::Matrix<3, 3> iFinM_;
 
-    LINALG::Matrix<3, 3> CM_;
-    LINALG::Matrix<3, 3> iCinM_;
+    CORE::LINALG::Matrix<3, 3> CM_;
+    CORE::LINALG::Matrix<3, 3> iCinM_;
   };
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateCe)
   {
-    LINALG::Matrix<3, 3> CeM_target(false);
+    CORE::LINALG::Matrix<3, 3> CeM_target(false);
     CeM_target(0, 0) = 1.3107725000000006;
     CeM_target(1, 1) = 1.5284889394999996;
     CeM_target(2, 2) = 1.7604995235000003;
@@ -59,7 +56,7 @@ namespace
     CeM_target(0, 2) = CeM_target(2, 0) = 0.091697784;
     CeM_target(1, 2) = CeM_target(2, 1) = 0.0564151401;
 
-    LINALG::Matrix<3, 3> CeM(false);
+    CORE::LINALG::Matrix<3, 3> CeM(false);
     MAT::EvaluateCe(FM_, iFinM_, CeM);
 
     BACI_EXPECT_NEAR(CeM, CeM_target, 1.0e-10);
@@ -67,7 +64,7 @@ namespace
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestEvaluateiCinCiCin)
   {
-    LINALG::Matrix<3, 3> iCinCiCinM_target(false);
+    CORE::LINALG::Matrix<3, 3> iCinCiCinM_target(false);
     iCinCiCinM_target(0, 0) = 1.418955902138138;
     iCinCiCinM_target(1, 1) = 1.6219134553554275;
     iCinCiCinM_target(2, 2) = 1.832708744871652;
@@ -75,7 +72,7 @@ namespace
     iCinCiCinM_target(0, 2) = iCinCiCinM_target(2, 0) = 0.113283079933819;
     iCinCiCinM_target(1, 2) = iCinCiCinM_target(2, 1) = 0.0631150197598975;
 
-    LINALG::Matrix<3, 3> iCinCiCinM(false);
+    CORE::LINALG::Matrix<3, 3> iCinCiCinM(false);
     MAT::EvaluateiCinCiCin(CM_, iCinM_, iCinCiCinM);
 
     BACI_EXPECT_NEAR(iCinCiCinM, iCinCiCinM_target, 1.0e-10);
@@ -84,8 +81,8 @@ namespace
 
   TEST_F(MultiplicativeSplitDefgradElastHyperServiceTest, TestElastHyperEvaluateElasticPart)
   {
-    LINALG::Matrix<6, 1> S_stress;
-    LINALG::Matrix<6, 6> cmat;
+    CORE::LINALG::Matrix<6, 1> S_stress;
+    CORE::LINALG::Matrix<6, 6> cmat;
 
     // Create parameter of IsoNeoHooke material
     Teuchos::RCP<MAT::PAR::Material> isoNeoHookeParams = Teuchos::rcp(new MAT::PAR::Material());
@@ -106,8 +103,8 @@ namespace
     MAT::ElastHyperEvaluateElasticPart(FM_, iFinM_, S_stress, cmat, potsum, properties, 0, 0);
 
     // Build matrices with the correct solution
-    LINALG::Matrix<6, 1> S_stress_target;
-    LINALG::Matrix<6, 6> cmat_target;
+    CORE::LINALG::Matrix<6, 1> S_stress_target;
+    CORE::LINALG::Matrix<6, 6> cmat_target;
 
     S_stress_target(0) = -0.16087311035295149;
     S_stress_target(1) = -0.0041652481745947378;

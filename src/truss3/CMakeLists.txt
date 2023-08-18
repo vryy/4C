@@ -5,7 +5,6 @@ set(_truss3_dependencies
     core
     inpar
     lib
-    linalg
     mat
     structure_new
     )

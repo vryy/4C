@@ -1,4 +1,17 @@
 #-------------------------------------------------------------------------------
+# General rules when to create a pipeline
+# N.B. This doesn't say anything about which jobs are run but only determines
+# if a pipeline is created.
+workflow:
+  rules:
+  # for merge requests
+  - if: $CI_MERGE_REQUEST_IID
+  # for tags
+  - if: $CI_COMMIT_TAG
+  # for the default branch
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  # if manually triggered with the web interface's "run pipeline"
+  - if: $CI_PIPELINE_SOURCE == "web"
 
 #-------------------------------------------------------------------------------
 # Define global variables for all jobs
@@ -25,14 +38,12 @@ variables:
 
 
   # Variables for docker
-  BACI_DOCKER_BUILD_IMAGES:
-    description: Build the docker images and push them to the CI registry
-    value: 'False'
-    options:
-    - 'True'
-    - 'False'
+  # Whether to build the docker images and push them to the CI registry
+  BACI_DOCKER_BUILD_IMAGES: 'False'
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies:latest
 
+before_script:
+- git config --global --add safe.directory ${CI_PROJECT_DIR}
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
 #-------------------------------------------------------------------------------
@@ -130,14 +141,15 @@ variables:
     when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
-# This kind of job is started when a user triggers a job in the gitlab UI.
-# Full tests are performed.
+# This kind of job is started when a user triggers a job in the gitlab UI or
+# inside a MR. Full tests are performed.
 .buildtest_full:
   extends: .buildtest_base
   rules:
   - if: $GITLAB_SCHEDULER_TYPE != "0"
     when: never
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
 
 
 # This kind of job is started by a scheduler, with the variable
@@ -168,10 +180,12 @@ variables:
     coverage_report/ --title "BACI commit $CI_COMMIT_SHORT_SHA" | tee genhtml_coverage.log
     # add repo link to the commit that the report is based on
   - find coverage_report/ -type f -exec sed -i "s/BACI commit $CI_COMMIT_SHORT_SHA/BACI
-    commit  \<a href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
+    commit  \<a 
+    href=\"https:\/\/gitlab.lrz.de\/baci\/baci\/commit\/$CI_COMMIT_SHA\"\>$CI_COMMIT_SHORT_SHA\<\/a\>/g"
     {} \;
+  after_script:
   - *post-process-log-files
-      # update (push) the cache of the coverage report:
+    # update (push) the cache of the coverage report:
     # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
     # single pipeline)
   cache:
@@ -185,8 +199,9 @@ variables:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
     - '*.log'
+    - coverage_report/
     when: always
-    expire_in: 1 day
+    expire_in: 30 days
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "3"
 
@@ -250,16 +265,17 @@ variables:
 
 # Doxygen job
 .doxygen:
-  stage: doxygen
+  stage: documentation
   script:
   - echo Doxygen
     # Delete old build files.
   - rm -rf ../baci-build/
   - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
 
-    # Configure and build
+    # Configure and build (setting BACI_BUILD_READTHEDOCS=OFF, so that we don't need the python virtual environment
   - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
-  - ${CMAKE_COMMAND} --build . --target documentation > ../doxygen.log
+    -DBACI_BUILD_READTHEDOCS=OFF
+  - ${CMAKE_COMMAND} --build . --target doxygen > ../doxygen.log
 
     # Throw error if there are Latex errors in doxygen comments. Latex errors can be uniquely identified by a line starting with "! ".
   - if grep -qE '^[eE]rror:' ../doxygen.log; then echo 'Found at least one fatal error
@@ -268,7 +284,7 @@ variables:
   - if grep -qE '^! ' ../doxygen.log; then echo "Found at least one LaTeX error during
     doxygen build."; exit 1; else echo "Doxygen builds without LaTeX errors."; fi
     # Move final doxygen into the base folder for the next stage
-  - mv $CI_PROJECT_DIR/../baci-build/doc/html $CI_PROJECT_DIR/doxygen
+  - mv $CI_PROJECT_DIR/../baci-build/doc/doxygen/html $CI_PROJECT_DIR/doxygen
   after_script:
     # Write Selection of the output into the terminal and therefore to GITLAB
   - sed -n '/* Extra verbosity turned on/,/Test project /p' ../doxygen.log
@@ -281,6 +297,37 @@ variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
 
+# ReadTheDocs job
+.readthedocs:
+  stage: documentation
+  script:
+  - echo Create ReadTheDocs documentation
+    # loading python virtual environment
+  - cd ${CI_PROJECT_DIR}
+  - ./create-baci-python-venv
+    # Delete old build files.
+  - rm -rf ../baci-build/
+  - mkdir -p ${CI_PROJECT_DIR}/../baci-build && cd ${CI_PROJECT_DIR}/../baci-build
+
+    # Configure and build
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
+  - ${CMAKE_COMMAND} --build . --target readthedocs | tee ../readthedocs.log
+
+    # Throw error if there are errors (or Warnings treated as errors) in readthedocs comments.
+  - if grep -qE 'ERROR|treated as error:' ../readthedocs.log; then echo 'Found at
+    least one fatal error during readthedocs generation.'; exit 1; else echo 'ReadTheDocs
+    documentation builds without fatal errors.'; fi
+    # Move final readthedocs into the base folder for the next stage
+  - mv $CI_PROJECT_DIR/../baci-build/doc/readthedocs/html $CI_PROJECT_DIR/readthedocs
+  after_script:
+    # Write Selection of the output into the terminal and therefore to GITLAB
+  - sed -n '/* Extra verbosity turned on/,/Test project /p' ../readthedocs.log
+    # Move the log file to the source folder, so it can be found by artifacts.
+  - mv ../readthedocs.log readthedocs.log
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+
 #-------------------------------------------------------------------------------
 # Stages during testing.
 #-------------------------------------------------------------------------------
@@ -289,7 +336,7 @@ stages:
 - build-docker-images
 - checkcode
 - buildtest
-- doxygen
+- documentation
 - pages
 
 #-------------------------------------------------------------------------------
@@ -303,7 +350,6 @@ checkcode:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   script:
   - echo code check
-  - cd ../baci
   - ./create-baci-python-venv
   - bash utilities/code_checks/check_format_and_header
   artifacts:
@@ -317,9 +363,11 @@ checkcode:
     when: never
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
   - if: $CI_PIPELINE_SOURCE == "schedule"
   tags:
   - checkcode
+  interruptible: true
 
 # IMCS--------------------------------------------------------------------------
 
@@ -330,18 +378,6 @@ imcs-buildtest_minimal_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-minimal-ubuntu20
-  needs: [checkcode]
-
-imcs-buildtest_full_ubuntu20:
-  extends: .buildtest_full
-  variables:
-    NUMBER_OF_TEST_THREADS: '12'
-    NUMBER_OF_BUILD_THREADS: '12'
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
-    CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
-    CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
-  tags:
-  - imcs-full-ubuntu20
   needs: [checkcode]
 
 imcs-buildtest_daily_ubuntu20:
@@ -388,7 +424,7 @@ codeclimate:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
     # configure to get a compilation database
-  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DBACI_BUILD_READTHEDOCS=OFF --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
     # create  and activate virtual environment
   - python3 -m venv venv
   - . venv/bin/activate
@@ -409,10 +445,12 @@ codeclimate:
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
   - if: $CI_PIPELINE_SOURCE == "schedule"
   allow_failure: true
   tags:
   - codeclimate
+  interruptible: true
 
 buildtest_minimal_release:
   extends: .buildtest_minimal
@@ -449,9 +487,10 @@ pages: # job name needs to be pages
   variables:
     # stage operates exclusively on artifacts. No need for source code.
     GIT_STRATEGY: fetch
-    # Download Doxygen from previous doxygen stage
+    # Download Doxygen and ReadTheDocs from previous documentation stage
   dependencies:
   - doxygen
+  - readthedocs
   script:
     # print the measured coverage rate
   - echo 'measured'
@@ -462,12 +501,16 @@ pages: # job name needs to be pages
   - mv coverage_report public/coverage_report
     # Move most recent doxygen to public folder
   - mv doxygen public/doxygen
+    # Move most recent readthedocs to public folder
+  - mv readthedocs public/readthedocs
     # Create python venv to create badges
   - python3 -m venv venv
   - . venv/bin/activate
   - pip install anybadge
     # Create doxygen badge
   - anybadge -l doxygen -v ok --color=green -f public/doxygen.svg
+    # Create readthedocs badge
+  - anybadge -l readthedocs -v ok --color=green -f public/readthedocs.svg
     # Create website badge
   - anybadge -l website -v ok --color=green -f public/website.svg
   coverage: /lines\.*:\s+\d+\.\d+/
@@ -507,6 +550,8 @@ doxygen-web:
   - if: $GITLAB_SCHEDULER_TYPE == "3"
     when: never
   - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
+  interruptible: true
 
 doxygen:
   extends: .doxygen
@@ -547,6 +592,7 @@ build-base-dependencies:
   - docker push $FULL_IMAGE_PATH
   rules:
   - if: $BACI_DOCKER_BUILD_IMAGES == "True"
+    when: manual
 
 buildtest_full_release:
   extends: .buildtest_full
@@ -567,6 +613,7 @@ buildtest_full_release:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
   - !reference [.buildtest_full, rules]
+  interruptible: true
 
 buildtest_full_debug:
   extends: .buildtest_daily_debug
@@ -614,3 +661,44 @@ build-verify-headers:
     expire_in: 1 day
   rules:
   - !reference [checkcode, rules]
+  interruptible: true
+
+readthedocs-web:
+  extends: .readthedocs
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  tags:
+  - readthedocs
+  artifacts:
+    name: $CI_JOB_NAME-$CI_JOB_ID
+    paths:
+    - readthedocs.log
+    when: always
+    expire_in: 1 day
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "3"
+    when: never
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
+  interruptible: true
+
+readthedocs:
+  extends: .readthedocs
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  tags:
+  - readthedocs
+  artifacts:
+    name: $CI_JOB_NAME-$CI_JOB_ID
+    paths:
+    - readthedocs.log
+    - readthedocs/
+    when: always
+    expire_in: 1 day
+  rules:
+  - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  - if: $CI_PIPELINE_SOURCE == "schedule"

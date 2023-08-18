@@ -76,7 +76,6 @@ CUTOFF_RADIUS                   1.0e-1
 CHOICE_MASTER_SLAVE             higher_eleGID_is_slave
 ----------------------------------BEAM POTENTIAL/RUNTIME VTK OUTPUT
 VTK_OUTPUT_BEAM_POTENTIAL       yes
-OUTPUT_DATA_FORMAT              binary
 INTERVAL_STEPS                  1
 EVERY_ITERATION                 no
 FORCES                          yes
