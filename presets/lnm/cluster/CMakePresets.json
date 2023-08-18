@@ -43,9 +43,9 @@
       }
     },
     {
-      "name": "lnm_deep",
-      "displayName": "Release build for deep at LNM",
-      "description": "Build release version of BACI on deep at LNM",
+      "name": "lnm_thought",
+      "displayName": "Release build for thought at LNM",
+      "description": "Build release version of BACI on thought at LNM",
       "inherits": [
         ".lnm_cluster"
       ],
