@@ -114,6 +114,8 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseType::SetupElementDefinition(
   defs["HEX8"].AddIntVector("HEX8", 8).AddNamedInt("MAT");
 
   defs["TET4"].AddIntVector("TET4", 4).AddNamedInt("MAT");
+
+  defs["TET10"].AddIntVector("TET10", 10).AddNamedInt("MAT");
 }
 
 /*----------------------------------------------------------------------*

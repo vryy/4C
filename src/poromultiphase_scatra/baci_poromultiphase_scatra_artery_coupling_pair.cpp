@@ -3271,8 +3271,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       xi[2] = 0.25;
       break;
     }
+    case DRT::Element::tet10:
+    {
+      xi[0] = 0.25;
+      xi[1] = 0.25;
+      xi[2] = 0.25;
+      break;
+    }
     default:
-      dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+      dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
   }
 
   if (PROJOUTPUT)
@@ -3290,12 +3297,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         // 3D case
       case DRT::Element::hex8:
       case DRT::Element::tet4:
+      case DRT::Element::tet10:
       {
         std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << ", xi3: " << xi[2] << std::endl;
         break;
       }
       default:
-        dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+        dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
     }
   }
 
@@ -3374,12 +3382,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
             // 3D case
           case DRT::Element::hex8:
           case DRT::Element::tet4:
+          case DRT::Element::tet10:
           {
             std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << ", xi3: " << xi[2] << std::endl;
             break;
           }
           default:
-            dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+            dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
         }
         std::cout << " with residual: " << residual << std::endl;
         std::cout << "r1:\n" << r1 << ", x2:\n" << x2 << std::endl;
@@ -3401,12 +3410,13 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
           // 3D case
         case DRT::Element::hex8:
         case DRT::Element::tet4:
+        case DRT::Element::tet10:
         {
           std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << ", xi3: " << xi[2] << std::endl;
           break;
         }
         default:
-          dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+          dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
       }
       std::cout << " with residual: " << residual << std::endl;
     }
@@ -3442,6 +3452,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
                 << std::endl;
   }
 
+  // check if xi lies inside element
   switch (element2_->Shape())
   {
     case DRT::Element::quad4:
@@ -3462,8 +3473,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         projection_valid = false;
       break;
     }
+    case DRT::Element::tet10:  // TODO: Is this correct?
+    {
+      if (xi[0] < -XIETATOL || xi[1] < -XIETATOL || xi[2] < -XIETATOL ||
+          xi[0] + xi[1] + xi[2] > limit)
+        projection_valid = false;
+      break;
+    }
     default:
-      dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+      dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
   }
 
   if (PROJOUTPUT)
@@ -3525,13 +3543,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       // 3D case
     case DRT::Element::hex8:
     case DRT::Element::tet4:
+    case DRT::Element::tet10:
     {
       CORE::DRT::UTILS::shape_function_3D(N2, xi[0], xi[1], xi[2], distypeCont);
       CORE::DRT::UTILS::shape_function_3D_deriv1(N2_xi, xi[0], xi[1], xi[2], distypeCont);
       break;
     }
     default:
-      dserror("Only quad4, hex8 and tet4 are valid so far for second element");
+      dserror("Only quad4, hex8, tet4 and tet10 are valid so far for second element");
   }
 
   return;
@@ -3734,6 +3753,8 @@ template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT:
     DRT::Element::hex8, 1>;
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
     DRT::Element::tet4, 1>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
+    DRT::Element::tet10, 1>;
 
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
     DRT::Element::quad4, 2>;
@@ -3741,6 +3762,8 @@ template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT:
     DRT::Element::hex8, 2>;
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
     DRT::Element::tet4, 2>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
+    DRT::Element::tet10, 2>;
 
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
     DRT::Element::quad4, 3>;
@@ -3748,3 +3771,5 @@ template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT:
     DRT::Element::hex8, 3>;
 template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
     DRT::Element::tet4, 3>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
+    DRT::Element::tet10, 3>;

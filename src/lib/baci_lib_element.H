@@ -1656,6 +1656,9 @@ namespace DRT
       case DRT::Element::line3:
         s = "LINE3";
         break;
+      case DRT::Element::line4:
+        s = "LINE4";
+        break;
       case DRT::Element::point1:
         s = "POINT1";
         break;
