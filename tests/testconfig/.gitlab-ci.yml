@@ -473,16 +473,15 @@ buildtest_coverage:
 
 pages: # job name needs to be pages
   stage: pages
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
-  variables:
-    # stage operates exclusively on artifacts. No need for source code.
-    GIT_STRATEGY: fetch
+  image: alpine:3.18
     # Download Doxygen and ReadTheDocs from previous documentation stage
   dependencies:
   - doxygen
   - readthedocs
+  before_script: []
   script:
     # Create python venv for gitlab api and anybadges
+  - apk add python3 curl unzip git
   - python3 -m venv venv
   - . venv/bin/activate
   - pip install -r utilities/coverage/requirements.txt
