@@ -111,6 +111,7 @@ contact_constitutivelaw/   @baci/team_contact
 core/                      @baci/team_infrastructure
 core/coupling              @baci/team_discretization
 core/discretization        @baci/team_discretization
+core/linear_solver         @baci/team_solvers
 core/utils                 @baci/team_infrastructure
 
 create_rtdfiles/           @baci/team_infrastructure
