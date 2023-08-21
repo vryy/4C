@@ -10,6 +10,7 @@
 #include "baci_linalg_utils_densematrix_eigen.H"
 
 #include "baci_linalg_fortran_definitions.h"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_utils_exceptions.H"
 
 /*----------------------------------------------------------------------*
@@ -152,13 +153,13 @@ double CORE::LINALG::GeneralizedEigen(
     CORE::LINALG::SerialDenseMatrix::Base H;
     H.shape(N, N);
 
-    H.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, tau[i], v, v, 0.);
+    CORE::LINALG::multiplyNT(0., H, tau[i], v, v);
     H.scale(-1.);
     for (int k = 0; k < N; ++k) H(k, k) = 1. + H(k, k);
 
     CORE::LINALG::SerialDenseMatrix::Base Q_help;
     Q_help.shape(N, N);
-    Q_help.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Q_new, H, 0.0);
+    CORE::LINALG::multiply(Q_help, Q_new, H);
     Q_new = Q_help;
   }
 
@@ -183,11 +184,11 @@ double CORE::LINALG::GeneralizedEigen(
   CORE::LINALG::SerialDenseMatrix::Base A_tmp;
   A_tmp.shape(N, N);
   // A_tt.Multiply('T','N',1.,Q_qr_tt,A,0.);
-  A_tmp.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1., Q_new, tmpA, 0.);
+  CORE::LINALG::multiplyTN(A_tmp, Q_new, tmpA);
 
   CORE::LINALG::SerialDenseMatrix::Base A_new;
   A_new.shape(N, N);
-  A_new.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., A_tmp, P, 0.);
+  CORE::LINALG::multiply(A_new, A_tmp, P);
 
   a = A_new.values();
 

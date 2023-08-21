@@ -17,6 +17,7 @@
 #include "baci_io_gmsh.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mortar_defines.H"
 #include "baci_mortar_dofset.H"
 #include "baci_mortar_element.H"
@@ -6596,7 +6597,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
     // Evaluate frictional trail traction
     CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
-    temptrac.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
+    CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
     // Lagrange multiplier in normal direction
     double lmuzawan = 0.0;
@@ -6608,7 +6609,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
     // Lagrange multiplier in tangential direction
     CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
-    lmuzawatan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, lmuzawa, 0.0);
+    CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
     if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
              InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
@@ -6752,8 +6753,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
       // Evaluate frictional trail traction
       CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
-      temptrac.multiply(
-          Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
+      CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
       // Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
@@ -6766,7 +6766,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
       // Lagrange multiplier in tangential direction
       CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
-      lmuzawatan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, lmuzawa, 0.0);
+      CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
       if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
                InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||
@@ -6971,8 +6971,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
       // Evaluate frictional trail traction
       CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
-      temptrac.multiply(
-          Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
+      CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
       // Lagrange multiplier in normal direction
       double lmuzawan = 0.0;
@@ -6985,7 +6984,7 @@ void CONTACT::CoInterface::FDCheckPenaltyTracFric()
 
       // Lagrange multiplier in tangential direction
       CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
-      lmuzawatan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, lmuzawa, 0.0);
+      CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
       if ((DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(
                InterfaceParams(), "STRATEGY") == INPAR::CONTACT::solution_penalty) ||

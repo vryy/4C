@@ -18,6 +18,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_list.H"
 #include "baci_mat_myocard.H"
 #include "baci_scatra_ele_calc_hdg.H"
@@ -610,7 +611,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     }
   }
 
-  Mmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPartOld, massPartOldW, 0.0);
+  CORE::LINALG::multiplyNT(Mmat, massPartOld, massPartOldW);
 
   for (unsigned int q = 0; q < shapes_old->nqpoints_; ++q)
     for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
@@ -618,7 +619,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   CORE::LINALG::SerialDenseMatrix tempMat1(
       shapes->ndofs_, actmat->GetNumberOfInternalStateVariables());
-  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, massPartOldW, state_variables, 0.0);
+  CORE::LINALG::multiply(tempMat1, massPartOldW, state_variables);
 
   using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
   using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -632,7 +633,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
       shapes->nqpoints_, actmat->GetNumberOfInternalStateVariables());
-  tempMat2.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, massPart, tempMat1, 0.0);
+  CORE::LINALG::multiplyTN(tempMat2, massPart, tempMat1);
 
   actmat->SetGP(shapes->nqpoints_);
   actmat->ResizeInternalStateVariables();
@@ -740,7 +741,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     }
   }
 
-  Mmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPartOld, massPartOldW, 0.0);
+  CORE::LINALG::multiplyNT(Mmat, massPartOld, massPartOldW);
 
   for (unsigned int q = 0; q < shape_gp_old.size(); ++q)
     for (int k = 0; k < actmat->GetNumberOfInternalStateVariables(); ++k)
@@ -748,7 +749,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   CORE::LINALG::SerialDenseMatrix tempMat1(
       polySpace->Size(), actmat->GetNumberOfInternalStateVariables());
-  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, massPartOldW, state_variables, 0.0);
+  CORE::LINALG::multiply(tempMat1, massPartOldW, state_variables);
 
   using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
   using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -762,7 +763,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
   CORE::LINALG::SerialDenseMatrix tempMat2(
       shape_gp.size(), actmat->GetNumberOfInternalStateVariables());
-  tempMat2.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, massPart, tempMat1, 0.0);
+  CORE::LINALG::multiplyTN(tempMat2, massPart, tempMat1);
 
   actmat->SetGP(shape_gp.size());
   actmat->ResizeInternalStateVariables();

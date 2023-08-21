@@ -10,6 +10,7 @@ multi-scale framework
 /*--------------------------------------------------------------------------*/
 #include "baci_lib_discret.H"
 #include "baci_lib_utils.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
 #include "baci_mat_newman_multiscale.H"
@@ -128,7 +129,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCondMultiScale<distype,
   Teuchos::SerialDenseSolver<ordinalType, scalarType> invert;
   invert.setMatrix(Teuchos::rcpFromRef(N));
   invert.invert();
-  conc.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, N, conc_gp, 0.0);
+  CORE::LINALG::multiply(conc, N, conc_gp);
 }
 
 /*----------------------------------------------------------------------*

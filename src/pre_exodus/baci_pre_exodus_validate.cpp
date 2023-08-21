@@ -18,6 +18,7 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "baci_io_control.H"  //for writing to the error file
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_inputreader.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_pre_exodus_soshextrusion.H"  //just temporarly for gmsh-plot
 
 /*----------------------------------------------------------------------*/
@@ -269,7 +270,7 @@ bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes, const 
   if (NSD == 3)
   {
     CORE::LINALG::SerialDenseMatrix xjm(NSD, NSD);
-    xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xyze, 0.0);
+    CORE::LINALG::multiplyNT(xjm, deriv, xyze);
     CORE::LINALG::Matrix<3, 3> jac(xjm.values(), true);
     const double det = jac.Determinant();
 
@@ -373,7 +374,7 @@ int EXODUS::EleSaneSign(
   {
     CORE::DRT::UTILS::shape_function_3D_deriv1(
         deriv, local_nodecoords(i, 0), local_nodecoords(i, 1), local_nodecoords(i, 2), distype);
-    xjm.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, deriv, xyze, 0.0);
+    CORE::LINALG::multiplyNT(xjm, deriv, xyze);
     const double det = xjm(0, 0) * xjm(1, 1) * xjm(2, 2) + xjm(0, 1) * xjm(1, 2) * xjm(2, 0) +
                        xjm(0, 2) * xjm(1, 0) * xjm(2, 1) - xjm(0, 2) * xjm(1, 1) * xjm(2, 0) -
                        xjm(0, 0) * xjm(1, 2) * xjm(2, 1) - xjm(0, 1) * xjm(1, 0) * xjm(2, 2);

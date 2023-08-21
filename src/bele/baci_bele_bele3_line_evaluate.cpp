@@ -14,6 +14,7 @@
 #include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_utils_exceptions.H"
 
@@ -206,7 +207,7 @@ double DRT::ELEMENTS::Bele3Line::f2_substitution(const CORE::LINALG::SerialDense
   // compute derivative of parametrization
   double dr = 0.0;
   CORE::LINALG::SerialDenseVector der_par(iel);
-  der_par.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, xye, deriv, 0.0);
+  CORE::LINALG::multiplyNT(der_par, xye, deriv);
   dr = CORE::LINALG::Norm2(der_par);
   return dr;
 }

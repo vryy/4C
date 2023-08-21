@@ -25,6 +25,7 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_constraintmixture.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_growthremodel_elasthyper.H"
@@ -1777,11 +1778,11 @@ void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
   // --- EAS default update ---------------------------
   CORE::LINALG::SerialDenseMatrix eashelp(neas_, 1);
   /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
-  eashelp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *oldKda, res_d_eas, 0.0);
+  CORE::LINALG::multiply(eashelp, *oldKda, res_d_eas);
   /*---------------------------------------- add old Rtilde to eashelp */
   eashelp += *oldfeas;
   /*--------- make multiplication alpha_inc = - old Dtildinv * eashelp */
-  eas_inc->multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *oldKaainv, eashelp, 0.0);
+  CORE::LINALG::multiply(*eas_inc, *oldKaainv, eashelp);
   eas_inc->scale(-1.0);
 }
 

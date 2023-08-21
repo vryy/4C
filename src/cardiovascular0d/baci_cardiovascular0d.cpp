@@ -17,6 +17,7 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_surface.H"
 
@@ -399,7 +400,7 @@ void UTILS::Cardiovascular0D::EvaluateDStructDp(
         // note that the length of this normal is the area dA
         // compute dXYZ / drs
         CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-        dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, xc, 0.0);
+        CORE::LINALG::multiply(dxyzdrs, deriv, xc);
 
         normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
         normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);

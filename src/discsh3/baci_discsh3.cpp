@@ -12,6 +12,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"
@@ -628,7 +629,7 @@ void DRT::ELEMENTS::DiscSh3::ComputeAreaDeriv(const CORE::LINALG::SerialDenseMat
     CORE::LINALG::SerialDenseMatrix ddet2(3 * ndof, ndof, true);
     CORE::LINALG::SerialDenseVector jacobi_deriv(ndof, true);
 
-    dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
+    CORE::LINALG::multiply(dxyzdrs, deriv, x);
 
     /*--------------- derivation of minor determiants of the Jacobian
      *----------------------------- with respect to the displacements */
@@ -770,7 +771,7 @@ void DRT::ELEMENTS::DiscSh3::SurfaceIntegration(double& detA, std::vector<double
 {
   // compute dXYZ / drs
   CORE::LINALG::SerialDenseMatrix dxyzdrs(2, 3);
-  dxyzdrs.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, x, 0.0);
+  CORE::LINALG::multiply(dxyzdrs, deriv, x);
 
   /* compute covariant metric tensor G for surface element
   **                        | g11   g12 |
@@ -783,7 +784,7 @@ void DRT::ELEMENTS::DiscSh3::SurfaceIntegration(double& detA, std::vector<double
   **        dr     dr            dr     ds            ds     ds
   */
   CORE::LINALG::SerialDenseMatrix metrictensor(2, 2);
-  metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, dxyzdrs, dxyzdrs, 0.0);
+  CORE::LINALG::multiplyNT(metrictensor, dxyzdrs, dxyzdrs);
   detA = sqrt(metrictensor(0, 0) * metrictensor(1, 1) - metrictensor(0, 1) * metrictensor(1, 0));
   normal[0] = dxyzdrs(0, 1) * dxyzdrs(1, 2) - dxyzdrs(0, 2) * dxyzdrs(1, 1);
   normal[1] = dxyzdrs(0, 2) * dxyzdrs(1, 0) - dxyzdrs(0, 0) * dxyzdrs(1, 2);

@@ -13,6 +13,7 @@
 #include "baci_lib_discret.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mortar_defines.H"
 #include "baci_mortar_element.H"
 #include "baci_mortar_integrator.H"
@@ -1209,7 +1210,7 @@ void MORTAR::Coupling2dManager::ConsistDualShape()
       for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
     // get solution matrix with dual parameters
-    ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+    CORE::LINALG::multiply(ae, de, invme);
   }
   // compute matrix A_e for all other cases
   else

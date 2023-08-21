@@ -15,6 +15,7 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_so3_surface.H"
@@ -223,7 +224,7 @@ double DRT::ELEMENTS::Bele3::ComputeConstrVols(
       double detA;
       // compute "metric tensor" deriv*ab, which is a 2x3 matrix with zero indc'th column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, 3);
-      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
+      CORE::LINALG::multiply(metrictensor, deriv, ab);
       // CORE::LINALG::SerialDenseMatrix metrictensor(2,2);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
@@ -298,7 +299,7 @@ void DRT::ELEMENTS::Bele3::ComputeVolDeriv(const CORE::LINALG::SerialDenseMatrix
       double detA;
       // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column
       CORE::LINALG::SerialDenseMatrix metrictensor(2, numdim);
-      metrictensor.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, deriv, ab, 0.0);
+      CORE::LINALG::multiply(metrictensor, deriv, ab);
       // metrictensor.Multiply('N','T',1.0,dxyzdrs,dxyzdrs,0.0);
       detA = metrictensor(0, inda) * metrictensor(1, indb) -
              metrictensor(0, indb) * metrictensor(1, inda);

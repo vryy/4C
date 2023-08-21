@@ -21,6 +21,7 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mortar_calc_utils.H"
 #include "baci_mortar_coupling3d_classes.H"
 #include "baci_mortar_defines.H"
@@ -1926,7 +1927,7 @@ void CONTACT::CoCoupling3dManager::ConsistDualShape()
       dserror("incorrect element shape for linear interpolation of quadratic element!");
 
     // get solution matrix with dual parameters
-    ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, meinv, 0.0);
+    CORE::LINALG::multiply(ae, de, meinv);
   }
   // compute matrix A_e and inverse of matrix M_e for all other cases
   else

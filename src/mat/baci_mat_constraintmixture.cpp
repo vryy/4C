@@ -35,6 +35,7 @@ For a detailed description see:
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"  // for debug plotting with gmsh
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_constraintmixture_history.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
@@ -3174,7 +3175,7 @@ void MAT::ConstraintMixtureOutputToGmsh(
       CORE::DRT::UTILS::shape_function_3D(
           funct, intpoints.qxg[gp][0], intpoints.qxg[gp][1], intpoints.qxg[gp][2], distype);
       CORE::LINALG::SerialDenseMatrix point(1, 3);
-      point.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, funct, xcurr, 0.0);
+      CORE::LINALG::multiplyTN(point, funct, xcurr);
 
       // write mandel stress
       // CORE::LINALG::Matrix<3,1> mandelgp = grow->GetHomstress(gp);

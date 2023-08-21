@@ -14,6 +14,7 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
@@ -129,8 +130,7 @@ namespace
 
     // solve least square algorithm
     CORE::LINALG::SerialDenseMatrix matTmat(shapefcns_at_gps.numCols(), shapefcns_at_gps.numCols());
-    matTmat.multiply(
-        Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, shapefcns_at_gps, shapefcns_at_gps, 0.0);
+    CORE::LINALG::multiplyTN(matTmat, shapefcns_at_gps, shapefcns_at_gps);
 
     {
       using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
@@ -155,8 +155,7 @@ namespace
 
     CORE::LINALG::SerialDenseMatrix matrix_gp_to_base(
         shapefcns_at_gps.numCols(), shapefcns_at_gps.numRows());
-    matrix_gp_to_base.multiply(
-        Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, matTmat, shapefunctions_at_gps_copy, 0.0);
+    CORE::LINALG::multiplyNT(matrix_gp_to_base, matTmat, shapefunctions_at_gps_copy);
 
     return matrix_gp_to_base;
   }
@@ -218,8 +217,7 @@ namespace
         matrix_gp_to_base.numCols());
 
     // extend matrix from base_distype to distype
-    matrix_gp_to_nodes.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, matrix_base_to_dis, matrix_gp_to_base, 0.0);
+    CORE::LINALG::multiply(matrix_gp_to_nodes, matrix_base_to_dis, matrix_gp_to_base);
 
     return matrix_gp_to_nodes;
   }
@@ -349,8 +347,8 @@ void CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble(const ::DRT::Elem
 {
   CORE::LINALG::SerialDenseMatrix nodal_quantity(
       ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement, gp_data.numCols());
-  nodal_quantity.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0,
-      EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration), gp_data, 0.0);
+  CORE::LINALG::multiply(
+      nodal_quantity, EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration), gp_data);
 
   AssembleExtrapolatedNodalValues(global_data, nodal_quantity, ele, nodal_average);
 }

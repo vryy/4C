@@ -14,6 +14,7 @@
 #include "baci_contact_interface.H"
 #include "baci_coupling_adapter.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 
@@ -252,7 +253,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
     // evaluate kappa.pptan.jumptan
     CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
-    temptrac.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
+    CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
     // fill vector tractionold
     std::vector<double> tractionold(dim);
@@ -603,7 +604,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 
     // Lagrange multiplier in tangential direction
     CORE::LINALG::SerialDenseMatrix lmuzawatan(dim, 1);
-    lmuzawatan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, lmuzawa, 0.0);
+    CORE::LINALG::multiply(lmuzawatan, tanplane, lmuzawa);
 
     // evaluate traction
     CORE::LINALG::SerialDenseMatrix jumpvec(dim, 1);
@@ -612,7 +613,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesUzawa()
 
     // evaluate kappa.pptan.jumptan
     CORE::LINALG::SerialDenseMatrix temptrac(dim, 1);
-    temptrac.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, kappa * pptan, tanplane, jumpvec, 0.0);
+    CORE::LINALG::multiply(0.0, temptrac, kappa * pptan, tanplane, jumpvec);
 
     // Evaluate trailtraction
     std::vector<double> trailtraction(dim);

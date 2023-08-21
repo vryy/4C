@@ -20,6 +20,7 @@
 #include "baci_lib_node.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_w1.H"
 
@@ -175,9 +176,9 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
 
     // update enhanced strain scales by condensation
     // add Kda . res_d to feas
-    (*oldfeas).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, (*oldKad), res_d, 1.0);
+    CORE::LINALG::multiply(1.0, (*oldfeas), 1.0, *oldKad, res_d);
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-    (*alpha).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, (*oldKaainv), (*oldfeas), 1.0);
+    CORE::LINALG::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
 
     // derivatives at origin
     CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
@@ -368,14 +369,13 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     solve_for_inverseKaa.invert();
 
     CORE::LINALG::SerialDenseMatrix KdaKaa(edof, Wall1::neas_);  // temporary Kda.Kaa^{-1}
-    KdaKaa.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Kda, Kaa, 1.0);
+    CORE::LINALG::multiply(1.0, KdaKaa, 1.0, Kda, Kaa);
 
     // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
-    if (stiffmatrix)
-      (*stiffmatrix).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, KdaKaa, Kad, 1.0);
+    if (stiffmatrix) CORE::LINALG::multiply(1.0, (*stiffmatrix), -1.0, KdaKaa, Kad);
 
     // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-    if (force) (*force).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, KdaKaa, feas, 1.0);
+    if (force) CORE::LINALG::multiply(1.0, *force, -1.0, KdaKaa, feas);
 
     // store current EAS data in history
     for (int i = 0; i < Wall1::neas_; ++i)
@@ -453,11 +453,11 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
 
   // FdotC (4 x 3) : F_m . C
   CORE::LINALG::SerialDenseMatrix FmC(4, 3, true);
-  FmC.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Fmm, C_red, 0.0);
+  CORE::LINALG::multiply(FmC, Fmm, C_red);
 
   // FmCF (4 x 4) : ( F_m . C ) . F_{n+1}^T
   FmCF.putScalar(0.0);
-  FmCF.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FmC, Fm, 0.0);
+  CORE::LINALG::multiply(FmCF, FmC, Fm);
 
   // BplusW (4 x edof) :  B_L + W0_{n+1}
   CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
@@ -466,11 +466,11 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
 
   // FmCFBW (4 x 8) : (Fm . C . F_{n+1}^T) . (B_L + W0_{n+1})
   CORE::LINALG::SerialDenseMatrix FmCFBW(4, 2 * NumNode(), true);
-  FmCFBW.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FmCF, BplusW, 0.0);
+  CORE::LINALG::multiply(FmCFBW, FmCF, BplusW);
 
   // SmBW (4 x 8) : S_m . (B_L + W0_{n+1})
   CORE::LINALG::SerialDenseMatrix SmBW(4, 2 * NumNode(), true);
-  SmBW.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Smm, BplusW, 0.0);
+  CORE::LINALG::multiply(SmBW, Smm, BplusW);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
   CORE::LINALG::Update(1.0, boplin, 0.0, BplusW);
@@ -478,10 +478,9 @@ void DRT::ELEMENTS::Wall1::TangFintByDispGEMM(const double& alphafgemm, const do
 
   // k_{dd} (8 x 8) :
   // k_{dd} += fac * (B_L + W0_m)^T . (Fm . C . F_{n+1}^T) . (B_L + W0_m)
-  estif.multiply(
-      Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm + xigemm) * fac, BplusW, FmCFBW, 1.0);
+  CORE::LINALG::multiplyTN(1.0, estif, 1.0 - alphafgemm + xigemm * fac, BplusW, FmCFBW);
   // k_{dd} += fac * (B_L+W0_m)^T . S_m . (B_L+W0_{n+1})
-  estif.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm) * fac, BplusW, SmBW, 1.0);
+  CORE::LINALG::multiplyTN(1.0, estif, 1.0 - alphafgemm * fac, BplusW, SmBW);
 
   // that's it
   return;
@@ -498,11 +497,11 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(const double& alphafgemm, const dou
 {
   // FmCFG (4 x 4) : (F_m . C . F_{n+1}^T) . G_{n+1}
   CORE::LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);
-  FmCFG.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FmCF, G, 0.0);
+  CORE::LINALG::multiply(FmCFG, FmCF, G);
 
   // SmG (4 x 4) : S_m . G_{n+1}
   CORE::LINALG::SerialDenseMatrix SmG(4, Wall1::neas_, true);
-  SmG.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Smm, G, 0.0);
+  CORE::LINALG::multiply(SmG, Smm, G);
 
   // BplusW (4 x 8) :  B_L + W0_{m}
   CORE::LINALG::SerialDenseMatrix BplusW(4, 2 * NumNode(), true);
@@ -511,10 +510,9 @@ void DRT::ELEMENTS::Wall1::TangFintByEnhGEMM(const double& alphafgemm, const dou
 
   // k_{da} (8 x 4) :
   // k_{da} += fac * (B_l+W0_m)^T . (F_m . C . F_{n+1}^T) . G_{n+1}
-  kda.multiply(
-      Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm + xigemm) * fac, BplusW, FmCFG, 1.0);
+  CORE::LINALG::multiplyTN(1.0, kda, 1.0 - alphafgemm + xigemm * fac, BplusW, FmCFG);
   // k_{da} += fac * (B_l+W0_m)^T . S_m . G_{n+1}
-  kda.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm) * fac, BplusW, SmG, 1.0);
+  CORE::LINALG::multiplyTN(1.0, kda, 1.0 - alphafgemm * fac, BplusW, SmG);
   // k_{da} += fac * \bar{\bar{P}}_{mm} . Z_{n+1}
   for (int i = 0; i < NumNode(); i++)
   {
@@ -548,18 +546,17 @@ void DRT::ELEMENTS::Wall1::TangEconByDispGEMM(const double& alphafgemm, const do
 
   // FmCFBW (4 x 8) : (F_m . C . F_{n+1}^T) . (B_L + W0_{n+1})
   CORE::LINALG::SerialDenseMatrix FmCFBW(4, 2 * NumNode(), true);
-  FmCFBW.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FmCF, BplusW, 0.0);
+  CORE::LINALG::multiply(FmCFBW, FmCF, BplusW);
 
   // SmGBW (4 x 8) : S_m . G_{n+1} . (B_L + W0_{n+1})
   CORE::LINALG::SerialDenseMatrix SmGBW(4, 2 * NumNode(), true);
-  SmGBW.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Smm, BplusW, 0.0);
+  CORE::LINALG::multiply(SmGBW, Smm, BplusW);
 
   // k_{ad} (4 x 8) :
   // k_{ad} += fac * G_{m}^T . (F_m . C . F_{n+1}^T) . (B_lin+W0_{n+1})
-  kad.multiply(
-      Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm + xigemm) * fac, Gm, FmCFBW, 1.0);
+  CORE::LINALG::multiplyTN(1.0, kad, 1.0 - alphafgemm + xigemm * fac, Gm, FmCFBW);
   // k_{ad} += fac *  G_{m}^T . S_m . (B_l+W0_{n+1})^T
-  kad.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm) * fac, Gm, SmGBW, 1.0);
+  CORE::LINALG::multiplyTN(1.0, kad, 1.0 - alphafgemm * fac, Gm, SmGBW);
   // k_{ad} += fac * (\bar{\bar{P}}_{mm} . Z_{n+1})^T
   for (int i = 0; i < NumNode(); i++)
   {
@@ -585,18 +582,17 @@ void DRT::ELEMENTS::Wall1::TangEconByEnhGEMM(const double& alphafgemm, const dou
 {
   // FmCFG : (F_m . C . F_{n+1}^T) . G_{n+1}
   CORE::LINALG::SerialDenseMatrix FmCFG(4, Wall1::neas_, true);
-  FmCFG.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, FmCF, G, 0.0);
+  CORE::LINALG::multiply(FmCFG, FmCF, G);
 
   // SmG : S_m  . G_{n+1}
   CORE::LINALG::SerialDenseMatrix SmG(4, Wall1::neas_, true);
-  SmG.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Smm, G, 0.0);
+  CORE::LINALG::multiply(SmG, Smm, G);
 
   // k_{aa} (4 x 4) :
   // k_{aa} += fac * G_m^T . (F_m . C . F_{n+1}^T) . G_{n+1}
-  kaa.multiply(
-      Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm + xigemm) * fac, Gm, FmCFG, 1.0);
+  CORE::LINALG::multiplyTN(1.0, kaa, 1.0 - alphafgemm + xigemm * fac, Gm, FmCFG);
   // k_{aa} += fac * G_m^T . S_m . G_{n+1}
-  kaa.multiply(Teuchos::TRANS, Teuchos::NO_TRANS, (1.0 - alphafgemm) * fac, Gm, SmG, 1.0);
+  CORE::LINALG::multiplyTN(1.0, kaa, 1.0 - alphafgemm * fac, Gm, SmG);
 
   return;
 }

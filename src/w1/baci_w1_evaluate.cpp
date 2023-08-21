@@ -24,6 +24,7 @@
 #include "baci_lib_utils_elements.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_nurbs_discret.H"
@@ -1143,9 +1144,9 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
       }
 
       // add Kda . res_d to feas
-      (*oldfeas).multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, (*oldKda), res_d, 1.0);
+      CORE::LINALG::multiplyTN(1.0, (*oldfeas), 1.0, *oldKda, res_d);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-      (*alpha).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, (*oldKaainv), (*oldfeas), 1.0);
+      CORE::LINALG::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
     }  // if (iseas)
   }    // if (*isdefault_step_ptr_)
   /* if it is no default step, we can correct the update and the current eas
@@ -1337,9 +1338,9 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       }
 
       // add Kda . res_d to feas
-      (*oldfeas).multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, (*oldKda), res_d, 1.0);
+      CORE::LINALG::multiplyTN(1.0, (*oldfeas), 1.0, *oldKda, res_d);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-      (*alpha).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, (*oldKaainv), (*oldfeas), 1.0);
+      CORE::LINALG::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
     }  // if (not IsInterface())
     /* end of EAS Update ******************/
 
@@ -1574,15 +1575,14 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
       CORE::LINALG::SerialDenseMatrix KdaKaa(
           2 * NumNode(), Wall1::neas_);  // temporary Kda.Kaa^{-1}
-      KdaKaa.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Kda, Kaa, 1.0);
+      CORE::LINALG::multiply(1.0, KdaKaa, 1.0, Kda, Kaa);
 
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
-      if (stiffmatrix)
-        (*stiffmatrix).multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0, KdaKaa, Kda, 1.0);
+      if (stiffmatrix) CORE::LINALG::multiplyNT(1.0, (*stiffmatrix), -1.0, KdaKaa, Kda);
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-      if (force) (*force).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, KdaKaa, feas, 1.0);
+      if (force) CORE::LINALG::multiply(1.0, *force, -1.0, KdaKaa, feas);
 
       // store current EAS data in history
       for (int i = 0; i < Wall1::neas_; ++i)
@@ -2133,11 +2133,11 @@ void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const d
 
   // PK1 stress tensor in Cartesian matrix notation
   CORE::LINALG::SerialDenseMatrix pk1stress(2, 2);
-  pk1stress.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0 / detf, pk2stress, defgrad, 0.0);
+  CORE::LINALG::multiplyNT(0.0, pk1stress, 1.0 / detf, pk2stress, defgrad);
 
   // Cauchy stress tensor in Cartesian matrix notation
   CORE::LINALG::SerialDenseMatrix cauchystress(2, 2);
-  cauchystress.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, defgrad, pk1stress, 0.0);
+  CORE::LINALG::multiply(cauchystress, defgrad, pk1stress);
 
   // copy results to array for output
   (*elestress)(ip, 0) = cauchystress(0, 0);
