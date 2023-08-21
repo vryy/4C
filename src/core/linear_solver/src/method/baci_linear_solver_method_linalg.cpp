@@ -735,7 +735,6 @@ const Teuchos::ParameterList CORE::LINALG::Solver::TranslateBACIToBelos(
     Teuchos::ParameterList& predictList = simplelist.sublist("Inverse1");
     predictList = TranslateSolverParameters(
         ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
-    std::cout << predictList << std::endl;
     Teuchos::ParameterList& schurList = simplelist.sublist("Inverse2");
     schurList = TranslateSolverParameters(
         ::DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
