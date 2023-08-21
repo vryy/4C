@@ -255,7 +255,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::UpdateStepState(const double& timefa
   // residual state vector
   if (not fstructcardio_np_ptr_.is_null())
   {
-    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
     fstructold_ptr->Update(timefac_n, *fstructcardio_np_ptr_, 1.0);
   }
 

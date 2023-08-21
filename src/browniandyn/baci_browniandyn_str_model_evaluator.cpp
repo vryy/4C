@@ -291,7 +291,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceBrownian()
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GStatePtr()->GetMutableDisNp());
+  Discret().SetState(0, "displacement", GStatePtr()->GetDisNp());
   Discret().SetState(0, "velocity", GState().GetVelNp());
   // -------------------------------------------------------------------------
   // Evaluate Browian (stochastic and damping forces)
@@ -355,7 +355,7 @@ bool STR::MODELEVALUATOR::BrownianDyn::ApplyForceStiffBrownian()
   // set vector values needed by elements
   // -------------------------------------------------------------------------
   Discret().ClearState();
-  Discret().SetState(0, "displacement", GStatePtr()->GetMutableDisNp());
+  Discret().SetState(0, "displacement", GStatePtr()->GetDisNp());
   Discret().SetState(0, "velocity", GState().GetVelNp());
   // -------------------------------------------------------------------------
   // Evaluate brownian (stochastic and damping) forces
@@ -450,7 +450,7 @@ void STR::MODELEVALUATOR::BrownianDyn::UpdateStepState(const double& timefac_n)
   // add brownian force contributions to the old structural
   // residual state vector
   // -------------------------------------------------------------------------
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
   fstructold_ptr->Update(timefac_n, *f_brown_np_ptr_, 1.0);
   fstructold_ptr->Update(-timefac_n, *f_ext_np_ptr_, 1.0);
 
@@ -466,7 +466,7 @@ void STR::MODELEVALUATOR::BrownianDyn::UpdateStepElement()
   // -------------------------------------------------------------------------
   // todo: this needs to go somewhere else, to a more global/general place
   // (console output at this point is also very unflattering)
-  //  sm_manager_ptr_->UpdateTimeAndStepSize((*GStatePtr()->GetMutableDeltaTime())[0],
+  //  sm_manager_ptr_->UpdateTimeAndStepSize((*GStatePtr()->GetDeltaTime())[0],
   //                                           GStatePtr()->GetTimeN());
 
   return;
@@ -570,15 +570,15 @@ void STR::MODELEVALUATOR::BrownianDyn::ResetStepState()
    * in any other case*/
   // todo: is this the right place for this (originally done in brownian predictor,
   // should work as prediction is the next thing that is done)
-  GStatePtr()->GetMutableDisNp()->PutScalar(0.0);
-  GStatePtr()->GetMutableVelNp()->PutScalar(0.0);
+  GStatePtr()->GetDisNp()->PutScalar(0.0);
+  GStatePtr()->GetVelNp()->PutScalar(0.0);
   // we only need this in case we use Lie Group gen alpha and calculate a consistent
   // mass matrix and acc vector (i.e. we are not neglecting inertia forces)
-  GStatePtr()->GetMutableAccNp()->PutScalar(0.0);
+  GStatePtr()->GetAccNp()->PutScalar(0.0);
 
-  GStatePtr()->GetMutableDisNp()->Update(1.0, (*GStatePtr()->GetDisN()), 0.0);
-  GStatePtr()->GetMutableVelNp()->Update(1.0, (*GStatePtr()->GetVelN()), 0.0);
-  GStatePtr()->GetMutableAccNp()->Update(1.0, (*GStatePtr()->GetAccN()), 0.0);
+  GStatePtr()->GetDisNp()->Update(1.0, (*GStatePtr()->GetDisN()), 0.0);
+  GStatePtr()->GetVelNp()->Update(1.0, (*GStatePtr()->GetVelN()), 0.0);
+  GStatePtr()->GetAccNp()->Update(1.0, (*GStatePtr()->GetAccN()), 0.0);
 
 
   return;
@@ -660,8 +660,7 @@ void STR::MODELEVALUATOR::BrownianDyn::GenerateGaussianRandomNumbers()
   DRT::Problem::Instance()->Random()->SetRandRange(0.0, 1.0);
 
   // multivector for stochastic forces evaluated by each element based on row map
-  Teuchos::RCP<Epetra_MultiVector> randomnumbersrow =
-      eval_browniandyn_ptr_->GetMutableRandomForces();
+  Teuchos::RCP<Epetra_MultiVector> randomnumbersrow = eval_browniandyn_ptr_->GetRandomForces();
 
   int numele = randomnumbersrow->MyLength();
   int numperele = randomnumbersrow->NumVectors();

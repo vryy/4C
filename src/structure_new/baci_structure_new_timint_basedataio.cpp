@@ -185,7 +185,7 @@ void STR::TIMINT::BaseDataIO::InitSetupEveryIterationWriter(
 
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::NLN::LineSearch::PrePostOperator::map& prepostls_map =
-      NOX::NLN::LineSearch::PrePostOperator::GetMutableMap(p_linesearch);
+      NOX::NLN::LineSearch::PrePostOperator::GetMap(p_linesearch);
 
   // insert/replace the old pointer in the map
   prepostls_map[NOX::NLN::LineSearch::prepost_output_every_iter] =

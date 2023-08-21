@@ -92,8 +92,8 @@ void STR::NLN::SOLVER::Nox::Setup()
   STR::NLN::CreateScaling(iscale, DataSDyn(), DataGlobalState());
 
   // build the global data container for the nox_nln_solver
-  nlnglobaldata_ = Teuchos::rcp(
-      new NOX::NLN::GlobalData(DataGlobalState().GetComm(), DataSDyn().GetMutableNoxParams(),
+  nlnglobaldata_ =
+      Teuchos::rcp(new NOX::NLN::GlobalData(DataGlobalState().GetComm(), DataSDyn().GetNoxParams(),
           linsolvers, ireq, ijac, opttype, iconstr, iprec, iconstr_prec, iscale));
 
   // -------------------------------------------------------------------------

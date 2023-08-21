@@ -57,7 +57,7 @@ void PARTICLEWALL::WallDiscretizationRuntimeVtuWriter::WriteWallDiscretizationRu
   {
     if (walldatastate_->GetDispCol() != Teuchos::null)
       runtime_vtuwriter_->AppendDofBasedResultDataVector(
-          walldatastate_->GetRefMutableDispCol(), 3, 0, "disp");
+          walldatastate_->GetRefDispCol(), 3, 0, "disp");
   }
 
   // node owner

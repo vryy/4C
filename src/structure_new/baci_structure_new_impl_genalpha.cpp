@@ -113,11 +113,11 @@ void STR::IMPLICIT::GenAlpha::Setup()
   // ---------------------------------------------------------------------------
   // setup pointers to the force vectors of the global state data container
   // ---------------------------------------------------------------------------
-  finertian_ptr_ = GlobalState().GetMutableFinertialN();
-  finertianp_ptr_ = GlobalState().GetMutableFinertialNp();
+  finertian_ptr_ = GlobalState().GetFinertialN();
+  finertianp_ptr_ = GlobalState().GetFinertialNp();
 
-  fviscon_ptr_ = GlobalState().GetMutableFviscoN();
-  fvisconp_ptr_ = GlobalState().GetMutableFviscoNp();
+  fviscon_ptr_ = GlobalState().GetFviscoN();
+  fvisconp_ptr_ = GlobalState().GetFviscoNp();
 
   // -------------------------------------------------------------------
   // set initial displacement
@@ -138,23 +138,23 @@ void STR::IMPLICIT::GenAlpha::SetInitialDisplacement(
   {
     case INPAR::STR::initdisp_zero_disp:
     {
-      GlobalState().GetMutableDisN()->PutScalar(0.0);
-      GlobalState().GetMutableDisNp()->PutScalar(0.0);
+      GlobalState().GetDisN()->PutScalar(0.0);
+      GlobalState().GetDisNp()->PutScalar(0.0);
 
       break;
     }
     case INPAR::STR::initdisp_disp_by_function:
     {
-      const Epetra_Map* dofrowmap = GlobalState().GetMutableDiscret()->DofRowMap();
+      const Epetra_Map* dofrowmap = GlobalState().GetDiscret()->DofRowMap();
 
       // loop all nodes on the processor
-      for (int lnodeid = 0; lnodeid < GlobalState().GetMutableDiscret()->NumMyRowNodes(); lnodeid++)
+      for (int lnodeid = 0; lnodeid < GlobalState().GetDiscret()->NumMyRowNodes(); lnodeid++)
       {
         // get the processor local node
-        DRT::Node* lnode = GlobalState().GetMutableDiscret()->lRowNode(lnodeid);
+        DRT::Node* lnode = GlobalState().GetDiscret()->lRowNode(lnodeid);
 
         // the set of degrees of freedom associated with the node
-        std::vector<int> nodedofset = GlobalState().GetMutableDiscret()->Dof(0, lnode);
+        std::vector<int> nodedofset = GlobalState().GetDiscret()->Dof(0, lnode);
 
         // loop nodal dofs
         for (unsigned int d = 0; d < nodedofset.size(); ++d)
@@ -167,13 +167,13 @@ void STR::IMPLICIT::GenAlpha::SetInitialDisplacement(
                                   ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
                                   .Evaluate(lnode->X(), GlobalState().GetTimeN(), d);
 
-          int err = GlobalState().GetMutableDisN()->ReplaceMyValues(1, &initialval, &doflid);
+          int err = GlobalState().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }
       }
 
       // initialize also the solution vector
-      GlobalState().GetMutableDisNp()->Update(1.0, *GlobalState().GetMutableDisN(), 0.0);
+      GlobalState().GetDisNp()->Update(1.0, *GlobalState().GetDisN(), 0.0);
 
       break;
     }
@@ -313,18 +313,18 @@ void STR::IMPLICIT::GenAlpha::SetState(const Epetra_Vector& x)
   // new end-point displacements
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetMutableDisNp()->Scale(1.0, *disnp_ptr);
+  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
 
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetMutableVelNp()->Update(
+  GlobalState().GetVelNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(0), gamma_ / (beta_ * dt), *disnp_ptr, 0.0);
 
   // ---------------------------------------------------------------------------
   // new end-point accelerations
   // ---------------------------------------------------------------------------
-  GlobalState().GetMutableAccNp()->Update(
+  GlobalState().GetAccNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(1), 1.0 / (beta_ * dt * dt), *disnp_ptr, 0.0);
 }
 

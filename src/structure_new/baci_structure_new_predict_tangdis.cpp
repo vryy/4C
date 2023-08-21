@@ -47,7 +47,7 @@ void STR::PREDICT::TangDis::Setup()
   Teuchos::ParameterList& p_grp_opt = NoxParams().sublist("Group Options");
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::NLN::GROUP::PrePostOperator::Map& prepostgroup_map =
-      NOX::NLN::GROUP::PrePostOp::GetMutableMap(p_grp_opt);
+      NOX::NLN::GROUP::PrePostOp::GetMap(p_grp_opt);
   // create the new tangdis pre/post operator
   Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> preposttangdis_ptr =
       Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::TangDis(Teuchos::rcp(this, false)));

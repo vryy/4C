@@ -122,8 +122,8 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
         {
           // get and prepare storage for position data
           std::vector<double>& positiondata = (runtime_visualization_managers_[type])[status]
-                                                  ->GetVisualizationDataMutable()
-                                                  .GetPointCoordinatesMutable();
+                                                  ->GetVisualizationData()
+                                                  .GetPointCoordinates();
           positiondata.clear();
           positiondata.reserve(statedim * particlestored);
 
@@ -149,7 +149,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 
           // append particle state data to vtp writer
           (runtime_visualization_managers_[type])[status]
-              ->GetVisualizationDataMutable()
+              ->GetVisualizationData()
               .SetPointDataVector<double>(statename, statedata, statedim);
         }
       }
@@ -166,7 +166,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 
       // append global id of particles to vtp writer
       (runtime_visualization_managers_[type])[status]
-          ->GetVisualizationDataMutable()
+          ->GetVisualizationData()
           .SetPointDataVector<double>("globalid", globaliddata, 1);
 
       // set particle owner data
@@ -174,7 +174,7 @@ void PARTICLEENGINE::ParticleRuntimeVtpWriter::SetParticlePositionsAndStates()
 
       // append owner of particles to vtp writer
       (runtime_visualization_managers_[type])[status]
-          ->GetVisualizationDataMutable()
+          ->GetVisualizationData()
           .SetPointDataVector<double>("owner", ownerdata, 1);
     }
   }

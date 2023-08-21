@@ -42,7 +42,7 @@ const IO::VisualizationData& IO::VisualizationManager::GetVisualizationData(
 /**
  *
  */
-IO::VisualizationData& IO::VisualizationManager::GetVisualizationDataMutable(
+IO::VisualizationData& IO::VisualizationManager::GetVisualizationData(
     const std::string& visualization_data_name)
 {
   if (visualization_map_.find(visualization_data_name) == visualization_map_.end() &&
@@ -52,7 +52,8 @@ IO::VisualizationData& IO::VisualizationManager::GetVisualizationDataMutable(
     RegisterVisualizationData("");
   }
   // The const_cast can be done here, since we know that the underlying data is not const
-  return const_cast<VisualizationData&>(GetVisualizationData(visualization_data_name));
+  return const_cast<VisualizationData&>(
+      const_cast<const VisualizationManager&>(*this).GetVisualizationData(visualization_data_name));
 }
 
 /**

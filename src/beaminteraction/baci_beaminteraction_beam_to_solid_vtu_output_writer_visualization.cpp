@@ -39,22 +39,20 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
     AddDiscretizationNodalReferencePosition(
         const Teuchos::RCP<const ::DRT::Discretization>& discret)
 {
-  auto& visualization_data = GetVisualizationDataMutable();
+  auto& visualization_data = GetVisualizationData();
 
   // Check that the discretization is not already set, and that all data in the writer is empty.
   if (discret_ != Teuchos::null)
     dserror(
         "When calling AddDiscretizationNodalReferencePosition, the discretization can not be "
         "already set. Did you forget to reset the writer?");
-  if (visualization_data.GetPointCoordinatesMutable().size() != 0)
+  if (visualization_data.GetPointCoordinates().size() != 0)
     dserror("Point coordinate vector is not empty!");
   for (const auto& point_data_name : visualization_data.GetPointDataNames())
     if (visualization_data.GetPointDataSize(point_data_name) != 0)
       dserror("Point data for '%s' is not empty!", point_data_name.c_str());
-  if (visualization_data.GetCellTypesMutable().size() != 0)
-    dserror("Cell types vector is not empty!");
-  if (visualization_data.GetCellOffsetsMutable().size() != 0)
-    dserror("Cell offsets vector is not empty!");
+  if (visualization_data.GetCellTypes().size() != 0) dserror("Cell types vector is not empty!");
+  if (visualization_data.GetCellOffsets().size() != 0) dserror("Cell offsets vector is not empty!");
   for (const auto& cell_data_name : visualization_data.GetCellDataNames())
     if (visualization_data.GetCellDataSize(cell_data_name) != 0)
       dserror("Cell data for '%s' is not empty!", cell_data_name.c_str());
@@ -66,8 +64,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::
   unsigned int num_my_nodes = discret_->NumMyRowNodes();
   std::vector<int> my_global_dof_ids;
   std::vector<int> node_global_dof_ids;
-  std::vector<double>& point_coordinates =
-      visualization_data.GetPointCoordinatesMutable(3 * num_my_nodes);
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(3 * num_my_nodes);
 
   // Check that the position vector is empty.
   if (point_coordinates.size() != 0)
@@ -106,7 +103,7 @@ void BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization::AddDiscretization
   // Add the values form the vector to the writer data.
   const int num_my_gid = node_gid_map_->NumMyElements();
   std::vector<double>& data_vector =
-      GetVisualizationDataMutable().GetPointDataMutable<double>(data_name, 3 * num_my_gid);
+      GetVisualizationData().GetPointData<double>(data_name, 3 * num_my_gid);
   data_vector.reserve(3 * num_my_gid);
   for (int i_lid = 0; i_lid < num_my_gid; i_lid++) data_vector.push_back((*vector_extract)[i_lid]);
 }

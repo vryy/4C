@@ -113,17 +113,16 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
         const std::vector<GEOMETRYPAIR::ProjectionPoint1DTo3D<double>>& points,
         const Teuchos::ParameterList& visualization_params) const
 {
-  auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_writer->GetVisualizationData();
 
   // Setup variables.
   CORE::LINALG::Matrix<3, 1, scalar_type> X_beam, u_beam, r_beam, r_solid, projection_dir;
 
   // Get the visualization vectors.
-  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
-  std::vector<double>& displacement =
-      visualization_data.GetPointDataMutable<double>("displacement");
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
+  std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
   std::vector<double>& projection_direction =
-      visualization_data.GetPointDataMutable<double>("projection_direction");
+      visualization_data.GetPointData<double>("projection_direction");
 
   const Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>& output_params_ptr =
       visualization_params.get<Teuchos::RCP<const BeamToSolidSurfaceVtkOutputParams>>(
@@ -133,8 +132,8 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam, sur
   std::vector<double>* pair_solid_id = nullptr;
   if (write_unique_ids)
   {
-    pair_beam_id = &(visualization_data.GetPointDataMutable<double>("uid_0_pair_beam_id"));
-    pair_solid_id = &(visualization_data.GetPointDataMutable<double>("uid_1_pair_solid_id"));
+    pair_beam_id = &(visualization_data.GetPointData<double>("uid_0_pair_beam_id"));
+    pair_solid_id = &(visualization_data.GetPointData<double>("uid_1_pair_solid_id"));
   }
 
   for (const auto& point : points)

@@ -3145,7 +3145,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
             {
               // access real vector of constant permeabilities
               const std::vector<double>* permeabilities =
-                  condition->GetMutable<std::vector<double>>("permeabilities");
+                  condition->Get<std::vector<double>>("permeabilities");
               if (permeabilities == nullptr)
                 dserror("Cannot access vector of permeabilities for macro-micro coupling!");
               if (permeabilities->size() != (unsigned)NumScal())
@@ -3191,7 +3191,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateMacroMicroCoupling()
                     "electrode-electrolyte interface!");
               }
               const std::vector<int>* stoichiometries =
-                  condition->GetMutable<std::vector<int>>("stoichiometries");
+                  condition->Get<std::vector<int>>("stoichiometries");
               if (stoichiometries == nullptr)
               {
                 dserror(

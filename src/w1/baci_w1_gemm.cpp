@@ -154,16 +154,15 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(Teuchos::ParameterList& params,
     // Kaa and Kda of previous step to avoid additional element call.
     // This corresponds to the (innermost) element update loop
     // in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
-    alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
-        "alphao");  // get alpha of last converged state
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
-        "alpha");  // get alpha of previous iteration
+    alphao =
+        data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // get alpha of last converged state
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get alpha of previous iteration
 
     // get stored EAS history
-    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-    oldKad = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kad");
+    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+    oldKad = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kad");
     if ((not alpha) or (not oldKaainv) or (not oldKda) or (not oldKad) or (not oldfeas))
       dserror("Missing EAS history-data");
 

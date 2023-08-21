@@ -283,8 +283,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
         if (IsParamsInterface())
         {
-          stressdata = StrParamsInterface().MutableStressDataPtr();
-          straindata = StrParamsInterface().MutableStrainDataPtr();
+          stressdata = StrParamsInterface().StressDataPtr();
+          straindata = StrParamsInterface().StrainDataPtr();
 
           iostress = StrParamsInterface().GetStressOutputType();
           iostrain = StrParamsInterface().GetStrainOutputType();
@@ -499,14 +499,14 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
       dsassert(IsParamsInterface(),
           "This action type should only be called from the new time integration framework!");
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
+      StrParamsInterface().GaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
           numgpt_post);
       // holder for output quantity names and their size
       std::unordered_map<std::string, int> quantities_map{};
       // Ask material for the output quantity names and sizes
       SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+      StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
     }
     break;
 
@@ -517,7 +517,7 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& [quantity_name, quantity_size] :
-          StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
+          StrParamsInterface().GaussPointDataOutputManagerPtr()->GetQuantities())
       {
         // Step 1: Collect the data for each Gauss point for the material
         CORE::LINALG::SerialDenseMatrix gp_data(numgpt_post, quantity_size, true);
@@ -527,16 +527,14 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetOutputType())
+          switch (StrParamsInterface().GaussPointDataOutputManagerPtr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableElementCenterData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetElementCenterData().at(
+                      quantity_name);
               CORE::DRT::ELEMENTS::AssembleAveragedElementValues<CORE::LINALG::SerialDenseMatrix>(
                   *global_data, gp_data, *this);
               break;
@@ -544,16 +542,12 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableNodalData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalData().at(
+                      quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface()
-                       .MutableGaussPointDataOutputManagerPtr()
-                       ->GetMutableNodalDataCount()
-                       .at(quantity_name);
+                  *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
+                      quantity_name);
 
               if (distype == DRT::Element::hex8)
               {
@@ -579,10 +573,8 @@ int DRT::ELEMENTS::So3_Plast<distype>::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableGaussPointData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
+                      quantity_name);
               DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
               break;
             }

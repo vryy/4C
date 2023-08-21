@@ -40,7 +40,7 @@ STR::NLN::LinSystem::StcScaling::StcScaling(
   Teuchos::ParameterList p;
 
   // get discretization
-  Teuchos::RCP<DRT::DiscretizationInterface> discret = GState.GetMutableDiscret();
+  Teuchos::RCP<DRT::DiscretizationInterface> discret = GState.GetDiscret();
 
   // action for elements
   discret->SetState("displacement", GState.GetDisNp());

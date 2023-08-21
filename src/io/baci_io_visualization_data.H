@@ -85,8 +85,7 @@ namespace IO
      *
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<double>& GetPointCoordinatesMutable(
-        const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<double>& GetPointCoordinates(const size_t additional_reserve = 0)
     {
       return AdditionalReserve(point_coordinates_, additional_reserve);
     }
@@ -106,7 +105,7 @@ namespace IO
      *
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<uint8_t>& GetCellTypesMutable(const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<uint8_t>& GetCellTypes(const size_t additional_reserve = 0)
     {
       return AdditionalReserve(cell_types_, additional_reserve);
     }
@@ -124,8 +123,7 @@ namespace IO
      *
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetCellConnectivityMutable(
-        const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetCellConnectivity(const size_t additional_reserve = 0)
     {
       return AdditionalReserve(cell_connectivity_, additional_reserve);
     }
@@ -140,8 +138,7 @@ namespace IO
      *
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetCellOffsetsMutable(
-        const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetCellOffsets(const size_t additional_reserve = 0)
     {
       return AdditionalReserve(cell_offsets_, additional_reserve);
     }
@@ -159,8 +156,7 @@ namespace IO
      *
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetFaceConnectivityMutable(
-        const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetFaceConnectivity(const size_t additional_reserve = 0)
     {
       return AdditionalReserve(face_connectivity_, additional_reserve);
     }
@@ -175,8 +171,7 @@ namespace IO
      *
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
-    [[nodiscard]] std::vector<index_type>& GetFaceOffsetsMutable(
-        const size_t additional_reserve = 0)
+    [[nodiscard]] std::vector<index_type>& GetFaceOffsets(const size_t additional_reserve = 0)
     {
       return AdditionalReserve(face_offsets_, additional_reserve);
     }
@@ -201,7 +196,7 @@ namespace IO
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetPointDataMutable(
+    [[nodiscard]] std::vector<T>& GetPointData(
         const std::string& data_name, const size_t additional_reserve = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
@@ -241,7 +236,7 @@ namespace IO
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetCellDataMutable(
+    [[nodiscard]] std::vector<T>& GetCellData(
         const std::string& data_name, const size_t additional_reserve = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const
@@ -282,7 +277,7 @@ namespace IO
      * @param additional_reserve (in) If this is larger than 0, additional entries will be reserved
      */
     template <typename T>
-    [[nodiscard]] std::vector<T>& GetFieldDataMutable(
+    [[nodiscard]] std::vector<T>& GetFieldData(
         const std::string& data_name, const size_t additional_reserve = 0)
     {
       // The const_cast can be done here, since we know that the underlying data is not const

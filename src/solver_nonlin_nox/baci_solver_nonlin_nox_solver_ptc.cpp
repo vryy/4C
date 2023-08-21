@@ -205,7 +205,7 @@ void NOX::NLN::Solver::PseudoTransient::createLinSystemPrePostOperator()
         paramsPtr->sublist("Direction").sublist(dir_str).sublist("Linear Solver");
     // get the current map. If there is no map, return a new empty one. (reference)
     NOX::NLN::LinSystem::PrePostOperator::Map& prePostLinSystemMap =
-        NOX::NLN::LinSystem::PrePostOp::GetMutableMap(p_linsolver);
+        NOX::NLN::LinSystem::PrePostOp::GetMap(p_linsolver);
     // insert/replace the old pointer in the map
     prePostLinSystemMap[NOX::NLN::LinSystem::prepost_ptc] = prePostLinSysPtr_;
     /* Now the last thing to do is, that we have to reset the pre/post-operator in
@@ -239,7 +239,7 @@ void NOX::NLN::Solver::PseudoTransient::createGroupPrePostOperator()
   Teuchos::ParameterList& p_grpOpt = paramsPtr->sublist("Group Options");
   // get the current map. If there is no map, return a new empty one. (reference)
   NOX::NLN::GROUP::PrePostOperator::Map& prePostGroupMap =
-      NOX::NLN::GROUP::PrePostOp::GetMutableMap(p_grpOpt);
+      NOX::NLN::GROUP::PrePostOp::GetMap(p_grpOpt);
   // insert or replace the old pointer in the map
   prePostGroupPtr_ = Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::PseudoTransient(
       scalingDiagOpPtr_, scalingMatrixOpPtr_, *this));

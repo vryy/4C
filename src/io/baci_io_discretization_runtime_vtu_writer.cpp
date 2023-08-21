@@ -52,17 +52,17 @@ void DiscretizationRuntimeVtuWriter::SetGeometryFromDiscretizationStandard()
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
   // need to adjust order of filling in the coordinates).
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
-  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_nodes);
 
-  std::vector<uint8_t>& cell_types = visualization_data.GetCellTypesMutable();
+  std::vector<uint8_t>& cell_types = visualization_data.GetCellTypes();
   cell_types.clear();
   cell_types.reserve(num_row_elements);
 
-  std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsetsMutable();
+  std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsets();
   cell_offsets.clear();
   cell_offsets.reserve(num_row_elements);
 
@@ -187,7 +187,7 @@ void DiscretizationRuntimeVtuWriter::AppendDofBasedResultDataVector(
         result_num_dofs_per_node * pointcounter, vtu_point_result_data.size());
   }
 
-  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector(
+  visualization_manager_->GetVisualizationData().SetPointDataVector(
       resultname, vtu_point_result_data, result_num_dofs_per_node);
 }
 
@@ -265,7 +265,7 @@ void DiscretizationRuntimeVtuWriter::AppendNodeBasedResultDataVector(
         result_num_components_per_node * pointcounter, vtu_point_result_data.size());
   }
 
-  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+  visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
       resultname, vtu_point_result_data, result_num_components_per_node);
 }
 
@@ -326,7 +326,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementBasedResultDataVector(
         result_num_components_per_element * cellcounter, vtu_cell_result_data.size());
   }
 
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+  visualization_manager_->GetVisualizationData().SetCellDataVector(
       resultname, vtu_cell_result_data, result_num_components_per_element);
 }
 
@@ -351,7 +351,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementOwner(const std::string result
   }
 
   // Pass data to the output writer.
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+  visualization_manager_->GetVisualizationData().SetCellDataVector(
       resultname, owner_of_row_elements, 1);
 }
 
@@ -375,7 +375,7 @@ void DiscretizationRuntimeVtuWriter::AppendElementGID(const std::string& resultn
   }
 
   // Pass data to the output writer.
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+  visualization_manager_->GetVisualizationData().SetCellDataVector(
       resultname, gid_of_row_elements, 1);
 }
 
@@ -419,7 +419,7 @@ void DiscretizationRuntimeVtuWriter::AppendNodeGID(const std::string& resultname
       gid_of_nodes.push_back(nodes[numbering[inode]]->Id());
   }
 
-  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+  visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
       resultname, gid_of_nodes, 1);
 }
 
@@ -486,6 +486,6 @@ void IO::AppendElementGhostingInformation(
     }
   }
 
-  visualization_manager->GetVisualizationDataMutable().SetCellDataVector(
+  visualization_manager->GetVisualizationData().SetCellDataVector(
       "element_ghosting", ghosted_elements, n_proc);
 }

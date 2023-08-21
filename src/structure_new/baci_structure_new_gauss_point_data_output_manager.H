@@ -50,26 +50,24 @@ namespace STR
        */
       void DistributeQuantities(const Epetra_Comm& comm);
 
-      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>&
-      GetMutableNodalData()
+      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>& GetNodalData()
       {
         return data_nodes_;
       }
 
-      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>>&
-      GetMutableNodalDataCount()
+      inline std::unordered_map<std::string, Teuchos::RCP<Epetra_IntVector>>& GetNodalDataCount()
       {
         return data_nodes_count_;
       }
 
       inline std::unordered_map<std::string, Teuchos::RCP<Epetra_MultiVector>>&
-      GetMutableElementCenterData()
+      GetElementCenterData()
       {
         return data_element_center_;
       }
 
       inline std::unordered_map<std::string, std::vector<Teuchos::RCP<Epetra_MultiVector>>>&
-      GetMutableGaussPointData()
+      GetGaussPointData()
       {
         return data_gauss_point_;
       }

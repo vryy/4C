@@ -115,7 +115,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get a mutable reference to the parameter coordinate on the line.
      */
-    inline scalar_type& GetEtaMutable() { return eta_; };
+    inline scalar_type& GetEta() { return eta_; };
 
     /**
      * \brief Set the parameter coordinates in the volume.
@@ -130,7 +130,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Get the parameter coordinates in the volume as a reference.
      */
-    inline CORE::LINALG::Matrix<3, 1, scalar_type>& GetXiMutable() { return xi_; };
+    inline CORE::LINALG::Matrix<3, 1, scalar_type>& GetXi() { return xi_; };
 
     /**
      * \brief Set the parameter coordinates in the cross section.
@@ -167,7 +167,7 @@ namespace GEOMETRYPAIR
     /**
      * Get the projection result for this projection point as a reference.
      */
-    inline ProjectionResult& GetProjectionResultMutable() { return projection_result_; }
+    inline ProjectionResult& GetProjectionResult() { return projection_result_; }
 
     /**
      * \brief Set the Gauss weight for this point.
@@ -313,7 +313,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return a mutable reference to the start point.
      */
-    inline ProjectionPoint1DTo3D<scalar_type>& GetStartPointMutable() { return start_point_; };
+    inline ProjectionPoint1DTo3D<scalar_type>& GetStartPoint() { return start_point_; };
 
     /**
      * \brief Return a const reference to the end point.
@@ -323,7 +323,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Return a mutable reference to the end point.
      */
-    inline ProjectionPoint1DTo3D<scalar_type>& GetEndPointMutable() { return end_point_; };
+    inline ProjectionPoint1DTo3D<scalar_type>& GetEndPoint() { return end_point_; };
 
     /**
      * \brief Add a projection point to the projection point vector.
@@ -356,7 +356,7 @@ namespace GEOMETRYPAIR
      * \brief Return a mutable reference to the projection points in this segment.
      * @return Reference to projection point vector.
      */
-    inline std::vector<ProjectionPoint1DTo3D<scalar_type>>& GetProjectionPointsMutable()
+    inline std::vector<ProjectionPoint1DTo3D<scalar_type>>& GetProjectionPoints()
     {
       return segment_projection_points_;
     }

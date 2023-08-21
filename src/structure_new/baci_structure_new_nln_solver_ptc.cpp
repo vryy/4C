@@ -48,7 +48,7 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
 
   /* get the nox parameter list and set the necessary parameters for a
    * pseudo transient solution procedure */
-  Teuchos::ParameterList& pnox = DataSDyn().GetMutableNoxParams();
+  Teuchos::ParameterList& pnox = DataSDyn().GetNoxParams();
 
   // ---------------------------------------------------------------------------
   // Set-up the pseudo transient method
@@ -103,8 +103,7 @@ void STR::NLN::SOLVER::PseudoTransient::SetPseudoTransientParams()
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
     CreateQuantityTypes(qtypes, DataSDyn());
-    SetStatusTestParams(
-        DataSDyn().GetMutableNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
+    SetStatusTestParams(DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
 
   return;

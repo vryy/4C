@@ -49,7 +49,7 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
 
   // get the nox parameter list and set the necessary parameters for a
   // full Newton solution procedure
-  Teuchos::ParameterList& p = DataSDyn().GetMutableNoxParams();
+  Teuchos::ParameterList& p = DataSDyn().GetNoxParams();
 
   // ---------------------------------------------------------------------------
   // Set-up the full Newton method
@@ -92,8 +92,7 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
       qtypes.erase(NOX::NLN::StatusTest::quantity_eas);  // EAS is removed since it is an element
                                                          // quantity and not nodal dof
     }
-    SetStatusTestParams(
-        DataSDyn().GetMutableNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
+    SetStatusTestParams(DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
 
   return;

@@ -121,7 +121,7 @@ namespace STR
       Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
       {
         CheckInit();
-        return datasdyn_->GetMutableLinSolvers()[INPAR::STR::model_structure];
+        return datasdyn_->GetLinSolvers()[INPAR::STR::model_structure];
       }
 
       /// Return MapExtractor for Dirichlet boundary conditions
@@ -184,7 +184,7 @@ namespace STR
       {
         CheckInit();
         SetStateInSyncWithNOXGroup(false);
-        return dataglobalstate_->GetMutableDisNp();
+        return dataglobalstate_->GetDisNp();
       }
 
       /// known displacements at \f$t_{n}\f$
@@ -198,7 +198,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> WriteAccessDispN() override
       {
         CheckInit();
-        return dataglobalstate_->GetMutableDisN();
+        return dataglobalstate_->GetDisN();
       }
 
       /// unknown velocities at \f$t_{n+1}\f$
@@ -212,7 +212,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> WriteAccessVelNp() override
       {
         CheckInit();
-        return dataglobalstate_->GetMutableVelNp();
+        return dataglobalstate_->GetVelNp();
       }
 
       /// unknown velocities at \f$t_{n}\f$
@@ -226,7 +226,7 @@ namespace STR
       Teuchos::RCP<Epetra_Vector> WriteAccessVelN() override
       {
         CheckInit();
-        return dataglobalstate_->GetMutableVelN();
+        return dataglobalstate_->GetVelN();
       }
 
       /// known velocities at \f$t_{n-1}\f$
@@ -315,7 +315,7 @@ namespace STR
       void SetTimeN(const double time_n) override
       {
         CheckInit();
-        dataglobalstate_->GetMutableTimeN() = time_n;
+        dataglobalstate_->GetTimeN() = time_n;
       }
 
       /// Return target time \f$t_{n+1}\f$ (derived)
@@ -329,7 +329,7 @@ namespace STR
       void SetTimeNp(const double time_np) override
       {
         CheckInit();
-        dataglobalstate_->GetMutableTimeNp() = time_np;
+        dataglobalstate_->GetTimeNp() = time_np;
       }
 
       /// Get upper limit of time range of interest (derived)
@@ -343,7 +343,7 @@ namespace STR
       void SetTimeEnd(double timemax) override
       {
         CheckInit();
-        datasdyn_->GetMutableTimeMax() = timemax;
+        datasdyn_->GetTimeMax() = timemax;
       }
 
       /// Get time step size \f$\Delta t_n\f$
@@ -357,7 +357,7 @@ namespace STR
       void SetDeltaTime(const double dt) override
       {
         CheckInit();
-        (*dataglobalstate_->GetMutableDeltaTime())[0] = dt;
+        (*dataglobalstate_->GetDeltaTime())[0] = dt;
       }
 
       /// Return time integration factor
@@ -374,7 +374,7 @@ namespace STR
       void SetStepN(int step_n) override
       {
         CheckInit();
-        dataglobalstate_->GetMutableStepN() = step_n;
+        dataglobalstate_->GetStepN() = step_n;
       }
 
       /// Return current step number $n+1$
@@ -388,7 +388,7 @@ namespace STR
       void SetStepNp(int step_np) override
       {
         CheckInitSetup();
-        dataglobalstate_->GetMutableStepNp() = step_np;
+        dataglobalstate_->GetStepNp() = step_np;
       }
 
       //! Get number of time steps
@@ -402,7 +402,7 @@ namespace STR
       void SetStepEnd(int step_end) override
       {
         CheckInitSetup();
-        datasdyn_->GetMutableStepMax() = step_end;
+        datasdyn_->GetStepMax() = step_end;
       }
 
       //! Get divcont type
@@ -430,7 +430,7 @@ namespace STR
       virtual double SetRandomTimeStepFactor(double rand_tsfac)
       {
         CheckInitSetup();
-        return datasdyn_->GetMutableRandomTimeStepFactor() = rand_tsfac;
+        return datasdyn_->GetRandomTimeStepFactor() = rand_tsfac;
       }
 
       //! Get random factor for time step adaption
@@ -444,7 +444,7 @@ namespace STR
       virtual int SetDivConRefineLevel(int divconrefinementlevel)
       {
         CheckInitSetup();
-        return datasdyn_->GetMutableDivConRefineLevel() = divconrefinementlevel;
+        return datasdyn_->GetDivConRefineLevel() = divconrefinementlevel;
       }
 
       //! Get random factor for time step adaption
@@ -458,7 +458,7 @@ namespace STR
       virtual int SetDivConNumFineStep(int divconnumfinestep)
       {
         CheckInitSetup();
-        return datasdyn_->GetMutableDivConNumFineStep() = divconnumfinestep;
+        return datasdyn_->GetDivConNumFineStep() = divconnumfinestep;
       }
 
       /// set evaluation action
@@ -498,7 +498,7 @@ namespace STR
       /// Access output object
       Teuchos::RCP<IO::DiscretizationWriter> DiscWriter() override
       {
-        return DataIO().GetMutableOutputPtr();
+        return DataIO().GetOutputPtr();
       }
 
       /// Calculate all output quantities depending on the constitutive model
@@ -592,7 +592,7 @@ namespace STR
       }
 
       /// Get TimIntBase data for global state quantities (read & write access)
-      Teuchos::RCP<BaseDataGlobalState>& GetMutableDataGlobalStatePtr()
+      Teuchos::RCP<BaseDataGlobalState>& GetDataGlobalStatePtr()
       {
         CheckInit();
         return dataglobalstate_;
@@ -638,7 +638,7 @@ namespace STR
       }
 
       /// return a reference to the Dirichlet Boundary Condition handler (write access)
-      STR::Dbc& GetMutableDBC()
+      STR::Dbc& GetDBC()
       {
         CheckInitSetup();
         return *dbc_ptr_;
@@ -844,7 +844,7 @@ namespace STR
         if (!state_is_insync_with_noxgroup_)
         {
           dserror(
-              "Mutable state has been requested but the manipulated state has\n"
+              " state has been requested but the manipulated state has\n"
               "not been communicated to NOX.\n"
               "Manipulations made in the state vector will have no effect.\n"
               "Call SetState(x) to synchronize the states stored in the global\n"

@@ -71,7 +71,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("velocity", 3);
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("force", 3);
@@ -91,7 +91,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("integration-points");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
     }
   }

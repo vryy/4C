@@ -591,7 +591,7 @@ namespace DRT
    |                                                            gee 02/07 |
    *----------------------------------------------------------------------*/
   template <>
-  std::vector<int>* Container::GetMutable(const std::string& name)
+  std::vector<int>* Container::Get(const std::string& name)
   {
     std::map<std::string, Teuchos::RCP<std::vector<int>>>::iterator icurr = intdata_.find(name);
     if (icurr != intdata_.end())
@@ -604,7 +604,7 @@ namespace DRT
    |                                                            gee 02/07 |
    *----------------------------------------------------------------------*/
   template <>
-  std::vector<double>* Container::GetMutable(const std::string& name)
+  std::vector<double>* Container::Get(const std::string& name)
   {
     std::map<std::string, Teuchos::RCP<std::vector<double>>>::iterator dcurr =
         doubledata_.find(name);
@@ -618,7 +618,7 @@ namespace DRT
    |                                                            gee 02/07 |
    *----------------------------------------------------------------------*/
   template <>
-  std::map<int, std::vector<double>>* Container::GetMutable(const std::string& name)
+  std::map<int, std::vector<double>>* Container::Get(const std::string& name)
   {
     std::map<std::string, Teuchos::RCP<std::map<int, std::vector<double>>>>::iterator mcurr =
         mapdata_.find(name);
@@ -632,7 +632,7 @@ namespace DRT
    |                                                            gee 02/07 |
    *----------------------------------------------------------------------*/
   template <>
-  std::string* Container::GetMutable(const std::string& name)
+  std::string* Container::Get(const std::string& name)
   {
     std::map<std::string, std::string>::iterator scurr = stringdata_.find(name);
     if (scurr != stringdata_.end())
@@ -645,7 +645,7 @@ namespace DRT
    |                                                            gee 02/07 |
    *----------------------------------------------------------------------*/
   template <>
-  CORE::LINALG::SerialDenseMatrix* Container::GetMutable(const std::string& name)
+  CORE::LINALG::SerialDenseMatrix* Container::Get(const std::string& name)
   {
     std::map<std::string, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>::iterator mcurr =
         matdata_.find(name);
@@ -659,7 +659,7 @@ namespace DRT
    |                                                            gee 03/10 |
    *----------------------------------------------------------------------*/
   template <>
-  Epetra_MultiVector* Container::GetMutable(const std::string& name)
+  Epetra_MultiVector* Container::Get(const std::string& name)
   {
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>>::const_iterator curr =
         evecdata_.find(name);
@@ -673,7 +673,7 @@ namespace DRT
    |                                                            gee 03/10 |
    *----------------------------------------------------------------------*/
   template <>
-  Epetra_Vector* Container::GetMutable(const std::string& name)
+  Epetra_Vector* Container::Get(const std::string& name)
   {
     std::map<std::string, Teuchos::RCP<Epetra_MultiVector>>::const_iterator curr =
         evecdata_.find(name);

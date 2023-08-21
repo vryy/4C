@@ -61,9 +61,8 @@ void BEAMINTERACTION::AddBeamInteractionNodalForces(
 
   if (write_unique_ids)
   {
-    auto& visualization_data = visualization->GetVisualizationDataMutable();
-    std::vector<double>& unique_id =
-        visualization_data.GetPointDataMutable<double>("uid_0_node_id");
+    auto& visualization_data = visualization->GetVisualizationData();
+    std::vector<double>& unique_id = visualization_data.GetPointData<double>("uid_0_node_id");
     for (int i_lid = 0; i_lid < discret_ptr->NumMyRowNodes(); i_lid++)
       unique_id.push_back(discret_ptr->lRowNode(i_lid)->Id());
   }
@@ -79,20 +78,17 @@ void BEAMINTERACTION::AddAveragedNodalNormals(
     const int condition_coupling_id, const bool write_unique_ids)
 {
   // Get the visualization vectors.
-  auto& visualization_data = output_writer_base_ptr->GetVisualizationDataMutable();
-  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
-  std::vector<double>& displacement =
-      visualization_data.GetPointDataMutable<double>("displacement");
-  std::vector<double>& normal_averaged =
-      visualization_data.GetPointDataMutable<double>("normal_averaged");
-  std::vector<double>& normal_element =
-      visualization_data.GetPointDataMutable<double>("normal_element");
-  std::vector<double>& coupling_id = visualization_data.GetPointDataMutable<double>("coupling_id");
+  auto& visualization_data = output_writer_base_ptr->GetVisualizationData();
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
+  std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
+  std::vector<double>& normal_averaged = visualization_data.GetPointData<double>("normal_averaged");
+  std::vector<double>& normal_element = visualization_data.GetPointData<double>("normal_element");
+  std::vector<double>& coupling_id = visualization_data.GetPointData<double>("coupling_id");
 
   std::vector<double>* face_id = nullptr;
   if (write_unique_ids)
   {
-    face_id = &(visualization_data.GetPointDataMutable<double>("uid_0_face_id"));
+    face_id = &(visualization_data.GetPointData<double>("uid_0_face_id"));
   }
 
   // Loop over face elements.

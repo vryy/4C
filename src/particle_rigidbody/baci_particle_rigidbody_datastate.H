@@ -119,40 +119,37 @@ namespace PARTICLERIGIDBODY
     //! @{
 
     //! get mass of rigid bodies
-    inline std::vector<double>& GetRefMutableMass() { return mass_; };
+    inline std::vector<double>& GetRefMass() { return mass_; };
 
     //! get mass moment of inertia of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableInertia() { return inertia_; };
+    inline std::vector<std::vector<double>>& GetRefInertia() { return inertia_; };
 
     //! get position of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutablePosition() { return position_; };
+    inline std::vector<std::vector<double>>& GetRefPosition() { return position_; };
 
     //! get velocity of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableVelocity() { return velocity_; };
+    inline std::vector<std::vector<double>>& GetRefVelocity() { return velocity_; };
 
     //! get acceleration of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableAcceleration() { return acceleration_; };
+    inline std::vector<std::vector<double>>& GetRefAcceleration() { return acceleration_; };
 
     //! get rotation of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableRotation() { return rotation_; };
+    inline std::vector<std::vector<double>>& GetRefRotation() { return rotation_; };
 
     //! get angular velocity of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableAngularVelocity()
-    {
-      return angularvelocity_;
-    };
+    inline std::vector<std::vector<double>>& GetRefAngularVelocity() { return angularvelocity_; };
 
     //! get angular acceleration of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableAngularAcceleration()
+    inline std::vector<std::vector<double>>& GetRefAngularAcceleration()
     {
       return angularacceleration_;
     };
 
     //! get force of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableForce() { return force_; };
+    inline std::vector<std::vector<double>>& GetRefForce() { return force_; };
 
     //! get torque of rigid bodies
-    inline std::vector<std::vector<double>>& GetRefMutableTorque() { return torque_; };
+    inline std::vector<std::vector<double>>& GetRefTorque() { return torque_; };
 
     //! @}
 

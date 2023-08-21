@@ -67,7 +67,7 @@ namespace NOX
 
         //! Necessary for the pre/post operator class
         //! Be careful: This version allows you to actually change the parameter list entries
-        inline virtual const Teuchos::RCP<Teuchos::ParameterList>& GetMutableListPtr() const
+        inline virtual const Teuchos::RCP<Teuchos::ParameterList>& GetListPtr() const
         {
           return paramsPtr;
         };

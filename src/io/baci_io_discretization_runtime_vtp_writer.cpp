@@ -47,7 +47,7 @@ void DiscretizationRuntimeVtpWriter::SetGeometryFromParticleDiscretization()
 
   // get and prepare storage for point coordinate values
   std::vector<double>& point_coordinates =
-      visualization_manager_->GetVisualizationDataMutable().GetPointCoordinatesMutable();
+      visualization_manager_->GetVisualizationData().GetPointCoordinates();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_row_nodes);
 
@@ -85,7 +85,7 @@ void DiscretizationRuntimeVtpWriter::AppendDofBasedResultDataVector(
   for (int lid = 0; lid < result_data_dofbased->MyLength(); ++lid)
     vtp_point_result_data.push_back((*result_data_dofbased)[lid]);
 
-  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+  visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
       resultname, vtp_point_result_data, result_num_dofs_per_node);
 }
 
@@ -121,7 +121,7 @@ void DiscretizationRuntimeVtpWriter::AppendNodeBasedResultDataVector(
     }
   }
 
-  visualization_manager_->GetVisualizationDataMutable().SetPointDataVector<double>(
+  visualization_manager_->GetVisualizationData().SetPointDataVector<double>(
       resultname, vtp_point_result_data, result_num_components_per_node);
 }
 

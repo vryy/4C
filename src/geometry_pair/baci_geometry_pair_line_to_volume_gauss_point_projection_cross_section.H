@@ -90,7 +90,7 @@ namespace GEOMETRYPAIR
      * \brief Get the line projection vector for the line element in this pair.
      * @return Reference to line projection vector.
      */
-    std::vector<bool>& GetLineProjectionVectorMutable() const;
+    std::vector<bool>& GetLineProjectionVector() const;
   };
 }  // namespace GEOMETRYPAIR
 

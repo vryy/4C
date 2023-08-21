@@ -43,7 +43,7 @@ Teuchos::RCP<const Epetra_Vector> STR::TIMINT::ImplicitBase::GetF() const
 Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
 {
   CheckInitSetup();
-  return DataGlobalState().GetMutableFreactNp();
+  return DataGlobalState().GetFreactNp();
 }
 
 /*----------------------------------------------------------------------------*
@@ -51,8 +51,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::ImplicitBase::Freact()
 Teuchos::RCP<CORE::LINALG::SparseMatrix> STR::TIMINT::ImplicitBase::SystemMatrix()
 {
   CheckInitSetup();
-  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(
-      DataGlobalState().GetMutableJacobian());
+  return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(DataGlobalState().GetJacobian());
 }
 
 
@@ -62,7 +61,7 @@ Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> STR::TIMINT::ImplicitBase::Blo
 {
   CheckInitSetup();
   return Teuchos::rcp_dynamic_cast<CORE::LINALG::BlockSparseMatrixBase>(
-      DataGlobalState().GetMutableJacobian());
+      DataGlobalState().GetJacobian());
 }
 
 /*----------------------------------------------------------------------------*

@@ -91,7 +91,7 @@ void STR::MODELEVALUATOR::PartitionedFSI::UpdateStepState(const double& timefac_
   if (not is_relaxationsolve)  // standard case
   {
     // add the old time factor scaled contributions to the residual
-    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
+    Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
     fstructold_ptr->Update(-timefac_n, *interface_force_np_ptr_, 1.0);
   }
   else
@@ -124,7 +124,7 @@ Teuchos::RCP<const Epetra_Vector> STR::MODELEVALUATOR::PartitionedFSI::SolveRela
   if (grp_ptr == nullptr) dserror("Dynamic cast failed!");
 
   // get nox parameter
-  Teuchos::ParameterList& noxparams = ti_impl->DataSDyn().GetMutableNoxParams();
+  Teuchos::ParameterList& noxparams = ti_impl->DataSDyn().GetNoxParams();
 
   // create new state vector
   Teuchos::RCP<NOX::Epetra::Vector> x_ptr = GState().CreateGlobalVector(

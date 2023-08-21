@@ -66,7 +66,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::PostSetup()
     if (TimInt().IsRestarting()) return;
 
     // so far, we are restricted to vanishing initial accelerations
-    Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
+    Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
     accnp_ptr->PutScalar(0.0);
 
     // sanity check whether assumption is fulfilled
@@ -104,7 +104,7 @@ void STR::IMPLICIT::GenAlphaLieGroup::SetState(const Epetra_Vector& x)
   // new end-point displacements
   // ---------------------------------------------------------------------------
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetMutableDisNp()->Scale(1.0, *disnp_ptr);
+  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
 
   /* ToDo in case we want to handle rotation vector DoFs correctly on time
    *      integrator level, the update procedure needs to be adapted here;
@@ -114,13 +114,13 @@ void STR::IMPLICIT::GenAlphaLieGroup::SetState(const Epetra_Vector& x)
   // ---------------------------------------------------------------------------
   // new end-point velocities
   // ---------------------------------------------------------------------------
-  GlobalState().GetMutableVelNp()->Update(
+  GlobalState().GetVelNp()->Update(
       1.0, *(*const_vel_acc_update_ptr_)(0), gamma_ / (beta_ * dt), *disnp_ptr, 0.0);
 
   // ---------------------------------------------------------------------------
   // new end-point accelerations
   // ---------------------------------------------------------------------------
-  GlobalState().GetMutableAccNp()->Update(1.0, *(*const_vel_acc_update_ptr_)(1),
+  GlobalState().GetAccNp()->Update(1.0, *(*const_vel_acc_update_ptr_)(1),
       (1.0 - alpham_) / (beta_ * dt * dt * (1.0 - alphaf_)), *disnp_ptr, 0.0);
 }
 

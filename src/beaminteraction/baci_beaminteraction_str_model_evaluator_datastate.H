@@ -99,7 +99,7 @@ namespace STR
       };
 
       /// get mutable extended bin to ele map
-      std::map<int, std::set<int>>& GetMutableBinToRowEleMap()
+      std::map<int, std::set<int>>& GetBinToRowEleMap()
       {
         CheckInitSetup();
         return bintorowelemap_;
@@ -113,7 +113,7 @@ namespace STR
       };
 
       /// get mutable extended bin to ele map
-      std::map<int, std::set<int>>& GetMutableExtendedBinToRowEleMap()
+      std::map<int, std::set<int>>& GetExtendedBinToRowEleMap()
       {
         CheckInitSetup();
         return exbintorowelemap_;
@@ -134,7 +134,7 @@ namespace STR
       };
 
       /// get mutable extended ele to bin map
-      std::map<int, std::set<int>>& GetMutableRowEleToBinMap()
+      std::map<int, std::set<int>>& GetRowEleToBinMap()
       {
         CheckInitSetup();
         return roweletobinmap_;
@@ -207,63 +207,56 @@ namespace STR
       ///@{
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableDisRestart()
+      Teuchos::RCP<Epetra_Vector>& GetDisRestart()
       {
         CheckInitSetup();
         return dis_restart_;
       }
 
       /// Return displacements at the restart step \f$D_{restart}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableDisRestartCol()
+      Teuchos::RCP<Epetra_Vector>& GetDisRestartCol()
       {
         CheckInitSetup();
         return dis_restart_col_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableDisNp()
+      Teuchos::RCP<Epetra_Vector>& GetDisNp()
       {
         CheckInitSetup();
         return disnp_;
       }
 
       /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<Epetra_Vector>& GetMutableDisColNp()
-      {
-        CheckInitSetup();
-        return discolnp_;
-      }
-
-      /// Return displacements \f$D_{n+1}\f$
-      Teuchos::RCP<const Epetra_Vector> GetDisColNp()
+      Teuchos::RCP<Epetra_Vector>& GetDisColNp()
       {
         CheckInitSetup();
         return discolnp_;
       }
 
       /// Return displacements \f$D_{n}\f$
-      Teuchos::RCP<Epetra_Vector> GetMutableDisN()
+      Teuchos::RCP<Epetra_Vector> GetDisN()
       {
         CheckInitSetup();
         return (*dis_)(0);
       }
 
       /// Return multi-displacement vector \f$D_{n}, D_{n-1}, ...\f$
-      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> GetMutableMultiDis()
+      Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>> GetMultiDis()
       {
         CheckInitSetup();
         return dis_;
       }
 
       /// Return internal force \f$fint_{n}\f$
-      Teuchos::RCP<Epetra_FEVector>& GetMutableForceN()
+      Teuchos::RCP<Epetra_FEVector>& GetForceN()
       {
         CheckInitSetup();
         return forcen_;
       }
 
       /// Return internal force \f$fint_{n+1}\f$
-      Teuchos::RCP<Epetra_FEVector>& GetMutableForceNp()
+      Teuchos::RCP<Epetra_FEVector>& GetForceNp()
       {
         CheckInitSetup();
         return forcenp_;
@@ -274,7 +267,7 @@ namespace STR
       /// @name Get mutable system matrices
       ///@{
       /// returns the entire structural jacobian
-      Teuchos::RCP<CORE::LINALG::SparseMatrix>& GetMutableStiff()
+      Teuchos::RCP<CORE::LINALG::SparseMatrix>& GetStiff()
       {
         CheckInitSetup();
         return stiff_;

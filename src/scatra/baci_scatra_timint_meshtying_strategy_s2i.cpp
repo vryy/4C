@@ -2942,7 +2942,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         {
           s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<double>*>(
-              "permeabilities", s2ikinetics_cond.GetMutable<std::vector<double>>("permeabilities"));
+              "permeabilities", s2ikinetics_cond.Get<std::vector<double>>("permeabilities"));
           s2icouplingparameters.set<int>(
               "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
           break;
@@ -2952,7 +2952,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         {
           s2icouplingparameters.set<double>("resistance", s2ikinetics_cond.GetDouble("resistance"));
           s2icouplingparameters.set<std::vector<int>*>(
-              "onoff", s2ikinetics_cond.GetMutable<std::vector<int>>("onoff"));
+              "onoff", s2ikinetics_cond.Get<std::vector<int>>("onoff"));
           s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
           s2icouplingparameters.set<int>(
               "is_pseudo_contact", s2ikinetics_cond.GetInt("is_pseudo_contact"));
@@ -2977,7 +2977,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         {
           s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
-              "stoichiometries", s2ikinetics_cond.GetMutable<std::vector<int>>("stoichiometries"));
+              "stoichiometries", s2ikinetics_cond.Get<std::vector<int>>("stoichiometries"));
           s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
           s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
           s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));
@@ -3031,7 +3031,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
         {
           s2icouplingparameters.set<int>("numscal", s2ikinetics_cond.GetInt("numscal"));
           s2icouplingparameters.set<std::vector<int>*>(
-              "stoichiometries", s2ikinetics_cond.GetMutable<std::vector<int>>("stoichiometries"));
+              "stoichiometries", s2ikinetics_cond.Get<std::vector<int>>("stoichiometries"));
           s2icouplingparameters.set<int>("numelectrons", s2ikinetics_cond.GetInt("e-"));
           s2icouplingparameters.set<double>("k_r", s2ikinetics_cond.GetDouble("k_r"));
           s2icouplingparameters.set<double>("alpha_a", s2ikinetics_cond.GetDouble("alpha_a"));

@@ -1921,7 +1921,8 @@ void CONTACT::AUG::L2ErrorNormPerNode(const std::unordered_map<int, Deriv1stMap>
 double CONTACT::AUG::Strategy::GetPotentialValue(
     const enum NOX::NLN::MeritFunction::MeritFctName mrt_type) const
 {
-  Potential& pot = Data().MutablePotential();
+  // Since constness is broken in this implementation, we resort to a const-cast here.
+  auto& pot = const_cast<Potential&>(Data().Potential());
   pot.Compute();
 
   switch (mrt_type)
@@ -2004,7 +2005,8 @@ double CONTACT::AUG::Strategy::GetLinearizedPotentialModelTerms(const Epetra_Vec
 {
   double linval = 0.0;
 
-  Potential& pot = Data().MutablePotential();
+  // Since constness is broken in this implementation, we resort to a const-cast here.
+  auto& pot = const_cast<Potential&>(Data().Potential());
   pot.ComputeLin(dir);
 
   switch (linorder)

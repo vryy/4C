@@ -120,10 +120,9 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   ia_state_ptr_->Init();
   ia_state_ptr_->Setup(ia_discret_);
 
-  ia_state_ptr_->GetMutableDisNp() =
-      Teuchos::rcp(new Epetra_Vector(*GStatePtr()->GetMutableDisNp()));
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetMutableDisNp(),
-      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(), ia_discret_);
+  ia_state_ptr_->GetDisNp() = Teuchos::rcp(new Epetra_Vector(*GStatePtr()->GetDisNp()));
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
+      ia_state_ptr_->GetDisNp(), TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(), ia_discret_);
 
   // -------------------------------------------------------------------------
   // initialize coupling adapter to transform matrices between the two discrets
@@ -139,8 +138,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   std::vector<Teuchos::RCP<::DRT::Discretization>> discret_vec(1, ia_discret_);
 
   // We have to pass the displacement column vector to the initialization of the binning strategy.
-  ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+  ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disp_vec(1, ia_state_ptr_->GetDisColNp());
   binstrategy_ = Teuchos::rcp(new BINSTRATEGY::BinningStrategy());
@@ -376,7 +375,7 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   // displacement vector according to periodic boundary conditions
   std::vector<Teuchos::RCP<Epetra_Vector>> mutabledisnp(
       1, Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap())));
-  CORE::LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *mutabledisnp[0]);
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *mutabledisnp[0]);
 
   std::vector<Teuchos::RCP<const Epetra_Vector>> disnp(
       1, Teuchos::rcp(new const Epetra_Vector(*mutabledisnp[0])));
@@ -414,15 +413,15 @@ void STR::MODELEVALUATOR::BeamInteraction::PartitionProblem()
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->StandardDiscretizationGhosting(
-      ia_discret_, rowbins_, ia_state_ptr_->GetMutableDisNp(), stdelecolmap, stdnodecolmapdummy);
+      ia_discret_, rowbins_, ia_state_ptr_->GetDisNp(), stdelecolmap, stdnodecolmapdummy);
 
   // distribute elements that can be cut by the periodic boundary to bins
   Teuchos::RCP<Epetra_Vector> iadiscolnp =
       Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetMutableDisNp(), *iadiscolnp);
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *iadiscolnp);
 
   binstrategy_->DistributeRowElementsToBinsUsingEleAABB(
-      ia_discret_, ia_state_ptr_->GetMutableBinToRowEleMap(), iadiscolnp);
+      ia_discret_, ia_state_ptr_->GetBinToRowEleMap(), iadiscolnp);
 
   // build row elements to bin map
   BuildRowEleToBinMap();
@@ -462,7 +461,7 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
 {
   TEUCHOS_FUNC_TIME_MONITOR("STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting");
 
-  ia_state_ptr_->GetMutableExtendedBinToRowEleMap().clear();
+  ia_state_ptr_->GetExtendedBinToRowEleMap().clear();
 
   CheckInit();
 
@@ -509,9 +508,9 @@ void STR::MODELEVALUATOR::BeamInteraction::ExtendGhosting()
   Teuchos::RCP<Epetra_Map> auxmap = Teuchos::rcp(
       new Epetra_Map(-1, static_cast<int>(auxgids.size()), auxgids.data(), 0, bindis_->Comm()));
 
-  Teuchos::RCP<Epetra_Map> ia_elecolmap = binstrategy_->ExtendElementColMap(
-      ia_state_ptr_->GetMutableBinToRowEleMap(), ia_state_ptr_->GetMutableBinToRowEleMap(),
-      ia_state_ptr_->GetMutableExtendedBinToRowEleMap(), auxmap);
+  Teuchos::RCP<Epetra_Map> ia_elecolmap =
+      binstrategy_->ExtendElementColMap(ia_state_ptr_->GetBinToRowEleMap(),
+          ia_state_ptr_->GetBinToRowEleMap(), ia_state_ptr_->GetExtendedBinToRowEleMap(), auxmap);
 
   // 2) extend ghosting of discretization
   BINSTRATEGY::UTILS::ExtendDiscretizationGhosting(ia_discret_, ia_elecolmap, true, false, true);
@@ -528,21 +527,19 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp());
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetMutableDisNp(),
-      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(), ia_discret_);
+      ia_discret_, ia_state_ptr_->GetDisNp(), GState().GetDisNp());
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
+      ia_state_ptr_->GetDisNp(), TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(), ia_discret_);
 
   // update column vector
-  ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+  ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
 
   // update restart displacement vector
   if (ia_state_ptr_->GetRestartCouplingFlag())
   {
-    ia_state_ptr_->GetMutableDisRestartCol() =
-        Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    CORE::LINALG::Export(
-        *ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+    ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+    CORE::LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
   }
 
   // submodel loop
@@ -553,9 +550,9 @@ void STR::MODELEVALUATOR::BeamInteraction::Reset(const Epetra_Vector& x)
   // Zero out force and stiffness contributions
   force_beaminteraction_->PutScalar(0.0);
   ia_force_beaminteraction_->PutScalar(0.0);
-  ia_state_ptr_->GetMutableForceNp()->PutScalar(0.0);
+  ia_state_ptr_->GetForceNp()->PutScalar(0.0);
   stiff_beaminteraction_->Zero();
-  ia_state_ptr_->GetMutableStiff()->Zero();
+  ia_state_ptr_->GetStiff()->Zero();
 
   // update gidmap_ and exporter in matrix transform object
   // Note: we need this in every evaluation call (i.e. every iteration) because a change
@@ -582,10 +579,10 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForce()
     (*sme_iter)->EvaluateForce();
 
   // do communication
-  if (ia_state_ptr_->GetMutableForceNp()->GlobalAssemble(Add, false) != 0)
+  if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
     dserror("GlobalAssemble failed");
   // add to non fe vector
-  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetMutableForceNp(), 1.))
+  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetForceNp(), 1.))
     dserror("update went wrong");
 
   // transformation from ia_discret to problem discret
@@ -600,13 +597,13 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateStiff()
 {
   CheckInitSetup();
 
-  ia_state_ptr_->GetMutableStiff()->UnComplete();
+  ia_state_ptr_->GetStiff()->UnComplete();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->EvaluateStiff();
 
-  if (not ia_state_ptr_->GetMutableStiff()->Filled()) ia_state_ptr_->GetMutableStiff()->Complete();
+  if (not ia_state_ptr_->GetStiff()->Filled()) ia_state_ptr_->GetStiff()->Complete();
 
   TransformStiff();
 
@@ -621,20 +618,20 @@ bool STR::MODELEVALUATOR::BeamInteraction::EvaluateForceStiff()
 {
   CheckInitSetup();
 
-  ia_state_ptr_->GetMutableStiff()->UnComplete();
+  ia_state_ptr_->GetStiff()->UnComplete();
 
   Vector::iterator sme_iter;
   for (sme_iter = me_vec_ptr_->begin(); sme_iter != me_vec_ptr_->end(); ++sme_iter)
     (*sme_iter)->EvaluateForceStiff();
 
   // do communication
-  if (ia_state_ptr_->GetMutableForceNp()->GlobalAssemble(Add, false) != 0)
+  if (ia_state_ptr_->GetForceNp()->GlobalAssemble(Add, false) != 0)
     dserror("GlobalAssemble failed");
 
   // add to non fe vector
-  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetMutableForceNp(), 1.))
+  if (ia_force_beaminteraction_->Update(1., *ia_state_ptr_->GetForceNp(), 1.))
     dserror("update went wrong");
-  if (not ia_state_ptr_->GetMutableStiff()->Filled()) ia_state_ptr_->GetMutableStiff()->Complete();
+  if (not ia_state_ptr_->GetStiff()->Filled()) ia_state_ptr_->GetStiff()->Complete();
 
   TransformForceStiff();
 
@@ -667,7 +664,7 @@ bool STR::MODELEVALUATOR::BeamInteraction::AssembleJacobian(
 
   // no need to keep it
   stiff_beaminteraction_->Zero();
-  ia_state_ptr_->GetMutableStiff()->Zero();
+  ia_state_ptr_->GetStiff()->Zero();
 
   return true;
 }
@@ -753,10 +750,8 @@ void STR::MODELEVALUATOR::BeamInteraction::ReadRestart(IO::DiscretizationReader&
           "COUPLE_RESTART_STATE"))
   {
     ia_state_ptr_->SetRestartCouplingFlag(true);
-    ia_state_ptr_->GetMutableDisRestart() =
-        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
-    ia_state_ptr_->GetMutableDisRestartCol() =
-        Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
+    ia_state_ptr_->GetDisRestart() = Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
+    ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_state_ptr_->GetDisNp()));
   }
 }
 
@@ -787,7 +782,7 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepState(const double& timefac
   CheckInitSetup();
 
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
 
   fstructold_ptr->Update(timefac_n, *force_beaminteraction_, 1.0);
 
@@ -823,8 +818,8 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateStepElement()
 
   if (beam_redist)
   {
-    binstrategy_->TransferNodesAndElements(ia_discret_, ia_state_ptr_->GetMutableDisColNp(),
-        ia_state_ptr_->GetMutableBinToRowEleMap());
+    binstrategy_->TransferNodesAndElements(
+        ia_discret_, ia_state_ptr_->GetDisColNp(), ia_state_ptr_->GetBinToRowEleMap());
 
     BuildRowEleToBinMap();
 
@@ -1053,7 +1048,7 @@ void STR::MODELEVALUATOR::BeamInteraction::BuildRowEleToBinMap()
   CheckInit();
 
   // delete old map
-  ia_state_ptr_->GetMutableRowEleToBinMap().clear();
+  ia_state_ptr_->GetRowEleToBinMap().clear();
   // loop over bins
   std::map<int, std::set<int>>::const_iterator biniter;
   for (biniter = ia_state_ptr_->GetBinToRowEleMap().begin();
@@ -1066,7 +1061,7 @@ void STR::MODELEVALUATOR::BeamInteraction::BuildRowEleToBinMap()
       int elegid = *eleiter;
       int bingid = biniter->first;
       // assign bins to elements
-      ia_state_ptr_->GetMutableRowEleToBinMap()[elegid].insert(bingid);
+      ia_state_ptr_->GetRowEleToBinMap()[elegid].insert(bingid);
     }
   }
 }
@@ -1082,34 +1077,31 @@ void STR::MODELEVALUATOR::BeamInteraction::UpdateMaps()
   // todo: check if update is necessary (->SameAs())
 
   // beam displacement
-  BEAMINTERACTION::UTILS::UpdateDofMapOfVector(ia_discret_, ia_state_ptr_->GetMutableDisNp());
+  BEAMINTERACTION::UTILS::UpdateDofMapOfVector(ia_discret_, ia_state_ptr_->GetDisNp());
 
   // get current displacement state and export to interaction discretization dofmap
   BEAMINTERACTION::UTILS::UpdateDofMapOfVector(
-      ia_discret_, ia_state_ptr_->GetMutableDisNp(), GState().GetMutableDisNp());
-  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(ia_state_ptr_->GetMutableDisNp(),
-      TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(), ia_discret_);
+      ia_discret_, ia_state_ptr_->GetDisNp(), GState().GetDisNp());
+  BEAMINTERACTION::UTILS::PeriodicBoundaryConsistentDisVector(
+      ia_state_ptr_->GetDisNp(), TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox(), ia_discret_);
 
   // update column vector
-  ia_state_ptr_->GetMutableDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetMutableDisColNp());
+  ia_state_ptr_->GetDisColNp() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+  CORE::LINALG::Export(*ia_state_ptr_->GetDisNp(), *ia_state_ptr_->GetDisColNp());
 
   // update restart displacement vector
   if (ia_state_ptr_->GetRestartCouplingFlag())
   {
-    ia_state_ptr_->GetMutableDisRestartCol() =
-        Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
-    CORE::LINALG::Export(
-        *ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetMutableDisRestartCol());
+    ia_state_ptr_->GetDisRestartCol() = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofColMap()));
+    CORE::LINALG::Export(*ia_state_ptr_->GetDisRestart(), *ia_state_ptr_->GetDisRestartCol());
   }
 
   // force
   ia_force_beaminteraction_ = Teuchos::rcp(new Epetra_Vector(*ia_discret_->DofRowMap(), true));
-  ia_state_ptr_->GetMutableForceNp() =
-      Teuchos::rcp(new Epetra_FEVector(*ia_discret_->DofRowMap(), true));
+  ia_state_ptr_->GetForceNp() = Teuchos::rcp(new Epetra_FEVector(*ia_discret_->DofRowMap(), true));
 
   // stiff
-  ia_state_ptr_->GetMutableStiff() = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
+  ia_state_ptr_->GetStiff() = Teuchos::rcp(new CORE::LINALG::SparseMatrix(
       *ia_discret_->DofRowMap(), 81, true, true, CORE::LINALG::SparseMatrix::FE_MATRIX));
 
   BEAMINTERACTION::UTILS::SetupEleTypeMapExtractor(ia_discret_, eletypeextractor_);
@@ -1137,7 +1129,7 @@ void STR::MODELEVALUATOR::BeamInteraction::TransformStiff()
 
   stiff_beaminteraction_->UnComplete();
   // transform stiffness matrix to problem discret layout/distribution
-  (*siatransform_)(*ia_state_ptr_->GetMutableStiff(), 1.0,
+  (*siatransform_)(*ia_state_ptr_->GetStiff(), 1.0,
       CORE::ADAPTER::CouplingMasterConverter(*coupsia_), *stiff_beaminteraction_, false);
 }
 

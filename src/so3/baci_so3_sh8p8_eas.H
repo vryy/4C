@@ -27,13 +27,13 @@ void DRT::ELEMENTS::So_sh8p8::EasUpdateIncrementally(CORE::LINALG::SerialDenseMa
     const CORE::LINALG::Matrix<NUMDISP_, 1>& dispi, const CORE::LINALG::Matrix<NUMPRES_, 1>& presi)
 {
   // retrieve history
-  alpha = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
+  alpha = data.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
   // evaluate current (updated) EAS alphas (from history variables)
   // get stored EAS history
-  oldfeas = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-  oldKaainv = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-  oldKad = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");  // actually k_ad
-  oldKap = data.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kap");
+  oldfeas = data.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+  oldKaainv = data.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  oldKad = data.Get<CORE::LINALG::SerialDenseMatrix>("Kda");  // actually k_ad
+  oldKap = data.Get<CORE::LINALG::SerialDenseMatrix>("Kap");
   if (!alpha || !oldKaainv || !oldKad || !oldKap || !oldfeas) dserror("Missing EAS history-data");
 
   // feas^{k+1} := feas^k + k_ad^k . Ddisp^k + k_ap^k . Dpres^k

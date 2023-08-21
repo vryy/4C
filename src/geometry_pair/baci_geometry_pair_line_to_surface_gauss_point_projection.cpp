@@ -29,7 +29,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, li
   // created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->line_to_surface_evaluation_data_->GetGaussPointProjectionTrackerMutable();
+      this->line_to_surface_evaluation_data_->GetGaussPointProjectionTracker();
 
   if (projection_tracker.find(line_element_id) == projection_tracker.end())
   {
@@ -83,12 +83,12 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, li
  */
 template <typename scalar_type, typename line, typename surface>
 std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<scalar_type, line,
-    surface>::GetLineProjectionVectorMutable() const
+    surface>::GetLineProjectionVector() const
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      this->line_to_surface_evaluation_data_->GetGaussPointProjectionTrackerMutable();
+      this->line_to_surface_evaluation_data_->GetGaussPointProjectionTracker();
   return projection_tracker[line_element_id];
 }
 

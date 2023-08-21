@@ -81,7 +81,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("nodal-forces", "btssc-nodal-forces");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("force_beam", 3);
       visualization_data.RegisterPointData<double>("force_solid", 3);
@@ -97,7 +97,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "averaged-normals", "btssc-averaged-normals");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("normal_averaged", 3);
       visualization_data.RegisterPointData<double>("normal_element", 3);
@@ -109,7 +109,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("mortar", "btssc-mortar");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
@@ -124,7 +124,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "mortar-continuous", "btssc-mortar-continuous");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("lambda", 3);
       if (write_unique_ids)
@@ -141,7 +141,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter(
               "integration-points", "btssc-integration-points");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("projection_direction", 3);
       if (write_unique_ids)
@@ -155,7 +155,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::Setup(
     {
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidVtuOutputWriterVisualization> visualization_writer =
           output_writer_base_ptr_->AddVisualizationWriter("segmentation", "btssc-segmentation");
-      auto& visualization_data = visualization_writer->GetVisualizationDataMutable();
+      auto& visualization_data = visualization_writer->GetVisualizationData();
       visualization_data.RegisterPointData<double>("displacement", 3);
       visualization_data.RegisterPointData<double>("projection_direction", 3);
       if (write_unique_ids)
@@ -333,11 +333,11 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
             dynamic_cast<const Epetra_MpiComm*>(&(beam_contact->Discret().Comm()))->Comm());
 
         // Add to the vtk output writer.
-        auto& visualization_data = nodal_force_visualization->GetVisualizationDataMutable();
+        auto& visualization_data = nodal_force_visualization->GetVisualizationData();
         std::vector<double>& field_data_beam_force =
-            visualization_data.GetFieldDataMutable<double>("sum_coupling_force_beam");
+            visualization_data.GetFieldData<double>("sum_coupling_force_beam");
         std::vector<double>& field_data_beam_moment =
-            visualization_data.GetFieldDataMutable<double>("sum_coupling_moment_beam");
+            visualization_data.GetFieldData<double>("sum_coupling_moment_beam");
         field_data_beam_force.clear();
         field_data_beam_force.resize(3);
         field_data_beam_moment.clear();
@@ -348,9 +348,9 @@ void BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter::WriteOutputBeamToSolidS
           field_data_beam_moment[i_dim] = beam_resultant_global(i_dim, 1);
         }
         std::vector<double>& field_data_solid_force =
-            visualization_data.GetFieldDataMutable<double>("sum_coupling_force_solid");
+            visualization_data.GetFieldData<double>("sum_coupling_force_solid");
         std::vector<double>& field_data_solid_moment =
-            visualization_data.GetFieldDataMutable<double>("sum_coupling_moment_solid");
+            visualization_data.GetFieldData<double>("sum_coupling_moment_solid");
         field_data_solid_force.clear();
         field_data_solid_force.resize(3);
         field_data_solid_moment.clear();

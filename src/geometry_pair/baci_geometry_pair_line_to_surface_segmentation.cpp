@@ -27,7 +27,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceSegmentation<scalar_type, line, surf
   // Check if a segment tracker exists for this line element. If not a new one is created.
   int line_element_id = this->Element1()->Id();
   std::map<int, std::set<LineSegment<double>>>& segment_tracker_map =
-      this->line_to_surface_evaluation_data_->GetSegmentTrackerMutable();
+      this->line_to_surface_evaluation_data_->GetSegmentTracker();
 
   if (segment_tracker_map.find(line_element_id) == segment_tracker_map.end())
   {
