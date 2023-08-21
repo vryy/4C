@@ -15,10 +15,6 @@ Every time something changes in the repository (commit, merge, etc.), GitLab che
 
 ## Testing in BACI
 
-### LNM and IMCS
-
-Since Baci is used in different environments and configurations, there are some environment variables defined in `.gitlab-ci.yml` that are passed to the gitlab-runner (for example, the variable `CONFIGURE_POSTFIX` is used to pass options to the `do-configure` script).
-
 ### Daily tests
 
 Each night a full release and a full debug test are started by a GitLab Scheduler on all configurations. If the release test passes, `doxygen` is build and copied to a folder with constant path (if the documentation is automatically loaded to a server it is better if it is always in the same location, the path is given with a variable and can be different for the different configurations).
