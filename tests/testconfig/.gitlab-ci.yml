@@ -322,6 +322,9 @@ before_script:
 # Stages during testing.
 #-------------------------------------------------------------------------------
 
+# We use stages just for grouping jobs into different categories. Dependencies are defined using the
+# `needs` keyword to reduce the time of a pipeline run, see the Gitlab documentation about Directed
+# Acyclic Graph Pipelines (https://docs.gitlab.com/ee/ci/pipelines/pipeline_architectures.html#directed-acyclic-graph-pipelines).
 stages:
 - build-docker-images
 - checkcode
@@ -358,6 +361,9 @@ checkcode:
   tags:
   - checkcode
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 # IMCS--------------------------------------------------------------------------
 
@@ -368,7 +374,7 @@ imcs-buildtest_minimal_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-minimal-ubuntu20
-  needs: [checkcode]
+  needs: []
 
 imcs-buildtest_daily_ubuntu20:
   extends: .buildtest_daily
@@ -379,7 +385,7 @@ imcs-buildtest_daily_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-full-ubuntu20
-  needs: [checkcode]
+  needs: []
 
 imcs-buildtest_daily_debug_ubuntu20:
   extends: .buildtest_daily_debug
@@ -390,7 +396,7 @@ imcs-buildtest_daily_debug_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-debug-ubuntu20
-  needs: [checkcode]
+  needs: []
 
 imcs-buildtest_release_trilinos_develop:
   extends: .buildtest_release_trilinos_develop
@@ -405,7 +411,7 @@ imcs-buildtest_release_trilinos_develop:
   - imcs-buildtest_release_trilinos_develop-ubuntu20
   needs: []
 
-# LNM---------------------------------------------------------------------------
+# Docker---------------------------------------------------------------------------
 
 codeclimate:
   stage: checkcode
@@ -441,6 +447,9 @@ codeclimate:
   tags:
   - codeclimate
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 buildtest_minimal_release:
   extends: .buildtest_minimal
@@ -452,7 +461,9 @@ buildtest_minimal_release:
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
   - buildtest-minimal
-  needs: [checkcode]
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 buildtest_coverage:
   extends: .buildtest_coverage
@@ -475,9 +486,12 @@ pages: # job name needs to be pages
   stage: pages
   image: alpine:3.18
     # Download Doxygen and ReadTheDocs from previous documentation stage
-  dependencies:
-  - doxygen
-  - readthedocs
+  needs:
+  - job: build-base-dependencies
+    optional: true
+  - job: doxygen
+    artifacts: true
+  - job: readthedocs
   before_script: []
   script:
     # Create python venv for gitlab api and anybadges
@@ -541,6 +555,9 @@ doxygen-web:
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_MERGE_REQUEST_IID
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 doxygen:
   extends: .doxygen
@@ -560,6 +577,9 @@ doxygen:
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 # Build the docker image with all dependencies for Baci
 build-base-dependencies:
@@ -595,7 +615,6 @@ buildtest_full_release:
   tags:
   - buildtest
   needs:
-  - checkcode
   - job: build-base-dependencies
     optional: true
   # Make use of evaluation order to run test in nightly pipeline as well
@@ -615,7 +634,6 @@ buildtest_full_debug:
   tags:
   - buildtest-debug
   needs:
-  - checkcode
   - job: build-base-dependencies
     optional: true
 
@@ -672,6 +690,9 @@ readthedocs-web:
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_MERGE_REQUEST_IID
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 readthedocs:
   extends: .readthedocs
@@ -691,3 +712,6 @@ readthedocs:
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
+  needs:
+  - job: build-base-dependencies
+    optional: true
