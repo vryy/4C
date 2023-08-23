@@ -711,8 +711,26 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplNonConforming::CreateNewArtery
               dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
           }
         }
+        case DRT::Element::tet10:
+        {
+          switch (DRT::Problem::Instance()->NDim())
+          {
+            case 1:
+              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+                  DRT::Element::line2, DRT::Element::tet10, 1>());
+            case 2:
+              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+                  DRT::Element::line2, DRT::Element::tet10, 2>());
+            case 3:
+              return Teuchos::rcp(new POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+                  DRT::Element::line2, DRT::Element::tet10, 3>());
+            default:
+              dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+          }
+        }
         default:
-          dserror("only quad4, hex8 and tet4 elements supported for continuous elements so far");
+          dserror(
+              "only quad4, hex8, tet4 and tet10 elements supported for continuous elements so far");
       }
     }
     default:

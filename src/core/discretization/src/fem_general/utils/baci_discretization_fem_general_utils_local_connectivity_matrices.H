@@ -6,14 +6,10 @@
 The surface mapping gives the node numbers such that the 2D shape functions can be used
 Nodal mappings describe the relation between volume, surface and line node numbering.
 They should be used as the only reference for such relationships.
-The corresponding graphics and a detailed description can be found in the Baci guide in the
-Convention chapter. The numbering of lower order elements is included in the higher order element,
-such that e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
+The numbering of elements with linear shape functions is included in higher
+order elements, such that e.g. the hex8 volume element uses only the first 8 nodes of the hex27
+mapping
 
-!!!!
-The corresponding graphics and a detailed description can be found
-in the Baci guide in the Convention chapter.
-!!!!
 
 \level 0
 
@@ -312,6 +308,9 @@ namespace CORE::DRT::UTILS
       {0.5, 0.0, 0.0}, {0.5, 0.5, 0.0}, {0.0, 0.5, 0.0}, {0.0, 0.0, 0.5}, {0.5, 0.0, 0.5},
       {0.0, 0.5, 0.5}};
   const double eleNodeNumbering_line3_nodes_reference[3][1] = {{-1.0}, {1.0}, {0.0}};
+
+  const double eleNodeNumbering_line4_nodes_reference[4][1] = {
+      {-1.0}, {1.0}, {-1.0 / 3.0}, {1.0 / 3.0}};
   /*!
  \brief Returns the number of nodes
         for each discretization type
