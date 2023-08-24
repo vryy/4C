@@ -7,24 +7,13 @@
 
 #include "baci_solid_ele_calc_fbar.H"
 
-#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
-#include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
-#include "baci_discretization_fem_general_utils_integration.H"
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fiber_nodal_fiber_holder.H"
-#include "baci_fiber_node.H"
 #include "baci_fiber_utils.H"
-#include "baci_lib_discret.H"
-#include "baci_lib_element.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_voigt_notation.H"
 #include "baci_mat_so3_material.H"
-#include "baci_so3_element_service.H"
 #include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_lib.H"
 #include "baci_solid_ele_utils.H"
-#include "baci_structure_new_gauss_point_data_output_manager.H"
-#include "baci_utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -465,60 +454,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateGaussPointDataOutput(cons
   dsassert(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
-  // Collection and assembly of gauss point data
-  for (const auto& quantity : gp_data_output_manager.GetQuantities())
-  {
-    const std::string& quantity_name = quantity.first;
-    const int quantity_size = quantity.second;
-
-    // Step 1: Collect the data for each Gauss point for the material
-    CORE::LINALG::SerialDenseMatrix gp_data(
-        stiffness_matrix_integration_.NumPoints(), quantity_size, true);
-    bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
-
-    // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
-    // point)
-    if (data_available)
-    {
-      switch (gp_data_output_manager.GetOutputType())
-      {
-        case INPAR::STR::GaussPointDataOutputType::element_center:
-        {
-          // compute average of the quantities
-          Teuchos::RCP<Epetra_MultiVector> global_data =
-              gp_data_output_manager.GetMutableElementCenterData().at(quantity_name);
-          CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, ele);
-          break;
-        }
-        case INPAR::STR::GaussPointDataOutputType::nodes:
-        {
-          Teuchos::RCP<Epetra_MultiVector> global_data =
-              gp_data_output_manager.GetMutableNodalData().at(quantity_name);
-
-          Epetra_IntVector& global_nodal_element_count =
-              *gp_data_output_manager.GetMutableNodalDataCount().at(quantity_name);
-
-          CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<distype>(
-              ele, gp_data, *global_data, false, stiffness_matrix_integration_);
-          DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, ele);
-          break;
-        }
-        case INPAR::STR::GaussPointDataOutputType::gauss_points:
-        {
-          std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-              gp_data_output_manager.GetMutableGaussPointData().at(quantity_name);
-          DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
-          break;
-        }
-        case INPAR::STR::GaussPointDataOutputType::none:
-          dserror(
-              "You specified a Gauss point data output type of none, so you should not end up "
-              "here.");
-        default:
-          dserror("Unknown Gauss point data output type.");
-      }
-    }
-  }
+  CollectAndAssembleGaussPointDataOutput<distype>(
+      stiffness_matrix_integration_, solid_material, ele, gp_data_output_manager);
 }
 
 template <DRT::Element::DiscretizationType distype>
