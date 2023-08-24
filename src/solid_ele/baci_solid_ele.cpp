@@ -430,7 +430,7 @@ void DRT::ELEMENTS::Solid::VisNames(std::map<std::string, int>& names)
 {
   DRT::Element::VisNames(names);
   SolidMaterial()->VisNames(names);
-}  // VisNames()
+}
 
 bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>& data)
 {
@@ -438,14 +438,4 @@ bool DRT::ELEMENTS::Solid::VisData(const std::string& name, std::vector<double>&
   if (DRT::Element::VisData(name, data)) return true;
 
   return SolidMaterial()->VisData(name, data, Id());
-
-}  // VisData()
-
-int DRT::ELEMENTS::Solid::PostEvaluate(Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
-    CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-    CORE::LINALG::SerialDenseVector& elevec3)
-{
-  return 0;
 }

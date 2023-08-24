@@ -1141,36 +1141,6 @@ namespace DRT
         CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
 
     /*!
-\brief PostEvaluate an element
-
-An element derived from this class may need to do something fancy before
-doing the original Evaluate(...)
-
-\param params (in/out)    : ParameterList for communication between control routine
-                            and elements
-\param discretization (in): A reference to the underlying discretization
-\param la (in)            : location data for all dofsets of the discretization
-\param elemat1 (out)      : matrix to be filled by element depending on commands
-                            given in params
-\param elemat2 (out)      : matrix to be filled by element depending on commands
-                            given in params
-\param elevec1 (out)      : vector to be filled by element depending on commands
-                            given in params
-\param elevec2 (out)      : vector to be filled by element depending on commands
-                            given in params
-\param elevec3 (out)      : vector to be filled by element depending on commands
-                            given in params
-\return 0 if successful, negative otherwise
-*/
-    virtual int PostEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
-    {
-      return 0;
-    }
-
-    /*!
     \brief Evaluate a Neumann boundary condition
 
     An element derived from this class uses the EvaluateNeumann method to receive commands

@@ -304,17 +304,6 @@ namespace DRT::ELEMENTS
       return 0;
     }
 
-    /*!
-    \brief Anything that needs to be done after the standard Evaluate.
-    Empty function in the base class that may be overloaded in derived elements.
-    */
-    virtual int PostEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
-
-    //@}
-
    private:
     //! discretization type
     DRT::Element::DiscretizationType distype_;
