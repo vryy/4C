@@ -292,18 +292,6 @@ namespace DRT::ELEMENTS
 
     bool VisData(const std::string& name, std::vector<double>& data) override;
 
-   protected:
-    /*! \brief Anything that needs to be done before the standard Evaluate.
-    Empty function in the base class that may be overloaded in derived elements.
-    */
-    virtual int PreEvaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
-        std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
-        CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3)
-    {
-      return 0;
-    }
-
    private:
     //! discretization type
     DRT::Element::DiscretizationType distype_;
