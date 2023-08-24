@@ -1425,7 +1425,7 @@ template <int probdim>
 CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
     const int nodeId, const ::DRT::Element::DiscretizationType distype)
 {
-  dsassert(nodeId < getNumberOfElementNodes(distype) - 1, "node number is not correct");
+  dsassert(nodeId < getNumberOfElementNodes(distype), "node number is not correct");
 
   const int dim = getDimension(distype);
   CORE::LINALG::Matrix<probdim, 1> coord(true);
