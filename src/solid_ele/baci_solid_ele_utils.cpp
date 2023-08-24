@@ -1,10 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief little helpers for solid elements
+\brief Helpers for solid elements
 
 \level 1
-*----------------------------------------------------------------------*/
+*/
 
 #include "baci_solid_ele_utils.H"
 

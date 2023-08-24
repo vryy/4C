@@ -1,10 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
 \brief A library of free functions for a default solid element
-\level 1
 
-*----------------------------------------------------------------------*/
+\level 1
+*/
 
 #ifndef BACI_SOLID_ELE_CALC_LIB_H
 #define BACI_SOLID_ELE_CALC_LIB_H
@@ -285,7 +284,6 @@ namespace DRT::ELEMENTS
     CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>> N_XYZ_;
   };
 
-
   template <DRT::Element::DiscretizationType distype>
   struct SpatialMaterialMapping
   {
@@ -293,8 +291,6 @@ namespace DRT::ELEMENTS
     CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> deformation_gradient_;
     CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> inverse_deformation_gradient_;
   };
-
-
 
   /*!
    * @brief Evaluates the jacobian mapping of the element
@@ -407,7 +403,6 @@ namespace DRT::ELEMENTS
     return spatial_material_mapping;
   }
 
-
   /*!
    * @brief Evaluates Green Lagrange strain from right cauchy green tensor
    *
@@ -433,7 +428,6 @@ namespace DRT::ELEMENTS
     return gl_strain;
   }
 
-
   /*!
    * @brief Evaluates right Cauchy-Green deformation tensor and its inverse
    *
@@ -457,7 +451,6 @@ namespace DRT::ELEMENTS
 
     return cauchygreen;
   }
-
 
   /*!
    * @brief Evaluate the determinant of the deformation gradient at the element centroid
@@ -785,7 +778,6 @@ namespace DRT::ELEMENTS
         break;
     }
   }
-
 
   template <DRT::Element::DiscretizationType distype>
   void AssembleStressTypeToMatrixRow(

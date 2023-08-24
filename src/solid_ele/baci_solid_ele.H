@@ -190,8 +190,6 @@ namespace DRT::ELEMENTS
     */
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
-
-
     //! @name Input and Creation
 
     /*!

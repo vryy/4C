@@ -1,10 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief main file containing routines for calculation of solid element with fbar
-\level 1
+\brief Declaration of routines for calculation of solid element with fbar element technology
 
-*----------------------------------------------------------------------*/
+\level 1
+*/
 
 #ifndef BACI_SOLID_ELE_CALC_FBAR_H
 #define BACI_SOLID_ELE_CALC_FBAR_H

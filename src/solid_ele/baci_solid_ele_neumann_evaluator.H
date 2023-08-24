@@ -1,11 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
 \brief Evaluation of neumann loads
 
 \level 1
 */
-/*--------------------------------------------------------------------------*/
 
 #ifndef BACI_SOLID_ELE_NEUMANN_EVALUATOR_H
 #define BACI_SOLID_ELE_NEUMANN_EVALUATOR_H

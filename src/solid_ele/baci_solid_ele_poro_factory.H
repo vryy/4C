@@ -1,11 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
 \brief Factory of solid-poro elements
 
 \level 1
-    */
-/*--------------------------------------------------------------------------*/
+*/
 
 #ifndef BACI_SOLID_ELE_PORO_FACTORY_H
 #define BACI_SOLID_ELE_PORO_FACTORY_H

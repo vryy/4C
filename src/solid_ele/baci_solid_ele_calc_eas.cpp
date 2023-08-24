@@ -1,10 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief main file containing routines for calculation of solid element with EAS element technology
+\brief Implementation of routines for calculation of solid element with EAS element technology
+
 \level 1
 */
-/*----------------------------------------------------------------------*/
 
 #include "baci_solid_ele_calc_eas.H"
 
@@ -346,7 +345,6 @@ namespace
     }
     return M;
   }
-
 
   /*!
    * @brief Map the matrix M in the parameter space to Mtilde in the material configuration and

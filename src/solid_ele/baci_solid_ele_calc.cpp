@@ -1,11 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief main file containing routines for calculation of solid element
-       simple displacement based
+\brief Implementation of routines for calculation of solid element simple displacement based
+
 \level 1
 */
-/*----------------------------------------------------------------------*/
 
 #include "baci_solid_ele_calc.H"
 
@@ -226,7 +224,6 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
   }
 }
-
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::Recover(const DRT::Element& ele,

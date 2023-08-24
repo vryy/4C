@@ -1,10 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
 \brief A library of free functions for a solid-poro element
-\level 1
 
-*----------------------------------------------------------------------*/
+\level 1
+*/
 
 #ifndef BACI_SOLID_ELE_PORO_CALC_LIB_H
 #define BACI_SOLID_ELE_PORO_CALC_LIB_H
@@ -35,7 +34,6 @@ namespace DRT::ELEMENTS
   {
     return DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule;
   }
-
 
   //! extract element data from global vector
   template <DRT::Element::DiscretizationType distype>
@@ -103,8 +101,6 @@ namespace DRT::ELEMENTS
     }
   }
 
-
-
   /*!
    * @brief Calculate volume change
    *
@@ -151,8 +147,6 @@ namespace DRT::ELEMENTS
       return spatial_material_mapping.determinant_deformation_gradient_;
     }
   }
-
-
 
   /*!
    * @brief Calculate derivative of determinant of deformation gradient w.r.t.
@@ -221,8 +215,6 @@ namespace DRT::ELEMENTS
     }
   }
 
-
-
   /*!
    * @brief Calculate derivative of volume change w.r.t. the displacements
    *
@@ -256,8 +248,6 @@ namespace DRT::ELEMENTS
       return dDetDefGrad_dDisp;
     }
   }
-
-
 
   /*!
    * @brief Calculate porosity depending on poro law given in input file and derivatives of
@@ -295,7 +285,6 @@ namespace DRT::ELEMENTS
     dPorosity_dDisp.Update(dphi_dJ, dDetDefGrad_dDisp);
   }
 
-
   /*!
    * @brief Calculate porosity depending on poro law given in input file
    *
@@ -321,7 +310,6 @@ namespace DRT::ELEMENTS
     );
     return porosity;
   }
-
 
   /*!
    * @brief Recalculate derivative of solidpressure w.r.t. the displacments in case of volfracs
@@ -367,8 +355,6 @@ namespace DRT::ELEMENTS
     dSolidpressure_dDisp.Update(dps_dphi, dPorosity_dDisp);
   }
 
-
-
   /*!
    * @brief Recalculate solidpressure in case of volfracs
    *
@@ -411,8 +397,6 @@ namespace DRT::ELEMENTS
     return press;
   }
 
-
-
   template <DRT::Element::DiscretizationType distype>
   CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> TransformMatrixInVectorVoigtNotation(
       const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>&
@@ -425,8 +409,6 @@ namespace DRT::ELEMENTS
 
     return C_inv_vec;
   }
-
-
 
   /*!
    * @brief Update the internal force vector with poroelasticity contribution of one Gauss point
@@ -449,8 +431,6 @@ namespace DRT::ELEMENTS
     double factor = -detJ_w * solidpressure * DetDefGrad;
     force_vector.Update(factor, BopCinv, 1.0);
   }
-
-
 
   /*!
    * @brief Update elastic stiffness matrix with poroelasticity contribution of one Gauss point
@@ -496,7 +476,6 @@ namespace DRT::ELEMENTS
     tmp.Multiply((-detJ_w * DetDefGrad), BopCinv, dSolidpressure_dDisp);
     stiffness_matrix.Update(1.0, tmp, 1.0);
   }
-
 
   /*!
    * @brief Update geometric stiffness matrix with poroelasticity contribution of one Gauss point
@@ -547,8 +526,6 @@ namespace DRT::ELEMENTS
     }
   }
 
-
-
   /*!
    * @brief Add coupling contribution (poroelasticity OD entries) of one Gauss point to stiffness
    * matrix
@@ -594,8 +571,6 @@ namespace DRT::ELEMENTS
     }
   }
 
-
-
   /*!
    * @brief Calculates fluid mulltiphase primary variables at GP
    *
@@ -623,7 +598,6 @@ namespace DRT::ELEMENTS
 
     return fluidmultiphase_phiAtGP;
   }
-
 
   /*!
    * @brief Calculates solid pressure derivatives w.r.t. primary variables of fluid phases in
@@ -695,8 +669,6 @@ namespace DRT::ELEMENTS
     return solidpressurederiv;
   }
 
-
-
   /*!
    * @brief Calculates solidpressure
    *
@@ -732,7 +704,6 @@ namespace DRT::ELEMENTS
 
     return solidpressure;
   }
-
 
   /*!
    * @brief Recalculates solid pressure derivative in case of volfracs
@@ -777,7 +748,6 @@ namespace DRT::ELEMENTS
       solidpressurederiv[ivolfrac + numfluidphases + numvolfrac] = volfracphi[ivolfrac] / porosity;
     }
   }
-
 
   /*!
    * @brief Evaluates the derivative of the inverse right Cauchy-Green deformation tensor w.r.t. the
@@ -842,9 +812,6 @@ namespace DRT::ELEMENTS
     }
     return dInverseCauchyGreen_dDisp;
   }
-
-
-
 }  // namespace DRT::ELEMENTS
 
 #endif  // SOLID_PORO_ELE_CALC_LIB_H

@@ -1,11 +1,11 @@
 
-/*----------------------------------------------------------------------*/
 /*! \file
 
 \brief An interface defining an serializable class
-\level 1
 
-*----------------------------------------------------------------------*/
+\level 1
+*/
+
 #include "baci_lib_pack_buffer.H"
 
 #include <vector>

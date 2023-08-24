@@ -1,9 +1,9 @@
 /*! \file
-\brief
+
+\brief Implementation of a C++ wrapper for the solid element
 
 \level 1
-
-*----------------------------------------------------------------------*/
+*/
 
 #include "baci_solid_ele.H"
 

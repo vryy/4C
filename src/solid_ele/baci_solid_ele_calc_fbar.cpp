@@ -1,10 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief main file containing routines for calculation of solid element with fbar
+\brief Implementation of routines for calculation of solid element with fbar element technology
+
 \level 1
 */
-/*----------------------------------------------------------------------*/
 
 #include "baci_solid_ele_calc_fbar.H"
 

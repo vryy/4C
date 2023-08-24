@@ -1,10 +1,10 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
 \brief Evaluation of neumann loads
+
 \level 1
 */
-/*--------------------------------------------------------------------------*/
+
 #include "baci_solid_ele_neumann_evaluator.H"
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"

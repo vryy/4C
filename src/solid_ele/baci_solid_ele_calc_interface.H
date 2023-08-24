@@ -1,11 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
 \brief Interface of solid elements
 
 \level 1
 */
-/*----------------------------------------------------------------------*/
 
 #ifndef BACI_SOLID_ELE_CALC_INTERFACE_H
 #define BACI_SOLID_ELE_CALC_INTERFACE_H

@@ -1,9 +1,9 @@
 /*! \file
-\brief
+
+\brief Implementation of the solid-poro element
 
 \level 1
-
-*----------------------------------------------------------------------*/
+*/
 
 #include "baci_solid_ele_poro.H"
 
@@ -125,7 +125,6 @@ void DRT::ELEMENTS::SolidPoroType::SetupElementDefinition(
       .AddOptionalNamedDoubleVector("POROANISODIR3", 3);
 }
 
-
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidPoroType::Create(
     const std::string eletype, const std::string eledistype, const int id, const int owner)
 {
@@ -156,7 +155,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidPoroType::ComputeNullSpace(
 {
   return ComputeSolid3DNullSpace(node, x0);
 }
-
 
 DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner)
     : DRT::Element(id, owner),
@@ -294,7 +292,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Volumes()
   }
 }
 
-
 void DRT::ELEMENTS::SolidPoro::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
   // if (interface_ptr_ != Teuchos::null) return;
@@ -306,7 +303,6 @@ void DRT::ELEMENTS::SolidPoro::SetParamsInterfacePtr(const Teuchos::ParameterLis
   else
     interface_ptr_ = Teuchos::null;
 }
-
 
 bool DRT::ELEMENTS::SolidPoro::ReadElement(
     const std::string& eletype, const std::string& eledistype, DRT::INPUT::LineDefinition* linedef)
@@ -382,7 +378,6 @@ void DRT::ELEMENTS::SolidPoro::ReadAnisotropicPermeabilityDirectionsFromElementL
   }
 }
 
-
 void DRT::ELEMENTS::SolidPoro::ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
     DRT::INPUT::LineDefinition* linedef)
 {
@@ -398,7 +393,6 @@ MAT::So3Material& DRT::ELEMENTS::SolidPoro::SolidPoroMaterial(int nummat) const
 {
   return *Teuchos::rcp_dynamic_cast<MAT::So3Material>(DRT::Element::Material(nummat), true);
 }
-
 
 void DRT::ELEMENTS::SolidPoro::Pack(DRT::PackBuffer& data) const
 {
@@ -446,7 +440,6 @@ void DRT::ELEMENTS::SolidPoro::Pack(DRT::PackBuffer& data) const
   TryPackInterface(solid_interface_, data);
   TryPackInterface(solidporo_interface_, data);
 }
-
 
 void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
 {

@@ -1,11 +1,10 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief file containing routines for calculation of solidporo element
-       with pressure based implementation
+\brief Implementation of routines for calculation of solidporo element with pressure based
+implementation
+
 \level 1
 */
-/*----------------------------------------------------------------------*/
 
 #include "baci_solid_ele_poro_calc_pressure_based.H"
 
@@ -44,7 +43,6 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::PoroSetup(
 {
   porostructmat.PoroSetup(gauss_integration_.NumPoints(), linedef);
 }
-
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearForceStiffness(
@@ -171,7 +169,6 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
   }
 }
 
-
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
     const DRT::Element& ele, MAT::StructPoro& porostructmat, MAT::FluidPoroMultiPhase& porofluidmat,
@@ -254,7 +251,6 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
   }
 }
 
-
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingStress(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
@@ -262,7 +258,6 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingStress(const
 {
   dserror("coupling stress poroelast not yet implemented for pressure-based variant");
 }
-
 
 // template classes
 template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::hex8>;

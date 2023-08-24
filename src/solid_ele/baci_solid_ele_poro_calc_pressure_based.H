@@ -1,11 +1,10 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief main file containing routines for calculation of solid poro element
-       with pressure based implementation
-\level 1
+\brief Definition of routines for calculation of solid poro element with pressure based
+implementation
 
-*----------------------------------------------------------------------*/
+\level 1
+*/
 
 #ifndef BACI_SOLID_ELE_PORO_CALC_PRESSURE_BASED_H
 #define BACI_SOLID_ELE_PORO_CALC_PRESSURE_BASED_H

@@ -1,11 +1,9 @@
-/*----------------------------------------------------------------------*/
 /*! \file
 
-\brief little helpers for solid elements
+\brief Helpers for solid elements
 
 \level 1
-
-*----------------------------------------------------------------------*/
+*/
 
 #ifndef BACI_SOLID_ELE_UTILS_H
 #define BACI_SOLID_ELE_UTILS_H

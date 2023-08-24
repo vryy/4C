@@ -1,8 +1,8 @@
 /*! \file
 
-\brief The declaration for the solid-poro element
+\brief Declaration of the solid-poro element
 
- This file contains the element-specific service routines such as
+This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
 
 \level 1
@@ -206,7 +206,6 @@ namespace DRT::ELEMENTS
     {
       return SolidPoroType::Instance();
     }
-
 
     /*!
     \brief Read input for this element
