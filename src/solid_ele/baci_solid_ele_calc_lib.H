@@ -12,6 +12,8 @@
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_fiber_nodal_fiber_holder.H"
+#include "baci_fiber_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_utils.H"
@@ -884,6 +886,7 @@ namespace DRT::ELEMENTS
    * @brief Collect Gauss Point output data from material and assemble/interpolate depending on
    * output type to element center, Gauss Points, or nodes
    *
+   * @tparam distype : Discretization type
    * @param stiffness_matrix_integration (in) : Container holding the integration points
    * @param solid_material (in) : Solid material of the element
    * @param ele (in) : Reference to the element
@@ -952,6 +955,49 @@ namespace DRT::ELEMENTS
     }
   }
 
+  /*!
+   * @brief For elements with fiber nodes, interpolate fibers to Gauss points and add to the
+   * parameter list
+   *
+   * @param stiffness_matrix_integration (in) : Container holding the integration points
+   * @param ele (in) : Reference to the element, possibly having nodal fibers
+   * @param params (in/out) : ParameterList the interpolated fibers are added to
+   */
+  template <DRT::Element::DiscretizationType distype>
+  inline void InterpolateFibersToGaussPointsAndAddToParameterList(
+      const CORE::DRT::UTILS::GaussIntegration& stiffness_matrix_integration,
+      const DRT::Element& ele, Teuchos::ParameterList& params)
+  {
+    if (DRT::FIBER::UTILS::HaveNodalFibers<distype>(ele.Nodes()))
+    {
+      // This element has fiber nodes.
+      // Interpolate fibers to the Gauss points and add them to the parameter list
+
+      // Get shape functions
+      const static std::vector<CORE::LINALG::Matrix<DETAIL::nen<distype>, 1>> shapefcts =
+          std::invoke(
+              [&]
+              {
+                std::vector<CORE::LINALG::Matrix<DETAIL::nen<distype>, 1>> shapefcns(
+                    stiffness_matrix_integration.NumPoints());
+                for (int gp = 0; gp < stiffness_matrix_integration.NumPoints(); ++gp)
+                {
+                  CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1> xi(
+                      stiffness_matrix_integration.Point(gp), true);
+                  CORE::DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
+                }
+                return shapefcns;
+              });
+
+      // add fibers to the ParameterList
+      DRT::FIBER::NodalFiberHolder fiberHolder;
+
+      // Do the interpolation
+      DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele.Nodes(), shapefcts, fiberHolder);
+
+      params.set("fiberholder", fiberHolder);
+    }
+  }
 
 }  // namespace DRT::ELEMENTS
 

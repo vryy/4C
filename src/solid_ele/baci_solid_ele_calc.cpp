@@ -7,8 +7,6 @@
 
 #include "baci_solid_ele_calc.H"
 
-#include "baci_fiber_nodal_fiber_holder.H"
-#include "baci_fiber_utils.H"
 #include "baci_lib_utils.H"
 #include "baci_mat_so3_material.H"
 #include "baci_solid_ele.H"
@@ -332,33 +330,10 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::MaterialPostSetup(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {
   Teuchos::ParameterList params{};
-  if (DRT::FIBER::UTILS::HaveNodalFibers<distype>(ele.Nodes()))
-  {
-    // This element has fiber nodes.
-    // Interpolate fibers to the Gauss points and pass them to the material
 
-    // Get shape functions
-    const static std::vector<CORE::LINALG::Matrix<nen_, 1>> shapefcts = std::invoke(
-        [&]
-        {
-          std::vector<CORE::LINALG::Matrix<nen_, 1>> shapefcns(
-              stiffness_matrix_integration_.NumPoints());
-          for (int gp = 0; gp < stiffness_matrix_integration_.NumPoints(); ++gp)
-          {
-            CORE::LINALG::Matrix<nsd_, 1> xi(stiffness_matrix_integration_.Point(gp), true);
-            CORE::DRT::UTILS::shape_function<distype>(xi, shapefcns[gp]);
-          }
-          return shapefcns;
-        });
-
-    // add fibers to the ParameterList
-    DRT::FIBER::NodalFiberHolder fiberHolder;
-
-    // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<distype>(ele.Nodes(), shapefcts, fiberHolder);
-
-    params.set("fiberholder", fiberHolder);
-  }
+  // Check if element has fiber nodes, if so interpolate fibers to Gauss Points and add to params
+  InterpolateFibersToGaussPointsAndAddToParameterList<distype>(
+      stiffness_matrix_integration_, ele, params);
 
   // Call PostSetup of material
   solid_material.PostSetup(params, ele.Id());
