@@ -30,10 +30,6 @@
 #include <memory>
 #include <optional>
 
-namespace
-{
-}  // namespace
-
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalc<distype>::SolidEleCalc()
@@ -418,7 +414,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(const DR
         stiffness_matrix_integration_.NumPoints(), quantity_size, true);
     bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
 
-    // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
+    // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
     // point)
     if (data_available)
     {

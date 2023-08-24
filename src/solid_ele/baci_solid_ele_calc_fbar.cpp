@@ -46,7 +46,6 @@ namespace
     return fbar_factor;
   }
 
-
   /*!
    * @brief Evaluates the H-Operator used in F-bar of the specified element
    *
@@ -149,6 +148,7 @@ namespace
   {
     const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping =
         EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
+
     // factor (detF0/detF)^1/3
     const double fbar_factor = EvaluateFbarFactor(
         detF_centroid, spatial_material_mapping.determinant_deformation_gradient_);
@@ -485,7 +485,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateGaussPointDataOutput(cons
         stiffness_matrix_integration_.NumPoints(), quantity_size, true);
     bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
 
-    // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
+    // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
     // point)
     if (data_available)
     {

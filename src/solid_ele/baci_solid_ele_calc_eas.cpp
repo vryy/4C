@@ -869,7 +869,6 @@ double DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateInternalEnergy
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
-  // need update
   double intenergy = 0.0;
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
@@ -988,7 +987,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateGaussPointDataOut
         stiffness_matrix_integration_.NumPoints(), quantity_size, true);
     bool data_available = solid_material.EvaluateVtkOutputData(quantity_name, gp_data);
 
-    // Step 3: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
+    // Step 2: Assemble data based on output type (elecenter, postprocessed to nodes, Gauss
     // point)
     if (data_available)
     {
