@@ -453,17 +453,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::InitializeGaussPointDataOutput(
   dsassert(ele.IsParamsInterface(),
       "This action type should only be called from the new time integration framework!");
 
-  // Save number of Gauss of the element for gauss point data output
-  gp_data_output_manager.AddElementNumberOfGaussPoints(stiffness_matrix_integration_.NumPoints());
-
-  // holder for output quantity names and their size
-  std::unordered_map<std::string, int> quantities_map{};
-
-  // Ask material for the output quantity names and sizes
-  solid_material.RegisterVtkOutputDataNames(quantities_map);
-
-  // Add quantities to the Gauss point output data manager (if they do not already exist)
-  gp_data_output_manager.MergeQuantities(quantities_map);
+  AskAndAddQuantitiesToGaussPointDataOutput(
+      stiffness_matrix_integration_.NumPoints(), solid_material, gp_data_output_manager);
 }
 
 template <DRT::Element::DiscretizationType distype>

@@ -16,6 +16,7 @@
 #include "baci_lib_voigt_notation.H"
 #include "baci_mat_so3_material.H"
 #include "baci_solid_ele_utils.H"
+#include "baci_structure_new_gauss_point_data_output_manager.H"
 
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -849,6 +850,35 @@ namespace DRT::ELEMENTS
       gp_evaluator(xi, shape_functions, jacobian_mapping, integration_factor, gp);
     }
   }
+
+  /*!
+   * @brief Asks the material for the Gauss Point output quantities and adds the information to the
+   * Gauss point output data manager
+   *
+   * @param num_gp (in) : Number of Gauss Points of the element
+   * @param solid_material (in) : Solid material of the element
+   * @param gp_data_output_manager (in/out) : Gauss point data output manager
+   *                                          (only for new structure time integration)
+   */
+  inline void AskAndAddQuantitiesToGaussPointDataOutput(const int num_gp,
+      const MAT::So3Material& solid_material,
+      STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager)
+  {
+    // Save number of Gauss Points of the element for gauss point data output
+    gp_data_output_manager.AddElementNumberOfGaussPoints(num_gp);
+
+    // holder for output quantity names and their size
+    std::unordered_map<std::string, int> quantities_map{};
+
+    // Ask material for the output quantity names and sizes
+    solid_material.RegisterVtkOutputDataNames(quantities_map);
+
+    // Add quantities to the Gauss point output data manager (if they do not already exist)
+    gp_data_output_manager.MergeQuantities(quantities_map);
+  }
+
+
+
 }  // namespace DRT::ELEMENTS
 
 #endif  // SOLID_ELE_CALC_LIB_H
