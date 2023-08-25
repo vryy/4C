@@ -345,7 +345,7 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
   JacobianMapping<distype> EvaluateJacobianMappingCentroid(
-      NodalCoordinates<distype> nodal_coordinates)
+      const NodalCoordinates<distype>& nodal_coordinates)
   {
     // set coordinates in parameter space at centroid as zero -> xi = [0; 0; 0]
     CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1> xi_centroid =
@@ -420,7 +420,7 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> EvaluateGreenLagrangeStrain(
-      CauchyGreen<distype> cauchygreen)
+      const CauchyGreen<distype>& cauchygreen)
   {
     CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain;
 
@@ -446,7 +446,8 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  CauchyGreen<distype> EvaluateCauchyGreen(SpatialMaterialMapping<distype> spatial_material_mapping)
+  CauchyGreen<distype> EvaluateCauchyGreen(
+      const SpatialMaterialMapping<distype>& spatial_material_mapping)
   {
     CauchyGreen<distype> cauchygreen;
 
@@ -467,7 +468,8 @@ namespace DRT::ELEMENTS
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
-  double EvaluateDeformationGradientDeterminantCentroid(NodalCoordinates<distype> nodal_coordinates)
+  double EvaluateDeformationGradientDeterminantCentroid(
+      const NodalCoordinates<distype>& nodal_coordinates)
   {
     // jacobian mapping at centroid of element
     const JacobianMapping<distype> jacobian_mapping_centroid =
@@ -620,7 +622,7 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void AddInternalForceVector(const CORE::LINALG::Matrix<DETAIL::numstr<distype>,
                                   DETAIL::nsd<distype> * DETAIL::nen<distype>>& Bop,
-      const Stress<distype> stress, const double integration_fac,
+      const Stress<distype>& stress, const double integration_fac,
       CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>, 1>& force_vector)
   {
     force_vector.MultiplyTN(integration_fac, Bop, stress.pk2_, 1.);
@@ -639,7 +641,7 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void AddElasticStiffnessMatrix(const CORE::LINALG::Matrix<DETAIL::numstr<distype>,
                                      DETAIL::nsd<distype> * DETAIL::nen<distype>>& Bop,
-      const Stress<distype> stress, const double integration_fac,
+      const Stress<distype>& stress, const double integration_fac,
       CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
           DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
@@ -664,7 +666,7 @@ namespace DRT::ELEMENTS
                                          DETAIL::nsd<distype> * DETAIL::nen<distype>>& Bop,
       const CORE::LINALG::Matrix<DETAIL::numstr<distype>,
           DETAIL::nsd<distype> * DETAIL::nen<distype>>& BopM,
-      const Stress<distype> stress, const double pre_fac,
+      const Stress<distype>& stress, const double pre_fac,
       CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
           DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
@@ -688,7 +690,7 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void AddGeometricStiffnessMatrix(
       const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nen<distype>>& B_L,
-      const Stress<distype> stress, const double integration_fac,
+      const Stress<distype>& stress, const double integration_fac,
       CORE::LINALG::Matrix<DETAIL::nsd<distype> * DETAIL::nen<distype>,
           DETAIL::nsd<distype> * DETAIL::nen<distype>>& stiffness_matrix)
   {
