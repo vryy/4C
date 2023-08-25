@@ -22,6 +22,24 @@
 
 namespace
 {
+  /*!
+   * @brief Solve for the inverse of a matrix and throw errors if unsuccessful
+   *
+   * @tparam dim : matrix dimensions
+   * @param matrix(in/out) : matrix to be inverted
+   */
+  template <int dim>
+  void SolveForInverse(CORE::LINALG::Matrix<dim, dim>& matrix)
+  {
+    CORE::LINALG::FixedSizeSerialDenseSolver<dim, dim, 1> solve_for_inverse;
+    solve_for_inverse.SetMatrix(matrix);
+
+    int err_fac = solve_for_inverse.Factor();
+    if (err_fac != 0) dserror("Factorization of matrix during inversion failed");
+
+    int err_inv = solve_for_inverse.Invert();
+    if (err_inv != 0) dserror("Inversion of matrix failed");
+  }
 
   template <DRT::Element::DiscretizationType distype>
   struct CentroidTransformation
@@ -108,13 +126,7 @@ namespace
                    jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(0, 2);
 
     // evaluate the inverse T0^{-T} with solver
-    CORE::LINALG::FixedSizeSerialDenseSolver<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        DRT::ELEMENTS::DETAIL::numstr<distype>, 1>
-        solve_for_inverseT0;
-    solve_for_inverseT0.SetMatrix(T0invT);
-    int err2 = solve_for_inverseT0.Factor();
-    int err = solve_for_inverseT0.Invert();
-    if ((err != 0) || (err2 != 0)) dserror("Inversion of T0inv (Jacobian0) failed");
+    SolveForInverse<DRT::ELEMENTS::DETAIL::numstr<distype>>(T0invT);
 
     return T0invT;
   }
@@ -703,13 +715,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
       });
 
   // invert Kaa with solver. eas_iteration_data_.invKaa_ then is Kaa^{-1}
-  CORE::LINALG::FixedSizeSerialDenseSolver<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas,
-      STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1>
-      solve_for_invKaa;
-  solve_for_invKaa.SetMatrix(eas_iteration_data_.invKaa_);
-  int err2 = solve_for_invKaa.Factor();
-  int err = solve_for_invKaa.Invert();
-  if ((err != 0) || (err2 != 0)) dserror("Inversion of Kaa failed");
+  SolveForInverse<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>(eas_iteration_data_.invKaa_);
 
   // compute the product (- Kda Kaa^{-1}) which is later needed for force and stiffness update
   CORE::LINALG::Matrix<numdofperelement_, STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
