@@ -25,6 +25,7 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_constraintmixture.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_growthremodel_elasthyper.H"
@@ -492,9 +493,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
         if (IsParamsInterface())
         {
-          stressdata = StrParamsInterface().MutableStressDataPtr();
-          straindata = StrParamsInterface().MutableStrainDataPtr();
-          plstraindata = StrParamsInterface().MutablePlasticStrainDataPtr();
+          stressdata = StrParamsInterface().StressDataPtr();
+          straindata = StrParamsInterface().StrainDataPtr();
+          plstraindata = StrParamsInterface().PlasticStrainDataPtr();
 
           iostress = StrParamsInterface().GetStressOutputType();
           iostrain = StrParamsInterface().GetStrainOutputType();
@@ -569,7 +570,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
+      StrParamsInterface().GaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
           NUMGPT_SOH8);
 
       // holder for output quantity names and their size
@@ -579,7 +580,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+      StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
     }
     break;
     case ELEMENTS::struct_gauss_point_data_output:
@@ -589,7 +590,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
+          StrParamsInterface().GaussPointDataOutputManagerPtr()->GetQuantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -602,32 +603,26 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetOutputType())
+          switch (StrParamsInterface().GaussPointDataOutputManagerPtr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableElementCenterData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetElementCenterData().at(
+                      quantity_name);
               CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableNodalData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalData().at(
+                      quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface()
-                       .MutableGaussPointDataOutputManagerPtr()
-                       ->GetMutableNodalDataCount()
-                       .at(quantity_name);
+                  *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
+                      quantity_name);
 
               static auto gauss_integration =
                   CORE::DRT::UTILS::IntegrationPoints3D(CORE::DRT::UTILS::NumGaussPointsToGaussRule<
@@ -641,10 +636,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableGaussPointData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
+                      quantity_name);
               DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
@@ -687,7 +680,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
         // reset EAS internal force
         CORE::LINALG::SerialDenseMatrix* oldfeas =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
         oldfeas->putScalar(0.0);
       }
       // Reset of history (if needed)
@@ -794,8 +787,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> T0invT;  // trafo matrix
       if (eastype_ != soh8_easnone)
       {
-        alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
-            "alpha");  // get alpha of previous iteration
+        alpha =
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get alpha of previous iteration
         soh8_eassetup(&M_GP, detJ0, T0invT, xrefe);
       }
 
@@ -1766,9 +1759,9 @@ void DRT::ELEMENTS::So_hex8::soh8_error_handling(const double& det_curr,
 void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
     const std::vector<double>& residual, CORE::LINALG::SerialDenseMatrix* const eas_inc)
 {
-  auto* oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-  auto* oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-  auto* oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+  auto* oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  auto* oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+  auto* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
   if (!oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history data");
 
   // we need the (residual) displacement at the previous step
@@ -1777,11 +1770,11 @@ void DRT::ELEMENTS::So_hex8::soh8_computeEASInc(
   // --- EAS default update ---------------------------
   CORE::LINALG::SerialDenseMatrix eashelp(neas_, 1);
   /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
-  eashelp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *oldKda, res_d_eas, 0.0);
+  CORE::LINALG::multiply(eashelp, *oldKda, res_d_eas);
   /*---------------------------------------- add old Rtilde to eashelp */
   eashelp += *oldfeas;
   /*--------- make multiplication alpha_inc = - old Dtildinv * eashelp */
-  eas_inc->multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *oldKaainv, eashelp, 0.0);
+  CORE::LINALG::multiply(*eas_inc, *oldKaainv, eashelp);
   eas_inc->scale(-1.0);
 }
 
@@ -1802,9 +1795,9 @@ void DRT::ELEMENTS::So_hex8::soh8_recover(
   {
     // access general eas history stuff stored in element
     // get alpha of previous iteration
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
     // get the old eas increment
-    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
   }
 
@@ -1959,12 +1952,11 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(std::vector<int>& lm,   // location ma
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
-        "alpha");  // get alpha of previous iteration
-    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get alpha of previous iteration
+    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
 
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
@@ -3233,7 +3225,7 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
     const auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
     if (not alpha) dserror("Can't access the current enhanced strain state.");
 
-    auto* alpha_backup_ptr = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha_backup");
+    auto* alpha_backup_ptr = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha_backup");
     if (alpha_backup_ptr)
       *alpha_backup_ptr = *alpha;
     else
@@ -3246,7 +3238,7 @@ void DRT::ELEMENTS::So_hex8::soh8_create_eas_backup_state(const std::vector<doub
     CORE::LINALG::SerialDenseMatrix eas_inc(neas_, 1);
     soh8_computeEASInc(displ_incr, &eas_inc);
 
-    auto* eas_inc_backup_ptr = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc_backup");
+    auto* eas_inc_backup_ptr = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc_backup");
     if (eas_inc_backup_ptr)
       *eas_inc_backup_ptr = eas_inc;
     else
@@ -3271,7 +3263,7 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
           "Can't access the enhanced strain backup state. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
     if (not alpha) dserror("Can't access the enhanced strain state.");
 
     *alpha = *alpha_backup;
@@ -3285,7 +3277,7 @@ void DRT::ELEMENTS::So_hex8::soh8_recover_from_eas_backup_state()
           "Can't access the enhanced strain increment backup. Did you "
           "create a backup? See soh8_create_eas_backup_state().");
 
-    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (not eas_inc) dserror("Can't access the enhanced strain increment.");
 
     *eas_inc = *eas_inc_backup;
@@ -3455,8 +3447,7 @@ void DRT::ELEMENTS::So_hex8::Update_element(std::vector<double>& disp,
     soh8_easupdate();
 
     // reset EAS internal force
-    CORE::LINALG::SerialDenseMatrix* oldfeas =
-        data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+    CORE::LINALG::SerialDenseMatrix* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
     oldfeas->putScalar(0.0);
   }
   SolidMaterial()->Update();

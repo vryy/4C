@@ -104,8 +104,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::Reset()
     {
       // extract the Dof values of this element from displacement vector
       BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(Discret(), element_ptr[ielement],
-          BeamInteractionDataStatePtr()->GetMutableDisColNp(),
-          element_posdofvec_absolutevalues[ielement]);
+          BeamInteractionDataStatePtr()->GetDisColNp(), element_posdofvec_absolutevalues[ielement]);
     }
 
     // update the Dof values in the interaction element pair object
@@ -192,7 +191,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForce()
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
             BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(),
-                elegids, eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
+                elegids, eleforce, dummystiff, BeamInteractionDataStatePtr()->GetForceNp(),
                 Teuchos::null);
           }
         }
@@ -284,7 +283,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateStiff()
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
             BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(),
                 elegids, dummyforce, elestiff, Teuchos::null,
-                BeamInteractionDataStatePtr()->GetMutableStiff());
+                BeamInteractionDataStatePtr()->GetStiff());
           }
         }
       }
@@ -384,8 +383,8 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::EvaluateForceStiff()
             // assemble the contributions into force vector class variable
             // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
             BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(),
-                elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
-                BeamInteractionDataStatePtr()->GetMutableStiff());
+                elegids, eleforce, elestiff, BeamInteractionDataStatePtr()->GetForceNp(),
+                BeamInteractionDataStatePtr()->GetStiff());
           }
         }
       }
@@ -923,8 +922,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   }
 
   // get and prepare storage for point coordinate values
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
-  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_row_points);
 
@@ -1124,13 +1123,13 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::WriteOutputRuntimeVtpBea
   // append all desired output data to the writer object's storage
   if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteForces())
   {
-    visualization_manager_->GetVisualizationDataMutable().SetPointDataVector(
+    visualization_manager_->GetVisualizationData().SetPointDataVector(
         "force", potential_force_vector, num_spatial_dimensions);
   }
 
   if (BeamPotentialParams().GetBeamPotentialVtkParams()->IsWriteMoments())
   {
-    visualization_manager_->GetVisualizationDataMutable().SetPointDataVector(
+    visualization_manager_->GetVisualizationData().SetPointDataVector(
         "moment", potential_moment_vector, num_spatial_dimensions);
   }
 

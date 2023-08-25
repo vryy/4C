@@ -205,12 +205,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForce()
       // and get their discrete element force vectors
       BEAMINTERACTION::UTILS::ApplyBindingSpotForceToParentElements<DRT::ELEMENTS::Rigidsphere,
           DRT::ELEMENTS::Beam3Base>(Discret(), PeriodicBoundingBoxPtr(),
-          BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotforce, eleforce);
+          BeamInteractionDataStatePtr()->GetDisColNp(), elepairptr, bspotforce, eleforce);
 
       // assemble the contributions into force vector class variable
       // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
       BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-          eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
+          eleforce, dummystiff, BeamInteractionDataStatePtr()->GetForceNp(), Teuchos::null);
     }
   }
 
@@ -265,12 +265,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateStiff()
       // apply linearizations to parent elements and get their discrete element stiffness matrices
       BEAMINTERACTION::UTILS::ApplyBindingSpotStiffToParentElements<DRT::ELEMENTS::Rigidsphere,
           DRT::ELEMENTS::Beam3Base>(Discret(), PeriodicBoundingBoxPtr(),
-          BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotstiff, elestiff);
+          BeamInteractionDataStatePtr()->GetDisColNp(), elepairptr, bspotstiff, elestiff);
 
       // assemble the contributions into stiffness matrix class variable
       // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
       BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-          dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
+          dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetStiff());
     }
   }
 
@@ -330,14 +330,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::EvaluateForceStiff()
       // and get their discrete element force vectors and stiffness matrices
       BEAMINTERACTION::UTILS::ApplyBindingSpotForceStiffToParentElements<DRT::ELEMENTS::Rigidsphere,
           DRT::ELEMENTS::Beam3Base>(Discret(), PeriodicBoundingBoxPtr(),
-          BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotforce, bspotstiff,
+          BeamInteractionDataStatePtr()->GetDisColNp(), elepairptr, bspotforce, bspotstiff,
           eleforce, elestiff);
 
       // assemble the contributions into force and stiffness class variables
       // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
       BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-          eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
-          BeamInteractionDataStatePtr()->GetMutableStiff());
+          eleforce, elestiff, BeamInteractionDataStatePtr()->GetForceNp(),
+          BeamInteractionDataStatePtr()->GetStiff());
     }
   }
 
@@ -621,7 +621,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
 
   // get and prepare storage for point coordinate values
   std::vector<double>& point_coordinates =
-      visualization_manager_ptr_->GetVisualizationDataMutable().GetPointCoordinatesMutable();
+      visualization_manager_ptr_->GetVisualizationData().GetPointCoordinates();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_row_points);
 
@@ -686,10 +686,10 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
 
   // append all desired output data to the writer object's storage
   // i) number of bonds
-  visualization_manager_ptr_->GetVisualizationDataMutable().SetPointDataVector(
+  visualization_manager_ptr_->GetVisualizationData().SetPointDataVector(
       "orientation", orientation, 3);
   // ii) linker force
-  visualization_manager_ptr_->GetVisualizationDataMutable().SetPointDataVector("force", force, 3);
+  visualization_manager_ptr_->GetVisualizationData().SetPointDataVector("force", force, 3);
 
   // finalize everything and write all required VTU files to filesystem
   visualization_manager_ptr_->WriteToDisk(GState().GetTimeN(), GState().GetStepN());

@@ -60,7 +60,7 @@ namespace STR
       void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! (derived)
-      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) override;
+      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override;
 
       //! return time integration factor (derived)
       [[nodiscard]] double GetIntParam() const override;

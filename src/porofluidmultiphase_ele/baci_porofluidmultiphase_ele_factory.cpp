@@ -107,6 +107,14 @@ DRT::ELEMENTS::PoroFluidMultiPhaseFactory::ProvideImpl(
         dserror("invalid problem dimension for tet4 porofluidmultiphase element!");
       break;
     }
+    case DRT::Element::tet10:
+    {
+      if (ndim == 3)
+        return DefineProblemType<DRT::Element::tet10>(numdofpernode, disname);
+      else
+        dserror("invalid problem dimension for tet10 porofluidmultiphase element!");
+      break;
+    }
     default:
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());
       break;

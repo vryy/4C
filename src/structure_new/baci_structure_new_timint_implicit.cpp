@@ -56,7 +56,7 @@ void STR::TIMINT::Implicit::Setup()
   const enum INPAR::STR::PredEnum& predtype = DataSDyn().GetPredictorType();
   predictor_ptr_ = STR::PREDICT::BuildPredictor(predtype);
   predictor_ptr_->Init(predtype, implint_ptr_, DBCPtr(), DataGlobalStatePtr(), DataIOPtr(),
-      DataSDyn().GetMutableNoxParamsPtr());
+      DataSDyn().GetNoxParamsPtr());
   predictor_ptr_->Setup();
 
   // ---------------------------------------------------------------------------
@@ -100,7 +100,7 @@ void STR::TIMINT::Implicit::PrepareTimeStep()
    * routine, such it becomes consistent with non-adaptive update routine! See the
    * UpdateStepTime() routine for more information.                             hiermeier 12/2015
    *
-  double& time_np = DataGlobalState().GetMutableTimeNp();
+  double& time_np = DataGlobalState().GetTimeNp();
   time_np = DataGlobalState().GetTimeN() + (*DataGlobalState().GetDeltaTime())[0]; */
 
   NOX::Abstract::Group& grp = NlnSolver().SolutionGroup();

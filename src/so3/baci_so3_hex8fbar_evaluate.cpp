@@ -214,9 +214,9 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType ioplstrain = INPAR::STR::strain_none;
         if (IsParamsInterface())
         {
-          stressdata = StrParamsInterface().MutableStressDataPtr();
-          straindata = StrParamsInterface().MutableStrainDataPtr();
-          plstraindata = StrParamsInterface().MutablePlasticStrainDataPtr();
+          stressdata = StrParamsInterface().StressDataPtr();
+          straindata = StrParamsInterface().StrainDataPtr();
+          plstraindata = StrParamsInterface().PlasticStrainDataPtr();
 
           iostress = StrParamsInterface().GetStressOutputType();
           iostrain = StrParamsInterface().GetStrainOutputType();

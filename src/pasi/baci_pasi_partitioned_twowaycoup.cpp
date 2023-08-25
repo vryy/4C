@@ -285,7 +285,7 @@ void PASI::PASI_PartTwoWayCoup::ClearInterfaceForces()
 #endif
 
   // clear interface forces
-  walldatastate->GetMutableForceCol()->PutScalar(0.0);
+  walldatastate->GetForceCol()->PutScalar(0.0);
 }
 
 void PASI::PASI_PartTwoWayCoup::GetInterfaceForces()

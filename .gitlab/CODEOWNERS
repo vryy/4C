@@ -22,8 +22,6 @@
 
 # --- specify code owner of basic directories and file --------------------------------------------------------------- #
 
-/buildconfig/                      @baci/baci_maintainer @baci/team_infrastructure
-
 /cmake/                            @baci/baci_maintainer @baci/team_infrastructure
 
 /dependencies/                     @baci/baci_maintainer @baci/team_infrastructure
@@ -113,6 +111,7 @@ contact_constitutivelaw/   @baci/team_contact
 core/                      @baci/team_infrastructure
 core/coupling              @baci/team_discretization
 core/discretization        @baci/team_discretization
+core/linear_solver         @baci/team_solvers
 core/utils                 @baci/team_infrastructure
 
 create_rtdfiles/           @baci/team_infrastructure
@@ -437,7 +436,6 @@ xfem/                      @baci/team_fluid
 
 # put CMakeLists.txt last to override folder owners
 *CMakeLists.txt                    @baci/baci_maintainer @baci/team_infrastructure
-do-configure                       @baci/team_infrastructure @baci/baci_maintainer
 
 # testing framework configuration files
 TestingFramework.cmake             @baci/team_testing

@@ -493,7 +493,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         INPAR::STR::StressType iocouplstress;
         if (this->IsParamsInterface())
         {
-          couplstressdata = this->StrParamsInterface().MutableCouplingStressDataPtr();
+          couplstressdata = this->StrParamsInterface().CouplingStressDataPtr();
           iocouplstress = this->StrParamsInterface().GetCouplingStressOutputType();
         }
         else

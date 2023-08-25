@@ -274,10 +274,10 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
     // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
     // -------------------------------------------------------------------------
-    Teuchos::ParameterList& p_grp_opt = datasdyn->GetMutableNoxParams().sublist("Group Options");
+    Teuchos::ParameterList& p_grp_opt = datasdyn->GetNoxParams().sublist("Group Options");
     // Get the current map. If there is no map, return a new empty one. (reference)
     NOX::NLN::GROUP::PrePostOperator::Map& prepostgroup_map =
-        NOX::NLN::GROUP::PrePostOp::GetMutableMap(p_grp_opt);
+        NOX::NLN::GROUP::PrePostOp::GetMap(p_grp_opt);
     // create the new rotation vector update pre/post operator
     Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepostrotvec_ptr =
         Teuchos::rcp(new NOX::NLN::GROUP::PrePostOp::TIMINT::RotVecUpdater(dataglobalstate));

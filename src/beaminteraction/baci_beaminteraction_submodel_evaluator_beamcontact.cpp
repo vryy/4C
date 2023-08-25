@@ -246,8 +246,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
     {
       // extract the Dof values of this element from displacement vector
       BEAMINTERACTION::UTILS::ExtractPosDofVecAbsoluteValues(Discret(), element_ptr[ielement],
-          BeamInteractionDataStatePtr()->GetMutableDisColNp(),
-          element_posdofvec_absolutevalues[ielement]);
+          BeamInteractionDataStatePtr()->GetDisColNp(), element_posdofvec_absolutevalues[ielement]);
     }
 
     // update positional Dof values in the interaction element pair object
@@ -255,7 +254,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Reset()
         element_posdofvec_absolutevalues[0], element_posdofvec_absolutevalues[1]);
 
     // update rotational Dof values in the interaction pair object
-    elepairptr->ResetRotationState(Discret(), BeamInteractionDataStatePtr()->GetMutableDisColNp());
+    elepairptr->ResetRotationState(Discret(), BeamInteractionDataStatePtr()->GetDisColNp());
   }
 
   // Set restart displacements in the pairs.
@@ -277,7 +276,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForce()
   for (auto& assembly_manager : assembly_managers_)
   {
     assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
-        BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
+        BeamInteractionDataStatePtr()->GetForceNp(), Teuchos::null);
   }
 
   return true;
@@ -295,7 +294,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateStiff()
   for (auto& assembly_manager : assembly_managers_)
   {
     assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(), Teuchos::null,
-        BeamInteractionDataStatePtr()->GetMutableStiff());
+        BeamInteractionDataStatePtr()->GetStiff());
   }
 
   return true;
@@ -313,8 +312,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::EvaluateForceStiff()
   // stiffness matrix.
   for (auto& assembly_manager : assembly_managers_)
     assembly_manager->EvaluateForceStiff(DiscretPtr(), BeamInteractionDataStatePtr(),
-        BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff());
+        BeamInteractionDataStatePtr()->GetForceNp(), BeamInteractionDataStatePtr()->GetStiff());
 
   PrintActiveBeamContactSet(IO::cout.os(IO::verbose));
 
@@ -485,7 +483,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamC
 
   // get and prepare storage for point coordinate values
   std::vector<double>& point_coordinates =
-      visualization_manager_ptr_->GetVisualizationDataMutable().GetPointCoordinatesMutable();
+      visualization_manager_ptr_->GetVisualizationData().GetPointCoordinates();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_row_points);
 
@@ -561,12 +559,12 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::WriteOutputRuntimeVtpBeamC
   // append all desired output data to the writer object's storage
   if (BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteContactForces())
   {
-    visualization_manager_ptr_->GetVisualizationDataMutable().SetPointDataVector(
+    visualization_manager_ptr_->GetVisualizationData().SetPointDataVector(
         "force", contact_force_vector, num_spatial_dimensions);
   }
   if (BeamContactParams().BeamContactRuntimeVtkOutputParams()->IsWriteGaps())
   {
-    visualization_manager_ptr_->GetVisualizationDataMutable().SetPointDataVector("gap", gaps, 1);
+    visualization_manager_ptr_->GetVisualizationData().SetPointDataVector("gap", gaps, 1);
   }
 
   // finalize everything and write all required vtk files to filesystem

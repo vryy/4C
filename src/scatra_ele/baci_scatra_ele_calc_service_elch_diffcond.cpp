@@ -274,7 +274,7 @@ void DRT::ELEMENTS::ScaTraEleCalcElchDiffCond<distype, probdim>::CalcElchDomainK
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
-  const std::vector<int>* stoich = cond->GetMutable<std::vector<int>>("stoich");
+  const std::vector<int>* stoich = cond->Get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
   {
     dserror(

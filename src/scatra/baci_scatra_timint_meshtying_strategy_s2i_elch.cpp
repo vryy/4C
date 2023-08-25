@@ -227,7 +227,7 @@ void SCATRA::MeshtyingStrategyS2IElch::EvaluatePointCoupling()
               "electrode-electrolyte interface!");
         }
         const std::vector<int>* stoichiometries =
-            cond_slave->GetMutable<std::vector<int>>("stoichiometries");
+            cond_slave->Get<std::vector<int>>("stoichiometries");
         if (stoichiometries == nullptr)
         {
           dserror(

@@ -38,7 +38,7 @@ void STR::IMPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln group in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_grp_opt = SDyn().GetMutableNoxParams().sublist("Group Options");
+  Teuchos::ParameterList& p_grp_opt = SDyn().GetNoxParams().sublist("Group Options");
 
   // create the new generic pre/post operator
   Teuchos::RCP<NOX::NLN::Abstract::PrePostOperator> prepost_generic_ptr =
@@ -46,7 +46,7 @@ void STR::IMPLICIT::Generic::Setup()
 
   // Get the current map. If there is no map, return a new empty one. (reference)
   NOX::NLN::GROUP::PrePostOperator::Map& prepostgroup_map =
-      NOX::NLN::GROUP::PrePostOp::GetMutableMap(p_grp_opt);
+      NOX::NLN::GROUP::PrePostOp::GetMap(p_grp_opt);
 
   // insert/replace the old pointer in the map
   prepostgroup_map[NOX::NLN::GROUP::prepost_impl_generic] = prepost_generic_ptr;
@@ -54,7 +54,7 @@ void STR::IMPLICIT::Generic::Setup()
   // ---------------------------------------------------------------------------
   // set the new pre/post operator for the nox nln solver in the parameter list
   // ---------------------------------------------------------------------------
-  Teuchos::ParameterList& p_sol_opt = SDyn().GetMutableNoxParams().sublist("Solver Options");
+  Teuchos::ParameterList& p_sol_opt = SDyn().GetNoxParams().sublist("Solver Options");
 
   NOX::NLN::AUX::AddToPrePostOpVector(p_sol_opt, prepost_generic_ptr);
 
@@ -77,10 +77,7 @@ const bool& STR::IMPLICIT::Generic::IsPredictorState() const { return ispredicto
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::ParameterList& STR::IMPLICIT::Generic::GetNoxParams()
-{
-  return SDyn().GetMutableNoxParams();
-}
+Teuchos::ParameterList& STR::IMPLICIT::Generic::GetNoxParams() { return SDyn().GetNoxParams(); }
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

@@ -467,7 +467,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::DistributeWallElementsAndNodes()
   Teuchos::RCP<Epetra_Map> stdelecolmap;
   Teuchos::RCP<Epetra_Map> stdnodecolmapdummy;
   binstrategy_->StandardDiscretizationGhosting(walldiscretization_, binrowmap_,
-      walldatastate_->GetRefMutableDispRow(), stdelecolmap, stdnodecolmapdummy);
+      walldatastate_->GetRefDispRow(), stdelecolmap, stdnodecolmapdummy);
 
   // export displacement vector
   Teuchos::RCP<Epetra_Vector> disn_col = Teuchos::null;
@@ -504,7 +504,7 @@ void PARTICLEWALL::WallHandlerDiscretCondition::TransferWallElementsAndNodes()
   // transfer wall elements and nodes
   std::map<int, std::set<int>> bintorowelemap;
   binstrategy_->TransferNodesAndElements(
-      walldiscretization_, walldatastate_->GetMutableDispCol(), bintorowelemap);
+      walldiscretization_, walldatastate_->GetDispCol(), bintorowelemap);
 
   // extend wall element ghosting
   ExtendWallElementGhosting(bintorowelemap);

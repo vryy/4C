@@ -490,8 +490,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
 
     // Add the projection point to an array.
     std::array<std::reference_wrapper<ProjectionPoint1DTo3D<scalar_type>>, 2>
-        segment_start_end_points = {
-            new_segment.GetStartPointMutable(), new_segment.GetEndPointMutable()};
+        segment_start_end_points = {new_segment.GetStartPoint(), new_segment.GetEndPoint()};
     segment_start_end_points[0].get().SetFromOtherPointDouble(segment_double.GetStartPoint());
     segment_start_end_points[1].get().SetFromOtherPointDouble(segment_double.GetEndPoint());
 
@@ -503,14 +502,13 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
       {
         this->IntersectLineWithSurfaceEdge(q_line, q_surface,
             face_fixed_parameters[intersection_face], face_fixed_values[intersection_face],
-            point.get().GetEtaMutable(), point.get().GetXiMutable(), projection_result,
-            nodal_normals, true);
+            point.get().GetEta(), point.get().GetXi(), projection_result, nodal_normals, true);
       }
     }
 
     // Reevaluate the integration points along the segment.
     std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
-        new_segment.GetProjectionPointsMutable();
+        new_segment.GetProjectionPoints();
     projection_points.resize(segment_double.GetNumberOfProjectionPoints());
     for (unsigned int i_point = 0; i_point < segment_double.GetNumberOfProjectionPoints();
          i_point++)
@@ -529,7 +527,7 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
       EvaluatePosition<line>(projection_point.GetEta(), q_line, point_in_space, this->Element1());
 
       // Calculate the projection.
-      this->ProjectPointToOther(point_in_space, q_surface, projection_point.GetXiMutable(),
+      this->ProjectPointToOther(point_in_space, q_surface, projection_point.GetXi(),
           projection_result, nodal_normals, true);
     }
   }

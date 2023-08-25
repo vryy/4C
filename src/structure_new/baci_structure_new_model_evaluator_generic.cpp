@@ -50,7 +50,7 @@ void STR::MODELEVALUATOR::Generic::Init(
   eval_data_ptr_ = eval_data_ptr;
   gstate_ptr_ = gstate_ptr;
   gio_ptr_ = gio_ptr;
-  discret_ptr_ = gstate_ptr->GetMutableDiscret();
+  discret_ptr_ = gstate_ptr->GetDiscret();
   int_ptr_ = int_ptr;
   timint_ptr_ = timint_ptr;
   dof_offset_ = dof_offset;

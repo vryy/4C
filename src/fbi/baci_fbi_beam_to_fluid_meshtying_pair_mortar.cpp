@@ -188,11 +188,10 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
     if (visualization_discret != Teuchos::null)
     {
       // Get the visualization vectors.
-      auto& visualization_data = visualization_discret->GetVisualizationDataMutable();
-      std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
-      std::vector<double>& displacement =
-          visualization_data.GetPointDataMutable<double>("displacement");
-      std::vector<double>& lambda_vis = visualization_data.GetPointDataMutable<double>("lambda");
+      auto& visualization_data = visualization_discret->GetVisualizationData();
+      std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
+      std::vector<double>& displacement = visualization_data.GetPointData<double>("displacement");
+      std::vector<double>& lambda_vis = visualization_data.GetPointData<double>("lambda");
 
       for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
       {
@@ -230,15 +229,15 @@ void BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<beam, fluid, mortar>::GetPa
                   "output_params_ptr")
               ->GetMortarLambdaContinuousSegments();
       double xi;
-      auto& visualization_data = visualization_continuous->GetVisualizationDataMutable();
-      std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable(
+      auto& visualization_data = visualization_continuous->GetVisualizationData();
+      std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates(
           (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& displacement = visualization_data.GetPointDataMutable<double>(
+      std::vector<double>& displacement = visualization_data.GetPointData<double>(
           "displacement", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<double>& lambda_vis = visualization_data.GetPointDataMutable<double>(
+      std::vector<double>& lambda_vis = visualization_data.GetPointData<double>(
           "lambda", (mortar_segments + 1) * 3 * this->line_to_3D_segments_.size());
-      std::vector<uint8_t>& cell_types = visualization_data.GetCellTypesMutable();
-      std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsetsMutable();
+      std::vector<uint8_t>& cell_types = visualization_data.GetCellTypes();
+      std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsets();
 
       for (const auto& segment : this->line_to_3D_segments_)
       {

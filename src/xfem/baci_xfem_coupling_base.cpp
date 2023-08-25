@@ -549,7 +549,7 @@ void XFEM::CouplingBase::EvaluateFunction(std::vector<double>& final_values, con
   // uniformly distributed random noise
 
   DRT::Condition& secondary = const_cast<DRT::Condition&>(*cond);
-  const std::vector<double>* percentage = secondary.GetMutable<std::vector<double>>("randnoise");
+  const std::vector<double>* percentage = secondary.Get<std::vector<double>>("randnoise");
 
   if (time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
 
@@ -610,7 +610,7 @@ void XFEM::CouplingBase::EvaluateScalarFunction(double& final_values, const doub
     dserror("Do not call EvaluateScalarFunction with more than one function/value provided");
 
   DRT::Condition& secondary = const_cast<DRT::Condition&>(*cond);
-  const std::vector<double>* percentage = secondary.GetMutable<std::vector<double>>("randnoise");
+  const std::vector<double>* percentage = secondary.Get<std::vector<double>>("randnoise");
 
   if (time < -1e-14) dserror("Negative time in curve/function evaluation: time = %f", time);
 

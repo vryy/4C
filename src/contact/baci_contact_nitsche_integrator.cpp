@@ -14,6 +14,7 @@
 #include "baci_contact_node.H"
 #include "baci_contact_paramsinterface.H"
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_so3_base.H"
 
@@ -611,8 +612,7 @@ void CONTACT::CoIntegratorNitsche::BuildAdjointTest(MORTAR::MortarElement& moEle
   CORE::LINALG::SerialDenseMatrix tmp(moEle.ParentElement()->NumNode() * dim, dim, false);
   CORE::LINALG::SerialDenseMatrix deriv_trafo(Teuchos::View, derivtravo_slave.A(),
       derivtravo_slave.numRows(), derivtravo_slave.numRows(), derivtravo_slave.numCols());
-  if (tmp.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1., d2sntDdDpxi, deriv_trafo, 0.))
-    dserror("multiply failed");
+  if (CORE::LINALG::multiply(tmp, d2sntDdDpxi, deriv_trafo)) dserror("multiply failed");
   for (int d = 0; d < dim - 1; ++d)
   {
     for (const auto& p : boundary_gpcoord_lin[d])

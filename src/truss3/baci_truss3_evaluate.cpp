@@ -11,6 +11,7 @@ adapts assembly automatically according to the thereby changed number of nodal d
 
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_lin_elast_1D.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_truss3.H"
@@ -365,7 +366,7 @@ void DRT::ELEMENTS::Truss3::NlnStiffMassEngStr(
   }
 
   // computing internal forces
-  DummyForce.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, DummyStiffMatrix, disp, 0.0);
+  CORE::LINALG::multiply(DummyForce, DummyStiffMatrix, disp);
 
   // calculating mass matrix.
   if (massmatrix != nullptr)
@@ -489,7 +490,7 @@ void DRT::ELEMENTS::Truss3::CalcGPStresses(
   INPAR::STR::StressType iostress;
   if (IsParamsInterface())
   {
-    stressdata = ParamsInterface().MutableStressDataPtr();
+    stressdata = ParamsInterface().StressDataPtr();
     iostress = ParamsInterface().GetStressOutputType();
   }
   else

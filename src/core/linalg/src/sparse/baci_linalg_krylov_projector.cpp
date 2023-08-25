@@ -15,6 +15,7 @@
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_utils_exceptions.H"
 
@@ -443,7 +444,7 @@ int CORE::LINALG::KrylovProjector::ApplyProjector(Epetra_MultiVector& Y,
   // compute temp2 from matrix-vector-product:
   // temp2 = (v1^T v2)^(-1) * temp1
   CORE::LINALG::SerialDenseVector temp2(nsdim_);
-  temp2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, *inv_v1Tv2, temp1, 0.0);
+  CORE::LINALG::multiply(temp2, *inv_v1Tv2, temp1);
 
   // loop
   for (int rr = 0; rr < nsdim_; ++rr)

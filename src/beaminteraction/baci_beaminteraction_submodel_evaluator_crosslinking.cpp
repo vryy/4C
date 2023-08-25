@@ -114,7 +114,7 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::PostPartitionProblem()
 
     std::vector<double> eledisp;
     BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), beamele_i,
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
+        BeamInteractionDataStatePtr()->GetDisColNp(), PeriodicBoundingBox(), eledisp);
 
     beam_data_[i] = Teuchos::rcp(new BEAMINTERACTION::DATA::BeamData());
     beam_data_[i]->SetId(beamele_i->Id());
@@ -777,7 +777,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::Reset()
       DRT::Element* ele = DiscretPtr()->gElement(elegid);
 
       BEAMINTERACTION::UTILS::GetPosAndTriadOfBindingSpot(Discret(), ele,
-          BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBoxPtr(),
+          BeamInteractionDataStatePtr()->GetDisColNp(), PeriodicBoundingBoxPtr(),
           elepairptr->GetLinkerType(), locbspotnum, pos[i], triad[i]);
     }
 
@@ -842,12 +842,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForce()
     // and get their discrete element force vectors
     BEAMINTERACTION::UTILS::ApplyBindingSpotForceToParentElements<DRT::ELEMENTS::Beam3Base,
         DRT::ELEMENTS::Beam3Base>(Discret(), PeriodicBoundingBoxPtr(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotforce, eleforce);
+        BeamInteractionDataStatePtr()->GetDisColNp(), elepairptr, bspotforce, eleforce);
 
     // assemble the contributions into force vector class variable
     // f_crosslink_np_ptr_, i.e. in the DOFs of the connected nodes
     BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-        eleforce, dummystiff, BeamInteractionDataStatePtr()->GetMutableForceNp(), Teuchos::null);
+        eleforce, dummystiff, BeamInteractionDataStatePtr()->GetForceNp(), Teuchos::null);
   }
 
   return true;
@@ -893,12 +893,12 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateStiff()
     // apply linearizations to parent elements and get their discrete element stiffness matrices
     BEAMINTERACTION::UTILS::ApplyBindingSpotStiffToParentElements<DRT::ELEMENTS::Beam3Base,
         DRT::ELEMENTS::Beam3Base>(Discret(), PeriodicBoundingBoxPtr(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotstiff, elestiff);
+        BeamInteractionDataStatePtr()->GetDisColNp(), elepairptr, bspotstiff, elestiff);
 
     // assemble the contributions into stiffness matrix class variable
     // stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
     BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-        dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetMutableStiff());
+        dummyforce, elestiff, Teuchos::null, BeamInteractionDataStatePtr()->GetStiff());
   }
 
   return true;
@@ -949,14 +949,14 @@ bool BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::EvaluateForceStiff()
     // and get their discrete element force vectors and stiffness matrices
     BEAMINTERACTION::UTILS::ApplyBindingSpotForceStiffToParentElements<DRT::ELEMENTS::Beam3Base,
         DRT::ELEMENTS::Beam3Base>(Discret(), PeriodicBoundingBoxPtr(),
-        BeamInteractionDataStatePtr()->GetMutableDisColNp(), elepairptr, bspotforce, bspotstiff,
-        eleforce, elestiff);
+        BeamInteractionDataStatePtr()->GetDisColNp(), elepairptr, bspotforce, bspotstiff, eleforce,
+        elestiff);
 
     // assemble the contributions into force and stiffness class variables
     // f_crosslink_np_ptr_, stiff_crosslink_ptr_, i.e. in the DOFs of the connected nodes
     BEAMINTERACTION::UTILS::FEAssembleEleForceStiffIntoSystemVectorMatrix(Discret(), elegids,
-        eleforce, elestiff, BeamInteractionDataStatePtr()->GetMutableForceNp(),
-        BeamInteractionDataStatePtr()->GetMutableStiff());
+        eleforce, elestiff, BeamInteractionDataStatePtr()->GetForceNp(),
+        BeamInteractionDataStatePtr()->GetStiff());
   }
 
   return true;
@@ -1197,7 +1197,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::WriteOutputRuntimeVtpStru
   //  unsigned int num_row_points = 2000;
   //
   //  // get and prepare storage for point coordinate values
-  //  std::vector< double >& point_coordinates = vtp_writer_ptr->GetMutablePointCoordinateVector();
+  //  std::vector< double >& point_coordinates = vtp_writer_ptr->GetPointCoordinateVector();
   //  point_coordinates.clear();
   //  point_coordinates.reserve( num_spatial_dimensions * num_row_points );
   //
@@ -1741,7 +1741,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         CORE::LINALG::Matrix<3, 1> bbspotpos;
         std::vector<double> eledisp;
         BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), ele,
-            BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
+            BeamInteractionDataStatePtr()->GetDisColNp(), PeriodicBoundingBox(), eledisp);
         ele->GetPosOfBindingSpot(bbspotpos, eledisp, crosslinker_i->GetMaterial()->LinkerType(),
             cldata_i->GetBSpots()[occbspotid].second, PeriodicBoundingBox());
 
@@ -1791,7 +1791,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         CORE::LINALG::Matrix<3, 1> bbspotposone;
         std::vector<double> eledisp;
         BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), ele,
-            BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
+            BeamInteractionDataStatePtr()->GetDisColNp(), PeriodicBoundingBox(), eledisp);
         ele->GetPosOfBindingSpot(bbspotposone, eledisp, crosslinker_i->GetMaterial()->LinkerType(),
             cldata_i->GetBSpots()[0].second, PeriodicBoundingBox());
 
@@ -1825,7 +1825,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::DiffuseCrosslinker()
         // get current position of filament binding spot
         CORE::LINALG::Matrix<3, 1> bbspotpostwo;
         BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), ele,
-            BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
+            BeamInteractionDataStatePtr()->GetDisColNp(), PeriodicBoundingBox(), eledisp);
         ele->GetPosOfBindingSpot(bbspotpostwo, eledisp, crosslinker_i->GetMaterial()->LinkerType(),
             cldata_i->GetBSpots()[1].second, PeriodicBoundingBox());
 
@@ -2141,7 +2141,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::UpdateAndExportBeamData(b
 
       std::vector<double> eledisp;
       BEAMINTERACTION::UTILS::GetCurrentUnshiftedElementDis(Discret(), beamele_i,
-          BeamInteractionDataStatePtr()->GetMutableDisColNp(), PeriodicBoundingBox(), eledisp);
+          BeamInteractionDataStatePtr()->GetDisColNp(), PeriodicBoundingBox(), eledisp);
 
       // loop over binding spot types of current element
       for (auto const& iter : beamele_i->GetBindingSpots())

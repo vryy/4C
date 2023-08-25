@@ -44,30 +44,13 @@ namespace STR
       //! Setup (has to be implemented by the derived classes)
       void Setup() override;
 
-      /*! \brief Apply the stiffness only
-       *
-       * Normally this one is unnecessary, since it makes more sense
-       * to evaluate the stiffness and right hand side at once, because of
-       * the lower computational overhead. */
-      virtual bool ApplyStiff(const Epetra_Vector& x, CORE::LINALG::SparseOperator& jac) = 0;
-
-      /*! \brief Apply force and stiff at once
-       *
-       *  Only one loop over all elements. Especially in the contact case,
-       *  the difference between this call and first call ApplyForce and
-       *  then ApplyStiff is mentionable because of the projection operations. */
-      virtual bool ApplyForceStiff(
-          const Epetra_Vector& x, Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) = 0;
-
+      //! derived
       bool ApplyCorrectionSystem(const enum NOX::NLN::CorrectionType type,
           const std::vector<INPAR::STR::ModelType>& constraint_models, const Epetra_Vector& x,
-          Epetra_Vector& f, CORE::LINALG::SparseOperator& jac);
+          Epetra_Vector& f, CORE::LINALG::SparseOperator& jac) override;
 
-      /*! \brief Remove contributions from the structural right-hand side stemming
-       *  from any condensation operations (typical example is contact)
-       *
-       *  \author hiermeier \date 03/18 */
-      void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const;
+      //! derived
+      void RemoveCondensedContributionsFromRhs(Epetra_Vector& rhs) const override;
 
       //! derived
       bool AssembleJac(CORE::LINALG::SparseOperator& jac,
@@ -83,7 +66,7 @@ namespace STR
        *  purpose we only need the right order of magnitude, so we don't
        *  mind evaluating the corresponding norms at possibly different
        *  points within the time-step (end point, generalized midpoint). */
-      virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) = 0;
+      virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const = 0;
 
       //! return the default step length of the used NOX::LineSearch method
       double GetDefaultStepLength() const;
@@ -159,7 +142,7 @@ namespace STR
 
       //! compute the scaling operator for element based scaling using PTC
       void ComputeJacobianContributionsFromElementLevelForPTC(
-          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr);
+          Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr) override;
 
       /*! \brief Print jacbian into text file for later use in MATLAB
        *

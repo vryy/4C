@@ -11,6 +11,7 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mortar_defines.H"
 #include "baci_mortar_element.H"
 #include "baci_mortar_node.H"
@@ -1148,7 +1149,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+        CORE::LINALG::multiply(ae, de, invme);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1465,7 +1466,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+        CORE::LINALG::multiply(ae, de, invme);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1556,7 +1557,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+        CORE::LINALG::multiply(ae, de, invme);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1646,7 +1647,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
           for (int k = 0; k < nnodeslin; ++k) invme(j, k) = melin(j, k);
 
         // get solution matrix with dual parameters
-        ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, invme, 0.0);
+        CORE::LINALG::multiply(ae, de, invme);
 
         // store coefficient matrix
         MoData().DualShape() = Teuchos::rcp(new CORE::LINALG::SerialDenseMatrix(ae));
@@ -1751,7 +1752,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
+      CORE::LINALG::multiply(ae, de, me);
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::dual1D_base_for_edge0, xi, vallin, derivlin);
@@ -1823,7 +1824,7 @@ void MORTAR::MortarElement::ShapeFunctions(MortarElement::ShapeType shape, const
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
+      CORE::LINALG::multiply(ae, de, me);
 
       // evaluate dual shape functions at loc. coord. xi
       ShapeFunctions(MortarElement::dual1D_base_for_edge1, xi, vallin, derivlin);
@@ -3724,7 +3725,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
+      CORE::LINALG::multiply(ae, de, me);
 
       // build linearization of ae and store in derivdual
       // (this is done according to a quite complex formula, which
@@ -3913,7 +3914,7 @@ void MORTAR::MortarElement::ShapeFunctionLinearizations(MORTAR::MortarElement::S
 
       // get solution matrix with dual parameters
       CORE::LINALG::SerialDenseMatrix ae(nnodes - 1, nnodes - 1);
-      ae.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, de, me, 0.0);
+      CORE::LINALG::multiply(ae, de, me);
 
       // build linearization of ae and store in derivdual
       // (this is done according to a quite complex formula, which

@@ -793,7 +793,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
           "This action type should only be called from the new time integration framework!");
 
       // Save number of Gauss of the element for gauss point data output
-      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
+      StrParamsInterface().GaussPointDataOutputManagerPtr()->AddElementNumberOfGaussPoints(
           NUMGPT_SOTET10);
 
       // holder for output quantity names and their size
@@ -803,7 +803,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       SolidMaterial()->RegisterVtkOutputDataNames(quantities_map);
 
       // Add quantities to the Gauss point output data manager (if they do not already exist)
-      StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
+      StrParamsInterface().GaussPointDataOutputManagerPtr()->MergeQuantities(quantities_map);
     }
     break;
     case struct_gauss_point_data_output:
@@ -813,7 +813,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
       // Collection and assembly of gauss point data
       for (const auto& quantity :
-          StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetQuantities())
+          StrParamsInterface().GaussPointDataOutputManagerPtr()->GetQuantities())
       {
         const std::string& quantity_name = quantity.first;
         const int quantity_size = quantity.second;
@@ -826,32 +826,26 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         // point)
         if (data_available)
         {
-          switch (StrParamsInterface().MutableGaussPointDataOutputManagerPtr()->GetOutputType())
+          switch (StrParamsInterface().GaussPointDataOutputManagerPtr()->GetOutputType())
           {
             case INPAR::STR::GaussPointDataOutputType::element_center:
             {
               // compute average of the quantities
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableElementCenterData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetElementCenterData().at(
+                      quantity_name);
               CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::nodes:
             {
               Teuchos::RCP<Epetra_MultiVector> global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableNodalData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalData().at(
+                      quantity_name);
 
               Epetra_IntVector& global_nodal_element_count =
-                  *StrParamsInterface()
-                       .MutableGaussPointDataOutputManagerPtr()
-                       ->GetMutableNodalDataCount()
-                       .at(quantity_name);
+                  *StrParamsInterface().GaussPointDataOutputManagerPtr()->GetNodalDataCount().at(
+                      quantity_name);
 
               static auto gauss_integration =
                   CORE::DRT::UTILS::IntegrationPoints3D(CORE::DRT::UTILS::NumGaussPointsToGaussRule<
@@ -865,10 +859,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
             {
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                  StrParamsInterface()
-                      .MutableGaussPointDataOutputManagerPtr()
-                      ->GetMutableGaussPointData()
-                      .at(quantity_name);
+                  StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
+                      quantity_name);
               DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }

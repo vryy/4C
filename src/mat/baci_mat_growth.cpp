@@ -341,7 +341,7 @@ void MAT::Growth::ResetStep()
 void MAT::Growth::StoreHistory(int timestep)
 {
   std::map<int, std::vector<double>>* access;
-  access = histdata_.GetMutable<std::map<int, std::vector<double>>>("thetaold");
+  access = histdata_.Get<std::map<int, std::vector<double>>>("thetaold");
   (*access)[timestep] = *thetaold_;
 }
 

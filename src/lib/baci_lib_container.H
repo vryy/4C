@@ -452,7 +452,7 @@ namespace DRT
     \return non-constant Ptr to data if data with that name exists, nullptr otherwise
     */
     template <typename T>
-    T* GetMutable(const std::string& name);
+    T* Get(const std::string& name);
 
     //@}
 

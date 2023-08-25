@@ -64,7 +64,7 @@ void STR::IMPLICIT::Statics::SetState(const Epetra_Vector& x)
   if (IsPredictorState()) return;
 
   Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().ExtractDisplEntries(x);
-  GlobalState().GetMutableDisNp()->Scale(1.0, *disnp_ptr);
+  GlobalState().GetDisNp()->Scale(1.0, *disnp_ptr);
 }
 
 /*----------------------------------------------------------------------------*
@@ -136,16 +136,25 @@ void STR::IMPLICIT::Statics::ReadRestart(IO::DiscretizationReader& ioreader)
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-double STR::IMPLICIT::Statics::CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type)
+double STR::IMPLICIT::Statics::CalcRefNormForce(
+    const enum NOX::Abstract::Vector::NormType& type) const
 {
   CheckInitSetup();
+
+  const Teuchos::RCP<Epetra_Vector> fintnp =
+      Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFintNp());
+  const Teuchos::RCP<Epetra_Vector> fextnp =
+      Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFextNp());
+  const Teuchos::RCP<Epetra_Vector> freactnp =
+      Teuchos::rcp_const_cast<Epetra_Vector>(GlobalState().GetFreactNp());
+
   // switch from Epetra_Vector to NOX::Epetra::Vector (view but read-only)
-  Teuchos::RCP<const NOX::Epetra::Vector> fintnp_nox_ptr = Teuchos::rcp(
-      new NOX::Epetra::Vector(GlobalState().GetMutableFintNp(), NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<const NOX::Epetra::Vector> fextnp_nox_ptr = Teuchos::rcp(
-      new NOX::Epetra::Vector(GlobalState().GetMutableFextNp(), NOX::Epetra::Vector::CreateView));
-  Teuchos::RCP<const NOX::Epetra::Vector> freactnp_nox_ptr = Teuchos::rcp(
-      new NOX::Epetra::Vector(GlobalState().GetMutableFreactNp(), NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const NOX::Epetra::Vector> fintnp_nox_ptr =
+      Teuchos::rcp(new NOX::Epetra::Vector(fintnp, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const NOX::Epetra::Vector> fextnp_nox_ptr =
+      Teuchos::rcp(new NOX::Epetra::Vector(fextnp, NOX::Epetra::Vector::CreateView));
+  Teuchos::RCP<const NOX::Epetra::Vector> freactnp_nox_ptr =
+      Teuchos::rcp(new NOX::Epetra::Vector(freactnp, NOX::Epetra::Vector::CreateView));
 
   // norm of the internal forces
   double fintnorm = fintnp_nox_ptr->norm(type);
@@ -176,8 +185,8 @@ void STR::IMPLICIT::Statics::PreUpdate()
   const double dt = (*GlobalState().GetDeltaTime())[0];
 
   const INPAR::STR::PredEnum& pred_type = impl_ptr->Predictor().GetType();
-  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetMutableAccNp();
-  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetMutableVelNp();
+  Teuchos::RCP<Epetra_Vector>& accnp_ptr = GlobalState().GetAccNp();
+  Teuchos::RCP<Epetra_Vector>& velnp_ptr = GlobalState().GetVelNp();
 
   switch (pred_type)
   {

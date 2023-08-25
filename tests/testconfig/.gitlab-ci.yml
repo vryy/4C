@@ -185,16 +185,6 @@ before_script:
     {} \;
   after_script:
   - *post-process-log-files
-    # update (push) the cache of the coverage report:
-    # cache can be used to pass data between pipelines (in contrast to artifacts that pass data from stage to stage in a
-    # single pipeline)
-  cache:
-    key: cache-coverage-report
-    paths:
-    - coverage_report/
-      # the log is needed to print the value of total line coverage in daily and minimal master pipelines
-    - genhtml_coverage.log
-    policy: push
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
@@ -332,6 +322,9 @@ before_script:
 # Stages during testing.
 #-------------------------------------------------------------------------------
 
+# We use stages just for grouping jobs into different categories. Dependencies are defined using the
+# `needs` keyword to reduce the time of a pipeline run, see the Gitlab documentation about Directed
+# Acyclic Graph Pipelines (https://docs.gitlab.com/ee/ci/pipelines/pipeline_architectures.html#directed-acyclic-graph-pipelines).
 stages:
 - build-docker-images
 - checkcode
@@ -368,6 +361,9 @@ checkcode:
   tags:
   - checkcode
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 # IMCS--------------------------------------------------------------------------
 
@@ -378,7 +374,7 @@ imcs-buildtest_minimal_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-minimal-ubuntu20
-  needs: [checkcode]
+  needs: []
 
 imcs-buildtest_daily_ubuntu20:
   extends: .buildtest_daily
@@ -389,7 +385,7 @@ imcs-buildtest_daily_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-full-ubuntu20
-  needs: [checkcode]
+  needs: []
 
 imcs-buildtest_daily_debug_ubuntu20:
   extends: .buildtest_daily_debug
@@ -400,7 +396,7 @@ imcs-buildtest_daily_debug_ubuntu20:
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
   tags:
   - imcs-nightly-debug-ubuntu20
-  needs: [checkcode]
+  needs: []
 
 imcs-buildtest_release_trilinos_develop:
   extends: .buildtest_release_trilinos_develop
@@ -415,7 +411,7 @@ imcs-buildtest_release_trilinos_develop:
   - imcs-buildtest_release_trilinos_develop-ubuntu20
   needs: []
 
-# LNM---------------------------------------------------------------------------
+# Docker---------------------------------------------------------------------------
 
 codeclimate:
   stage: checkcode
@@ -451,6 +447,9 @@ codeclimate:
   tags:
   - codeclimate
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 buildtest_minimal_release:
   extends: .buildtest_minimal
@@ -462,14 +461,16 @@ buildtest_minimal_release:
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
   tags:
   - buildtest-minimal
-  needs: [checkcode]
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 buildtest_coverage:
   extends: .buildtest_coverage
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   variables:
     # increase the global test timeout
-    GLOBAL_TEST_TIMEOUT_SCALE: '30'
+    GLOBAL_TEST_TIMEOUT_SCALE: '50'
     # increase the unit test timeout
     UNITTEST_TIMEOUT: '50'
     # enable coverage option of ctest
@@ -483,29 +484,37 @@ buildtest_coverage:
 
 pages: # job name needs to be pages
   stage: pages
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
-  variables:
-    # stage operates exclusively on artifacts. No need for source code.
-    GIT_STRATEGY: fetch
+  image: alpine:3.18
     # Download Doxygen and ReadTheDocs from previous documentation stage
-  dependencies:
-  - doxygen
-  - readthedocs
+  needs:
+  - job: build-base-dependencies
+    optional: true
+  - job: doxygen
+    artifacts: true
+  - job: readthedocs
+  before_script: []
   script:
-    # print the measured coverage rate
-  - echo 'measured'
-  - grep "Overall coverage rate:" -A 2 genhtml_coverage.log
+    # Create python venv for gitlab api and anybadges
+  - apk add python3 curl unzip git
+  - python3 -m venv venv
+  - . venv/bin/activate
+  - pip install -r utilities/coverage/requirements.txt
+    # Download latest coverage report
+  - LATEST_ARTIFACT_URL="`python ./utilities/coverage/get_latest_artifacts_url_by_jobname.py
+    $CI_SERVER_URL $ACCESS_TOKEN $CI_PROJECT_ID $CI_DEFAULT_BRANCH buildtest_coverage`"
+  - 'curl --location --output coverage_artifacts.zip --header "PRIVATE-TOKEN: $ACCESS_TOKEN"
+    "$LATEST_ARTIFACT_URL"'
+  - unzip coverage_artifacts.zip -d coverage_artifacts
+    # Print measured coverage rate
+  - grep "Overall coverage rate:" -A 2 coverage_artifacts/genhtml_coverage.log
     # Create directory that will be published
   - mkdir -p public
     # move created coverage report to public folder (which is the path for GitLab Pages content)
-  - mv coverage_report public/coverage_report
+  - mv coverage_artifacts/coverage_report public/coverage_report
     # Move most recent doxygen to public folder
   - mv doxygen public/doxygen
     # Move most recent readthedocs to public folder
   - mv readthedocs public/readthedocs
-    # Create python venv to create badges
-  - python3 -m venv venv
-  - . venv/bin/activate
   - pip install anybadge
     # Create doxygen badge
   - anybadge -l doxygen -v ok --color=green -f public/doxygen.svg
@@ -514,12 +523,6 @@ pages: # job name needs to be pages
     # Create website badge
   - anybadge -l website -v ok --color=green -f public/website.svg
   coverage: /lines\.*:\s+\d+\.\d+/
-  cache:
-    key: cache-coverage-report
-    paths:
-    - coverage_report/
-    - genhtml_coverage.log
-    policy: pull
   artifacts:
     # store the public path in artifact
     # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
@@ -529,8 +532,8 @@ pages: # job name needs to be pages
     expire_in: 1 day
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  tags: # must run on the same machine as the coverage report
-  - coverage
+  tags:
+  - pages
 
 doxygen-web:
   extends: .doxygen
@@ -552,6 +555,9 @@ doxygen-web:
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_MERGE_REQUEST_IID
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 doxygen:
   extends: .doxygen
@@ -571,6 +577,9 @@ doxygen:
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 # Build the docker image with all dependencies for Baci
 build-base-dependencies:
@@ -606,7 +615,6 @@ buildtest_full_release:
   tags:
   - buildtest
   needs:
-  - checkcode
   - job: build-base-dependencies
     optional: true
   # Make use of evaluation order to run test in nightly pipeline as well
@@ -626,7 +634,6 @@ buildtest_full_debug:
   tags:
   - buildtest-debug
   needs:
-  - checkcode
   - job: build-base-dependencies
     optional: true
 
@@ -683,6 +690,9 @@ readthedocs-web:
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_MERGE_REQUEST_IID
   interruptible: true
+  needs:
+  - job: build-base-dependencies
+    optional: true
 
 readthedocs:
   extends: .readthedocs
@@ -702,3 +712,6 @@ readthedocs:
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
+  needs:
+  - job: build-base-dependencies
+    optional: true

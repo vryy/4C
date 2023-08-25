@@ -17,6 +17,7 @@
 #include "baci_fluid_ele_parameter_xfem.H"
 #include "baci_fluid_functions.H"
 #include "baci_lib_condition_utils.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_mat_par_bundle.H"
@@ -2611,10 +2612,10 @@ namespace DRT
       CORE::LINALG::SerialDenseMatrix GuisInvKss(patchelementslm.size(), numstressdof_ * nen_);
 
       // G_uis * K_ss^-1
-      GuisInvKss.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, G_uis, InvKss, 1.0);
+      CORE::LINALG::multiply(1.0, GuisInvKss, 1.0, G_uis, InvKss);
 
       // Cuiui <--> (-)G_uis * K_ss^-1 * G_sui
-      Cuiui.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, GuisInvKss, G_sui, 1.0);
+      CORE::LINALG::multiply(1.0, Cuiui, 1.0, GuisInvKss, G_sui);
 
       if (add_conv_stab) Cuiui += Cuiui_conv;
     }

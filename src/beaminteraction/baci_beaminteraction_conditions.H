@@ -226,7 +226,7 @@ namespace BEAMINTERACTION
      */
     inline std::map<INPAR::BEAMINTERACTION::BeamInteractionConditions,
         std::vector<Teuchos::RCP<BeamInteractionConditionBase>>>&
-    GetConditionMapMutable()
+    GetConditionMap()
     {
       return condition_map_;
     }

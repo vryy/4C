@@ -85,7 +85,7 @@ void STR::Integrator::Setup()
   // build monitor for a tensile test
   // ---------------------------------------------------------------------------
   monitor_dbc_ptr_ = Teuchos::rcp(new STR::MonitorDbc);
-  monitor_dbc_ptr_->Init(io_ptr_, *gstate_ptr_->GetMutableDiscret(), *gstate_ptr_, *dbc_ptr_);
+  monitor_dbc_ptr_->Init(io_ptr_, *gstate_ptr_->GetDiscret(), *gstate_ptr_, *dbc_ptr_);
   monitor_dbc_ptr_->Setup();
 
   mt_energy_.Setup();
@@ -133,9 +133,9 @@ void STR::Integrator::EquilibrateInitialState()
   // overwrite initial state vectors with Dirichlet BCs
   // note that we get accelerations resulting from inhomogeneous Dirichlet conditions here
   const double& timen = (*GlobalState().GetMultiTime())[0];
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetMutableDisNp();
-  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetMutableVelNp();
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetDisNp();
+  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
   Dbc().ApplyDirichletBC(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
 
@@ -267,9 +267,9 @@ bool STR::Integrator::CurrentStateIsEquilibrium(const double& tol)
 
   // overwrite initial state vectors with Dirichlet BCs
   const double& timen = (*GlobalState().GetMultiTime())[0];
-  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetMutableDisNp();
-  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetMutableVelNp();
-  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetMutableAccNp();
+  Teuchos::RCP<Epetra_Vector> disnp_ptr = GlobalState().GetDisNp();
+  Teuchos::RCP<Epetra_Vector> velnp_ptr = GlobalState().GetVelNp();
+  Teuchos::RCP<Epetra_Vector> accnp_ptr = GlobalState().GetAccNp();
   Dbc().ApplyDirichletBC(timen, disnp_ptr, velnp_ptr, accnp_ptr, false);
 
   // set the evaluate parameters of the current base class

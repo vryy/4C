@@ -22,6 +22,7 @@
 #include "baci_contact_selfcontact_binarytree_unbiased.H"
 #include "baci_io.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_binarytree.H"
@@ -8640,7 +8641,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 
     // evaluate jump in tangential direction
     CORE::LINALG::SerialDenseMatrix jumptan(dim, 1);
-    jumptan.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1, tanplane, jumpvec, 0.0);
+    CORE::LINALG::multiply(jumptan, tanplane, jumpvec);
 
     // force vector
     CORE::LINALG::SerialDenseMatrix forcevec(dim, 1);

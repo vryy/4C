@@ -55,8 +55,8 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
     springs_.emplace_back(Teuchos::rcp(new UTILS::SpringDashpot(discret_ptr, springdashpot)));
 
   // setup the displacement pointer
-  disnp_ptr_ = GState().GetMutableDisNp();
-  velnp_ptr_ = GState().GetMutableVelNp();
+  disnp_ptr_ = GState().GetDisNp();
+  velnp_ptr_ = GState().GetVelNp();
 
   fspring_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMapView()));
   stiff_spring_ptr_ =
@@ -275,7 +275,7 @@ void STR::MODELEVALUATOR::SpringDashpot::ReadRestart(IO::DiscretizationReader& i
 void STR::MODELEVALUATOR::SpringDashpot::UpdateStepState(const double& timefac_n)
 {
   // add the old time factor scaled contributions to the residual
-  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetMutableFstructureOld();
+  Teuchos::RCP<Epetra_Vector>& fstructold_ptr = GState().GetFstructureOld();
   fstructold_ptr->Update(timefac_n, *fspring_np_ptr_, 1.0);
 
   // check for prestressing and reset if necessary

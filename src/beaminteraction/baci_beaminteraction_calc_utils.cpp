@@ -21,6 +21,7 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_rigidsphere.H"
@@ -881,8 +882,7 @@ namespace BEAMINTERACTION
               eledisp);
 
         eleforce[elei].size(numdof_ele);
-        eleforce[elei].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotforce[elei], 0.0);
+        CORE::LINALG::multiplyTN(eleforce[elei], trafomatrix, bspotforce[elei]);
       }
     }
 
@@ -938,12 +938,10 @@ namespace BEAMINTERACTION
             ele1disp);
 
         auxmat[0][0].shape(numdof_ele1, 6);
-        auxmat[0][0].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][0], 0.0);
+        CORE::LINALG::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
 
         auxmat[0][1].shape(numdof_ele1, 6);
-        auxmat[0][1].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][1], 0.0);
+        CORE::LINALG::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
@@ -953,12 +951,10 @@ namespace BEAMINTERACTION
             ele1disp);
 
         elestiff[0][0].shape(numdof_ele1, numdof_ele1);
-        elestiff[0][0].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[0][0], trafomatrix, 0.0);
+        CORE::LINALG::multiply(elestiff[0][0], auxmat[0][0], trafomatrix);
 
         auxmat[1][0].shape(6, numdof_ele1);
-        auxmat[1][0].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, bspotstiff[1][0], trafomatrix, 0.0);
+        CORE::LINALG::multiply(auxmat[1][0], bspotstiff[1][0], trafomatrix);
       }
 
       // element 2:
@@ -971,12 +967,10 @@ namespace BEAMINTERACTION
             ele2disp);
 
         elestiff[1][0].shape(numdof_ele2, numdof_ele1);
-        elestiff[1][0].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, auxmat[1][0], 0.0);
+        CORE::LINALG::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
 
         auxmat[1][1].shape(numdof_ele2, 6);
-        auxmat[1][1].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[1][1], 0.0);
+        CORE::LINALG::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);
@@ -986,12 +980,10 @@ namespace BEAMINTERACTION
             ele2disp);
 
         elestiff[0][1].shape(numdof_ele1, numdof_ele2);
-        elestiff[0][1].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[1][0], trafomatrix, 0.0);
+        CORE::LINALG::multiply(elestiff[0][1], auxmat[1][0], trafomatrix);
 
         elestiff[1][1].shape(numdof_ele2, numdof_ele2);
-        elestiff[1][1].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[1][1], trafomatrix, 0.0);
+        CORE::LINALG::multiply(elestiff[1][1], auxmat[1][1], trafomatrix);
       }
     }
 
@@ -1065,16 +1057,13 @@ namespace BEAMINTERACTION
             ele1disp);
 
         eleforce[0].size(numdof_ele1);
-        eleforce[0].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotforce[0], 0.0);
+        CORE::LINALG::multiplyTN(eleforce[0], trafomatrix, bspotforce[0]);
 
         auxmat[0][0].shape(numdof_ele1, 6);
-        auxmat[0][0].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][0], 0.0);
+        CORE::LINALG::multiplyTN(auxmat[0][0], trafomatrix, bspotstiff[0][0]);
 
         auxmat[0][1].shape(numdof_ele1, 6);
-        auxmat[0][1].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[0][1], 0.0);
+        CORE::LINALG::multiplyTN(auxmat[0][1], trafomatrix, bspotstiff[0][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele1);
@@ -1084,12 +1073,10 @@ namespace BEAMINTERACTION
             ele1disp);
 
         elestiff[0][0].shape(numdof_ele1, numdof_ele1);
-        elestiff[0][0].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[0][0], trafomatrix, 0.0);
+        CORE::LINALG::multiply(elestiff[0][0], auxmat[0][0], trafomatrix);
 
         auxmat[1][0].shape(6, numdof_ele1);
-        auxmat[1][0].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, bspotstiff[1][0], trafomatrix, 0.0);
+        CORE::LINALG::multiply(auxmat[1][0], bspotstiff[1][0], trafomatrix);
 
 
         // additional contribution from linearization of generalized interpolation matrix for
@@ -1113,16 +1100,13 @@ namespace BEAMINTERACTION
             ele2disp);
 
         eleforce[1].size(numdof_ele2);
-        eleforce[1].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotforce[1], 0.0);
+        CORE::LINALG::multiplyTN(eleforce[1], trafomatrix, bspotforce[1]);
 
         elestiff[1][0].shape(numdof_ele2, numdof_ele1);
-        elestiff[1][0].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, auxmat[1][0], 0.0);
+        CORE::LINALG::multiplyTN(elestiff[1][0], trafomatrix, auxmat[1][0]);
 
         auxmat[1][1].shape(numdof_ele2, 6);
-        auxmat[1][1].multiply(
-            Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, trafomatrix, bspotstiff[1][1], 0.0);
+        CORE::LINALG::multiplyTN(auxmat[1][1], trafomatrix, bspotstiff[1][1]);
 
         // ii) I_increments
         trafomatrix.shape(6, numdof_ele2);
@@ -1132,12 +1116,10 @@ namespace BEAMINTERACTION
             ele2disp);
 
         elestiff[0][1].shape(numdof_ele1, numdof_ele2);
-        elestiff[0][1].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[0][1], trafomatrix, 0.0);
+        CORE::LINALG::multiply(elestiff[0][1], auxmat[0][1], trafomatrix);
 
         elestiff[1][1].shape(numdof_ele2, numdof_ele2);
-        elestiff[1][1].multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, auxmat[1][1], trafomatrix, 0.0);
+        CORE::LINALG::multiply(elestiff[1][1], auxmat[1][1], trafomatrix);
 
 
         // additional contribution from linearization of generalized interpolation matrix for

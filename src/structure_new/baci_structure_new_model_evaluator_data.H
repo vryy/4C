@@ -168,19 +168,19 @@ namespace STR
       bool IsPredictorState() const;
 
       //! mutable access to the stress data vector
-      Teuchos::RCP<std::vector<char>>& MutableStressDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& StressDataPtr() override;
 
       //! mutable access to the strain data vector
-      Teuchos::RCP<std::vector<char>>& MutableStrainDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& StrainDataPtr() override;
 
       //! mutable access to the plastic strain data vector
-      Teuchos::RCP<std::vector<char>>& MutablePlasticStrainDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& PlasticStrainDataPtr() override;
 
       //! mutable access to the stress data vector
-      Teuchos::RCP<std::vector<char>>& MutableCouplingStressDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& CouplingStressDataPtr() override;
 
       //! mutable access to the optional quantity data vector
-      Teuchos::RCP<std::vector<char>>& MutableOptQuantityDataPtr() override;
+      Teuchos::RCP<std::vector<char>>& OptQuantityDataPtr() override;
 
       //! get the current stress type [derived]
       [[nodiscard]] enum INPAR::STR::StressType GetStressOutputType() const override;
@@ -198,7 +198,7 @@ namespace STR
       virtual enum INPAR::STR::OptQuantityType GetOptQuantityOutputType() const;
 
       //< get the manager of Gauss point data output
-      Teuchos::RCP<GaussPointDataOutputManager>& MutableGaussPointDataOutputManagerPtr() override;
+      Teuchos::RCP<GaussPointDataOutputManager>& GaussPointDataOutputManagerPtr() override;
 
       //! register energy type to be computed and written to file
       void InsertEnergyTypeToBeConsidered(enum STR::EnergyType type);
@@ -540,7 +540,7 @@ namespace STR
       }
 
       //! get nodal postprocessed stress data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataNodePostprocessedMutable()
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataNodePostprocessed()
       {
         return stressdata_postprocessed_nodal_ptr_;
       }
@@ -552,7 +552,7 @@ namespace STR
       }
 
       //! get element postprocessed stress data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataElementPostprocessedMutable()
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStressDataElementPostprocessed()
       {
         return stressdata_postprocessed_element_ptr_;
       }
@@ -588,7 +588,7 @@ namespace STR
       }
 
       //! get nodal postprocessed strain data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataNodePostprocessedMutable()
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataNodePostprocessed()
       {
         return straindata_postprocessed_nodal_ptr_;
       }
@@ -600,7 +600,7 @@ namespace STR
       }
 
       //! get element postprocessed strain data vector
-      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataElementPostprocessedMutable()
+      inline Teuchos::RCP<Epetra_MultiVector>& GetStrainDataElementPostprocessed()
       {
         return straindata_postprocessed_element_ptr_;
       }
@@ -1316,7 +1316,7 @@ namespace STR
           Teuchos::RCP<DRT::Discretization> discret_ptr, int maxrandnumelement);
 
       //! get mutable random force vector
-      Teuchos::RCP<Epetra_MultiVector>& GetMutableRandomForces()
+      Teuchos::RCP<Epetra_MultiVector>& GetRandomForces()
       {
         CheckInitSetup();
         return randomforces_;

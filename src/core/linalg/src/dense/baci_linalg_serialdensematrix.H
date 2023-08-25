@@ -71,29 +71,6 @@ namespace CORE::LINALG
     mat.print(out);
     return out;
   }
-
-  /*!
-   \brief General matrix-matrix multiplication C = A*B.
-   It assumes that the dimension is compatible
-
-   \param A (in):        Matrix A
-   \param B (in):        Matrix B
-   \param C (out):       Matrix C
-   */
-  template <typename Tmat1, typename Tmat2, typename Tmat3>
-  int Multiply(const Tmat1& A, const Tmat2& B, Tmat3& C)
-  {
-    for (int i = 0; i < C.numRows(); ++i)
-    {
-      for (int j = 0; j < C.numCols(); ++j)
-      {
-        double cij = 0.0;
-        for (int k = 0; k < A.numCols(); ++k) cij += A(i, k) * B(k, j);
-        C(i, j) = cij;
-      }
-    }
-    return 0;
-  }
 }  // namespace CORE::LINALG
 
 #endif  // BACI_LINALG_SERIALDENSEMATRIX_H

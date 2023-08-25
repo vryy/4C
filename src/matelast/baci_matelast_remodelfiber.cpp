@@ -23,7 +23,7 @@ MAT::ELASTIC::PAR::RemodelFiber::RemodelFiber(const Teuchos::RCP<MAT::PAR::Mater
       matids_(matdata->Get<std::vector<int>>("MATIDS")),
       t_decay_(matdata->GetDouble("TDECAY")),
       k_growth_(matdata->GetDouble("GROWTHFAC")),
-      init_w_col_(matdata->GetMutable<std::vector<double>>("COLMASSFRAC")),
+      init_w_col_(matdata->Get<std::vector<double>>("COLMASSFRAC")),
       G_(matdata->GetDouble("DEPOSITIONSTRETCH"))
 {
   // check if sizes fit

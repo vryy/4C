@@ -120,7 +120,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcElchBoundar
 
   // convention for stoichiometric coefficients s_i:
   // Sum_i (s_i  M_i^(z_i)) -> n e- (n needs to be positive)
-  const std::vector<int>* stoich = cond->GetMutable<std::vector<int>>("stoich");
+  const std::vector<int>* stoich = cond->Get<std::vector<int>>("stoich");
   if ((unsigned int)my::numscal_ != (*stoich).size())
     dserror(
         "Electrode kinetics: number of stoichiometry coefficients %u does not match"
@@ -242,7 +242,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::CalcNernstLinea
           "The convention for electrochemical reactions at the electrodes does not allow \n"
           "a negative number of transferred electrons");
 
-    const std::vector<int>* stoich = cond->GetMutable<std::vector<int>>("stoich");
+    const std::vector<int>* stoich = cond->Get<std::vector<int>>("stoich");
     if ((unsigned int)my::numscal_ != (*stoich).size())
       dserror(
           "Electrode kinetics: number of stoichiometry coefficients %u does not match"

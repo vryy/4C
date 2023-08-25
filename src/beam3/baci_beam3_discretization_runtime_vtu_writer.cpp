@@ -110,17 +110,17 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
   // do not need to store connectivity indices here because we create a
   // contiguous array by the order in which we fill the coordinates (otherwise
   // need to adjust order of filling in the coordinates).
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
-  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinatesMutable();
+  std::vector<double>& point_coordinates = visualization_data.GetPointCoordinates();
   point_coordinates.clear();
   point_coordinates.reserve(num_spatial_dimensions * num_vtk_points);
 
-  std::vector<uint8_t>& cell_types = visualization_data.GetCellTypesMutable();
+  std::vector<uint8_t>& cell_types = visualization_data.GetCellTypes();
   cell_types.clear();
   cell_types.reserve(num_beam_row_elements);
 
-  std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsetsMutable();
+  std::vector<int32_t>& cell_offsets = visualization_data.GetCellOffsets();
   cell_offsets.clear();
   cell_offsets.reserve(num_beam_row_elements);
 
@@ -250,7 +250,7 @@ void BeamDiscretizationRuntimeVtuWriter::SetGeometryFromBeamDiscretization(
 void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   // triads only make sense in 3D
   const unsigned int num_spatial_dimensions = 3;
@@ -259,7 +259,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
   unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
-  std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsetsMutable();
+  std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsets();
 
   // disp vector
   std::vector<double> displacement_vector;
@@ -339,7 +339,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendDisplacementField(
 void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   // triads only make sense in 3D
   const unsigned int num_spatial_dimensions = 3;
@@ -348,7 +348,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendTriadField(
   // output is completely independent of the number of processors involved
   unsigned int num_beam_row_elements = local_row_indices_beam_elements_.size();
   unsigned int num_vtk_points = num_beam_row_elements * (n_subsegments_ + 1);
-  std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsetsMutable();
+  std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsets();
 
   // we write the triad field as three base vectors at every visualization point
   std::vector<double> base_vector_1;
@@ -464,8 +464,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOwningProcessor()
   }
 
   // set the solution vector in the visualization data container
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
-      "element_owner", owner, 1);
+  visualization_manager_->GetVisualizationData().SetCellDataVector("element_owner", owner, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -497,7 +496,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementGID()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector("element_gid", gid, 1);
+  visualization_manager_->GetVisualizationData().SetCellDataVector("element_gid", gid, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -541,7 +540,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementInternalEnergy()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+  visualization_manager_->GetVisualizationData().SetCellDataVector(
       "element_internal_energy", e_int, 1);
 }
 
@@ -578,7 +577,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementKineticEnergy()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+  visualization_manager_->GetVisualizationData().SetCellDataVector(
       "element_kinetic_energy", e_kin, 1);
 }
 
@@ -625,7 +624,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementFilamentIdAndType()
   }
 
   // append the solution vector to the visualization data
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
   visualization_data.SetCellDataVector("ele_filament_id", id, 1);
   visualization_data.SetCellDataVector("ele_filament_type", type, 1);
 }
@@ -664,7 +663,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
+  visualization_manager_->GetVisualizationData().SetCellDataVector(
       "cross_section_radius", cross_section_radius, 1);
 }
 
@@ -673,7 +672,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementCircularCrossSectionRadius
 void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformationVector(
     Teuchos::RCP<const Epetra_Vector> const& displacement_state_vector)
 {
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   // assume 3D here
   const unsigned int num_spatial_dimensions = 3;
@@ -694,7 +693,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendPointCircularCrossSectionInformat
   //       in the future.
   std::vector<double> circular_cross_section_information_vector;
   circular_cross_section_information_vector.reserve(num_spatial_dimensions * num_vtk_points);
-  std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsetsMutable();
+  std::vector<int32_t> const& cell_offsets = visualization_data.GetCellOffsets();
 
   // number of points so far
   int points_sofar = 0;
@@ -909,7 +908,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   visualization_data.SetCellDataVector("axial_strain_GPs", axial_strain_GPs_all_row_elements,
       global_num_GPs_per_element_translational);
@@ -1096,7 +1095,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointMaterialCrossSectionStr
 
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   visualization_data.SetCellDataVector("material_axial_force_GPs",
       material_axial_force_GPs_all_row_elements, global_num_GPs_per_element_translational);
@@ -1281,7 +1280,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendGaussPointSpatialCrossSectionStre
 
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   visualization_data.SetCellDataVector("spatial_axial_force_GPs",
       spatial_axial_force_GPs_all_row_elements, global_num_GPs_per_element_translational);
@@ -1400,7 +1399,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendElementOrientationParamater(
       InsertVectorValuesAtBackOfOtherVector(
           global_orientation_parameter, orientation_parameter_for_global_network);
 
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
 
   // append the solution vector to the visualization data
   visualization_data.SetCellDataVector(
@@ -1507,7 +1506,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRVECrosssectionForces(
       }
 
   // append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
   visualization_data.SetCellDataVector(
       "sum_spatial_force_rve_crosssection_xdir", sum_spatial_force_rve_crosssection_xdir, 3);
   visualization_data.SetCellDataVector(
@@ -1583,8 +1582,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendRefLength()
   }
 
   // append the solution vector to the visualization data
-  visualization_manager_->GetVisualizationDataMutable().SetCellDataVector(
-      "ref_length", ref_lengths, 1);
+  visualization_manager_->GetVisualizationData().SetCellDataVector("ref_length", ref_lengths, 1);
 }
 
 /*-----------------------------------------------------------------------------------------------*
@@ -1787,7 +1785,7 @@ void BeamDiscretizationRuntimeVtuWriter::AppendContinuousStressStrainResultants(
   }
 
   // finally append the solution vectors to the visualization data of the vtu writer object
-  auto& visualization_data = visualization_manager_->GetVisualizationDataMutable();
+  auto& visualization_data = visualization_manager_->GetVisualizationData();
   for (std::size_t i = 0; i < 6; i++)
     visualization_data.SetPointDataVector(field_names[i], stress_strain_vector[i], 1);
 }

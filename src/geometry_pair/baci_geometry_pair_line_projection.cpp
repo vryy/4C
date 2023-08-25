@@ -58,8 +58,8 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
   for (auto& point : projection_points)
   {
     // Project the point.
-    ProjectPointOnLineToOther(pair, q_line, q_other, point.GetEta(), point.GetXiMutable(),
-        point.GetProjectionResultMutable(), optional_args...);
+    ProjectPointOnLineToOther(pair, q_line, q_other, point.GetEta(), point.GetXi(),
+        point.GetProjectionResult(), optional_args...);
 
     // Update the counters.
     if (point.GetProjectionResult() == ProjectionResult::projection_found_valid)
@@ -104,7 +104,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
 {
   // Set up the vector with the projection points.
   std::vector<ProjectionPoint1DTo3D<scalar_type>>& projection_points =
-      segment.GetProjectionPointsMutable();
+      segment.GetProjectionPoints();
   projection_points.clear();
   projection_points.reserve(gauss_points.nquad);
   CORE::LINALG::Matrix<3, 1, scalar_type> xi_start;
@@ -164,7 +164,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::PreEvaluate(const pa
     std::vector<LineSegment<scalar_type>>& segments, optional_type... optional_args)
 {
   // Get the Gauss point projection tracker for this line element.
-  std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable(pair);
+  std::vector<bool>& line_projection_tracker = GetLineProjectionVector(pair);
 
   // Gauss rule.
   CORE::DRT::UTILS::IntegrationPoints1D gauss_points = pair->GetEvaluationData()->GetGaussPoints();
@@ -241,7 +241,7 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
     bool need_segmentation = false;
 
     // Check if all Gauss points projected for this line.
-    const std::vector<bool>& line_projection_tracker = GetLineProjectionVectorMutable(pair);
+    const std::vector<bool>& line_projection_tracker = GetLineProjectionVector(pair);
     for (auto const& projects : line_projection_tracker)
       if (!projects) need_segmentation = true;
 
@@ -284,14 +284,13 @@ void GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::Evaluate(const pair_
  *
  */
 template <typename pair_type>
-std::vector<bool>&
-GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::GetLineProjectionVectorMutable(
+std::vector<bool>& GEOMETRYPAIR::LineTo3DGaussPointProjection<pair_type>::GetLineProjectionVector(
     const pair_type* pair)
 {
   // Get the Gauss point projection tracker for this line element.
   int line_element_id = pair->Element1()->Id();
   std::map<int, std::vector<bool>>& projection_tracker =
-      pair->GetEvaluationData()->GetGaussPointProjectionTrackerMutable();
+      pair->GetEvaluationData()->GetGaussPointProjectionTracker();
   auto find = projection_tracker.find(line_element_id);
   if (find == projection_tracker.end())
     dserror("Could not find the projection tracker for line id %d.", line_element_id);
@@ -387,8 +386,7 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
       search_points.reserve(intersection_points.size() - 1);
 
       // Loop over the middle points and check if they are projected valid or not.
-      std::set<GEOMETRYPAIR::LineSegment<double>>& segment_tracker =
-          GetSegmentTrackingSetMutable(pair);
+      std::set<GEOMETRYPAIR::LineSegment<double>>& segment_tracker = GetSegmentTrackingSet(pair);
       ProjectionResult projection_result;
       bool last_segment_active = false;
       ProjectionPoint1DTo3D<scalar_type> segment_start;
@@ -473,12 +471,12 @@ void GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::Evaluate(const pair_type* pa
  */
 template <typename pair_type>
 std::set<GEOMETRYPAIR::LineSegment<double>>&
-GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::GetSegmentTrackingSetMutable(const pair_type* pair)
+GEOMETRYPAIR::LineTo3DSegmentation<pair_type>::GetSegmentTrackingSet(const pair_type* pair)
 {
   // Get the segment tracker for this line element.
   int line_element_id = pair->Element1()->Id();
   std::map<int, std::set<GEOMETRYPAIR::LineSegment<double>>>& segment_tracker_map =
-      pair->GetEvaluationData()->GetSegmentTrackerMutable();
+      pair->GetEvaluationData()->GetSegmentTracker();
   auto find = segment_tracker_map.find(line_element_id);
   if (find == segment_tracker_map.end())
     dserror("Could not find the segment tracker for line id %d.", line_element_id);

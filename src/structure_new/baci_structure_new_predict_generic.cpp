@@ -69,7 +69,7 @@ void STR::PREDICT::Generic::PrePredict(NOX::Abstract::Group& grp)
 void STR::PREDICT::Generic::Predict(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
-  bool& ispredict = gstate_ptr_->GetMutableIsPredict();
+  bool& ispredict = gstate_ptr_->IsPredict();
   ispredict = true;
 
   // pre-process the prediction step
@@ -90,8 +90,8 @@ void STR::PREDICT::Generic::PostPredict(NOX::Abstract::Group& grp)
 {
   CheckInitSetup();
 
-  Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(), GlobalState().GetMutableDisNp(),
-      GlobalState().GetMutableVelNp(), GlobalState().GetMutableAccNp(), false);
+  Dbc().ApplyDirichletBC(GlobalState().GetTimeNp(), GlobalState().GetDisNp(),
+      GlobalState().GetVelNp(), GlobalState().GetAccNp(), false);
 
   // Create the new solution vector
   Teuchos::RCP<NOX::Epetra::Vector> x_vec = GlobalState().CreateGlobalVector(

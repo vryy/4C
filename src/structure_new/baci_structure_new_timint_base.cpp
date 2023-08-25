@@ -94,8 +94,8 @@ void STR::TIMINT::Base::Setup()
    * unfortunately this wasn't considered during the implementation of the
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
-  Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr = DataGlobalState().GetMutableDiscret();
-  dbc_ptr_->Init(discret_ptr, DataGlobalState().GetMutableFreactNp(), Teuchos::rcp(this, false));
+  Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr = DataGlobalState().GetDiscret();
+  dbc_ptr_->Init(discret_ptr, DataGlobalState().GetFreactNp(), Teuchos::rcp(this, false));
   dbc_ptr_->Setup();
 
   // ---------------------------------------------------------------------------
@@ -107,7 +107,7 @@ void STR::TIMINT::Base::Setup()
   int_ptr_->Setup();
   int_ptr_->PostSetup();
   // Initialize and Setup the input/output writer for every Newton iteration
-  dataio_->InitSetupEveryIterationWriter(this, DataSDyn().GetMutableNoxParams());
+  dataio_->InitSetupEveryIterationWriter(this, DataSDyn().GetNoxParams());
 
   // Initialize the output of system energy
   if (dataio_->GetWriteEnergyEveryNStep())
@@ -237,16 +237,16 @@ void STR::TIMINT::Base::ResizeMStepTimAda()
   CheckInitSetup();
   // resize time and stepsize fields
   const double& timen = dataglobalstate_->GetTimeN();
-  dataglobalstate_->GetMutableMultiTime()->Resize(-1, 0, timen);
-  const double& dtn = (*dataglobalstate_->GetMutableDeltaTime())[0];
-  dataglobalstate_->GetMutableDeltaTime()->Resize(-1, 0, dtn);
+  dataglobalstate_->GetMultiTime()->Resize(-1, 0, timen);
+  const double& dtn = (*dataglobalstate_->GetDeltaTime())[0];
+  dataglobalstate_->GetDeltaTime()->Resize(-1, 0, dtn);
 
   // resize state vectors, AB2 is a 2-step method, thus we need two
   // past steps at t_{n} and t_{n-1}
   const Epetra_Map* dofrowmap_ptr = dataglobalstate_->DofRowMapView();
-  dataglobalstate_->GetMutableMultiDis()->Resize(-1, 0, dofrowmap_ptr, true);
-  dataglobalstate_->GetMutableMultiVel()->Resize(-1, 0, dofrowmap_ptr, true);
-  dataglobalstate_->GetMutableMultiAcc()->Resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->GetMultiDis()->Resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->GetMultiVel()->Resize(-1, 0, dofrowmap_ptr, true);
+  dataglobalstate_->GetMultiAcc()->Resize(-1, 0, dofrowmap_ptr, true);
 }
 
 /*----------------------------------------------------------------------------*
@@ -268,14 +268,14 @@ void STR::TIMINT::Base::Update()
 void STR::TIMINT::Base::UpdateStepTime()
 {
   CheckInitSetup();
-  double& timenp = dataglobalstate_->GetMutableTimeNp();
-  int& stepnp = dataglobalstate_->GetMutableStepNp();
-  int& stepn = dataglobalstate_->GetMutableStepN();
+  double& timenp = dataglobalstate_->GetTimeNp();
+  int& stepnp = dataglobalstate_->GetStepNp();
+  int& stepn = dataglobalstate_->GetStepN();
 
   // --------------------------------------------------------------------------
   // update old time and step variables
   // --------------------------------------------------------------------------
-  dataglobalstate_->GetMutableMultiTime()->UpdateSteps(timenp);
+  dataglobalstate_->GetMultiTime()->UpdateSteps(timenp);
   stepn = stepnp;
 
   // --------------------------------------------------------------------------
@@ -547,7 +547,7 @@ void STR::TIMINT::Base::OutputStep(bool forced_writerestart)
       dataio_->IsWriteCurrentEleVolume())
   {
     NewIOStep(datawritten);
-    IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
+    IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
     OutputElementVolume(iowriter);
   }
 
@@ -577,8 +577,7 @@ void STR::TIMINT::Base::NewIOStep(bool& datawritten)
   if (not datawritten)
   {
     // Make new step
-    dataio_->GetMutableOutputPtr()->NewStep(
-        dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
+    dataio_->GetOutputPtr()->NewStep(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
 
     datawritten = true;
   }
@@ -589,7 +588,7 @@ void STR::TIMINT::Base::NewIOStep(bool& datawritten)
 void STR::TIMINT::Base::OutputState()
 {
   CheckInitSetup();
-  IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
+  IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
 
   OutputState(iowriter, dataio_->IsFirstOutputOfRun());
 
@@ -631,7 +630,7 @@ void STR::TIMINT::Base::RuntimeOutputState()
 void STR::TIMINT::Base::OutputReactionForces()
 {
   CheckInitSetup();
-  IO::DiscretizationWriter& iowriter = *(dataio_->GetMutableOutputPtr());
+  IO::DiscretizationWriter& iowriter = *(dataio_->GetOutputPtr());
   int_ptr_->MonitorDbc(iowriter);
 }
 
@@ -656,7 +655,7 @@ void STR::TIMINT::Base::OutputStressStrain()
   CheckInitSetup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetMutableOutputPtr();
+  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
   // ---------------------------------------------------------------------------
   // write stress output
@@ -680,7 +679,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text, evaldata.StressData(), *(DiscretizationInterface()->ElementRowMap()));
   }
   // we don't need this anymore
-  evaldata.MutableStressDataPtr() = Teuchos::null;
+  evaldata.StressDataPtr() = Teuchos::null;
 
   // ---------------------------------------------------------------------------
   // write coupling stress output
@@ -731,7 +730,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text, evaldata.StrainData(), *(DiscretizationInterface()->ElementRowMap()));
   }
   // we don't need this anymore
-  evaldata.MutableStrainDataPtr() = Teuchos::null;
+  evaldata.StrainDataPtr() = Teuchos::null;
 
   // ---------------------------------------------------------------------------
   // write plastic strain output
@@ -755,7 +754,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         text, evaldata.PlasticStrainData(), *(DiscretizationInterface()->ElementRowMap()));
   }
   // we don't need this anymore
-  evaldata.MutablePlasticStrainDataPtr() = Teuchos::null;
+  evaldata.PlasticStrainDataPtr() = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
@@ -795,7 +794,7 @@ void STR::TIMINT::Base::OutputOptionalQuantity()
   CheckInitSetup();
 
   STR::MODELEVALUATOR::Data& evaldata = int_ptr_->EvalData();
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetMutableOutputPtr();
+  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
   // ---------------------------------------------------------------------------
   // write optional quantity output
@@ -816,7 +815,7 @@ void STR::TIMINT::Base::OutputOptionalQuantity()
         text, evaldata.OptQuantityData(), *(DiscretizationInterface()->ElementRowMap()));
   }
   // we don't need this anymore
-  evaldata.MutableOptQuantityDataPtr() = Teuchos::null;
+  evaldata.OptQuantityDataPtr() = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------------*
@@ -825,7 +824,7 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
 {
   CheckInitSetup();
 
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetMutableOutputPtr();
+  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
   // write restart output, please
   if (dataglobalstate_->GetStepN() != 0)
     output_ptr->WriteMesh(dataglobalstate_->GetStepN(), dataglobalstate_->GetTimeN());
@@ -864,7 +863,7 @@ void STR::TIMINT::Base::OutputRestart(bool& datawritten)
  *----------------------------------------------------------------------------*/
 void STR::TIMINT::Base::AddRestartToOutputState()
 {
-  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetMutableOutputPtr();
+  Teuchos::RCP<IO::DiscretizationWriter> output_ptr = dataio_->GetOutputPtr();
 
   // add velocity and acceleration if necessary
   if (dataio_->IsWriteVelAcc())
@@ -926,13 +925,13 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
 
   // create an input/output reader
   IO::DiscretizationReader ioreader(Discretization(), stepn);
-  dataglobalstate_->GetMutableStepN() = stepn;
-  dataglobalstate_->GetMutableStepNp() = stepn + 1;
-  dataglobalstate_->GetMutableMultiTime() =
+  dataglobalstate_->GetStepN() = stepn;
+  dataglobalstate_->GetStepNp() = stepn + 1;
+  dataglobalstate_->GetMultiTime() =
       Teuchos::rcp(new ::TIMINT::TimIntMStep<double>(0, 0, ioreader.ReadDouble("time")));
   const double& timen = dataglobalstate_->GetTimeN();
   const double& dt = (*dataglobalstate_->GetDeltaTime())[0];
-  dataglobalstate_->GetMutableTimeNp() = timen + dt;
+  dataglobalstate_->GetTimeNp() = timen + dt;
 
   // ---------------------------------------------------------------------------
   // The order is important at this point!
@@ -951,12 +950,12 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
   Setup();
 
   // (2) read (or overwrite) the general dynamic state
-  Teuchos::RCP<Epetra_Vector>& velnp = dataglobalstate_->GetMutableVelNp();
+  Teuchos::RCP<Epetra_Vector>& velnp = dataglobalstate_->GetVelNp();
   ioreader.ReadVector(velnp, "velocity");
-  dataglobalstate_->GetMutableMultiVel()->UpdateSteps(*velnp);
-  Teuchos::RCP<Epetra_Vector>& accnp = dataglobalstate_->GetMutableAccNp();
+  dataglobalstate_->GetMultiVel()->UpdateSteps(*velnp);
+  Teuchos::RCP<Epetra_Vector>& accnp = dataglobalstate_->GetAccNp();
   ioreader.ReadVector(accnp, "acceleration");
-  dataglobalstate_->GetMutableMultiAcc()->UpdateSteps(*accnp);
+  dataglobalstate_->GetMultiAcc()->UpdateSteps(*accnp);
 
   // (3) read specific time integrator (forces, etc.) and model evaluator data
   int_ptr_->ReadRestart(ioreader);
@@ -977,7 +976,7 @@ Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::Discretization()
 {
   CheckInit();
   Teuchos::RCP<DRT::Discretization> discret =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(dataglobalstate_->GetMutableDiscret(), true);
+      Teuchos::rcp_dynamic_cast<DRT::Discretization>(dataglobalstate_->GetDiscret(), true);
   return discret;
 }
 
@@ -986,7 +985,7 @@ Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::Discretization()
 Teuchos::RCP<DRT::DiscretizationInterface> STR::TIMINT::Base::DiscretizationInterface()
 {
   CheckInit();
-  return dataglobalstate_->GetMutableDiscret();
+  return dataglobalstate_->GetDiscret();
 }
 
 /*----------------------------------------------------------------------------*

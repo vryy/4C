@@ -3,18 +3,6 @@
 
 \brief Provide a node numbering scheme together with a set of shape functions
 
-The surface mapping gives the node numbers such that the 2D shape functions can be used
-Nodal mappings describe the relation between volume, surface and line node numbering.
-They should be used as the only reference for such relationships.
-The corresponding graphics and a detailed description can be found in the Baci guide in the
-Convention chapter. The numbering of lower order elements is included in the higher order element,
-such that e.g. the hex8 volume element uses only the first 8 nodes of the hex27 mapping
-
-!!!!
-The corresponding graphics and a detailed description can be found
-in the Baci guide in the Convention chapter.
-!!!!
-
 \level 0
 
 *----------------------------------------------------------------------*/
@@ -1443,605 +1431,65 @@ template <int probdim>
 CORE::LINALG::Matrix<probdim, 1> CORE::DRT::UTILS::GetNodeCoordinates(
     const int nodeId, const ::DRT::Element::DiscretizationType distype)
 {
+  dsassert(nodeId < getNumberOfElementNodes(distype), "node number is not correct");
+
+  const int dim = getDimension(distype);
   CORE::LINALG::Matrix<probdim, 1> coord(true);
 
-  if (distype == ::DRT::Element::line2)
+  switch (distype)
   {
-    switch (nodeId)
+    case ::DRT::Element::quad4:
+    case ::DRT::Element::quad8:
+    case ::DRT::Element::quad9:
+    case ::DRT::Element::nurbs9:
     {
-      case 0:
-      {
-        coord(0) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        break;
-      }
-      default:
-        dserror("node number not correct");
+      for (int isd = 0; isd < dim; isd++)
+        coord(isd) = eleNodeNumbering_quad9_nodes_reference[nodeId][isd];
+      break;
     }
-  }
-  else if (distype == ::DRT::Element::line3)
-  {
-    switch (nodeId)
+    case ::DRT::Element::tri3:
+    case ::DRT::Element::tri6:
     {
-      case 0:
-      {
-        coord(0) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = 0.0;
-        break;
-      }
-      default:
-        dserror("node number not correct");
+      for (int isd = 0; isd < dim; isd++)
+        coord(isd) = eleNodeNumbering_tri6_nodes_reference[nodeId][isd];
+      break;
     }
-  }
-  else if (distype == ::DRT::Element::line4)
-  {
-    switch (nodeId)
+    case ::DRT::Element::hex8:
+    case ::DRT::Element::hex20:
+    case ::DRT::Element::hex27:
     {
-      case 0:
-      {
-        coord(0) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = -1. / 3.;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = 1. / 3.;
-        break;
-      }
-      default:
-        dserror("node number not correct");
+      for (int isd = 0; isd < dim; isd++)
+        coord(isd) = eleNodeNumbering_hex27_nodes_reference[nodeId][isd];
+
+      break;
     }
-  }
-  else if (distype == ::DRT::Element::quad4)
-  {
-    switch (nodeId)
+    case ::DRT::Element::tet4:
+    case ::DRT::Element::tet10:
     {
-      case 0:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = 1.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = -1.0;
-        coord(1) = 1.0;
-        break;
-      }
-      default:
-        dserror("node number not correct");
+      for (int isd = 0; isd < dim; isd++)
+        coord(isd) = eleNodeNumbering_tet10_nodes_reference[nodeId][isd];
+
+      break;
     }
-  }
-  else if (distype == ::DRT::Element::quad8)
-  {
-    switch (nodeId)
+    case ::DRT::Element::line2:
+    case ::DRT::Element::line3:
     {
-      case 0:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = 1.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = -1.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 4:
-      {
-        coord(0) = 0.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 5:
-      {
-        coord(0) = 1.0;
-        coord(1) = 0.0;
-        break;
-      }
-      case 6:
-      {
-        coord(0) = 0.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 7:
-      {
-        coord(0) = -1.0;
-        coord(1) = 0.0;
-        break;
-      }
-      default:
-        dserror("node number not correct");
+      for (int isd = 0; isd < dim; isd++)
+        coord(isd) = eleNodeNumbering_line3_nodes_reference[nodeId][isd];
+
+      break;
     }
-  }
-  else if (distype == ::DRT::Element::quad9)
-  {
-    switch (nodeId)
+    case ::DRT::Element::line4:
     {
-      case 0:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = 1.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = -1.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 4:
-      {
-        coord(0) = 0.0;
-        coord(1) = -1.0;
-        break;
-      }
-      case 5:
-      {
-        coord(0) = 1.0;
-        coord(1) = 0.0;
-        break;
-      }
-      case 6:
-      {
-        coord(0) = 0.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 7:
-      {
-        coord(0) = -1.0;
-        coord(1) = 0.0;
-        break;
-      }
-      case 8:
-      {
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        break;
-      }
-      default:
-        dserror("node number not correct");
+      for (int isd = 0; isd < dim; isd++)
+        coord(isd) = eleNodeNumbering_line4_nodes_reference[nodeId][isd];
+
+      break;
     }
+    default:
+      dserror(
+          "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
   }
-  else if (distype == ::DRT::Element::tri3)
-  {
-    switch (nodeId)
-    {
-      case 0:
-      {
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        coord(1) = 0.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = 0.0;
-        coord(1) = 1.0;
-        break;
-      }
-      default:
-        dserror("node number not correct");
-    }
-  }
-  else if (distype == ::DRT::Element::tri6)
-  {
-    switch (nodeId)
-    {
-      case 0:
-      {
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        coord(1) = 0.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = 0.0;
-        coord(1) = 1.0;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = 0.5;
-        coord(1) = 0.0;
-        break;
-      }
-      case 4:
-      {
-        coord(0) = 0.5;
-        coord(1) = 0.5;
-        break;
-      }
-      case 5:
-      {
-        coord(0) = 0.0;
-        coord(1) = 0.5;
-        break;
-      }
-      default:
-        dserror("node number not correct");
-    }
-  }
-  else if (distype == ::DRT::Element::hex8)
-  {
-    switch (nodeId)
-    {
-      case 0:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = +1.0;
-        coord(1) = -1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = +1.0;
-        coord(1) = +1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = -1.0;
-        coord(1) = +1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 4:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 5:
-      {
-        coord(0) = +1.0;
-        coord(1) = -1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 6:
-      {
-        coord(0) = +1.0;
-        coord(1) = +1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 7:
-      {
-        coord(0) = -1.0;
-        coord(1) = +1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      default:
-        dserror("node number does not exist");
-    }
-  }
-  else if (distype == ::DRT::Element::hex20      // schott 05/11
-           || distype == ::DRT::Element::hex27)  // seitz 05/15
-  {
-    switch (nodeId)
-    {
-      case 0:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = +1.0;
-        coord(1) = -1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = +1.0;
-        coord(1) = +1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = -1.0;
-        coord(1) = +1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 4:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 5:
-      {
-        coord(0) = +1.0;
-        coord(1) = -1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 6:
-      {
-        coord(0) = +1.0;
-        coord(1) = +1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 7:
-      {
-        coord(0) = -1.0;
-        coord(1) = +1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 8:
-      {
-        coord(0) = 0.0;
-        coord(1) = -1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 9:
-      {
-        coord(0) = +1.0;
-        coord(1) = 0.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 10:
-      {
-        coord(0) = 0.0;
-        coord(1) = 1.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 11:
-      {
-        coord(0) = -1.0;
-        coord(1) = 0.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 12:
-      {
-        coord(0) = -1.0;
-        coord(1) = -1.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 13:
-      {
-        coord(0) = +1.0;
-        coord(1) = -1.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 14:
-      {
-        coord(0) = +1.0;
-        coord(1) = +1.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 15:
-      {
-        coord(0) = -1.0;
-        coord(1) = +1.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 16:
-      {
-        coord(0) = 0.0;
-        coord(1) = -1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 17:
-      {
-        coord(0) = +1.0;
-        coord(1) = 0.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 18:
-      {
-        coord(0) = 0.0;
-        coord(1) = +1.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 19:
-      {
-        coord(0) = -1.0;
-        coord(1) = 0.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 20:
-      {
-        if (distype == ::DRT::Element::hex20) dserror("node number does not exist");
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        coord(2) = -1.0;
-        break;
-      }
-      case 21:
-      {
-        if (distype == ::DRT::Element::hex20) dserror("node number does not exist");
-        coord(0) = 0.0;
-        coord(1) = -1.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 22:
-      {
-        if (distype == ::DRT::Element::hex20) dserror("node number does not exist");
-        coord(0) = +1.0;
-        coord(1) = 0.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 23:
-      {
-        if (distype == ::DRT::Element::hex20) dserror("node number does not exist");
-        coord(0) = 0.0;
-        coord(1) = +1.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 24:
-      {
-        if (distype == ::DRT::Element::hex20) dserror("node number does not exist");
-        coord(0) = -1.0;
-        coord(1) = 0.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 25:
-      {
-        if (distype == ::DRT::Element::hex20) dserror("node number does not exist");
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        coord(2) = +1.0;
-        break;
-      }
-      case 26:
-      {
-        if (distype == ::DRT::Element::hex20) dserror("node number does not exist");
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        coord(2) = 0.0;
-        break;
-      }
-      default:
-        dserror("node number does not exist");
-    }
-  }
-  else if (distype == ::DRT::Element::tet4)  // bk
-  {
-    switch (nodeId)
-    {
-      case 0:
-      {
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 1:
-      {
-        coord(0) = 1.0;
-        coord(1) = 0.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 2:
-      {
-        coord(0) = 0.0;
-        coord(1) = 1.0;
-        coord(2) = 0.0;
-        break;
-      }
-      case 3:
-      {
-        coord(0) = 0.0;
-        coord(1) = 0.0;
-        coord(2) = 1.0;
-        break;
-      }
-      default:
-        dserror("node number not correct");
-    }
-  }
-  else
-    dserror(
-        "discretization type %s not yet implemented", (::DRT::DistypeToString(distype)).c_str());
 
   return coord;
 }
@@ -2292,6 +1740,9 @@ int CORE::DRT::UTILS::getDimension(const ::DRT::Element::DiscretizationType dist
       break;
     case ::DRT::Element::line3:
       dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::line3>::dim;
+      break;
+    case ::DRT::Element::line4:
+      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::line4>::dim;
       break;
     case ::DRT::Element::nurbs2:
       dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::nurbs2>::dim;

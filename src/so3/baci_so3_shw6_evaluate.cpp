@@ -12,6 +12,7 @@
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_micromaterial.H"
 #include "baci_mat_viscoanisotropic.H"
@@ -215,8 +216,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alphao := alpha
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alphao, *alpha);
       }
@@ -229,8 +230,8 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
       // do something with internal EAS, etc parameters
       if (eastype_ == soshw6_easpoisthick)
       {
-        auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
-        auto* alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+        auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");    // Alpha_{n+1}
+        auto* alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         // alpha := alphao
         CORE::LINALG::DENSEFUNCTIONS::update<double, soshw6_easpoisthick, 1>(*alpha, *alphao);
       }
@@ -324,13 +325,13 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(std::vector<int>& lm,  // locat
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get old alpha
     // evaluate current (updated) EAS alphas (from history variables)
     // get stored EAS history
-    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas || !eas_inc)
       dserror("Missing EAS history-data");
 
@@ -1110,7 +1111,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(
   CORE::LINALG::SerialDenseMatrix v(NUMDIM_WEG6, NUMDIM_WEG6);
   SVD(defgrd, u, s, v);  // Singular Value Decomposition
   CORE::LINALG::SerialDenseMatrix rot(NUMDIM_WEG6, NUMDIM_WEG6);
-  rot.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, v, 0.0);
+  CORE::LINALG::multiply(rot, u, v);
 
   // get modified squared stretch (U^mod)^2 from glstrain
   CORE::LINALG::SerialDenseMatrix Usq_mod(NUMDIM_WEG6, NUMDIM_WEG6);
@@ -1127,12 +1128,12 @@ void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(
   CORE::LINALG::SerialDenseMatrix U_mod(NUMDIM_WEG6, NUMDIM_WEG6);
   for (int i = 0; i < NUMDIM_SOH8; ++i) s(i, i) = sqrt(s(i, i));
   CORE::LINALG::SerialDenseMatrix temp2(NUMDIM_WEG6, NUMDIM_WEG6);
-  temp2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, u, s, 0.0);
-  U_mod.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, temp2, v, 0.0);
+  CORE::LINALG::multiply(temp2, u, s);
+  CORE::LINALG::multiply(U_mod, temp2, v);
 
   // F^mod = RU^mod
   CORE::LINALG::SerialDenseMatrix defgrd_consistent(NUMDIM_WEG6, NUMDIM_WEG6);
-  defgrd_consistent.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, rot, U_mod, 0.0);
+  CORE::LINALG::multiply(defgrd_consistent, rot, U_mod);
   defgrd.SetView(defgrd_consistent.A());
 #endif
   double detF = defgrd.Determinant();
@@ -1297,11 +1298,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_recover(const std::vector<double>& residual)
 
   const double step_length = StrParamsInterface().GetStepLength();
 
-  auto* oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-  auto* oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
-  auto* alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
-  auto* eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
-  auto* oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
+  auto* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+  auto* oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
+  auto* alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
+  auto* eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+  auto* oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
   /* if it is a default step, we have to recover the condensed
    * solution vectors */
   if (StrParamsInterface().IsDefaultStep())

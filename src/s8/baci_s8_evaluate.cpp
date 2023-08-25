@@ -238,8 +238,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList& params,
       // EAS
       if (nhyb_)
       {
-        std::vector<double>* alfa = data_.GetMutable<std::vector<double>>("alfa");    // Alpha_{n+1}
-        std::vector<double>* alfao = data_.GetMutable<std::vector<double>>("alfao");  // Alpha_n
+        std::vector<double>* alfa = data_.Get<std::vector<double>>("alfa");    // Alpha_{n+1}
+        std::vector<double>* alfao = data_.Get<std::vector<double>>("alfao");  // Alpha_n
         for (int i = 0; i < nhyb_; ++i)
         {
           (*alfao)[i] = (*alfa)[i];
@@ -252,8 +252,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList& params,
       // EAS
       if (nhyb_)
       {
-        std::vector<double>* alfa = data_.GetMutable<std::vector<double>>("alfa");    // Alpha_{n+1}
-        std::vector<double>* alfao = data_.GetMutable<std::vector<double>>("alfao");  // Alpha_n
+        std::vector<double>* alfa = data_.Get<std::vector<double>>("alfa");    // Alpha_{n+1}
+        std::vector<double>* alfao = data_.Get<std::vector<double>>("alfao");  // Alpha_n
         for (int i = 0; i < nhyb_; ++i)
         {
           (*alfa)[i] = (*alfao)[i];
@@ -1005,8 +1005,8 @@ void DRT::ELEMENTS::Shell8::s8_recover(
   if (nhyb_)
   {
     // access general eas history stuff stored in element
-    alfa = data_.GetMutable<std::vector<double>>("alfa");
-    alfa_inc = data_.GetMutable<std::vector<double>>("alfa_inc");
+    alfa = data_.Get<std::vector<double>>("alfa");
+    alfa_inc = data_.Get<std::vector<double>>("alfa_inc");
     if (!alfa || !alfa_inc) dserror("Missing data");
   }
 
@@ -1023,10 +1023,9 @@ void DRT::ELEMENTS::Shell8::s8_recover(
           NOX::NLN::StatusTest::quantity_eas, nhyb_, alfa->data(), Owner());
 
       CORE::LINALG::SerialDenseMatrix* oldDtildinv =
-          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Dtildinv");
-      CORE::LINALG::SerialDenseMatrix* oldLt =
-          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Lt");
-      std::vector<double>* oldRtild = data_.GetMutable<std::vector<double>>("Rtild");
+          data_.Get<CORE::LINALG::SerialDenseMatrix>("Dtildinv");
+      CORE::LINALG::SerialDenseMatrix* oldLt = data_.Get<CORE::LINALG::SerialDenseMatrix>("Lt");
+      std::vector<double>* oldRtild = data_.Get<std::vector<double>>("Rtild");
       if (!oldDtildinv || !oldLt || !oldRtild) dserror("Missing data");
 
       /*----------- make multiplication eashelp = oldLt * disp_incr[kstep] */
@@ -1212,11 +1211,11 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>& lm, std::vector<do
     for (int i = 0; i < nhyb_; ++i) Rtild[i] = 0.0;
 
     // access history stuff stored in element
-    alfa = data_.GetMutable<std::vector<double>>("alfa");
-    alfa_inc = data_.GetMutable<std::vector<double>>("alfa_inc");
-    oldDtildinv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Dtildinv");
-    oldLt = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Lt");
-    oldRtild = data_.GetMutable<std::vector<double>>("Rtild");
+    alfa = data_.Get<std::vector<double>>("alfa");
+    alfa_inc = data_.Get<std::vector<double>>("alfa_inc");
+    oldDtildinv = data_.Get<CORE::LINALG::SerialDenseMatrix>("Dtildinv");
+    oldLt = data_.Get<CORE::LINALG::SerialDenseMatrix>("Lt");
+    oldRtild = data_.Get<std::vector<double>>("Rtild");
     if (!alfa || !alfa_inc || !oldDtildinv || !oldLt || !oldRtild) dserror("Missing data");
     // FixMe deprecated implementation
     if (not IsParamsInterface())
@@ -3885,12 +3884,12 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
     CORE::LINALG::SerialDenseMatrix tmpmatrix(3, numnode);
     actele->data_.Add("a3ref", tmpmatrix);
     CORE::LINALG::SerialDenseMatrix* a3ref =
-        actele->data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("a3ref");
+        actele->data_.Get<CORE::LINALG::SerialDenseMatrix>("a3ref");
 
     // create vector thick
     std::vector<double> tmpvector(numnode);
     actele->data_.Add("thick", tmpvector);
-    std::vector<double>* thick = actele->data_.GetMutable<std::vector<double>>("thick");
+    std::vector<double>* thick = actele->data_.Get<std::vector<double>>("thick");
     for (int i = 0; i < numnode; ++i) (*thick)[i] = actele->thickness_;
 
 
@@ -4010,7 +4009,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
         if (actele->Nodes()[k] == actnode)
         {
           CORE::LINALG::SerialDenseMatrix* a3ref =
-              actele->data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("a3ref");
+              actele->data_.Get<CORE::LINALG::SerialDenseMatrix>("a3ref");
           if (!a3ref) dserror("Cannot find a3ref");
           (*a3ref)(0, k) = curr->second[0];
           (*a3ref)(1, k) = curr->second[1];

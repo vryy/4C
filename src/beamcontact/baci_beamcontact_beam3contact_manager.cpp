@@ -29,6 +29,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_densematrix_communication.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_rigidsphere.H"
@@ -4287,7 +4288,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   }
 
   // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-  radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+  CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
   // get second point on surface for node1 and node2
   for (int j = 0; j < 3; j++)
@@ -4333,7 +4334,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; ++j)
@@ -4483,7 +4484,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
@@ -4529,7 +4530,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+      CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
@@ -4685,7 +4686,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
@@ -4731,7 +4732,7 @@ void CONTACT::Beam3cmanager::GMSH_4_noded(const int& n,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+      CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)
@@ -4897,7 +4898,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
     }
 
     // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-    radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+    CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
     // get second point on surface for node1 and node2
     for (int j = 0; j < 3; j++)
@@ -4943,7 +4944,7 @@ void CONTACT::Beam3cmanager::GMSH_N_noded(const int& n, int& n_axial,
       }
 
       // compute radiusvec2 by rotating radiusvec1 with rotation matrix R
-      radiusvec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, R, radiusvec1, 0.0);
+      CORE::LINALG::multiply(radiusvec2, R, radiusvec1);
 
       // get second point on surface for node1 and node2
       for (int j = 0; j < 3; ++j)

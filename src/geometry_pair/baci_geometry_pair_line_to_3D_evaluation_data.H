@@ -93,7 +93,7 @@ namespace GEOMETRYPAIR
      * \brief Return a reference to the gauss point projection tracker.
      * @return Projection tracker.
      */
-    inline std::map<int, std::vector<bool>>& GetGaussPointProjectionTrackerMutable()
+    inline std::map<int, std::vector<bool>>& GetGaussPointProjectionTracker()
     {
       return gauss_point_projection_tracker_;
     };
@@ -102,10 +102,7 @@ namespace GEOMETRYPAIR
      * \brief Return a reference to the segment tracker.
      * @return Segment tracker.
      */
-    std::map<int, std::set<LineSegment<double>>>& GetSegmentTrackerMutable()
-    {
-      return segment_tracker_;
-    };
+    std::map<int, std::set<LineSegment<double>>>& GetSegmentTracker() { return segment_tracker_; };
 
    private:
     //! Strategy to be used for contact search.

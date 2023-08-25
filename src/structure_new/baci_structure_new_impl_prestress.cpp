@@ -75,9 +75,9 @@ void STR::IMPLICIT::PreStress::PostUpdate()
     // This is a MULF step, hence we do not update the displacements at the end of the
     // timestep. This is achieved by resetting the displacements, velocities and
     // accelerations.
-    GlobalState().GetMutableDisN()->PutScalar(0.0);
-    GlobalState().GetMutableVelN()->PutScalar(0.0);
-    GlobalState().GetMutableAccN()->PutScalar(0.0);
+    GlobalState().GetDisN()->PutScalar(0.0);
+    GlobalState().GetVelN()->PutScalar(0.0);
+    GlobalState().GetAccN()->PutScalar(0.0);
   }
   else if (::UTILS::PRESTRESS::IsMaterialIterativeActive(GlobalState().GetTimeN()))
   {

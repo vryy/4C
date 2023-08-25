@@ -17,6 +17,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_mat_list.H"
 #include "baci_mat_scatra_mat.H"
 #include "baci_scatra_ele_action.H"
@@ -814,18 +815,17 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 
   for (unsigned int d = 0; d < nsd_; ++d)
     for (unsigned int e = 0; e < nsd_; ++e)
-      DW[d * nsd_ + e].multiply(
-          Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPartD, massPartDW[d * nsd_ + e], 0.0);
+      CORE::LINALG::multiplyNT(DW[d * nsd_ + e], massPartD, massPartDW[d * nsd_ + e]);
 
 
   // multiply matrices to perform summation over quadrature points
   if (not scatraparatimint_->IsStationary())
   {
-    hdgele->Mmat_.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPart, massPartW, 0.0);
+    CORE::LINALG::multiplyNT(hdgele->Mmat_, massPart, massPartW);
   }
-  hdgele->Amat_.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0, gradPartVel, massPartW,
-      0.0);  // first part of A matrix (only if velocity field not zero)
-  hdgele->Bmat_.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0, massPartW, gradPart, 0.0);
+  CORE::LINALG::multiplyNT(0.0, hdgele->Amat_, -1.0, gradPartVel,
+      massPartW);  // first part of A matrix (only if velocity field not zero)
+  CORE::LINALG::multiplyNT(0.0, hdgele->Bmat_, -1.0, massPartW, gradPart);
 
   for (unsigned int j = 0; j < hdgele->ndofs_; ++j)
     for (unsigned int i = 0; i < hdgele->ndofs_; ++i)
@@ -912,18 +912,17 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeInte
 
   for (unsigned int d = 0; d < nsd_; ++d)
     for (unsigned int e = 0; e < nsd_; ++e)
-      DW[d * nsd_ + e].multiply(
-          Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPart, massPartDW[d * nsd_ + e], 0.0);
+      CORE::LINALG::multiplyNT(DW[d * nsd_ + e], massPart, massPartDW[d * nsd_ + e]);
 
 
   // multiply matrices to perform summation over quadrature points
   if (not scatraparatimint_->IsStationary())
   {
-    hdgele->Mmat_.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0, massPart, massPartW, 0.0);
+    CORE::LINALG::multiplyNT(hdgele->Mmat_, massPart, massPartW);
   }
-  hdgele->Amat_.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0, gradPartVel, massPartW,
-      0.0);  // first part of A matrix (only if velocity field not zero)
-  hdgele->Bmat_.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0, massPartW, gradPart, 0.0);
+  CORE::LINALG::multiplyNT(0.0, hdgele->Amat_, -1.0, gradPartVel,
+      massPartW);  // first part of A matrix (only if velocity field not zero)
+  CORE::LINALG::multiplyNT(0.0, hdgele->Bmat_, -1.0, massPartW, gradPart);
 
   for (unsigned int j = 0; j < hdgele->ndofs_; ++j)
     for (unsigned int i = 0; i < hdgele->ndofs_; ++i)
@@ -1017,16 +1016,14 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
 
   if (theta != 1.0)
   {
-    tempVec1.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Amat_, tempinteriorphin, 0.0);
-    tempVec1.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Bmat_, tempinteriorgradphin, 1.0);
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Cmat_, tracen,
-        1.0);  // = (  A U^n + B Q^n + C L^n )
+    CORE::LINALG::multiply(tempVec1, hdgele->Amat_, tempinteriorphin);
+    CORE::LINALG::multiply(1.0, tempVec1, 1.0, hdgele->Bmat_, tempinteriorgradphin);
+    CORE::LINALG::multiply(
+        1.0, tempVec1, 1.0, hdgele->Cmat_, tracen);  // = (  A U^n + B Q^n + C L^n )
     tempVec1.scale(dt * (1.0 - theta));
   }
-  tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Mmat_, tempinteriorphin,
-      1.0);  // = s = -M * U^n + dt*(1-theta) * (  A U^n + B Q^n + C L^n )
+  CORE::LINALG::multiply(1.0, tempVec1, -1.0, hdgele->Mmat_,
+      tempinteriorphin);  // = s = -M * U^n + dt*(1-theta) * (  A U^n + B Q^n + C L^n )
 
   CORE::LINALG::SerialDenseVector tempVecI(hdgele->ndofs_);
   if (!scatrapara_->SemiImplicit())
@@ -1064,45 +1061,40 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::ComputeResi
 
   if (theta != 1.0)
   {
-    tempVec2.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->BmatMT_, tempinteriorphin, 0.0);
-    tempVec2.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Dmat_, tempinteriorgradphin, 1.0);
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Emat_, tracen,
-        1.0);                            // = (-B^T U^n  + D Q^n + E L^n )
+    CORE::LINALG::multiply(tempVec2, hdgele->BmatMT_, tempinteriorphin);
+    CORE::LINALG::multiply(1.0, tempVec2, 1.0, hdgele->Dmat_, tempinteriorgradphin);
+    CORE::LINALG::multiply(
+        1.0, tempVec2, 1.0, hdgele->Emat_, tracen);  // = (-B^T U^n  + D Q^n + E L^n )
     tempVec2.scale(dt * (1.0 - theta));  //= t = dt*(1-theta) * (-B^T U^n  + D Q^n + E L^n )
   }
 
-  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->BTAMmat_, tempVec1,
-      1.0);  // = t - (-B^T) AM^{-1} s
+  CORE::LINALG::multiply(
+      1.0, tempVec2, -1.0, hdgele->BTAMmat_, tempVec1);  // = t - (-B^T) AM^{-1} s
 
   CORE::LINALG::SerialDenseVector tempVec3(hdgele->ndofs_ * nsd_);
-  tempVec3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invCondmat_, tempVec2,
-      0.0);  // = y= ( D - (-B^T)   (AM)^-1    B)^-1     (t - (-B^T)   (AM^-1)    s)
+  CORE::LINALG::multiply(tempVec3, hdgele->invCondmat_,
+      tempVec2);  // = y= ( D - (-B^T)   (AM)^-1    B)^-1     (t - (-B^T)   (AM^-1)    s)
 
-  tempVec1.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Bmat_, tempVec3, 1.0);  // = ( s - B y)
+  CORE::LINALG::multiply(1.0, tempVec1, -1.0, hdgele->Bmat_, tempVec3);  // = ( s - B y)
   CORE::LINALG::SerialDenseVector tempVec4(hdgele->ndofs_);
-  tempVec4.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invAMmat_, tempVec1,
-      0.0);  // = x= (1/(dt*theta)M + A)^-1 ( s - B y)
+  CORE::LINALG::multiply(
+      tempVec4, hdgele->invAMmat_, tempVec1);  // = x= (1/(dt*theta)M + A)^-1 ( s - B y)
 
 
   if (theta != 1.0)
   {
-    elevec.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Gmat_, tempinteriorphin, 0.0);
-    elevec.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->EmatT_, tempinteriorgradphin, 1.0);
-    elevec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Hmat_, tracen,
-        1.0);                          // = (  G  U^n    + E^T Q^n  + H L^n  )
+    CORE::LINALG::multiply(elevec, hdgele->Gmat_, tempinteriorphin);
+    CORE::LINALG::multiply(1.0, elevec, 1.0, hdgele->EmatT_, tempinteriorgradphin);
+    CORE::LINALG::multiply(
+        1.0, elevec, 1.0, hdgele->Hmat_, tracen);  // = (  G  U^n    + E^T Q^n  + H L^n  )
     elevec.scale(dt * (1.0 - theta));  // = dt*(1-theta) * (  G  U^n    + E^T Q^n  + H L^n  )
   }
 
-  elevec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Gmat_, tempVec4, 1.0);
-  elevec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->EmatT_, tempVec3,
-      1.0);  // =  - (G x + E^T y ) +   dt(1-theta) (  G  U    + E^T Q  + H L  )
+  CORE::LINALG::multiply(1.0, elevec, -1.0, hdgele->Gmat_, tempVec4);
+  CORE::LINALG::multiply(1.0, elevec, -1.0, hdgele->EmatT_,
+      tempVec3);  // =  - (G x + E^T y ) +   dt(1-theta) (  G  U    + E^T Q  + H L  )
 
-  elevec.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Kmat_, tracenp, 1.0);
+  CORE::LINALG::multiply(1.0, elevec, 1.0, hdgele->Kmat_, tracenp);
 
   return;
 }  // ComputeResidual
@@ -1192,20 +1184,17 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLoc
   double theta = scatraparatimint_->TimeFac() * (1 / dt);
 
   CORE::LINALG::SerialDenseMatrix tempMat1(hdgele->ndofs_ * nsd_, hdgele->ndofs_);
-  tempMat1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->BmatMT_, hdgele->invAMmat_,
-      0.0);  // =  (-B^T) AM^{-1}
+  CORE::LINALG::multiply(tempMat1, hdgele->BmatMT_, hdgele->invAMmat_);  // =  (-B^T) AM^{-1}
 
   hdgele->BTAMmat_ = tempMat1;
 
   CORE::LINALG::SerialDenseMatrix tempMat2(hdgele->ndofs_ * nsd_, hdgele->ndofs_ * nsd_);
   tempMat2 = hdgele->Dmat_;
 
-  tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, hdgele->Bmat_,
-      1.0);  // = D - (-B^T) AM^{-1} B
+  CORE::LINALG::multiply(1.0, tempMat2, -1.0, tempMat1, hdgele->Bmat_);  // = D - (-B^T) AM^{-1} B
   CORE::LINALG::SerialDenseMatrix tempMat3(hdgele->ndofs_ * nsd_, onfdofs);
   tempMat3 = hdgele->Emat_;
-  tempMat3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, hdgele->Cmat_,
-      1.0);  // = E - (-B^T) AM^{-1} C
+  CORE::LINALG::multiply(1.0, tempMat3, -1.0, tempMat1, hdgele->Cmat_);  // = E - (-B^T) AM^{-1} C
 
   using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
   using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -1221,24 +1210,21 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::CondenseLoc
   hdgele->Kmat_ = hdgele->Hmat_;  // = H
 
   CORE::LINALG::SerialDenseMatrix tempMat4(hdgele->ndofs_ * nsd_, onfdofs);
-  tempMat4.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat2, tempMat3, 0.0);  // = y
-  hdgele->Kmat_.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->EmatT_, tempMat4, 1.0);  // = - E^T y + H
+  CORE::LINALG::multiply(tempMat4, tempMat2, tempMat3);                        // = y
+  CORE::LINALG::multiply(1.0, hdgele->Kmat_, -1.0, hdgele->EmatT_, tempMat4);  // = - E^T y + H
 
   CORE::LINALG::SerialDenseMatrix tempMat5(hdgele->ndofs_, onfdofs);
   tempMat5 = hdgele->Cmat_;
-  tempMat5.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Bmat_, tempMat4, 1.0);  // = C -B y
+  CORE::LINALG::multiply(1.0, tempMat5, -1.0, hdgele->Bmat_, tempMat4);  // = C -B y
 
   CORE::LINALG::SerialDenseMatrix tempMat6(hdgele->ndofs_, onfdofs);
-  tempMat6.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invAMmat_, tempMat5,
-      0.0);  // = x = AM^{-1} ( C - B y )
+  CORE::LINALG::multiply(tempMat6, hdgele->invAMmat_, tempMat5);  // = x = AM^{-1} ( C - B y )
 
   // save for later use
   hdgele->Xmat_ = tempMat6;
 
-  hdgele->Kmat_.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Gmat_, tempMat6,
-      1.0);  // = K = H - G x - E^T y
+  CORE::LINALG::multiply(
+      1.0, hdgele->Kmat_, -1.0, hdgele->Gmat_, tempMat6);  // = K = H - G x - E^T y
 
   hdgele->Kmat_.scale(dt * theta);
 
@@ -1274,27 +1260,23 @@ void DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::LocalSolver::AddReacMat(
   tempMat1 = hdgele->Imatnpderiv_;  // = I'
 
   CORE::LINALG::SerialDenseMatrix tempMat2(hdgele->ndofs_, hdgele->onfdofs_);
-  tempMat2.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, tempMat1, hdgele->Xmat_, 0.0);  // = I' * (-x1)
+  CORE::LINALG::multiply(0.0, tempMat2, -1.0, tempMat1, hdgele->Xmat_);  // = I' * (-x1)
 
   CORE::LINALG::SerialDenseMatrix tempMat3(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
-  tempMat3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->BTAMmat_, tempMat2,
-      0.0);  // = nullptr*y1 - (-B^T) AM^{-1} I'* (-x1)
+  CORE::LINALG::multiply(
+      0.0, tempMat3, -1.0, hdgele->BTAMmat_, tempMat2);  // = nullptr*y1 - (-B^T) AM^{-1} I'* (-x1)
   CORE::LINALG::SerialDenseMatrix tempMat4(hdgele->ndofs_ * nsd_, hdgele->onfdofs_);
-  tempMat4.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invCondmat_, tempMat3,
-      0.0);  // = y2 = ( D - (-B^T) AM^{-1} B)^-1  (nullptr*y1 - (-B^T) AM^{-1} I'* (-x1))
+  CORE::LINALG::multiply(tempMat4, hdgele->invCondmat_,
+      tempMat3);  // = y2 = ( D - (-B^T) AM^{-1} B)^-1  (nullptr*y1 - (-B^T) AM^{-1} I'* (-x1))
 
-  tempMat2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Bmat_, tempMat4,
-      1.0);  // = I'*(-x1) -B y2
+  CORE::LINALG::multiply(1.0, tempMat2, -1.0, hdgele->Bmat_, tempMat4);  // = I'*(-x1) -B y2
 
   CORE::LINALG::SerialDenseMatrix tempMat5(hdgele->ndofs_, hdgele->onfdofs_);
-  tempMat5.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invAMmat_, tempMat2,
-      0.0);  // = x2 = AM^{-1} ( I'*(-x1) - B y2 )
+  CORE::LINALG::multiply(
+      tempMat5, hdgele->invAMmat_, tempMat2);  // = x2 = AM^{-1} ( I'*(-x1) - B y2 )
 
-  eleMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, dt * theta, hdgele->EmatT_, tempMat4,
-      1.0);  // = K - E^T y2
-  eleMat.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, dt * theta, hdgele->Gmat_, tempMat5,
-      1.0);  // = K- G x2 - E^T y2
+  CORE::LINALG::multiply(1.0, eleMat, dt * theta, hdgele->EmatT_, tempMat4);  // = K - E^T y2
+  CORE::LINALG::multiply(1.0, eleMat, dt * theta, hdgele->Gmat_, tempMat5);   // = K- G x2 - E^T y2
 
 }  // AddReacMat
 
@@ -1529,16 +1511,14 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
   CORE::LINALG::SerialDenseVector tempVec1(hdgele->ndofs_);
   if (theta != 1.0)
   {
-    tempVec1.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Amat_, tempinteriorphin, 0.0);
-    tempVec1.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Bmat_, tempinteriorgradphin, 1.0);
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Cmat_, tracenm_,
-        1.0);  // = ( A U^n + B Q^n + C L^n )
+    CORE::LINALG::multiply(tempVec1, hdgele->Amat_, tempinteriorphin);
+    CORE::LINALG::multiply(1.0, tempVec1, 1.0, hdgele->Bmat_, tempinteriorgradphin);
+    CORE::LINALG::multiply(
+        1.0, tempVec1, 1.0, hdgele->Cmat_, tracenm_);  // = ( A U^n + B Q^n + C L^n )
     tempVec1.scale(-dt * (1. - theta));
   }
-  tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Mmat_, tempinteriorphin,
-      1.0);  // = -M * U^n + dt*(1-theta) * (  A U^n + B Q^n + C L^n )
+  CORE::LINALG::multiply(1.0, tempVec1, 1.0, hdgele->Mmat_,
+      tempinteriorphin);  // = -M * U^n + dt*(1-theta) * (  A U^n + B Q^n + C L^n )
 
 
   // Reaction term
@@ -1575,40 +1555,37 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::UpdateInteriorVariables(
   }
 
 
-  tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -dt * theta, hdgele->Cmat_, tracen_,
-      1.0);  //= s = -M * U^n + dt*(1-theta) * (A U^n + B Q^n + C L^n) - dt*theta I^n+1
-             //-dt*(1-theta) I^n - dt* theta C L^n+1
+  CORE::LINALG::multiply(1.0, tempVec1, -dt * theta, hdgele->Cmat_,
+      tracen_);  //= s = -M * U^n + dt*(1-theta) * (A U^n + B Q^n + C L^n) - dt*theta I^n+1
+                 //-dt*(1-theta) I^n - dt* theta C L^n+1
 
   CORE::LINALG::SerialDenseVector tempVec2(hdgele->ndofs_ * nsd_);
   if (theta != 1.0)
   {
-    tempVec2.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->BmatMT_, tempinteriorphin, 0.0);
-    tempVec2.multiply(
-        Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Dmat_, tempinteriorgradphin, 1.0);
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->Emat_, tracenm_,
-        1.0);  // = (-B^T U^n  + D Q^n + E L^n )
+    CORE::LINALG::multiply(tempVec2, hdgele->BmatMT_, tempinteriorphin);
+    CORE::LINALG::multiply(1.0, tempVec2, 1.0, hdgele->Dmat_, tempinteriorgradphin);
+    CORE::LINALG::multiply(
+        1.0, tempVec2, 1.0, hdgele->Emat_, tracenm_);  // = (-B^T U^n  + D Q^n + E L^n )
     tempVec2.scale(-dt * (1. - theta));
   }
-  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -dt * theta, hdgele->Emat_, tracen_,
-      1.0);  //= t = -dt*(1-theta) * (-B^T U^n  + D Q^n + E L^n )  - dt*theta E L^n+1
+  CORE::LINALG::multiply(1.0, tempVec2, -dt * theta, hdgele->Emat_,
+      tracen_);  //= t = -dt*(1-theta) * (-B^T U^n  + D Q^n + E L^n )  - dt*theta E L^n+1
 
   // y = ( D - (-B^T)   (AM)^-1    B)^-1     (t - (-B^T)   (AM^-1)    s)
   // x = (1/(dt*theta)M + A)^-1 ( s - B y)
 
 
-  tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->BTAMmat_, tempVec1,
-      1.0);  // = t - (-B^T) AM^{-1} s
+  CORE::LINALG::multiply(
+      1.0, tempVec2, -1.0, hdgele->BTAMmat_, tempVec1);  // = t - (-B^T) AM^{-1} s
 
   CORE::LINALG::SerialDenseVector tempVec3(hdgele->ndofs_ * nsd_);
-  tempVec3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invCondmat_, tempVec2,
-      0.0);  // = y= ( D - (-B^T)   (AM)^-1    B)^-1     (t - (-B^T)   (AM^-1)    s)
+  CORE::LINALG::multiply(tempVec3, hdgele->invCondmat_,
+      tempVec2);  // = y= ( D - (-B^T)   (AM)^-1    B)^-1     (t - (-B^T)   (AM^-1)    s)
 
-  tempVec1.multiply(
-      Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, hdgele->Bmat_, tempVec3, 1.0);  // = ( s - B y)
+  CORE::LINALG::multiply(1.0, tempVec1, -1.0, hdgele->Bmat_, tempVec3);  // = ( s - B y)
   CORE::LINALG::SerialDenseVector tempVec4(hdgele->ndofs_);
-  tempVec4.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, hdgele->invAMmat_, tempVec1,
-      0.0);  // = x= (1/(dt*theta)M + A)^-1 ( s - B y)
+  CORE::LINALG::multiply(
+      tempVec4, hdgele->invAMmat_, tempVec1);  // = x= (1/(dt*theta)M + A)^-1 ( s - B y)
 
   tempVec3.scale(1. / (dt * theta));
   tempVec4.scale(1. / (dt * theta));
@@ -1690,7 +1667,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::SetInitialField(const DRT
       }
     }
 
-    Mmat.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1., massPart, massPartW, 0.);
+    CORE::LINALG::multiplyNT(Mmat, massPart, massPartW);
     {
       using ordinalType = CORE::LINALG::SerialDenseMatrix::ordinalType;
       using scalarType = CORE::LINALG::SerialDenseMatrix::scalarType;
@@ -1935,7 +1912,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
           for (unsigned int k = 0; k < shapes_old->ndofs_; k++)
             tempMat(j * shapes_->ndofs_ + i, j * shapes_old->ndofs_ + k) = tempVec(k);
       }
-      elevec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat, interiorPhi_old, 0.0);
+      CORE::LINALG::multiply(elevec2, tempMat, interiorPhi_old);
     }
 
     // project trace field
@@ -1992,8 +1969,7 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::ProjectField(const DRT::E
           for (unsigned int k = 0; k < shapesface_old->nfdofs_; k++) tempMat1(i, k) = tempVec(k);
         }
 
-        tempVec2.multiply(
-            Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, tempMat1, tracePhi_face_old, 0.0);
+        CORE::LINALG::multiply(tempVec2, tempMat1, tracePhi_face_old);
 
         for (unsigned int i = 0; i < shapesface_->nfdofs_; i++) elevec1(nfdofs + i) = tempVec2(i);
       }
@@ -2122,10 +2098,10 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::CalcPAdaptivity(
     CORE::LINALG::SerialDenseVector tempVec4(shapesface_->nqpoints_);
 
 
-    tempVec1.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, QMatW, tempinteriorgradphinp, 0.0);
-    tempVec2.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, QMat, tempinteriorgradphinp, 0.0);
-    tempVec3.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, UMatW, tempinteriorphinp, 0.0);
-    tempVec4.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, UMat, tempinteriorphinp, 0.0);
+    CORE::LINALG::multiply(tempVec1, QMatW, tempinteriorgradphinp);
+    CORE::LINALG::multiply(tempVec2, QMat, tempinteriorgradphinp);
+    CORE::LINALG::multiply(tempVec3, UMatW, tempinteriorphinp);
+    CORE::LINALG::multiply(tempVec4, UMat, tempinteriorphinp);
 
     double errorface = 0;
     double facearea = 0;

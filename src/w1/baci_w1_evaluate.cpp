@@ -24,6 +24,7 @@
 #include "baci_lib_utils_elements.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
+#include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"
 #include "baci_mat_stvenantkirchhoff.H"
 #include "baci_nurbs_discret.H"
@@ -315,9 +316,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       if (iseas_)
       {
         CORE::LINALG::SerialDenseMatrix* alpha =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         CORE::LINALG::SerialDenseMatrix* alphao =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
         blas.COPY((*alphao).numRows() * (*alphao).numCols(), (*alpha).values(), 1,
             (*alphao).values(),
@@ -333,9 +334,9 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       if (iseas_)
       {
         CORE::LINALG::SerialDenseMatrix* alpha =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // Alpha_{n+1}
         CORE::LINALG::SerialDenseMatrix* alphao =
-            data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
+            data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");  // Alpha_n
         Teuchos::BLAS<unsigned int, double> blas;
         blas.COPY((*alphao).numRows() * (*alphao).numCols(), (*alphao).values(), 1,
             (*alpha).values(),
@@ -357,8 +358,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         INPAR::STR::StrainType iostrain = INPAR::STR::strain_none;
         if (IsParamsInterface())
         {
-          stressdata = StrParamsInterface().MutableStressDataPtr();
-          straindata = StrParamsInterface().MutableStrainDataPtr();
+          stressdata = StrParamsInterface().StressDataPtr();
+          straindata = StrParamsInterface().StrainDataPtr();
 
           iostress = StrParamsInterface().GetStressOutputType();
           iostrain = StrParamsInterface().GetStrainOutputType();
@@ -1107,9 +1108,9 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
   {
     // access general eas history stuff stored in element
     // get alpha of previous iteration
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alpha");
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");
     // get the old eas increment
-    eas_inc = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("eas_inc");
+    eas_inc = data_.Get<CORE::LINALG::SerialDenseMatrix>("eas_inc");
     if (!alpha || !eas_inc) dserror("Missing EAS history data (eas_inc and/or alpha)");
   }
 
@@ -1126,12 +1127,10 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
           NOX::NLN::StatusTest::quantity_eas, w1_neas(), (*alpha)[0], Owner());
 
       // get stored EAS history
-      CORE::LINALG::SerialDenseMatrix* oldfeas =
-          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
+      CORE::LINALG::SerialDenseMatrix* oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
       CORE::LINALG::SerialDenseMatrix* oldKaainv =
-          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-      CORE::LINALG::SerialDenseMatrix* oldKda =
-          data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+          data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+      CORE::LINALG::SerialDenseMatrix* oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
       if (!oldKaainv or !oldKda or !oldfeas) dserror("Missing EAS history-data");
 
       // we need the (residual) displacement at the previous step
@@ -1143,9 +1142,9 @@ void DRT::ELEMENTS::Wall1::w1_recover(const std::vector<int>& lm, const std::vec
       }
 
       // add Kda . res_d to feas
-      (*oldfeas).multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, (*oldKda), res_d, 1.0);
+      CORE::LINALG::multiplyTN(1.0, (*oldfeas), 1.0, *oldKda, res_d);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-      (*alpha).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, (*oldKaainv), (*oldfeas), 1.0);
+      CORE::LINALG::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
     }  // if (iseas)
   }    // if (*isdefault_step_ptr_)
   /* if it is no default step, we can correct the update and the current eas
@@ -1318,13 +1317,12 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     ** This corresponds to the (innermost) element update loop
     ** in the nonlinear FE-Skript page 120 (load-control alg. with EAS)
     */
-    alpha = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>(
-        "alpha");  // get alpha of previous iteration
+    alpha = data_.Get<CORE::LINALG::SerialDenseMatrix>("alpha");  // get alpha of previous iteration
 
     // get stored EAS history
-    oldfeas = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("feas");
-    oldKaainv = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("invKaa");
-    oldKda = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("Kda");
+    oldfeas = data_.Get<CORE::LINALG::SerialDenseMatrix>("feas");
+    oldKaainv = data_.Get<CORE::LINALG::SerialDenseMatrix>("invKaa");
+    oldKda = data_.Get<CORE::LINALG::SerialDenseMatrix>("Kda");
     if (!alpha || !oldKaainv || !oldKda || !oldfeas) dserror("Missing EAS history-data");
     // FixMe deprecated implementation
     if (not IsParamsInterface())
@@ -1337,9 +1335,9 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
       }
 
       // add Kda . res_d to feas
-      (*oldfeas).multiply(Teuchos::TRANS, Teuchos::NO_TRANS, 1.0, (*oldKda), res_d, 1.0);
+      CORE::LINALG::multiplyTN(1.0, (*oldfeas), 1.0, *oldKda, res_d);
       // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
-      (*alpha).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, (*oldKaainv), (*oldfeas), 1.0);
+      CORE::LINALG::multiply(1.0, (*alpha), -1.0, *oldKaainv, *oldfeas);
     }  // if (not IsInterface())
     /* end of EAS Update ******************/
 
@@ -1574,15 +1572,14 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
       CORE::LINALG::SerialDenseMatrix KdaKaa(
           2 * NumNode(), Wall1::neas_);  // temporary Kda.Kaa^{-1}
-      KdaKaa.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, Kda, Kaa, 1.0);
+      CORE::LINALG::multiply(1.0, KdaKaa, 1.0, Kda, Kaa);
 
 
       // EAS-stiffness matrix is: Kdd - Kda^T . Kaa^-1 . Kad  with Kad=Kda^T
-      if (stiffmatrix)
-        (*stiffmatrix).multiply(Teuchos::NO_TRANS, Teuchos::TRANS, -1.0, KdaKaa, Kda, 1.0);
+      if (stiffmatrix) CORE::LINALG::multiplyNT(1.0, (*stiffmatrix), -1.0, KdaKaa, Kda);
 
       // EAS-internal force is: fint - Kda^T . Kaa^-1 . feas
-      if (force) (*force).multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, -1.0, KdaKaa, feas, 1.0);
+      if (force) CORE::LINALG::multiply(1.0, *force, -1.0, KdaKaa, feas);
 
       // store current EAS data in history
       for (int i = 0; i < Wall1::neas_; ++i)
@@ -2133,11 +2130,11 @@ void DRT::ELEMENTS::Wall1::StressCauchy(const int ip, const double& F11, const d
 
   // PK1 stress tensor in Cartesian matrix notation
   CORE::LINALG::SerialDenseMatrix pk1stress(2, 2);
-  pk1stress.multiply(Teuchos::NO_TRANS, Teuchos::TRANS, 1.0 / detf, pk2stress, defgrad, 0.0);
+  CORE::LINALG::multiplyNT(0.0, pk1stress, 1.0 / detf, pk2stress, defgrad);
 
   // Cauchy stress tensor in Cartesian matrix notation
   CORE::LINALG::SerialDenseMatrix cauchystress(2, 2);
-  cauchystress.multiply(Teuchos::NO_TRANS, Teuchos::NO_TRANS, 1.0, defgrad, pk1stress, 0.0);
+  CORE::LINALG::multiply(cauchystress, defgrad, pk1stress);
 
   // copy results to array for output
   (*elestress)(ip, 0) = cauchystress(0, 0);
@@ -2218,7 +2215,7 @@ void DRT::ELEMENTS::Wall1::Energy(Teuchos::ParameterList& params, const std::vec
     Z.shape(edof, Wall1::neas_);
 
     // get alpha of last converged state
-    alphao = data_.GetMutable<CORE::LINALG::SerialDenseMatrix>("alphao");
+    alphao = data_.Get<CORE::LINALG::SerialDenseMatrix>("alphao");
 
     // derivatives at origin
     CORE::DRT::UTILS::shape_function_2D_deriv1(shpdrv, 0.0, 0.0, distype);
