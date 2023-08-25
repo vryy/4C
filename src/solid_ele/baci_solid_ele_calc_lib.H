@@ -50,7 +50,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Compare two Gauss integration rules for equality
    */
-  bool CompareGaussIntegration(const CORE::DRT::UTILS::GaussIntegration& integration_a,
+  inline bool CompareGaussIntegration(const CORE::DRT::UTILS::GaussIntegration& integration_a,
       const CORE::DRT::UTILS::GaussIntegration& integration_b)
   {
     // currently this simple check is sufficient as we only use the same type of gauss integrations.
