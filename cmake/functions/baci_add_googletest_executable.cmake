@@ -46,7 +46,7 @@ function(baci_add_google_test_executable TESTNAME)
 
   add_executable(
     ${TESTNAME}
-    ${PROJECT_SOURCE_DIR}/unittests/gtest_main_mpi.cpp
+    ${PROJECT_SOURCE_DIR}/unittests/baci_gtest_main_mpi_test.cpp
     ${assert_mpi_file}
     ${BACI_ADD_GOOGLE_TEST_EXECUTABLE_SOURCE}
     )
