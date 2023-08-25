@@ -192,7 +192,6 @@ void STR::UTILS::READELEMENT::ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef,
 void STR::UTILS::NodalBlockInformationSolid(
     DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
 {
-  // todo: to this combined for 2D and 3D
   numdf = 3;
   dimns = 6;
 

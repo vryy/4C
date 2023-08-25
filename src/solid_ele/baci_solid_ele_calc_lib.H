@@ -47,6 +47,16 @@ namespace DRT::ELEMENTS::DETAIL
 
 namespace DRT::ELEMENTS
 {
+  /*!
+   * @brief Compare two Gauss integration rules for equality
+   */
+  bool CompareGaussIntegration(const CORE::DRT::UTILS::GaussIntegration& integration_a,
+      const CORE::DRT::UTILS::GaussIntegration& integration_b)
+  {
+    // currently this simple check is sufficient as we only use the same type of gauss integrations.
+    return integration_a.NumPoints() == integration_b.NumPoints();
+  }
+
   inline void LumpMatrix(CORE::LINALG::SerialDenseMatrix& matrix)
   {
     dsassert(
@@ -141,7 +151,6 @@ namespace DRT::ELEMENTS
     return CORE::DRT::UTILS::GaussRule3D::tet_1point;
   }
 
-  // TODO: What about the stiffness matrix of tri-elements?
   template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
   CORE::DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
   {
@@ -507,7 +516,6 @@ namespace DRT::ELEMENTS
           Bop(d, DETAIL::nsd<distype> * i + e) =
               spatial_material_mapping.deformation_gradient_(e, d) * jacobian_mapping.N_XYZ_(d, i);
 
-      // TODO: make this work for 2D
       Bop(3, DETAIL::nsd<distype> * i + 0) =
           spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ_(1, i) +
           spatial_material_mapping.deformation_gradient_(0, 1) * jacobian_mapping.N_XYZ_(0, i);

@@ -46,9 +46,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
-  // TODO: This is a quite unsafe check, whether the same integrations are used
   bool equal_integration_mass_stiffness =
-      mass_matrix_integration_.NumPoints() == stiffness_matrix_integration_.NumPoints();
+      CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
 
   double mean_density = 0.0;
 
@@ -129,9 +128,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
   const NodalCoordinates<distype> nodal_coordinates_old =
       EvaluateNodalCoordinatesOld<distype>(ele, discretization, lm);
 
-  // TODO: This is a quite unsafe check, whether the same integrations are used
   bool equal_integration_mass_stiffness =
-      mass_matrix_integration_.NumPoints() == stiffness_matrix_integration_.NumPoints();
+      CompareGaussIntegration(mass_matrix_integration_, stiffness_matrix_integration_);
 
   double mean_density = 0.0;
 
@@ -216,10 +214,6 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Recover(const DRT::Element& ele,
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
-  // nothing to do for a standard element
-  // except...
-  // TODO: We need to recover history information of materials!
-  // which was also not implemented in the old elements
 }
 
 template <DRT::Element::DiscretizationType distype>
@@ -281,8 +275,6 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
     const DRT::Discretization& discretization, const std::vector<int>& lm,
     Teuchos::ParameterList& params)
 {
-  // TODO: If we get rid of post_drt_*, we don't need this here anymore. We could directly use
-  // InitializeGaussPointDataOutput and EvaluateGaussPointDataOutput and write the stresses there.
   if (discretization.Comm().MyPID() != ele.Owner()) return;
 
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;

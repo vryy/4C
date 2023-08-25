@@ -172,10 +172,7 @@ namespace DRT::ELEMENTS
     /*!
     \brief Get number of degrees of freedom of a certain node
     */
-    [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override
-    {
-      return 3;
-    }  // todo fix this for 2D elements
+    [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
     /*!
     \brief Get number of degrees of freedom per element
