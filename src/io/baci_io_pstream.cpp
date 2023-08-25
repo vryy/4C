@@ -135,6 +135,13 @@ void IO::Pstream::close()
   }
   outfile_ = nullptr;
 
+  if (blackholestream_)
+  {
+    blackholestream_->flush();
+    delete blackholestream_;
+    blackholestream_ = nullptr;
+  }
+
   prefixgroupID_ = false;
   groupID_ = -2;
 
