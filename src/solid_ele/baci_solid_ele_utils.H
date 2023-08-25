@@ -106,8 +106,6 @@ namespace STR::UTILS
 
     void ReadAndSetEAS(DRT::INPUT::LineDefinition* linedef, ::STR::ELEMENTS::EasType& eastype,
         std::set<INPAR::STR::EleTech>& eletech);
-
-
   }  // namespace READELEMENT
 
 }  // namespace STR::UTILS

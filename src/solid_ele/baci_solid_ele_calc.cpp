@@ -94,7 +94,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
 
   if (mass.has_value() && !equal_integration_mass_stiffness)
-  {  // integrate mass matrix
+  {
+    // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
         [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
@@ -199,7 +200,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
 
 
   if (mass.has_value() && !equal_integration_mass_stiffness)
-  {  // integrate mass matrix
+  {
+    // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
         [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,

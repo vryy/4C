@@ -76,8 +76,10 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_update_istep:
+    {
       solid_interface_->Update(*this, *SolidMaterial(), discretization, lm, params);
       return 0;
+    }
     case DRT::ELEMENTS::struct_calc_recover:
     {
       solid_interface_->Recover(*this, discretization, lm, params);

@@ -62,7 +62,7 @@ namespace DRT
        * @brief Setup routine for the element
        *
        * @param solid_material (in) : Solid material of the element
-       * @param linedef (in) : 778
+       * @param linedef (in) : Input line of the corresponding element
        */
       virtual void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef) = 0;
 
@@ -150,7 +150,7 @@ namespace DRT
        * @param ele (in) : Reference to the element
        * @param solid_material (in) : Solid material of the element
        * @param gp_data_output_manager (in) : Gauss point data output manager
-       *                                    (only for new structure time integration)
+       *                                      (only for new structure time integration)
        */
       virtual void InitializeGaussPointDataOutput(const DRT::Element& ele,
           const MAT::So3Material& solid_material,
@@ -166,7 +166,7 @@ namespace DRT
        * @param ele (in) : Reference to the element
        * @param solid_material (in) : Solid material of the element
        * @param gp_data_output_manager (in) : Gauss point data output manager
-       *                                    (only for new structure time integration)
+       *                                      (only for new structure time integration)
        */
       virtual void EvaluateGaussPointDataOutput(const DRT::Element& ele,
           const MAT::So3Material& solid_material,

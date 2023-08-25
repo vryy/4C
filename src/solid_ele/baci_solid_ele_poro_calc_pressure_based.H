@@ -59,7 +59,6 @@ namespace DRT
       void CouplingStress(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) override;
 
-
       void PoroSetup(MAT::StructPoro& porostructmat, DRT::INPUT::LineDefinition* linedef) override;
 
      private:

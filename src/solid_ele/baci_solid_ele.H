@@ -70,6 +70,7 @@ namespace DRT::ELEMENTS
 
    public:
     //! @name Constructors and destructors and related methods
+    //!@{
 
     /*!
     \brief Standard Constructor
@@ -91,6 +92,7 @@ namespace DRT::ELEMENTS
     */
     [[nodiscard]] DRT::Element* Clone() const override;
 
+    //@}
 
     /*!
     \brief Return unique ParObject id
@@ -117,9 +119,8 @@ namespace DRT::ELEMENTS
     /// return ElementType instance
     [[nodiscard]] DRT::ElementType& ElementType() const override { return SolidType::Instance(); }
 
-    //@}
-
     //! @name Query methods
+    //!@{
 
     /*!
     \brief Get shape type of element
@@ -176,7 +177,6 @@ namespace DRT::ELEMENTS
       return 3;
     }  // todo fix this for 2D elements
 
-
     /*!
     \brief Get number of degrees of freedom per element
            (implements pure virtual DRT::Element)
@@ -190,16 +190,21 @@ namespace DRT::ELEMENTS
     */
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
+    //@}
+
     //! @name Input and Creation
+    //!@{
 
     /*!
     \brief Read input for this element
     */
     bool ReadElement(const std::string& eletype, const std::string& distype,
         DRT::INPUT::LineDefinition* linedef) override;
+
     /// @}
 
     //! @name Evaluation
+    //!@{
 
     /*!
     \brief Evaluate an element
@@ -300,12 +305,10 @@ namespace DRT::ELEMENTS
     //! element technology
     std::set<INPAR::STR::EleTech> eletech_;
 
-    //! specify EAS type in case contains EAS
+    //! specify EAS type in case contains enhanced assumed strains
     STR::ELEMENTS::EasType eastype_;
 
-    /*! \brief interface ptr
-     *
-     *  data exchange between the element and the time integrator. */
+    //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! element calculation interface

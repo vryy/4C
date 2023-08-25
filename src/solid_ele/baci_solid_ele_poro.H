@@ -280,9 +280,6 @@ namespace DRT::ELEMENTS
      */
     void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
-
-    //@}
-
     /*!
     \brief get access to the parameter interface pointer
     */
@@ -333,7 +330,7 @@ namespace DRT::ELEMENTS
     //! element techonology
     std::set<INPAR::STR::EleTech> eletech_;
 
-    //! specify EAS type in case contains EAS
+    //! specify EAS type in case contains enhanced assumed strains
     ::STR::ELEMENTS::EasType eastype_;
 
     //! porosity implementation type (physics)
@@ -348,9 +345,7 @@ namespace DRT::ELEMENTS
     //! scaling coefficients for nodal anisotropic permeability
     std::vector<std::vector<double>> anisotropic_permeability_nodal_coeffs_;
 
-    /** \brief interface ptr
-     *
-     *  data exchange between the element and the time integrator. */
+    //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! element calculation interface

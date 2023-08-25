@@ -189,7 +189,7 @@ namespace DRT::ELEMENTS
       defgrd_inv_vec(7) = spatial_material_mapping.inverse_deformation_gradient_(2, 1);
       defgrd_inv_vec(8) = spatial_material_mapping.inverse_deformation_gradient_(2, 2);
 
-      //--------------------------- build N_X operator (wrt material config)
+      // build N_X operator (w.r.t. material configuration)
       CORE::LINALG::Matrix<9, DETAIL::numdofperelement<distype>> N_X(true);  // set to zero
       for (int i = 0; i < DETAIL::nen<distype>; ++i)
       {
@@ -206,9 +206,8 @@ namespace DRT::ELEMENTS
         N_X(8, 3 * i + 2) = jacobian_mapping.N_XYZ_(2, i);
       }
 
-      //------linearization of determinant of deformation gradient detF=DetDefGrad w.r.t. strucuture
-      // displacement   dDetDefGrad/d(disp) =
-      // dDetDefGrad/dF : dF/dus = DetDefGrad * F^-T * N,X
+      // linearization of determinant of deformation gradient detF w.r.t. structural displacement
+      // u_s dDetF/du_s = dDetF/dF : dF/du_s = DetF * F^-T * N,X
       dDetDefGrad_dDisp.MultiplyTN(
           spatial_material_mapping.determinant_deformation_gradient_, defgrd_inv_vec, N_X);
       return dDetDefGrad_dDisp;
@@ -312,7 +311,7 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Recalculate derivative of solidpressure w.r.t. the displacments in case of volfracs
+   * @brief Recalculate derivative of solidpressure w.r.t. the displacements in case of volfracs
    *
    * @tparam distype: Discretization type
    * @param fluidpress (in) : solid pressure contribution coming from the multiphase fluid S_i*p_i
@@ -322,8 +321,8 @@ namespace DRT::ELEMENTS
    * @param numfluidphases (in): number of fluidphases in multiphase porespace
    * @param numvolfrac (in): number of volfracs
    * @param fluidmultiphase_phiAtGP (in): fluid multiphase primary variables at GP
-   * @param dPorosity_dDisp (in): derivative of porosity w.r.t. the displacments
-   * @param dSolidpressure_dDisp (in/out): derivative of solidpressure w.r.t. the displacments
+   * @param dPorosity_dDisp (in): derivative of porosity w.r.t. the displacements
+   * @param dSolidpressure_dDisp (in/out): derivative of solidpressure w.r.t. the displacements
    */
   template <DRT::Element::DiscretizationType distype>
   void RecalculateLinearizationOfSolPressWrtDisp(const double fluidpress, const double porosity,
@@ -751,7 +750,7 @@ namespace DRT::ELEMENTS
 
   /*!
    * @brief Evaluates the derivative of the inverse right Cauchy-Green deformation tensor w.r.t. the
-   * displacments
+   * displacements
    *
    * @tparam distype: Discretization type
    * @param cauchygreen (in) : An object holding the right Cauchy-Green deformation tensor and its
@@ -762,7 +761,7 @@ namespace DRT::ELEMENTS
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
    * @return dInverseCauchyGreen_dDisp : derivative of the inverse right Cauchy-Green deformation
-   * tensor w.r.t. the displacments
+   * tensor w.r.t. the displacements
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
