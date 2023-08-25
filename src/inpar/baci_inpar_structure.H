@@ -32,13 +32,12 @@ namespace INPAR
     /// Active element technologies
     enum class EleTech
     {
-      eas,         ///< EAS detected
-      fbar,        ///< FBAR detected
-      plasticity,  ///< plasticity detected
+      eas,         ///< enhanced assumed strain
+      fbar,        ///< F-bar
+      plasticity,  ///< plasticity
       pressure,    ///< additional pressure degree of freedom
       rotvec,      ///< non-additive rotation (pseudo-)vector DOFs
-      ps_mulf,     ///< prestressing: mulf
-      ps_id        ///< prestressing: inverse design
+      ps_mulf      ///< prestressing: mulf
     };
 
     /// Map element technology to string
