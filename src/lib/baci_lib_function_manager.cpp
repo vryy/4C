@@ -20,6 +20,8 @@
 #include "baci_poromultiphase_scatra_function.H"
 #include "baci_structure_new_functions.H"
 
+#include <stdexcept>
+
 
 namespace
 {
@@ -119,53 +121,61 @@ void PrintFunctionDatHeader()
 
 void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
-  DRT::INPUT::LineDefinition onecomponentexpr;
-  onecomponentexpr.AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME");
+  using namespace DRT::INPUT;
 
-  DRT::INPUT::LineDefinition symbolic_function_of_time;
-  symbolic_function_of_time.AddNamedString("SYMBOLIC_FUNCTION_OF_TIME");
+  LineDefinition onecomponentexpr =
+      LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME").Build();
 
-  DRT::INPUT::LineDefinition componentexpr;
-  componentexpr.AddNamedInt("COMPONENT").AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME");
+  LineDefinition symbolic_function_of_time =
+      LineDefinition::Builder().AddNamedString("SYMBOLIC_FUNCTION_OF_TIME").Build();
 
-  DRT::INPUT::LineDefinition variableexpr;
-  variableexpr.AddNamedInt("VARIABLE")
-      .AddNamedString("NAME")
-      .AddNamedString("TYPE")
-      .AddOptionalNamedString("DESCRIPTION")
-      .AddOptionalNamedInt("NUMPOINTS")
-      .AddOptionalNamedString("BYNUM")
-      .AddOptionalNamedDoubleVector("TIMERANGE", 2)
-      .AddOptionalNamedDoubleVector("TIMES", "NUMPOINTS")
-      .AddOptionalNamedDoubleVector("VALUES", "NUMPOINTS")
-      .AddOptionalNamedString("PERIODIC")
-      .AddOptionalNamedDouble("T1")
-      .AddOptionalNamedDouble("T2");
+  LineDefinition componentexpr = LineDefinition::Builder()
+                                     .AddNamedInt("COMPONENT")
+                                     .AddNamedString("SYMBOLIC_FUNCTION_OF_SPACE_TIME")
+                                     .Build();
 
-  DRT::INPUT::LineDefinition variableexprmulti;
-  variableexprmulti.AddNamedInt("VARIABLE")
-      .AddNamedString("NAME")
-      .AddNamedString("TYPE")
-      .AddOptionalNamedInt("NUMPOINTS")
-      .AddOptionalNamedString("BYNUM")
-      .AddOptionalNamedDoubleVector("TIMERANGE", 2)
-      .AddOptionalNamedDoubleVector("TIMES", "NUMPOINTS")
-      .AddOptionalNamedDoubleVector("VALUES", "NUMPOINTS")
-      .AddOptionalNamedStringVector("DESCRIPTION", "NUMPOINTS")  // only NUMPOINTS-1 are taken
-      .AddOptionalNamedString("PERIODIC")
-      .AddOptionalNamedDouble("T1")
-      .AddOptionalNamedDouble("T2");
+  LineDefinition variableexprmulti =
+      LineDefinition::Builder()
+          .AddNamedInt("VARIABLE")
+          .AddNamedString("NAME")
+          .AddNamedString("TYPE")
+          .AddOptionalNamedInt("NUMPOINTS")
+          .AddOptionalNamedString("BYNUM")
+          .AddOptionalNamedDoubleVector("TIMERANGE", 2)
+          .AddOptionalNamedDoubleVector("TIMES", LengthFromIntNamed("NUMPOINTS"))
+          .AddOptionalNamedDoubleVector("VALUES", LengthFromIntNamed("NUMPOINTS"))
+          .AddOptionalNamedStringVector("DESCRIPTION",
+              // Special case where only NUMPOINTS-1 are taken
+              [](const LineDefinition& already_read_line)
+              {
+                try
+                {
+                  int length;
+                  already_read_line.ExtractInt("NUMPOINTS", length);
+                  return length - 1;
+                }
+                catch (const std::runtime_error& e)
+                {
+                  // When NUMPOINTS is not set, then we still allow for a single DESCRIPTION entry
+                  return 1;
+                }
+              })
+          .AddOptionalNamedString("PERIODIC")
+          .AddOptionalNamedDouble("T1")
+          .AddOptionalNamedDouble("T2")
+          .Build();
 
   lines->Add(onecomponentexpr);
   lines->Add(symbolic_function_of_time);
   lines->Add(componentexpr);
-  lines->Add(variableexpr);
   lines->Add(variableexprmulti);
 
-  DRT::INPUT::LineDefinition varfunct;
-  varfunct.AddNamedString("VARFUNCTION")
-      .AddOptionalNamedInt("NUMCONSTANTS")
-      .AddOptionalNamedPairOfStringAndDoubleVector("CONSTANTS", "NUMCONSTANTS");
+  LineDefinition varfunct = LineDefinition::Builder()
+                                .AddNamedString("VARFUNCTION")
+                                .AddOptionalNamedInt("NUMCONSTANTS")
+                                .AddOptionalNamedPairOfStringAndDoubleVector(
+                                    "CONSTANTS", LengthFromIntNamed("NUMCONSTANTS"))
+                                .Build();
 
   lines->Add(varfunct);
 }

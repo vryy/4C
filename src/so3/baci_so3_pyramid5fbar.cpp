@@ -74,17 +74,18 @@ void DRT::ELEMENTS::So_pyramid5fbarType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["PYRAMID5"]
-      .AddIntVector("PYRAMID5", 5)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("GROWTHTRIG");
+  defs["PYRAMID5"] = INPUT::LineDefinition::Builder()
+                         .AddIntVector("PYRAMID5", 5)
+                         .AddNamedInt("MAT")
+                         .AddNamedString("KINEM")
+                         .AddOptionalNamedDoubleVector("RAD", 3)
+                         .AddOptionalNamedDoubleVector("AXI", 3)
+                         .AddOptionalNamedDoubleVector("CIR", 3)
+                         .AddOptionalNamedDoubleVector("FIBER1", 3)
+                         .AddOptionalNamedDoubleVector("FIBER2", 3)
+                         .AddOptionalNamedDoubleVector("FIBER3", 3)
+                         .AddOptionalNamedDouble("GROWTHTRIG")
+                         .Build();
 }
 
 

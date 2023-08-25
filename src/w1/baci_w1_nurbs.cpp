@@ -68,23 +68,25 @@ void DRT::ELEMENTS::NURBS::Wall1NurbsType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLNURBS"];
 
-  defs["NURBS4"]
-      .AddIntVector("NURBS4", 4)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedString("EAS")
-      .AddNamedDouble("THICK")
-      .AddNamedString("STRESS_STRAIN")
-      .AddNamedIntVector("GP", 2);
+  defs["NURBS4"] = INPUT::LineDefinition::Builder()
+                       .AddIntVector("NURBS4", 4)
+                       .AddNamedInt("MAT")
+                       .AddNamedString("KINEM")
+                       .AddNamedString("EAS")
+                       .AddNamedDouble("THICK")
+                       .AddNamedString("STRESS_STRAIN")
+                       .AddNamedIntVector("GP", 2)
+                       .Build();
 
-  defs["NURBS9"]
-      .AddIntVector("NURBS9", 9)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedString("EAS")
-      .AddNamedDouble("THICK")
-      .AddNamedString("STRESS_STRAIN")
-      .AddNamedIntVector("GP", 2);
+  defs["NURBS9"] = INPUT::LineDefinition::Builder()
+                       .AddIntVector("NURBS9", 9)
+                       .AddNamedInt("MAT")
+                       .AddNamedString("KINEM")
+                       .AddNamedString("EAS")
+                       .AddNamedDouble("THICK")
+                       .AddNamedString("STRESS_STRAIN")
+                       .AddNamedIntVector("GP", 2)
+                       .Build();
 }
 
 

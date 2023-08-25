@@ -63,10 +63,8 @@ void DRT::ELEMENTS::So_hex8PoroP1ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"] = defs_hex8["HEX8"];
-
-  // add scalar transport ImplType
-  defs["HEX8"].AddNamedString("TYPE");
+  defs["HEX8"] =
+      DRT::INPUT::LineDefinition::Builder(defs_hex8["HEX8"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -118,8 +116,6 @@ void DRT::ELEMENTS::So_tet4PoroP1ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET4"] = defs_tet4["TET4"];
-
-  // add scalar transport ImplType
-  defs["TET4"].AddNamedString("TYPE");
+  defs["TET4"] =
+      DRT::INPUT::LineDefinition::Builder(defs_tet4["TET4"]).AddNamedString("TYPE").Build();
 }

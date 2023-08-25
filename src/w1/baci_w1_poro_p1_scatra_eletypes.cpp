@@ -73,10 +73,8 @@ void DRT::ELEMENTS::WallQuad4PoroP1ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ4POROP1SCATRA"];
 
-  defs["QUAD4"] = defs_wallporo["QUAD4"];
-
-  // add scalar transport ImplType
-  defs["QUAD4"].AddNamedString("TYPE");
+  defs["QUAD4"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wallporo["QUAD4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -138,10 +136,8 @@ void DRT::ELEMENTS::WallQuad9PoroP1ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ9POROP1SCATRA"];
 
-  defs["QUAD9"] = defs_wallporo["QUAD9"];
-
-  // add scalar transport ImplType
-  defs["QUAD9"].AddNamedString("TYPE");
+  defs["QUAD9"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wallporo["QUAD9"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -203,8 +199,6 @@ void DRT::ELEMENTS::WallTri3PoroP1ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLT3POROP1SCATRA"];
 
-  defs["TRI3"] = defs_wallporo["TRI3"];
-
-  // add scalar transport ImplType
-  defs["TRI3"].AddNamedString("TYPE");
+  defs["TRI3"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wallporo["TRI3"]).AddNamedString("TYPE").Build();
 }

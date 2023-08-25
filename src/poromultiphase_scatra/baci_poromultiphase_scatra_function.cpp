@@ -27,10 +27,13 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction<dim>::PoroMultiPhaseScaTraFun
 /*----------------------------------------------------------------------*/
 void POROMULTIPHASESCATRA::AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
 {
-  DRT::INPUT::LineDefinition poromultiphasescatra_funct;
-  poromultiphasescatra_funct.AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
-      .AddOptionalNamedInt("NUMPARAMS")
-      .AddOptionalNamedPairOfStringAndDoubleVector("PARAMS", "NUMPARAMS");
+  DRT::INPUT::LineDefinition poromultiphasescatra_funct =
+      DRT::INPUT::LineDefinition::Builder()
+          .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
+          .AddOptionalNamedInt("NUMPARAMS")
+          .AddOptionalNamedPairOfStringAndDoubleVector(
+              "PARAMS", DRT::INPUT::LengthFromIntNamed("NUMPARAMS"))
+          .Build();
 
   lines->Add(poromultiphasescatra_funct);
 }

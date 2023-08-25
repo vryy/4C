@@ -83,7 +83,11 @@ void DRT::ELEMENTS::NStetType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["TET4"].AddIntVector("TET4", 4).AddNamedInt("MAT").AddNamedString("KINEM");
+  defs["TET4"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("TET4", 4)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .Build();
 }
 
 

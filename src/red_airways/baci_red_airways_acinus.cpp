@@ -58,27 +58,28 @@ void DRT::ELEMENTS::RedAcinusType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["RED_ACINUS"];
 
-  defs["LINE2"]
-      .AddIntVector("LINE2", 2)
-      .AddNamedInt("MAT")
-      .AddNamedString("TYPE")
-      .AddNamedDouble("AcinusVolume")
-      .AddNamedDouble("AlveolarDuctVolume")
-      .AddOptionalNamedDouble("E1_0")
-      .AddOptionalNamedDouble("E1_LIN")
-      .AddOptionalNamedDouble("E1_EXP")
-      .AddOptionalNamedDouble("TAU")
-      .AddOptionalNamedDouble("E1_01")
-      .AddOptionalNamedDouble("E1_LIN1")
-      .AddOptionalNamedDouble("E1_EXP1")
-      .AddOptionalNamedDouble("TAU1")
-      .AddOptionalNamedDouble("E1_02")
-      .AddOptionalNamedDouble("E1_LIN2")
-      .AddOptionalNamedDouble("E1_EXP2")
-      .AddOptionalNamedDouble("TAU2")
-      .AddOptionalNamedDouble("KAPPA")
-      .AddOptionalNamedDouble("BETA")
-      .AddOptionalNamedDouble("Area");
+  defs["LINE2"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE2", 2)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("TYPE")
+                      .AddNamedDouble("AcinusVolume")
+                      .AddNamedDouble("AlveolarDuctVolume")
+                      .AddOptionalNamedDouble("E1_0")
+                      .AddOptionalNamedDouble("E1_LIN")
+                      .AddOptionalNamedDouble("E1_EXP")
+                      .AddOptionalNamedDouble("TAU")
+                      .AddOptionalNamedDouble("E1_01")
+                      .AddOptionalNamedDouble("E1_LIN1")
+                      .AddOptionalNamedDouble("E1_EXP1")
+                      .AddOptionalNamedDouble("TAU1")
+                      .AddOptionalNamedDouble("E1_02")
+                      .AddOptionalNamedDouble("E1_LIN2")
+                      .AddOptionalNamedDouble("E1_EXP2")
+                      .AddOptionalNamedDouble("TAU2")
+                      .AddOptionalNamedDouble("KAPPA")
+                      .AddOptionalNamedDouble("BETA")
+                      .AddOptionalNamedDouble("Area")
+                      .Build();
 }
 
 

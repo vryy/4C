@@ -68,7 +68,11 @@ void DRT::ELEMENTS::So_Hex8P1J1Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"].AddIntVector("HEX8", 8).AddNamedInt("MAT").AddNamedString("KINEM");
+  defs["HEX8"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("HEX8", 8)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .Build();
 }
 
 

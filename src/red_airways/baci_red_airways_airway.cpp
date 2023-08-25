@@ -60,27 +60,28 @@ void DRT::ELEMENTS::RedAirwayType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["RED_AIRWAY"];
 
-  defs["LINE2"]
-      .AddIntVector("LINE2", 2)
-      .AddNamedInt("MAT")
-      .AddNamedString("ElemSolvingType")
-      .AddNamedString("TYPE")
-      .AddNamedString("Resistance")
-      .AddNamedDouble("PowerOfVelocityProfile")
-      .AddNamedDouble("WallElasticity")
-      .AddNamedDouble("PoissonsRatio")
-      .AddNamedDouble("ViscousTs")
-      .AddNamedDouble("ViscousPhaseShift")
-      .AddNamedDouble("WallThickness")
-      .AddNamedDouble("Area")
-      .AddNamedInt("Generation")
-      .AddOptionalNamedDouble("AirwayColl")
-      .AddOptionalNamedDouble("S_Close")
-      .AddOptionalNamedDouble("S_Open")
-      .AddOptionalNamedDouble("Pcrit_Open")
-      .AddOptionalNamedDouble("Pcrit_Close")
-      .AddOptionalNamedDouble("Open_Init")
-      .AddOptionalNamedDouble("BranchLength");
+  defs["LINE2"] = DRT::INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE2", 2)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("ElemSolvingType")
+                      .AddNamedString("TYPE")
+                      .AddNamedString("Resistance")
+                      .AddNamedDouble("PowerOfVelocityProfile")
+                      .AddNamedDouble("WallElasticity")
+                      .AddNamedDouble("PoissonsRatio")
+                      .AddNamedDouble("ViscousTs")
+                      .AddNamedDouble("ViscousPhaseShift")
+                      .AddNamedDouble("WallThickness")
+                      .AddNamedDouble("Area")
+                      .AddNamedInt("Generation")
+                      .AddOptionalNamedDouble("AirwayColl")
+                      .AddOptionalNamedDouble("S_Close")
+                      .AddOptionalNamedDouble("S_Open")
+                      .AddOptionalNamedDouble("Pcrit_Open")
+                      .AddOptionalNamedDouble("Pcrit_Close")
+                      .AddOptionalNamedDouble("Open_Init")
+                      .AddOptionalNamedDouble("BranchLength")
+                      .Build();
 }
 
 

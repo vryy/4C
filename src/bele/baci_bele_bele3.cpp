@@ -88,27 +88,37 @@ void DRT::ELEMENTS::Bele3Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs3 = definitions["BELE3_3"];
 
-  defs3["TRI3"].AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT");
+  defs3["TRI3"] =
+      INPUT::LineDefinition::Builder().AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT").Build();
 
-  defs3["TRI6"].AddIntVector("TRI6", 6).AddOptionalNamedInt("MAT");
+  defs3["TRI6"] =
+      INPUT::LineDefinition::Builder().AddIntVector("TRI6", 6).AddOptionalNamedInt("MAT").Build();
 
-  defs3["QUAD4"].AddIntVector("QUAD4", 4).AddOptionalNamedInt("MAT");
+  defs3["QUAD4"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddOptionalNamedInt("MAT").Build();
 
-  defs3["QUAD8"].AddIntVector("QUAD8", 8).AddOptionalNamedInt("MAT");
+  defs3["QUAD8"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddOptionalNamedInt("MAT").Build();
 
-  defs3["QUAD9"].AddIntVector("QUAD9", 9).AddOptionalNamedInt("MAT");
+  defs3["QUAD9"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddOptionalNamedInt("MAT").Build();
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs4 = definitions["BELE3_4"];
 
-  defs4["TRI3"].AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT");
+  defs4["TRI3"] =
+      INPUT::LineDefinition::Builder().AddIntVector("TRI3", 3).AddOptionalNamedInt("MAT").Build();
 
-  defs4["TRI6"].AddIntVector("TRI6", 6).AddOptionalNamedInt("MAT");
+  defs4["TRI6"] =
+      INPUT::LineDefinition::Builder().AddIntVector("TRI6", 6).AddOptionalNamedInt("MAT").Build();
 
-  defs4["QUAD4"].AddIntVector("QUAD4", 4).AddOptionalNamedInt("MAT");
+  defs4["QUAD4"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddOptionalNamedInt("MAT").Build();
 
-  defs4["QUAD8"].AddIntVector("QUAD8", 8).AddOptionalNamedInt("MAT");
+  defs4["QUAD8"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddOptionalNamedInt("MAT").Build();
 
-  defs4["QUAD9"].AddIntVector("QUAD9", 9).AddOptionalNamedInt("MAT");
+  defs4["QUAD9"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddOptionalNamedInt("MAT").Build();
 }
 
 

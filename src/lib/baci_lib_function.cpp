@@ -17,6 +17,7 @@
 
 #include <Sacado.hpp>
 
+#include <stdexcept>
 #include <utility>
 
 namespace
@@ -275,14 +276,29 @@ template <int dim>
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
     const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
 {
+  // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
+  // This line accepts optional components in the beginning although this is not directly supported
+  // by LineDefinition. Thus, we need to ignore read errors when reading these first line
+  // components.
+  const auto ignore_errors_in = [](const auto& call)
+  {
+    try
+    {
+      call();
+    }
+    catch (const std::runtime_error& e)
+    {
+    }
+  };
+
   // evaluate the maximum component and the number of variables
   int maxcomp = 0;
   int maxvar = -1;
   bool found_function_of_space_time(false);
   for (const auto& ith_function_lin_def : function_line_defs)
   {
-    ith_function_lin_def->ExtractInt("COMPONENT", maxcomp);
-    ith_function_lin_def->ExtractInt("VARIABLE", maxvar);
+    ignore_errors_in([&]() { ith_function_lin_def->ExtractInt("COMPONENT", maxcomp); });
+    ignore_errors_in([&]() { ith_function_lin_def->ExtractInt("VARIABLE", maxvar); });
     if (ith_function_lin_def->HaveNamed("SYMBOLIC_FUNCTION_OF_SPACE_TIME"))
       found_function_of_space_time = true;
   }
@@ -303,7 +319,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
 
     // check the validity of the n-th component
     int compid = 0;
-    functcomp->ExtractInt("COMPONENT", compid);
+    ignore_errors_in([&]() { functcomp->ExtractInt("COMPONENT", compid); });
     if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
 
@@ -321,87 +337,98 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
 
     // read the number of the variable
     int varid;
-    line->ExtractInt("VARIABLE", varid);
+    ignore_errors_in([&]() { line->ExtractInt("VARIABLE", varid); });
 
+    const auto variable = std::invoke(
+        [&]() -> Teuchos::RCP<DRT::UTILS::FunctionVariable>
+        {
+          // read the name of the variable
+          std::string varname;
+          line->ExtractString("NAME", varname);
 
-    const auto variable = [&line]() -> Teuchos::RCP<DRT::UTILS::FunctionVariable>
-    {
-      // read the name of the variable
-      std::string varname;
-      line->ExtractString("NAME", varname);
+          // read the type of the variable
+          std::string vartype;
+          line->ExtractString("TYPE", vartype);
 
-      // read the type of the variable
-      std::string vartype;
-      line->ExtractString("TYPE", vartype);
+          // read periodicity data
+          periodicstruct periodicdata{};
 
-      // read periodicity data
-      periodicstruct periodicdata{};
+          periodicdata.periodic = line->HasString("PERIODIC");
+          if (periodicdata.periodic)
+          {
+            line->ExtractDouble("T1", periodicdata.t1);
+            line->ExtractDouble("T2", periodicdata.t2);
+          }
+          else
+          {
+            periodicdata.t1 = 0;
+            periodicdata.t2 = 0;
+          }
 
-      periodicdata.periodic = line->HasString("PERIODIC");
-      if (periodicdata.periodic)
-      {
-        line->ExtractDouble("T1", periodicdata.t1);
-        line->ExtractDouble("T2", periodicdata.t2);
-      }
-      else
-      {
-        periodicdata.t1 = 0;
-        periodicdata.t2 = 0;
-      }
+          // distinguish the type of the variable
+          if (vartype == "expression")
+          {
+            std::vector<std::string> description_vec;
+            line->ExtractStringVector("DESCRIPTION", description_vec);
 
-      // distinguish the type of the variable
-      if (vartype == "expression")
-      {
-        std::string description;
-        line->ExtractString("DESCRIPTION", description);
-        return Teuchos::rcp(new ParsedFunctionVariable(varname, description));
-      }
-      else if (vartype == "linearinterpolation")
-      {
-        // read times
-        std::vector<double> times = ExtractTimeVector(*line);
+            if (description_vec.size() != 1)
+            {
+              dserror(
+                  "Only expect one DESCRIPTION for variable of type 'expression' but %d were "
+                  "given.",
+                  description_vec.size());
+            }
 
-        // read values
-        std::vector<double> values;
-        line->ExtractDoubleVector("VALUES", values);
+            return Teuchos::rcp(new ParsedFunctionVariable(varname, description_vec.front()));
+          }
+          else if (vartype == "linearinterpolation")
+          {
+            // read times
+            std::vector<double> times = ExtractTimeVector(*line);
 
-        return Teuchos::rcp(new LinearInterpolationVariable(varname, times, values, periodicdata));
-      }
-      else if (vartype == "multifunction")
-      {
-        // read times
-        std::vector<double> times = ExtractTimeVector(*line);
+            // read values
+            std::vector<double> values;
+            line->ExtractDoubleVector("VALUES", values);
 
-        // read descriptions (strings separated with spaces)
-        std::vector<std::string> description_vec;
-        line->ExtractStringVector("DESCRIPTION", description_vec);
+            return Teuchos::rcp(
+                new LinearInterpolationVariable(varname, times, values, periodicdata));
+          }
+          else if (vartype == "multifunction")
+          {
+            // read times
+            std::vector<double> times = ExtractTimeVector(*line);
 
-        // check if the number of times = number of descriptions + 1
-        std::size_t numtimes = times.size();
-        std::size_t numdescriptions = description_vec.size();
-        if (numtimes != numdescriptions + 1)
-          dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
+            // read descriptions (strings separated with spaces)
+            std::vector<std::string> description_vec;
+            line->ExtractStringVector("DESCRIPTION", description_vec);
 
-        return Teuchos::rcp(
-            new MultiFunctionVariable(varname, times, description_vec, periodicdata));
-      }
-      else if (vartype == "fourierinterpolation")
-      {
-        // read times
-        std::vector<double> times = ExtractTimeVector(*line);
+            // check if the number of times = number of descriptions + 1
+            std::size_t numtimes = times.size();
+            std::size_t numdescriptions = description_vec.size();
+            if (numtimes != numdescriptions + 1)
+              dserror("the number of TIMES and the number of DESCRIPTIONs must be consistent");
 
-        // read values
-        std::vector<double> values;
-        line->ExtractDoubleVector("VALUES", values);
+            return Teuchos::rcp(
+                new MultiFunctionVariable(varname, times, description_vec, periodicdata));
+          }
+          else if (vartype == "fourierinterpolation")
+          {
+            // read times
+            std::vector<double> times = ExtractTimeVector(*line);
 
-        return Teuchos::rcp(new FourierInterpolationVariable(varname, times, values, periodicdata));
-      }
-      else
-      {
-        dserror("unknown variable type");
-        return Teuchos::null;
-      }
-    }();
+            // read values
+            std::vector<double> values;
+            line->ExtractDoubleVector("VALUES", values);
+
+            return Teuchos::rcp(
+                new FourierInterpolationVariable(varname, times, values, periodicdata));
+          }
+          else
+          {
+            dserror("unknown variable type");
+            return Teuchos::null;
+          }
+        });
 
     variable_pieces[varid].emplace_back(variable);
   }

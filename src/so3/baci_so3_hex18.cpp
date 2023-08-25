@@ -66,17 +66,18 @@ void DRT::ELEMENTS::So_hex18Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX18"]
-      .AddIntVector("HEX18", 18)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("STRENGTH");
+  defs["HEX18"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("HEX18", 18)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("KINEM")
+                      .AddOptionalNamedDoubleVector("RAD", 3)
+                      .AddOptionalNamedDoubleVector("AXI", 3)
+                      .AddOptionalNamedDoubleVector("CIR", 3)
+                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .AddOptionalNamedDoubleVector("FIBER2", 3)
+                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .AddOptionalNamedDouble("STRENGTH")
+                      .Build();
 }
 
 /*----------------------------------------------------------------------*

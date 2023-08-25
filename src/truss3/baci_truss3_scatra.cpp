@@ -67,10 +67,8 @@ void DRT::ELEMENTS::Truss3ScatraType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs_truss = definitions_truss["TRUSS3"];
 
   // copy definitions of standard truss element to truss element for scalar transport coupling
-  defs["LINE2"] = defs_truss["LINE2"];
-
-  // add scalar transport implementation type
-  defs["LINE2"].AddNamedString("TYPE");
+  defs["LINE2"] =
+      DRT::INPUT::LineDefinition::Builder(defs_truss["LINE2"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*

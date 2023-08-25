@@ -74,7 +74,11 @@ void DRT::ELEMENTS::NURBS::So_nurbs27Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["NURBS27"].AddIntVector("NURBS27", 27).AddNamedInt("MAT").AddNamedIntVector("GP", 3);
+  defs["NURBS27"] = INPUT::LineDefinition::Builder()
+                        .AddIntVector("NURBS27", 27)
+                        .AddNamedInt("MAT")
+                        .AddNamedIntVector("GP", 3)
+                        .Build();
 }
 
 
