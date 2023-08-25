@@ -137,19 +137,16 @@ namespace DRT::ELEMENTS
 
     /*!
     \brief Get vector of Teuchos::RCPs to the lines of this element
-
     */
     std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
     /*!
     \brief Get vector of Teuchos::RCPs to the surfaces of this element
-
     */
     std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
     /*!
     \brief Get vector of Teuchos::RCPs to the volumes of this element
-
     */
     std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
@@ -176,18 +173,16 @@ namespace DRT::ELEMENTS
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
 
     /*!
-\   brief Pack this class so it can be communicated
+    \brief Pack this class so it can be communicated
 
     \ref Pack and \ref Unpack are used to communicate this element
-
-            */
+    */
     void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
     \ref Pack and \ref Unpack are used to communicate this element
-
     */
     void Unpack(const std::vector<char>& data) override;
 
@@ -279,39 +274,34 @@ namespace DRT::ELEMENTS
       return anisotropic_permeability_nodal_coeffs_;
     }
 
-    /** \brief set the parameter interface ptr for the solid-poro elements
-     *
-     *  \param p (in): Parameter list coming from the time integrator.
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief set the parameter interface ptr for the solid-poro elements
+    \param p (in): Parameter list coming from the time integrator.
+     */
     void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
 
     //@}
 
-    /** \brief get access to the parameter interface pointer
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief get access to the parameter interface pointer
+    */
     Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override
     {
       return interface_ptr_;
     }
 
-    /** \brief returns true if the parameter interface is defined and initialized, otherwise false
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief returns true if the parameter interface is defined and initialized, otherwise false
+    */
     [[nodiscard]] inline bool IsParamsInterface() const override
     {
       return (not interface_ptr_.is_null());
     }
 
-    /** \brief get access to the interface
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief get access to the interface
+    */
     [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
     {
       if (not IsParamsInterface()) dserror("The interface ptr is not set!");
@@ -343,10 +333,10 @@ namespace DRT::ELEMENTS
     //! element techonology
     std::set<INPAR::STR::EleTech> eletech_;
 
-    //! specify EAS type in case  contains EAS
+    //! specify EAS type in case contains EAS
     ::STR::ELEMENTS::EasType eastype_;
 
-    //! scalar transport implementation type (physics)
+    //! porosity implementation type (physics)
     INPAR::PORO::PoroType porotype_;
 
     //! scalar transport implementation type (physics)
@@ -366,12 +356,11 @@ namespace DRT::ELEMENTS
     //! element calculation interface
     std::shared_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
 
-    //! element calculation interface
+    //! poro element calculation interface
     std::shared_ptr<SolidPoroEleCalcInterface> solidporo_interface_ = nullptr;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;
-
 
   };  // class Solid
 

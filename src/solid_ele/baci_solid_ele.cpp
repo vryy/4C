@@ -303,7 +303,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Solid::Volumes()
     volumes[0] = Teuchos::rcp(this, false);
     return volumes;
   }
-  else  //
+  else
   {
     dserror("Volumes() does not exist for 1D/2D-elements");
     return DRT::Element::Volumes();
@@ -315,25 +315,19 @@ void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
-  // Object Id
   AddtoPack(data, UniqueParObjectId());
 
   // add base class Element
   DRT::Element::Pack(data);
 
-  // discretization type
   AddtoPack(data, (int)distype_);
 
-  // kinematic type
   AddtoPack(data, (int)kintype_);
 
-  // element technology7
   AddtoPack(data, eletech_);
 
-  // eas type
   AddtoPack(data, eastype_);
 
-  // Setup flag
   data.AddtoPack(material_post_setup_);
 
   // optional data, e.g., EAS data
@@ -353,15 +347,14 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   DRT::Element::Unpack(basedata);
 
-  // discretization type
   distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
-  // kinematic type
+
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
-  // element technology
+
   DRT::ParObject::ExtractfromPack(position, data, eletech_);
-  // eas type
+
   eastype_ = static_cast<STR::ELEMENTS::EasType>(ExtractInt(position, data));
-  // Setup flag
+
   DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid interface
@@ -377,7 +370,6 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
 
 void DRT::ELEMENTS::Solid::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
-  // if (interface_ptr_ != Teuchos::null) return;
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
@@ -395,7 +387,6 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
   // read number of material model
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
-  //  SolidMaterial()->Setup(STR::UTILS::DisTypeToNgpOptGaussRule(Shape()), linedef);
 
   // kinematic type
   SetKinematicType(STR::UTILS::READELEMENT::ReadElementKinematicType(linedef));

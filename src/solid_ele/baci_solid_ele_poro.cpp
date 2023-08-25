@@ -285,7 +285,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Volumes()
     volumes[0] = Teuchos::rcp(this, false);
     return volumes;
   }
-  else  //
+  else
   {
     dserror("Volumes() does not exist for 1D/2D-elements");
     return DRT::Element::Volumes();
@@ -294,7 +294,6 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Volumes()
 
 void DRT::ELEMENTS::SolidPoro::SetParamsInterfacePtr(const Teuchos::ParameterList& p)
 {
-  // if (interface_ptr_ != Teuchos::null) return;
   if (p.isParameter("interface"))
   {
     interface_ptr_ = Teuchos::rcp_dynamic_cast<STR::ELEMENTS::ParamsInterface>(
@@ -399,31 +398,23 @@ void DRT::ELEMENTS::SolidPoro::Pack(DRT::PackBuffer& data) const
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
-  // Object Id
   AddtoPack(data, UniqueParObjectId());
 
   // add base class Element
   DRT::Element::Pack(data);
 
-  // discretization type
   AddtoPack(data, (int)distype_);
 
-  // kinematic type
   AddtoPack(data, (int)kintype_);
 
-  // element technology7
   AddtoPack(data, eletech_);
 
-  // eas type
   AddtoPack(data, eastype_);
 
-  // poro implementation type
   AddtoPack(data, porotype_);
 
-  // scalar transport implementation type
   AddtoPack(data, impltype_);
 
-  // Setup flag
   data.AddtoPack(material_post_setup_);
 
   // anisotropic_permeability_directions_
@@ -452,19 +443,18 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   ExtractfromPack(position, data, basedata);
   DRT::Element::Unpack(basedata);
 
-  // discretization type
   distype_ = static_cast<DRT::Element::DiscretizationType>(ExtractInt(position, data));
-  // kinematic type
+
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
-  // element technology
+
   DRT::ParObject::ExtractfromPack(position, data, eletech_);
-  // eas type
+
   eastype_ = static_cast<::STR::ELEMENTS::EasType>(ExtractInt(position, data));
-  // poro implementation type
+
   porotype_ = static_cast<INPAR::PORO::PoroType>(ExtractInt(position, data));
-  // scalar transport implementation type
+
   impltype_ = static_cast<INPAR::SCATRA::ImplType>(ExtractInt(position, data));
-  // Setup flag
+
   DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // anisotropic_permeability_directions_
@@ -480,7 +470,6 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
   anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(this->NumNode(), 0.0));
   for (int i = 0; i < size; ++i)
     ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
-
 
   // reset solid and poro interfaces
   solid_interface_ =
@@ -498,7 +487,7 @@ void DRT::ELEMENTS::SolidPoro::VisNames(std::map<std::string, int>& names)
 {
   DRT::Element::VisNames(names);
   SolidPoroMaterial().VisNames(names);
-}  // VisNames()
+}
 
 bool DRT::ELEMENTS::SolidPoro::VisData(const std::string& name, std::vector<double>& data)
 {

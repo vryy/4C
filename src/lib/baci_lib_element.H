@@ -1538,6 +1538,7 @@ namespace DRT
 
 
   //! @name Type traits for element shapes
+  /// @{
   template <DRT::Element::DiscretizationType distype>
   using is_tet = std::bool_constant<distype == DRT::Element::DiscretizationType::tet4 ||
                                     distype == DRT::Element::DiscretizationType::tet10>;
