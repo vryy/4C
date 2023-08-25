@@ -88,9 +88,9 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     case struct_calc_stress:
     {
       solid_interface_->CalculateStress(*this, *SolidMaterial(),
-          StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
-          StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
-          discretization, lm, params);
+          StressIO{GetIOStressType(*this, params), GetStressData(*this, params)},
+          StrainIO{GetIOStrainType(*this, params), GetStrainData(*this, params)}, discretization,
+          lm, params);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_energy:
@@ -116,13 +116,13 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     case struct_init_gauss_point_data_output:
     {
       solid_interface_->InitializeGaussPointDataOutput(
-          *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+          *this, *SolidMaterial(), *ParamsInterface().GaussPointDataOutputManagerPtr());
       return 0;
     }
     case struct_gauss_point_data_output:
     {
       solid_interface_->EvaluateGaussPointDataOutput(
-          *this, *SolidMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+          *this, *SolidMaterial(), *ParamsInterface().GaussPointDataOutputManagerPtr());
       return 0;
     }
     case ELEMENTS::struct_calc_reset_all:

@@ -132,9 +132,9 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
     case struct_calc_stress:
     {
       solid_interface_->CalculateStress(*this, this->StructPoroMaterial(),
-          StressIO{GetIOStressType(*this, params), GetMutableStressData(*this, params)},
-          StrainIO{GetIOStrainType(*this, params), GetMutableStrainData(*this, params)},
-          discretization, la[0].lm_, params);
+          StressIO{GetIOStressType(*this, params), GetStressData(*this, params)},
+          StrainIO{GetIOStrainType(*this, params), GetStrainData(*this, params)}, discretization,
+          la[0].lm_, params);
 
       if (la.Size() > 2)
       {
@@ -148,13 +148,13 @@ int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,
     case struct_init_gauss_point_data_output:
     {
       solid_interface_->InitializeGaussPointDataOutput(
-          *this, SolidPoroMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+          *this, SolidPoroMaterial(), *ParamsInterface().GaussPointDataOutputManagerPtr());
       return 0;
     }
     case struct_gauss_point_data_output:
     {
       solid_interface_->EvaluateGaussPointDataOutput(
-          *this, SolidPoroMaterial(), *ParamsInterface().MutableGaussPointDataOutputManagerPtr());
+          *this, SolidPoroMaterial(), *ParamsInterface().GaussPointDataOutputManagerPtr());
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_predict:

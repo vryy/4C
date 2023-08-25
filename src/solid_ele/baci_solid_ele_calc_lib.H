@@ -66,11 +66,11 @@ namespace DRT::ELEMENTS
   }
 
   template <typename T>
-  inline std::vector<char>& GetMutableStressData(const T& ele, const Teuchos::ParameterList& params)
+  inline std::vector<char>& GetStressData(const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.ParamsInterface().MutableStressDataPtr();
+      return *ele.ParamsInterface().StressDataPtr();
     }
     else
     {
@@ -79,11 +79,11 @@ namespace DRT::ELEMENTS
   }
 
   template <typename T>
-  inline std::vector<char>& GetMutableStrainData(const T& ele, const Teuchos::ParameterList& params)
+  inline std::vector<char>& GetStrainData(const T& ele, const Teuchos::ParameterList& params)
   {
     if (ele.IsParamsInterface())
     {
-      return *ele.ParamsInterface().MutableStrainDataPtr();
+      return *ele.ParamsInterface().StrainDataPtr();
     }
     else
     {
@@ -920,17 +920,17 @@ namespace DRT::ELEMENTS
           {
             // compute average of the quantities
             Teuchos::RCP<Epetra_MultiVector> global_data =
-                gp_data_output_manager.GetMutableElementCenterData().at(quantity_name);
+                gp_data_output_manager.GetElementCenterData().at(quantity_name);
             CORE::DRT::ELEMENTS::AssembleAveragedElementValues(*global_data, gp_data, ele);
             break;
           }
           case INPAR::STR::GaussPointDataOutputType::nodes:
           {
             Teuchos::RCP<Epetra_MultiVector> global_data =
-                gp_data_output_manager.GetMutableNodalData().at(quantity_name);
+                gp_data_output_manager.GetNodalData().at(quantity_name);
 
             Epetra_IntVector& global_nodal_element_count =
-                *gp_data_output_manager.GetMutableNodalDataCount().at(quantity_name);
+                *gp_data_output_manager.GetNodalDataCount().at(quantity_name);
 
             CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<distype>(
                 ele, gp_data, *global_data, false, stiffness_matrix_integration);
@@ -940,7 +940,7 @@ namespace DRT::ELEMENTS
           case INPAR::STR::GaussPointDataOutputType::gauss_points:
           {
             std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
-                gp_data_output_manager.GetMutableGaussPointData().at(quantity_name);
+                gp_data_output_manager.GetGaussPointData().at(quantity_name);
             DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, ele);
             break;
           }
