@@ -71,10 +71,8 @@ void DRT::ELEMENTS::WallQuad4PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ4POROSCATRA"];
 
-  defs["QUAD4"] = defs_wall["QUAD4"];
-
-  // add scalar transport ImplType
-  defs["QUAD4"].AddNamedString("TYPE");
+  defs["QUAD4"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wall["QUAD4"]).AddNamedString("TYPE").Build();
 }
 
 
@@ -135,10 +133,8 @@ void DRT::ELEMENTS::WallQuad9PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLQ9POROSCATRA"];
 
-  defs["QUAD9"] = defs_wall["QUAD9"];
-
-  // add scalar transport ImplType
-  defs["QUAD9"].AddNamedString("TYPE");
+  defs["QUAD9"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wall["QUAD9"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -199,10 +195,8 @@ void DRT::ELEMENTS::WallNurbs4PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN4POROSCATRA"];
 
-  defs["NURBS4"] = defs_wall["NURBS4"];
-
-  // add scalar transport ImplType
-  defs["NURBS4"].AddNamedString("TYPE");
+  defs["NURBS4"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wall["NURBS4"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -263,10 +257,8 @@ void DRT::ELEMENTS::WallNurbs9PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLN9POROSCATRA"];
 
-  defs["NURBS9"] = defs_wall["NURBS9"];
-
-  // add scalar transport ImplType
-  defs["NURBS9"].AddNamedString("TYPE");
+  defs["NURBS9"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wall["NURBS9"]).AddNamedString("TYPE").Build();
 }
 
 /*----------------------------------------------------------------------*
@@ -327,8 +319,6 @@ void DRT::ELEMENTS::WallTri3PoroScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLT3POROSCATRA"];
 
-  defs["TRI3"] = defs_wall["TRI3"];
-
-  // add scalar transport ImplType
-  defs["TRI3"].AddNamedString("TYPE");
+  defs["TRI3"] =
+      DRT::INPUT::LineDefinition::Builder(defs_wall["TRI3"]).AddNamedString("TYPE").Build();
 }

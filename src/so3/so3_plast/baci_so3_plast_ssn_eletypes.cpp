@@ -77,9 +77,10 @@ void DRT::ELEMENTS::So_hex8PlastType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"] = defs_hex8["HEX8"];
-  defs["HEX8"].AddNamedString("FBAR");
-  defs["HEX8"].AddOptionalNamedInt("NUMGP");
+  defs["HEX8"] = DRT::INPUT::LineDefinition::Builder(defs_hex8["HEX8"])
+                     .AddNamedString("FBAR")
+                     .AddOptionalNamedInt("NUMGP")
+                     .Build();
 
 }  // SetupElementDefinition()
 
@@ -167,17 +168,18 @@ void DRT::ELEMENTS::So_hex18PlastType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX18"]
-      .AddIntVector("HEX18", 18)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("STRENGTH");
+  defs["HEX18"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("HEX18", 18)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("KINEM")
+                      .AddOptionalNamedDoubleVector("RAD", 3)
+                      .AddOptionalNamedDoubleVector("AXI", 3)
+                      .AddOptionalNamedDoubleVector("CIR", 3)
+                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .AddOptionalNamedDoubleVector("FIBER2", 3)
+                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .AddOptionalNamedDouble("STRENGTH")
+                      .Build();
 }  // SetupElementDefinition()
 
 
@@ -449,7 +451,11 @@ void DRT::ELEMENTS::So_nurbs27PlastType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["NURBS27"].AddIntVector("NURBS27", 27).AddNamedInt("MAT").AddNamedString("KINEM");
+  defs["NURBS27"] = INPUT::LineDefinition::Builder()
+                        .AddIntVector("NURBS27", 27)
+                        .AddNamedInt("MAT")
+                        .AddNamedString("KINEM")
+                        .Build();
 }  // SetupElementDefinition()
 
 

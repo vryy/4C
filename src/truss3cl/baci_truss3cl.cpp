@@ -70,11 +70,12 @@ void DRT::ELEMENTS::Truss3CLType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["Truss3CL"];
 
-  defs["LINE2"]
-      .AddIntVector("LINE2", 2)
-      .AddNamedInt("MAT")
-      .AddNamedDouble("CROSS")
-      .AddNamedString("KINEM");
+  defs["LINE2"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE2", 2)
+                      .AddNamedInt("MAT")
+                      .AddNamedDouble("CROSS")
+                      .AddNamedString("KINEM")
+                      .Build();
 }
 
 

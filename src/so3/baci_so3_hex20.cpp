@@ -74,18 +74,19 @@ void DRT::ELEMENTS::So_hex20Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX20"]
-      .AddIntVector("HEX20", 20)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3)
-      .AddOptionalNamedDouble("STRENGTH")
-      .AddOptionalNamedDouble("GROWTHTRIG");
+  defs["HEX20"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("HEX20", 20)
+                      .AddNamedInt("MAT")
+                      .AddNamedString("KINEM")
+                      .AddOptionalNamedDoubleVector("RAD", 3)
+                      .AddOptionalNamedDoubleVector("AXI", 3)
+                      .AddOptionalNamedDoubleVector("CIR", 3)
+                      .AddOptionalNamedDoubleVector("FIBER1", 3)
+                      .AddOptionalNamedDoubleVector("FIBER2", 3)
+                      .AddOptionalNamedDoubleVector("FIBER3", 3)
+                      .AddOptionalNamedDouble("STRENGTH")
+                      .AddOptionalNamedDouble("GROWTHTRIG")
+                      .Build();
 }
 
 

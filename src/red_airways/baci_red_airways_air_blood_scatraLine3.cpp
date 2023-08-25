@@ -59,11 +59,12 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Type::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs =
       definitions["RED_AIR_BLOOD_SCATRA_LINE3"];
 
-  defs["LINE3"]
-      .AddIntVector("LINE3", 3)
-      .AddNamedDouble("DiffusionCoefficient")
-      .AddNamedDouble("WallThickness")
-      .AddNamedDouble("PercentageOfDiffusionArea");
+  defs["LINE3"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE3", 3)
+                      .AddNamedDouble("DiffusionCoefficient")
+                      .AddNamedDouble("WallThickness")
+                      .AddNamedDouble("PercentageOfDiffusionArea")
+                      .Build();
   ;
 }
 

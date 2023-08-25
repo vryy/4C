@@ -92,29 +92,32 @@ void DRT::ELEMENTS::Beam3kType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["BEAM3K"];
 
-  defs["LINE2"]
-      .AddIntVector("LINE2", 2)
-      .AddNamedInt("WK")
-      .AddNamedInt("ROTVEC")
-      .AddNamedInt("MAT")
-      .AddNamedDoubleVector("TRIADS", 6)
-      .AddOptionalTag("FAD");
+  defs["LINE2"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE2", 2)
+                      .AddNamedInt("WK")
+                      .AddNamedInt("ROTVEC")
+                      .AddNamedInt("MAT")
+                      .AddNamedDoubleVector("TRIADS", 6)
+                      .AddOptionalTag("FAD")
+                      .Build();
 
-  defs["LINE3"]
-      .AddIntVector("LINE3", 3)
-      .AddNamedInt("WK")
-      .AddNamedInt("ROTVEC")
-      .AddNamedInt("MAT")
-      .AddNamedDoubleVector("TRIADS", 9)
-      .AddOptionalTag("FAD");
+  defs["LINE3"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE3", 3)
+                      .AddNamedInt("WK")
+                      .AddNamedInt("ROTVEC")
+                      .AddNamedInt("MAT")
+                      .AddNamedDoubleVector("TRIADS", 9)
+                      .AddOptionalTag("FAD")
+                      .Build();
 
-  defs["LINE4"]
-      .AddIntVector("LINE4", 4)
-      .AddNamedInt("WK")
-      .AddNamedInt("ROTVEC")
-      .AddNamedInt("MAT")
-      .AddNamedDoubleVector("TRIADS", 12)
-      .AddOptionalTag("FAD");
+  defs["LINE4"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("LINE4", 4)
+                      .AddNamedInt("WK")
+                      .AddNamedInt("ROTVEC")
+                      .AddNamedInt("MAT")
+                      .AddNamedDoubleVector("TRIADS", 12)
+                      .AddOptionalTag("FAD")
+                      .Build();
 }
 
 /*----------------------------------------------------------------------*

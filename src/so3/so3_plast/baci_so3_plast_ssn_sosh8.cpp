@@ -286,16 +286,17 @@ void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"]
-      .AddIntVector("HEX8", 8)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedString("EAS")
-      .AddNamedString("ANS")
-      .AddNamedString("THICKDIR")
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defs["HEX8"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("HEX8", 8)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .AddNamedString("EAS")
+                     .AddNamedString("ANS")
+                     .AddNamedString("THICKDIR")
+                     .AddOptionalNamedDoubleVector("FIBER1", 3)
+                     .AddOptionalNamedDoubleVector("FIBER2", 3)
+                     .AddOptionalNamedDoubleVector("FIBER3", 3)
+                     .Build();
 
 }  // SetupElementDefinition()
 

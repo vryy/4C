@@ -85,16 +85,41 @@ void DRT::ELEMENTS::ElemagType::SetupElementDefinition(
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["ELECTROMAGNETIC"];
 
   // 3D elements
-  defs["HEX8"].AddIntVector("HEX8", 8).AddNamedInt("MAT").AddNamedInt("DEG").AddNamedInt("SPC");
+  defs["HEX8"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("HEX8", 8)
+                     .AddNamedInt("MAT")
+                     .AddNamedInt("DEG")
+                     .AddNamedInt("SPC")
+                     .Build();
 
-  defs["TET4"].AddIntVector("TET4", 4).AddNamedInt("MAT").AddNamedInt("DEG").AddNamedInt("SPC");
+  defs["TET4"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("TET4", 4)
+                     .AddNamedInt("MAT")
+                     .AddNamedInt("DEG")
+                     .AddNamedInt("SPC")
+                     .Build();
 
   // 2D elements
-  defs["QUAD4"].AddIntVector("QUAD4", 4).AddNamedInt("MAT").AddNamedInt("DEG").AddNamedInt("SPC");
+  defs["QUAD4"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("QUAD4", 4)
+                      .AddNamedInt("MAT")
+                      .AddNamedInt("DEG")
+                      .AddNamedInt("SPC")
+                      .Build();
 
-  defs["QUAD9"].AddIntVector("QUAD9", 9).AddNamedInt("MAT").AddNamedInt("DEG").AddNamedInt("SPC");
+  defs["QUAD9"] = INPUT::LineDefinition::Builder()
+                      .AddIntVector("QUAD9", 9)
+                      .AddNamedInt("MAT")
+                      .AddNamedInt("DEG")
+                      .AddNamedInt("SPC")
+                      .Build();
 
-  defs["TRI3"].AddIntVector("TRI3", 3).AddNamedInt("MAT").AddNamedInt("DEG").AddNamedInt("SPC");
+  defs["TRI3"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("TRI3", 3)
+                     .AddNamedInt("MAT")
+                     .AddNamedInt("DEG")
+                     .AddNamedInt("SPC")
+                     .Build();
 }
 
 

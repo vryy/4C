@@ -53,22 +53,10 @@ void DRT::ELEMENTS::Wall1ScatraType::SetupElementDefinition(
 
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["WALLSCATRA"];
 
-  defs["QUAD4"] = defs_wall["QUAD4"];
-  defs["QUAD8"] = defs_wall["QUAD8"];
-  defs["QUAD9"] = defs_wall["QUAD9"];
-  defs["TRI3"] = defs_wall["TRI3"];
-  defs["TRI6"] = defs_wall["TRI6"];
-  defs["NURBS4"] = defs_wall["NURBS4"];
-  defs["NURBS9"] = defs_wall["NURBS9"];
-
-  // add scalar transport impltype
-  defs["QUAD4"].AddNamedString("TYPE");
-  defs["QUAD8"].AddNamedString("TYPE");
-  defs["QUAD9"].AddNamedString("TYPE");
-  defs["TRI3"].AddNamedString("TYPE");
-  defs["TRI6"].AddNamedString("TYPE");
-  defs["NURBS4"].AddNamedString("TYPE");
-  defs["NURBS9"].AddNamedString("TYPE");
+  for (const auto& [key, wall_line_def] : defs_wall)
+  {
+    defs[key] = DRT::INPUT::LineDefinition::Builder(wall_line_def).AddNamedString("TYPE").Build();
+  }
 }
 
 /*----------------------------------------------------------------------*

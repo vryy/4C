@@ -67,15 +67,16 @@ void DRT::ELEMENTS::So_shw6Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["WEDGE6"]
-      .AddIntVector("WEDGE6", 6)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedString("EAS")
-      .AddOptionalTag("OPTORDER")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3);
+  defs["WEDGE6"] = INPUT::LineDefinition::Builder()
+                       .AddIntVector("WEDGE6", 6)
+                       .AddNamedInt("MAT")
+                       .AddNamedString("KINEM")
+                       .AddNamedString("EAS")
+                       .AddOptionalTag("OPTORDER")
+                       .AddOptionalNamedDoubleVector("RAD", 3)
+                       .AddOptionalNamedDoubleVector("AXI", 3)
+                       .AddOptionalNamedDoubleVector("CIR", 3)
+                       .Build();
 }
 
 

@@ -81,15 +81,20 @@ void DRT::ELEMENTS::Ale2Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["ALE2"];
 
-  defs["QUAD4"].AddIntVector("QUAD4", 4).AddNamedInt("MAT");
+  defs["QUAD4"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD4", 4).AddNamedInt("MAT").Build();
 
-  defs["QUAD8"].AddIntVector("QUAD8", 8).AddNamedInt("MAT");
+  defs["QUAD8"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD8", 8).AddNamedInt("MAT").Build();
 
-  defs["QUAD9"].AddIntVector("QUAD9", 9).AddNamedInt("MAT");
+  defs["QUAD9"] =
+      INPUT::LineDefinition::Builder().AddIntVector("QUAD9", 9).AddNamedInt("MAT").Build();
 
-  defs["TRI3"].AddIntVector("TRI3", 3).AddNamedInt("MAT");
+  defs["TRI3"] =
+      INPUT::LineDefinition::Builder().AddIntVector("TRI3", 3).AddNamedInt("MAT").Build();
 
-  defs["TRI6"].AddIntVector("TRI6", 6).AddNamedInt("MAT");
+  defs["TRI6"] =
+      INPUT::LineDefinition::Builder().AddIntVector("TRI6", 6).AddNamedInt("MAT").Build();
 }
 
 /*----------------------------------------------------------------------------*/

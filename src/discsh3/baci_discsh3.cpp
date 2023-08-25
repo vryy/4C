@@ -69,7 +69,11 @@ void DRT::ELEMENTS::DiscSh3Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["DISCSH3"];
 
-  defs["TRI3"].AddIntVector("TRI3", 3).AddNamedInt("MAT").AddNamedDouble("THICK");
+  defs["TRI3"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("TRI3", 3)
+                     .AddNamedInt("MAT")
+                     .AddNamedDouble("THICK")
+                     .Build();
 }
 
 

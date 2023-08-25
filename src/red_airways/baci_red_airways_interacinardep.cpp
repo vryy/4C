@@ -68,7 +68,8 @@ void DRT::ELEMENTS::RedInterAcinarDepType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["RED_ACINAR_INTER_DEP"];
 
-  defs["LINE2"].AddIntVector("LINE2", 2).AddNamedInt("MAT");
+  defs["LINE2"] =
+      INPUT::LineDefinition::Builder().AddIntVector("LINE2", 2).AddNamedInt("MAT").Build();
 }
 
 

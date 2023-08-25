@@ -72,20 +72,21 @@ void DRT::ELEMENTS::So_sh8p8Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions[GetElementTypeString()];
 
-  defs["HEX8"]
-      .AddIntVector("HEX8", 8)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddNamedString("STAB")
-      .AddNamedString("ANS")
-      .AddNamedString("LIN")
-      .AddNamedString("THICKDIR")
-      .AddNamedString("EAS")
-      .AddNamedString("ISO")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDouble("STRENGTH");
+  defs["HEX8"] = INPUT::LineDefinition::Builder()
+                     .AddIntVector("HEX8", 8)
+                     .AddNamedInt("MAT")
+                     .AddNamedString("KINEM")
+                     .AddNamedString("STAB")
+                     .AddNamedString("ANS")
+                     .AddNamedString("LIN")
+                     .AddNamedString("THICKDIR")
+                     .AddNamedString("EAS")
+                     .AddNamedString("ISO")
+                     .AddOptionalNamedDoubleVector("RAD", 3)
+                     .AddOptionalNamedDoubleVector("AXI", 3)
+                     .AddOptionalNamedDoubleVector("CIR", 3)
+                     .AddOptionalNamedDouble("STRENGTH")
+                     .Build();
 }
 
 

@@ -88,7 +88,11 @@ void DRT::ELEMENTS::RigidsphereType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["RIGIDSPHERE"];
 
-  defs["POINT1"].AddIntVector("POINT1", 1).AddNamedDouble("RADIUS").AddNamedDouble("DENSITY");
+  defs["POINT1"] = INPUT::LineDefinition::Builder()
+                       .AddIntVector("POINT1", 1)
+                       .AddNamedDouble("RADIUS")
+                       .AddNamedDouble("DENSITY")
+                       .Build();
 }
 
 /*----------------------------------------------------------------------*

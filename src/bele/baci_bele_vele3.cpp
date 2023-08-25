@@ -64,7 +64,7 @@ void DRT::ELEMENTS::Vele3Type::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defs = definitions["VELE3"];
 
-  defs["HEX8"].AddIntVector("HEX8", 8);
+  defs["HEX8"] = INPUT::LineDefinition::Builder().AddIntVector("HEX8", 8).Build();
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Vele3SurfaceType::Create(const int id, const int owner)
