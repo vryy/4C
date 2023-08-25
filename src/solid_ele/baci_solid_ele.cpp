@@ -31,128 +31,139 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
 {
   std::map<std::string, DRT::INPUT::LineDefinition>& defsgeneral = definitions["SOLID"];
 
-  defsgeneral["HEX8"]
-      .AddIntVector("HEX8", 8)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedString("EAS")
-      .AddOptionalTag("FBAR")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["HEX8"] = INPUT::LineDefinition::Builder()
+                            .AddIntVector("HEX8", 8)
+                            .AddNamedInt("MAT")
+                            .AddNamedString("KINEM")
+                            .AddOptionalNamedString("EAS")
+                            .AddOptionalTag("FBAR")
+                            .AddOptionalNamedDoubleVector("RAD", 3)
+                            .AddOptionalNamedDoubleVector("AXI", 3)
+                            .AddOptionalNamedDoubleVector("CIR", 3)
+                            .AddOptionalNamedDoubleVector("FIBER1", 3)
+                            .AddOptionalNamedDoubleVector("FIBER2", 3)
+                            .AddOptionalNamedDoubleVector("FIBER3", 3)
+                            .Build();
 
-  defsgeneral["HEX18"]
-      .AddIntVector("HEX18", 18)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["HEX18"] = INPUT::LineDefinition::Builder()
+                             .AddIntVector("HEX18", 18)
+                             .AddNamedInt("MAT")
+                             .AddNamedString("KINEM")
+                             .AddOptionalNamedDoubleVector("RAD", 3)
+                             .AddOptionalNamedDoubleVector("AXI", 3)
+                             .AddOptionalNamedDoubleVector("CIR", 3)
+                             .AddOptionalNamedDoubleVector("FIBER1", 3)
+                             .AddOptionalNamedDoubleVector("FIBER2", 3)
+                             .AddOptionalNamedDoubleVector("FIBER3", 3)
+                             .Build();
 
-  defsgeneral["HEX20"]
-      .AddIntVector("HEX20", 20)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["HEX20"] = INPUT::LineDefinition::Builder()
+                             .AddIntVector("HEX20", 20)
+                             .AddNamedInt("MAT")
+                             .AddNamedString("KINEM")
+                             .AddOptionalNamedDoubleVector("RAD", 3)
+                             .AddOptionalNamedDoubleVector("AXI", 3)
+                             .AddOptionalNamedDoubleVector("CIR", 3)
+                             .AddOptionalNamedDoubleVector("FIBER1", 3)
+                             .AddOptionalNamedDoubleVector("FIBER2", 3)
+                             .AddOptionalNamedDoubleVector("FIBER3", 3)
+                             .Build();
 
-  defsgeneral["HEX27"]
-      .AddIntVector("HEX27", 27)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["HEX27"] = INPUT::LineDefinition::Builder()
+                             .AddIntVector("HEX27", 27)
+                             .AddNamedInt("MAT")
+                             .AddNamedString("KINEM")
+                             .AddOptionalNamedDoubleVector("RAD", 3)
+                             .AddOptionalNamedDoubleVector("AXI", 3)
+                             .AddOptionalNamedDoubleVector("CIR", 3)
+                             .AddOptionalNamedDoubleVector("FIBER1", 3)
+                             .AddOptionalNamedDoubleVector("FIBER2", 3)
+                             .AddOptionalNamedDoubleVector("FIBER3", 3)
+                             .Build();
 
-  defsgeneral["TET4"]
-      .AddIntVector("TET4", 4)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["TET4"] = INPUT::LineDefinition::Builder()
+                            .AddIntVector("TET4", 4)
+                            .AddNamedInt("MAT")
+                            .AddNamedString("KINEM")
+                            .AddOptionalNamedDoubleVector("RAD", 3)
+                            .AddOptionalNamedDoubleVector("AXI", 3)
+                            .AddOptionalNamedDoubleVector("CIR", 3)
+                            .AddOptionalNamedDoubleVector("FIBER1", 3)
+                            .AddOptionalNamedDoubleVector("FIBER2", 3)
+                            .AddOptionalNamedDoubleVector("FIBER3", 3)
+                            .Build();
 
-  defsgeneral["TET10"]
-      .AddIntVector("TET10", 10)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["TET10"] = INPUT::LineDefinition::Builder()
+                             .AddIntVector("TET10", 10)
+                             .AddNamedInt("MAT")
+                             .AddNamedString("KINEM")
+                             .AddOptionalNamedDoubleVector("RAD", 3)
+                             .AddOptionalNamedDoubleVector("AXI", 3)
+                             .AddOptionalNamedDoubleVector("CIR", 3)
+                             .AddOptionalNamedDoubleVector("FIBER1", 3)
+                             .AddOptionalNamedDoubleVector("FIBER2", 3)
+                             .AddOptionalNamedDoubleVector("FIBER3", 3)
+                             .Build();
 
-  defsgeneral["WEDGE6"]
-      .AddIntVector("WEDGE6", 6)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["WEDGE6"] = INPUT::LineDefinition::Builder()
+                              .AddIntVector("WEDGE6", 6)
+                              .AddNamedInt("MAT")
+                              .AddNamedString("KINEM")
+                              .AddOptionalNamedDoubleVector("RAD", 3)
+                              .AddOptionalNamedDoubleVector("AXI", 3)
+                              .AddOptionalNamedDoubleVector("CIR", 3)
+                              .AddOptionalNamedDoubleVector("FIBER1", 3)
+                              .AddOptionalNamedDoubleVector("FIBER2", 3)
+                              .AddOptionalNamedDoubleVector("FIBER3", 3)
+                              .Build();
 
-  defsgeneral["WEDGE15"]
-      .AddIntVector("WEDGE15", 15)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["WEDGE15"] = INPUT::LineDefinition::Builder()
+                               .AddIntVector("WEDGE15", 15)
+                               .AddNamedInt("MAT")
+                               .AddNamedString("KINEM")
+                               .AddOptionalNamedDoubleVector("RAD", 3)
+                               .AddOptionalNamedDoubleVector("AXI", 3)
+                               .AddOptionalNamedDoubleVector("CIR", 3)
+                               .AddOptionalNamedDoubleVector("FIBER1", 3)
+                               .AddOptionalNamedDoubleVector("FIBER2", 3)
+                               .AddOptionalNamedDoubleVector("FIBER3", 3)
+                               .Build();
 
-  defsgeneral["PYRAMID5"]
-      .AddIntVector("PYRAMID5", 5)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["PYRAMID5"] = INPUT::LineDefinition::Builder()
+                                .AddIntVector("PYRAMID5", 5)
+                                .AddNamedInt("MAT")
+                                .AddNamedString("KINEM")
+                                .AddOptionalNamedDoubleVector("RAD", 3)
+                                .AddOptionalNamedDoubleVector("AXI", 3)
+                                .AddOptionalNamedDoubleVector("CIR", 3)
+                                .AddOptionalNamedDoubleVector("FIBER1", 3)
+                                .AddOptionalNamedDoubleVector("FIBER2", 3)
+                                .AddOptionalNamedDoubleVector("FIBER3", 3)
+                                .Build();
 
-  defsgeneral["NURBS8"]
-      .AddIntVector("NURBS8", 8)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["NURBS8"] = INPUT::LineDefinition::Builder()
+                              .AddIntVector("NURBS8", 8)
+                              .AddNamedInt("MAT")
+                              .AddNamedString("KINEM")
+                              .AddOptionalNamedDoubleVector("RAD", 3)
+                              .AddOptionalNamedDoubleVector("AXI", 3)
+                              .AddOptionalNamedDoubleVector("CIR", 3)
+                              .AddOptionalNamedDoubleVector("FIBER1", 3)
+                              .AddOptionalNamedDoubleVector("FIBER2", 3)
+                              .AddOptionalNamedDoubleVector("FIBER3", 3)
+                              .Build();
 
-  defsgeneral["NURBS27"]
-      .AddIntVector("NURBS27", 27)
-      .AddNamedInt("MAT")
-      .AddNamedString("KINEM")
-      .AddOptionalNamedDoubleVector("RAD", 3)
-      .AddOptionalNamedDoubleVector("AXI", 3)
-      .AddOptionalNamedDoubleVector("CIR", 3)
-      .AddOptionalNamedDoubleVector("FIBER1", 3)
-      .AddOptionalNamedDoubleVector("FIBER2", 3)
-      .AddOptionalNamedDoubleVector("FIBER3", 3);
+  defsgeneral["NURBS27"] = INPUT::LineDefinition::Builder()
+                               .AddIntVector("NURBS27", 27)
+                               .AddNamedInt("MAT")
+                               .AddNamedString("KINEM")
+                               .AddOptionalNamedDoubleVector("RAD", 3)
+                               .AddOptionalNamedDoubleVector("AXI", 3)
+                               .AddOptionalNamedDoubleVector("CIR", 3)
+                               .AddOptionalNamedDoubleVector("FIBER1", 3)
+                               .AddOptionalNamedDoubleVector("FIBER2", 3)
+                               .AddOptionalNamedDoubleVector("FIBER3", 3)
+                               .Build();
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(
