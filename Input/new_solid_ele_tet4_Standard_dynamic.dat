@@ -5,18 +5,6 @@ Time Integration: Standard
 Shape: tet4
 Element-Technology:
 Fibers: none
-----------------------------------------------------------------------------IO
-STRUCT_STRAIN                   gl
-STRUCT_STRESS                   cauchy
----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT              ascii
-INTERVAL_STEPS                  1
-EVERY_ITERATION                 no
------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
-OUTPUT_STRUCTURE                yes
-DISPLACEMENT                    yes
-ELEMENT_OWNER                   no
-STRESS_STRAIN                   no
 -------------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 ----------------------------------------------------------------DISCRETISATION
@@ -43,9 +31,9 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ------------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+1)*(y+2)*(z+3)
 ------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 1.791089415425496 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.08110717600747094 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.9928726167046381 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 1.8035171997026356 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0.16501668754702745 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 0.993842670273672 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 1.7942204706216396 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE 0.04214478830520364 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE 0.8788619899769452 TOLERANCE 1e-12
@@ -55,9 +43,9 @@ STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 0.7656126914959439 TOLERANCE
 STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 1.7990455887556023 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 0.1641225398453887 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE 0.7625855494040384 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 1.8035171997026356 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0.16501668754702745 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 0.993842670273672 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 1.791089415425496 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.08110717600747094 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.9928726167046381 TOLERANCE 1e-12
 -------------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0
@@ -75,16 +63,16 @@ NDLINE                          0
 NDSURF                          2
 NDVOL                           0
 -----------------------------------------------------------DSURF-NODE TOPOLOGY
-NODE 3 DSURFACE 1
 NODE 2 DSURFACE 1
+NODE 1 DSURFACE 1
 NODE 13 DSURFACE 1
 NODE 4 DSURFACE 1
-NODE 1 DSURFACE 1
-NODE 6 DSURFACE 2
+NODE 3 DSURFACE 1
+NODE 5 DSURFACE 2
 NODE 11 DSURFACE 2
 NODE 8 DSURFACE 2
 NODE 7 DSURFACE 2
-NODE 5 DSURFACE 2
+NODE 6 DSURFACE 2
 -------------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0 0.0 0.0
 NODE 2 COORD 0.0 1.0 0.0

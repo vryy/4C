@@ -1,22 +1,10 @@
 -------------------------------------------------------------------------TITLE
 Test of the new solid elements in BACI
 
-Time Integration: Old
+Time Integration: Standard
 Shape: tet4
 Element-Technology:
 Fibers: none
-----------------------------------------------------------------------------IO
-STRUCT_STRAIN                   gl
-STRUCT_STRESS                   cauchy
----------------------------------------------------------IO/RUNTIME VTK OUTPUT
-OUTPUT_DATA_FORMAT              ascii
-INTERVAL_STEPS                  1
-EVERY_ITERATION                 no
------------------------------------------------IO/RUNTIME VTK OUTPUT/STRUCTURE
-OUTPUT_STRUCTURE                yes
-DISPLACEMENT                    yes
-ELEMENT_OWNER                   no
-STRESS_STRAIN                   no
 -------------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Structure
 ----------------------------------------------------------------DISCRETISATION
@@ -26,7 +14,7 @@ NAME                            Structure_Solver
 SOLVER                          UMFPACK
 ------------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
-INT_STRATEGY                    Old
+INT_STRATEGY                    Standard
 DYNAMICTYP                      Statics
 NLNSOL                          fullnewton
 PREDICT                         ConstDis
@@ -43,27 +31,30 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ------------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x+1)*(y+2)*(z+3)
 ------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE 1.6901055099813493 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE 0.045508421574508594 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE 0.045509543594702814 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 1.6965407601569171 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 0.1679312546730472 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE -0.07875100330983982 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.6843023773687442 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -0.0766450434232341 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -0.07552184259216714 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE 1.696514306113259 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE -0.07701663303842933 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE 0.1696693460144385 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 1.707971341755086 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE 0.16826914782872232 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE 0.16714979648543 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE   2.87504600239697794e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispy VALUE   2.07826754941936281e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 5 QUANTITY dispz VALUE   2.06191776753556100e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispx VALUE   2.86434983360201212e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispy VALUE  -8.19415721220755067e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 6 QUANTITY dispz VALUE   2.09835917219517221e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE   2.85308836901795893e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE  -8.18706066979800334e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE  -8.02318627286854463e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE   2.86438865085503824e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE   2.07444116821998120e-01 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 7 QUANTITY dispz VALUE  -8.43295327261180810e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 11 QUANTITY dispx VALUE  2.86189550391051029e+00 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 11 QUANTITY dispy VALUE  6.28305375891688445e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 11 QUANTITY dispz VALUE  6.28316708967067705e-02 TOLERANCE 1e-12
 -------------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10 0.01 0.01 0 0 0 FUNCT 1 2 2 0 0 0 Live Mid
+-------------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+DVOL  1
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10 0.01 0.01 0 0 0 FUNCT 1 2 2 0 0 0 Live Mid
 ------------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        28
 NODES                           15
@@ -73,18 +64,34 @@ MATERIALS                       9999
 NDPOINT                         0
 NDLINE                          0
 NDSURF                          2
-NDVOL                           0
+NDVOL                           1
 -----------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 13 DSURFACE 1
+NODE 4 DSURFACE 1
+NODE 3 DSURFACE 1
 NODE 1 DSURFACE 1
 NODE 2 DSURFACE 1
-NODE 3 DSURFACE 1
-NODE 4 DSURFACE 1
-NODE 13 DSURFACE 1
-NODE 11 DSURFACE 2
-NODE 7 DSURFACE 2
-NODE 8 DSURFACE 2
-NODE 6 DSURFACE 2
 NODE 5 DSURFACE 2
+NODE 6 DSURFACE 2
+NODE 8 DSURFACE 2
+NODE 7 DSURFACE 2
+NODE 11 DSURFACE 2
+------------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 8 DVOL 1
+NODE 9 DVOL 1
+NODE 4 DVOL 1
+NODE 12 DVOL 1
+NODE 13 DVOL 1
+NODE 3 DVOL 1
+NODE 15 DVOL 1
+NODE 10 DVOL 1
+NODE 14 DVOL 1
+NODE 1 DVOL 1
+NODE 7 DVOL 1
+NODE 11 DVOL 1
+NODE 2 DVOL 1
 -------------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0 0.0 0.0
 NODE 2 COORD 0.0 1.0 0.0
