@@ -306,10 +306,10 @@ namespace NOX
       /// correction system type
       NOX::NLN::CorrectionType corr_type_;
 
-     private:
       //! pointer to an user defined wrapped NOX::NLN::Abstract::PrePostOperator object.
       Teuchos::RCP<NOX::NLN::GROUP::PrePostOperator> prePostOperatorPtr_;
 
+     private:
       /// container for eigenvalue info
       struct Eigenvalues
       {
