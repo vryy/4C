@@ -355,6 +355,11 @@ namespace DRT
               matmap  ///< map of material IDs (source element -> target element)
       )
       {
+#ifdef DEBUG
+        if (!(sourcedis->HaveGlobalNode(sourcedis->NodeRowMap()->GID(0))))
+          dserror("Cloning not possible since node with GID %d is not stored on this proc!",
+              sourcedis->NodeRowMap()->GID(0));
+#endif
         // try to cast sourcedis to NurbsDiscretisation
         DRT::NURBS::NurbsDiscretization* nurbsdis =
             dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*(sourcedis)));
