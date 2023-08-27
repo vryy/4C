@@ -1,12 +1,9 @@
 /*! \file
 
-\brief A C++ wrapper for the solid element
+\brief Declaration of the solid element
 
 This file contains the element-specific service routines such as
 Pack, Unpack, NumDofPerNode etc.
-
-In addition to that, it contains the interface between element call
-and Gauss point loop as well as some additional service routines.
 
 \level 1
 */

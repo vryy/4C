@@ -1,6 +1,6 @@
 /*! \file
 
-\brief A C++ wrapper for the solid-poro element
+\brief Evaluation routines for the solid-poro element
 
 This file contains the element-specific evaluation routines such as
 Evaluate(...), EvaluateNeumann(...), etc.

@@ -1,6 +1,6 @@
 /*! \file
 
-\brief Implementation of a C++ wrapper for the solid element
+\brief Implementation of the solid element
 
 \level 1
 */

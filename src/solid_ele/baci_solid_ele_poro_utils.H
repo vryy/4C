@@ -1,6 +1,6 @@
 /*! \file
 
-\brief Helpers for solid elements
+\brief Helpers for solid-poro elements
 
 \level 1
 */

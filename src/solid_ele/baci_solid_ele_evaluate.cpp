@@ -1,6 +1,6 @@
 /*! \file
 
-\brief A C++ wrapper for the solid element
+\brief Implementation of the solid element
 
 This file contains the element-specific evaluation routines such as
 Evaluate(...), EvaluateNeumann(...), etc.
