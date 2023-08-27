@@ -215,9 +215,9 @@ namespace DRT
       // adding the section for the CLONING MATERIAL MAP
       WriteLinktarget(stream, "cloningmaterialsreference");
       WriteHeader(stream, 0, "Cloning material reference");
-      Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
+      const DRT::INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
       std::stringstream cloningMatStream;
-      lines->Print(cloningMatStream);
+      lines.Print(cloningMatStream);
       const std::vector<std::string> cloningMatList =
           DRT::UTILS::Split(cloningMatStream.str(), "\n");
 
@@ -634,28 +634,32 @@ namespace DRT
     {
       //
       // adding the sections for the RESULT DESCRIPTION
-      WriteLinktarget(stream, "restultdescriptionreference");
-      WriteHeader(stream, 0, "Result description reference");
-      DRT::ResultTestManager resulttestmanager;
-      Teuchos::RCP<DRT::INPUT::Lines> lines = resulttestmanager.ValidResultLines();
-      std::string sectionDescription = lines->Description();
-      WriteParagraph(stream, sectionDescription);
-      std::stringstream resultDescriptionStream;
-      lines->Print(resultDescriptionStream);
-      const std::vector<std::string> resultDescriptionList =
-          DRT::UTILS::Split(resultDescriptionStream.str(), "\n");
-      WriteCode(stream, resultDescriptionList);
+      {
+        WriteLinktarget(stream, "restultdescriptionreference");
+        WriteHeader(stream, 0, "Result description reference");
+        DRT::ResultTestManager resulttestmanager;
+        const DRT::INPUT::Lines lines = resulttestmanager.ValidResultLines();
+        std::string sectionDescription = lines.Description();
+        WriteParagraph(stream, sectionDescription);
+        std::stringstream resultDescriptionStream;
+        lines.Print(resultDescriptionStream);
+        const std::vector<std::string> resultDescriptionList =
+            DRT::UTILS::Split(resultDescriptionStream.str(), "\n");
+        WriteCode(stream, resultDescriptionList);
+      }
       //
       // adding the sections for the FUNCTION
-      WriteLinktarget(stream, "functionreference");
-      WriteHeader(stream, 0, "Functions reference");
-      lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
-      sectionDescription = lines->Description();
-      WriteParagraph(stream, sectionDescription);
-      std::stringstream functionStream;
-      lines->Print(functionStream);
-      const std::vector<std::string> functionList = DRT::UTILS::Split(functionStream.str(), "\n");
-      WriteCode(stream, functionList);
+      {
+        WriteLinktarget(stream, "functionreference");
+        WriteHeader(stream, 0, "Functions reference");
+        const auto lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
+        std::string sectionDescription = lines.Description();
+        WriteParagraph(stream, sectionDescription);
+        std::stringstream functionStream;
+        lines.Print(functionStream);
+        const std::vector<std::string> functionList = DRT::UTILS::Split(functionStream.str(), "\n");
+        WriteCode(stream, functionList);
+      }
     }
   }  // namespace RTD
 

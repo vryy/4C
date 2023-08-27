@@ -8,6 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_lib_function.H"
+#include "baci_lib_linedefinition.H"
 
 #ifndef BACI_FLUID_XFLUID_FUNCTIONS_COMBUST_H
 #define BACI_FLUID_XFLUID_FUNCTIONS_COMBUST_H
@@ -20,16 +21,17 @@ namespace DRT
   namespace INPUT
   {
     class LineDefinition;
-  }
+    class Lines;
+  }  // namespace INPUT
 
   namespace UTILS
   {
     /// add valid combustion-specific function lines
-    void AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    void AddValidCombustFunctionLines(DRT::INPUT::Lines& lines);
 
     /// try to create combustion-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateCombustFunction(
-        const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+        const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
     /// special implementation for a level set test function "Zalesak's disk"
     class ZalesaksDiskFunction : public DRT::UTILS::FunctionOfSpaceTime

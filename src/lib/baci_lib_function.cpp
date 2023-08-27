@@ -245,21 +245,21 @@ namespace
 
 template <int dim>
 Teuchos::RCP<DRT::UTILS::FunctionOfAnything> DRT::UTILS::TryCreateSymbolicFunctionOfAnything(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
   const auto& function_lin_def = function_line_defs.front();
 
-  if (function_lin_def->HaveNamed("VARFUNCTION"))
+  if (function_lin_def.HaveNamed("VARFUNCTION"))
   {
     std::string component;
-    function_lin_def->ExtractString("VARFUNCTION", component);
+    function_lin_def.ExtractString("VARFUNCTION", component);
 
     std::vector<std::pair<std::string, double>> constants;
-    if (function_lin_def->HaveNamed("CONSTANTS"))
+    if (function_lin_def.HaveNamed("CONSTANTS"))
     {
-      function_lin_def->ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
+      function_lin_def.ExtractPairOfStringAndDoubleVector("CONSTANTS", constants);
     }
 
     return Teuchos::rcp(new DRT::UTILS::SymbolicFunctionOfAnything<dim>(component, constants));
@@ -274,7 +274,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfAnything> DRT::UTILS::TryCreateSymbolicFuncti
 
 template <int dim>
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   // Work around a design flaw in the input line for SymbolicFunctionOfSpaceTime.
   // This line accepts optional components in the beginning although this is not directly supported
@@ -297,9 +297,9 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
   bool found_function_of_space_time(false);
   for (const auto& ith_function_lin_def : function_line_defs)
   {
-    ignore_errors_in([&]() { ith_function_lin_def->ExtractInt("COMPONENT", maxcomp); });
-    ignore_errors_in([&]() { ith_function_lin_def->ExtractInt("VARIABLE", maxvar); });
-    if (ith_function_lin_def->HaveNamed("SYMBOLIC_FUNCTION_OF_SPACE_TIME"))
+    ignore_errors_in([&]() { ith_function_lin_def.ExtractInt("COMPONENT", maxcomp); });
+    ignore_errors_in([&]() { ith_function_lin_def.ExtractInt("VARIABLE", maxvar); });
+    if (ith_function_lin_def.HaveNamed("SYMBOLIC_FUNCTION_OF_SPACE_TIME"))
       found_function_of_space_time = true;
   }
 
@@ -315,16 +315,16 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
   for (int n = 0; n <= maxcomp; ++n)
   {
     // update the current row
-    Teuchos::RCP<DRT::INPUT::LineDefinition> functcomp = function_line_defs[n];
+    const DRT::INPUT::LineDefinition& functcomp = function_line_defs[n];
 
     // check the validity of the n-th component
     int compid = 0;
-    ignore_errors_in([&]() { functcomp->ExtractInt("COMPONENT", compid); });
+    ignore_errors_in([&]() { functcomp.ExtractInt("COMPONENT", compid); });
     if (compid != n) dserror("expected COMPONENT %d but got COMPONENT %d", n, compid);
 
 
     // read the expression of the n-th component of the i-th function
-    functcomp->ExtractString("SYMBOLIC_FUNCTION_OF_SPACE_TIME", functstring[n]);
+    functcomp.ExtractString("SYMBOLIC_FUNCTION_OF_SPACE_TIME", functstring[n]);
   }
 
   std::map<int, std::vector<Teuchos::RCP<FunctionVariable>>> variable_pieces;
@@ -333,31 +333,31 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
   for (std::size_t j = 1; j <= numrowsvar; ++j)
   {
     // update the current row
-    Teuchos::RCP<DRT::INPUT::LineDefinition> line = function_line_defs[maxcomp + j];
+    const DRT::INPUT::LineDefinition& line = function_line_defs[maxcomp + j];
 
     // read the number of the variable
     int varid;
-    ignore_errors_in([&]() { line->ExtractInt("VARIABLE", varid); });
+    ignore_errors_in([&]() { line.ExtractInt("VARIABLE", varid); });
 
     const auto variable = std::invoke(
         [&]() -> Teuchos::RCP<DRT::UTILS::FunctionVariable>
         {
           // read the name of the variable
           std::string varname;
-          line->ExtractString("NAME", varname);
+          line.ExtractString("NAME", varname);
 
           // read the type of the variable
           std::string vartype;
-          line->ExtractString("TYPE", vartype);
+          line.ExtractString("TYPE", vartype);
 
           // read periodicity data
           periodicstruct periodicdata{};
 
-          periodicdata.periodic = line->HasString("PERIODIC");
+          periodicdata.periodic = line.HasString("PERIODIC");
           if (periodicdata.periodic)
           {
-            line->ExtractDouble("T1", periodicdata.t1);
-            line->ExtractDouble("T2", periodicdata.t2);
+            line.ExtractDouble("T1", periodicdata.t1);
+            line.ExtractDouble("T2", periodicdata.t2);
           }
           else
           {
@@ -369,7 +369,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
           if (vartype == "expression")
           {
             std::vector<std::string> description_vec;
-            line->ExtractStringVector("DESCRIPTION", description_vec);
+            line.ExtractStringVector("DESCRIPTION", description_vec);
 
             if (description_vec.size() != 1)
             {
@@ -384,11 +384,11 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
           else if (vartype == "linearinterpolation")
           {
             // read times
-            std::vector<double> times = ExtractTimeVector(*line);
+            std::vector<double> times = ExtractTimeVector(line);
 
             // read values
             std::vector<double> values;
-            line->ExtractDoubleVector("VALUES", values);
+            line.ExtractDoubleVector("VALUES", values);
 
             return Teuchos::rcp(
                 new LinearInterpolationVariable(varname, times, values, periodicdata));
@@ -396,11 +396,11 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
           else if (vartype == "multifunction")
           {
             // read times
-            std::vector<double> times = ExtractTimeVector(*line);
+            std::vector<double> times = ExtractTimeVector(line);
 
             // read descriptions (strings separated with spaces)
             std::vector<std::string> description_vec;
-            line->ExtractStringVector("DESCRIPTION", description_vec);
+            line.ExtractStringVector("DESCRIPTION", description_vec);
 
             // check if the number of times = number of descriptions + 1
             std::size_t numtimes = times.size();
@@ -414,11 +414,11 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateSymbolicFunct
           else if (vartype == "fourierinterpolation")
           {
             // read times
-            std::vector<double> times = ExtractTimeVector(*line);
+            std::vector<double> times = ExtractTimeVector(line);
 
             // read values
             std::vector<double> values;
-            line->ExtractDoubleVector("VALUES", values);
+            line.ExtractDoubleVector("VALUES", values);
 
             return Teuchos::rcp(
                 new FourierInterpolationVariable(varname, times, values, periodicdata));
@@ -703,20 +703,20 @@ template class DRT::UTILS::SymbolicFunctionOfAnything<3>;
 
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
 DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime<1>(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
 DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime<2>(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>
 DRT::UTILS::TryCreateSymbolicFunctionOfSpaceTime<3>(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
 template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
 DRT::UTILS::TryCreateSymbolicFunctionOfAnything<1>(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
 DRT::UTILS::TryCreateSymbolicFunctionOfAnything<2>(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
 DRT::UTILS::TryCreateSymbolicFunctionOfAnything<3>(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);

@@ -30,11 +30,11 @@ namespace DRT
 namespace FLD
 {
   /// add valid fluid-specific function lines
-  void AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+  void AddValidFluidFunctionLines(DRT::INPUT::Lines& lines);
 
   /// try to create fluid-specific functions from a given line definition
   Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateFluidFunction(
-      const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
   /// special implementation for beltrami flow (velocity, pressure)
   class BeltramiUP : public DRT::UTILS::FunctionOfSpaceTime

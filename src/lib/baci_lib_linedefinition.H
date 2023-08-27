@@ -297,8 +297,7 @@ namespace DRT::INPUT
     void Print(std::ostream& stream) const;
 
     /// Read section and return one LineDefinition per line read
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> Read(
-        DatFileReader& reader, int suffix = -1);
+    std::vector<DRT::INPUT::LineDefinition> Read(DatFileReader& reader, int suffix = -1);
 
    private:
     /// Name of the section we read

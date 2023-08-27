@@ -27,7 +27,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::AddValidLibraryFunctionLines(DRT::INPUT::Lines& lines)
 {
   using namespace DRT::INPUT;
 
@@ -41,28 +41,28 @@ void DRT::UTILS::AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> li
   LineDefinition cubicsplinefromcsv_funct =
       LineDefinition::Builder().AddTag("CUBIC_SPLINE_FROM_CSV").AddNamedString("CSV").Build();
 
-  lines->Add(fastpolynomial_funct);
-  lines->Add(cubicsplinefromcsv_funct);
+  lines.Add(fastpolynomial_funct);
+  lines.Add(cubicsplinefromcsv_funct);
 }
 
 Teuchos::RCP<DRT::UTILS::FunctionOfScalar> DRT::UTILS::TryCreateLibraryFunctionScalar(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
   const auto& function_lin_def = function_line_defs.front();
 
-  if (function_lin_def->HaveNamed("FASTPOLYNOMIAL"))
+  if (function_lin_def.HaveNamed("FASTPOLYNOMIAL"))
   {
     std::vector<double> coefficients;
-    function_lin_def->ExtractDoubleVector("COEFF", coefficients);
+    function_lin_def.ExtractDoubleVector("COEFF", coefficients);
 
     return Teuchos::rcp(new FastPolynomialFunction(std::move(coefficients)));
   }
-  else if (function_lin_def->HaveNamed("CUBIC_SPLINE_FROM_CSV"))
+  else if (function_lin_def.HaveNamed("CUBIC_SPLINE_FROM_CSV"))
   {
     std::string csv_file;
-    function_lin_def->ExtractString("CSV", csv_file);
+    function_lin_def.ExtractString("CSV", csv_file);
 
     // safety check
     if (csv_file.empty())

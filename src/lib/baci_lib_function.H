@@ -13,7 +13,6 @@
 
 
 #include "baci_discretization_fem_general_utils_polynomial.H"
-#include "baci_lib_function_manager.H"
 #include "baci_lib_functionvariables.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_utils_exceptions.H"
@@ -34,8 +33,6 @@ namespace DRT
 
     template <class T>
     class SymbolicExpression;
-
-    class FunctionManager;
 
     /*!
      * \brief interface for space- and time-dependent functions.
@@ -263,12 +260,12 @@ namespace DRT
     /// try to create SymbolicFunctionOfAnything from a given line definition
     template <int dim>
     Teuchos::RCP<FunctionOfAnything> TryCreateSymbolicFunctionOfAnything(
-        const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+        const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
     /// create a vector function from multiple expressions
     template <int dim>
     Teuchos::RCP<FunctionOfSpaceTime> TryCreateSymbolicFunctionOfSpaceTime(
-        const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+        const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
   }  // namespace UTILS
 
 }  // namespace DRT

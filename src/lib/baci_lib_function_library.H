@@ -16,17 +16,22 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "baci_lib_function.H"
 #include "baci_lib_function_of_scalar.H"
 
+namespace DRT::INPUT
+{
+  class Lines;
+}
+
 namespace DRT::UTILS
 {
   // forward declaration
   class CubicSplineInterpolation;
 
   /// add valid function lines
-  void AddValidLibraryFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+  void AddValidLibraryFunctionLines(DRT::INPUT::Lines& lines);
 
   /// try to create functions from a given line definition
   Teuchos::RCP<FunctionOfScalar> TryCreateLibraryFunctionScalar(
-      const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
 
   /**
