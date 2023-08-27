@@ -33,6 +33,7 @@ namespace STR::ELEMENTS
 {
   enum class EasType;
 }
+
 namespace DRT::ELEMENTS
 {
   // forward declaration
@@ -241,10 +242,10 @@ namespace DRT::ELEMENTS
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! element calculation interface
-    std::shared_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
+    std::shared_ptr<SolidEleCalcInterface> solid_interface_;
 
     //! poro element calculation interface
-    std::shared_ptr<SolidPoroEleCalcInterface> solidporo_interface_ = nullptr;
+    std::shared_ptr<SolidPoroEleCalcInterface> solidporo_interface_;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

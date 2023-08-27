@@ -106,8 +106,6 @@ namespace DRT::ELEMENTS
 
     [[nodiscard]] DRT::ElementType& ElementType() const override { return SolidType::Instance(); }
 
-    //! @name Query methods
-    //!@{
     [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
 
     //! Get kinematic type of element
@@ -133,16 +131,10 @@ namespace DRT::ELEMENTS
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
     [[nodiscard]] int NumDofPerElement() const override { return 0; }
-    //@}
 
-    //! @name Input and Creation
-    //!@{
     bool ReadElement(const std::string& eletype, const std::string& distype,
         DRT::INPUT::LineDefinition* linedef) override;
-    /// @}
 
-    //! @name Evaluation
-    //!@{
     int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
         CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
@@ -152,7 +144,6 @@ namespace DRT::ELEMENTS
     int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
-    //@}
 
     Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override
     {
@@ -201,10 +192,11 @@ namespace DRT::ELEMENTS
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
     //! element calculation interface
-    std::shared_ptr<SolidEleCalcInterface> solid_interface_ = nullptr;
+    std::shared_ptr<SolidEleCalcInterface> solid_interface_;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;
+
   };  // class Solid
 
 }  // namespace DRT::ELEMENTS

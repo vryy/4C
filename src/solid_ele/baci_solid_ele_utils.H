@@ -20,53 +20,6 @@ namespace STR::ELEMENTS
 
 namespace STR::UTILS
 {
-  template <CORE::DRT::UTILS::GaussRule3D rule>
-  struct IntRuleToNquad
-  {
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::hex_8point>
-  {
-    static const int ngp = 8;
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::hex_27point>
-  {
-    static const int ngp = 27;
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::hex_18point>
-  {
-    static const int ngp = 18;
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::pyramid_1point>
-  {
-    static const int ngp = 1;
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::pyramid_8point>
-  {
-    static const int ngp = 8;
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::tet_1point>
-  {
-    static const int ngp = 1;
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::tet_4point>
-  {
-    static const int ngp = 4;
-  };
-  template <>
-  struct IntRuleToNquad<CORE::DRT::UTILS::GaussRule3D::tet_11point>
-  {
-    static const int ngp = 11;
-  };
-
-
-
   int DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distype);
 
   void NodalBlockInformationSolid(DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
@@ -76,27 +29,6 @@ namespace STR::UTILS
 
   CORE::LINALG::Matrix<6, 1> GreenLagrangeToEulerAlmansi(
       const CORE::LINALG::Matrix<6, 1>& gl, const CORE::LINALG::Matrix<3, 3>& defgrd);
-
-
-  namespace ELEMENTDEFINITION
-  {
-    void AddElementDefinitionElementNodes(
-        DRT::INPUT::LineDefinition& defs, std::basic_string<char> name, int numnodes);
-
-    void AddElementDefinitionElementMaterial(DRT::INPUT::LineDefinition& defs);
-
-    void AddElementDefinitionElementKinematics(DRT::INPUT::LineDefinition& defs);
-
-    template <int nsd>
-    void AddElementDefinitionCylinderCoordinates(DRT::INPUT::LineDefinition& defs);
-
-    template <int nsd>
-    void AddElementDefinitionFiber(DRT::INPUT::LineDefinition& defs);
-
-    void AddElementDefinitionEAS(DRT::INPUT::LineDefinition& defs);
-
-    void AddElementDefinitionFBAR(DRT::INPUT::LineDefinition& defs);
-  }  // namespace ELEMENTDEFINITION
 
   namespace READELEMENT
   {
