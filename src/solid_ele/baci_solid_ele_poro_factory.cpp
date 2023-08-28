@@ -55,11 +55,11 @@ DRT::ELEMENTS::CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotyp
   // here we go into the different cases for element type
   switch (porotype)
   {
-    case INPAR::PORO::PoroType::porotype_pressure_velocity_based:
+    case INPAR::PORO::PoroType::pressure_velocity_based:
       dserror("POROTYPE: 'pressure_velocity_based' not yet implemented!");
       return nullptr;
       break;
-    case INPAR::PORO::PoroType::porotype_pressure_based:
+    case INPAR::PORO::PoroType::pressure_based:
     {
       return std::make_unique<DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>>();
       break;

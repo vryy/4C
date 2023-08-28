@@ -165,7 +165,7 @@ DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner)
       distype_(DRT::Element::dis_none),
       kintype_(INPAR::STR::kinem_vague),
       eastype_(STR::ELEMENTS::EasType::eastype_undefined),
-      porotype_(INPAR::PORO::PoroType::porotype_undefined),
+      porotype_(INPAR::PORO::PoroType::undefined),
       impltype_(INPAR::SCATRA::impltype_undefined),
       interface_ptr_(Teuchos::null),
       material_post_setup_(false)
@@ -340,7 +340,7 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   }
   else
   {
-    porotype_ = INPAR::PORO::PoroType::porotype_undefined;
+    porotype_ = INPAR::PORO::PoroType::undefined;
   }
 
   // read scalar transport implementation type

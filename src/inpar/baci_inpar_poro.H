@@ -14,9 +14,9 @@ namespace INPAR::PORO
   //! poro element implementation type
   enum class PoroType
   {
-    porotype_undefined,
-    porotype_pressure_based,
-    porotype_pressure_velocity_based
+    undefined,
+    pressure_based,
+    pressure_velocity_based
   };
 
 }  // namespace INPAR::PORO

@@ -60,13 +60,13 @@ namespace STR::UTILS
       linedef->ExtractString("POROTYPE", impltype);
 
       if (impltype == "PressureVelocityBased")
-        return INPAR::PORO::PoroType::porotype_pressure_velocity_based;
+        return INPAR::PORO::PoroType::pressure_velocity_based;
       else if (impltype == "PressureBased")
-        return INPAR::PORO::PoroType::porotype_pressure_based;
+        return INPAR::PORO::PoroType::pressure_based;
       else
       {
         dserror("Invalid POROTYPE for SolidPoro elements!");
-        return INPAR::PORO::PoroType::porotype_undefined;
+        return INPAR::PORO::PoroType::undefined;
       }
     }
   }  // namespace READELEMENT
