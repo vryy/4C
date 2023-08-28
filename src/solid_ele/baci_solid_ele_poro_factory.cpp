@@ -52,7 +52,7 @@ template <DRT::Element::DiscretizationType distype>
 std::unique_ptr<DRT::ELEMENTS::SolidPoroEleCalcInterface>
 DRT::ELEMENTS::CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotype)
 {
-  // here we go into the different cases for element type
+  // here we go into the different cases for poro type
   switch (porotype)
   {
     case INPAR::PORO::PoroType::pressure_velocity_based:
