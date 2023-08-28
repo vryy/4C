@@ -130,6 +130,15 @@ namespace DRT::ELEMENTS
     }
   }
 
+  /*!
+   * @brief Get the default Gauss integration rules for different discretization types.
+   *
+   * @note It follows the rules defined in DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule,
+   * except for the stiffness matrix of tetrahedral elements.
+   *
+   */
+  /// @{
+
   template <DRT::Element::DiscretizationType distype>
   constexpr auto GetGaussRuleMassMatrix()
   {
@@ -153,6 +162,7 @@ namespace DRT::ELEMENTS
   {
     return CORE::DRT::UTILS::GaussRule3D::tet_1point;
   }
+  /// @}
 
   /*!
    * @brief Create a Gauss integration interface from a given Gauss rule type
@@ -179,10 +189,22 @@ namespace DRT::ELEMENTS
     return CORE::DRT::UTILS::GaussIntegration(gp);
   }
 
+  /*!
+   * @brief A type holding the reference and the current position of nodes of an element
+   *
+   * @tparam distype
+   */
   template <DRT::Element::DiscretizationType distype>
   struct NodalCoordinates
   {
+    /*!
+     * @brief Position of nodes in the reference configuration
+     */
     CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> reference_;
+
+    /*!
+     * @brief Position of nodes in the current configuration
+     */
     CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> current_;
   };
 
@@ -293,6 +315,12 @@ namespace DRT::ELEMENTS
     return xi;
   }
 
+  /*!
+   * @brief Type holding the shape functions and it's first derivatives evaluated at a specific
+   * point.
+   *
+   * @tparam distype
+   */
   template <DRT::Element::DiscretizationType distype>
   struct ShapeFunctionsAndDerivatives
   {
@@ -323,19 +351,17 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   struct JacobianMapping
   {
+    /// Determinant of the jacobian
     double determinant_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> jacobian_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> inverse_jacobian_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_nodes<distype>> N_XYZ_;
-  };
 
-  template <DRT::Element::DiscretizationType distype>
-  struct SpatialMaterialMapping
-  {
-    double determinant_deformation_gradient_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> deformation_gradient_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
-        inverse_deformation_gradient_;
+    /// Jacobian matrix at a specific point
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> jacobian_;
+
+    /// Inverse jacobian matrix at a specific point
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> inverse_jacobian_;
+
+    /// Derivative of the shape functions w.r.t. the reference coordinates
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_nodes<distype>> N_XYZ_;
   };
 
   /*!
@@ -412,11 +438,12 @@ namespace DRT::ELEMENTS
   }
 
   template <DRT::Element::DiscretizationType distype>
-  struct CauchyGreen
+  struct SpatialMaterialMapping
   {
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> right_cauchy_green_;
+    double determinant_deformation_gradient_;
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> deformation_gradient_;
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
-        inverse_right_cauchy_green;
+        inverse_deformation_gradient_;
   };
 
   /*!
@@ -458,6 +485,14 @@ namespace DRT::ELEMENTS
 
     return spatial_material_mapping;
   }
+
+  template <DRT::Element::DiscretizationType distype>
+  struct CauchyGreen
+  {
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> right_cauchy_green_;
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
+        inverse_right_cauchy_green;
+  };
 
   /*!
    * @brief Evaluates Green-Lagrange strain from right Cauchy-Green tensor
@@ -599,7 +634,11 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   struct Stress
   {
+    /// Second Piola-Kirchhoff stress tensor in stress-like voigt notation
     CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> pk2_;
+
+    /// Linearization of the 2. Piola Kirchhoff stress tensor w.r.t. Green-Lagrange strain tensor in
+    /// mixed Voigt notation
     CORE::LINALG::Matrix<DETAIL::num_str<distype>, DETAIL::num_str<distype>> cmat_;
   };
 
