@@ -663,7 +663,7 @@ namespace DRT::ELEMENTS
   Stress<distype> EvaluateMaterialStress(MAT::So3Material& material,
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& defgrd,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strain,
-      Teuchos::ParameterList& params, int gp, int eleGID)
+      Teuchos::ParameterList& params, const int gp, const int eleGID)
   {
     Stress<distype> stress;
 
@@ -694,7 +694,7 @@ namespace DRT::ELEMENTS
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strains_old,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strains_m,
       const CauchyGreen<distype>& rcg, const CauchyGreen<distype>& rcg_old,
-      Teuchos::ParameterList& params, int gp, int eleGID)
+      const Teuchos::ParameterList& params, const int gp, const int eleGID)
   {
     Stress<distype> stress;
 
@@ -859,7 +859,7 @@ namespace DRT::ELEMENTS
    */
   template <unsigned num_str>
   void AssembleVectorToMatrixRow(
-      CORE::LINALG::Matrix<num_str, 1> vector, CORE::LINALG::SerialDenseMatrix& data, int row)
+      CORE::LINALG::Matrix<num_str, 1> vector, CORE::LINALG::SerialDenseMatrix& data, const int row)
   {
     for (unsigned i = 0; i < num_str; ++i) data(row, i) = vector(i);
   }
@@ -879,7 +879,8 @@ namespace DRT::ELEMENTS
   void AssembleStrainTypeToMatrixRow(
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strain,
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& defgrd,
-      INPAR::STR::StrainType strain_type, CORE::LINALG::SerialDenseMatrix& data, int row)
+      const INPAR::STR::StrainType strain_type, CORE::LINALG::SerialDenseMatrix& data,
+      const int row)
   {
     switch (strain_type)
     {
@@ -921,8 +922,8 @@ namespace DRT::ELEMENTS
   template <DRT::Element::DiscretizationType distype>
   void AssembleStressTypeToMatrixRow(
       const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& defgrd,
-      const Stress<distype>& stress, INPAR::STR::StressType stress_type,
-      CORE::LINALG::SerialDenseMatrix& data, int row)
+      const Stress<distype>& stress, const INPAR::STR::StressType stress_type,
+      CORE::LINALG::SerialDenseMatrix& data, const int row)
   {
     switch (stress_type)
     {
