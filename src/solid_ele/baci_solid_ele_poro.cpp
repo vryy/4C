@@ -166,9 +166,7 @@ DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner)
       kintype_(INPAR::STR::kinem_vague),
       eastype_(STR::ELEMENTS::EasType::eastype_undefined),
       porotype_(INPAR::PORO::PoroType::undefined),
-      impltype_(INPAR::SCATRA::impltype_undefined),
-      interface_ptr_(Teuchos::null),
-      material_post_setup_(false)
+      impltype_(INPAR::SCATRA::impltype_undefined)
 {
 }
 
@@ -184,6 +182,9 @@ DRT::ELEMENTS::SolidPoro::SolidPoro(const DRT::ELEMENTS::SolidPoro& other)
       interface_ptr_(other.interface_ptr_),
       material_post_setup_(other.material_post_setup_)
 {
+  // create own solid and poro interface on copy
+  CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
+  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 }
 
 DRT::ELEMENTS::SolidPoro& ::DRT::ELEMENTS::SolidPoro::operator=(
@@ -198,6 +199,11 @@ DRT::ELEMENTS::SolidPoro& ::DRT::ELEMENTS::SolidPoro::operator=(
   anisotropic_permeability_nodal_coeffs_ = other.anisotropic_permeability_nodal_coeffs_;
   interface_ptr_ = other.interface_ptr_;
   material_post_setup_ = other.material_post_setup_;
+
+  // create own solid and poro interface on copy assignment
+  solid_interface_ =
+      CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
+  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
   return *this;
 }

@@ -172,25 +172,37 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidType::ComputeNullSpace(
   exit(1);
 }
 
-DRT::ELEMENTS::Solid::Solid(int id, int owner)
-    : DRT::Element(id, owner),
-      distype_(DRT::Element::dis_none),
-      kintype_(INPAR::STR::kinem_vague),
-      eastype_(STR::ELEMENTS::EasType::eastype_undefined),
-      interface_ptr_(Teuchos::null)
-{
-}
+DRT::ELEMENTS::Solid::Solid(int id, int owner) : DRT::Element(id, owner) {}
 
 DRT::ELEMENTS::Solid::Solid(const DRT::ELEMENTS::Solid& old)
     : DRT::Element(old),
       distype_(old.distype_),
       kintype_(old.kintype_),
+      eletech_(old.eletech_),
       eastype_(old.eastype_),
-      interface_ptr_(old.interface_ptr_)
+      interface_ptr_(old.interface_ptr_),
+      material_post_setup_(old.material_post_setup_)
 {
-  // reset solid interface
+  // create own solid interface on copy
   solid_interface_ =
       CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
+}
+
+DRT::ELEMENTS::Solid& DRT::ELEMENTS::Solid::operator=(const DRT::ELEMENTS::Solid& old)
+{
+  DRT::Element::operator=(old);
+  distype_ = old.distype_;
+  kintype_ = old.kintype_;
+  eletech_ = old.eletech_;
+  eastype_ = old.eastype_;
+  interface_ptr_ = old.interface_ptr_;
+  material_post_setup_ = old.material_post_setup_;
+
+  // create own solid interface on copy assignment
+  solid_interface_ =
+      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
+
+  return *this;
 }
 
 DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }

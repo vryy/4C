@@ -174,16 +174,16 @@ namespace DRT::ELEMENTS
 
    private:
     //! discretization type
-    DRT::Element::DiscretizationType distype_;
+    DRT::Element::DiscretizationType distype_ = DRT::Element::dis_none;
 
     //! kinematic type
-    INPAR::STR::KinemType kintype_;
+    INPAR::STR::KinemType kintype_ = INPAR::STR::kinem_vague;
 
     //! element technology
     std::set<INPAR::STR::EleTech> eletech_;
 
     //! specify EAS type in case contains enhanced assumed strains
-    STR::ELEMENTS::EasType eastype_;
+    STR::ELEMENTS::EasType eastype_ = STR::ELEMENTS::EasType::eastype_undefined;
 
     //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
