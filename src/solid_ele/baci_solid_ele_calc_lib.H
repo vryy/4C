@@ -196,6 +196,7 @@ namespace DRT::ELEMENTS
    * @param ele (in) : Reference to the element
    * @param discretization (in) : Reference to the discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+   * @return NodalCoordinates<distype> : Nodal coordinates from previous iteration
    */
   template <DRT::Element::DiscretizationType distype>
   NodalCoordinates<distype> EvaluateNodalCoordinatesOld(const DRT::Element& ele,
@@ -229,6 +230,7 @@ namespace DRT::ELEMENTS
    * @param ele (in) : Reference to the element
    * @param discretization (in) : Reference to the discretization
    * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+   * @return NodalCoordinates<distype> : Nodal coordinates
    */
   template <DRT::Element::DiscretizationType distype>
   NodalCoordinates<distype> EvaluateNodalCoordinates(const DRT::Element& ele,
@@ -369,7 +371,7 @@ namespace DRT::ELEMENTS
    * @param shapefcns (in) : Shape functions and derivatives evaluated at the respective point in
    * the parameter space
    * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
-   * @return Jacobian determinant
+   * @return double : Jacobian determinant
    */
   template <DRT::Element::DiscretizationType distype>
   double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<distype>& shapefcns,
@@ -456,12 +458,15 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluates Green Lagrange strain from right cauchy green tensor
+   * @brief Evaluates Green-Lagrange strain from right Cauchy-Green tensor
    *
    * GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+   *
    * @tparam distype : Discretization type
-   * @param strains (in/out) : Strain measures
-   * Cauchy-Green deformation tensor, Green-Lagrange strain tensor
+   * @param cauchygreen (in) : Object holding the right Cauchy-Green deformation tensor and its
+   * inverse
+   * @return CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> : Green-Lagrange strain tensor in
+   * strain-like Voigt notation
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
@@ -531,7 +536,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Evaluates the strain gradient (B-Operator) of the specified element
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param jacobian_mapping (in) : Quantities of the jacobian mapping
    * @param spatial_material_mapping (in) :An object holding quantities of the spatial material
    * mapping (deformation_gradient, inverse_deformation_gradient,
@@ -593,21 +598,21 @@ namespace DRT::ELEMENTS
   };
 
   /*!
-   * @brief Evaluates the material stress (2. Piola Kirchhoff stress tensor and the linearization
-   * w.r.t Green-Lagrange strain)
+   * @brief Evaluates the material stress (2. Piola-Kirchhoff stress tensor and the linearization
+   * w.r.t. Green-Lagrange strain)
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param material (in) : Reference to the material
    * @param spatial_material_mapping (in) : An object holding quantities of the spatial material
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
-   * @param gl_strain (in) : Green Lagrange strain
+   * @param gl_strain (in) : Green-Lagrange strain
    * @param params (in) : List of additional parameter to pass quantities from the time integrator
    * to the material
    * @param gp (in) : Gauss point
    * @param eleGID (in) : Global element id
-   * @return Stress<distype> : Object holding the 2. Piola Kirchhoff stress tensor and the
-   * linearization w.r.t. Green Lagrange strain tensor
+   * @return Stress<distype> : Object holding the 2. Piola-Kirchhoff stress tensor and the
+   * linearization w.r.t. Green-Lagrange strain tensor
    */
   template <DRT::Element::DiscretizationType distype>
   Stress<distype> EvaluateMaterialStress(MAT::So3Material& material,
@@ -622,10 +627,10 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluates the material stress (2. Piola Kirchhoff stress tensor and the linearization
-   * w.r.t Green-Lagrange strain)
+   * @brief Evaluates the material stress (2. Piola-Kirchhoff stress tensor and the linearization
+   * w.r.t. Green-Lagrange strain)
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param material (in) : Reference to the material
    * @param strains (in) : Strain measures of the element
    * @param strains_old (in) : Strain measures of the element old
@@ -635,8 +640,8 @@ namespace DRT::ELEMENTS
    * to the material
    * @param gp (in) : Gauss point
    * @param eleGID (in) : Global element id
-   * @return Stress<distype> : Object holding the 2. Piola Kirchhoff stress tensor and the
-   * linearization w.r.t. Green Lagrange strain tensor
+   * @return Stress<distype> : Object holding the 2. Piola-Kirchhoff stress tensor and the
+   * linearization w.r.t. Green-Lagrange strain tensor
    */
   template <DRT::Element::DiscretizationType distype>
   Stress<distype> EvaluateMaterialStressGEMM(MAT::So3Material& material,
@@ -657,7 +662,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Adds the internal force vector contribution of one Gauss point
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param Bop (in) : Strain gradient (B-Operator)
    * @param stress (in) : Stress measures
    * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
@@ -676,7 +681,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Add elastic stiffness matrix contribution of one Gauss point
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param Bop (in) : Strain gradient (B-Operator)
    * @param stress (in) : Stress measures
    * @param integration_fac (in) : Integration factor (Gauss point weight times the determinant of
@@ -698,7 +703,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Add GEMM elastic stiffness matrix contribution of one Gauss point
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param Bop (in) : Strain gradient (B-Operator)
    * @param BopM (in) : Mid point strain gradient (B-Operator at mid point)
    * @param stress (in) : Stress measures
@@ -724,7 +729,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Add geometric stiffness matrix contribution of one Gauss point
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param B_L (in) : B_L operator, i.e. derivatives of the shape functions w.r.t. XYZ
    *                   at the respective Gauss point
    * @param stress (in) : Stress measures
@@ -766,7 +771,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Add mass matrix contribution of one Gauss point
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param shapefunctions (in) : Shape functions and derivatives evaluated at the respective point
    * in the parameter space
    * @param integration_factor (in) : Integration factor (Gauss point weight times the determinant
@@ -796,7 +801,7 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Assemble a vector into a matrix row
    *
-   * @tparam distype
+   * @tparam numstr
    * @param vector (in) : Vector to be assembled into matrix
    * @param data (in/out) : Matrix the vector is assembled into
    * @param row (in) : Matrix row
@@ -812,8 +817,8 @@ namespace DRT::ELEMENTS
    * @brief Convert Green-Lagrange strains to the desired strain type and assemble to a given matrix
    * row in stress-like Voigt notation
    *
-   * @tparam distype
-   * @param gl_strain (in) : Green Lagrange strain
+   * @tparam distype : Discretization type
+   * @param gl_strain (in) : Green-Lagrange strain
    * @param defgrd (in) : Deformation gradient
    * @param strain_type (in) : Strain type, i.e., Green-Lagrange or Euler-Almansi
    * @param data (in/out) : Matrix the strains are assembled into
@@ -855,7 +860,7 @@ namespace DRT::ELEMENTS
    * @brief Convert 2nd Piola-Kirchhoff stresses to the desired stress type and assemble to a given
    * matrix row in stress-like Voigt notation
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param defgrd (in) : Deformation gradient
    * @param stress (in) : 2nd Piola-Kirchhoff stress
    * @param stress_type (in) : Stress type, i.e., 2nd Piola-Kirchhoff or Cauchy
@@ -910,7 +915,8 @@ namespace DRT::ELEMENTS
   /*!
    * @brief Iterates over the jacobian mapping at each integration point of @p integration.
    *
-   * @tparam distype The discretization type known at compile time.
+   * @tparam distype : Discretization type known at compile time
+   * @tparam GaussPointEvaluator
    * @param nodal_coordinates (in) : The nodal coordinates of the element
    * @param integration (in) : The integration rule to be used.
    * @param gp_evaluator (in) : A callable object (e.g. lambda-function) with signature void(const
@@ -1043,6 +1049,7 @@ namespace DRT::ELEMENTS
    * @brief For elements with fiber nodes, interpolate fibers to Gauss points and add to the
    * parameter list
    *
+   * @tparam distype : Discretization type
    * @param stiffness_matrix_integration (in) : Container holding the integration points
    * @param ele (in) : Reference to the element, possibly having nodal fibers
    * @param params (in/out) : ParameterList the interpolated fibers are added to

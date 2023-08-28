@@ -60,9 +60,9 @@ namespace
    *
    * For details, see Andelfinger et al., EAS-elements, 1993, doi: 10.1002/nme.1620360805.
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param jacobian_centroid(in) : Jacobian mapping evaluated at the element centroid
-   * @return T0invT : transformation matrix
+   * @return double : transformation matrix
    */
   template <DRT::Element::DiscretizationType distype>
   CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
@@ -135,9 +135,9 @@ namespace
    * @brief Evaluates and returns the centroid transformation quantities, i.e., the jacobi
    * determinant at the element centroid and the transformation matrix T0^{-T}
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param nodal_coordinates(in) : reference and current coordinates of the nodes of the element
-   * @return centroid_transformation : Jacobi determinant at the element centroid and
+   * @return CentroidTransformation<distype> : Jacobi determinant at the element centroid and
    * transformation matrix T0^{-T}
    */
   template <DRT::Element::DiscretizationType distype>
@@ -161,10 +161,10 @@ namespace
   /*!
    * @brief Extracts and returns the residual displacement
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param discretization(in) : reference to the discretization
    * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
-   * @return displ_inc : residual displacement or displacement increment
+   * @return double : residual displacement or displacement increment
    */
   template <DRT::Element::DiscretizationType distype>
   CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1>
@@ -186,7 +186,7 @@ namespace
    * @tparam distype, eastype
    * @param displ_inc(in) : displacement increment delta_D_{i+1}
    * @param eas_iteration_data(in) : EAS matrices and vectors from iteration i
-   * @return alpha_inc : enhanced strains scalar increment delta_alpha_{i+1}
+   * @return double : enhanced strains scalar increment delta_alpha_{i+1}
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1> EvaluateAlphaIncrement(
@@ -241,7 +241,8 @@ namespace
    *
    * @tparam distype, eastype
    * @param xi(in) : coordinate in the parameter space
-   * @return M : enhanced strains shape function matrix in parameter space
+   * @return CORE::LINALG::Matrix<numstr, neas> : enhanced strains shape function matrix in
+   * parameter space
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
@@ -358,7 +359,7 @@ namespace
    * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
    * element centroid
    * @param M(in) : matrix M in the parameter space
-   * @return Mtilde : matrix Mtilde in the material configuration
+   * @return CORE::LINALG::Matrix<numstr, neas> : matrix Mtilde in the material configuration
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
@@ -388,7 +389,7 @@ namespace
    * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
    * element centroid
    * @param xi(in) : coordinate in the parameter space
-   * @return Mtilde : matrix Mtilde in the material configuration
+   * @return CORE::LINALG::Matrix<numstr, neas> : matrix Mtilde in the material configuration
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
@@ -419,7 +420,7 @@ namespace
    * @param gl_strain(in) : Green-Lagrange strains E^{u}
    * @param Mtilde(in) : matrix Mtilde in the material configuration
    * @param alpha(in) : enhanced strain scalars
-   * @return enhanced_gl_strain : enhanced Green-Lagrange strains E^{enh}
+   * @return CORE::LINALG::Matrix<numstr, 1>  : enhanced Green-Lagrange strains E^{enh}
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> EvaluateEnhancedAssumedGLStrains(
@@ -440,7 +441,7 @@ namespace
    * @param displacement_based_mapping(in) : displacement-based spatial mapping
    * @param Mtilde(in) : matrix Mtilde in the material configuration
    * @param alpha(in) : enhanced strain scalars
-   * @return Enhanced Green-Lagrange strains E^{enh}
+   * @return CORE::LINALG::Matrix<numstr, 1> : Enhanced Green-Lagrange strains E^{enh}
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> EvaluateEnhancedAssumedGLStrains(
@@ -464,7 +465,7 @@ namespace
    * @tparam dim
    * @param defgrd_disp(in) : displacement-based deformation gradient F^{u}
    * @param enhanced_gl_strain(in) : enhanced Green-Lagrange strains E^{enh}
-   * @return defgrd_enh : enhanced deformation gradient F^{enh}
+   * @return CORE::LINALG::Matrix<dim, dim> : enhanced deformation gradient F^{enh}
    */
   template <unsigned dim>
   CORE::LINALG::Matrix<dim, dim> EvaluateConsistentDefgrd(
@@ -553,7 +554,7 @@ namespace
    *
    * The EAS internal force contribution is $- K_{da} K_{aa}^{-1} feas$.
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param minusKdainvKaa(in) : matrix product $- K_{da} K_{aa}^{-1}$
    * @param feas(in) : EAS portion of internal forces, also called enhancement vector
    * @param force(in/out) : internal force vector where the contribution is added to
@@ -573,7 +574,7 @@ namespace
    *
    * The EAS stiffness matrix contribution is $- K_{da} K_{aa}^{-1} K_{da}^T$.
    *
-   * @tparam distype
+   * @tparam distype : Discretization type
    * @param minusKdainvKaa(in) : matrix product $- K_{da} K_{aa}^{-1}$
    * @param Kda(in) : EAS stiffness matrix part K_{da}
    * @param stiffness_matrix(in/out) : stiffness matrix where the local contribution is added to

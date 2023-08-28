@@ -46,7 +46,7 @@ namespace
    * @param spatial_material_mapping_centroid (in) : An object holding quantities of the spatial
    * material mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient) evaluated at the element centroid
-   * @return CORE::LINALG::Matrix<DETAIL:numdofperelement<distype>, 1> : H-Operator
+   * @return CORE::LINALG::Matrix<numdofperelement, 1> : H-Operator
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DRT::ELEMENTS::DETAIL::nsd<distype> == 3, int> = 0>

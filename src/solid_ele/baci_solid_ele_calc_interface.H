@@ -71,7 +71,6 @@ namespace DRT
        *
        * @param ele (in) : reference to the element
        * @param solid_material (in) : Solid material of the element
-       *
        */
       virtual void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material) = 0;
 
@@ -153,6 +152,7 @@ namespace DRT
        * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
        * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
        * the elements/materials
+       * @return double : Internal energy
        */
       virtual double CalculateInternalEnergy(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
