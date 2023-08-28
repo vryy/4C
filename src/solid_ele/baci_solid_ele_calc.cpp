@@ -36,9 +36,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -52,7 +52,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
   double mean_density = 0.0;
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -61,10 +61,10 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
         const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
 
-        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
+        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -115,9 +115,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
   const double gemmxi = params.get<double>("xi");
 
   // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -134,7 +134,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
   double mean_density = 0.0;
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -144,29 +144,29 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
         SpatialMaterialMapping<distype> spatial_material_mapping_old =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates_old);
 
-        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
+        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
-        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop_old =
+        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop_old =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping_old);
 
         CauchyGreen<distype> cauchy_green = EvaluateCauchyGreen(spatial_material_mapping);
         CauchyGreen<distype> cauchy_green_old = EvaluateCauchyGreen(spatial_material_mapping_old);
 
-        CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchy_green);
-        CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain_old =
+        CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain_old =
             EvaluateGreenLagrangeStrain(cauchy_green_old);
 
         // computed averaged mid-point quantities
         // 1. non-linear mid-B-operator from Bop and Bop_old
         // B_{m} = (1.0-gemmalphaf)*B_{n+1} + gemmalphaf*B_{n}
-        CORE::LINALG::Matrix<numstr_, numdofperelement_> BopM(true);
+        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> BopM(true);
         BopM.Update(1.0 - gemmalphaf, Bop, gemmalphaf, Bop_old);
 
         // 2. mid-strain GL-vector from gl_strains and gl_strains_old
         // E_{m} = (1.0-gemmalphaf+gemmxi)*E_{n+1} + (gemmalphaf-gemmxi)*E_{n}
-        CORE::LINALG::Matrix<numstr_, 1> gl_strains_m(true);
+        CORE::LINALG::Matrix<num_str_, 1> gl_strains_m(true);
         gl_strains_m.Update(
             1.0 - gemmalphaf + gemmxi, gl_strain, gemmalphaf - gemmxi, gl_strain_old);
 
@@ -202,7 +202,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -248,7 +248,7 @@ double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -257,7 +257,7 @@ double DRT::ELEMENTS::SolidEleCalc<distype>::CalculateInternalEnergy(const DRT::
 
         const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
 
         double psi = 0.0;
@@ -279,14 +279,14 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
 
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
-  CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
+  CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
+  CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
 
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
 
         const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,

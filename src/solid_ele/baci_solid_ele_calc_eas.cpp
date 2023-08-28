@@ -46,8 +46,8 @@ namespace
   {
     // transformation matrix T0^{-T}, which maps the matrix M from parameter space to the material
     // configuration see Andelfinger et al., EAS-elements, 1993, doi: 10.1002/nme.1620360805
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        DRT::ELEMENTS::DETAIL::numstr<distype>>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+        DRT::ELEMENTS::DETAIL::num_str<distype>>
         T0invT_;
 
     // Jacobi determinant evaluated at the element centroid
@@ -65,14 +65,14 @@ namespace
    * @return double : transformation matrix
    */
   template <DRT::Element::DiscretizationType distype>
-  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-      DRT::ELEMENTS::DETAIL::numstr<distype>>
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+      DRT::ELEMENTS::DETAIL::num_str<distype>>
   EvaluateT0invT(const DRT::ELEMENTS::JacobianMapping<distype>& jacobian_centroid)
   {
     // build T0^T (based on strain-like Voigt notation: xx,yy,zz,xy,yz,xz)
     // currently only works in 3D
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        DRT::ELEMENTS::DETAIL::numstr<distype>>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+        DRT::ELEMENTS::DETAIL::num_str<distype>>
         T0invT(false);
     T0invT(0, 0) = jacobian_centroid.jacobian_(0, 0) * jacobian_centroid.jacobian_(0, 0);
     T0invT(1, 0) = jacobian_centroid.jacobian_(1, 0) * jacobian_centroid.jacobian_(1, 0);
@@ -126,7 +126,7 @@ namespace
                    jacobian_centroid.jacobian_(2, 0) * jacobian_centroid.jacobian_(0, 2);
 
     // evaluate the inverse T0^{-T} with solver
-    SolveForInverse<DRT::ELEMENTS::DETAIL::numstr<distype>>(T0invT);
+    SolveForInverse<DRT::ELEMENTS::DETAIL::num_str<distype>>(T0invT);
 
     return T0invT;
   }
@@ -167,14 +167,14 @@ namespace
    * @return double : residual displacement or displacement increment
    */
   template <DRT::Element::DiscretizationType distype>
-  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1>
-  GetDisplacementIncrement(const DRT::Discretization& discretization, const std::vector<int>& lm)
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>, 1> GetDisplacementIncrement(
+      const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
     auto residual_from_dis = discretization.GetState("residual displacement");
     std::vector<double> residual(lm.size());
     DRT::UTILS::ExtractMyValues(*residual_from_dis, residual, lm);
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> displ_inc(false);
-    for (int i = 0; i < DRT::ELEMENTS::DETAIL::numdofperelement<distype>; ++i)
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>, 1> displ_inc(false);
+    for (int i = 0; i < DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>; ++i)
       displ_inc(i) = residual[i];
 
     return displ_inc;
@@ -189,16 +189,16 @@ namespace
    * @return double : enhanced strains scalar increment delta_alpha_{i+1}
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1> EvaluateAlphaIncrement(
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1>& displ_inc,
+  CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> EvaluateAlphaIncrement(
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>, 1>& displ_inc,
       const DRT::ELEMENTS::EasIterationData<distype, eastype>& eas_iteration_data)
   {
     // the enhanced strains scalar increment is computed to:
     // delta_alpha_{i+1} = - invKaa_{i} (s_{i} + Kad_{i} delta_D_{i+1})
-    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1> alpha_inc(true);
+    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> alpha_inc(true);
 
     // init as enhancement vector s_{i} (EAS portion of internal forces)
-    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1> tmp(
+    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> tmp(
         eas_iteration_data.feas_);
 
     // addition of Kad_{i} delta_D_{i+1}
@@ -224,11 +224,11 @@ namespace
       const DRT::Discretization& discretization, const std::vector<int>& lm)
   {
     // residual displacement at the previous step
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1> displ_inc(false);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>, 1> displ_inc(false);
     displ_inc = GetDisplacementIncrement<distype>(discretization, lm);
 
     // compute the enhanced strain scalar increment delta_alpha
-    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1> alpha_inc =
+    CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> alpha_inc =
         EvaluateAlphaIncrement<distype, eastype>(displ_inc, eas_iteration_data);
 
     // update alpha_i with the increment delta_alpha such that alpha_{i+1} = alpha_{i} + delta_alpha
@@ -241,17 +241,17 @@ namespace
    *
    * @tparam distype, eastype
    * @param xi(in) : coordinate in the parameter space
-   * @return CORE::LINALG::Matrix<numstr, neas> : enhanced strains shape function matrix in
+   * @return CORE::LINALG::Matrix<num_str, num_eas> : enhanced strains shape function matrix in
    * parameter space
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-      STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+      STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   EvaluateEASShapeFunctionsParameterSpace(
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, 1>& xi)
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1>& xi)
   {
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+        STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
         M(true);
 
     switch (eastype)
@@ -359,18 +359,18 @@ namespace
    * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
    * element centroid
    * @param M(in) : matrix M in the parameter space
-   * @return CORE::LINALG::Matrix<numstr, neas> : matrix Mtilde in the material configuration
+   * @return CORE::LINALG::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-      STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+      STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   MapEASShapeFunctionsToMaterialConfig(const double detJ,
       const CentroidTransformation<distype>& centroid_transformation,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-          STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>& M)
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+          STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& M)
   {
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+        STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
         Mtilde;
 
     // Mtilde = detJ0/detJ T0^{-T} M
@@ -389,20 +389,20 @@ namespace
    * @param centroid_transformation(in) : transformation matrix T0^{-T} and Jacobi determinant at
    * element centroid
    * @param xi(in) : coordinate in the parameter space
-   * @return CORE::LINALG::Matrix<numstr, neas> : matrix Mtilde in the material configuration
+   * @return CORE::LINALG::Matrix<num_str, num_eas> : matrix Mtilde in the material configuration
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-      STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+      STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
   EvaluateEASShapeFunctionsMaterialConfig(const double detJ,
       const CentroidTransformation<distype>& centroid_transformation,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::nsd<distype>, 1>& xi)
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>, 1>& xi)
   {
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+        STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
         M(EvaluateEASShapeFunctionsParameterSpace<distype, eastype>(xi));
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+        STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
         Mtilde = MapEASShapeFunctionsToMaterialConfig<distype, eastype>(
             detJ, centroid_transformation, M);
     return Mtilde;
@@ -420,16 +420,16 @@ namespace
    * @param gl_strain(in) : Green-Lagrange strains E^{u}
    * @param Mtilde(in) : matrix Mtilde in the material configuration
    * @param alpha(in) : enhanced strain scalars
-   * @return CORE::LINALG::Matrix<numstr, 1>  : enhanced Green-Lagrange strains E^{enh}
+   * @return CORE::LINALG::Matrix<num_str, 1>  : enhanced Green-Lagrange strains E^{enh}
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> EvaluateEnhancedAssumedGLStrains(
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1>& gl_strain,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-          STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>& Mtilde,
-      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1>& alpha)
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> EvaluateEnhancedAssumedGLStrains(
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1>& gl_strain,
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+          STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
+      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
   {
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> enhanced_gl_strain(gl_strain);
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> enhanced_gl_strain(gl_strain);
     enhanced_gl_strain.Multiply(1.0, Mtilde, alpha, 1.0);
     return enhanced_gl_strain;
   }
@@ -441,19 +441,19 @@ namespace
    * @param displacement_based_mapping(in) : displacement-based spatial mapping
    * @param Mtilde(in) : matrix Mtilde in the material configuration
    * @param alpha(in) : enhanced strain scalars
-   * @return CORE::LINALG::Matrix<numstr, 1> : Enhanced Green-Lagrange strains E^{enh}
+   * @return CORE::LINALG::Matrix<num_str, 1> : Enhanced Green-Lagrange strains E^{enh}
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
-  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> EvaluateEnhancedAssumedGLStrains(
+  CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> EvaluateEnhancedAssumedGLStrains(
       const DRT::ELEMENTS::SpatialMaterialMapping<distype>& displacement_based_mapping,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-          STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>& Mtilde,
-      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1>& alpha)
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+          STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
+      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
   {
     const DRT::ELEMENTS::CauchyGreen<distype> displacement_based_cauchygreen =
         EvaluateCauchyGreen(displacement_based_mapping);
 
-    const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>, 1> gl_strain =
+    const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> gl_strain =
         EvaluateGreenLagrangeStrain(displacement_based_cauchygreen);
 
     return EvaluateEnhancedAssumedGLStrains<distype, eastype>(gl_strain, Mtilde, alpha);
@@ -526,18 +526,18 @@ namespace
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   void IntegrateEAS(const DRT::ELEMENTS::Stress<distype>& stress,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-          STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>& Mtilde,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-          DRT::ELEMENTS::DETAIL::numdofperelement<distype>>& Bop,
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+          STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+          DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>>& Bop,
       const double integration_factor,
       DRT::ELEMENTS::EasIterationData<distype, eastype>& eas_iteration_data)
   {
     // integrate Kaa: Kaa += (Mtilde^T . cmat . Mtilde) * detJ * w(gp)
     // IMPORTANT: We save this in invKaa_ here since after the loop over all Gauss points, we
     // invert the matrix. At this point, this is still Kaa and NOT invKaa.
-    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numstr<distype>,
-        STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+    CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>,
+        STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
         cmatM(true);
     cmatM.Multiply(stress.cmat_, Mtilde);
     eas_iteration_data.invKaa_.MultiplyTN(integration_factor, Mtilde, cmatM, 1.);
@@ -561,10 +561,10 @@ namespace
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   void AddEASInternalForce(
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>,
-          STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>& minusKdainvKaa,
-      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1>& feas,
-      CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>, 1>& force_vector)
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>,
+          STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& minusKdainvKaa,
+      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& feas,
+      CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>, 1>& force_vector)
   {
     force_vector.MultiplyNN(1.0, minusKdainvKaa, feas, 1.0);
   }
@@ -581,12 +581,12 @@ namespace
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   void AddEASStiffnessMatrix(
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>,
-          STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>& minusKdainvKaa,
-      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>,
-          STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>& Kda,
-      CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::numdofperelement<distype>,
-          DRT::ELEMENTS::DETAIL::numdofperelement<distype>>& stiffness_matrix)
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>,
+          STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& minusKdainvKaa,
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>,
+          STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Kda,
+      CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>,
+          DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>>& stiffness_matrix)
   {
     stiffness_matrix.MultiplyNT(1.0, minusKdainvKaa, Kda, 1.0);
   }
@@ -607,14 +607,14 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Pack(DRT::PackBuffer& dat
   constexpr int num_dof_per_element =
       CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement *
       CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1>(
+  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.alpha_);
-  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas, 1>(
+  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.feas_);
-  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas,
-      STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>(data, eas_iteration_data_.invKaa_);
+  DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
+      STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.invKaa_);
   DRT::ELEMENTS::Solid::AddtoPack<num_dof_per_element,
-      STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>(data, eas_iteration_data_.Kda_);
+      STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.Kda_);
 };
 
 template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
@@ -635,9 +635,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix, CORE::LINALG::SerialDenseMatrix* mass_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, numdofperelement_>> mass = {};
-  std::optional<CORE::LINALG::Matrix<numdofperelement_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> stiff = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, num_dof_per_ele_>> mass = {};
+  std::optional<CORE::LINALG::Matrix<num_dof_per_ele_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (mass_matrix != nullptr) mass.emplace(*mass_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
@@ -661,26 +661,26 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
   eas_iteration_data_.feas_.Clear();
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
+        CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, displacement_based_spatial_material_mapping);
 
-        const CORE::LINALG::Matrix<numstr_, STR::ELEMENTS::EasTypeToNumEas<eastype>::neas> Mtilde =
-            EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
+        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+            Mtilde = EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
-        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> consistent_defgrd =
-            EvaluateConsistentDefgrd(
+        const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
+            consistent_defgrd = EvaluateConsistentDefgrd(
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
 
@@ -715,10 +715,10 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
       });
 
   // invert Kaa with solver. eas_iteration_data_.invKaa_ then is Kaa^{-1}
-  SolveForInverse<STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>(eas_iteration_data_.invKaa_);
+  SolveForInverse<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(eas_iteration_data_.invKaa_);
 
   // compute the product (- Kda Kaa^{-1}) which is later needed for force and stiffness update
-  CORE::LINALG::Matrix<numdofperelement_, STR::ELEMENTS::EasTypeToNumEas<eastype>::neas>
+  CORE::LINALG::Matrix<num_dof_per_ele_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
       minusKdainvKaa(true);
   minusKdainvKaa.MultiplyNN(-1.0, eas_iteration_data_.Kda_, eas_iteration_data_.invKaa_);
 
@@ -737,7 +737,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -777,24 +777,24 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
   // of alpha
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const CORE::LINALG::Matrix<numstr_, STR::ELEMENTS::EasTypeToNumEas<eastype>::neas> Mtilde =
-            EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
+        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+            Mtilde = EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
 
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> consistent_defgrd =
-            EvaluateConsistentDefgrd(
+        const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
+            consistent_defgrd = EvaluateConsistentDefgrd(
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
 
@@ -814,8 +814,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
 
   std::vector<char>& serialized_stress_data = stressIO.mutable_data;
   std::vector<char>& serialized_strain_data = strainIO.mutable_data;
-  CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), numstr_);
-  CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), numstr_);
+  CORE::LINALG::SerialDenseMatrix stress_data(stiffness_matrix_integration_.NumPoints(), num_str_);
+  CORE::LINALG::SerialDenseMatrix strain_data(stiffness_matrix_integration_.NumPoints(), num_str_);
 
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
@@ -826,24 +826,24 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
   EvaluateAlpha<distype, eastype>(eas_iteration_data_, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const CORE::LINALG::Matrix<numstr_, STR::ELEMENTS::EasTypeToNumEas<eastype>::neas> Mtilde =
-            EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
+        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+            Mtilde = EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
 
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>> consistent_defgrd =
-            EvaluateConsistentDefgrd(
+        const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
+            consistent_defgrd = EvaluateConsistentDefgrd(
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
 
@@ -875,18 +875,18 @@ double DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateInternalEnergy
   EvaluateAlpha<distype, eastype>(eas_iteration_data_, discretization, lm);
 
   IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::nsd<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
-        const CORE::LINALG::Matrix<numstr_, STR::ELEMENTS::EasTypeToNumEas<eastype>::neas> Mtilde =
-            EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
+        const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
+            Mtilde = EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 

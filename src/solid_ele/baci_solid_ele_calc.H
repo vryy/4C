@@ -85,11 +85,11 @@ namespace DRT
 
      private:
       /// static values for matrix sizes
-      static constexpr int nen_ =
+      static constexpr int num_nodes_ =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static constexpr int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-      static constexpr int numdofperelement_ = nen_ * nsd_;
-      static constexpr int numstr_ = nsd_ * (nsd_ + 1) / 2;
+      static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
+      static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
       CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
       CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;

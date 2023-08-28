@@ -40,22 +40,22 @@ namespace STR::ELEMENTS
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_h8_9>
   {
-    static const int neas = 9;
+    static const int num_eas = 9;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_h8_21>
   {
-    static const int neas = 21;
+    static const int num_eas = 21;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_sh8_7>
   {
-    static const int neas = 7;
+    static const int num_eas = 7;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_sh18_9>
   {
-    static const int neas = 9;
+    static const int num_eas = 9;
   };
   template <>
   struct EasTypeToNumEas<STR::ELEMENTS::EasType::eastype_undefined>
@@ -80,22 +80,22 @@ namespace DRT
     template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
     struct EasIterationData
     {
-      constexpr static int neas = STR::ELEMENTS::EasTypeToNumEas<eastype>::neas;
+      constexpr static int num_eas = STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
 
       /// inverse EAS matrix K_{alpha alpha}, sometimes called Dtilde
-      CORE::LINALG::Matrix<neas, neas> invKaa_{true};
+      CORE::LINALG::Matrix<num_eas, num_eas> invKaa_{true};
 
       /// EAS matrix K_{d alpha}, sometimes called Ltilde
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement *
                                CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
-          neas>
+          num_eas>
           Kda_{true};
 
       /// EAS portion of internal forces f_{eas}, sometimes called enhacement vector s or Rtilde
-      CORE::LINALG::Matrix<neas, 1> feas_{true};
+      CORE::LINALG::Matrix<num_eas, 1> feas_{true};
 
       /// discrete enhanced strain scalars alpha
-      CORE::LINALG::Matrix<neas, 1> alpha_{true};
+      CORE::LINALG::Matrix<num_eas, 1> alpha_{true};
     };
 
     template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
@@ -159,11 +159,11 @@ namespace DRT
       DRT::ELEMENTS::EasIterationData<distype, eastype> eas_iteration_data_ = {};
 
       /// static values for matrix sizes
-      static constexpr int nen_ =
+      static constexpr int num_nodes_ =
           CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
-      static constexpr int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
-      static constexpr int numdofperelement_ = nen_ * nsd_;
-      static constexpr int numstr_ = nsd_ * (nsd_ + 1) / 2;
+      static constexpr int num_dim_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
+      static constexpr int num_dof_per_ele_ = num_nodes_ * num_dim_;
+      static constexpr int num_str_ = num_dim_ * (num_dim_ + 1) / 2;
 
       CORE::DRT::UTILS::GaussIntegration stiffness_matrix_integration_;
       CORE::DRT::UTILS::GaussIntegration mass_matrix_integration_;

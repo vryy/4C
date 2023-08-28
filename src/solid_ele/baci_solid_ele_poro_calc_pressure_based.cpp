@@ -53,8 +53,8 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
     CORE::LINALG::SerialDenseMatrix* stiffness_matrix)
 {
   // Create views to SerialDenseMatrices
-  std::optional<CORE::LINALG::Matrix<nsd_ * nen_, nsd_* nen_>> stiff = {};
-  std::optional<CORE::LINALG::Matrix<nsd_ * nen_, 1>> force = {};
+  std::optional<CORE::LINALG::Matrix<num_dim_ * num_nodes_, num_dim_* num_nodes_>> stiff = {};
+  std::optional<CORE::LINALG::Matrix<num_dim_ * num_nodes_, 1>> force = {};
   if (stiffness_matrix != nullptr) stiff.emplace(*stiffness_matrix, true);
   if (force_vector != nullptr) force.emplace(*force_vector, true);
 
@@ -76,7 +76,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
   // Loop over all Gauss points
   for (int gp = 0; gp < gauss_integration_.NumPoints(); ++gp)
   {
-    const CORE::LINALG::Matrix<nsd_, 1> xi =
+    const CORE::LINALG::Matrix<num_dim_, 1> xi =
         EvaluateParameterCoordinate<distype>(gauss_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
@@ -91,21 +91,21 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
 
     const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-    CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
+    CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
         EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
-    CORE::LINALG::Matrix<numstr_, numdofperelement_> dInverseRightCauchyGreen_dDisp =
+    CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> dInverseRightCauchyGreen_dDisp =
         EvaluateInverseCauchyGreenLinearization(
             cauchygreen, jacobian_mapping, spatial_material_mapping);
 
     const double volchange = ComputeVolumeChange<distype>(
         spatial_material_mapping, jacobian_mapping, ele, discretization, la[0].lm_, kinematictype);
 
-    CORE::LINALG::Matrix<1, numdofperelement_> dDetDefGrad_dDisp =
+    CORE::LINALG::Matrix<1, num_dof_per_ele_> dDetDefGrad_dDisp =
         ComputeLinearizationOfDetDefGradWrtDisp<distype>(
             spatial_material_mapping, jacobian_mapping, kinematictype);
 
-    const CORE::LINALG::Matrix<1, numdofperelement_> dVolchange_dDisp =
+    const CORE::LINALG::Matrix<1, num_dof_per_ele_> dVolchange_dDisp =
         ComputeLinearizationOfVolchangeWrtDisp<distype>(
             dDetDefGrad_dDisp, jacobian_mapping, kinematictype);
 
@@ -116,11 +116,11 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
     double solidpressure = ComputeSolPressureAtGP<distype>(
         nummultifluiddofpernode, numfluidphases, fluidmultiphase_phiAtGP, porofluidmat);
     // derivative of press w.r.t. displacements (only in case of volfracs)
-    CORE::LINALG::Matrix<1, numdofperelement_> dSolidpressure_dDisp(true);
+    CORE::LINALG::Matrix<1, num_dof_per_ele_> dSolidpressure_dDisp(true);
 
     if (hasvolfracs)
     {
-      CORE::LINALG::Matrix<1, numdofperelement_> dPorosity_dDisp;
+      CORE::LINALG::Matrix<1, num_dof_per_ele_> dPorosity_dDisp;
       double porosity = 0.0;
 
       ComputePorosityAndLinearization<distype>(porostructmat, params, solidpressure, gp, volchange,
@@ -141,11 +141,11 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
     const double detJ_w = jacobian_mapping.determinant_ * gauss_integration_.Weight(gp);
 
     // inverse Right Cauchy-Green tensor as vector in voigt notation
-    CORE::LINALG::Matrix<numstr_, 1> C_inv_vec(false);
+    CORE::LINALG::Matrix<num_str_, 1> C_inv_vec(false);
     ::UTILS::VOIGT::Stresses::MatrixToVector(cauchygreen.inverse_right_cauchy_green, C_inv_vec);
 
     // B^T . C^-1
-    CORE::LINALG::Matrix<numdofperelement_, 1> BopCinv(true);
+    CORE::LINALG::Matrix<num_dof_per_ele_, 1> BopCinv(true);
     BopCinv.MultiplyTN(Bop, C_inv_vec);
 
     // update internal force vector
@@ -194,7 +194,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
   // Loop over all Gauss points
   for (int gp = 0; gp < gauss_integration_.NumPoints(); ++gp)
   {
-    const CORE::LINALG::Matrix<nsd_, 1> xi =
+    const CORE::LINALG::Matrix<num_dim_, 1> xi =
         EvaluateParameterCoordinate<distype>(gauss_integration_, gp);
 
     const ShapeFunctionsAndDerivatives<distype> shape_functions =
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
 
     const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
 
-    CORE::LINALG::Matrix<numstr_, numdofperelement_> Bop =
+    CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
         EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
     // volume change (used for porosity law). Same as J in nonlinear theory.
@@ -238,11 +238,11 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
     const double detJ_w = jacobian_mapping.determinant_ * gauss_integration_.Weight(gp);
 
     // inverse Right Cauchy-Green tensor as vector in voigt notation
-    CORE::LINALG::Matrix<numstr_, 1> C_inv_vec(false);
+    CORE::LINALG::Matrix<num_str_, 1> C_inv_vec(false);
     ::UTILS::VOIGT::Stresses::MatrixToVector(cauchygreen.inverse_right_cauchy_green, C_inv_vec);
 
     // B^T . C^-1
-    CORE::LINALG::Matrix<numdofperelement_, 1> BopCinv(true);
+    CORE::LINALG::Matrix<num_dof_per_ele_, 1> BopCinv(true);
     BopCinv.MultiplyTN(Bop, C_inv_vec);
 
     UpdateStiffnessMatrixCouplingMultiPhasePressureBased<distype>(detJ_w, solidpressurederiv,
