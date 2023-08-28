@@ -26,6 +26,7 @@
 #include "baci_solver_nonlin_nox_interface_jacobian.H"
 #include "baci_solver_nonlin_nox_linearsystem.H"
 #include "baci_solver_nonlin_nox_linearsystem_factory.H"
+#include "baci_solver_nonlin_nox_singlestep_group.H"
 
 #include <Epetra_Operator.h>
 #include <NOX_Epetra_Interface_Jacobian.H>
@@ -110,12 +111,19 @@ Teuchos::RCP<NOX::Abstract::Group> NOX::NLN::Problem::CreateGroup(
   Teuchos::ParameterList& params = noxNlnGlobalData_->GetNlnParameterList();
   const Teuchos::RCP<NOX::Epetra::Interface::Required>& iReq =
       noxNlnGlobalData_->GetRequiredInterface();
+  const std::string nlnSolver = params.get<std::string>("Nonlinear Solver", "");
   if (noxNlnGlobalData_->GetIsConstrained())
   {
     const NOX::NLN::CONSTRAINT::ReqInterfaceMap& iconstr =
         noxNlnGlobalData_->GetConstraintInterfaces();
     noxgrp = Teuchos::rcp(new NOX::NLN::CONSTRAINT::Group(params.sublist("Printing"),
         params.sublist("Group Options"), iReq, **xVector_, linSys, iconstr));
+  }
+  else if (nlnSolver.compare("Single Step") == 0)
+  {
+    std::cout << "Single Step Group is selected" << std::endl;
+    noxgrp = Teuchos::rcp(new NOX::NLN::SINGLESTEP::Group(
+        params.sublist("Printing"), params.sublist("Group Options"), iReq, **xVector_, linSys));
   }
   else
   {

@@ -92,18 +92,22 @@ namespace STR
 
        protected:
         //! Reset the non-linear solver parameters and variables
-        void ResetParams();
+        virtual void ResetParams();
 
         //! Convert the final nox status into a structural status
         enum INPAR::STR::ConvergenceStatus ConvertFinalStatus(
             const NOX::StatusTest::StatusType& finalstatus) const;
 
+       protected:
+        //! pointer to the nox nln global data container
+        Teuchos::RCP<NOX::NLN::GlobalData> nlnglobaldata_;
+
+        //! NOX non-linear solver
+        Teuchos::RCP<NOX::Solver::Generic> nlnsolver_;
+
        private:
         //! @name Variables which stay constant after Init() and Setup() call
         //!@{
-
-        //! pointer to the nox nln global data container
-        Teuchos::RCP<NOX::NLN::GlobalData> nlnglobaldata_;
 
         //!@}
 
@@ -124,9 +128,6 @@ namespace STR
 
         //! inner status test
         Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> istatus_;
-
-        //! NOX non-linear solver
-        Teuchos::RCP<NOX::Solver::Generic> nlnsolver_;
 
         //!@}
       };  // class Nox

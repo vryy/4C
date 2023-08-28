@@ -29,10 +29,11 @@ void INPAR::NLNSOL::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list
   Teuchos::ParameterList& snox = list->sublist("STRUCT NOX", false, "");
 
   {
-    Teuchos::Array<std::string> st = Teuchos::tuple<std::string>("Line Search Based",
-        "Pseudo Transient", "Trust Region Based", "Inexact Trust Region Based", "Tensor Based");
-    Teuchos::setStringToIntegralParameter<int>(
-        "Nonlinear Solver", "Line Search Based", "", st, Teuchos::tuple<int>(0, 1, 2, 3, 4), &snox);
+    Teuchos::Array<std::string> st =
+        Teuchos::tuple<std::string>("Line Search Based", "Pseudo Transient", "Trust Region Based",
+            "Inexact Trust Region Based", "Tensor Based", "Single Step");
+    Teuchos::setStringToIntegralParameter<int>("Nonlinear Solver", "Line Search Based", "", st,
+        Teuchos::tuple<int>(0, 1, 2, 3, 4, 5), &snox);
   }
 
   // sub-list direction
