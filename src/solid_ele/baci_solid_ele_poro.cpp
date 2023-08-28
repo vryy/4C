@@ -318,7 +318,6 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
 
   // read number of material model
   SetMaterial(STR::UTILS::READELEMENT::ReadElementMaterial(linedef));
-  SolidPoroMaterial().Setup(STR::UTILS::DisTypeToNgpOptGaussRule(Shape()), linedef);
 
   // kinematic type
   SetKinematicType(STR::UTILS::READELEMENT::ReadElementKinematicType(linedef));

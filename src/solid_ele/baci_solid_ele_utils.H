@@ -20,8 +20,6 @@ namespace STR::ELEMENTS
 
 namespace STR::UTILS
 {
-  int DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distype);
-
   void NodalBlockInformationSolid(DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
 
   void Pk2ToCauchy(const CORE::LINALG::Matrix<6, 1>& pk2, const CORE::LINALG::Matrix<3, 3>& defgrd,
