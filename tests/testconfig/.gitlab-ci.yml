@@ -636,6 +636,10 @@ buildtest_full_debug:
   needs:
   - job: build-base-dependencies
     optional: true
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "1"
+  - !reference [.buildtest_full, rules]
+  interruptible: true
 
 build-verify-headers:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
