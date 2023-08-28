@@ -613,21 +613,21 @@ void DRT::Problem::ReadContactConstitutiveLaws(DRT::INPUT::DatFileReader& reader
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
 {
-  Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
+  DRT::INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
 
   // perform the actual reading and extract the input parameters
-  std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> input_line_vec = lines->Read(reader);
-  for (auto& input_line : input_line_vec)
+  std::vector<DRT::INPUT::LineDefinition> input_line_vec = lines.Read(reader);
+  for (const auto& input_line : input_line_vec)
   {
     // extract what was read from the input file
     std::string src_field;
-    input_line->ExtractString("SRC_FIELD", src_field);
+    input_line.ExtractString("SRC_FIELD", src_field);
     int src_matid(-1);
-    input_line->ExtractInt("SRC_MAT", src_matid);
+    input_line.ExtractInt("SRC_MAT", src_matid);
     std::string tar_field;
-    input_line->ExtractString("TAR_FIELD", tar_field);
+    input_line.ExtractString("TAR_FIELD", tar_field);
     int tar_matid(-1);
-    input_line->ExtractInt("TAR_MAT", tar_matid);
+    input_line.ExtractInt("TAR_MAT", tar_matid);
 
     // create the key pair
     std::pair<std::string, std::string> fields(src_field, tar_field);

@@ -109,7 +109,7 @@ namespace DRT
     void TestAll(const Epetra_Comm& comm);
 
     /// Definition of valid input section
-    Teuchos::RCP<DRT::INPUT::Lines> ValidResultLines();
+    DRT::INPUT::Lines ValidResultLines();
 
     /// read the baci input file and set up all curves
     void ReadInput(DRT::INPUT::DatFileReader& reader);
@@ -119,7 +119,7 @@ namespace DRT
     std::vector<Teuchos::RCP<ResultTest>> fieldtest_;
 
     /// expected results
-    std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> results_;
+    std::vector<DRT::INPUT::LineDefinition> results_;
   };
 
 }  // namespace DRT

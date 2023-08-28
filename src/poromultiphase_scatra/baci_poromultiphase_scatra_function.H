@@ -18,6 +18,11 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
 #define BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
 
+namespace DRT::INPUT
+{
+  class Lines;
+}
+
 namespace POROMULTIPHASESCATRA
 {
   /*!
@@ -63,12 +68,12 @@ namespace POROMULTIPHASESCATRA
   };
 
   /// add valid poro-specific function lines
-  void AddValidPoroFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+  void AddValidPoroFunctionLines(DRT::INPUT::Lines& lines);
 
   /// try to create poro-specific functions from a given line definition
   template <int dim>
   Teuchos::RCP<DRT::UTILS::FunctionOfAnything> TryCreatePoroFunction(
-      const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
   //! create poro-specific functions from a given line definition
   template <int dim>

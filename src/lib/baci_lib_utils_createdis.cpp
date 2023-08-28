@@ -252,14 +252,11 @@ void DRT::UTILS::DiscretizationCreatorBase::Finalize(
     if (not sourcedis.ElementColMap()->SameAs(*(targetdis.ElementColMap())))
       dserror("ElementColMaps of source and target discretization are different!");
   }
-
-  // all done ;-)
-  return;
 }  // DRT::UTILS::DiscretizationCreatorBase::Finalize
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
+DRT::INPUT::Lines DRT::UTILS::ValidCloningMaterialMapLines()
 {
   // this defines the valid input line
   DRT::INPUT::LineDefinition structure = DRT::INPUT::LineDefinition::Builder()
@@ -268,13 +265,13 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
                                              .AddNamedString("TAR_FIELD")
                                              .AddNamedInt("TAR_MAT")
                                              .Build();
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("CLONING MATERIAL MAP",
+  DRT::INPUT::Lines lines = DRT::INPUT::Lines("CLONING MATERIAL MAP",
       "This section is used for multi physics simulations, "
       "in which a discretization is used for more than one physics. "
       "The material model given for the defined element (SRC_MAT) is coupled to the material model "
-      "for a different physics (TAR_MAT)."));
+      "for a different physics (TAR_MAT).");
 
-  lines->Add(structure);
+  lines.Add(structure);
 
   return lines;
 }  // DRT::UTILS::ValidCloningMaterialMapLines
@@ -283,8 +280,6 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::ValidCloningMaterialMapLines()
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PrintCloningMaterialMapDatHeader()
 {
-  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidCloningMaterialMapLines();
-  lines->Print(std::cout);
-
-  return;
+  DRT::INPUT::Lines lines = ValidCloningMaterialMapLines();
+  lines.Print(std::cout);
 }  // DRT::UTILS::PrintCloningMaterialMapDatHeader

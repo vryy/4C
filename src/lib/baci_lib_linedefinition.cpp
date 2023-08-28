@@ -895,13 +895,13 @@ namespace DRT::INPUT
 
 
 
-  std::vector<Teuchos::RCP<LineDefinition>> Lines::Read(DatFileReader& reader, int suffix)
+  std::vector<LineDefinition> Lines::Read(DatFileReader& reader, int suffix)
   {
     std::ostringstream name;
     name << "--" << sectionname_;
     if (suffix > 0) name << suffix;
 
-    std::vector<Teuchos::RCP<LineDefinition>> lines;
+    std::vector<LineDefinition> lines;
 
     std::vector<const char*> section = reader.Section(name.str());
     // these are the lines of the section stored in [0],[1],...
@@ -909,34 +909,32 @@ namespace DRT::INPUT
     {
       for (const auto& input_line : section)
       {
-        const auto filled_line_definition = std::invoke(
-            [&]() -> Teuchos::RCP<LineDefinition>
+        const LineDefinition& filled_line_definition = std::invoke(
+            [&]()
             {
               for (auto& definition : definitions_)
               {
                 std::stringstream l{input_line};
                 if (definition.Read(l))
                 {
-                  return Teuchos::rcp(new LineDefinition(definition));
+                  return definition;
                 }
               }
-              return Teuchos::null;
+              {
+                std::stringstream out;
+                out << "Read failed in section " << std::quoted(name.str()) << ": line "
+                    << std::quoted(input_line) << "\n";
+                out << "Valid lines are:\n\n";
+                std::for_each(definitions_.begin(), definitions_.end(),
+                    [&](const LineDefinition& def)
+                    {
+                      def.Print(out);
+                      out << "\n";
+                    });
+                dserror(out.str().c_str());
+              }
             });
 
-        if (filled_line_definition == Teuchos::null)
-        {
-          std::stringstream out;
-          out << "Read failed in section " << std::quoted(name.str()) << ": line "
-              << std::quoted(input_line) << "\n";
-          out << "Valid lines are:\n\n";
-          std::for_each(definitions_.begin(), definitions_.end(),
-              [&](const LineDefinition& def)
-              {
-                def.Print(out);
-                out << "\n";
-              });
-          dserror(out.str().c_str());
-        }
         lines.push_back(filled_line_definition);
       }
     }

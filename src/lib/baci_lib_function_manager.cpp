@@ -25,7 +25,7 @@
 
 namespace
 {
-  using LineDefinitionVector = std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>;
+  using LineDefinitionVector = std::vector<DRT::INPUT::LineDefinition>;
 
   using TypeErasedFunctionCreator = std::function<std::any(const LineDefinitionVector&)>;
 
@@ -53,7 +53,7 @@ namespace
   template <int dim>
   void FillFunctions(DRT::INPUT::DatFileReader& reader, std::vector<std::any>& functions)
   {
-    Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
+    DRT::INPUT::Lines lines = DRT::UTILS::FunctionManager::ValidFunctionLines();
 
     // Read FUNCT sections starting from FUNCT1 until the first empty one is encountered.
     // This implies that the FUNCT sections must form a contiguous range in the input file.
@@ -61,8 +61,7 @@ namespace
     for (int funct_suffix = 1;; ++funct_suffix)
     {
       // Read lines belonging to section FUNCT<i> in the input file
-      std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>> section_line_defs =
-          lines->Read(reader, funct_suffix);
+      std::vector<DRT::INPUT::LineDefinition> section_line_defs = lines.Read(reader, funct_suffix);
 
       // Stop reading as soon as the first FUNCT section in the input file is empty
       if (section_line_defs.empty()) break;
@@ -101,7 +100,7 @@ namespace
         for (const auto& line : section_line_defs)
         {
           ss << "\n";
-          line->Print(ss);
+          line.Print(ss);
         }
 
         dserror("Could not create any function from the following function line definition:\n%s",
@@ -114,12 +113,12 @@ namespace
 void PrintFunctionDatHeader()
 {
   DRT::UTILS::FunctionManager functionmanager;
-  Teuchos::RCP<DRT::INPUT::Lines> lines = functionmanager.ValidFunctionLines();
+  DRT::INPUT::Lines lines = functionmanager.ValidFunctionLines();
 
-  lines->Print(std::cout);
+  lines.Print(std::cout);
 }
 
-void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::AddValidFunctionFunctionLines(DRT::INPUT::Lines& lines)
 {
   using namespace DRT::INPUT;
 
@@ -165,10 +164,10 @@ void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> l
           .AddOptionalNamedDouble("T2")
           .Build();
 
-  lines->Add(onecomponentexpr);
-  lines->Add(symbolic_function_of_time);
-  lines->Add(componentexpr);
-  lines->Add(variableexprmulti);
+  lines.Add(onecomponentexpr);
+  lines.Add(symbolic_function_of_time);
+  lines.Add(componentexpr);
+  lines.Add(variableexprmulti);
 
   LineDefinition varfunct = LineDefinition::Builder()
                                 .AddNamedString("VARFUNCTION")
@@ -177,13 +176,13 @@ void DRT::UTILS::AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> l
                                     "CONSTANTS", LengthFromIntNamed("NUMCONSTANTS"))
                                 .Build();
 
-  lines->Add(varfunct);
+  lines.Add(varfunct);
 }
 
-Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines()
+DRT::INPUT::Lines DRT::UTILS::FunctionManager::ValidFunctionLines()
 {
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines(
-      "FUNCT", "Definition of functions for various cases, mainly boundary conditions"));
+  DRT::INPUT::Lines lines(
+      "FUNCT", "Definition of functions for various cases, mainly boundary conditions");
 
   DRT::UTILS::AddValidFunctionFunctionLines(lines);
   DRT::UTILS::AddValidLibraryFunctionLines(lines);

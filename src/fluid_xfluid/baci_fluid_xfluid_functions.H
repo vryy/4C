@@ -20,16 +20,17 @@ namespace DRT
   namespace INPUT
   {
     class LineDefinition;
-  }
+    class Lines;
+  }  // namespace INPUT
 
   namespace UTILS
   {
     /// add valid xfluid-specific function lines
-    void AddValidXfluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    void AddValidXfluidFunctionLines(DRT::INPUT::Lines& lines);
 
     /// try to create xfluid-specific functions from a given line definition
     Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateXfluidFunction(
-        const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs);
+        const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
 
     /// special implementation level set cut utilizing xfluid
     class GerstenbergerForwardfacingStep : public FunctionOfSpaceTime

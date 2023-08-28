@@ -38,7 +38,7 @@ namespace DRT
     {
      public:
       /// Return all known input lines that define a DRT::Function.
-      static Teuchos::RCP<DRT::INPUT::Lines> ValidFunctionLines();
+      static DRT::INPUT::Lines ValidFunctionLines();
 
       /// read the baci input file and set up all functions
       void ReadInput(DRT::INPUT::DatFileReader& reader);
@@ -62,7 +62,7 @@ namespace DRT
     };
 
     /// add valid function lines
-    void AddValidFunctionFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines);
+    void AddValidFunctionFunctionLines(DRT::INPUT::Lines& lines);
   }  // namespace UTILS
 
 }  // namespace DRT

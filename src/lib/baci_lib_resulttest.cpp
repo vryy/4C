@@ -163,16 +163,16 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
   for (auto& result : results_)
   {
-    for (auto& fieldtest : fieldtest_)
+    for (const auto& fieldtest : fieldtest_)
     {
-      if (fieldtest->Match(*result))
+      if (fieldtest->Match(result))
       {
-        if (result->HaveNamed("ELEMENT"))
-          fieldtest->TestElement(*result, nerr, test_count);
-        else if (result->HaveNamed("NODE"))
-          fieldtest->TestNode(*result, nerr, test_count);
+        if (result.HaveNamed("ELEMENT"))
+          fieldtest->TestElement(result, nerr, test_count);
+        else if (result.HaveNamed("NODE"))
+          fieldtest->TestNode(result, nerr, test_count);
         else
-          fieldtest->TestSpecial(*result, nerr, test_count, uneval_test_count);
+          fieldtest->TestSpecial(result, nerr, test_count, uneval_test_count);
       }
     }
   }
@@ -221,7 +221,7 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
+DRT::INPUT::Lines DRT::ResultTestManager::ValidResultLines()
 {
   DRT::INPUT::LineDefinition structure = DRT::INPUT::LineDefinition::Builder()
                                              .AddTag("STRUCTURE")
@@ -528,41 +528,41 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
                                                     .AddOptionalNamedString("NAME")
                                                     .Build();
 
-  Teuchos::RCP<DRT::INPUT::Lines> lines = Teuchos::rcp(new DRT::INPUT::Lines("RESULT DESCRIPTION",
+  DRT::INPUT::Lines lines("RESULT DESCRIPTION",
       "The result of the simulation with respect to specific quantities at concrete points "
-      "can be tested against particular values with a given tolerance."));
-  lines->Add(structure);
-  lines->Add(structure_special);
-  lines->Add(fluid_node);
-  lines->Add(fluid_ele);
-  lines->Add(xfluid_node);
-  lines->Add(ale);
-  lines->Add(thermal);
-  lines->Add(lubrication);
-  lines->Add(porofluidmultiphase_node);
-  lines->Add(porofluidmultiphase_ele);
-  lines->Add(porofluidmultiphase_special);
-  lines->Add(scatra);
-  lines->Add(scatra_special);
-  lines->Add(ssi);
-  lines->Add(ssi_special);
-  lines->Add(ssti_special);
-  lines->Add(sti_special);
-  lines->Add(red_airway);
-  lines->Add(red_airway_ele);
-  lines->Add(art_net_node);
-  lines->Add(art_net_ele);
-  lines->Add(fld_adj);
-  lines->Add(opti_node);
-  lines->Add(opti_ele);
-  lines->Add(fsi_node);
-  lines->Add(fsi_special);
-  lines->Add(particle);
-  lines->Add(particlewall_node);
-  lines->Add(particlewall_special);
-  lines->Add(rigidbody);
-  lines->Add(elemag);
-  lines->Add(cardiovascular0d);
+      "can be tested against particular values with a given tolerance.");
+  lines.Add(structure);
+  lines.Add(structure_special);
+  lines.Add(fluid_node);
+  lines.Add(fluid_ele);
+  lines.Add(xfluid_node);
+  lines.Add(ale);
+  lines.Add(thermal);
+  lines.Add(lubrication);
+  lines.Add(porofluidmultiphase_node);
+  lines.Add(porofluidmultiphase_ele);
+  lines.Add(porofluidmultiphase_special);
+  lines.Add(scatra);
+  lines.Add(scatra_special);
+  lines.Add(ssi);
+  lines.Add(ssi_special);
+  lines.Add(ssti_special);
+  lines.Add(sti_special);
+  lines.Add(red_airway);
+  lines.Add(red_airway_ele);
+  lines.Add(art_net_node);
+  lines.Add(art_net_ele);
+  lines.Add(fld_adj);
+  lines.Add(opti_node);
+  lines.Add(opti_ele);
+  lines.Add(fsi_node);
+  lines.Add(fsi_special);
+  lines.Add(particle);
+  lines.Add(particlewall_node);
+  lines.Add(particlewall_special);
+  lines.Add(rigidbody);
+  lines.Add(elemag);
+  lines.Add(cardiovascular0d);
 
   return lines;
 }
@@ -572,8 +572,8 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::ResultTestManager::ValidResultLines()
 /*----------------------------------------------------------------------*/
 void DRT::ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 {
-  Teuchos::RCP<DRT::INPUT::Lines> lines = ValidResultLines();
-  results_ = lines->Read(reader);
+  DRT::INPUT::Lines lines = ValidResultLines();
+  results_ = lines.Read(reader);
 }
 
 
@@ -582,7 +582,7 @@ void DRT::ResultTestManager::ReadInput(DRT::INPUT::DatFileReader& reader)
 void PrintResultDescrDatHeader()
 {
   DRT::ResultTestManager resulttestmanager;
-  Teuchos::RCP<DRT::INPUT::Lines> lines = resulttestmanager.ValidResultLines();
+  DRT::INPUT::Lines lines = resulttestmanager.ValidResultLines();
 
-  lines->Print(std::cout);
+  lines.Print(std::cout);
 }

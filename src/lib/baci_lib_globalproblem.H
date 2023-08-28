@@ -13,7 +13,7 @@
 #ifndef BACI_LIB_GLOBALPROBLEM_H
 #define BACI_LIB_GLOBALPROBLEM_H
 
-#include "baci_lib_function.H"
+#include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem_enums.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils.H"

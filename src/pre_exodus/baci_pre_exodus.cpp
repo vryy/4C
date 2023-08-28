@@ -277,8 +277,8 @@ int main(int argc, char** argv)
       }
 
       // print cloning material map default lines (right after the materials)
-      Teuchos::RCP<DRT::INPUT::Lines> lines = DRT::UTILS::ValidCloningMaterialMapLines();
-      lines->Print(defaulthead);
+      DRT::INPUT::Lines lines = DRT::UTILS::ValidCloningMaterialMapLines();
+      lines.Print(defaulthead);
 
       // print spatial functions
       defaulthead << "-------------------------------------------------------------FUNCT1"
@@ -292,8 +292,8 @@ int main(int argc, char** argv)
       {
         std::stringstream tmp;
         DRT::UTILS::FunctionManager functionmanager;
-        Teuchos::RCP<DRT::INPUT::Lines> flines = functionmanager.ValidFunctionLines();
-        flines->Print(tmp);
+        DRT::INPUT::Lines flines = functionmanager.ValidFunctionLines();
+        flines.Print(tmp);
         std::string tmpstring = tmp.str();
         std::string removeit =
             "--------------------------------------------------------------FUNCT\n";
@@ -308,8 +308,8 @@ int main(int argc, char** argv)
       // default result-test lines
       {
         DRT::ResultTestManager resulttestmanager;
-        Teuchos::RCP<DRT::INPUT::Lines> lines = resulttestmanager.ValidResultLines();
-        lines->Print(defaulthead);
+        DRT::INPUT::Lines lines = resulttestmanager.ValidResultLines();
+        lines.Print(defaulthead);
       }
 
       // close default header file

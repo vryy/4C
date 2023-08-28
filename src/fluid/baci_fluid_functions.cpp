@@ -59,7 +59,7 @@ namespace
   }
 }  // namespace
 
-void FLD::AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void FLD::AddValidFluidFunctionLines(DRT::INPUT::Lines& lines)
 {
   auto beltrami =
       DRT::INPUT::LineDefinition::Builder().AddTag("BELTRAMI").AddNamedDouble("c1").Build();
@@ -180,51 +180,51 @@ void FLD::AddValidFluidFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
                            .AddNamedDouble("AMPLITUDE")
                            .Build();
 
-  lines->Add(beltrami);
-  lines->Add(channelweaklycompressible);
-  lines->Add(correctiontermchannelweaklycompressible);
-  lines->Add(weaklycompressiblepoiseuille);
-  lines->Add(weaklycompressiblepoiseuilleforce);
-  lines->Add(weaklycompressiblemanufacturedflow);
-  lines->Add(weaklycompressiblemanufacturedflowforce);
-  lines->Add(weaklycompressibleetiennecfd);
-  lines->Add(weaklycompressibleetiennecfdforce);
-  lines->Add(weaklycompressibleetiennecfdviscosity);
-  lines->Add(weaklycompressibleetiennefsifluid);
-  lines->Add(weaklycompressibleetiennefsifluidforce);
-  lines->Add(weaklycompressibleetiennefsifluidviscosity);
-  lines->Add(beltramiup);
-  lines->Add(beltramigradu);
-  lines->Add(beltramirhs);
-  lines->Add(kimmoinup);
-  lines->Add(kimmoingradu);
-  lines->Add(kimmoinrhs);
-  lines->Add(kimmoinstress);
+  lines.Add(beltrami);
+  lines.Add(channelweaklycompressible);
+  lines.Add(correctiontermchannelweaklycompressible);
+  lines.Add(weaklycompressiblepoiseuille);
+  lines.Add(weaklycompressiblepoiseuilleforce);
+  lines.Add(weaklycompressiblemanufacturedflow);
+  lines.Add(weaklycompressiblemanufacturedflowforce);
+  lines.Add(weaklycompressibleetiennecfd);
+  lines.Add(weaklycompressibleetiennecfdforce);
+  lines.Add(weaklycompressibleetiennecfdviscosity);
+  lines.Add(weaklycompressibleetiennefsifluid);
+  lines.Add(weaklycompressibleetiennefsifluidforce);
+  lines.Add(weaklycompressibleetiennefsifluidviscosity);
+  lines.Add(beltramiup);
+  lines.Add(beltramigradu);
+  lines.Add(beltramirhs);
+  lines.Add(kimmoinup);
+  lines.Add(kimmoingradu);
+  lines.Add(kimmoinrhs);
+  lines.Add(kimmoinstress);
 }
 
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
   const auto& function_lin_def = function_line_defs.front();
 
-  if (function_lin_def->HaveNamed("BELTRAMI"))
+  if (function_lin_def.HaveNamed("BELTRAMI"))
   {
     double c1;
-    function_lin_def->ExtractDouble("c1", c1);
+    function_lin_def.ExtractDouble("c1", c1);
 
     return Teuchos::rcp(new FLD::BeltramiFunction(c1));
   }
-  else if (function_lin_def->HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
+  else if (function_lin_def.HaveNamed("CHANNELWEAKLYCOMPRESSIBLE"))
   {
     return Teuchos::rcp(new FLD::ChannelWeaklyCompressibleFunction());
   }
-  else if (function_lin_def->HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
+  else if (function_lin_def.HaveNamed("CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE"))
   {
     return Teuchos::rcp(new FLD::CorrectionTermChannelWeaklyCompressibleFunction());
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE"))
   {
     // read data
     int mat_id = -1;
@@ -232,10 +232,10 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
     double R = 0.0;
     double U = 0.0;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
-    function_lin_def->ExtractDouble("L", L);
-    function_lin_def->ExtractDouble("R", R);
-    function_lin_def->ExtractDouble("U", U);
+    function_lin_def.ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractDouble("L", L);
+    function_lin_def.ExtractDouble("R", R);
+    function_lin_def.ExtractDouble("U", U);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE");
     if (L <= 0) dserror("Please give a (reasonable) 'L' in WEAKLYCOMPRESSIBLE_POISEUILLE");
@@ -247,7 +247,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleFunction(fparams, L, R, U));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE"))
   {
     // read data
     int mat_id = -1;
@@ -255,10 +255,10 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
     double R = 0.0;
     double U = 0.0;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
-    function_lin_def->ExtractDouble("L", L);
-    function_lin_def->ExtractDouble("R", R);
-    function_lin_def->ExtractDouble("U", U);
+    function_lin_def.ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractDouble("L", L);
+    function_lin_def.ExtractDouble("R", R);
+    function_lin_def.ExtractDouble("U", U);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_POISEUILLE_FORCE");
@@ -271,12 +271,12 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::WeaklyCompressiblePoiseuilleForceFunction(fparams, L, R, U));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW"))
   {
     // read data
     int mat_id = -1;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW");
@@ -286,12 +286,12 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowFunction(fparams));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE"))
   {
     // read data
     int mat_id = -1;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_MANUFACTUREDFLOW_FORCE");
@@ -301,12 +301,12 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::WeaklyCompressibleManufacturedFlowForceFunction(fparams));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD"))
   {
     // read data
     int mat_id = -1;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD");
 
@@ -315,12 +315,12 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDFunction(fparams));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE"))
   {
     // read data
     int mat_id = -1;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_FORCE");
@@ -330,12 +330,12 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDForceFunction(fparams));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY"))
   {
     // read data
     int mat_id = -1;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0)
       dserror("Please give a (reasonable) 'MAT' in WEAKLYCOMPRESSIBLE_ETIENNE_CFD_VISCOSITY");
@@ -345,14 +345,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::WeaklyCompressibleEtienneCFDViscosityFunction(fparams));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID"))
   {
     // read data
     int mat_id_fluid = -1;
     int mat_id_struc = -1;
 
-    function_lin_def->ExtractInt("MAT_FLUID", mat_id_fluid);
-    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def.ExtractInt("MAT_FLUID", mat_id_fluid);
+    function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_fluid <= 0)
       dserror("Please give a (reasonable) 'MAT_FLUID' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID");
@@ -366,14 +366,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
     return Teuchos::rcp(
         new FLD::WeaklyCompressibleEtienneFSIFluidFunction(fparams_fluid, fparams_struc));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_FORCE"))
   {
     // read data
     int mat_id_fluid = -1;
     int mat_id_struc = -1;
 
-    function_lin_def->ExtractInt("MAT_FLUID", mat_id_fluid);
-    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def.ExtractInt("MAT_FLUID", mat_id_fluid);
+    function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_fluid <= 0)
     {
@@ -395,14 +395,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
     return Teuchos::rcp(
         new FLD::WeaklyCompressibleEtienneFSIFluidForceFunction(fparams_fluid, fparams_struc));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_FLUID_VISCOSITY"))
   {
     // read data
     int mat_id_fluid = -1;
     int mat_id_struc = -1;
 
-    function_lin_def->ExtractInt("MAT_FLUID", mat_id_fluid);
-    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def.ExtractInt("MAT_FLUID", mat_id_fluid);
+    function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_fluid <= 0)
     {
@@ -424,12 +424,12 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
     return Teuchos::rcp(
         new FLD::WeaklyCompressibleEtienneFSIFluidViscosityFunction(fparams_fluid, fparams_struc));
   }
-  else if (function_lin_def->HaveNamed("BELTRAMI-UP"))
+  else if (function_lin_def.HaveNamed("BELTRAMI-UP"))
   {
     // read material
     int mat_id = -1;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("MAT", mat_id);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-UP");
 
@@ -438,14 +438,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::BeltramiUP(fparams));
   }
-  else if (function_lin_def->HaveNamed("BELTRAMI-RHS"))
+  else if (function_lin_def.HaveNamed("BELTRAMI-RHS"))
   {
     // read material
     int mat_id = -1;
     int is_stokes = 0;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
-    function_lin_def->ExtractInt("ISSTOKES", is_stokes);
+    function_lin_def.ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("ISSTOKES", is_stokes);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-RHS");
 
@@ -454,14 +454,14 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::BeltramiRHS(fparams, (bool)is_stokes));
   }
-  else if (function_lin_def->HaveNamed("KIMMOIN-UP"))
+  else if (function_lin_def.HaveNamed("KIMMOIN-UP"))
   {
     // read material
     int mat_id = -1;
     int is_stationary = 0;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
-    function_lin_def->ExtractInt("ISSTAT", is_stationary);
+    function_lin_def.ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("ISSTAT", is_stationary);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
 
@@ -470,16 +470,16 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::KimMoinUP(fparams, (bool)is_stationary));
   }
-  else if (function_lin_def->HaveNamed("KIMMOIN-RHS"))
+  else if (function_lin_def.HaveNamed("KIMMOIN-RHS"))
   {
     // read material
     int mat_id = -1;
     int is_stationary = 0;
     int is_stokes = 0;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
-    function_lin_def->ExtractInt("ISSTAT", is_stationary);
-    function_lin_def->ExtractInt("ISSTOKES", is_stokes);
+    function_lin_def.ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("ISSTAT", is_stationary);
+    function_lin_def.ExtractInt("ISSTOKES", is_stokes);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-RHS");
 
@@ -488,16 +488,16 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> FLD::TryCreateFluidFunction(
 
     return Teuchos::rcp(new FLD::KimMoinRHS(fparams, (bool)is_stationary, (bool)is_stokes));
   }
-  else if (function_lin_def->HaveNamed("KIMMOIN-STRESS"))
+  else if (function_lin_def.HaveNamed("KIMMOIN-STRESS"))
   {
     // read material
     int mat_id = -1;
     int is_stationary = 0;
     double amplitude = 1.0;
 
-    function_lin_def->ExtractInt("MAT", mat_id);
-    function_lin_def->ExtractInt("ISSTAT", is_stationary);
-    function_lin_def->ExtractDouble("AMPLITUDE", amplitude);
+    function_lin_def.ExtractInt("MAT", mat_id);
+    function_lin_def.ExtractInt("ISSTAT", is_stationary);
+    function_lin_def.ExtractDouble("AMPLITUDE", amplitude);
 
     if (mat_id <= 0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STRESS");
 

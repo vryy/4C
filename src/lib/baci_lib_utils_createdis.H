@@ -925,7 +925,7 @@ namespace DRT
     };  // CloneDiscretizationFromCondition
 
     //! construct and return cloning material map input lines
-    Teuchos::RCP<DRT::INPUT::Lines> ValidCloningMaterialMapLines();
+    DRT::INPUT::Lines ValidCloningMaterialMapLines();
 
     //! helper method for printout
     void PrintCloningMaterialMapDatHeader();

@@ -13,7 +13,7 @@
 #include "baci_lib_linedefinition.H"
 
 
-void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void DRT::UTILS::AddValidCombustFunctionLines(DRT::INPUT::Lines& lines)
 {
   DRT::INPUT::LineDefinition zalesaksdisk =
       DRT::INPUT::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
@@ -21,20 +21,20 @@ void DRT::UTILS::AddValidCombustFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> li
   DRT::INPUT::LineDefinition collapsingwatercolumn =
       DRT::INPUT::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
 
-  lines->Add(zalesaksdisk);
-  lines->Add(collapsingwatercolumn);
+  lines.Add(zalesaksdisk);
+  lines.Add(collapsingwatercolumn);
 }
 
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateCombustFunction(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
-  if (function_line_defs.front()->HaveNamed("ZALESAKSDISK"))
+  if (function_line_defs.front().HaveNamed("ZALESAKSDISK"))
   {
     return Teuchos::rcp(new ZalesaksDiskFunction());
   }
-  else if (function_line_defs.front()->HaveNamed("COLLAPSINGWATERCOLUMN"))
+  else if (function_line_defs.front().HaveNamed("COLLAPSINGWATERCOLUMN"))
   {
     return Teuchos::rcp(new CollapsingWaterColumnFunction());
   }

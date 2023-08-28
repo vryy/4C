@@ -32,7 +32,7 @@ namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
+void STR::AddValidStructureFunctionLines(DRT::INPUT::Lines& lines)
 {
   DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure =
       DRT::INPUT::LineDefinition::Builder()
@@ -46,25 +46,25 @@ void STR::AddValidStructureFunctionLines(Teuchos::RCP<DRT::INPUT::Lines> lines)
           .AddNamedInt("MAT_STRUC")
           .Build();
 
-  lines->Add(weaklycompressibleetiennefsistructure);
-  lines->Add(weaklycompressibleetiennefsistructureforce);
+  lines.Add(weaklycompressibleetiennefsistructure);
+  lines.Add(weaklycompressibleetiennefsistructureforce);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> STR::TryCreateStructureFunction(
-    const std::vector<Teuchos::RCP<DRT::INPUT::LineDefinition>>& function_line_defs)
+    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
 {
   if (function_line_defs.size() != 1) return Teuchos::null;
 
   const auto& function_lin_def = function_line_defs.front();
 
-  if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
+  if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
   {
     // read data
     int mat_id_struc = -1;
 
-    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_struc <= 0)
       dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
@@ -74,12 +74,12 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> STR::TryCreateStructureFunction(
 
     return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
   }
-  else if (function_lin_def->HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
+  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
   {
     // read data
     int mat_id_struc = -1;
 
-    function_lin_def->ExtractInt("MAT_STRUC", mat_id_struc);
+    function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
 
     if (mat_id_struc <= 0)
     {
