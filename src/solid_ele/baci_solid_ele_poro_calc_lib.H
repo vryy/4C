@@ -94,10 +94,10 @@ namespace DRT::ELEMENTS
     }
     else
     {
-      for (int inode = 0; inode < DETAIL::num_nodes<distype>; ++inode)  // number of nodes
-      {
-        if (vectortofill != nullptr) (*vectortofill)(inode, 0) = mymatrix[inode * numdofpernode];
-      }
+      dserror(
+          "Unknown degrees of freedom per node. Currently, only dim+1, dim and 1 are supported. "
+          "You have %d dofs per node.",
+          numdofpernode);
     }
   }
 
