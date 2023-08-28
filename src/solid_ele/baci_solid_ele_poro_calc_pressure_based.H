@@ -15,7 +15,6 @@ implementation
 #include "baci_lib_element_integration_select.H"
 #include "baci_solid_ele_poro_calc_interface.H"
 #include "baci_solid_ele_utils.H"
-#include "baci_utils_singleton_owner.H"
 
 namespace STR::ELEMENTS
 {
@@ -39,10 +38,6 @@ namespace DRT
     {
      public:
       SolidPoroPressureBasedEleCalc();
-
-      /// Singleton access method
-      static SolidPoroPressureBasedEleCalc<distype>* Instance(
-          CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       void EvaluateNonlinearForceStiffness(const DRT::Element& ele, MAT::StructPoro& porostructmat,
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,

@@ -13,21 +13,6 @@ implementation
 #include "baci_lib_utils.H"
 #include "baci_solid_ele_calc_lib.H"
 #include "baci_solid_ele_poro_calc_lib.H"
-#include "baci_utils_singleton_owner.H"
-
-
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>*
-DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::Instance(CORE::UTILS::SingletonAction action)
-{
-  auto singleton_owner = CORE::UTILS::MakeSingletonOwner(
-      []()
-      {
-        return std::unique_ptr<DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>>(
-            new DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>());
-      });
-  return singleton_owner.Instance(action);
-}
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::SolidPoroPressureBasedEleCalc()
