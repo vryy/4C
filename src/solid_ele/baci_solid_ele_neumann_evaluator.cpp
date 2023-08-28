@@ -98,7 +98,7 @@ void DRT::ELEMENTS::EvaluateNeumann(DRT::Element& element,
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(element, discretization, dof_index_array);
 
-  IterateJacobianMappingAtGaussPoints<distype>(nodal_coordinates, gauss_integration,
+  ForEachGaussPoint<distype>(nodal_coordinates, gauss_integration,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)

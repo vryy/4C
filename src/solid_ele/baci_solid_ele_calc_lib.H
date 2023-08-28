@@ -965,7 +965,8 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Iterates over the jacobian mapping at each integration point of @p integration.
+   * @brief Calls the @p gp_evaluator for each Gauss point with evaluated jacobian mapping using the
+   * integration rule defined by @p integration.
    *
    * @tparam distype : Discretization type known at compile time
    * @tparam GaussPointEvaluator
@@ -978,8 +979,7 @@ namespace DRT::ELEMENTS
    * point.
    */
   template <DRT::Element::DiscretizationType distype, typename GaussPointEvaluator>
-  inline void IterateJacobianMappingAtGaussPoints(
-      const NodalCoordinates<distype>& nodal_coordinates,
+  inline void ForEachGaussPoint(const NodalCoordinates<distype>& nodal_coordinates,
       const CORE::DRT::UTILS::GaussIntegration& integration, GaussPointEvaluator gp_evaluator)
   {
     for (int gp = 0; gp < integration.NumPoints(); ++gp)
