@@ -36,11 +36,6 @@ int STR::UTILS::DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distyp
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::hex27>::rule)
           .IP()
           .nquad;
-    case DRT::Element::nurbs27:
-      return CORE::DRT::UTILS::IntPointsAndWeights<3>(
-          DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::nurbs27>::rule)
-          .IP()
-          .nquad;
     case DRT::Element::tet4:
       return CORE::DRT::UTILS::IntPointsAndWeights<3>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::tet4>::rule)
@@ -74,11 +69,6 @@ int STR::UTILS::DisTypeToNgpOptGaussRule(DRT::Element::DiscretizationType distyp
     case DRT::Element::quad9:
       return CORE::DRT::UTILS::IntPointsAndWeights<2>(
           DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad9>::rule)
-          .IP()
-          .nquad;
-    case DRT::Element::nurbs9:
-      return CORE::DRT::UTILS::IntPointsAndWeights<2>(
-          DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::nurbs9>::rule)
           .IP()
           .nquad;
     case DRT::Element::tri3:

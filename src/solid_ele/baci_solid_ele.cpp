@@ -117,18 +117,6 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                               .AddOptionalNamedDoubleVector("FIBER3", 3)
                               .Build();
 
-  defsgeneral["WEDGE15"] = INPUT::LineDefinition::Builder()
-                               .AddIntVector("WEDGE15", 15)
-                               .AddNamedInt("MAT")
-                               .AddNamedString("KINEM")
-                               .AddOptionalNamedDoubleVector("RAD", 3)
-                               .AddOptionalNamedDoubleVector("AXI", 3)
-                               .AddOptionalNamedDoubleVector("CIR", 3)
-                               .AddOptionalNamedDoubleVector("FIBER1", 3)
-                               .AddOptionalNamedDoubleVector("FIBER2", 3)
-                               .AddOptionalNamedDoubleVector("FIBER3", 3)
-                               .Build();
-
   defsgeneral["PYRAMID5"] = INPUT::LineDefinition::Builder()
                                 .AddIntVector("PYRAMID5", 5)
                                 .AddNamedInt("MAT")
@@ -140,30 +128,6 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                                 .AddOptionalNamedDoubleVector("FIBER2", 3)
                                 .AddOptionalNamedDoubleVector("FIBER3", 3)
                                 .Build();
-
-  defsgeneral["NURBS8"] = INPUT::LineDefinition::Builder()
-                              .AddIntVector("NURBS8", 8)
-                              .AddNamedInt("MAT")
-                              .AddNamedString("KINEM")
-                              .AddOptionalNamedDoubleVector("RAD", 3)
-                              .AddOptionalNamedDoubleVector("AXI", 3)
-                              .AddOptionalNamedDoubleVector("CIR", 3)
-                              .AddOptionalNamedDoubleVector("FIBER1", 3)
-                              .AddOptionalNamedDoubleVector("FIBER2", 3)
-                              .AddOptionalNamedDoubleVector("FIBER3", 3)
-                              .Build();
-
-  defsgeneral["NURBS27"] = INPUT::LineDefinition::Builder()
-                               .AddIntVector("NURBS27", 27)
-                               .AddNamedInt("MAT")
-                               .AddNamedString("KINEM")
-                               .AddOptionalNamedDoubleVector("RAD", 3)
-                               .AddOptionalNamedDoubleVector("AXI", 3)
-                               .AddOptionalNamedDoubleVector("CIR", 3)
-                               .AddOptionalNamedDoubleVector("FIBER1", 3)
-                               .AddOptionalNamedDoubleVector("FIBER2", 3)
-                               .AddOptionalNamedDoubleVector("FIBER3", 3)
-                               .Build();
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SolidType::Create(
