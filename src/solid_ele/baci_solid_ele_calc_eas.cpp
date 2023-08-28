@@ -163,7 +163,7 @@ namespace
    *
    * @tparam distype
    * @param discretization(in) : reference to the discretization
-   * @param lm(in) : location vector of this element
+   * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    * @return displ_inc : residual displacement or displacement increment
    */
   template <DRT::Element::DiscretizationType distype>
@@ -217,7 +217,7 @@ namespace
    * @tparam distype, eastype
    * @param eas_iteration_data(in/out) : EAS matrices and vectors
    * @param discretization(in) : reference to the discretization
-   * @param lm(in) : location vector of this element
+   * @param lm(in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   void EvaluateAlpha(DRT::ELEMENTS::EasIterationData<distype, eastype>& eas_iteration_data,

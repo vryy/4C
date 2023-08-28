@@ -112,7 +112,7 @@ namespace DRT::ELEMENTS
    * (inverse Jacobian, determinant, derivatives of the shape functions w.r.t. XYZ)
    * @param ele (in) : Element
    * @param discretization (in) : Discretization
-   * @param lm (in) : global dof numbers of elemental dofs
+   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
    * @param kinematictype (in): kinematic type of element
    * @return volchange: volume change
    */

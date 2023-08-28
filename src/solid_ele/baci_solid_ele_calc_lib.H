@@ -57,6 +57,9 @@ namespace DRT::ELEMENTS
     return integration_a.NumPoints() == integration_b.NumPoints();
   }
 
+  /*!
+   * @brief Calculate the lumped mass matrix
+   */
   inline void LumpMatrix(CORE::LINALG::SerialDenseMatrix& matrix)
   {
     dsassert(
@@ -151,6 +154,9 @@ namespace DRT::ELEMENTS
     return CORE::DRT::UTILS::GaussRule3D::tet_1point;
   }
 
+  /*!
+   * @brief Create a Gauss integration interface from a given Gauss rule type
+   */
   template <DRT::Element::DiscretizationType distype, typename GaussRuleType>
   CORE::DRT::UTILS::GaussIntegration CreateGaussIntegration(GaussRuleType rule)
   {
@@ -180,6 +186,17 @@ namespace DRT::ELEMENTS
     CORE::LINALG::Matrix<DETAIL::nen<distype>, DETAIL::nsd<distype>> current_;
   };
 
+  /*!
+   * @brief Evaluates the nodal coordinates from the previous iteration (old)
+   *
+   * Extracts the displacement from the previous iteration from the discretization and computes the
+   * current and reference position of the nodal coordinates
+   *
+   * @tparam distype : Discretization type
+   * @param ele (in) : Reference to the element
+   * @param discretization (in) : Reference to the discretization
+   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+   */
   template <DRT::Element::DiscretizationType distype>
   NodalCoordinates<distype> EvaluateNodalCoordinatesOld(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
@@ -202,6 +219,17 @@ namespace DRT::ELEMENTS
     return coordinates;
   }
 
+  /*!
+   * @brief Evaluates the nodal coordinates from this iteration
+   *
+   * Extracts the displacement from the discretization and computes the current and reference
+   * position of the nodal coordinates
+   *
+   * @tparam distype : Discretization type
+   * @param ele (in) : Reference to the element
+   * @param discretization (in) : Reference to the discretization
+   * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+   */
   template <DRT::Element::DiscretizationType distype>
   NodalCoordinates<distype> EvaluateNodalCoordinates(const DRT::Element& ele,
       const DRT::Discretization& discretization, const std::vector<int>& lm)
@@ -334,6 +362,15 @@ namespace DRT::ELEMENTS
     return jacobian;
   }
 
+  /*!
+   * @brief Evaluates the jacobian determinant of the element
+   *
+   * @tparam distype : Discretization type
+   * @param shapefcns (in) : Shape functions and derivatives evaluated at the respective point in
+   * the parameter space
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @return Jacobian determinant
+   */
   template <DRT::Element::DiscretizationType distype>
   double EvaluateJacobianDeterminant(const ShapeFunctionsAndDerivatives<distype>& shapefcns,
       const NodalCoordinates<distype>& nodal_coordinates)
@@ -424,7 +461,7 @@ namespace DRT::ELEMENTS
    * GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
    * @tparam distype : Discretization type
    * @param strains (in/out) : Strain measures
-   * Cauchy-Green deformation tensor, Green-Lagrange strain tensor)
+   * Cauchy-Green deformation tensor, Green-Lagrange strain tensor
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
@@ -451,7 +488,7 @@ namespace DRT::ELEMENTS
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
    * @return CauchyGreen<distype> : An object holding the right Cauchy-Green deformation tensor and
-   * its inverse)
+   * its inverse
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::nsd<distype> == 3, int> = 0>
@@ -756,6 +793,14 @@ namespace DRT::ELEMENTS
     }
   }
 
+  /*!
+   * @brief Assemble a vector into a matrix row
+   *
+   * @tparam distype
+   * @param vector (in) : Vector to be assembled into matrix
+   * @param data (in/out) : Matrix the vector is assembled into
+   * @param row (in) : Matrix row
+   */
   template <unsigned numstr>
   void AssembleVectorToMatrixRow(
       CORE::LINALG::Matrix<numstr, 1> vector, CORE::LINALG::SerialDenseMatrix& data, int row)
@@ -763,6 +808,17 @@ namespace DRT::ELEMENTS
     for (unsigned i = 0; i < numstr; ++i) data(row, i) = vector(i);
   }
 
+  /*!
+   * @brief Convert Green-Lagrange strains to the desired strain type and assemble to a given matrix
+   * row in stress-like Voigt notation
+   *
+   * @tparam distype
+   * @param gl_strain (in) : Green Lagrange strain
+   * @param defgrd (in) : Deformation gradient
+   * @param strain_type (in) : Strain type, i.e., Green-Lagrange or Euler-Almansi
+   * @param data (in/out) : Matrix the strains are assembled into
+   * @param row (in) : Matrix row
+   */
   template <DRT::Element::DiscretizationType distype>
   void AssembleStrainTypeToMatrixRow(
       const CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1>& gl_strain,
@@ -795,6 +851,17 @@ namespace DRT::ELEMENTS
     }
   }
 
+  /*!
+   * @brief Convert 2nd Piola-Kirchhoff stresses to the desired stress type and assemble to a given
+   * matrix row in stress-like Voigt notation
+   *
+   * @tparam distype
+   * @param defgrd (in) : Deformation gradient
+   * @param stress (in) : 2nd Piola-Kirchhoff stress
+   * @param stress_type (in) : Stress type, i.e., 2nd Piola-Kirchhoff or Cauchy
+   * @param data (in/out) : Matrix the stresses are assembled into
+   * @param row (in) : Matrix row
+   */
   template <DRT::Element::DiscretizationType distype>
   void AssembleStressTypeToMatrixRow(
       const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>& defgrd,
@@ -824,13 +891,20 @@ namespace DRT::ELEMENTS
     }
   }
 
-  inline void Serialize(const CORE::LINALG::SerialDenseMatrix& matrix, std::vector<char>& data)
+  /*!
+   * @brief Serialize a matrix by conversion to a vector representation
+
+   * @param matrix (in) : Matrix
+   * @param serialized_matrix (in/out) : Serialized matrix
+   */
+  inline void Serialize(
+      const CORE::LINALG::SerialDenseMatrix& matrix, std::vector<char>& serialized_matrix)
   {
     DRT::PackBuffer packBuffer;
     DRT::ParObject::AddtoPack(packBuffer, matrix);
     packBuffer.StartPacking();
     DRT::ParObject::AddtoPack(packBuffer, matrix);
-    std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(data));
+    std::copy(packBuffer().begin(), packBuffer().end(), std::back_inserter(serialized_matrix));
   }
 
   /*!

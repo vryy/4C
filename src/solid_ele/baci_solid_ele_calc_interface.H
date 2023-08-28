@@ -81,7 +81,7 @@ namespace DRT
        * @param ele (in) : reference to the element
        * @param solid_material (in) : Solid material of the element
        * @param discretization  (in) : Reference to the discretization
-       * @param lm (in) : Location vector
+       * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        * @param force_vector (out) : pointer to force vector or nullptr
@@ -101,7 +101,7 @@ namespace DRT
        * @param ele (in) : reference to the element
        * @param solid_material (in) : Solid material of the element
        * @param discretization  (in) : Reference to the discretization
-       * @param lm (in) : Location vector
+       * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
        * @param params (in) : ParameterList for communication between control routine, elements and
        * materials
        * @param force_vector (out) : pointer to force vector or nullptr
@@ -115,14 +115,45 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
           CORE::LINALG::SerialDenseMatrix* mass_matrix) = 0;
 
+      /*!
+       * @brief Recover elementwise stored quantities from history
+       *
+       * @param ele  (in) : Reference to the element
+       * @param discretization (in) : Reference to the discretization
+       * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+       * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
+       * the elements/materials
+       */
       virtual void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) = 0;
 
+      /*!
+       * @brief Calculate stresses and strains for output
+       *
+       * @param ele  (in) : Reference to the element
+       * @param solid_material (in) : Solid material of the element
+       * @param stressIO (in) : Stress in/output
+       * @param strainIO (in) : Strain in/output
+       * @param discretization (in) : Reference to the discretization
+       * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+       * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
+       * the elements/materials
+       */
       virtual void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
           const StressIO& stressIO, const StrainIO& strainIO,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
           Teuchos::ParameterList& params) = 0;
 
+      /*!
+       * @brief Calculate the internal energy
+       *
+       * @param ele  (in) : Reference to the element
+       * @param solid_material (in) : Solid material of the element
+       * @param discretization (in) : Reference to the discretization
+       * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
+       * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
+       * the elements/materials
+       */
       virtual double CalculateInternalEnergy(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params) = 0;
@@ -133,7 +164,7 @@ namespace DRT
        * @param ele  (in) : Reference to the element
        * @param solid_material (in) : Solid material of the element
        * @param discretization (in) : Reference to the discretization
-       * @param lm (in) : The location array of the owned dofs
+       * @param lm (in) : Location vector of the element, i.e., global dof numbers of elemental dofs
        * @param params (in/[out]) : A ParameterList to pass values from the time integrator to
        * the elements/materials
        */
@@ -172,8 +203,22 @@ namespace DRT
           const MAT::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const = 0;
 
+      /*!
+       * @brief Reset the elementwise internal variables to the state in the beginning of the
+       * computation
+       *
+       * @param ele  (in) : Reference to the element
+       * @param solid_material (in/out) : Solid material of the element
+       */
       virtual void ResetAll(const DRT::Element& ele, MAT::So3Material& solid_material) = 0;
 
+      /*!
+       * @brief Reset the elementwise internal variables during an iteration to the last converged
+       * state
+       *
+       * @param ele  (in) : Reference to the element
+       * @param solid_material (in/out) : Solid material of the element
+       */
       virtual void ResetToLastConverged(
           const DRT::Element& ele, MAT::So3Material& solid_material) = 0;
 
