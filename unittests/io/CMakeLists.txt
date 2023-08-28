@@ -2,8 +2,8 @@ set(TESTNAME unittests_io)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    unit_csv_reader.cpp
-    unit_pstream.cpp
+    baci_csv_reader_test.cpp
+    baci_pstream_test.cpp
     )
 
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})

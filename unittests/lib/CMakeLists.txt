@@ -2,19 +2,19 @@ set(TESTNAME unittests_lib)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    unit_cubic_spline_interpolation.cpp
-    unit_demangle.cpp
-    unit_discretization_nodal_coordinates.cpp
-    unit_domainreader.cpp
-    unit_function_library.cpp
-    unit_functionvariables.cpp
-    unit_gridgenerator.cpp
-    unit_inputreader.cpp
-    unit_linedefinition.cpp
-    unit_symbolic_expression.cpp
-    unit_tensor_transformation.cpp
-    unit_utils_reference_configuration.cpp
-    unit_voigt_notation.cpp
+    baci_cubic_spline_interpolation_test.cpp
+    baci_demangle_test.cpp
+    baci_discretization_nodal_coordinates_test.cpp
+    baci_domainreader_test.cpp
+    baci_function_library_test.cpp
+    baci_functionvariables_test.cpp
+    baci_gridgenerator_test.cpp
+    baci_inputreader_test.cpp
+    baci_linedefinition_test.cpp
+    baci_symbolic_expression_test.cpp
+    baci_tensor_transformation_test.cpp
+    baci_utils_reference_configuration_test.cpp
+    baci_voigt_notation_test.cpp
     )
 
 baci_add_google_test_executable(${TESTNAME} SOURCE ${SOURCE_LIST})
@@ -26,9 +26,9 @@ set(TESTNAME unittests_lib_np_3)
 
 set(SOURCE_LIST
     # cmake-format: sortable
-    unit_discretization_nodal_coordinates_np_3.cpp
-    unit_gid_vector.cpp
-    unit_gridgenerator_np_3.cpp
+    baci_discretization_nodal_coordinates_np_3_test.cpp
+    baci_gid_vector_test.cpp
+    baci_gridgenerator_np_3_test.cpp
     )
 
 baci_add_google_test_executable(

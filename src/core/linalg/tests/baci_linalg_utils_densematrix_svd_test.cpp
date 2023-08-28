@@ -11,7 +11,7 @@
 #include "baci_linalg_utils_densematrix_svd.H"
 
 #include "baci_linalg_utils_densematrix_multiply.H"
-#include "baci_unittest_utils_assertions.h"
+#include "baci_unittest_utils_assertions_test.H"
 
 namespace
 {
