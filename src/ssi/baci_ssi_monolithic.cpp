@@ -45,8 +45,8 @@ SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
     : SSIBase(comm, globaltimeparams),
       contact_strategy_nitsche_(Teuchos::null),
       dbc_handler_(Teuchos::null),
-      dtele_(0.0),
-      dtsolve_(0.0),
+      dt_eval_(0.0),
+      dt_solve_(0.0),
       equilibration_method_{Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
           Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
@@ -879,11 +879,10 @@ void SSI::SSIMono::NewtonLoop()
     // update iteration counter
     IncrementIterationCount();
 
-    // reset timer
     timer_->reset();
 
     // store time before evaluating elements and assembling global system of equations
-    double time = timer_->wallTime();
+    const double time_before_evaluate = timer_->wallTime();
 
     // set solution from last Newton step to all fields
     DistributeSolutionAllFields();
@@ -900,10 +899,9 @@ void SSI::SSIMono::NewtonLoop()
     // apply the Dirichlet boundary conditions to global system
     ApplyDBCToSystem();
 
-    // determine time needed for evaluating elements and assembling global system of
-    // equations, and take maximum over all processors via communication
-    double mydtele = timer_->wallTime() - time;
-    Comm().MaxAll(&mydtele, &dtele_, 1);
+    // time needed for evaluating elements and assembling global system of equations
+    double my_evaluation_time = timer_->wallTime() - time_before_evaluate;
+    Comm().MaxAll(&my_evaluation_time, &dt_eval_, 1);
 
     // safety check
     if (!ssi_matrices_->SystemMatrix()->Filled())
@@ -916,20 +914,19 @@ void SSI::SSIMono::NewtonLoop()
     ssi_vectors_->ClearIncrement();
 
     // store time before solving global system of equations
-    time = timer_->wallTime();
+    const double time_before_solving = timer_->wallTime();
 
     SolveLinearSystem();
 
-    // determine time needed for solving global system of equations,
-    // and take maximum over all processors via communication
-    double mydtsolve = timer_->wallTime() - time;
-    Comm().MaxAll(&mydtsolve, &dtsolve_, 1);
+    // time needed for solving global system of equations
+    double my_solve_time = timer_->wallTime() - time_before_solving;
+    Comm().MaxAll(&my_solve_time, &dt_solve_, 1);
 
     // output performance statistics associated with linear solver into text file if
     // applicable
     if (DRT::INPUT::IntegralValue<bool>(
             *ScaTraField()->ScatraParameterList(), "OUTPUTLINSOLVERSTATS"))
-      ScaTraField()->OutputLinSolverStats(*solver_, dtsolve_, Step(), IterationCount(),
+      ScaTraField()->OutputLinSolverStats(*solver_, dt_solve_, Step(), IterationCount(),
           ssi_vectors_->Residual()->Map().NumGlobalElements());
 
     // update states for next Newton iteration
@@ -1239,6 +1236,11 @@ void SSI::SSIMono::CalcInitialPotentialField()
   {
     IncrementIterationCount();
 
+    timer_->reset();
+
+    // store time before evaluating elements and assembling global system of equations
+    const double time_before_evaluate = timer_->wallTime();
+
     // prepare full SSI system
     DistributeSolutionAllFields(true);
     EvaluateSubproblems();
@@ -1271,11 +1273,23 @@ void SSI::SSIMono::CalcInitialPotentialField()
         *rhs, *dbc_zeros, *pseudo_dbc_map);
     ssi_vectors_->Residual()->Update(1.0, *rhs, 0.0);
 
+    // time needed for evaluating elements and assembling global system of equations
+    double my_evaluation_time = timer_->wallTime() - time_before_evaluate;
+    Comm().MaxAll(&my_evaluation_time, &dt_eval_, 1);
+
     if (strategy_convcheck_->ExitNewtonRaphsonInitPotCalc(*this)) break;
 
     // solve for potential increments
     ssi_vectors_->ClearIncrement();
+
+    // store time before solving global system of equations
+    const double time_before_solving = timer_->wallTime();
+
     SolveLinearSystem();
+
+    // time needed for solving global system of equations
+    double my_solve_time = timer_->wallTime() - time_before_solving;
+    Comm().MaxAll(&my_solve_time, &dt_solve_, 1);
 
     // update potential dofs in scatra and manifold fields
     UpdateIterScaTra();

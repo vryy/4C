@@ -189,7 +189,7 @@ void SSI::SSIMono::ConvCheckStrategyStd::PrintNewtonIterationInformation(
               << std::setw(10) << std::setprecision(3) << std::scientific
               << norms.at(L2norm::structureresnorm) << "   |      --      | "
               << "(       --      , te = " << std::setw(10) << std::setprecision(3)
-              << ssi_mono.dtele_ << ")" << std::endl;
+              << ssi_mono.dt_eval_ << ")" << std::endl;
   }
   else
   {
@@ -203,8 +203,8 @@ void SSI::SSIMono::ConvCheckStrategyStd::PrintNewtonIterationInformation(
               << norms.at(L2norm::structureresnorm) << "   | " << std::setw(10)
               << std::setprecision(3) << std::scientific
               << norms.at(L2norm::structureincnorm) / norms.at(L2norm::structuredofnorm)
-              << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtsolve_
-              << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtele_ << ")"
+              << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_solve_
+              << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_eval_ << ")"
               << std::endl;
   }
 
@@ -358,7 +358,7 @@ void SSI::SSIMono::ConvCheckStrategyElch::PrintNewtonIterationInformation(
               << std::setprecision(3) << std::scientific << norms.at(SSI::L2norm::structureresnorm)
               << "   |      --      | "
               << "(       --      , te = " << std::setw(10) << std::setprecision(3)
-              << ssi_mono.dtele_ << ")" << std::endl;
+              << ssi_mono.dt_eval_ << ")" << std::endl;
   }
   else
   {
@@ -376,8 +376,8 @@ void SSI::SSIMono::ConvCheckStrategyElch::PrintNewtonIterationInformation(
               << norms.at(SSI::L2norm::structureresnorm) << "   | " << std::setw(10)
               << std::setprecision(3) << std::scientific
               << norms.at(SSI::L2norm::structureincnorm) / norms.at(SSI::L2norm::structuredofnorm)
-              << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtsolve_
-              << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtele_ << ")"
+              << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_solve_
+              << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_eval_ << ")"
               << std::endl;
   }
 
@@ -428,8 +428,9 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(const SSI
       std::cout << "|  " << std::setw(3) << ssi_mono.IterationCount() << "/" << std::setw(3)
                 << itermax_ << "   | " << std::setw(10) << std::setprecision(3) << std::scientific
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
-                << std::scientific << norms.at(SSI::L2norm::potresnorm) << "   |      --      |"
-                << std::endl;
+                << std::scientific << norms.at(SSI::L2norm::potresnorm)
+                << "   |      --      | (       --      , te = " << std::setw(10)
+                << std::setprecision(3) << ssi_mono.dt_eval_ << ")" << std::endl;
     }
 
     else
@@ -439,7 +440,9 @@ bool SSI::SSIMono::ConvCheckStrategyElch::ExitNewtonRaphsonInitPotCalc(const SSI
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << norms.at(SSI::L2norm::potresnorm) << "   | " << std::setw(10)
                 << std::setprecision(3) << std::scientific
-                << norms.at(SSI::L2norm::potincnorm) / norms.at(SSI::L2norm::potdofnorm) << "   |"
+                << norms.at(SSI::L2norm::potincnorm) / norms.at(SSI::L2norm::potdofnorm)
+                << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_solve_
+                << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_eval_ << ")"
                 << std::endl;
     }
 
@@ -621,7 +624,7 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::PrintNewtonIterationInfo
               << norms.at(SSI::L2norm::manifoldconcresnorm) << "   |      --      |  "
               << std::scientific << norms.at(SSI::L2norm::manifoldpotresnorm)
               << "   |      --      | (       --      , te = " << std::setw(10)
-              << std::setprecision(3) << ssi_mono.dtele_ << ")" << std::endl;
+              << std::setprecision(3) << ssi_mono.dt_eval_ << ")" << std::endl;
   }
   else
   {
@@ -649,8 +652,8 @@ void SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::PrintNewtonIterationInfo
               << std::setprecision(3) << std::scientific
               << norms.at(SSI::L2norm::manifoldpotincnorm) /
                      norms.at(SSI::L2norm::manifoldpotdofnorm)
-              << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtsolve_
-              << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dtele_ << ")"
+              << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_solve_
+              << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_eval_ << ")"
               << std::endl;
   }
 
@@ -722,7 +725,9 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
                 << itertol_ << "[L_2 ]  | " << std::setw(10) << std::setprecision(3)
                 << std::scientific << norms.at(SSI::L2norm::potresnorm) << "   |      --      | "
                 << std::setw(10) << std::setprecision(3) << std::scientific
-                << norms.at(SSI::L2norm::manifoldpotresnorm) << "   |      --      | " << std::endl;
+                << norms.at(SSI::L2norm::manifoldpotresnorm)
+                << "   |      --      | (       --      , te = " << std::setw(10)
+                << std::setprecision(3) << ssi_mono.dt_eval_ << ")" << std::endl;
     }
     else
     {
@@ -737,7 +742,9 @@ bool SSI::SSIMono::ConvCheckStrategyElchScaTraManifold::ExitNewtonRaphsonInitPot
                 << std::setprecision(3) << std::scientific
                 << norms.at(SSI::L2norm::manifoldpotincnorm) /
                        norms.at(SSI::L2norm::manifoldpotdofnorm)
-                << "   | " << std::endl;
+                << "   | (ts = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_solve_
+                << ", te = " << std::setw(10) << std::setprecision(3) << ssi_mono.dt_eval_ << ")"
+                << std::endl;
     }
 
     // warn if maximum number of iterations is reached without convergence

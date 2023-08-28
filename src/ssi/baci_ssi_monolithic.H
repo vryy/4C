@@ -251,10 +251,10 @@ namespace SSI
     Teuchos::RCP<SSI::DBCHandlerBase> dbc_handler_;
 
     //! time for element evaluation and assembly of global system of equations
-    double dtele_;
+    double dt_eval_;
 
     //! time for solution of global system of equations
-    double dtsolve_;
+    double dt_solve_;
 
     //! equilibration method applied to system matrix
     const struct SSIMonoEquilibrationMethod equilibration_method_;
