@@ -141,8 +141,8 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
     const double detJ_w = jacobian_mapping.determinant_ * gauss_integration_.Weight(gp);
 
     // inverse Right Cauchy-Green tensor as vector in voigt notation
-    CORE::LINALG::Matrix<numstr_, 1> C_inv_vec =
-        TransformMatrixInVectorVoigtNotation<distype>(cauchygreen.inverse_right_cauchy_green);
+    CORE::LINALG::Matrix<numstr_, 1> C_inv_vec(false);
+    ::UTILS::VOIGT::Stresses::MatrixToVector(cauchygreen.inverse_right_cauchy_green, C_inv_vec);
 
     // B^T . C^-1
     CORE::LINALG::Matrix<numdofperelement_, 1> BopCinv(true);
@@ -238,8 +238,8 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
     const double detJ_w = jacobian_mapping.determinant_ * gauss_integration_.Weight(gp);
 
     // inverse Right Cauchy-Green tensor as vector in voigt notation
-    CORE::LINALG::Matrix<numstr_, 1> C_inv_vec =
-        TransformMatrixInVectorVoigtNotation<distype>(cauchygreen.inverse_right_cauchy_green);
+    CORE::LINALG::Matrix<numstr_, 1> C_inv_vec(false);
+    ::UTILS::VOIGT::Stresses::MatrixToVector(cauchygreen.inverse_right_cauchy_green, C_inv_vec);
 
     // B^T . C^-1
     CORE::LINALG::Matrix<numdofperelement_, 1> BopCinv(true);

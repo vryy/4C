@@ -52,8 +52,7 @@ namespace UTILS
        *  \param[in] pow          positive integer exponent
        *  \param[in] vtensor      input tensor in Voigt <type> notation
        *  \param[in] vtensor_pow  result, i.e. input tensor to the given power
-       *
-       *  \author hiermeier \date 09/17 */
+       */
       static void PowerOfSymmetricTensor(unsigned pow, const CORE::LINALG::Matrix<6, 1>& vtensor,
           CORE::LINALG::Matrix<6, 1>& vtensor_pow);
 
@@ -61,8 +60,7 @@ namespace UTILS
        *
        *  \param[in]  vtensor      tensor in Voigt <type> notation
        *  \param[out] vtensor_inv  inverse tensor in Voigt <type> notation
-       *
-       *  \author hiermeier \date 09/17 */
+       */
       static void InverseTensor(
           const CORE::LINALG::Matrix<6, 1>& vtensor, CORE::LINALG::Matrix<6, 1>& vtensor_inv);
 
@@ -105,8 +103,7 @@ namespace UTILS
        *
        *  \param[in]  vtensor      tensor in Voigt <type> notation
        *  \param[out] vtensor_inv  inverser tensor in Voigt <type> notation
-       *
-       *  \author hiermeier \date 09/17 */
+       */
       static void MultiplyTensorVector(const CORE::LINALG::Matrix<6, 1>& vtensor,
           const CORE::LINALG::Matrix<3, 1>& vec, CORE::LINALG::Matrix<3, 1>& vec_res);
 
@@ -118,8 +115,7 @@ namespace UTILS
        *  \param[in]  vec_b  second vector
        *  \param[out] ab_ba  symmetric outer product of the two input vectors
        *                     in the Voigt <type> notation
-       *
-       *  \author hiermeier \date 09/17 */
+       */
       static void SymmetricOuterProduct(const CORE::LINALG::Matrix<3, 1>& vec_a,
           const CORE::LINALG::Matrix<3, 1>& vec_b, CORE::LINALG::Matrix<6, 1>& ab_ba);
 
@@ -174,8 +170,7 @@ namespace UTILS
        *  \note This function changes the values only if the strain notation is used.
        *
        *  \param[out] tensor  scale the off-diagonal values of this tensor
-       *
-       *  \author hiermeier \date 09/17 */
+       */
       static void ScaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& tensor);
 
       /** \brief unscale off diagonal values
@@ -183,8 +178,7 @@ namespace UTILS
        *  \note This function changes the values only if the strain notation is used.
        *
        *  \param[out] tensor  unscale the off-diagonal values of this tensor
-       *
-       *  \author hiermeier \date 09/17 */
+       */
       static void UnscaleOffDiagonalVals(CORE::LINALG::Matrix<6, 1>& strain);
 
 

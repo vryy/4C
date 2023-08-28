@@ -396,19 +396,6 @@ namespace DRT::ELEMENTS
     return press;
   }
 
-  template <DRT::Element::DiscretizationType distype>
-  CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> TransformMatrixInVectorVoigtNotation(
-      const CORE::LINALG::Matrix<DETAIL::nsd<distype>, DETAIL::nsd<distype>>&
-          InverseRightCauchyGreen)
-  {
-    CORE::LINALG::Matrix<DETAIL::numstr<distype>, 1> C_inv_vec(true);
-    for (int i = 0, k = 0; i < DETAIL::nsd<distype>; i++)
-      for (int j = 0; j < DETAIL::nsd<distype> - i; j++, k++)
-        C_inv_vec(k) = InverseRightCauchyGreen(i + j, j);
-
-    return C_inv_vec;
-  }
-
   /*!
    * @brief Update the internal force vector with poroelasticity contribution of one Gauss point
    *
