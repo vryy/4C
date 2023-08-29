@@ -15,7 +15,6 @@
 #include "baci_lib_locsys.H"
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_matrixtransform.H"
-#include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_scatra_timint_meshtying_strategy_s2i.H"
 #include "baci_ssi_monolithic.H"
@@ -28,10 +27,7 @@
 SSI::MeshtyingStrategyBase::MeshtyingStrategyBase(const bool is_scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
-    : temp_scatra_struct_mat_(Teuchos::null),
-      temp_scatramanifold_struct_mat_(Teuchos::null),
-      temp_struct_scatra_mat_(Teuchos::null),
-      is_scatra_manifold_(is_scatra_manifold),
+    : is_scatra_manifold_(is_scatra_manifold),
       ssi_maps_(ssi_maps),
       ssi_structure_meshtying_(std::move(ssi_structure_meshtying))
 {
@@ -63,9 +59,8 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifol
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
     Teuchos::RCP<const SSI::UTILS::SSIMeshTying> ssi_structure_meshtying)
     : MeshtyingStrategyBase(is_scatra_manifold, ssi_maps, ssi_structure_meshtying),
-      block_position_scatra_(Teuchos::null),
-      block_position_scatra_manifold_(Teuchos::null),
-      position_structure_(-1)
+      block_position_scatra_(SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport)),
+      position_structure_(SSIMaps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
 {
   temp_scatra_struct_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
       SSIMaps()->BlockMapScaTra(), SSIMaps()->BlockMapStructure());
@@ -79,16 +74,8 @@ SSI::MeshtyingStrategyBlock::MeshtyingStrategyBlock(const bool is_scatra_manifol
   temp_struct_scatra_mat_ = SSI::UTILS::SSIMatrices::SetupBlockMatrix(
       SSIMaps()->BlockMapStructure(), SSIMaps()->BlockMapScaTra());
 
-  block_position_scatra_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport);
-  position_structure_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::structure)->at(0);
   if (IsScaTraManifold())
     block_position_scatra_manifold_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::manifold);
-
-  // safety checks
-  if (block_position_scatra_ == Teuchos::null) dserror("Cannot get position of scatra blocks");
-  if (position_structure_ == -1) dserror("Cannot get position of structure block");
-  if (IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
-    dserror("Cannot get position of scatra manifold blocks");
 }
 
 /*----------------------------------------------------------------------*
@@ -272,7 +259,7 @@ void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraManifoldStructure(
       CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(manifold_structure_matrix);
 
   // apply mesh tying contributions to temp matrix blocks and complete the resulting matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold().size()); ++iblock)
   {
     ApplyMeshtyingToXXXStructure(temp_scatramanifold_struct_block_matrix->Matrix(iblock, 0),
         manifold_structure_matrix_block_matrix->Matrix(iblock, 0));
@@ -316,7 +303,7 @@ void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToScatraStructure(
       CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
 
   // apply mesh tying for all blocks
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     ApplyMeshtyingToXXXStructure(temp_scatra_struct_domain_block_sparse_matrix->Matrix(iblock, 0),
         scatra_structure_matrix_block_sparse->Matrix(iblock, 0));
@@ -362,7 +349,7 @@ void SSI::MeshtyingStrategyBlock::ApplyMeshtyingToStructureScatra(
 
   // apply mesh tying contributions to temp matrix blocks and complete the resulting matrix
   if (do_uncomplete) temp_struct_scatra_block_matrix->UnComplete();
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     ApplyMeshtyingToStructureXXX(temp_struct_scatra_block_matrix->Matrix(0, iblock),
         structure_scatra_block_matrix->Matrix(0, iblock));

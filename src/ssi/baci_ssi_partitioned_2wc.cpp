@@ -22,11 +22,7 @@
  | constructor                                               Thon 12/14 |
  *----------------------------------------------------------------------*/
 SSI::SSIPart2WC::SSIPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSIPart(comm, globaltimeparams),
-      scaincnp_(Teuchos::null),
-      dispincnp_(Teuchos::null),
-      ittol_(-1.0),
-      itmax_(-1)
+    : SSIPart(comm, globaltimeparams)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -569,7 +565,7 @@ void SSI::SSIPart2WCSolidToScatraRelax::CalcOmega(double& omega, const int itnum
  *----------------------------------------------------------------------*/
 SSI::SSIPart2WCSolidToScatraRelaxAitken::SSIPart2WCSolidToScatraRelaxAitken(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSIPart2WCSolidToScatraRelax(comm, globaltimeparams), dispincnpold_(Teuchos::null)
+    : SSIPart2WCSolidToScatraRelax(comm, globaltimeparams)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -787,7 +783,7 @@ void SSI::SSIPart2WCScatraToSolidRelax::CalcOmega(double& omega, const int itnum
  *----------------------------------------------------------------------*/
 SSI::SSIPart2WCScatraToSolidRelaxAitken::SSIPart2WCScatraToSolidRelaxAitken(
     const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
-    : SSIPart2WCScatraToSolidRelax(comm, globaltimeparams), scaincnpold_(Teuchos::null)
+    : SSIPart2WCScatraToSolidRelax(comm, globaltimeparams)
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.

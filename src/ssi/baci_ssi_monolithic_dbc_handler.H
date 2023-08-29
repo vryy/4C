@@ -164,7 +164,7 @@ namespace SSI
     int PositionStructure() const { return position_structure_; };
 
     //! position of structure block in system matrix
-    int position_structure_;
+    const int position_structure_;
   };
 
   /*!

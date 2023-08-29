@@ -43,35 +43,20 @@
  *--------------------------------------------------------------------------*/
 SSI::SSIMono::SSIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams)
     : SSIBase(comm, globaltimeparams),
-      contact_strategy_nitsche_(Teuchos::null),
-      dbc_handler_(Teuchos::null),
-      dt_eval_(0.0),
-      dt_solve_(0.0),
       equilibration_method_{Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
                                 globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION"),
           Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_SCATRA"),
           Teuchos::getIntegralValue<CORE::LINALG::EquilibrationMethod>(
               globaltimeparams.sublist("MONOLITHIC"), "EQUILIBRATION_STRUCTURE")},
-      manifoldscatraflux_(Teuchos::null),
       matrixtype_(Teuchos::getIntegralValue<CORE::LINALG::MatrixType>(
           globaltimeparams.sublist("MONOLITHIC"), "MATRIXTYPE")),
       print_matlab_(DRT::INPUT::IntegralValue<bool>(
           globaltimeparams.sublist("MONOLITHIC"), "PRINT_MAT_RHS_MAP_MATLAB")),
-      scatrastructureOffDiagcoupling_(Teuchos::null),
       solver_(Teuchos::rcp(new CORE::LINALG::Solver(
           DRT::Problem::Instance()->SolverParams(
               globaltimeparams.sublist("MONOLITHIC").get<int>("LINEAR_SOLVER")),
           comm, DRT::Problem::Instance()->ErrorFile()->Handle()))),
-      ssi_maps_(Teuchos::null),
-      ssi_matrices_(Teuchos::null),
-      ssi_vectors_(Teuchos::null),
-      strategy_assemble_(Teuchos::null),
-      strategy_contact_(Teuchos::null),
-      strategy_convcheck_(Teuchos::null),
-      strategy_equilibration_(Teuchos::null),
-      strategy_manifold_meshtying_(Teuchos::null),
-      strategy_meshtying_(Teuchos::null),
       timer_(Teuchos::rcp(new Teuchos::Time("SSI_Mono", true)))
 {
 }
@@ -384,11 +369,11 @@ void SSI::SSIMono::BuildNullSpaces() const
     {
       // equip smoother for scatra matrix blocks with null space
       ScaTraField()->BuildBlockNullSpaces(
-          solver_, ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0));
+          solver_, ssi_maps_->GetBlockPositions(Subproblem::scalar_transport).at(0));
       if (IsScaTraManifold())
       {
         ScaTraManifold()->BuildBlockNullSpaces(
-            solver_, ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0));
+            solver_, ssi_maps_->GetBlockPositions(Subproblem::manifold).at(0));
       }
       break;
     }
@@ -398,7 +383,7 @@ void SSI::SSIMono::BuildNullSpaces() const
       // equip smoother for scatra matrix block with empty parameter sub lists to trigger null space
       // computation
       std::ostringstream scatrablockstr;
-      scatrablockstr << ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0) + 1;
+      scatrablockstr << ssi_maps_->GetBlockPositions(Subproblem::scalar_transport).at(0) + 1;
       Teuchos::ParameterList& blocksmootherparamsscatra =
           solver_->Params().sublist("Inverse" + scatrablockstr.str());
       blocksmootherparamsscatra.sublist("Belos Parameters");
@@ -411,7 +396,7 @@ void SSI::SSIMono::BuildNullSpaces() const
       if (IsScaTraManifold())
       {
         std::ostringstream scatramanifoldblockstr;
-        scatramanifoldblockstr << ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0) + 1;
+        scatramanifoldblockstr << ssi_maps_->GetBlockPositions(Subproblem::manifold).at(0) + 1;
         Teuchos::ParameterList& blocksmootherparamsscatramanifold =
             solver_->Params().sublist("Inverse" + scatramanifoldblockstr.str());
         blocksmootherparamsscatramanifold.sublist("Belos Parameters");
@@ -435,7 +420,7 @@ void SSI::SSIMono::BuildNullSpaces() const
 
   // store number of matrix block associated with structural field as string
   std::stringstream iblockstr;
-  iblockstr << ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0) + 1;
+  iblockstr << ssi_maps_->GetBlockPositions(Subproblem::structure).at(0) + 1;
 
   // equip smoother for structural matrix block with empty parameter sub lists to trigger null space
   // computation
@@ -1087,23 +1072,33 @@ std::vector<CORE::LINALG::EquilibrationMethod> SSI::SSIMono::GetBlockEquilibrati
       {
         auto block_positions_scatra = ssi_maps_->GetBlockPositions(Subproblem::scalar_transport);
         auto block_position_structure = ssi_maps_->GetBlockPositions(Subproblem::structure);
-        auto block_positions_scatra_manifold =
-            IsScaTraManifold() ? ssi_maps_->GetBlockPositions(Subproblem::manifold) : Teuchos::null;
+        if (IsScaTraManifold())
+        {
+          auto block_positions_scatra_manifold = ssi_maps_->GetBlockPositions(Subproblem::manifold);
 
-        equilibration_method_vector = std::vector<CORE::LINALG::EquilibrationMethod>(
-            block_positions_scatra->size() + block_position_structure->size() +
-                (IsScaTraManifold() ? block_positions_scatra_manifold->size() : 0),
-            CORE::LINALG::EquilibrationMethod::none);
+          equilibration_method_vector = std::vector<CORE::LINALG::EquilibrationMethod>(
+              block_positions_scatra.size() + block_position_structure.size() +
+                  block_positions_scatra_manifold.size(),
+              CORE::LINALG::EquilibrationMethod::none);
+        }
+        else
+        {
+          equilibration_method_vector = std::vector<CORE::LINALG::EquilibrationMethod>(
+              block_positions_scatra.size() + block_position_structure.size(),
+              CORE::LINALG::EquilibrationMethod::none);
+        }
 
-        for (const int block_position_scatra : *block_positions_scatra)
+
+        for (const int block_position_scatra : block_positions_scatra)
           equilibration_method_vector.at(block_position_scatra) = equilibration_method_.scatra;
 
-        equilibration_method_vector.at(block_position_structure->at(0)) =
+        equilibration_method_vector.at(block_position_structure.at(0)) =
             equilibration_method_.structure;
 
         if (IsScaTraManifold())
         {
-          for (const int block_position_scatra_manifold : *block_positions_scatra_manifold)
+          for (const int block_position_scatra_manifold :
+              ssi_maps_->GetBlockPositions(Subproblem::manifold))
           {
             equilibration_method_vector.at(block_position_scatra_manifold) =
                 equilibration_method_.scatra;
@@ -1388,8 +1383,8 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
             *CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_system), *ones_struct)
       : CORE::LINALG::InsertMyRowDiagonalIntoUnfilledMatrix(
             CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system)
-                ->Matrix(ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0),
-                    ssi_maps_->GetBlockPositions(Subproblem::structure)->at(0)),
+                ->Matrix(ssi_maps_->GetBlockPositions(Subproblem::structure).at(0),
+                    ssi_maps_->GetBlockPositions(Subproblem::structure).at(0)),
             *ones_struct);
 
   // extract residuals of scatra and manifold from global residual
@@ -1439,9 +1434,9 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
           auto positions_scatra = ssi_maps_->GetBlockPositions(Subproblem::scalar_transport);
 
-          for (int i = 0; i < static_cast<int>(positions_scatra->size()); ++i)
+          for (int i = 0; i < static_cast<int>(positions_scatra.size()); ++i)
           {
-            const int position_scatra = positions_scatra->at(i);
+            const int position_scatra = positions_scatra.at(i);
             massmatrix_system_block->Matrix(position_scatra, position_scatra)
                 .Add(massmatrix_scatra_block->Matrix(i, i), false, 1.0, 1.0);
           }
@@ -1452,9 +1447,9 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
             auto massmatrix_manifold_block =
                 CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_manifold);
 
-            for (int i = 0; i < static_cast<int>(positions_manifold->size()); ++i)
+            for (int i = 0; i < static_cast<int>(positions_manifold.size()); ++i)
             {
-              const int position_manifold = positions_manifold->at(i);
+              const int position_manifold = positions_manifold.at(i);
               massmatrix_system_block->Matrix(position_manifold, position_manifold)
                   .Add(massmatrix_manifold_block->Matrix(i, i), false, 1.0, 1.0);
             }
@@ -1469,7 +1464,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
               CORE::LINALG::CastToBlockSparseMatrixBaseAndCheckSuccess(massmatrix_system);
 
           const int position_scatra =
-              ssi_maps_->GetBlockPositions(Subproblem::scalar_transport)->at(0);
+              ssi_maps_->GetBlockPositions(Subproblem::scalar_transport).at(0);
 
           massmatrix_system_block->Matrix(position_scatra, position_scatra)
               .Add(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_scatra), false, 1.0,
@@ -1477,7 +1472,7 @@ void SSI::SSIMono::CalcInitialTimeDerivative()
 
           if (IsScaTraManifold())
           {
-            const int position_manifold = ssi_maps_->GetBlockPositions(Subproblem::manifold)->at(0);
+            const int position_manifold = ssi_maps_->GetBlockPositions(Subproblem::manifold).at(0);
 
             massmatrix_system_block->Matrix(position_manifold, position_manifold)
                 .Add(*CORE::LINALG::CastToSparseMatrixAndCheckSuccess(massmatrix_manifold), false,

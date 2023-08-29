@@ -128,9 +128,9 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> dispincnp_;
 
     //! convergence tolerance
-    double ittol_;
+    double ittol_ = -1.0;
     //! maximum iteration steps
-    int itmax_;
+    int itmax_ = -1;
   };
 
   //! class to deal with displacement relaxated partioned 2WC SSI. Relaxation parameter is constant

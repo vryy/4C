@@ -18,7 +18,6 @@
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_matrixtransform.H"
@@ -101,18 +100,9 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::scalar_transport))),
       full_map_structure_(ssi_mono.MapsSubProblems()->Map(
           UTILS::SSIMaps::GetProblemPosition(Subproblem::structure))),
-      matrix_manifold_scatra_(Teuchos::null),
-      matrix_manifold_structure_(Teuchos::null),
-      matrix_scatra_manifold_(Teuchos::null),
-      matrix_scatra_structure_(Teuchos::null),
-      rhs_manifold_(Teuchos::null),
-      rhs_scatra_(Teuchos::null),
       scatra_(ssi_mono.ScaTraBaseAlgorithm()),
       scatra_manifold_(ssi_mono.ScaTraManifoldBaseAlgorithm()),
-      scatra_manifold_couplings_(Teuchos::null),
-      ssi_structure_meshtying_(ssi_mono.SSIStructureMeshTying()),
-      systemmatrix_manifold_(Teuchos::null),
-      systemmatrix_scatra_(Teuchos::null)
+      ssi_structure_meshtying_(ssi_mono.SSIStructureMeshTying())
 {
   // safety check before setup of coupling
   if (ssi_mono.ScaTraField()->NumDofPerNode() != ssi_mono.ScaTraManifold()->NumDofPerNode())

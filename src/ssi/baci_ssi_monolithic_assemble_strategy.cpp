@@ -30,19 +30,11 @@ SSI::AssembleStrategyBase::AssembleStrategyBase(
 SSI::AssembleStrategyBlock::AssembleStrategyBlock(
     Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi_maps, const bool is_scatra_manifold)
     : AssembleStrategyBase(ssi_maps, is_scatra_manifold),
-      block_position_scatra_(Teuchos::null),
-      block_position_scatra_manifold_(Teuchos::null),
-      position_structure_(-1)
+      block_position_scatra_(SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport)),
+      position_structure_(SSIMaps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
 {
-  block_position_scatra_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::scalar_transport);
-  position_structure_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::structure)->at(0);
   if (IsScaTraManifold())
     block_position_scatra_manifold_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::manifold);
-
-  if (block_position_scatra_ == Teuchos::null) dserror("Cannot get position of scatra blocks");
-  if (position_structure_ == -1) dserror("Cannot get position of structure block");
-  if (IsScaTraManifold() and block_position_scatra_manifold_ == Teuchos::null)
-    dserror("Cannot get position of scatra manifold blocks");
 }
 
 /*----------------------------------------------------------------------*
@@ -81,12 +73,12 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraScatra(
   systemmatrix_block->UnComplete();
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra().size()); ++jblock)
     {
       auto& systemmatrix_block_iscatra_jscatra = systemmatrix_block->Matrix(
-          BlockPositionScaTra()->at(iblock), BlockPositionScaTra()->at(jblock));
+          BlockPositionScaTra().at(iblock), BlockPositionScaTra().at(jblock));
 
       systemmatrix_block_iscatra_jscatra.Add(
           scatra_scatra_matrix_block->Matrix(iblock, jblock), false, 1.0, 1.0);
@@ -105,7 +97,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraScatra(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatra_scatra_matrix);
 
   auto& systemmatrix_block_scatra_scatra =
-      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), BlockPositionScaTra()->at(0));
+      systemmatrix_block->Matrix(BlockPositionScaTra().at(0), BlockPositionScaTra().at(0));
 
   systemmatrix_block_scatra_scatra.Add(*scatra_scatra_matrix_sparse, false, 1.0, 1.0);
 }
@@ -171,10 +163,10 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraStructure(
       CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatra_structure_matrix);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     auto& systemmatrix_block_iscatra_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTra()->at(iblock), PositionStructure());
+        systemmatrix_block->Matrix(BlockPositionScaTra().at(iblock), PositionStructure());
 
     systemmatrix_block_iscatra_struct.Add(
         scatra_structure_matrix_block->Matrix(iblock, 0), false, 1.0, 1.0);
@@ -192,7 +184,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraStructure(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatra_structure_matrix);
 
   auto& systemmatrix_block_scatra_struct =
-      systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), PositionStructure());
+      systemmatrix_block->Matrix(BlockPositionScaTra().at(0), PositionStructure());
   systemmatrix_block_scatra_struct.UnComplete();
 
   systemmatrix_block_scatra_struct.Add(*scatra_structure_matrix_sparse, false, 1.0, 1.0);
@@ -221,12 +213,12 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatraScatramanifold(
   auto scatra_scatramanifold_matrix_block =
       CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatra_scatramanifold_matrix);
 
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTraManifold().size()); ++jblock)
     {
       systemmatrix_block
-          ->Matrix(BlockPositionScaTra()->at(iblock), BlockPositionScaTraManifold()->at(jblock))
+          ->Matrix(BlockPositionScaTra().at(iblock), BlockPositionScaTraManifold().at(jblock))
           .Add(scatra_scatramanifold_matrix_block->Matrix(iblock, jblock), false, 1.0, 1.0);
     }
   }
@@ -242,7 +234,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatraScatramanifold(
   auto scatra_scatramanifold_matrix_sparse =
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatra_scatramanifold_matrix);
 
-  systemmatrix_block->Matrix(BlockPositionScaTra()->at(0), BlockPositionScaTraManifold()->at(0))
+  systemmatrix_block->Matrix(BlockPositionScaTra().at(0), BlockPositionScaTraManifold().at(0))
       .Add(*scatra_scatramanifold_matrix_sparse, false, 1.0, 1.0);
 }
 
@@ -270,10 +262,10 @@ void SSI::AssembleStrategyBlockBlock::AssembleStructureScatra(
       CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(structure_scatra_matrix);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTra().size()); ++iblock)
   {
     auto& systemmatrix_block_struct_iscatra =
-        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(iblock));
+        systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(iblock));
     systemmatrix_block_struct_iscatra.Add(
         structure_scatra_matrix_block->Matrix(0, iblock), false, 1.0, 1.0);
   }
@@ -290,7 +282,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleStructureScatra(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(structure_scatra_matrix);
 
   auto& systemmatrix_block_struct_scatra =
-      systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra()->at(0));
+      systemmatrix_block->Matrix(PositionStructure(), BlockPositionScaTra().at(0));
   systemmatrix_block_struct_scatra.UnComplete();
   systemmatrix_block_struct_scatra.Add(*structure_scatra_matrix_sparse, false, 1.0, 1.0);
 }
@@ -318,12 +310,12 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatramanifoldScatra(
   auto scatramanifold_scatra_matrix_block =
       CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(scatramanifold_scatra_matrix);
 
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTra().size()); ++jblock)
     {
       systemmatrix_block
-          ->Matrix(BlockPositionScaTraManifold()->at(iblock), BlockPositionScaTra()->at(jblock))
+          ->Matrix(BlockPositionScaTraManifold().at(iblock), BlockPositionScaTra().at(jblock))
           .Add(scatramanifold_scatra_matrix_block->Matrix(iblock, jblock), false, 1.0, 1.0);
     }
   }
@@ -339,7 +331,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatramanifoldScatra(
   auto scatramanifold_scatra_matrix_sparse =
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_scatra_matrix);
 
-  systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), BlockPositionScaTra()->at(0))
+  systemmatrix_block->Matrix(BlockPositionScaTraManifold().at(0), BlockPositionScaTra().at(0))
       .Add(*scatramanifold_scatra_matrix_sparse, false, 1.0, 1.0);
 }
 
@@ -368,12 +360,12 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatramanifoldScatramanifold(
           scatramanifold_scatramanifold_matrix);
 
   // assemble blocks of scalar transport system matrix into global system matrix
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold().size()); ++iblock)
   {
-    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++jblock)
+    for (int jblock = 0; jblock < static_cast<int>(BlockPositionScaTraManifold().size()); ++jblock)
     {
       auto& systemmatrix_block_iscatramanifold_jscatramanifold = systemmatrix_block->Matrix(
-          BlockPositionScaTraManifold()->at(iblock), BlockPositionScaTraManifold()->at(jblock));
+          BlockPositionScaTraManifold().at(iblock), BlockPositionScaTraManifold().at(jblock));
 
       systemmatrix_block_iscatramanifold_jscatramanifold.Add(
           scatramanifold_scatramanifold_matrix_block->Matrix(iblock, jblock), false, 1.0, 1.0);
@@ -392,7 +384,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatramanifoldScatramanifold(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_scatramanifold_matrix);
 
   auto& systemmatrix_block_scatramanifold_scatramanifold = systemmatrix_block->Matrix(
-      BlockPositionScaTraManifold()->at(0), BlockPositionScaTraManifold()->at(0));
+      BlockPositionScaTraManifold().at(0), BlockPositionScaTraManifold().at(0));
 
   systemmatrix_block_scatramanifold_scatramanifold.Add(
       *scatramanifold_scatramanifold_matrix_sparse, false, 1.0, 1.0);
@@ -422,10 +414,10 @@ void SSI::AssembleStrategyBlockBlock::AssembleScatramanifoldStructure(
       CORE::LINALG::CastToConstBlockSparseMatrixBaseAndCheckSuccess(
           scatramanifold_structure_matrix);
 
-  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold()->size()); ++iblock)
+  for (int iblock = 0; iblock < static_cast<int>(BlockPositionScaTraManifold().size()); ++iblock)
   {
     auto& systemmatrix_block_iscatramanifold_struct =
-        systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(iblock), PositionStructure());
+        systemmatrix_block->Matrix(BlockPositionScaTraManifold().at(iblock), PositionStructure());
     systemmatrix_block_iscatramanifold_struct.Add(
         scatramanifold_structure_matrix_block->Matrix(iblock, 0), false, 1.0, 1.0);
   }
@@ -442,7 +434,7 @@ void SSI::AssembleStrategyBlockSparse::AssembleScatramanifoldStructure(
       CORE::LINALG::CastToConstSparseMatrixAndCheckSuccess(scatramanifold_structure_matrix);
 
   auto& systemmatrix_block_scatramanifold_struct =
-      systemmatrix_block->Matrix(BlockPositionScaTraManifold()->at(0), PositionStructure());
+      systemmatrix_block->Matrix(BlockPositionScaTraManifold().at(0), PositionStructure());
   systemmatrix_block_scatramanifold_struct.Add(
       *scatramanifold_structure_matrix_sparse, false, 1.0, 1.0);
 }
