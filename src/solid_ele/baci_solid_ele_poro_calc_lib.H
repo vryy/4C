@@ -9,13 +9,10 @@
 #define BACI_SOLID_ELE_PORO_CALC_LIB_H
 
 
-#include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_lib_element.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_voigt_notation.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_structporo.H"
-#include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_lib.H"
 
 #include <Epetra_Vector.h>
@@ -87,7 +84,7 @@ namespace DRT::ELEMENTS
     }
     else if (numdofpernode == 1)
     {
-      for (int inode = 0; inode < DETAIL::num_nodes<distype>; ++inode)  // number of nodes
+      for (std::size_t inode = 0; inode < DETAIL::num_nodes<distype>; ++inode)  // number of nodes
       {
         if (vectortofill != nullptr) (*vectortofill)(inode, 0) = mymatrix[inode * numdofpernode];
       }

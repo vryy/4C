@@ -188,15 +188,17 @@ DRT::ELEMENTS::Solid::Solid(const DRT::ELEMENTS::Solid& old)
       CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
 }
 
-DRT::ELEMENTS::Solid& DRT::ELEMENTS::Solid::operator=(const DRT::ELEMENTS::Solid& old)
+DRT::ELEMENTS::Solid& DRT::ELEMENTS::Solid::operator=(const DRT::ELEMENTS::Solid& other)
 {
-  DRT::Element::operator=(old);
-  distype_ = old.distype_;
-  kintype_ = old.kintype_;
-  eletech_ = old.eletech_;
-  eastype_ = old.eastype_;
-  interface_ptr_ = old.interface_ptr_;
-  material_post_setup_ = old.material_post_setup_;
+  if (this == &other) return *this;
+
+  DRT::Element::operator=(other);
+  distype_ = other.distype_;
+  kintype_ = other.kintype_;
+  eletech_ = other.eletech_;
+  eastype_ = other.eastype_;
+  interface_ptr_ = other.interface_ptr_;
+  material_post_setup_ = other.material_post_setup_;
 
   // create own solid interface on copy assignment
   solid_interface_ =

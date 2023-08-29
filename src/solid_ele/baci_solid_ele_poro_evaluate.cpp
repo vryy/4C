@@ -8,11 +8,8 @@ Evaluate(...), EvaluateNeumann(...), etc.
 \level 1
 */
 
-#include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_factory.H"
 #include "baci_solid_ele_poro.H"
-#include "baci_solid_ele_poro_factory.H"
 
 
 int DRT::ELEMENTS::SolidPoro::Evaluate(Teuchos::ParameterList& params,

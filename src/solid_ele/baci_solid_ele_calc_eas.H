@@ -10,7 +10,6 @@
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
 #include "baci_lib_element.H"
-#include "baci_lib_element_integration_select.H"
 #include "baci_solid_ele_calc_interface.H"
 #include "baci_solid_ele_interface_serializable.H"
 #include "baci_solid_ele_utils.H"
@@ -21,8 +20,6 @@
 
 namespace STR::ELEMENTS
 {
-  class ParamsInterface;
-
   enum class EasType
   {
     soh8_easnone,

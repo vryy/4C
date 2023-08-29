@@ -12,7 +12,6 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_interface.H"
 #include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_factory.H"
 #include "baci_solid_ele_neumann_evaluator.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"

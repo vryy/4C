@@ -16,6 +16,7 @@
 #include "baci_fiber_utils.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
+#include "baci_lib_element_integration_select.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_voigt_notation.H"
 #include "baci_mat_so3_material.H"
@@ -595,9 +596,13 @@ namespace DRT::ELEMENTS
     for (int i = 0; i < DETAIL::num_nodes<distype>; ++i)
     {
       for (int d = 0; d < DETAIL::num_dim<distype>; ++d)
+      {
         for (int e = 0; e < DETAIL::num_dim<distype>; ++e)
+        {
           Bop(d, DETAIL::num_dim<distype> * i + e) =
               spatial_material_mapping.deformation_gradient_(e, d) * jacobian_mapping.N_XYZ_(d, i);
+        }
+      }
 
       Bop(3, DETAIL::num_dim<distype> * i + 0) =
           spatial_material_mapping.deformation_gradient_(0, 0) * jacobian_mapping.N_XYZ_(1, i) +
@@ -861,7 +866,7 @@ namespace DRT::ELEMENTS
   void AssembleVectorToMatrixRow(
       CORE::LINALG::Matrix<num_str, 1> vector, CORE::LINALG::SerialDenseMatrix& data, const int row)
   {
-    for (unsigned i = 0; i < num_str; ++i) data(row, i) = vector(i);
+    for (unsigned i = 0; i < num_str; ++i) data(row, static_cast<int>(i)) = vector(i);
   }
 
   /*!

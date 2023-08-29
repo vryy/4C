@@ -12,17 +12,12 @@
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_mat_so3_material.H"
-#include "baci_utils_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
 
 namespace STR::MODELEVALUATOR
 {
   class GaussPointDataOutputManager;
-}
-namespace CORE::UTILS
-{
-  class GaussIntegration;
 }
 
 namespace DRT

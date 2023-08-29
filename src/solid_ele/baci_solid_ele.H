@@ -43,7 +43,7 @@ namespace DRT::ELEMENTS
 
     DRT::ParObject* Create(const std::vector<char>& data) override;
 
-    std::string Name() const override { return "SolidType"; }
+    [[nodiscard]] std::string Name() const override { return "SolidType"; }
 
     void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
@@ -74,7 +74,7 @@ namespace DRT::ELEMENTS
     Solid(int id, int owner);
 
     //! destructor
-    ~Solid() = default;
+    ~Solid() override = default;
 
     //! copy constructor
     Solid(const Solid& other);

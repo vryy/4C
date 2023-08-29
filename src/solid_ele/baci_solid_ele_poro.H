@@ -54,7 +54,7 @@ namespace DRT::ELEMENTS
 
     DRT::ParObject* Create(const std::vector<char>& data) override;
 
-    std::string Name() const override { return "SolidPoroType"; }
+    [[nodiscard]] std::string Name() const override { return "SolidPoroType"; }
 
     void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
@@ -86,7 +86,7 @@ namespace DRT::ELEMENTS
     SolidPoro(int id, int owner);
 
     //! destructor
-    ~SolidPoro() = default;
+    ~SolidPoro() override = default;
 
     //! copy constructor
     SolidPoro(const SolidPoro& other);
@@ -102,7 +102,7 @@ namespace DRT::ELEMENTS
 
     //!@}
 
-    DRT::Element* Clone() const override;
+    [[nodiscard]] DRT::Element* Clone() const override;
 
     [[nodiscard]] int UniqueParObjectId() const override
     {

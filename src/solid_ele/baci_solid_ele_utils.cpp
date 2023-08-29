@@ -8,7 +8,6 @@
 #include "baci_solid_ele_utils.H"
 
 #include "baci_lib_element.H"
-#include "baci_lib_element_integration_select.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_voigt_notation.H"
 

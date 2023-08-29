@@ -8,6 +8,7 @@
 #include "baci_solid_ele_poro.H"
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
+#include "baci_lib_utils_factory.H"
 #include "baci_mat_fluidporo_multiphase.H"
 #include "baci_mat_structporo.H"
 #include "baci_so3_line.H"
@@ -190,6 +191,8 @@ DRT::ELEMENTS::SolidPoro::SolidPoro(const DRT::ELEMENTS::SolidPoro& other)
 DRT::ELEMENTS::SolidPoro& ::DRT::ELEMENTS::SolidPoro::operator=(
     const DRT::ELEMENTS::SolidPoro& other)
 {
+  if (this == &other) return *this;
+
   distype_ = other.distype_;
   kintype_ = other.kintype_;
   eastype_ = other.eastype_;
@@ -269,8 +272,10 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::SolidPoro::Surfaces()
   // so we have to allocate new line elements:
 
   if (NumSurface() > 1)  // 2D boundary element and 3D parent element
+  {
     return DRT::UTILS::ElementBoundaryFactory<StructuralSurface, SolidPoro>(
         DRT::UTILS::buildSurfaces, this);
+  }
   else if (NumSurface() == 1)  // 2D boundary element and 2D parent element -> body load
                                // (calculated in evaluate)
   {

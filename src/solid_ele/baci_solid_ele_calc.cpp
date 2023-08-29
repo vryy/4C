@@ -7,11 +7,8 @@
 
 #include "baci_solid_ele_calc.H"
 
-#include "baci_lib_utils.H"
 #include "baci_mat_so3_material.H"
-#include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_lib.H"
-#include "baci_solid_ele_utils.H"
 
 #include <Teuchos_ParameterList.hpp>
 
