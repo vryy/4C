@@ -12,10 +12,6 @@ Sciume, G.; Gray, W. G.; Hussain, F.; Ferrari, M.; Decuzzi, P. & Schrefler, B. A
 Three phase flow dynamics in tumor growth Computational Mechanics, 2014, 53, 465-484
 fully monolithic framework, however, structure is fixed with DVOL condition
 Units are g, mm, s
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    400
-//NODES       1604
-DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0

@@ -11,10 +11,6 @@ scalar transport) and PoroMultiphaseScatra-Framework.
 Test for a larger network segmented from a mouse, the geometry is
 publicly available from
 https://physiology.arizona.edu/people/secomb/network/rattum98
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    2328
-//NODES       2874
-DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0

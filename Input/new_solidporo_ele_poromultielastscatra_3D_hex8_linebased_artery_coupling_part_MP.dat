@@ -10,10 +10,6 @@ Test for line-based coupling between artery network (including
 scalar transport) and PoroMultiphaseScatra-Framework.
 Mortar penalty coupling method is employed with partitioned
 algorithm
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    125
-//NODES       216
-DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0

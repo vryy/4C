@@ -9,10 +9,6 @@
 Framework test for multiphase flow through elastic porous medium.
 Partitioned algorithm
 Basically a 3D extension of the 2D input-file poromultielast_2D_quad4_mono.dat
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    500
-//NODES       1122
-DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity
 RESTART                         0

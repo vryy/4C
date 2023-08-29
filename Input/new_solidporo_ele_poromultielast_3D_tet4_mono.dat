@@ -10,10 +10,6 @@ Framework test for multiphase flow through elastic porous medium.
 Monolithic algorithm
 Basically a modification of the input-file poromultielast_3D_hex8_mono.dat
 only with TET4 elements
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    500
-//NODES       1122
-DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity
 RESTART                         0

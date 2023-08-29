@@ -130,11 +130,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10 0.01 0.01 0 0 0 FUNCT 1 2 2 0 0 0 Live Mid
-------------------------------------------------------------------PROBLEM SIZE
-ELEMENTS                        1
-NODES                           27
-DIM                             3
-MATERIALS                       9999
 ------------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0

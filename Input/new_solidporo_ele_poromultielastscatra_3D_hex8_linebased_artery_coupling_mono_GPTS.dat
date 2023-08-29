@@ -9,10 +9,6 @@ General Data File BACI
 Test for line-based coupling between artery network (including
 scalar transport) and PoroMultiphaseScatra-Framework.
 Gauss-point-to-segment coupling method is employed
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    125
-//NODES       216
-DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0

@@ -21,10 +21,6 @@ poromultielastscatra_3D_hex8_linebased_artery_coupling_part_network_porofluid_ar
 is employed for scatra-artery_scatra coupling solver-file
 poromultielastscatra_3D_hex8_linebased_artery_coupling_part_network_scatra_artery-scatra_BGS-AMG_2x2.xml
 is employed
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    2328
-//NODES       2874
-DIM           3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Multiphase_Poroelasticity_ScaTra
 RESTART                         0
