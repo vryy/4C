@@ -197,9 +197,9 @@ namespace
     // delta_alpha_{i+1} = - invKaa_{i} (s_{i} + Kad_{i} delta_D_{i+1})
     CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> alpha_inc(true);
 
-    // init as enhancement vector s_{i} (EAS portion of internal forces)
+    // init as enhancement vector s_{i}
     CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1> tmp(
-        eas_iteration_data.feas_);
+        eas_iteration_data.s_);
 
     // addition of Kad_{i} delta_D_{i+1}
     tmp.MultiplyTN(1.0, eas_iteration_data.Kda_, displ_inc, 1.0);
@@ -545,28 +545,28 @@ namespace
     // integrate Kda: Kda += (B^T . cmat . Mtilde) * detJ * w(gp)
     eas_iteration_data.Kda_.MultiplyTN(integration_factor, Bop, cmatM, 1.);
 
-    // integrate feas: feas += (Mtilde^T . sigma) * detJ * w(gp)
-    eas_iteration_data.feas_.MultiplyTN(integration_factor, Mtilde, stress.pk2_, 1.);
+    // integrate s: s += (Mtilde^T . S) * detJ * w(gp)
+    eas_iteration_data.s_.MultiplyTN(integration_factor, Mtilde, stress.pk2_, 1.);
   }
 
   /*!
    * @brief Add EAS internal force contribution of one Gauss point
    *
-   * The EAS internal force contribution is $- K_{da} K_{aa}^{-1} feas$.
+   * The EAS internal force contribution is $f_{eas} = - K_{da} K_{aa}^{-1} s$.
    *
    * @tparam distype : Discretization type
    * @param minusKdainvKaa(in) : matrix product $- K_{da} K_{aa}^{-1}$
-   * @param feas(in) : EAS portion of internal forces, also called enhancement vector
+   * @param s(in) : enhancement vector s
    * @param force(in/out) : internal force vector where the contribution is added to
    */
   template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
   void AddEASInternalForce(
       const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>,
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& minusKdainvKaa,
-      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& feas,
+      const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& s,
       CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>, 1>& force_vector)
   {
-    force_vector.MultiplyNN(1.0, minusKdainvKaa, feas, 1.0);
+    force_vector.MultiplyNN(1.0, minusKdainvKaa, s, 1.0);
   }
 
   /*!
@@ -610,7 +610,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Pack(DRT::PackBuffer& dat
   DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
       data, eas_iteration_data_.alpha_);
   DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>(
-      data, eas_iteration_data_.feas_);
+      data, eas_iteration_data_.s_);
   DRT::ELEMENTS::Solid::AddtoPack<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas,
       STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>(data, eas_iteration_data_.invKaa_);
   DRT::ELEMENTS::Solid::AddtoPack<num_dof_per_element,
@@ -622,7 +622,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Unpack(
     std::vector<char>::size_type& position, const std::vector<char>& data)
 {
   DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.alpha_);
-  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.feas_);
+  DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.s_);
   DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.invKaa_);
   DRT::ParObject::ExtractfromPack(position, data, eas_iteration_data_.Kda_);
 };
@@ -658,7 +658,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
   // clear for integration
   eas_iteration_data_.invKaa_.Clear();
   eas_iteration_data_.Kda_.Clear();
-  eas_iteration_data_.feas_.Clear();
+  eas_iteration_data_.s_.Clear();
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
@@ -724,7 +724,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
 
   if (force.has_value())
   {
-    AddEASInternalForce<distype, eastype>(minusKdainvKaa, eas_iteration_data_.feas_, *force);
+    AddEASInternalForce<distype, eastype>(minusKdainvKaa, eas_iteration_data_.s_, *force);
   }
 
   if (stiff.has_value())

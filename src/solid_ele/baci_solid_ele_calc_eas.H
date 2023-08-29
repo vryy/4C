@@ -79,17 +79,17 @@ namespace DRT
     {
       constexpr static int num_eas = STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas;
 
-      /// inverse EAS matrix K_{alpha alpha}, sometimes called Dtilde
+      /// inverse EAS matrix K_{alpha alpha}
       CORE::LINALG::Matrix<num_eas, num_eas> invKaa_{true};
 
-      /// EAS matrix K_{d alpha}, sometimes called Ltilde
+      /// EAS matrix K_{d alpha}
       CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement *
                                CORE::DRT::UTILS::DisTypeToDim<distype>::dim,
           num_eas>
           Kda_{true};
 
-      /// EAS portion of internal forces f_{eas}, sometimes called enhacement vector s or Rtilde
-      CORE::LINALG::Matrix<num_eas, 1> feas_{true};
+      /// EAS enhacement vector s
+      CORE::LINALG::Matrix<num_eas, 1> s_{true};
 
       /// discrete enhanced strain scalars alpha
       CORE::LINALG::Matrix<num_eas, 1> alpha_{true};
