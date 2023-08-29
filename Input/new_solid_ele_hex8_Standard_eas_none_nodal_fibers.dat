@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------TITLE
-Test of the new solid elements in BACI
+Test of the templated implementation of solid elements
 
 Time Integration: Standard
 Shape: hex8

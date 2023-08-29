@@ -108,7 +108,6 @@ namespace DRT::ELEMENTS
     //! Get kinematic type of element
     [[nodiscard]] INPAR::STR::KinemType KinematicType() const { return kintype_; }
 
-    //! Set kinematic type of element
     void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
 
     [[nodiscard]] virtual Teuchos::RCP<MAT::So3Material> SolidMaterial(int nummat = 0) const;

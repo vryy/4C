@@ -129,7 +129,6 @@ namespace DRT::ELEMENTS
 
     void Unpack(const std::vector<char>& data) override;
 
-    //! Set kinematic type of element
     void SetKinematicType(INPAR::STR::KinemType kintype) { kintype_ = kintype; }
 
     [[nodiscard]] DRT::Element::DiscretizationType Shape() const override { return distype_; };
@@ -152,22 +151,18 @@ namespace DRT::ELEMENTS
         DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
         CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override;
 
-    //! read anisotropic permeability directions in the element definition
     void ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(
         DRT::INPUT::LineDefinition* linedef);
 
-    //! read nodal anisotropic permeability scaling coefficients in the element definition
     void ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(
         DRT::INPUT::LineDefinition* linedef);
 
-    //! return anisotropic permeability directions (used for cloning)
     [[nodiscard]] const std::vector<std::vector<double>>& GetAnisotropicPermeabilityDirections()
         const
     {
       return anisotropic_permeability_directions_;
     }
 
-    //! return scaling coefficients for anisotropic permeability (used for cloning)
     [[nodiscard]] const std::vector<std::vector<double>>& GetAnisotropicPermeabilityNodalCoeffs()
         const
     {
@@ -186,7 +181,6 @@ namespace DRT::ELEMENTS
       return (not interface_ptr_.is_null());
     }
 
-    //! get access to the interface
     [[nodiscard]] inline STR::ELEMENTS::ParamsInterface& ParamsInterface() const
     {
       if (not IsParamsInterface()) dserror("The interface ptr is not set!");
