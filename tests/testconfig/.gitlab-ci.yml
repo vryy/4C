@@ -4,13 +4,13 @@
 # if a pipeline is created.
 workflow:
   rules:
-  # for merge requests
+    # for merge requests
   - if: $CI_MERGE_REQUEST_IID
-  # for tags
+      # for tags
   - if: $CI_COMMIT_TAG
-  # for the default branch
+      # for the default branch
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
-  # if manually triggered with the web interface's "run pipeline"
+      # if manually triggered with the web interface's "run pipeline"
   - if: $CI_PIPELINE_SOURCE == "web"
 
 #-------------------------------------------------------------------------------
@@ -485,7 +485,7 @@ buildtest_coverage:
 pages: # job name needs to be pages
   stage: pages
   image: alpine:3.18
-    # Download Doxygen and ReadTheDocs from previous documentation stage
+  # Download Doxygen and ReadTheDocs from previous documentation stage
   needs:
   - job: build-base-dependencies
     optional: true
@@ -622,6 +622,27 @@ buildtest_full_release:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
   - !reference [.buildtest_full, rules]
   interruptible: true
+
+buildtest_full_release_asan:
+  extends: .buildtest_full
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  variables:
+    GLOBAL_TEST_TIMEOUT_SCALE: '10'
+    NUMBER_OF_TEST_THREADS: '10'
+    NUMBER_OF_BUILD_THREADS: '10'
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  tags:
+  - buildtest
+  needs:
+  - job: build-base-dependencies
+    optional: true
+  # This job only runs in nightly builds
+  rules:
+  - if: $GITLAB_SCHEDULER_TYPE == "1"
+  interruptible: true
+  allow_failure: true
+
 
 buildtest_full_debug:
   extends: .buildtest_daily_debug

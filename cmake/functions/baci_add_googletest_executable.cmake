@@ -56,6 +56,7 @@ function(baci_add_google_test_executable TESTNAME)
   separate_arguments(
     MPIEXEC_EXTRA_OPTS_FOR_TESTING_LIST UNIX_COMMAND ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}
     )
+
   set(mpi_arguments
       ${MPIEXEC_EXTRA_OPTS_FOR_TESTING_LIST}
       -np
@@ -70,6 +71,7 @@ function(baci_add_google_test_executable TESTNAME)
       APPEND
       mpi_arguments
       :
+      ${MPIEXEC_EXTRA_OPTS_FOR_TESTING_LIST}
       -np
       ${remaining_procs}
       $<TARGET_FILE:${TESTNAME}>

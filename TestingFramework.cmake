@@ -216,7 +216,7 @@ macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
 
   # additionally run postprocessing in serial mode
   set(RUNPOSTFILTER_SER
-      ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_SER\ --outputtype=bin\ --stress=ndxyz
+      ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./post_ensight\ --file=${test_directory}/xxx\ --output=${test_directory}/xxx_SER\ --outputtype=bin\ --stress=ndxyz
       )
 
   add_test(
@@ -447,7 +447,7 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
   set(test_directory framework_test_output/${name_of_input_file})
 
   set(RUNPREEXODUS
-      ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.head\ --dat=${test_directory}/xxx.dat
+      ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.bc\ --head=${PROJECT_SOURCE_DIR}/tests/framework-test/${name_of_input_file}.head\ --dat=${test_directory}/xxx.dat
       ) # pre_exodus is run to generate a Dat file
 
   if(NOT ${xml_filename} STREQUAL "")
@@ -491,7 +491,7 @@ macro(cut_test num_proc)
       # Run all the cuttests with num_proc except from alex53
       ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ${PROJECT_BINARY_DIR}/cut_test\ --ignore_test=alex53
       # Run alex53 serially
-      ${PROJECT_BINARY_DIR}/cut_test\ --test=alex53
+      ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ${PROJECT_BINARY_DIR}/cut_test\ --test=alex53
       )
 
   add_test(
@@ -515,10 +515,10 @@ macro(pre_processing name_of_input_file num_proc)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
 
   set(RUNPREEXODUS_NOHEAD
-      ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e
+      ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e
       ) # run pre_exodus to generate default head and bc file
   set(RUNPREEXODUS_DEFAULTHEAD
-      ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.bc\ --head=default.head\ --dat=${test_directory}/xxx.dat
+      ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./pre_exodus\ --exo=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.e\ --bc=${PROJECT_SOURCE_DIR}/tests/pre_processing_test/${name_of_input_file}.bc\ --head=default.head\ --dat=${test_directory}/xxx.dat
       ) # run pre_exodus to generate dat file using the default head file
 
   add_test(
@@ -576,7 +576,7 @@ macro(
   set(name_of_test "${name_of_input_file}${IDENTIFIER}${FIELD}-p${num_proc}-pp")
   # define macros for serial and parallel runs
   set(RUNPOSTFILTER_SER
-      ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
+      ${BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}
       )
   set(RUNPOSTFILTER_PAR
       ${MPI_RUN}\ ${MPIEXEC_EXTRA_OPTS_FOR_TESTING}\ -np\ ${num_proc}\ ./post_ensight\ --file=${test_directory}/xxx${IDENTIFIER}\ --output=${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}\ --stress=${stresstype}\ --strain=${straintype}\ --start=${startstep}

@@ -45,6 +45,13 @@ foreach(_file ${_function_files})
   include(${_file})
 endforeach()
 
+# If enabled, build all targets with address sanitizer
+option(BACI_WITH_ADDRESS_SANITIZER "Compile BACI with address sanitizer" OFF)
+if(BACI_WITH_ADDRESS_SANITIZER)
+  add_compile_options(-fsanitize=address -fno-omit-frame-pointer)
+  add_link_options(-fsanitize=address -fno-omit-frame-pointer)
+endif()
+
 #
 ### Build in default values
 
@@ -142,6 +149,12 @@ add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)
 set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
     "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
     )
+
+if(BACI_WITH_ADDRESS_SANITIZER)
+  # Do not detect leaks, we only care about UB inducing memory issues
+  string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
+  set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
+endif()
 
 enable_testing()
 

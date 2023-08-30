@@ -58,6 +58,17 @@
       }
     },
     {
+      "name": "docker_asan",
+      "displayName": "ASAN build for Docker image",
+      "description": "Build release version of BACI with address sanitizer on a Docker image",
+      "inherits": [
+        ".docker_base"
+      ],
+      "cacheVariables": {
+        "BACI_WITH_ADDRESS_SANITIZER": "ON"
+      }
+    },
+    {
       "name": "docker_coverage",
       "displayName": "Coverage report for Docker image",
       "description": "Build unoptimized version of BACI with coverage instrumentation on a Docker image",
