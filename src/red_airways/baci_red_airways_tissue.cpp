@@ -479,10 +479,9 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
     dserror(
         "no linear solver defined. Please set LINEAR_SOLVER in REDUCED DIMENSIONAL AIRWAYS DYNAMIC "
         "to a valid number!");
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                       actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()),
-          false);
+  std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm(),
+      DRT::Problem::Instance()->ErrorFile()->Handle());
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // Set parameters in list required for all schemes
@@ -543,7 +542,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
   // velocity degrees of freedom
   //------------------------------------------------------------------
   redairways_ = Teuchos::rcp(
-      new AIRWAY::RedAirwayImplicitTimeInt(actdis, *solver, airwaystimeparams, *output));
+      new AIRWAY::RedAirwayImplicitTimeInt(actdis, std::move(solver), airwaystimeparams, *output));
 
   redairways_->SetupForCoupling();
 }

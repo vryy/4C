@@ -34,10 +34,11 @@
  |  Constructor (public)                                    ismail 01/10|
  *----------------------------------------------------------------------*/
 AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> actdis,
-    CORE::LINALG::Solver& solver, Teuchos::ParameterList& params, IO::DiscretizationWriter& output)
+    std::unique_ptr<CORE::LINALG::Solver> solver, Teuchos::ParameterList& params,
+    IO::DiscretizationWriter& output)
     :  // Call constructor for "nontrivial" objects
       discret_(actdis),
-      solver_(solver),
+      solver_(std::move(solver)),
       params_(params),
       output_(output),
       time_(0.0),
@@ -1095,7 +1096,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(
       TEUCHOS_FUNC_TIME_MONITOR("      + solver calls");
     }
     // Call solver
-    solver_.Solve(sysmat_->EpetraOperator(), pnp_, rhs_, true, true);
+    solver_->Solve(sysmat_->EpetraOperator(), pnp_, rhs_, true, true);
   }
 
   // end time measurement for solver
