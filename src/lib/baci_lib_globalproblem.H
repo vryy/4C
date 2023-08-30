@@ -577,7 +577,7 @@ namespace DRT
      * @tparam T The type of function interface.
      */
     template <typename T>
-    T& FunctionById(int num)
+    const T& FunctionById(int num)
     {
       return functionmanager_.template FunctionById<T>(num);
     }

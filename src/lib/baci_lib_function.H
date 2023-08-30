@@ -57,7 +57,7 @@ namespace DRT
        *                      which should be evaluated
        * @return function value
        */
-      virtual double Evaluate(const double* x, double t, std::size_t component) = 0;
+      virtual double Evaluate(const double* x, double t, std::size_t component) const = 0;
 
       /*!
        * \brief Evaluation of first spatial derivative of time and space dependent function
@@ -69,7 +69,7 @@ namespace DRT
        * \return first spatial derivative of function
        */
       virtual std::vector<double> EvaluateSpatialDerivative(
-          const double* x, double t, std::size_t component)
+          const double* x, double t, std::size_t component) const
       {
         dserror("The evaluation of the derivative is not implemented for this function");
         std::vector<double> emptyvector;
@@ -90,7 +90,7 @@ namespace DRT
        * @return vector containing value and time derivative(s)
        */
       virtual std::vector<double> EvaluateTimeDerivative(
-          const double* x, double t, unsigned deg, std::size_t component)
+          const double* x, double t, unsigned deg, std::size_t component) const
       {
         dserror("The evaluation of the time derivative is not implemented for this function");
         std::vector<double> emptyvector;
@@ -98,7 +98,7 @@ namespace DRT
       };
 
       /// Return number of components of function
-      virtual std::size_t NumberComponents() { return 0; }
+      virtual std::size_t NumberComponents() const { return 0; }
     };
 
 
@@ -122,15 +122,15 @@ namespace DRT
       SymbolicFunctionOfSpaceTime(const std::vector<std::string>& expressions,
           std::vector<Teuchos::RCP<FunctionVariable>> variables);
 
-      double Evaluate(const double* x, double t, std::size_t component) override;
+      double Evaluate(const double* x, double t, std::size_t component) const override;
 
       std::vector<double> EvaluateSpatialDerivative(
-          const double* x, double t, std::size_t component) override;
+          const double* x, double t, std::size_t component) const override;
 
       std::vector<double> EvaluateTimeDerivative(
-          const double* x, double t, unsigned deg, std::size_t component) override;
+          const double* x, double t, unsigned deg, std::size_t component) const override;
 
-      std::size_t NumberComponents() override { return (expr_.size()); }
+      std::size_t NumberComponents() const override { return (expr_.size()); }
 
      private:
       using ValueType = double;
@@ -190,7 +190,7 @@ namespace DRT
        */
       virtual double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants,
-          const std::size_t component) = 0;
+          const std::size_t component) const = 0;
 
       /*!
        * \brief evaluates the derivative of a function with respect to the given variables
@@ -205,7 +205,7 @@ namespace DRT
       virtual std::vector<double> EvaluateDerivative(
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants,
-          const std::size_t component) = 0;
+          const std::size_t component) const = 0;
 
       //! Return number of components of function
       virtual std::size_t NumberComponents() const = 0;
@@ -232,13 +232,13 @@ namespace DRT
 
       double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants,
-          const std::size_t component) override;
+          const std::size_t component) const override;
 
 
       std::vector<double> EvaluateDerivative(
           const std::vector<std::pair<std::string, double>>& variables,
           const std::vector<std::pair<std::string, double>>& constants,
-          const std::size_t component) override;
+          const std::size_t component) const override;
 
       /// return the number of components
       std::size_t NumberComponents() const override { return (expr_.size()); }

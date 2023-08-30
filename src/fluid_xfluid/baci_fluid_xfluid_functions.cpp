@@ -343,7 +343,7 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateXfluidFunctio
 DRT::UTILS::GerstenbergerForwardfacingStep::GerstenbergerForwardfacingStep() {}
 
 double DRT::UTILS::GerstenbergerForwardfacingStep::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   //  //cube_Gerstenberger:
   //  //1.6x1.6
@@ -447,7 +447,7 @@ DRT::UTILS::MovingLevelSetCylinder::MovingLevelSetCylinder(std::vector<double>* 
 }
 
 double DRT::UTILS::MovingLevelSetCylinder::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -583,7 +583,7 @@ DRT::UTILS::MovingLevelSetTorus::MovingLevelSetTorus(std::vector<double>* origin
 }
 
 double DRT::UTILS::MovingLevelSetTorus::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -695,7 +695,7 @@ DRT::UTILS::MovingLevelSetTorusVelocity::MovingLevelSetTorusVelocity(std::vector
 }
 
 double DRT::UTILS::MovingLevelSetTorusVelocity::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // d = L/2 * sin(f*t-PI/2)
   // v = L*f/2 * cos(f*t-PI/2) = maxspeed * cos( (maxspeed*2/L)*t-PI/2 )
@@ -825,7 +825,7 @@ DRT::UTILS::MovingLevelSetTorusSliplength::MovingLevelSetTorusSliplength(
 }
 
 double DRT::UTILS::MovingLevelSetTorusSliplength::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // coefficient for sinus.
   double dist;
@@ -1012,7 +1012,7 @@ DRT::UTILS::TaylorCouetteFlow::TaylorCouetteFlow(double radius_inner, double rad
 }
 
 double DRT::UTILS::TaylorCouetteFlow::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   double radius = sqrt(xp[0] * xp[0] + xp[1] * xp[1]);
 
@@ -1039,7 +1039,7 @@ double DRT::UTILS::TaylorCouetteFlow::Evaluate(
 }
 
 std::vector<double> DRT::UTILS::TaylorCouetteFlow::EvaluateSpatialDerivative(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // u_x = -(c1_*r + c2_/r)*y/r = -(c1_*y + c2_*y/(x^2+y^2))
   // d u_x /dx = c2_ * 2*x*y/((x^2+y^2)^2)
@@ -1141,7 +1141,7 @@ DRT::UTILS::UrquizaBoxFlow::UrquizaBoxFlow(double lengthx, double lengthy, doubl
 }
 
 double DRT::UTILS::UrquizaBoxFlow::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // CASE 1:
   //  u =
@@ -1293,7 +1293,7 @@ double DRT::UTILS::UrquizaBoxFlow::Evaluate(
 }
 
 std::vector<double> DRT::UTILS::UrquizaBoxFlow::EvaluateSpatialDerivative(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   //  CASE 1:
   //  du_i/dx_j =
@@ -1394,7 +1394,7 @@ DRT::UTILS::UrquizaBoxFlowForce::UrquizaBoxFlowForce(double lengthx, double leng
 }
 
 double DRT::UTILS::UrquizaBoxFlowForce::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   double x = xp[0];
   double y = xp[1];
@@ -1548,7 +1548,7 @@ DRT::UTILS::UrquizaBoxFlowTraction::UrquizaBoxFlowTraction(double lengthx, doubl
 }
 
 double DRT::UTILS::UrquizaBoxFlowTraction::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   double tol = 1e-13;
 

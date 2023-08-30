@@ -54,7 +54,7 @@ namespace DRT
        * repeatedly.
        */
       template <typename T>
-      T& FunctionById(int num) const;
+      const T& FunctionById(int num) const;
 
      private:
       /// Internal storage for all functions. We use type erasure via std::any to store various
@@ -75,7 +75,7 @@ void PrintFunctionDatHeader();
 // --- template and inline functions --- //
 
 template <typename T>
-T& DRT::UTILS::FunctionManager::FunctionById(int num) const
+const T& DRT::UTILS::FunctionManager::FunctionById(int num) const
 {
   const int input_id = num + 1;
   if (functions_.size() < (unsigned int)(input_id) || input_id < 1)

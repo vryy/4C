@@ -2354,7 +2354,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
     int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::EvaluateFunctionAndDeriv(DRT::UTILS::FunctionOfAnything& funct,
+    dim>::EvaluateFunctionAndDeriv(const DRT::UTILS::FunctionOfAnything& funct,
     const double& artpressnpAtGP, const std::vector<double>& artscalarnpAtGP,
     const std::vector<double>& scalarnpAtGP, double& functval, std::vector<double>& artderivs,
     std::vector<double>& contderivs)
@@ -3612,7 +3612,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 template <DRT::Element::DiscretizationType distypeArt, DRT::Element::DiscretizationType distypeCont,
     int dim>
 void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, distypeCont,
-    dim>::FillFunctionVector(std::vector<DRT::UTILS::FunctionOfAnything*>& my_funct_vec,
+    dim>::FillFunctionVector(std::vector<const DRT::UTILS::FunctionOfAnything*>& my_funct_vec,
     const std::vector<int>& funct_vec, const std::vector<int>& scale_vec)
 {
   for (unsigned int i = 0; i < funct_vec.size(); i++)

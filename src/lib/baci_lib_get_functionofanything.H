@@ -13,7 +13,7 @@
 
 namespace DRT::UTILS
 {
-  inline DRT::UTILS::FunctionOfAnything& GetFunctionOfAnything(int functnum)
+  inline const DRT::UTILS::FunctionOfAnything& GetFunctionOfAnything(int functnum)
   {
     return DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfAnything>(functnum);
   }

@@ -111,7 +111,7 @@ STR::WeaklyCompressibleEtienneFSIStructureFunction::WeaklyCompressibleEtienneFSI
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -140,7 +140,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureFunction::EvaluateTimeDerivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component)
+    const double* xp, const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);
@@ -207,7 +207,7 @@ STR::WeaklyCompressibleEtienneFSIStructureForceFunction::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // ease notation
   double x = xp[0];
@@ -252,7 +252,7 @@ double STR::WeaklyCompressibleEtienneFSIStructureForceFunction::Evaluate(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::vector<double> STR::WeaklyCompressibleEtienneFSIStructureForceFunction::EvaluateTimeDerivative(
-    const double* xp, const double t, const unsigned deg, const std::size_t component)
+    const double* xp, const double t, const unsigned deg, const std::size_t component) const
 {
   // resulting vector holding
   std::vector<double> res(deg + 1);

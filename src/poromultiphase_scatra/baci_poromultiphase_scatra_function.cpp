@@ -145,7 +145,7 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::TumorGrowthLawHeaviside(
 template <int dim>
 void POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in fluidporo_multiphase_singlereaction, but
@@ -168,7 +168,7 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -204,7 +204,7 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate(
 template <int dim>
 std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -297,7 +297,7 @@ POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::NecrosisLawHeaviside(
 template <int dim>
 void POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
@@ -320,7 +320,7 @@ void POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -357,7 +357,7 @@ double POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::Evaluate(
 template <int dim>
 std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -470,7 +470,7 @@ POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::OxygenConsumptionLawHe
 template <int dim>
 void POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
@@ -493,7 +493,7 @@ void POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -531,7 +531,7 @@ double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Evaluate(
 template <int dim>
 std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -649,7 +649,7 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::TumorGrowthLawHeavisideOx
 template <int dim>
 void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
@@ -672,7 +672,7 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -709,7 +709,7 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evaluate(
 template <int dim>
 std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -825,7 +825,7 @@ POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::TumorGrowthLawHeaviside
 template <int dim>
 void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
@@ -848,7 +848,7 @@ void POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -887,7 +887,7 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Evaluate(
 template <int dim>
 std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -1025,7 +1025,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::OxygenTransvascul
 template <int dim>
 void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
@@ -1050,7 +1050,7 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -1094,7 +1094,7 @@ template <int dim>
 std::vector<double>
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -1231,7 +1231,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::OxygenTransvascul
 template <int dim>
 void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   // they should have been added in exactly the same way in scatra_ele_calc_multiporo_reaction, but
@@ -1267,7 +1267,7 @@ void POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -1313,7 +1313,7 @@ template <int dim>
 std::vector<double>
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -1426,7 +1426,7 @@ POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::LungOxygenExchangeLaw(
 template <int dim>
 void POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::CheckOrder(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants)
+    const std::vector<std::pair<std::string, double>>& constants) const
 {
   // safety check for correct ordering of variables and constants
   if (variables[0].first == "phi1")
@@ -1461,7 +1461,7 @@ void POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::CheckOrder(
 template <int dim>
 double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
   // Check order of variables and constants vector only once (since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
@@ -1514,7 +1514,7 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
 template <int dim>
 std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
 {
 // In debug mode, check order of variables and constants vector on every call
 #ifdef DEBUG

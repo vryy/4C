@@ -474,7 +474,7 @@ DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::SymbolicFunctionOfSpaceTime(
 
 template <int dim>
 double DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
-    const double* x, const double t, const std::size_t component)
+    const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
 
@@ -504,7 +504,7 @@ double DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::Evaluate(
 
 template <int dim>
 std::vector<double> DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpatialDerivative(
-    const double* x, const double t, const std::size_t component)
+    const double* x, const double t, const std::size_t component) const
 {
   std::size_t component_mod = FindModifiedComponent(component, expr_);
 
@@ -526,7 +526,7 @@ std::vector<double> DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateSpatia
 
 template <int dim>
 std::vector<double> DRT::UTILS::SymbolicFunctionOfSpaceTime<dim>::EvaluateTimeDerivative(
-    const double* x, const double t, const unsigned deg, const std::size_t component)
+    const double* x, const double t, const unsigned deg, const std::size_t component) const
 {
   // result vector
   std::vector<double> res(deg + 1);
@@ -629,7 +629,7 @@ DRT::UTILS::SymbolicFunctionOfAnything<dim>::SymbolicFunctionOfAnything(
 template <int dim>
 double DRT::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const std::size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
   // create map for variables
   std::map<std::string, double> variable_values;
@@ -660,7 +660,7 @@ double DRT::UTILS::SymbolicFunctionOfAnything<dim>::Evaluate(
 template <int dim>
 std::vector<double> DRT::UTILS::SymbolicFunctionOfAnything<dim>::EvaluateDerivative(
     const std::vector<std::pair<std::string, double>>& variables,
-    const std::vector<std::pair<std::string, double>>& constants, const std::size_t component)
+    const std::vector<std::pair<std::string, double>>& constants, const std::size_t component) const
 {
   auto variables_FAD = ConvertVariableValuesToFADObjects(variables);
 

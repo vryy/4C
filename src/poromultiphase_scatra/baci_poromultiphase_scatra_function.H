@@ -38,13 +38,13 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override = 0;
+        const std::size_t component) const override = 0;
 
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override = 0;
+        const std::size_t component) const override = 0;
 
     //! only one component possible for PoroMultiPhaseScatraFunction so far
     [[nodiscard]] std::size_t NumberComponents() const override { return 1; }
@@ -57,14 +57,14 @@ namespace POROMULTIPHASESCATRA
      * \param constants (i) A vector containing a pair (variablename, value) for each constant
      */
     virtual void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) = 0;
+        const std::vector<std::pair<std::string, double>>& constants) const = 0;
 
    protected:
     /// function parameters for the specific POROMULTIPHASESCATRA_FUNCTION (have to be read in from
     /// input file)
     std::vector<double> myfunct_params_;
     /// indicating if the order has already been check for this function
-    bool order_checked_;
+    mutable bool order_checked_;
   };
 
   /// add valid poro-specific function lines
@@ -105,15 +105,15 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
   /*!
@@ -143,15 +143,15 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
   /*!
@@ -182,15 +182,15 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
   /*!
@@ -222,15 +222,15 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
   /*!
@@ -261,15 +261,15 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
   /*!
@@ -295,15 +295,15 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const std::size_t component) override;
+        const std::size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
   /*!
@@ -330,19 +330,19 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const size_t componnet) override;
+        const size_t componnet) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const size_t component) override;
+        const size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
-    int pos_oxy_art_;
-    int pos_diam_;
+    mutable int pos_oxy_art_;
+    mutable int pos_diam_;
   };
 
   /*!
@@ -371,15 +371,15 @@ namespace POROMULTIPHASESCATRA
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const size_t component) override;
+        const size_t component) const override;
 
     std::vector<double> EvaluateDerivative(
         const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
-        const size_t component) override;
+        const size_t component) const override;
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
-        const std::vector<std::pair<std::string, double>>& constants) override;
+        const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
 }  // namespace POROMULTIPHASESCATRA
