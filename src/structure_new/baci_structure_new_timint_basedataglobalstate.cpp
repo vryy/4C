@@ -448,12 +448,12 @@ void STR::TIMINT::BaseDataGlobalState::SetupElementTechnologyMapExtractors()
 
     switch (et)
     {
-      case (INPAR::STR::eletech_rotvec):
+      case (INPAR::STR::EleTech::rotvec):
       {
         SetupRotVecMapExtractor(mapext);
         break;
       }
-      case (INPAR::STR::eletech_pressure):
+      case (INPAR::STR::EleTech::pressure):
       {
         SetupPressExtractor(mapext);
         break;
@@ -736,7 +736,7 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::DofRowMapView() const
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::AdditiveDofRowMapView() const
 {
   CheckInit();
-  return GetElementTechnologyMapExtractor(INPAR::STR::eletech_rotvec).Map(0).get();
+  return GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).Map(0).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -744,7 +744,7 @@ const Epetra_Map* STR::TIMINT::BaseDataGlobalState::AdditiveDofRowMapView() cons
 const Epetra_Map* STR::TIMINT::BaseDataGlobalState::RotVecDofRowMapView() const
 {
   CheckInit();
-  return GetElementTechnologyMapExtractor(INPAR::STR::eletech_rotvec).Map(1).get();
+  return GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).Map(1).get();
 }
 
 /*----------------------------------------------------------------------------*
@@ -794,7 +794,7 @@ void STR::TIMINT::BaseDataGlobalState::RemoveElementTechnologies(
   {
     switch (et)
     {
-      case (INPAR::STR::eletech_pressure):
+      case (INPAR::STR::EleTech::pressure):
       {
         rhs_ptr = GetElementTechnologyMapExtractor(et).ExtractVector(rhs_ptr, 0);
         break;
@@ -818,7 +818,7 @@ void STR::TIMINT::BaseDataGlobalState::ExtractElementTechnologies(
   enum INPAR::STR::EleTech eletech = STR::NLN::ConvertQuantityType2EleTech(checkquantity);
   switch (eletech)
   {
-    case INPAR::STR::eletech_pressure:
+    case INPAR::STR::EleTech::pressure:
     {
       rhs_ptr = GetElementTechnologyMapExtractor(eletech).ExtractVector(rhs_ptr, 1);
       break;
@@ -845,7 +845,7 @@ void STR::TIMINT::BaseDataGlobalState::ApplyElementTechnologyToAccelerationSyste
   {
     switch (et)
     {
-      case INPAR::STR::eletech_pressure:
+      case INPAR::STR::EleTech::pressure:
       {
         // get map extractor
         const CORE::LINALG::MultiMapExtractor& mapext = GetElementTechnologyMapExtractor(et);
@@ -874,7 +874,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractAdditiveEnt
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      GetElementTechnologyMapExtractor(INPAR::STR::eletech_rotvec).ExtractVector(source, 0);
+      GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 0);
 
   return addit_ptr;
 }
@@ -885,7 +885,7 @@ Teuchos::RCP<Epetra_Vector> STR::TIMINT::BaseDataGlobalState::ExtractRotVecEntri
     const Epetra_Vector& source) const
 {
   Teuchos::RCP<Epetra_Vector> addit_ptr =
-      GetElementTechnologyMapExtractor(INPAR::STR::eletech_rotvec).ExtractVector(source, 1);
+      GetElementTechnologyMapExtractor(INPAR::STR::EleTech::rotvec).ExtractVector(source, 1);
 
   return addit_ptr;
 }

@@ -42,14 +42,14 @@ def compare_arrays(
     else:
         array_1_sorted = array_1[reorder_1, :]
         array_2_sorted = array_2[reorder_2, :]
-    diff = array_1_sorted - array_2_sorted
-    if not (np.max(np.abs(diff)) < tol_float):
-        error_string = (
-            "VTK array comparison failed! With error {} " "(tol={}."
-        ).format(np.max(np.abs(diff)), tol_float)
-        if name is not None:
-            error_string += " Name of the array: {}".format(name)
-        raise ValueError(error_string)
+
+    np.testing.assert_allclose(
+        array_1_sorted,
+        array_2_sorted,
+        atol=tol_float,
+        rtol=0,
+        err_msg="assertion failed for {0}".format(name),
+    )
 
 
 def compare_data_sets(data1, data2, name, **kwargs):
@@ -69,17 +69,26 @@ def compare_data_sets(data1, data2, name, **kwargs):
         )
 
     # Compare each array.
+    numerrors = 0
     for i in range(data1.GetNumberOfArrays()):
 
         # Get the arrays with the same name.
         name = data1.GetArrayName(i)
+        print("Checking quantity {0} for equality".format(name))
         if name is not None and name.startswith("uid_"):
             # We do not compare the unique ID arrays, as they won't match in
             # general.
             return
         array1 = data1.GetArray(name)
         array2 = data2.GetArray(name)
-        compare_arrays(array1, array2, name=name, **kwargs)
+        try:
+            compare_arrays(array1, array2, name=name, **kwargs)
+        except AssertionError as e:
+            print(e)
+            numerrors += 1
+
+    if numerrors > 0:
+        raise AssertionError()
 
 
 def get_unique_reordering_map(vtk_data):
@@ -217,23 +226,38 @@ def compare_vtk_data(vtk_1, vtk_2, **kwargs):
         if not connectivity_1 == connectivity_2:
             raise ValueError("Wrong connectivity!")
 
+    num_errors = 0
     if n_cells > 0:
+        try:
+            compare_data_sets(
+                vtk_1.GetCellData(),
+                vtk_2.GetCellData(),
+                "cell data",
+                reorder_1=uid_ordering_cell_1,
+                reorder_2=uid_ordering_cell_2,
+                **kwargs
+            )
+        except AssertionError as e:
+            num_errors += 1
+
+    try:
         compare_data_sets(
-            vtk_1.GetCellData(),
-            vtk_2.GetCellData(),
-            "cell data",
-            reorder_1=uid_ordering_cell_1,
-            reorder_2=uid_ordering_cell_2,
+            vtk_1.GetPointData(),
+            vtk_2.GetPointData(),
+            "point data",
+            reorder_1=uid_ordering_point_1,
+            reorder_2=uid_ordering_point_2,
             **kwargs
         )
-    compare_data_sets(
-        vtk_1.GetPointData(),
-        vtk_2.GetPointData(),
-        "point data",
-        reorder_1=uid_ordering_point_1,
-        reorder_2=uid_ordering_point_2,
-        **kwargs
-    )
-    compare_data_sets(
-        vtk_1.GetFieldData(), vtk_2.GetFieldData(), "field data", **kwargs
-    )
+    except AssertionError as e:
+        num_errors += 1
+
+    try:
+        compare_data_sets(
+            vtk_1.GetFieldData(), vtk_2.GetFieldData(), "field data", **kwargs
+        )
+    except AssertionError as e:
+        num_errors += 1
+
+    if num_errors > 0:
+        raise AssertionError()

@@ -1218,28 +1218,27 @@ namespace DRT
 
     /// @name Parameter interface access and management functions
     /// @{
-    /** \brief set the interface ptr for the elements
-     *
-     *  \param p (in): Parameter list coming from the time integrator.
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+
+    /*!
+    \brief set the interface ptr for the elements
+
+    \param p (in): Parameter list coming from the time integrator.
+     */
     virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p)
   { /* This is a dummy function. Please implement the function in the derived classes, if necessary. */ };
 
-    /** \brief returns true if the interface is defined and initialized, otherwise false
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief returns true if the interface is defined and initialized, otherwise false
+    */
     virtual inline bool IsParamsInterface() const
-    { /* dummy implementation */
+    {
+      // dummy implementation
       return false;
     }
 
-    /** \brief get access to the interface pointer
-     *
-     *  \author hiermeier
-     *  \date 04/16 */
+    /*!
+    \brief get access to the interface pointer
+    */
     virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr()
     {
       dserror(
@@ -1536,6 +1535,9 @@ namespace DRT
     friend class DRT::DiscretizationHDG;
   };
 
+
+  //! @name Type traits for element shapes
+  /// @{
   template <DRT::Element::DiscretizationType distype>
   using is_tet = std::bool_constant<distype == DRT::Element::DiscretizationType::tet4 ||
                                     distype == DRT::Element::DiscretizationType::tet10>;
@@ -1571,8 +1573,6 @@ namespace DRT
                                      distype == DRT::Element::DiscretizationType::line5 ||
                                      distype == DRT::Element::DiscretizationType::line6>;
 
-
-
   template <DRT::Element::DiscretizationType distype>
   inline static constexpr bool is_tet_v = is_tet<distype>::value;
 
@@ -1593,6 +1593,7 @@ namespace DRT
 
   template <DRT::Element::DiscretizationType distype>
   inline static constexpr bool is_line_v = is_line<distype>::value;
+  /// @}
 
   /*!
    * \brief translate to string for screen output

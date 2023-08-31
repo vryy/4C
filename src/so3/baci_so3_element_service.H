@@ -15,6 +15,10 @@
 
 namespace DRT
 {
+  namespace UTILS
+  {
+    class GaussIntegration;
+  }
   namespace ELEMENTS
   {
     /*!
@@ -23,8 +27,7 @@ namespace DRT
      * \param global_data Add a 1 to all nodes belonging to this element
      * \param ele element
      */
-    void AssembleNodalElementCount(
-        Epetra_IntVector& global_data, const DRT::ELEMENTS::So_base* ele);
+    void AssembleNodalElementCount(Epetra_IntVector& global_data, const DRT::Element& ele);
 
     /*!
      * \brief Assemble Gauss point data into an array of global cell data
@@ -34,11 +37,11 @@ namespace DRT
      * \param ele element
      */
     void AssembleGaussPointValues(std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-        const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele);
+        const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::Element& ele);
 
     /*!
-     * @brief calculate and return the value of the quantity at position xi based on the quantity
-     * node vector
+     * @brief calculate and return the value of the quantity at position xi based on the
+     * quantity node vector
      *
      * @tparam distype        discretization type of element
      * @param xi              position to project to in local coordinates

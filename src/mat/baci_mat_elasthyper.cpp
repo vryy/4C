@@ -345,11 +345,12 @@ void MAT::ElastHyper::StrainEnergy(
  |  Evaluate for GEMM time integration                        popp 11/13|
  *----------------------------------------------------------------------*/
 void MAT::ElastHyper::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, CORE::LINALG::Matrix<3, 3>* rcg_new,
-    CORE::LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+    const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
+    const int gp, const int eleGID)
 {
 #ifdef DEBUG
   if (stress == nullptr) dserror("No stress vector supplied");
@@ -363,7 +364,6 @@ void MAT::ElastHyper::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* 
   Teuchos::ParameterList params;
   CORE::LINALG::Matrix<3, 3> defgrd(true);
   Evaluate(&defgrd, glstrain_m, params, stress, cmat, gp, eleGID);
-  *density = Density();
 
   //**********************************************************************
   // CHECK IF GEMM ALGORITHMIC STRESSES NEED TO BE APPLIED

@@ -24,6 +24,7 @@
 #include "baci_poroelast_utils.H"
 #include "baci_so3_poro_p1_scatra_eletypes.H"
 #include "baci_so3_poro_scatra_eletypes.H"
+#include "baci_solid_ele_poro.H"
 #include "baci_w1_poro_p1_scatra_eletypes.H"
 #include "baci_w1_poro_scatra_eletypes.H"
 
@@ -34,6 +35,7 @@ bool POROELASTSCATRA::UTILS::IsPoroScatraElement(const DRT::Element* actele)
 {
   // checks if element is a poro scatra element (new elements need to be listed here)
   return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroScatraType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SolidPoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet4PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet10PoroScatraType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_hex27PoroScatraType::Instance() or

@@ -30,13 +30,14 @@ namespace INPAR
   namespace STR
   {
     /// Active element technologies
-    enum EleTech
+    enum class EleTech
     {
-      eletech_eas,         ///< EAS detected
-      eletech_fbar,        ///< FBAR detected
-      eletech_plasticity,  ///< plasticity detected
-      eletech_pressure,    ///< additional pressure degree of freedom
-      eletech_rotvec       ///< non-additive rotation (pseudo-)vector DOFs
+      eas,         ///< enhanced assumed strain
+      fbar,        ///< F-bar
+      plasticity,  ///< plasticity
+      pressure,    ///< additional pressure degree of freedom
+      rotvec,      ///< non-additive rotation (pseudo-)vector DOFs
+      ps_mulf      ///< prestressing: mulf
     };
 
     /// Map element technology to string
@@ -45,19 +46,19 @@ namespace INPAR
     {
       switch (name)
       {
-        case eletech_eas:
+        case EleTech::eas:
           return "EAS";
           break;
-        case eletech_fbar:
+        case EleTech::fbar:
           return "FBar";
           break;
-        case eletech_plasticity:
+        case EleTech::plasticity:
           return "plasticity";
           break;
-        case eletech_pressure:
+        case EleTech::pressure:
           return "pressure";
           break;
-        case eletech_rotvec:
+        case EleTech::rotvec:
           return "rotationvectorDOFs";
           break;
         default:

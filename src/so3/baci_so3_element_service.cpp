@@ -15,12 +15,12 @@
 
 void DRT::ELEMENTS::AssembleGaussPointValues(
     std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data,
-    const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::ELEMENTS::So_base* ele)
+    const CORE::LINALG::SerialDenseMatrix& gp_data, const DRT::Element& ele)
 {
   for (int gp = 0; gp < gp_data.numRows(); ++gp)
   {
     const Epetra_BlockMap& elemap = global_data[gp]->Map();
-    int lid = elemap.LID(ele->Id());
+    int lid = elemap.LID(ele.Id());
     if (lid != -1)
     {
       for (int i = 0; i < gp_data.numCols(); ++i)
@@ -32,11 +32,11 @@ void DRT::ELEMENTS::AssembleGaussPointValues(
 }
 
 void DRT::ELEMENTS::AssembleNodalElementCount(
-    Epetra_IntVector& global_count, const DRT::ELEMENTS::So_base* ele)
+    Epetra_IntVector& global_count, const DRT::Element& ele)
 {
-  for (int n = 0; n < ele->NumNode(); ++n)
+  for (int n = 0; n < ele.NumNode(); ++n)
   {
-    const int lid = global_count.Map().LID(ele->NodeIds()[n]);
+    const int lid = global_count.Map().LID(ele.NodeIds()[n]);
 
     if (lid != -1)
     {

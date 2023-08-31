@@ -260,8 +260,7 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair>
 BEAMINTERACTION::BeamToSolidConditionVolumeMeshtying::CreateContactPairInternal(
     const std::vector<DRT::Element const*>& ele_ptrs)
 {
-  const DRT::ELEMENTS::So_base* solidele = dynamic_cast<const DRT::ELEMENTS::So_base*>(ele_ptrs[1]);
-  const DRT::Element::DiscretizationType shape = solidele->Shape();
+  const DRT::Element::DiscretizationType shape = ele_ptrs[1]->Shape();
   const auto beam_to_volume_params =
       Teuchos::rcp_dynamic_cast<const BeamToSolidVolumeMeshtyingParams>(
           beam_to_solid_params_, true);

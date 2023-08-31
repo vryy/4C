@@ -48,6 +48,7 @@
 #include "baci_so3_plast_ssn_sosh18.H"
 #include "baci_so3_plast_ssn_sosh8.H"
 #include "baci_so3_sh8p8.H"
+#include "baci_solid_ele.H"
 #include "baci_solver_nonlin_nox_group.H"
 #include "baci_solver_nonlin_nox_group_prepostoperator.H"
 #include "baci_structure_new_model_evaluator.H"
@@ -268,7 +269,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   // in case of non-additive rotation (pseudo-)vector DOFs:
   // ---------------------------------------------------------------------------
-  if (eletechs->find(INPAR::STR::eletech_rotvec) != eletechs->end())
+  if (eletechs->find(INPAR::STR::EleTech::rotvec) != eletechs->end())
   {
     // -------------------------------------------------------------------------
     // set the RotVecUpdater as new precomputeX operator for the nox nln group
@@ -585,6 +586,11 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
         if (shell8_ele->HaveEAS()) iseas_local = 1;
     }
 
+    DRT::ELEMENTS::Solid* solid = dynamic_cast<DRT::ELEMENTS::Solid*>(actele);
+    if (solid)
+      if (solid->GetEleTech().find(INPAR::STR::EleTech::eas) != solid->GetEleTech().end())
+        iseas_local = 1;
+
     // Detect additional pressure dofs -----------------------------------------
     if (actele->ElementType() == DRT::ELEMENTS::So_sh8p8Type::Instance()) ispressure_local = 1;
 
@@ -603,23 +609,23 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
 
   // plasticity - sum over all processors
   actdis_->Comm().SumAll(&isplasticity_local, &isplasticity_global, 1);
-  if (isplasticity_global > 0) eletechs.insert(INPAR::STR::eletech_plasticity);
+  if (isplasticity_global > 0) eletechs.insert(INPAR::STR::EleTech::plasticity);
 
   // eas - sum over all processors
   actdis_->Comm().SumAll(&iseas_local, &iseas_global, 1);
-  if (iseas_global > 0) eletechs.insert(INPAR::STR::eletech_eas);
+  if (iseas_global > 0) eletechs.insert(INPAR::STR::EleTech::eas);
 
   // pressure - sum over all processors
   actdis_->Comm().SumAll(&ispressure_local, &ispressure_global, 1);
-  if (ispressure_global > 0) eletechs.insert(INPAR::STR::eletech_pressure);
+  if (ispressure_global > 0) eletechs.insert(INPAR::STR::EleTech::pressure);
 
   // fbar - sum over all processors
   actdis_->Comm().SumAll(&isfbar_local, &isfbar_global, 1);
-  if (isfbar_global > 0) eletechs.insert(INPAR::STR::eletech_fbar);
+  if (isfbar_global > 0) eletechs.insert(INPAR::STR::EleTech::fbar);
 
   // rotation vector DOFs - sum over all processors
   actdis_->Comm().SumAll(&isrotvec_local, &isrotvec_global, 1);
-  if (isrotvec_global > 0) eletechs.insert(INPAR::STR::eletech_rotvec);
+  if (isrotvec_global > 0) eletechs.insert(INPAR::STR::EleTech::rotvec);
 
   return;
 }

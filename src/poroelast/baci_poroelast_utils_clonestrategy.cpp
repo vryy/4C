@@ -18,6 +18,7 @@
 #include "baci_so3_element_service.H"
 #include "baci_so3_poro.H"
 #include "baci_so3_poro_p1_eletypes.H"
+#include "baci_solid_ele_poro.H"
 #include "baci_w1_poro.H"
 
 std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::ConditionsToCopy()
@@ -128,6 +129,11 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetAnisotropicPermeabilityDirecti
         (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
+  else if (eletypename == "SolidPoroType")
+  {
+    fluid->SetAnisotropicPermeabilityDirections(
+        (dynamic_cast<DRT::ELEMENTS::SolidPoro*>(oldele))->GetAnisotropicPermeabilityDirections());
+  }
 
   // Anisotropic permeability not yet supported for p1 type elements. Do nothing.
 }
@@ -164,6 +170,11 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetAnisotropicPermeabilityNodalCo
     fluid->SetAnisotropicPermeabilityNodalCoeffs(
         (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(oldele))
             ->GetAnisotropicPermeabilityNodalCoeffs());
+  }
+  else if (eletypename == "SolidPoroType")
+  {
+    fluid->SetAnisotropicPermeabilityNodalCoeffs(
+        (dynamic_cast<DRT::ELEMENTS::SolidPoro*>(oldele))->GetAnisotropicPermeabilityNodalCoeffs());
   }
 
   // Nodal anisotropic permeability not yet supported for higher order or p1 elements.

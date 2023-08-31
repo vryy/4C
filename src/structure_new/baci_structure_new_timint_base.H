@@ -264,11 +264,11 @@ namespace STR
       virtual bool HaveSemiSmoothPlasticity()
       {
         CheckInitSetup();
-        return datasdyn_->HaveEleTech(INPAR::STR::eletech_plasticity);
+        return datasdyn_->HaveEleTech(INPAR::STR::EleTech::plasticity);
       }
 
       /// FixMe get constraint manager defined in the structure
-      const Teuchos::RCP<UTILS::ConstrManager> GetConstraintManager() override
+      const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
       {
         dserror("Not yet implemented!");
         return Teuchos::null;

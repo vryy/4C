@@ -8,7 +8,11 @@
 *-----------------------------------------------------------------------*/
 #include <gtest/gtest.h>
 
+#include "baci_discretization_fem_general_utils_gauss_point_extrapolation.H"
+#include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_lib_element.H"
+#include "baci_lib_element_integration_select.H"
 #include "baci_so3_element_service.H"
 
 #include <vector>
@@ -67,6 +71,31 @@ namespace
     auto test_val =
         DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::wedge6>(xi, nodal_quantity);
     for (std::size_t i = 0; i < ref_val.size(); ++i) EXPECT_NEAR(test_val[i], ref_val[i], 1.0e-10);
+  }
+
+  TEST(ElementServiceTest, TestGaussPointProjectionMatrixHex8)
+  {
+    constexpr DRT::Element::DiscretizationType distype = DRT::Element::DiscretizationType::hex8;
+    constexpr int nsd = 3;
+
+    CORE::DRT::UTILS::IntPointsAndWeights<nsd> intpoints(
+        DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
+
+    // format as DRT::UTILS::GaussIntegration
+    Teuchos::RCP<CORE::DRT::UTILS::CollectedGaussPoints> gp =
+        Teuchos::rcp(new CORE::DRT::UTILS::CollectedGaussPoints);
+
+    std::array<double, nsd> xi{};
+    for (int i = 0; i < intpoints.IP().nquad; ++i)
+    {
+      for (int d = 0; d < nsd; ++d) xi[d] = intpoints.IP().qxg[i][d];
+      gp->Append(xi[0], xi[1], xi[2], intpoints.IP().qwgt[i]);
+    }
+
+    // save default integration rule
+    CORE::DRT::UTILS::GaussIntegration integration(gp);
+    CORE::LINALG::SerialDenseMatrix m =
+        CORE::DRT::UTILS::EvaluateGaussPointsToNodesExtrapolationMatrix<distype>(integration);
   }
 
 }  // namespace

@@ -546,6 +546,9 @@ void POROMULTIPHASE::PoroMultiPhaseMonolithicTwoWay::ApplyStrCouplMatrix(
     // std::cout << Dt() << std::endl;
 
     sparams.set<Teuchos::RCP<DRT::ELEMENTS::ParamsInterface>>("interface", params);
+    sparams.set<std::string>("action", "struct_poro_calc_fluidcoupling");
+    sparams.set<double>("delta time", Dt());
+    sparams.set<double>("total time", Time());
 
     StructureField()->Discretization()->ClearState();
     StructureField()->Discretization()->SetState(0, "displacement", StructureField()->Dispnp());

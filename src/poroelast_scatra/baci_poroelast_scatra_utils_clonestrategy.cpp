@@ -21,6 +21,7 @@
 #include "baci_so3_poro_p1_scatra.H"
 #include "baci_so3_poro_scatra.H"
 #include "baci_so3_scatra.H"
+#include "baci_solid_ele_poro.H"
 #include "baci_w1_poro_p1_scatra.H"
 #include "baci_w1_poro_scatra.H"
 
@@ -88,6 +89,11 @@ INPAR::SCATRA::ImplType POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::GetImpl
     return (dynamic_cast<DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
                 DRT::Element::nurbs27>*>(ele))
         ->ImplType();
+  }
+  // Solidporo
+  else if (eletypename == "SolidPoroType")
+  {
+    return (dynamic_cast<DRT::ELEMENTS::SolidPoro*>(ele))->GetImplType();
   }
   // wall poro scatra elements
   // quad 4
@@ -181,7 +187,7 @@ void POROELASTSCATRA::UTILS::PoroScatraCloneStrategy::SetElementData(
         "to scatra elements "
         "or the ImplType is set 'Undefined' which is not meaningful for the created scatra "
         "discretization! "
-        "Use SOLIDSCATRA, WALLSCATRA, SHELLSCATRA, SOLIDPOROSCATRA, SOLIDPOROP1SCATRA, "
+        "Use SOLIDSCATRA, WALLSCATRA, SHELLSCATRA, SOLIDPOROSCATRA, SOLIDPOROP1SCATRA, SOLIDPORO"
         "WALLPOROSCATRA or "
         "WALLPOROP1SCATRA Elements with meaningful ImplType instead!");
 

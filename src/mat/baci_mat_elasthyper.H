@@ -161,7 +161,7 @@ namespace MAT
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
     ///
-    /// \param data (in/out): char vector to store class information
+    /// \param data (in/out) : char vector to store class information
     void Pack(DRT::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
@@ -197,7 +197,7 @@ namespace MAT
     /*!
      * @brief deliver material ID of index i'th potential summand in collection
      *
-     * @param[in] index index
+     * @param(in) index index
      * @return material id
      */
     virtual int MatID(unsigned index) const;
@@ -218,27 +218,42 @@ namespace MAT
         int eleGID                                                 ///< Element GID
         ) override;
 
-    /// hyperelastic stress response plus elasticity tensor
-    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
-        Teuchos::ParameterList& params,      ///< Container for additional information
-        CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
-        CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
-        int gp,                              ///< Gauss point
-        int eleGID                           ///< Element GID
-        ) override;
+    /*!
+     * \brief Hyperelastic stress response plus elasticity tensor
+     *
+     * \param defgrd(in) : Deformation gradient
+     * \param glstrain(in) : Green-Lagrange strain
+     * \param params(in) : Container for additional information
+     * \param stress(in,out) : 2nd Piola-Kirchhoff stresses
+     * \param cmat(in,out) : Constitutive matrix
+     * \param gp(in) : Gauss point
+     * \param eleGID(in) : Element GID
+     */
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+        const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
 
-    /// evaluate for GEMM
-    void EvaluateGEMM(CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
-        CORE::LINALG::Matrix<6, 6>* cmat,                  ///< Constitutive matrix
-        double* density,                                   ///< Density
-        CORE::LINALG::Matrix<6, 1>* glstrain_m,            ///< Green-Lagrange strain at t_{n+1/2}
-        CORE::LINALG::Matrix<6, 1>* glstrain_new,          ///< Green-Lagrange strain at t_{n+1}
-        CORE::LINALG::Matrix<6, 1>* glstrain_old,          ///< Green-Lagrange strain at t_{n}
-        CORE::LINALG::Matrix<3, 3>* rcg_new,               ///< Right Cauchy-Green tensor at t_{n+1}
-        CORE::LINALG::Matrix<3, 3>* rcg_old,               ///< Right Cauchy-Green tensor at t_{n}
-        int gp,                                            ///< Gauss point
-        int eleGID) override;                              ///< Element GID
+    /*!
+     * \brief Evaluate for GEMM
+     *
+     * \param stress(in,out) : 2nd Piola-Kirchhoff stresses
+     * \param cmat(in,out) : Constitutive matrix
+     * \param glstrain_m(in) : Green-Lagrange strain at t_{n+1/2}
+     * \param glstrain_new(in) : Green-Lagrange strain at t_{n+1}
+     * \param glstrain_old(in) : Green-Lagrange strain at t_{n}
+     * \param rcg_new(in) : Right Cauchy-Green tensor at t_{n+1}
+     * \param rcg_old(in) : Right Cauchy-Green tensor at t_{n}
+     * \param gp(in) : Gauss point
+     * \param eleGID(in) : Element GID
+     */
+    void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
+        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+        const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
+        int gp, int eleGID) override;
 
     void EvaluateCauchyNDirAndDerivatives(const CORE::LINALG::Matrix<3, 3>& defgrd,
         const CORE::LINALG::Matrix<3, 1>& n, const CORE::LINALG::Matrix<3, 1>& dir,
@@ -254,14 +269,13 @@ namespace MAT
      * \brief The derivatives of the strain energy function w.r.t. the principle invariants are
      * filled up to the third derivative, can be overloaded if temperature is given.
      *
-     * \param prinv[in]       principle invariants of the tensor
-     * \param gp[in]          Gauss point
-     * \param eleGID[in]      global ID of the element
-     * \param dPI[in,out]     first derivative of strain energy function w.r.t. principle invariants
-     * \param ddPII[in,out]   second derivative of strain energy function w.r.t. principle
-                              invariants
-     * \param dddPIII[in,out] third derivative of strain energy function w.r.t. principle invariants
-     * \param temp[in]        temperature
+     * \param prinv(in) : principle invariants of the tensor
+     * \param gp(in) : Gauss point
+     * \param eleGID(in) : global ID of the element
+     * \param dPI(in,out) : 1st derivative of strain energy function w.r.t. principle invariants
+     * \param ddPII(in,out) : 2nd derivative of strain energy function w.r.t. principle invariants
+     * \param dddPIII(in,out) : 3rd derivative of strain energy function w.r.t. principle invariants
+     * \param temp(in) : temperature
      */
     virtual void EvaluateCauchyDerivs(const CORE::LINALG::Matrix<3, 1>& prinv, int gp, int eleGID,
         CORE::LINALG::Matrix<3, 1>& dPI, CORE::LINALG::Matrix<6, 1>& ddPII,
@@ -271,30 +285,28 @@ namespace MAT
      * \brief Evaluate the thermal dependency of the linearizations of the cauchy stress, to be
      *        overloaded
      *
-     * \param prinv[in]      principle invariants of the tensor
-     * \param ndt[in]        dot product of vectors n and t (\f[\mathbf{t} \cdot \mathbf{t}\f])
-     * \param bdndt[in]      left Cauchy-Green tensor contracted using the vector n and t (\f[
-                             \mathbf{b} \cdot \mathbf{n} \cdot \mathbf{t} \f])
-     * \param ibdndt[in]     inverse of left Cauchy-Green tensor contracted using the vector n and t
-                             (\f[ \mathbf{b}^{-1} \cdot \mathbf{n} \cdot \mathbf{t} \f])
-     * \param temp[in]       temperature
-     * \param DsntDT[out]    derivative of cauchy stress contracted with vectors n and t w.r.t.
-                             temperature (\f[\frac{\mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot
-                             \mathbf{t} }{ \mathrm{d} T }\f])
-     * \param iFTV[in]       inverse transposed of the deformation gradient
-     * \param DbdndtDFV[in]  derivative of bdndt w.r.t. deformation gradient (\f[\frac{ \mathrm{d}
-                             \mathbf{b} \cdot \mathbf{n} \cdot \mathbf{t}}{\mathrm{d} \mathbf{F}
-     }\f])
-     * \param DibdndtDFV[in] derivative of ibdndt w.r.t. deformation gradient (\f[\frac{ \mathrm{d}
-                             \mathbf{b}^{-1} \cdot \mathbf{n} \cdot \mathbf{t}}{\mathrm{d}
-     \mathbf{F} }\f])
-     * \param DI1DF[in]      derivative of first invariant w.r.t. deformation gradient
-     * \param DI2DF[in]      derivative of second invariant w.r.t. deformation gradient
-     * \param DI3DF[in]      derivative of third invariant w.r.t. deformation gradient
-     * \param D2sntDFDT[out] second derivative of cauchy stress contracted with vectors n and t
-                             w.r.t. temperature and deformation gradient (\f[ \frac{\mathrm{d}^2
-                             \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{t}} {\mathrm{d}
-     \mathbf{F} \mathrm{d} T } \f])
+     * \param prinv(in) : principle invariants of the tensor
+     * \param ndt(in) : dot product of vectors n and t (\f[\mathbf{t} \cdot \mathbf{t}\f])
+     * \param bdndt(in) : left Cauchy-Green tensor contracted using the vector n and t (\f[
+              \mathbf{b} \cdot \mathbf{n} \cdot \mathbf{t} \f])
+     * \param ibdndt(in) : inverse of left Cauchy-Green tensor contracted using the vector n and t
+              (\f[ \mathbf{b}^{-1} \cdot \mathbf{n} \cdot \mathbf{t} \f])
+     * \param temp(in) : temperature
+     * \param DsntDT(out) : derivative of cauchy stress contracted with vectors n and t w.r.t.
+              temperature (\f[\frac{\mathrm{d} \mathbf{\sigma} \cdot \mathbf{n} \cdot \mathbf{t} }{
+              \mathrm{d} T }\f])
+     * \param iFTV(in) : inverse transposed of the deformation gradient
+     * \param DbdndtDFV(in) : derivative of bdndt w.r.t. deformation gradient (\f[\frac{ \mathrm{d}
+              \mathbf{b} \cdot \mathbf{n} \cdot \mathbf{t}}{\mathrm{d} \mathbf{F}}\f])
+     * \param DibdndtDFV(in) : derivative of ibdndt w.r.t. deformation gradient
+              (\f[\frac{\mathrm{d} \mathbf{b}^{-1} \cdot \mathbf{n} \cdot \mathbf{t}}{\mathrm{d}
+              \mathbf{F} }\f])
+     * \param DI1DF(in) : derivative of first invariant w.r.t. deformation gradient
+     * \param DI2DF(in) : derivative of second invariant w.r.t. deformation gradient
+     * \param DI3DF(in) : derivative of third invariant w.r.t. deformation gradient
+     * \param D2sntDFDT(out) : second derivative of cauchy stress contracted with vectors n and t
+              w.r.t. temperature and deformation gradient (\f[ \frac{\mathrm{d}^2 \mathbf{\sigma}
+              \cdot \mathbf{n} \cdot \mathbf{t}} {\mathrm{d} \mathbf{F} \mathrm{d} T } \f])
      */
     virtual void EvaluateCauchyTempDeriv(const CORE::LINALG::Matrix<3, 1>& prinv, const double ndt,
         const double bdndt, const double ibdndt, const double* temp, double* DsntDT,

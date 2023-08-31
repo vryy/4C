@@ -20,6 +20,7 @@
 #include "baci_lib_element.H"
 #include "baci_rigidsphere.H"
 #include "baci_so3_base.H"
+#include "baci_solid_ele.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_RCP.hpp>
@@ -77,7 +78,8 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::BeamContactPair:
 {
   // Check the type of the second element.
   const bool other_is_beam = dynamic_cast<DRT::ELEMENTS::Beam3Base const*>(ele_ptrs[1]) != nullptr;
-  const bool other_is_solid = dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]) != nullptr;
+  const bool other_is_solid = dynamic_cast<DRT::ELEMENTS::So_base const*>(ele_ptrs[1]) != nullptr ||
+                              dynamic_cast<DRT::ELEMENTS::Solid const*>(ele_ptrs[1]) != nullptr;
   const bool other_is_sphere =
       ele_ptrs[1]->ElementType() == DRT::ELEMENTS::RigidsphereType::Instance();
 

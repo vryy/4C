@@ -853,7 +853,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
               CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
                   DRT::Element::DiscretizationType::tet10>(
                   *this, gp_data, *global_data, false, gauss_integration);
-              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
+              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
@@ -861,7 +861,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                   StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
                       quantity_name);
-              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
+              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::none:

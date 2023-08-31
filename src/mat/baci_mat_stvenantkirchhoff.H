@@ -126,12 +126,12 @@ namespace MAT
         const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
     void EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
-        CORE::LINALG::Matrix<3, 3>* rcg_new, CORE::LINALG::Matrix<3, 3>* rcg_old, int gp,
-        int eleGID) override;
+        CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
+        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+        const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+        const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
+        int gp, int eleGID) override;
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat);

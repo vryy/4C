@@ -19,7 +19,7 @@
 #include "baci_rigidsphere.H"
 #include "baci_scatra_ele.H"
 #include "baci_so3_base.H"
-
+#include "baci_solid_ele.H"
 namespace BINSTRATEGY
 {
   namespace UTILS
@@ -95,7 +95,8 @@ namespace BINSTRATEGY
       {
         return BINSTRATEGY::UTILS::RigidSphere;
       }
-      else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != nullptr)
+      else if (dynamic_cast<DRT::ELEMENTS::So_base const*>(eleptr) != nullptr ||
+               dynamic_cast<DRT::ELEMENTS::Solid const*>(eleptr) != nullptr)
       {
         return BINSTRATEGY::UTILS::Solid;
       }

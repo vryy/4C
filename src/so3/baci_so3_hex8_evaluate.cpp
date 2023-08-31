@@ -630,7 +630,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
               CORE::DRT::UTILS::ExtrapolateGPQuantityToNodesAndAssemble<
                   DRT::Element::DiscretizationType::hex8>(
                   *this, gp_data, *global_data, false, gauss_integration);
-              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, this);
+              DRT::ELEMENTS::AssembleNodalElementCount(global_nodal_element_count, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::gauss_points:
@@ -638,7 +638,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
               std::vector<Teuchos::RCP<Epetra_MultiVector>>& global_data =
                   StrParamsInterface().GaussPointDataOutputManagerPtr()->GetGaussPointData().at(
                       quantity_name);
-              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, this);
+              DRT::ELEMENTS::AssembleGaussPointValues(global_data, gp_data, *this);
               break;
             }
             case INPAR::STR::GaussPointDataOutputType::none:
@@ -3020,9 +3020,8 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(std::vector<int>& lm,  // lo
     // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D> cmat(true);
     CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> stress(true);
-    double density;
     SolidMaterial()->EvaluateGEMM(
-        &stress, &cmat, &density, &glstrainm, &glstrain, &glstraino, &rcg, &rcgo, gp, Id());
+        &stress, &cmat, &glstrainm, &glstrain, &glstraino, &rcg, &rcgo, gp, Id());
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

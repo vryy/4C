@@ -26,6 +26,7 @@
 #include "baci_poroelast_utils_clonestrategy.H"
 #include "baci_so3_poro_eletypes.H"
 #include "baci_so3_poro_p1_eletypes.H"
+#include "baci_solid_ele_poro.H"
 #include "baci_w1_poro_eletypes.H"
 #include "baci_w1_poro_p1_eletypes.H"
 
@@ -33,6 +34,7 @@ bool POROELAST::UTILS::IsPoroElement(const DRT::Element* actele)
 {
   // all poro elements need to be listed here
   return actele->ElementType() == DRT::ELEMENTS::So_hex8PoroType::Instance() or
+         actele->ElementType() == DRT::ELEMENTS::SolidPoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet4PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_tet10PoroType::Instance() or
          actele->ElementType() == DRT::ELEMENTS::So_hex27PoroType::Instance() or

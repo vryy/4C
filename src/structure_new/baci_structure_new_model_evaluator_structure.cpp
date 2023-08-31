@@ -77,7 +77,7 @@ void STR::MODELEVALUATOR::Structure::Setup()
   stiff_ptc_ptr_ =
       Teuchos::rcp(new CORE::LINALG::SparseMatrix(*GState().DofRowMapView(), 81, true, true));
 
-  dsassert(stiff_ptr_ != NULL, "Dynamic cast to CORE::LINALG::SparseMatrix failed!");
+  dsassert(stiff_ptr_ != nullptr, "Dynamic cast to CORE::LINALG::SparseMatrix failed!");
 
   // get the structural dynamic content
   {
@@ -2028,6 +2028,12 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
       break;
     case DRT::ELEMENTS::struct_gauss_point_data_output:
       action = "struct_gauss_point_data_output";
+      break;
+    case DRT::ELEMENTS::struct_poro_calc_fluidcoupling:
+      action = "struct_poro_calc_fluidcoupling";
+      break;
+    case DRT::ELEMENTS::struct_poro_calc_scatracoupling:
+      action = "struct_poro_calc_scatracoupling";
       break;
     default:
       action = "unknown";

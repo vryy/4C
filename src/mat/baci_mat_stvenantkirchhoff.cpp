@@ -240,11 +240,12 @@ void MAT::StVenantKirchhoff::StrainEnergy(
  |  Evaluate for GEMM                                           ly 02/13|
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* stress,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat, double* density,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
-    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old, CORE::LINALG::Matrix<3, 3>* rcg_new,
-    CORE::LINALG::Matrix<3, 3>* rcg_old, const int gp, const int eleGID)
+    CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>* cmat,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_m,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_new,
+    const CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>* glstrain_old,
+    const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
+    const int gp, const int eleGID)
 {
 #ifdef DEBUG
   if (!stress) dserror("No stress vector supplied");
@@ -261,7 +262,6 @@ void MAT::StVenantKirchhoff::EvaluateGEMM(CORE::LINALG::Matrix<MAT::NUM_STRESS_3
   Teuchos::ParameterList params;
   CORE::LINALG::Matrix<3, 3> defgrd(true);
   Evaluate(&defgrd, glstrain_m, params, stress, cmat, gp, eleGID);
-  *density = Density();
   StrainEnergy(*glstrain_new, psi, gp, eleGID);
   StrainEnergy(*glstrain_old, psio, gp, eleGID);
 
