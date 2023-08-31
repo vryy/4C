@@ -25,31 +25,83 @@ namespace STR
     {
      public:
       //! constructor
-      AdamsBashforth2(){};
+      AdamsBashforth2();
 
       //! destructor
       ~AdamsBashforth2() override = default;
 
       //! Setup class variables (derived)
-      void Setup() override{};
+      void Setup() override;
+
+      //! Post setup operation (compute initial equilibrium state) (derived)
+      void PostSetup() override;
 
       //! Set state variables (derived)
-      void SetState(const Epetra_Vector& x) override{};
-
-      //! Apply the right hand side only (derived)
-      bool ApplyForce(const Epetra_Vector& x, Epetra_Vector& f) override { return false; };
+      void SetState(const Epetra_Vector& x) override;
 
       //! return integration factor (derived)
-      double GetIntParam() const override { return -1.0; }
+      [[nodiscard]] double GetIntParam() const override { return -1.0; }
+
+      /*! \brief Add the viscous and mass contributions to the right hand side
+       */
+      void AddViscoMassContributions(Epetra_Vector& f) const override;
+
+      /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
+       */
+      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
 
       //! Update configuration after time step (derived)
-      void UpdateStepState() override{};
+      void UpdateStepState() override;
 
-      //! Update everything on element level after time step and after output (derived)
-      void UpdateStepElement() override{};
+      //! (derived)
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
+
+      /*! read restart information of the different time integration schemes
+       *  and model evaluators (derived) */
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
+
+      //! @name Attribute access functions
+      //@{
+
+      //! Return time integrator name
+      [[nodiscard]] enum INPAR::STR::DynamicType MethodName() const override
+      {
+        return INPAR::STR::dyna_ab2;
+      }
+
+      //! Provide number of steps, e.g. a single-step method returns 1,
+      //! a m-multistep method returns m
+      [[nodiscard]] int MethodSteps() const override { return 2; }
+
+      //! Give local order of accuracy of displacement part
+      [[nodiscard]] int MethodOrderOfAccuracyDis() const override { return 2; }
+
+      //! Give local order of accuracy of velocity part
+      [[nodiscard]] int MethodOrderOfAccuracyVel() const override { return 2; }
+
+      //! Return linear error coefficient of displacements
+      [[nodiscard]] double MethodLinErrCoeffDis() const override;
+
+      //! Return linear error coefficient of velocities
+      [[nodiscard]] double MethodLinErrCoeffVel() const override { return MethodLinErrCoeffDis(); }
+
+      //@}
+
+     private:
+      //! viscous force vector F_viscous F_{viscous;n+1}
+      Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;
+
+      //! viscous force vector F_viscous F_{viscous;n}
+      Teuchos::RCP<Epetra_Vector> fviscon_ptr_;
+
+      //! pointer to inertial force vector F_{inertial,n+1} at new time
+      Teuchos::RCP<Epetra_Vector> finertianp_ptr_;
+
+      //! pointer to inertial force vector F_{inertial,n} at last time
+      Teuchos::RCP<Epetra_Vector> finertian_ptr_;
     };
   }  // namespace EXPLICIT
 }  // namespace STR
 
-
-#endif  // STRUCTURE_NEW_EXPL_AB2_H
+#endif  // BACI_STRUCTURE_NEW_EXPL_AB2_H

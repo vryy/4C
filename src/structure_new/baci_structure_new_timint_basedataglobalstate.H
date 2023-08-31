@@ -753,6 +753,13 @@ namespace STR
         return vel_;
       }
 
+      /// Return multi-velocity vector \f$V_{n}, V_{n-1}, ...\f$
+      const Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiVel() const
+      {
+        CheckInitSetup();
+        return vel_;
+      }
+
       /// Return accelerations \f$A_{n+1}\f$
       Teuchos::RCP<Epetra_Vector>& GetAccNp()
       {
@@ -769,6 +776,13 @@ namespace STR
 
       /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
       Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc()
+      {
+        CheckInitSetup();
+        return acc_;
+      }
+
+      /// Return multi-acceleration vector \f$A_{n}, A_{n-1}, ...\f$
+      const Teuchos::RCP<::TIMINT::TimIntMStep<Epetra_Vector>>& GetMultiAcc() const
       {
         CheckInitSetup();
         return acc_;

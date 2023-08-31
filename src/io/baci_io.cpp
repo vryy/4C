@@ -55,6 +55,15 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+int IO::DiscretizationReader::HasInt(std::string name)
+{
+  int integer;
+  return map_find_int(restart_step_, name.c_str(), &integer);
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> IO::DiscretizationReader::ReadVector(std::string name)
 {
   MAP* result = map_read_map(restart_step_, name.c_str());

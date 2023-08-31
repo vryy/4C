@@ -97,9 +97,8 @@ Teuchos::RCP<STR::TIMINT::Base> STR::TIMINT::Factory::BuildExplicitStrategy(
       DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP");
 
   if (dyntype == INPAR::STR::dyna_expleuler or dyntype == INPAR::STR::dyna_centrdiff or
-      dyntype == INPAR::STR::dyna_ab2)
-    //    ti_strategy = Teuchos::rcp(new STR::TIMINT::Explicit());
-    dserror("Explicit time integration scheme is not yet implemented!");
+      dyntype == INPAR::STR::dyna_ab2 or dyntype == INPAR::STR::dyna_ab4)
+    ti_strategy = Teuchos::rcp(new STR::TIMINT::Explicit());
 
   return ti_strategy;
 }

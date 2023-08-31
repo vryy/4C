@@ -87,9 +87,11 @@ namespace INPAR
       setStringToIntegralParameter<int>("DYNAMICTYP", "GenAlpha",
           "type of the specific dynamic time integration scheme",
           tuple<std::string>("Statics", "GenAlpha", "GenAlphaLieGroup", "OneStepTheta", "GEMM",
-              "ExplicitEuler", "CentrDiff", "AdamsBashforth2", "EulerMaruyama", "EulerImpStoch"),
+              "ExplicitEuler", "CentrDiff", "AdamsBashforth2", "AdamsBashforth4", "EulerMaruyama",
+              "EulerImpStoch"),
           tuple<int>(dyna_statics, dyna_genalpha, dyna_genalpha_liegroup, dyna_onesteptheta,
-              dyna_gemm, dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_euma, dyna_euimsto),
+              dyna_gemm, dyna_expleuler, dyna_centrdiff, dyna_ab2, dyna_ab4, dyna_euma,
+              dyna_euimsto),
           &sdyn);
 
       setStringToIntegralParameter<INPAR::STR::PreStress>("PRESTRESS", "none",

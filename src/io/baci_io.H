@@ -142,6 +142,9 @@ namespace IO
         Teuchos::RCP<std::map<int, Teuchos::RCP<CORE::LINALG::SerialDenseMatrix>>> mapdata,
         std::string name);
 
+    /// check if an integer value exists in the control file
+    int HasInt(std::string name);
+
     /// read an integer value from the control file
     int ReadInt(std::string name);
 

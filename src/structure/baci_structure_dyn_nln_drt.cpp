@@ -48,6 +48,7 @@ void caldyn_drt()
     case INPAR::STR::dyna_expleuler:
     case INPAR::STR::dyna_centrdiff:
     case INPAR::STR::dyna_ab2:
+    case INPAR::STR::dyna_ab4:
     case INPAR::STR::dyna_euma:
     case INPAR::STR::dyna_euimsto:
       dyn_nlnstructural_drt();

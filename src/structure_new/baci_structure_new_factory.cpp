@@ -13,6 +13,10 @@
 
 #include "baci_lib_prestress_service.H"
 #include "baci_structure_new_dbc.H"
+#include "baci_structure_new_expl_ab2.H"
+#include "baci_structure_new_expl_abx.H"
+#include "baci_structure_new_expl_centrdiff.H"
+#include "baci_structure_new_expl_forwardeuler.H"
 #include "baci_structure_new_impl_gemm.H"
 #include "baci_structure_new_impl_genalpha.H"
 #include "baci_structure_new_impl_genalpha_liegroup.H"
@@ -112,10 +116,47 @@ Teuchos::RCP<STR::Integrator> STR::Factory::BuildImplicitIntegrator(
 Teuchos::RCP<STR::Integrator> STR::Factory::BuildExplicitIntegrator(
     const STR::TIMINT::BaseDataSDyn& datasdyn) const
 {
-  //  Teuchos::RCP<STR::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;
-  dserror("Not yet implemented!");
+  Teuchos::RCP<STR::EXPLICIT::Generic> expl_int_ptr = Teuchos::null;
 
-  return Teuchos::null;
+  switch (datasdyn.GetDynamicType())
+  {
+    // Forward Euler Scheme
+    case INPAR::STR::dyna_expleuler:
+    {
+      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::ForwardEuler());
+      break;
+    }
+
+    // Central Difference Scheme
+    case INPAR::STR::dyna_centrdiff:
+    {
+      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::CentrDiff());
+      break;
+    }
+
+    // Adams-Bashforth-2 Scheme
+    case INPAR::STR::dyna_ab2:
+    {
+      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::AdamsBashforth2());
+      break;
+    }
+
+    // Adams-Bashforth-4 Scheme
+    case INPAR::STR::dyna_ab4:
+    {
+      expl_int_ptr = Teuchos::rcp(new STR::EXPLICIT::AdamsBashforthX<4>());
+      break;
+    }
+
+    // Everything else
+    default:
+    {
+      /* Do nothing and return Techos::null. */
+      break;
+    }
+  }  // end of switch(dynType)
+
+  return expl_int_ptr;
 }
 
 /*----------------------------------------------------------------------------*
