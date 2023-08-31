@@ -85,10 +85,9 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
         "to a valid number!");
   }
   // Create the solver
-  Teuchos::RCP<CORE::LINALG::Solver> solver =
-      Teuchos::rcp(new CORE::LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                       actdis->Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()),
-          false);
+  std::unique_ptr<CORE::LINALG::Solver> solver = std::make_unique<CORE::LINALG::Solver>(
+      DRT::Problem::Instance()->SolverParams(linsolvernumber), actdis->Comm(),
+      DRT::Problem::Instance()->ErrorFile()->Handle());
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
   // 5. Set parameters in list required for all schemes
@@ -141,7 +140,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> dyn_red_airways_drt(bool CoupledT
   // the only parameter from the list required here is the number of
   // velocity degrees of freedom
   Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt> airwayimplicit = Teuchos::rcp(
-      new AIRWAY::RedAirwayImplicitTimeInt(actdis, *solver, airwaystimeparams, *output));
+      new AIRWAY::RedAirwayImplicitTimeInt(actdis, std::move(solver), airwaystimeparams, *output));
 
   // Initialize state save vectors
   if (CoupledTo3D)

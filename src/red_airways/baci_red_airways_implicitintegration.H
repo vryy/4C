@@ -57,8 +57,9 @@ namespace AIRWAY
     \brief Standard Constructor
 
     */
-    RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis, CORE::LINALG::Solver& solver,
-        Teuchos::ParameterList& params, IO::DiscretizationWriter& output);
+    RedAirwayImplicitTimeInt(Teuchos::RCP<DRT::Discretization> dis,
+        std::unique_ptr<CORE::LINALG::Solver> solver, Teuchos::ParameterList& params,
+        IO::DiscretizationWriter& output);
 
 
     /*!
@@ -287,7 +288,7 @@ namespace AIRWAY
     //! @name general algorithm parameters
     //! reduced dimensional airway network discretization
     Teuchos::RCP<DRT::Discretization> discret_;
-    CORE::LINALG::Solver& solver_;
+    std::unique_ptr<CORE::LINALG::Solver> solver_;
     Teuchos::ParameterList params_;
     IO::DiscretizationWriter& output_;
     //! the processor ID from the communicator
