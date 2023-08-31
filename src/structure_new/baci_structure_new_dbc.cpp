@@ -175,7 +175,7 @@ Teuchos::RCP<Epetra_Vector> STR::Dbc::GetDirichletIncrement()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::Dbc::ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> dis,
-    Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap)
+    Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap) const
 {
   CheckInitSetup();
   // We have to rotate forward ...

@@ -1648,7 +1648,7 @@ namespace DRT
     void EvaluateDirichlet(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
         Teuchos::RCP<Epetra_Vector> systemvectord, Teuchos::RCP<Epetra_Vector> systemvectordd,
         Teuchos::RCP<Epetra_IntVector> toggle,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) override;
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const override;
 
     /// Evaluate a specific condition using assemble strategy
     virtual void EvaluateCondition(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
@@ -1769,7 +1769,7 @@ namespace DRT
 
     */
     void EvaluateInitialField(const std::string& fieldstring,
-        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
+        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const;
 
     //@}
 
