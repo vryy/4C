@@ -87,12 +87,13 @@ void STR::NLN::SOLVER::FullNewton::SetFullNewtonParams()
   if (not IsXMLStatusTestFile(DataSDyn().GetNoxParams().sublist("Status Test")))
   {
     std::set<enum NOX::NLN::StatusTest::QuantityType> qtypes;
-    CreateQuantityTypes(qtypes, DataSDyn());
+    STR::NLN::SOLVER::CreateQuantityTypes(qtypes, DataSDyn());
     {  // remove the unsupported quantity of status test
       qtypes.erase(NOX::NLN::StatusTest::quantity_eas);  // EAS is removed since it is an element
                                                          // quantity and not nodal dof
     }
-    SetStatusTestParams(DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
+    STR::NLN::SOLVER::SetStatusTestParams(
+        DataSDyn().GetNoxParams().sublist("Status Test"), DataSDyn(), qtypes);
   }
 
   return;

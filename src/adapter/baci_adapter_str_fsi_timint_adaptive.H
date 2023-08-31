@@ -85,13 +85,13 @@ namespace ADAPTER
     virtual double Time() const;
 
     //! Set new time step size
-    virtual void SetDt(const double dtnew);
+    void SetDt(const double dtnew) override;
 
     //! Update step size
     virtual void UpdateStepSize(const double dtnew);
 
     //! Reset certain quantities to prepare repetition of current time step
-    virtual void ResetStep();
+    void ResetStep() override;
 
     //! return pointer to structure time integration
     Teuchos::RCP<Structure> GetStrTimIntPtr() { return str_time_integrator_; };

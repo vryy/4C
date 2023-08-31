@@ -49,7 +49,8 @@ namespace ADAPTER
     /// calculate initial volume
     void InitVol();
 
-    virtual void Update();
+    //! (derived)
+    void Update() override;
 
    private:
     /// map between coupling ID and conditions on structure
