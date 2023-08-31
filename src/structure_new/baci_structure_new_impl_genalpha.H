@@ -114,10 +114,6 @@ namespace STR
       bool PredictConstAcc(
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
 
-      //! Set initial displacement field
-      virtual void SetInitialDisplacement(
-          const INPAR::STR::InitialDisp init, const int startfuncno);
-
       /*! \brief Time integration coefficients container
        *
        * \note For bounds on the individual parameters, please consult the
