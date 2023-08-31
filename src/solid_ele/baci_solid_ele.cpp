@@ -121,6 +121,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                                 .AddIntVector("PYRAMID5", 5)
                                 .AddNamedInt("MAT")
                                 .AddNamedString("KINEM")
+                                .AddOptionalTag("FBAR")
                                 .AddOptionalNamedDoubleVector("RAD", 3)
                                 .AddOptionalNamedDoubleVector("AXI", 3)
                                 .AddOptionalNamedDoubleVector("CIR", 3)
@@ -392,7 +393,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
   if (linedef->HaveNamed("FBAR"))
   {
-    if (Shape() == DRT::Element::hex8) eletech_.insert(INPAR::STR::EleTech::fbar);
+    eletech_.insert(INPAR::STR::EleTech::fbar);
   }
 
   solid_interface_ =

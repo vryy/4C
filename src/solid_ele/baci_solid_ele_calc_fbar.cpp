@@ -296,8 +296,14 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
+        const SpatialMaterialMapping<distype> spatial_material_mapping =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
+
+        const double fbar_factor = EvaluateFbarFactor(
+            detF_centroid, spatial_material_mapping.determinant_deformation_gradient_);
+
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
-            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, detF_centroid);
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
 
         solid_material.Update(
             spatial_material_mapping_bar.deformation_gradient_, gp, params, ele.Id());
@@ -334,8 +340,14 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
         const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> gl_strains_bar =
             EvaluateStrainsBar(nodal_coordinates, jacobian_mapping, detF_centroid);
 
+        const SpatialMaterialMapping<distype> spatial_material_mapping =
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
+
+        const double fbar_factor = EvaluateFbarFactor(
+            detF_centroid, spatial_material_mapping.determinant_deformation_gradient_);
+
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
-            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, detF_centroid);
+            EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
 
         const Stress<distype> stress_bar = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping_bar.deformation_gradient_, gl_strains_bar, params, gp,
@@ -441,3 +453,4 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::ResetToLastConverged(
 
 // template classes
 template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::hex8>;
+template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::pyramid5>;

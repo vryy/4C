@@ -316,6 +316,16 @@ namespace DRT::ELEMENTS
     return xi;
   }
 
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::is_pyramid_v<distype>, int> = 0>
+  CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
+  {
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
+    xi(2) = 0.25;
+
+    return xi;
+  }
+
   /*!
    * @brief Type holding the shape functions and it's first derivatives evaluated at a specific
    * point.

@@ -21,9 +21,9 @@ namespace
   std::unique_ptr<DRT::ELEMENTS::SolidEleCalcInterface> CreateFBarSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
-    if constexpr (distype != DRT::Element::hex8)
+    if constexpr (distype != DRT::Element::hex8 && distype != DRT::Element::pyramid5)
     {
-      dserror("FBAR is only implemented for hex8 elements.");
+      dserror("FBAR is only implemented for hex8 and pyramid5 elements.");
       return nullptr;
     }
 
