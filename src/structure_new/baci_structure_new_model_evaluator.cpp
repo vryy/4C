@@ -329,11 +329,10 @@ bool STR::ModelEvaluator::ApplyForce(
   bool ok = true;
   // initialize right hand side to zero
   f.PutScalar(0.0);
-  // update the state variables of the current time integrator
-  int_ptr_->SetState(x);
 
   // ---------------------------------------------------------------------------
   // reset model specific variables
+  // and also update the state variables of the current time integrator
   // ---------------------------------------------------------------------------
   ResetStates(x);
 
