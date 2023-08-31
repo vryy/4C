@@ -16,10 +16,6 @@
 #include "baci_structure_new_timint_implicitbase.H"  // base class
 
 // forward declarations ...
-namespace NOX::NLN::INNER::StatusTest
-{
-  class Generic;
-}  // namespace NOX::NLN::INNER::StatusTest
 namespace STR
 {
   namespace IMPLICIT
