@@ -25,9 +25,7 @@ MIXTURE::PAR::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
 std::unique_ptr<MIXTURE::MixtureGrowthStrategy>
 MIXTURE::PAR::AnisotropicGrowthStrategy::CreateGrowthStrategy()
 {
-  std::unique_ptr<MIXTURE::AnisotropicGrowthStrategy> strategy(
-      new MIXTURE::AnisotropicGrowthStrategy(this));
-  return std::move(strategy);
+  return std::make_unique<MIXTURE::AnisotropicGrowthStrategy>(this);
 }
 
 MIXTURE::AnisotropicGrowthStrategy::AnisotropicGrowthStrategy(
