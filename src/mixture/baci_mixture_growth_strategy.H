@@ -55,6 +55,14 @@ namespace MIXTURE
   class MixtureGrowthStrategy
   {
    public:
+    virtual ~MixtureGrowthStrategy() = default;
+
+    MixtureGrowthStrategy() = default;
+    MixtureGrowthStrategy(const MixtureGrowthStrategy& copyFrom) = default;
+    MixtureGrowthStrategy& operator=(const MixtureGrowthStrategy& copyFrom) = default;
+    MixtureGrowthStrategy(MixtureGrowthStrategy&&) noexcept = default;
+    MixtureGrowthStrategy& operator=(MixtureGrowthStrategy&&) noexcept = default;
+
     virtual void PackMixtureGrowthStrategy(DRT::PackBuffer& data) const {}
 
     virtual void UnpackMixtureGrowthStrategy(
