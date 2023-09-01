@@ -2955,10 +2955,10 @@ void DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template <int nsd, int nen>
-inline DRT::UTILS::FunctionOfAnything&
+inline const DRT::UTILS::FunctionOfAnything&
 DRT::ELEMENTS::POROFLUIDEVALUATOR::EvaluatorDomainIntegrals<nsd, nen>::Function(int functnum) const
 {
-  auto& funct = DRT::UTILS::GetFunctionOfAnything(functnum);
+  const auto& funct = DRT::UTILS::GetFunctionOfAnything(functnum);
   if (funct.NumberComponents() != 1)
     dserror("only one component allowed for domain integral functions");
   return funct;

@@ -17,7 +17,7 @@
 #include "baci_utils_exceptions.H"
 
 #include <any>
-#include <iostream>
+#include <typeindex>
 #include <vector>
 
 
@@ -50,10 +50,11 @@ namespace DRT
        * number in the input file.
        *
        * @note This call performs potentially throwing, expensive casts. It is therefore recommended
-       * to query required Function objects as early as possible.
+       * to query required Function objects as early as possible and store them if they are required
+       * repeatedly.
        */
       template <typename T>
-      T& FunctionById(int num);
+      const T& FunctionById(int num) const;
 
      private:
       /// Internal storage for all functions. We use type erasure via std::any to store various
@@ -74,31 +75,23 @@ void PrintFunctionDatHeader();
 // --- template and inline functions --- //
 
 template <typename T>
-T& DRT::UTILS::FunctionManager::FunctionById(int num)
+const T& DRT::UTILS::FunctionManager::FunctionById(int num) const
 {
   const int input_id = num + 1;
   if (functions_.size() < (unsigned int)(input_id) || input_id < 1)
     dserror("Function with index %d (i.e. input FUNCT%d) not available.", num, input_id);
 
-  auto& function_any = functions_[num];
+  const auto& function_any = functions_[num];
   dsassert(function_any.has_value(), "Implementation error.");
 
-  T* const queried_function = std::invoke(
-      [&]() -> T*
-      {
-        try
-        {
-          const auto function_rcp = std::any_cast<Teuchos::RCP<T>>(function_any);
-          dsassert(function_rcp != Teuchos::null, "Implementation error.");
-          return function_rcp.get();
-        }
-        catch (const std::bad_any_cast& exc)
-        {
-          return nullptr;
-        }
-      });
-
-  if (!queried_function)
+  using StoredType = Teuchos::RCP<T>;
+  if (typeid(StoredType) == function_any.type())
+  {
+    const auto function_rcp = std::any_cast<StoredType>(function_any);
+    dsassert(function_rcp != Teuchos::null, "Implementation error.");
+    return *function_rcp;
+  }
+  else
   {
     const std::string actual_type_name = std::invoke(
         [&function_any]()
@@ -123,8 +116,6 @@ T& DRT::UTILS::FunctionManager::FunctionById(int num)
         "Actually, it has type '%s'.",
         input_id, CORE::UTILS::TryDemangle(typeid(T).name()).c_str(), actual_type_name.c_str());
   }
-
-  return *queried_function;
 }
 
 #endif

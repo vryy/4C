@@ -37,22 +37,16 @@ namespace DRT
     class ZalesaksDiskFunction : public DRT::UTILS::FunctionOfSpaceTime
     {
      public:
-      /// ctor
-      ZalesaksDiskFunction();
-
       /// evaluate function at given position in space
-      double Evaluate(const double* x, double t, std::size_t component) override;
+      double Evaluate(const double* x, double t, std::size_t component) const override;
     };
 
     /// special implementation two-phase flow test case
     class CollapsingWaterColumnFunction : public DRT::UTILS::FunctionOfSpaceTime
     {
      public:
-      /// ctor
-      CollapsingWaterColumnFunction();
-
       /// evaluate function at given position in space
-      double Evaluate(const double* x, double t, std::size_t component) override;
+      double Evaluate(const double* x, double t, std::size_t component) const override;
     };
   }  // namespace UTILS
 }  // namespace DRT

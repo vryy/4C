@@ -45,10 +45,8 @@ Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateCombustFuncti
 }
 
 
-DRT::UTILS::ZalesaksDiskFunction::ZalesaksDiskFunction() {}
-
 double DRT::UTILS::ZalesaksDiskFunction::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // the disk consists of 3 lines and a part of a circle and four points
   // decide if the orthogonal projection of the current point lies on the lines and the circle (four
@@ -120,10 +118,8 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(
 }
 
 
-DRT::UTILS::CollapsingWaterColumnFunction::CollapsingWaterColumnFunction() {}
-
 double DRT::UTILS::CollapsingWaterColumnFunction::Evaluate(
-    const double* xp, const double t, const std::size_t component)
+    const double* xp, const double t, const std::size_t component) const
 {
   // here calculation of distance (sign is already taken in consideration)
   double distance = 0.0;

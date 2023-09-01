@@ -89,7 +89,7 @@ void PARTICLEALGORITHM::InitialFieldHandler::SetInitialFields()
       const int functid = initialFieldIt.second;
 
       // get reference to function
-      DRT::UTILS::FunctionOfSpaceTime& function =
+      const auto& function =
           DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(functid - 1);
 
       // get pointer to particle states

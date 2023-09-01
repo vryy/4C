@@ -40,12 +40,12 @@ namespace STR
    public:
     WeaklyCompressibleEtienneFSIStructureFunction(const MAT::PAR::StVenantKirchhoff& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) override;
+    double Evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> EvaluateTimeDerivative(
-        const double* x, double t, unsigned deg, std::size_t component) override;
+        const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() override { return (2); };
+    std::size_t NumberComponents() const override { return (2); };
 
    private:
     double poissonratio_;
@@ -57,12 +57,12 @@ namespace STR
    public:
     WeaklyCompressibleEtienneFSIStructureForceFunction(const MAT::PAR::StVenantKirchhoff& fparams);
 
-    double Evaluate(const double* x, double t, std::size_t component) override;
+    double Evaluate(const double* x, double t, std::size_t component) const override;
 
     std::vector<double> EvaluateTimeDerivative(
-        const double* x, double t, unsigned deg, std::size_t component) override;
+        const double* x, double t, unsigned deg, std::size_t component) const override;
 
-    std::size_t NumberComponents() override { return (2); };
+    std::size_t NumberComponents() const override { return (2); };
 
    private:
     double youngmodulus_;

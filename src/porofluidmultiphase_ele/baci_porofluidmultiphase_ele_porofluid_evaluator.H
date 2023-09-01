@@ -2056,7 +2056,7 @@ namespace DRT
         );
 
         //! cast to VarExp-function
-        inline DRT::UTILS::FunctionOfAnything& Function(int functnum) const;
+        [[nodiscard]] const DRT::UTILS::FunctionOfAnything& Function(int functnum) const;
 
         //! vector holding the functions to be integrated
         std::vector<int> domainint_funct_;
