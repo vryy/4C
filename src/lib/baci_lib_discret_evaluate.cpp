@@ -331,7 +331,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
 void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
     Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
     Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
-    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor)
+    Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor) const
 {
   DRT::UTILS::EvaluateDirichlet(
       *this, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
@@ -645,7 +645,7 @@ void DRT::Discretization::EvaluateScalars(
  |  evaluate an initial scalar or vector field (public)       popp 06/11|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateInitialField(const std::string& fieldstring,
-    Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids)
+    Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids) const
 {
   DRT::UTILS::EvaluateInitialField(*this, fieldstring, fieldvector, locids);
 }  // DRT::Discretization::EvaluateIntialField

@@ -101,7 +101,7 @@ namespace STR
      *
      * \note Stay in the global coordinate system (Rotation: global-->local-->global).*/
     virtual void ApplyDirichletBC(const double& time, Teuchos::RCP<Epetra_Vector> dis,
-        Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap);
+        Teuchos::RCP<Epetra_Vector> vel, Teuchos::RCP<Epetra_Vector> acc, bool recreatemap) const;
 
     /*! \brief Insert non-dbc dof values of source vector into the non-dbc dofs of target vector
      *

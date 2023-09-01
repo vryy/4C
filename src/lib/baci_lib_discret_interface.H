@@ -533,7 +533,7 @@ namespace DRT
     virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
         Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
         Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) = 0;
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const = 0;
 
     /** \brief Evaluate a specified condition
      *
