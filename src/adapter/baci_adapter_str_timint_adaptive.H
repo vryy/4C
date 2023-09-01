@@ -30,7 +30,7 @@ namespace ADAPTER
 {
   /*====================================================================*/
   /*!
-   * \brief Adapter to general implicit structural time integration
+   * \brief Adapter to adaptive implicit structural time integration
    *
    * \date 08/08
    */
@@ -47,7 +47,7 @@ namespace ADAPTER
     //@{
 
     /// Integrate from \f$t_1\f$ to \f$t_2\f$
-    virtual int Integrate();
+    int Integrate() override;
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void PrepareOutput(bool force_prepare) override;
@@ -61,13 +61,13 @@ namespace ADAPTER
     //! Access routines
     //{@
 
-    Teuchos::RCP<STR::TimAda> StrAda() const { return structure_; }
+    Teuchos::RCP<STR::TimAda> StrAda() const { return sta_; }
 
     //@}
 
    private:
     /// the actual structure algorithm
-    Teuchos::RCP<STR::TimAda> structure_;
+    Teuchos::RCP<STR::TimAda> sta_;  // STR::TimAda is the old time integration
 
   };  // class StructureTimIntAda
 

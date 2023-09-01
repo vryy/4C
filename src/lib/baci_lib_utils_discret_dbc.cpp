@@ -24,7 +24,7 @@ void DRT::UTILS::EvaluateDirichlet(const DRT::DiscretizationInterface& discret,
     const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor)
 {
   // create const version
-  const Teuchos::RCP<const Dbc> dbc = BuildDbc(&discret);
+  const Teuchos::RCP<const DRT::UTILS::Dbc> dbc = BuildDbc(&discret);
   (*dbc)(discret, params, systemvector, systemvectord, systemvectordd, toggle, dbcmapextractor);
 }
 

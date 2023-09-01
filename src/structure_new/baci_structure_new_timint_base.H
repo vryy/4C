@@ -72,7 +72,7 @@ namespace STR
        *
        *  This function is supposed to reset all variables which are directly related
        *  to the current new step n+1. To be more precise all variables ending with "Np"
-       *  have to be reseted. */
+       *  have to be reset. */
       void ResetStep() override;
 
       /// wrapper for things that should be done before PrepareTimeStep is called

@@ -61,14 +61,14 @@ namespace ADAPTER
 
     /// expand dirichlet bc map
     /// old struct. time integration version
-    virtual void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd);
+    void AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd) override;
 
     /// contract dirichlet bc map
     /// old struct. time integration version
-    virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
+    void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove) override;
 
     /// set the state of the nox group and the global state data container
-    void SetState(const Teuchos::RCP<Epetra_Vector>& x);
+    void SetState(const Teuchos::RCP<Epetra_Vector>& x) override;
 
     /// @name Apply interface forces
 
