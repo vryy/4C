@@ -20,8 +20,7 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> 
     : Parameter(matdata),
       youngs_(matdata->GetDouble("YOUNG")),
       poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
-      thermexpans_(matdata->GetDouble("THEXPANS"))
+      density_(matdata->GetDouble("DENS"))
 {
   if (youngs_ <= 0.) dserror("Young's modulus must be greater zero");
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.) dserror("Poisson's ratio must be in [-1;0.5)");

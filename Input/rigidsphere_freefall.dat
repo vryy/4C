@@ -63,7 +63,7 @@ NODE 1 COORD  0.0000000000000e+00 0.00000000000000e+00 -0.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 1 RIGIDSPHERE POINT1 1 RADIUS 1.0 DENSITY 1.0
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e9 NUE 0.0 DENS 0 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1e9 NUE 0.0 DENS 0
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME 1
 ----------------------------------------------------------RESULT DESCRIPTION

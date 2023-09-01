@@ -36,8 +36,6 @@ namespace MAT
       const double poissonratio_;
       /// mass density
       const double density_;
-      /// linear coefficient of thermal expansion
-      const double thermexpans_;
 
       //@}
 

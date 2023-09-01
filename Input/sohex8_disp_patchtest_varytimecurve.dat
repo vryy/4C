@@ -45,7 +45,7 @@ DIVERCONT                       continue
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 10.0 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 10.0
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.52549196155110467e+00 TOLERANCE 1e-08
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -8.31427514725287670e-02 TOLERANCE 1e-08

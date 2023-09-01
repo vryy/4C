@@ -47,7 +47,7 @@ REYNOLDS-STRESS       no_reynolds
 SOLVER                UMFPACK
 ---------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid_linear_density_viscosity REFDENSITY 1 REFVISCOSITY 1 REFPRESSURE 0 COEFFDENSITY 3.3333333333333333333e-2 COEFFVISCOSITY 1e-5 GAMMA 1
-MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0
 ------------------------------------------------------------FUNCT1
 CHANNELWEAKLYCOMPRESSIBLE
 ------------------------------------------------------------FUNCT2

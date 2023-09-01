@@ -102,7 +102,7 @@ ML_SMOOTHERCOARSE               GS
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.8
 MAT 5 MAT_PoroLawNeoHooke BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 4.0e4 NUE 0.3 DENS 2.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 4.0e4 NUE 0.3 DENS 2.0
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e1 TYPE Darcy
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD porofluid TAR_MAT 3

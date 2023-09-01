@@ -150,7 +150,7 @@ GHOST_PENALTY_FAC               0.05
 // MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 // MAT_Struct_StVenantKirchhoff
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000000 NUE 0.3 DENS 1.0 THEXPANS 1
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1000000000 NUE 0.3 DENS 1.0
 //MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1
 //MAT 3 ELAST_CoupNeoHooke YOUNG 100000000 NUE 0.0
 ----------------------------------------------------------------------FUNCT1

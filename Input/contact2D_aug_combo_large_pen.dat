@@ -220,8 +220,8 @@ MUELU_XML_ENFORCE               No
 SOLVER                          Belos
 PERMUTE_SYSTEM                  local
 ----------------------------------------------------------MATERIALS
-//MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2500  NUE 0.25 DENS 7.8e-3 THEXPANS 0.0
-//MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 25000 NUE 0.25 DENS 7.8e-3 THEXPANS 0.0
+//MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2500  NUE 0.25 DENS 7.8e-3
+//MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 25000 NUE 0.25 DENS 7.8e-3
 MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 3 DENS 0.1
 MAT 3   ELAST_CoupNeoHooke YOUNG 2500 NUE 0.25
 MAT 2   MAT_ElastHyper   NUMMAT 1 MATIDS 4 DENS 0.1

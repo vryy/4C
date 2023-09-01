@@ -45,7 +45,7 @@ LOADLIN                         no
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-//MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 3100 NUE 0.35 DENS 0.005 THEXPANS 0.0
+//MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 3100 NUE 0.35 DENS 0.005
 MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 0.005
 MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 0.005
 MAT 21 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
