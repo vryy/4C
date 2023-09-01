@@ -47,6 +47,8 @@ namespace MIXTURE
 
       /// Flag whether the prestretch tensor is isochoric
       const bool isochoric_;
+      /// Flag whether the prestretch tensor should be updated
+      const bool is_active_;
       /// @}
     };
   }  // namespace PAR
@@ -72,7 +74,7 @@ namespace MIXTURE
         MIXTURE::MixtureConstituent& constituent, CORE::LINALG::Matrix<3, 3>& G,
         Teuchos::ParameterList& params, int gp, int eleGID) override;
 
-    void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+    void Update(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
         CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) override;
 

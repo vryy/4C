@@ -140,13 +140,6 @@ void MIXTURE::MixtureConstituent_SolidMaterial::Update(CORE::LINALG::Matrix<3, 3
   material_->Update(defgrd, gp, params, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_SolidMaterial::UpdatePrestress(
-    CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
-    const int eleGID)
-{
-  material_->UpdatePrestress(defgrd, gp, params, eleGID);
-}
-
 void MIXTURE::MixtureConstituent_SolidMaterial::Evaluate(const CORE::LINALG::Matrix<3, 3>& F,
     const CORE::LINALG::Matrix<6, 1>& E_strain, Teuchos::ParameterList& params,
     CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, const int gp,

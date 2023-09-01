@@ -168,7 +168,7 @@ namespace MIXTURE
      * \param gp (in) : Gauss point
      * \param eleGID (in) : Global element id
      */
-    virtual void UpdatePrestress(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
+    virtual void Update(const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
         MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
         CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID) = 0;
   };

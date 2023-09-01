@@ -1313,31 +1313,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
 
       switch (pstype_)
       {
-        case INPAR::STR::PreStress::material_iterative:
-        {
-          CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe(
-              false);  // reference coord. of element
-          CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xcurr(false);  // current coord. of element
-          CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xdisp(false);
-
-          UTILS::EvaluateNodalCoordinates<DRT::Element::hex8, 3>(Nodes(), xrefe);
-          UTILS::EvaluateNodalDisplacements<DRT::Element::hex8, 3>(mydisp, xdisp);
-          UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::hex8, 3>(xrefe, xdisp, xcurr);
-
-          for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
-          {
-            // Compute deformation gradient
-            CORE::LINALG::Matrix<3, 3> defgrd;
-            CORE::LINALG::Matrix<3, 8> derivs(false);
-            soh8_derivs(derivs, gp);
-
-            UTILS::ComputeDeformationGradient<DRT::Element::hex8>(
-                defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
-
-            SolidMaterial()->UpdatePrestress(defgrd, gp, params, Id());
-          }
-          break;
-        }
         case INPAR::STR::PreStress::mulf:
         {
           // build def gradient for every gauss point

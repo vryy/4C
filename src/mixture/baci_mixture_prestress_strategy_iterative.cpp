@@ -20,7 +20,9 @@
 
 MIXTURE::PAR::IterativePrestressStrategy::IterativePrestressStrategy(
     const Teuchos::RCP<MAT::PAR::Material>& matdata)
-    : PrestressStrategy(matdata), isochoric_(static_cast<bool>(matdata->GetInt("ISOCHORIC")))
+    : PrestressStrategy(matdata),
+      isochoric_(static_cast<bool>(matdata->GetInt("ISOCHORIC"))),
+      is_active_(static_cast<bool>(matdata->GetInt("ACTIVE")))
 {
 }
 
@@ -53,11 +55,14 @@ void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(const MixtureRule& m
   MAT::IdentityMatrix(G);
 }
 
-void MIXTURE::IterativePrestressStrategy::UpdatePrestress(
+void MIXTURE::IterativePrestressStrategy::Update(
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
     MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
     CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
+  // only update prestress if it is active
+  if (!params_->is_active_) return;
+
   // Compute isochoric part of the deformation
   CORE::LINALG::Matrix<3, 3> F_bar;
   if (params_->isochoric_)

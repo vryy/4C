@@ -60,12 +60,9 @@ void MIXTURE::ConstantPrestressStrategy::EvaluatePrestress(const MixtureRule& mi
   UTILS::VOIGT::Matrix9x1to3x3(prestretch_vector, G);
 }
 
-void MIXTURE::ConstantPrestressStrategy::UpdatePrestress(
+void MIXTURE::ConstantPrestressStrategy::Update(
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
     MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
     CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
-  dserror(
-      "The prestretching strategy that you have chosen does not need iterative prestretching. It "
-      "ensures equilibrium during setup.");
 }

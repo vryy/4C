@@ -285,22 +285,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
 
       switch (pstype_)
       {
-        case INPAR::STR::PreStress::material_iterative:
-        {
-          // get current displacements
-          CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> xdispT(mydisp.data());
-
-          for (unsigned gp = 0; gp < NUMGPT_SOTET4; ++gp)
-          {
-            // Compute deformation gradient
-            CORE::LINALG::Matrix<3, 3> defgrd;
-            ComputeDeformationGradient(defgrd, xdispT, gp);
-
-            SolidMaterial()->UpdatePrestress(defgrd, gp, params, Id());
-          }
-        }
-        break;
-
         case INPAR::STR::PreStress::mulf:
         {
           // build incremental def gradient for every gauss point
