@@ -47,7 +47,7 @@ namespace MAT
   class StVenantKirchhoffType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const override { return "StVenantKirchhoffType"; }
+    [[nodiscard]] std::string Name() const override { return "StVenantKirchhoffType"; }
 
     static StVenantKirchhoffType& Instance() { return instance_; };
 
@@ -68,7 +68,7 @@ namespace MAT
     /// construct the material object given material parameters
     explicit StVenantKirchhoff(MAT::PAR::StVenantKirchhoff* params);
 
-    int UniqueParObjectId() const override
+    [[nodiscard]] int UniqueParObjectId() const override
     {
       return StVenantKirchhoffType::Instance().UniqueParObjectId();
     }
@@ -81,31 +81,37 @@ namespace MAT
 
     //! @name Access methods
 
-    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_stvenant; }
+    [[nodiscard]] INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_stvenant;
+    }
 
     void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
-      if (!(kinem == INPAR::STR::kinem_linear || kinem == INPAR::STR::kinem_nonlinearTotLag))
+      if (kinem != INPAR::STR::kinem_linear && kinem != INPAR::STR::kinem_nonlinearTotLag)
         dserror("element and material kinematics are not compatible");
     }
 
-    Teuchos::RCP<Material> Clone() const override
+    [[nodiscard]] Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new StVenantKirchhoff(*this));
     }
 
     /// Young's modulus
-    double Youngs() const { return params_->youngs_; }
+    [[nodiscard]] double Youngs() const { return params_->youngs_; }
 
     /// Poisson's ratio
-    double PoissonRatio() const { return params_->poissonratio_; }
+    [[nodiscard]] double PoissonRatio() const { return params_->poissonratio_; }
 
-    double Density() const override { return params_->density_; }
+    [[nodiscard]] double Density() const override { return params_->density_; }
 
     /// shear modulus
-    double ShearMod() const { return 0.5 * params_->youngs_ / (1.0 + params_->poissonratio_); }
+    [[nodiscard]] double ShearMod() const
+    {
+      return 0.5 * params_->youngs_ / (1.0 + params_->poissonratio_);
+    }
 
-    MAT::PAR::Parameter* Parameter() const override { return params_; }
+    [[nodiscard]] MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //@}
 
@@ -133,11 +139,6 @@ namespace MAT
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(CORE::LINALG::Matrix<6, 6>& cmat);
-
-    // computes isotropic elasticity tensor in matrix notion for 2d
-    // plane strain, rotational symmetry
-    void SetupCmat2d(CORE::LINALG::SerialDenseMatrix* cmat);
-
     //@}
 
     //! general setup of constitutive tensor based on Young's and poisson's ratio
