@@ -24,7 +24,6 @@ $CMAKE_COMMAND \
   -D Trilinos_ENABLE_Gtest:BOOL=OFF \
   -D Trilinos_ENABLE_Amesos:BOOL=ON \
   -D Trilinos_ENABLE_Amesos2:BOOL=ON \
-  -D Trilinos_ENABLE_Anasazi:BOOL=ON \
   -D Trilinos_ENABLE_AztecOO:BOOL=ON \
   -D Trilinos_ENABLE_Belos:BOOL=ON \
   -D Trilinos_ENABLE_Epetra:BOOL=ON \
@@ -56,7 +55,6 @@ $CMAKE_COMMAND \
     -D Xpetra_ENABLE_EpetraExt:BOOL=ON \
   -D Trilinos_ENABLE_Zoltan:BOOL=ON \
   -D Trilinos_ENABLE_Zoltan2:BOOL=ON \
-  -D Trilinos_ENABLE_Zoltan2Sphynx:BOOL=ON \
   \
   -D Trilinos_MUST_FIND_ALL_TPL_LIBS=TRUE \
   -D TPL_ENABLE_DLlib:BOOL=OFF \
