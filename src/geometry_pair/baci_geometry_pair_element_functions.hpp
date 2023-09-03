@@ -82,9 +82,9 @@ namespace GEOMETRYPAIR
    * @param N (out) shape function matrix.
    * @param element (in) Pointer to the element, needed for beam elements.
    */
-  template <typename element_type, typename T, typename scalar_type, unsigned int n_dim>
+  template <typename element_type, typename T, typename scalar_type>
   inline void EvaluateShapeFunctionMatrix(const T& xi,
-      CORE::LINALG::Matrix<n_dim, element_type::n_dof_, scalar_type>& N,
+      CORE::LINALG::Matrix<element_type::spatial_dim_, element_type::n_dof_, scalar_type>& N,
       const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
@@ -93,14 +93,15 @@ namespace GEOMETRYPAIR
 
     // Evaluate the shape function values.
     element_type::EvaluateShapeFunction(
-        N_flat, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+        N_flat, xi, std::integral_constant<unsigned int, element_type::element_dim_>{}, element);
 
     // Fill up the full shape function matrix.
     N.Clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-      for (unsigned int dim = 0; dim < n_dim; dim++)
+      for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
         for (unsigned int val = 0; val < element_type::n_val_; val++)
-          N(dim, n_dim * element_type::n_val_ * node + n_dim * val + dim) =
+          N(dim, element_type::spatial_dim_ * element_type::n_val_ * node +
+                     element_type::spatial_dim_ * val + dim) =
               N_flat(element_type::n_val_ * node + val);
   }
 
@@ -111,23 +112,25 @@ namespace GEOMETRYPAIR
    * @param r (out) Position on the element.
    * @param element (in) Pointer to the element, needed for beam elements.
    */
-  template <typename element_type, typename T, typename V, typename scalar_type, unsigned int n_dim>
+  template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePosition(const T& xi, const V& q,
-      CORE::LINALG::Matrix<n_dim, 1, scalar_type>& r, const DRT::Element* element = nullptr)
+      CORE::LINALG::Matrix<element_type::spatial_dim_, 1, scalar_type>& r,
+      const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
     CORE::LINALG::Matrix<1, element_type::n_nodes_ * element_type::n_val_, scalar_type> N(true);
 
     // Evaluate the shape function values.
     element_type::EvaluateShapeFunction(
-        N, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+        N, xi, std::integral_constant<unsigned int, element_type::element_dim_>{}, element);
 
     // Calculate the position.
     r.Clear();
     for (unsigned int node = 0; node < element_type::n_nodes_; node++)
-      for (unsigned int dim = 0; dim < n_dim; dim++)
+      for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
         for (unsigned int val = 0; val < element_type::n_val_; val++)
-          r(dim) += q(n_dim * element_type::n_val_ * node + n_dim * val + dim) *
+          r(dim) += q(element_type::spatial_dim_ * element_type::n_val_ * node +
+                        element_type::spatial_dim_ * val + dim) *
                     N(element_type::n_val_ * node + val);
   }
 
@@ -140,25 +143,26 @@ namespace GEOMETRYPAIR
    */
   template <typename element_type, typename T, typename V, typename scalar_type>
   inline void EvaluatePositionDerivative1(const T& xi, const V& q,
-      CORE::LINALG::Matrix<3, element_type::dim_, scalar_type>& dr,
+      CORE::LINALG::Matrix<element_type::spatial_dim_, element_type::element_dim_, scalar_type>& dr,
       const DRT::Element* element = nullptr)
   {
     // Matrix for shape function values.
-    CORE::LINALG::Matrix<element_type::dim_, element_type::n_nodes_ * element_type::n_val_,
+    CORE::LINALG::Matrix<element_type::element_dim_, element_type::n_nodes_ * element_type::n_val_,
         scalar_type>
         dN(true);
 
     // Evaluate the shape function values.
     element_type::EvaluateShapeFunctionDeriv1(
-        dN, xi, std::integral_constant<unsigned int, element_type::dim_>{}, element);
+        dN, xi, std::integral_constant<unsigned int, element_type::element_dim_>{}, element);
 
     // Calculate the derivative of the position.
     dr.Clear();
-    for (unsigned int dim = 0; dim < 3; dim++)
-      for (unsigned int direction = 0; direction < element_type::dim_; direction++)
+    for (unsigned int dim = 0; dim < element_type::spatial_dim_; dim++)
+      for (unsigned int direction = 0; direction < element_type::element_dim_; direction++)
         for (unsigned int node = 0; node < element_type::n_nodes_; node++)
           for (unsigned int val = 0; val < element_type::n_val_; val++)
-            dr(dim, direction) += q(3 * element_type::n_val_ * node + 3 * val + dim) *
+            dr(dim, direction) += q(element_type::spatial_dim_ * element_type::n_val_ * node +
+                                      element_type::spatial_dim_ * val + dim) *
                                   dN(direction, element_type::n_val_ * node + val);
   }
 
@@ -180,7 +184,8 @@ namespace GEOMETRYPAIR
           nullptr)
   {
     // Check at compile time if a surface (2D) element is given.
-    static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
+    static_assert(
+        surface::element_dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
 
     if (nodal_normals == nullptr)
     {
@@ -225,7 +230,8 @@ namespace GEOMETRYPAIR
           nullptr)
   {
     // Check at compile time if a surface (2D) element is given.
-    static_assert(surface::dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
+    static_assert(
+        surface::element_dim_ == 2, "EvaluateSurfaceNormal can only be called for 2D elements!");
 
     // Evaluate the normal.
     CORE::LINALG::Matrix<3, 1, scalar_type_result> normal;
@@ -300,7 +306,8 @@ namespace GEOMETRYPAIR
       CORE::LINALG::Matrix<3, 3, scalar_type>& J, const DRT::Element* element)
   {
     // Check at compile time if a volume (3D) element is given.
-    static_assert(volume::dim_ == 3, "EvaluateJacobian can only be called for 3D elements!");
+    static_assert(
+        volume::element_dim_ == 3, "EvaluateJacobian can only be called for 3D elements!");
 
     // Get the derivatives of the reference position w.r.t the parameter coordinates. This is the
     // transposed Jacobi matrix.
@@ -327,8 +334,8 @@ namespace GEOMETRYPAIR
       CORE::LINALG::Matrix<3, 3, scalar_type_result>& F, const DRT::Element* element)
   {
     // Check at compile time if a volume (3D) element is given.
-    static_assert(
-        volume::dim_ == 3, "EvaluateDeformationGradient can only be called for 3D elements!");
+    static_assert(volume::element_dim_ == 3,
+        "EvaluateDeformationGradient can only be called for 3D elements!");
 
     // Get the inverse of the Jacobian.
     CORE::LINALG::Matrix<3, 3, scalar_type_xi> inv_J(true);
@@ -336,14 +343,14 @@ namespace GEOMETRYPAIR
     CORE::LINALG::Inverse(inv_J);
 
     // Get the derivatives of the shape functions w.r.t to the parameter coordinates.
-    CORE::LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdxi(
-        true);
+    CORE::LINALG::Matrix<volume::element_dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi>
+        dNdxi(true);
     volume::EvaluateShapeFunctionDeriv1(
-        dNdxi, xi, std::integral_constant<unsigned int, volume::dim_>{}, element);
+        dNdxi, xi, std::integral_constant<unsigned int, volume::element_dim_>{}, element);
 
     // Transform to derivatives w.r.t physical coordinates.
-    CORE::LINALG::Matrix<volume::dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi> dNdX(
-        true);
+    CORE::LINALG::Matrix<volume::element_dim_, volume::n_nodes_ * volume::n_val_, scalar_type_xi>
+        dNdX(true);
     for (unsigned int i_row = 0; i_row < 3; i_row++)
       for (unsigned int i_col = 0; i_col < volume::n_nodes_ * volume::n_val_; i_col++)
         for (unsigned int i_sum = 0; i_sum < 3; i_sum++)

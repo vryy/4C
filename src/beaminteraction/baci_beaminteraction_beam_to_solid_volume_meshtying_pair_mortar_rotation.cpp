@@ -249,7 +249,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Evaluate shape functions.
       mortar_rot::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, mortar_rot::dim_>{});
+          std::integral_constant<unsigned int, mortar_rot::element_dim_>{});
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
@@ -538,7 +538,7 @@ void BEAMINTERACTION::BeamToSolidVolumeMeshtyingPairMortarRotation<beam, solid, 
 
       // Evaluate shape functions.
       mortar_rot::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
-          std::integral_constant<unsigned int, mortar_rot::dim_>{});
+          std::integral_constant<unsigned int, mortar_rot::element_dim_>{});
       for (unsigned int i_node = 0; i_node < mortar_rot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);

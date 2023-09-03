@@ -118,10 +118,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairGapVariation<scalar_type, bea
       gap = r_rel.Dot(surface_normal) - beam_cross_section_radius;
 
       // Get the shape function matrices.
-      beam::EvaluateShapeFunction(
-          N_beam, eta, std::integral_constant<unsigned int, beam::dim_>{}, this->Element1());
+      beam::EvaluateShapeFunction(N_beam, eta,
+          std::integral_constant<unsigned int, beam::element_dim_>{}, this->Element1());
       surface::EvaluateShapeFunction(N_surface, xi,
-          std::integral_constant<unsigned int, surface::dim_>{},
+          std::integral_constant<unsigned int, surface::element_dim_>{},
           this->face_element_->GetDrtFaceElement());
 
       // Calculate the variation of the gap function multiplied with the surface normal vector.

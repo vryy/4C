@@ -614,7 +614,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
         // Evaluate mortar shape functions.
         mortar::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
-            std::integral_constant<unsigned int, mortar::dim_>{});
+            std::integral_constant<unsigned int, mortar::element_dim_>{});
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
@@ -853,7 +853,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
 
         // Evaluate mortar shape functions.
         mortar::EvaluateShapeFunction(lambda_shape_functions, projected_gauss_point.GetEta(),
-            std::integral_constant<unsigned int, mortar::dim_>{});
+            std::integral_constant<unsigned int, mortar::element_dim_>{});
         for (unsigned int i_node = 0; i_node < mortar::n_nodes_; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);

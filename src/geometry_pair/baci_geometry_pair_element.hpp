@@ -41,8 +41,11 @@ namespace GEOMETRYPAIR
    * @tparam discretization Type of shape function.
    * @tparam values_per_node Number of nodal values per node (standard elements have 1, Hermitian
    * shape functions have 2)
+   * @tparam spatial_dim Number of spatial dimensions. This affects the number of degrees of freedom
+   * of the element
    */
-  template <CORE::FE::CellType discretization, unsigned int values_per_node>
+  template <CORE::FE::CellType discretization, unsigned int values_per_node,
+      unsigned int spatial_dim = 3>
   class ElementDiscretizationBase
   {
    public:
@@ -50,7 +53,7 @@ namespace GEOMETRYPAIR
     static constexpr CORE::FE::CellType discretization_ = discretization;
 
     //! Dimension of element (curve=1, surface=2, volume=3).
-    static constexpr unsigned int dim_ = CORE::FE::dim<discretization_>;
+    static constexpr unsigned int element_dim_ = CORE::FE::dim<discretization_>;
 
     //! Number of values per node.
     static constexpr unsigned int n_val_ = values_per_node;
@@ -58,8 +61,11 @@ namespace GEOMETRYPAIR
     //! Number of nodes for this element.
     static constexpr unsigned int n_nodes_ = CORE::FE::num_nodes<discretization_>;
 
+    //! Number of spatial dimensions.
+    static const unsigned int spatial_dim_ = spatial_dim;
+
     //! Number of unknowns for this element.
-    static constexpr unsigned int n_dof_ = 3 * n_val_ * n_nodes_;
+    static constexpr unsigned int n_dof_ = spatial_dim_ * n_val_ * n_nodes_;
 
     //! Geometry type of the element.
     static constexpr GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
@@ -89,7 +95,8 @@ namespace GEOMETRYPAIR
         V& N, const T& xi, t_1D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
-      static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
+      static_assert(
+          base::element_dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
@@ -136,7 +143,8 @@ namespace GEOMETRYPAIR
         V& N, const T& xi, t_2D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 2.
-      static_assert(base::dim_ == 2, "EvaluateShapeFunction2D can only be called for 2D elements!");
+      static_assert(
+          base::element_dim_ == 2, "EvaluateShapeFunction2D can only be called for 2D elements!");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
@@ -159,8 +167,8 @@ namespace GEOMETRYPAIR
         V& dN, const T& xi, t_2D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 2.
-      static_assert(
-          base::dim_ == 2, "EvaluateShapeFunctionDeriv1 can only be called for 2D elements!");
+      static_assert(base::element_dim_ == 2,
+          "EvaluateShapeFunctionDeriv1 can only be called for 2D elements!");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
@@ -183,7 +191,8 @@ namespace GEOMETRYPAIR
         V& N, const T& xi, t_3D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
-      static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
+      static_assert(
+          base::element_dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
@@ -206,7 +215,8 @@ namespace GEOMETRYPAIR
         V& dN, const T& xi, t_3D_element dimension, const DRT::Element* element = nullptr)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
-      static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
+      static_assert(
+          base::element_dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
@@ -241,7 +251,8 @@ namespace GEOMETRYPAIR
         V& N, const T& xi, t_1D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
-      static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
+      static_assert(
+          base::element_dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
@@ -273,7 +284,8 @@ namespace GEOMETRYPAIR
         V& dN, const T& xi, t_1D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 1.
-      static_assert(base::dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
+      static_assert(
+          base::element_dim_ == 1, "EvaluateShapeFunction1D can only be called for 1D elements!");
 
       // We need to redefine the discretization here, as otherwise the compiler has problems
       // passing the static const member of the base class as a reference.
@@ -315,7 +327,8 @@ namespace GEOMETRYPAIR
         V& N, const T& xi, t_2D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 2.
-      static_assert(base::dim_ == 2, "nurbs_get_2D_funct can only be called for 2D elements!");
+      static_assert(
+          base::element_dim_ == 2, "nurbs_get_2D_funct can only be called for 2D elements!");
 
       // The element pointer has to be a face element.
       auto face_element = dynamic_cast<const DRT::FaceElement*>(element);
@@ -359,7 +372,8 @@ namespace GEOMETRYPAIR
         V& N, const T& xi, t_3D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
-      static_assert(base::dim_ == 3, "nurbs_get_3D_funct can only be called for 3D elements!");
+      static_assert(
+          base::element_dim_ == 3, "nurbs_get_3D_funct can only be called for 3D elements!");
 
       if (element == nullptr)
         dserror("EvaluateShapeFunction for nurbs needs a valid element pointer!");
@@ -392,7 +406,8 @@ namespace GEOMETRYPAIR
         V& dN, const T& xi, t_2D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 2.
-      static_assert(base::dim_ == 2, "nurbs_get_2D_funct can only be called for 2D elements!");
+      static_assert(
+          base::element_dim_ == 2, "nurbs_get_2D_funct can only be called for 2D elements!");
 
       // The element pointer has to be a face element.
       auto face_element = dynamic_cast<const DRT::FaceElement*>(element);
@@ -438,7 +453,8 @@ namespace GEOMETRYPAIR
         V& dN, const T& xi, t_3D_element dimension, const DRT::Element* element)
     {
       // Throw a compiler error if this function is called from an element with dim_ != 3.
-      static_assert(base::dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
+      static_assert(
+          base::element_dim_ == 3, "EvaluateShapeFunction3D can only be called for 3D elements!");
 
       if (element == nullptr)
         dserror("EvaluateShapeFunctionDeriv1 for nurbs needs a valid element pointer!");
