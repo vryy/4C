@@ -61,9 +61,9 @@ SOLVER               Superlu
 NAME                 Contact_Solver
 SOLVER               Superlu
 ---------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 500.0 NUE 0.1 DENS 0.02 THEXPANS 0.0
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 500.0 NUE 0.3 DENS 0.02 THEXPANS 0.0
-MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 5000.0 NUE 0.3 DENS 0.02 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 500.0 NUE 0.1 DENS 0.02
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 500.0 NUE 0.3 DENS 0.02
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 5000.0 NUE 0.3 DENS 0.02
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES  0 0.5 1 VALUES 0 35 5

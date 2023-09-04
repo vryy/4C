@@ -1031,7 +1031,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     AddNamedReal(m, "YOUNG", "Young's modulus");
     AddNamedReal(m, "NUE", "Poisson's ratio");
     AddNamedReal(m, "DENS", "mass density");
-    AddNamedReal(m, "THEXPANS", "coefficient of linear thermal expansion", 0.0, true);
 
     AppendMaterialDefinition(matlist, m);
   }

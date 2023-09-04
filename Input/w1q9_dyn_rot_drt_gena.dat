@@ -130,7 +130,7 @@ NODE 9 COORD 0.000000000000000e+00 2.000000000000000e+00 0.000000000000000e+00
 1 WALL QUAD9 6 1 5 9 3 2 8 7 4 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 3 3
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000 NUE 0.3 DENS 7.8e-2 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000 NUE 0.3 DENS 7.8e-2
 ----------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION t/10 0.1

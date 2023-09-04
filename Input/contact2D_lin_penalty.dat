@@ -401,7 +401,7 @@ NODE 92 COORD 0.000000000000000e+00 1.000000000000000e+00 0.000000000000000e+00
 63 WALL QUAD4 62 57 51 49 MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_stress GP 2 2
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000.0 NUE 0.3 DENS 7.8E-6 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 21000.0 NUE 0.3 DENS 7.8E-6
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 6 VALUES 0 0 6

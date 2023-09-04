@@ -29,7 +29,6 @@ namespace
     mat_stvenant->Add("YOUNG", 1.0);
     mat_stvenant->Add("NUE", 0.1);
     mat_stvenant->Add("DENS", 2.0);
-    mat_stvenant->Add("THEXPANS", 1.0);
 
     DRT::Problem::Instance()->Materials()->Insert(1, mat_stvenant);
   }

@@ -26,7 +26,6 @@ namespace
       container->Add("YOUNG", young_);
       container->Add("NUE", nu_);
       container->Add("DENS", rho_);
-      container->Add("THEXPANS", thermal_);
 
       // initialize parameter class for StVenantKirchhoff material with container
       parameters_stvenantkirchhoff_ = Teuchos::rcp(new MAT::PAR::StVenantKirchhoff(container));
@@ -39,8 +38,7 @@ namespace
     //! material parameters
     const double young_ = 210.;
     const double nu_ = 0.3;
-    const double rho_ = 1.0;      // dummy value (needed for construction)
-    const double thermal_ = 1.0;  // dummy value (needed for construction)
+    const double rho_ = 1.0;  // dummy value (needed for construction)
     Teuchos::RCP<MAT::PAR::StVenantKirchhoff> parameters_stvenantkirchhoff_;
 
     //! material class

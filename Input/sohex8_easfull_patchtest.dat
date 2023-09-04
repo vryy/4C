@@ -45,7 +45,7 @@ DIVERCONT                       continue
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 0.0
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION

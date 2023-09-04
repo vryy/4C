@@ -146,7 +146,7 @@ NODE 9 COORD 2.000000000000000e+00 2.000000000000000e+00 0.000000000000000e+00
 4 WALL QUAD4 2 4 6 5 MAT 1 KINEM nonlinear EAS none THICK 1.0 STRESS_STRAIN plane_stress GP 2 2
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0
 ----------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION

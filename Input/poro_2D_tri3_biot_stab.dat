@@ -89,7 +89,7 @@ THETA                           1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 POROLAWID 5 INITPOROSITY 0.8
 MAT 5 MAT_PoroLawLinBiot INVBIOTMODULUS 0.0 BIOTCEOFF 1.0
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0e6 NUE 0.0 DENS 1.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0e6 NUE 0.0 DENS 1.0
 MAT 3 MAT_FluidPoro DYNVISCOSITY 1.0 DENSITY 1.0 PERMEABILITY 1.0e-7 TYPE Darcy
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0

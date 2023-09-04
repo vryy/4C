@@ -4669,7 +4669,7 @@ NODE 1331 COORD 2.000000000000000e+00 2.000000000000000e+00 3.000000000000000e+0
 1000 SOLIDH8 HEX8 1322 1310 1294 1311 1318 1306 1285 1307 MAT 1 KINEM nonlinear EAS mild
 -------------------------------------------------------------------MATERIALS
 //                              MAT_Struct_StVenantKirchhoff
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000 NUE 0.3 DENS 0.0
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION

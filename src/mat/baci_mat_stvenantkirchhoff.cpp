@@ -20,8 +20,7 @@ MAT::PAR::StVenantKirchhoff::StVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> 
     : Parameter(matdata),
       youngs_(matdata->GetDouble("YOUNG")),
       poissonratio_(matdata->GetDouble("NUE")),
-      density_(matdata->GetDouble("DENS")),
-      thermexpans_(matdata->GetDouble("THEXPANS"))
+      density_(matdata->GetDouble("DENS"))
 {
   if (youngs_ <= 0.) dserror("Young's modulus must be greater zero");
   if (poissonratio_ >= 0.5 || poissonratio_ < -1.) dserror("Poisson's ratio must be in [-1;0.5)");
@@ -105,41 +104,6 @@ void MAT::StVenantKirchhoff::Unpack(const std::vector<char>& data)
   }
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
-}
-
-/*----------------------------------------------------------------------*
-// computes isotropic eplane strain, rotational symmetry
-// plane strain, rotational symmetry
- *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::SetupCmat2d(CORE::LINALG::SerialDenseMatrix* cmat)
-{
-  const double ym = params_->youngs_;
-  const double pv = params_->poissonratio_;
-
-  // plane strain, rotational symmetry
-  const double c1 = ym / (1.0 + pv);
-  const double b1 = c1 * pv / (1.0 - 2.0 * pv);
-  const double a1 = b1 + c1;
-
-  (*cmat)(0, 0) = a1;
-  (*cmat)(0, 1) = b1;
-  (*cmat)(0, 2) = 0.;
-  (*cmat)(0, 3) = b1;
-
-  (*cmat)(1, 0) = b1;
-  (*cmat)(1, 1) = a1;
-  (*cmat)(1, 2) = 0.;
-  (*cmat)(1, 3) = b1;
-
-  (*cmat)(2, 0) = 0.;
-  (*cmat)(2, 1) = 0.;
-  (*cmat)(2, 2) = c1 / 2.;
-  (*cmat)(2, 3) = 0.;
-
-  (*cmat)(3, 0) = b1;
-  (*cmat)(3, 1) = b1;
-  (*cmat)(3, 2) = 0.;
-  (*cmat)(3, 3) = a1;
 }
 
 /*----------------------------------------------------------------------*

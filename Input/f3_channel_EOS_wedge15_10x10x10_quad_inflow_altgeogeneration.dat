@@ -109,7 +109,7 @@ ML_DAMPMED                      0.66
 ML_DAMPCOARSE                   1.0
 ---------------------------------------------------------MATERIALS
 MAT       1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
+MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 20.0*(y*y-0.25)*(z*z-0.25) //velx
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0

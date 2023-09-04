@@ -157,7 +157,7 @@ ML_DAMPMED                      0.2
 ML_DAMPCOARSE                   1.0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 0.0
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0
 ----------------------------------------------------------------------FUNCT1
 //Velocity and Derivative of Urquiza-box-flow
 URQUIZABOXFLOW LENGTHX 1.0 LENGTHY 1.0 ROTATION 0.0 VISCOSITY 1.0 DENSITY 1.0 CASE 3 COMBINATION 1.25 0.75
