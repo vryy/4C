@@ -152,8 +152,7 @@ namespace
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidEleCalcFbar<distype>::SolidEleCalcFbar()
-    : DRT::ELEMENTS::SolidEleCalcInterface::SolidEleCalcInterface(),
-      stiffness_matrix_integration_(
+    : stiffness_matrix_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
       mass_matrix_integration_(CreateGaussIntegration<distype>(GetGaussRuleMassMatrix<distype>()))
 {

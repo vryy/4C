@@ -16,6 +16,7 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_solid_ele_calc_eas.H"
+#include "baci_solid_ele_factory.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
 #include <memory>
@@ -72,21 +73,6 @@ namespace DRT::ELEMENTS
     \param owner (in): owner processor of the element
     */
     Solid(int id, int owner);
-
-    //! destructor
-    ~Solid() override = default;
-
-    //! copy constructor
-    Solid(const Solid& other);
-
-    //! copy assignment operator
-    Solid& operator=(const Solid& other);
-
-    //! move constructor
-    Solid(Solid&& other) noexcept = default;
-
-    //! move assignment operator
-    Solid& operator=(Solid&& other) noexcept = default;
 
     //!@}
 
@@ -187,8 +173,8 @@ namespace DRT::ELEMENTS
     //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
-    //! element calculation interface
-    std::shared_ptr<SolidEleCalcInterface> solid_interface_;
+    //! element calculation holding one of the implemented variants
+    SolidCalcVariant solid_calc_variant_;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

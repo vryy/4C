@@ -17,7 +17,8 @@ Pack, Unpack, NumDofPerNode etc.
 #include "baci_lib_element.H"
 #include "baci_lib_elementtype.H"
 #include "baci_linalg_serialdensematrix.H"
-#include "baci_solid_ele_poro_calc_interface.H"
+#include "baci_solid_ele_factory.H"
+#include "baci_solid_ele_poro_factory.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 
 #include <memory>
@@ -84,21 +85,6 @@ namespace DRT::ELEMENTS
     \param owner (in): owner processor of the element
     */
     SolidPoro(int id, int owner);
-
-    //! destructor
-    ~SolidPoro() override = default;
-
-    //! copy constructor
-    SolidPoro(const SolidPoro& other);
-
-    //! copy assignment operator
-    SolidPoro& operator=(const SolidPoro& other);
-
-    //! move constructor
-    SolidPoro(SolidPoro&& other) noexcept = default;
-
-    //! move assignment operator
-    SolidPoro& operator=(SolidPoro&& other) noexcept = default;
 
     //!@}
 
@@ -235,11 +221,11 @@ namespace DRT::ELEMENTS
     //! interface pointer for data exchange between the element and the time integrator.
     Teuchos::RCP<STR::ELEMENTS::ParamsInterface> interface_ptr_;
 
-    //! element calculation interface
-    std::shared_ptr<SolidEleCalcInterface> solid_interface_;
+    //! element calculation holding one of the implemented variants
+    SolidCalcVariant solid_calc_variant_;
 
-    //! poro element calculation interface
-    std::shared_ptr<SolidPoroEleCalcInterface> solidporo_interface_;
+    //! poro element calculation holding one of the implemented variants
+    SolidPoroCalcVariant solidporo_calc_variant_;
 
     //! flag, whether the post setup of materials is already called
     bool material_post_setup_ = false;

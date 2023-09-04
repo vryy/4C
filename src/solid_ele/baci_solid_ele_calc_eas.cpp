@@ -13,6 +13,7 @@
 #include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_lib.H"
 #include "baci_solid_ele_utils.H"
+#include "baci_structure_new_gauss_point_data_output_manager.H"
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -594,8 +595,7 @@ namespace
 
 template <DRT::Element::DiscretizationType distype, STR::ELEMENTS::EasType eastype>
 DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::SolidEleCalcEas()
-    : DRT::ELEMENTS::SolidEleCalcInterface::SolidEleCalcInterface(),
-      stiffness_matrix_integration_(
+    : stiffness_matrix_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrix<distype>())),
       mass_matrix_integration_(CreateGaussIntegration<distype>(GetGaussRuleMassMatrix<distype>()))
 {
@@ -965,3 +965,13 @@ template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8,
     STR::ELEMENTS::EasType::eastype_h8_9>;
 template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8,
     STR::ELEMENTS::EasType::eastype_h8_21>;
+
+static_assert(
+    DRT::ELEMENTS::IsPackable<
+        DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, STR::ELEMENTS::EasType::eastype_h8_9>*>,
+    "EAS needs to implement the method Pack(DRT::PackBuffer&) to be able to store history data!");
+static_assert(
+    DRT::ELEMENTS::IsUnpackable<
+        DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, STR::ELEMENTS::EasType::eastype_h8_9>*>,
+    "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "
+    "history data!");

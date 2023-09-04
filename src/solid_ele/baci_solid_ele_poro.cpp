@@ -22,27 +22,6 @@
 
 #include <memory>
 
-namespace
-{
-  template <typename Interface>
-  void TryPackInterface(const Interface& interface, DRT::PackBuffer& data)
-  {
-    std::shared_ptr<DRT::ELEMENTS::Serializable> serializable_interface =
-        std::dynamic_pointer_cast<DRT::ELEMENTS::Serializable>(interface);
-    if (serializable_interface != nullptr) serializable_interface->Pack(data);
-  }
-
-  template <typename Interface>
-  void TryUnpackInterface(
-      Interface& interface, std::size_t& position, const std::vector<char>& data)
-  {
-    std::shared_ptr<DRT::ELEMENTS::Serializable> serializable_solid_interface =
-        std::dynamic_pointer_cast<DRT::ELEMENTS::Serializable>(interface);
-    if (serializable_solid_interface != nullptr)
-      serializable_solid_interface->Unpack(position, data);
-  }
-}  // namespace
-
 
 DRT::ELEMENTS::SolidPoroType DRT::ELEMENTS::SolidPoroType::instance_;
 
@@ -169,46 +148,6 @@ DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner)
       porotype_(INPAR::PORO::PoroType::undefined),
       impltype_(INPAR::SCATRA::impltype_undefined)
 {
-}
-
-DRT::ELEMENTS::SolidPoro::SolidPoro(const DRT::ELEMENTS::SolidPoro& other)
-    : DRT::Element(other),
-      distype_(other.distype_),
-      kintype_(other.kintype_),
-      eastype_(other.eastype_),
-      porotype_(other.porotype_),
-      impltype_(other.impltype_),
-      anisotropic_permeability_directions_(other.anisotropic_permeability_directions_),
-      anisotropic_permeability_nodal_coeffs_(other.anisotropic_permeability_nodal_coeffs_),
-      interface_ptr_(other.interface_ptr_),
-      material_post_setup_(other.material_post_setup_)
-{
-  // create own solid and poro interface on copy
-  CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
-  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
-}
-
-DRT::ELEMENTS::SolidPoro& ::DRT::ELEMENTS::SolidPoro::operator=(
-    const DRT::ELEMENTS::SolidPoro& other)
-{
-  if (this == &other) return *this;
-
-  distype_ = other.distype_;
-  kintype_ = other.kintype_;
-  eastype_ = other.eastype_;
-  porotype_ = other.porotype_;
-  impltype_ = other.impltype_;
-  anisotropic_permeability_directions_ = other.anisotropic_permeability_directions_;
-  anisotropic_permeability_nodal_coeffs_ = other.anisotropic_permeability_nodal_coeffs_;
-  interface_ptr_ = other.interface_ptr_;
-  material_post_setup_ = other.material_post_setup_;
-
-  // create own solid and poro interface on copy assignment
-  solid_interface_ =
-      CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
-  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
-
-  return *this;
 }
 
 DRT::Element* DRT::ELEMENTS::SolidPoro::Clone() const
@@ -367,15 +306,17 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
   ReadAnisotropicPermeabilityDirectionsFromElementLineDefinition(linedef);
   ReadAnisotropicPermeabilityNodalCoeffsFromElementLineDefinition(linedef);
 
-  solid_interface_ =
+  solid_calc_variant_ =
       CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
-  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
+  solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
   // setup solid material
-  solid_interface_->Setup(StructPoroMaterial(), linedef);
+  std::visit(
+      [&](auto& solid) { solid->Setup(StructPoroMaterial(), linedef); }, solid_calc_variant_);
 
   // setup poro material
-  solidporo_interface_->PoroSetup(StructPoroMaterial(), linedef);
+  std::visit([&](auto& solidporo) { solidporo->PoroSetup(StructPoroMaterial(), linedef); },
+      solidporo_calc_variant_);
 
   return true;
 }
@@ -442,8 +383,8 @@ void DRT::ELEMENTS::SolidPoro::Pack(DRT::PackBuffer& data) const
   for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // optional data, e.g., EAS data
-  TryPackInterface(solid_interface_, data);
-  TryPackInterface(solidporo_interface_, data);
+  DRT::ELEMENTS::Pack(solid_calc_variant_, data);
+  DRT::ELEMENTS::Pack(solidporo_calc_variant_, data);
 }
 
 void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
@@ -486,12 +427,12 @@ void DRT::ELEMENTS::SolidPoro::Unpack(const std::vector<char>& data)
     ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // reset solid and poro interfaces
-  solid_interface_ =
+  solid_calc_variant_ =
       CreateSolidCalculationInterface(*this, GetEleTech(), GetEleKinematicType(), GetEAStype());
-  solidporo_interface_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
+  solidporo_calc_variant_ = CreateSolidPoroCalculationInterface(*this, GetElePoroType());
 
-  TryUnpackInterface(solid_interface_, position, data);
-  TryUnpackInterface(solidporo_interface_, position, data);
+  DRT::ELEMENTS::Unpack(solid_calc_variant_, position, data);
+  DRT::ELEMENTS::Unpack(solidporo_calc_variant_, position, data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);

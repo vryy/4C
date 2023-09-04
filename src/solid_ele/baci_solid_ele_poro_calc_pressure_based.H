@@ -11,9 +11,14 @@ implementation
 
 
 #include "baci_discretization_fem_general_utils_gausspoints.H"
+#include "baci_inpar_structure.H"
 #include "baci_lib_element.H"
-#include "baci_solid_ele_poro_calc_interface.H"
 
+namespace MAT
+{
+  class FluidPoroMultiPhase;
+  class StructPoro;
+}  // namespace MAT
 namespace STR::ELEMENTS
 {
   class ParamsInterface;
@@ -32,7 +37,7 @@ namespace DRT
   namespace ELEMENTS
   {
     template <DRT::Element::DiscretizationType distype>
-    class SolidPoroPressureBasedEleCalc : public virtual SolidPoroEleCalcInterface
+    class SolidPoroPressureBasedEleCalc
     {
      public:
       SolidPoroPressureBasedEleCalc();
@@ -41,18 +46,17 @@ namespace DRT
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           Teuchos::ParameterList& params, CORE::LINALG::SerialDenseVector* force_vector,
-          CORE::LINALG::SerialDenseMatrix* stiffness_matrix) override;
+          CORE::LINALG::SerialDenseMatrix* stiffness_matrix);
 
       void CouplingPoroelast(const DRT::Element& ele, MAT::StructPoro& porostructmat,
           MAT::FluidPoroMultiPhase& porofluidmat, const INPAR::STR::KinemType& kinematictype,
           const DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          Teuchos::ParameterList& params,
-          CORE::LINALG::SerialDenseMatrix& stiffness_matrix) override;
+          Teuchos::ParameterList& params, CORE::LINALG::SerialDenseMatrix& stiffness_matrix);
 
       void CouplingStress(const DRT::Element& ele, const DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params) override;
+          const std::vector<int>& lm, Teuchos::ParameterList& params);
 
-      void PoroSetup(MAT::StructPoro& porostructmat, DRT::INPUT::LineDefinition* linedef) override;
+      void PoroSetup(MAT::StructPoro& porostructmat, DRT::INPUT::LineDefinition* linedef);
 
      private:
       /// static values for matrix sizes

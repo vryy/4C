@@ -8,6 +8,7 @@
 
 #include "baci_lib_pack_buffer.H"
 
+#include <variant>
 #include <vector>
 
 
@@ -17,29 +18,129 @@
 namespace DRT::ELEMENTS
 {
   /*!
-   * @brief An interface providing methods to serialize an object into a packbuffer and deserialize
-   * from a char array
+   * @brief A type trait to check whether the type T supports the Pack(DRT::PackBuffer&) method.
    *
+   * @note T does not necessarily need to derive from some interface class
+   * @{
    */
-  class Serializable
+  template <typename T, typename AlwaysVoid = void>
+  constexpr bool IsPackable = false;
+
+  template <typename T>
+  constexpr bool IsPackable<T,
+      std::void_t<decltype(std::declval<const T>()->Pack(std::declval<DRT::PackBuffer&>()))>> =
+      true;
+  ///@}
+
+  /*!
+   * @brief A type trait to check whether the type T supports the
+   * Unpack(std::vector<char>::size_type&, const std::vector<char>&) method.
+   *
+   * @note T does not necessarily need to derive from some interface class
+   * @{
+   */
+  template <typename T, typename AlwaysVoid = void>
+  constexpr bool IsUnpackable = false;
+
+  template <typename T>
+  constexpr bool IsUnpackable<T,
+      std::void_t<decltype(std::declval<T>()->Unpack(std::declval<std::vector<char>::size_type&>(),
+          std::declval<const std::vector<char>&>()))>> = true;
+  ///@}
+
+
+  namespace DETAILS
   {
-   public:
-    virtual ~Serializable() = default;
     /*!
-     * @brief Pack the whole state of the object into into the pack buffer
+     * @brief This struct should be used to serialize an item within a sum type (e.g.
+     *std::variant).
      *
-     * @param data (out) : the buffer to pack into.
+     * The Pack(DRT::PackBuffer&) is called for those types that provide the method. Nothing is done
+     * for types that don't provide a Pack-method.
+     *
+     * @note If you have a type that needs to be serialized during execution, you could verify that
+     * the Pack-member function is correct by asserting it with static_assert(IsPackable<T>); in
+     *your cpp file
      */
-    virtual void Pack(DRT::PackBuffer& data) const = 0;
+    struct PackAction
+    {
+      PackAction(DRT::PackBuffer& buffer) : data(buffer) {}
+
+      template <typename T, std::enable_if_t<IsPackable<T>, bool> = true>
+      void operator()(const T& packable)
+      {
+        packable->Pack(data);
+      }
+
+      template <typename T, std::enable_if_t<!IsPackable<T>, bool> = true>
+      void operator()(const T& other)
+      {
+        // do nothing if it is not packable
+      }
+
+      DRT::PackBuffer& data;
+    };
 
     /*!
-     * @brief Unpack the state of an object from a char vector starting from the position
+     * @brief This struct should be used to deserialize an item within a sum type (e.g.
+     * std::variant).
      *
-     * @param position (in/out) : position where to unpack the data
-     * @param data     (in)     : data to be unpacked.
+     * Unpack(std::size_t&, const std::vector<char>&) is called for those types that provide the
+     * method. Nothing is done for types that don't provide a Unpack-method.
+     *
+     * @note If you have a type that needs to be serialized during execution, you could verify that
+     * the Pack-member function is correct by asserting it with static_assert(IsUnpackable<T>); in
+     * your cpp file
      */
-    virtual void Unpack(std::vector<char>::size_type& position, const std::vector<char>& data) = 0;
-  };
+    struct UnpackAction
+    {
+      UnpackAction(std::size_t& p, const std::vector<char>& d) : position(p), data(d) {}
+
+      template <typename T, std::enable_if_t<IsUnpackable<T&>, bool> = true>
+      void operator()(T& unpackable)
+      {
+        unpackable->Unpack(position, data);
+      }
+
+      template <typename T, std::enable_if_t<!IsUnpackable<T&>, bool> = true>
+      void operator()(T& other)
+      {
+        // do nothing if it is not unpackable
+      }
+
+      std::size_t& position;
+      const std::vector<char>& data;
+    };
+  }  // namespace DETAILS
+
+  /*!
+   * @brief Pack the item within the variant if it is packable
+   *
+   * @tparam VariantType A template argument to match all variant types
+   * @param variant (in) : variant to pack
+   * @param data (in/out) : the data to pack the variant to
+   */
+  template <typename VariantType>
+  void Pack(const VariantType& variant, DRT::PackBuffer& data)
+  {
+    std::visit(DETAILS::PackAction(data), variant);
+  }
+
+  /*!
+   * @brief Unpack the data into the variant type
+   *
+   * @tparam VariantType A template argument to match all variant types
+   * @param variant (in/out) : variant to unpack
+   * @param position (in/out) : position where to start unpacking. Will be incremented within the
+   * function
+   * @param data (in) : data to unpack from
+   */
+  template <typename VariantType>
+  void Unpack(
+      VariantType& variant, std::vector<char>::size_type& position, const std::vector<char>& data)
+  {
+    std::visit(DETAILS::UnpackAction(position, data), variant);
+  }
 }  // namespace DRT::ELEMENTS
 
 #endif  // SOLID_ELE_INTERFACE_SERIALIZABLE_H

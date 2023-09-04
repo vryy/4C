@@ -16,7 +16,14 @@
 #include <string>
 #include <unordered_map>
 
-
+namespace MAT
+{
+  class So3Material;
+}
+namespace STR::MODELEVALUATOR
+{
+  class GaussPointDataOutputManager;
+}
 namespace DRT
 {
   namespace UTILS
@@ -30,56 +37,56 @@ namespace DRT
   namespace ELEMENTS
   {
     template <DRT::Element::DiscretizationType distype>
-    class SolidEleCalc : public virtual SolidEleCalcInterface
+    class SolidEleCalc
     {
      public:
       SolidEleCalc();
 
-      void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef) override;
+      void Setup(MAT::So3Material& solid_material, DRT::INPUT::LineDefinition* linedef);
 
-      void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material) override;
+      void MaterialPostSetup(const DRT::Element& ele, MAT::So3Material& solid_material);
 
       void EvaluateNonlinearForceStiffnessMass(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           CORE::LINALG::SerialDenseVector* force_vector,
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-          CORE::LINALG::SerialDenseMatrix* mass_matrix) override;
+          CORE::LINALG::SerialDenseMatrix* mass_matrix);
 
       void EvaluateNonlinearForceStiffnessMassGEMM(const DRT::Element& ele,
           MAT::So3Material& solid_material, const DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           CORE::LINALG::SerialDenseVector* force_vector,
           CORE::LINALG::SerialDenseMatrix* stiffness_matrix,
-          CORE::LINALG::SerialDenseMatrix* mass_matrix) override;
+          CORE::LINALG::SerialDenseMatrix* mass_matrix);
 
       void Recover(const DRT::Element& ele, const DRT::Discretization& discretization,
-          const std::vector<int>& lm, Teuchos::ParameterList& params) override;
+          const std::vector<int>& lm, Teuchos::ParameterList& params);
 
       void CalculateStress(const DRT::Element& ele, MAT::So3Material& solid_material,
           const StressIO& stressIO, const StrainIO& strainIO,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params) override;
+          Teuchos::ParameterList& params);
 
       double CalculateInternalEnergy(const DRT::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params) override;
+          Teuchos::ParameterList& params);
 
       void Update(const DRT::Element& ele, MAT::So3Material& solid_material,
           const DRT::Discretization& discretization, const std::vector<int>& lm,
-          Teuchos::ParameterList& params) override;
+          Teuchos::ParameterList& params);
 
       void InitializeGaussPointDataOutput(const DRT::Element& ele,
           const MAT::So3Material& solid_material,
-          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const override;
+          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
       void EvaluateGaussPointDataOutput(const DRT::Element& ele,
           const MAT::So3Material& solid_material,
-          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const override;
+          STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      void ResetAll(const DRT::Element& ele, MAT::So3Material& solid_material) override;
+      void ResetAll(const DRT::Element& ele, MAT::So3Material& solid_material);
 
-      void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material) override;
+      void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
 
      private:
       /// static values for matrix sizes
