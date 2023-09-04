@@ -227,8 +227,6 @@ before_script:
     # Cloning the Trilinos-develop branch
   - git clone -b develop https://github.com/trilinos/Trilinos.git
   - cd Trilinos
-    # Apply patches for baci
-  - git apply $CI_PROJECT_DIR/trilinos/trilinos_for_baci.patch
     # Delete old Trilinos build files
   - rm -rf $CI_PROJECT_DIR/../Trilinos-develop-build
   - mkdir $CI_PROJECT_DIR/../Trilinos-develop-build
