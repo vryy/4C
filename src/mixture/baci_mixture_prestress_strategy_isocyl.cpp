@@ -227,12 +227,9 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
   return (target_stress - (total_stress - membrane_stress)) / membrane_stress;
 }
 
-void MIXTURE::IsotropicCylinderPrestressStrategy::UpdatePrestress(
+void MIXTURE::IsotropicCylinderPrestressStrategy::Update(
     const Teuchos::RCP<const MAT::CoordinateSystemProvider> anisotropy,
     MIXTURE::MixtureConstituent& constituent, const CORE::LINALG::Matrix<3, 3>& F,
     CORE::LINALG::Matrix<3, 3>& G, Teuchos::ParameterList& params, int gp, int eleGID)
 {
-  dserror(
-      "The prestretching strategy that you have chosen does not need iterative prestretching. It "
-      "ensures equilibrium during setup.");
 }

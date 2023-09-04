@@ -1382,24 +1382,13 @@ void STR::MODELEVALUATOR::Structure::UpdateStepElement()
   bool isDuringPrestressing =
       ::UTILS::PRESTRESS::IsActive(GState().GetTimeN(), prestress_type, prestress_time);
 
-  if (isDuringPrestressing)
+  if (isDuringPrestressing && prestress_type == INPAR::STR::PreStress::mulf)
   {
-    switch (prestress_type)
-    {
-      case INPAR::STR::PreStress::mulf:
-      case INPAR::STR::PreStress::material_iterative:
-        if (Discret().Comm().MyPID() == 0)
-          IO::cout << "====== Entering PRESTRESSING update" << IO::endl;
+    if (Discret().Comm().MyPID() == 0)
+      IO::cout << "====== Entering PRESTRESSING update" << IO::endl;
 
-        // Choose special update action for elements in case of MULF
-        EvalData().SetActionType(DRT::ELEMENTS::struct_update_prestress);
-        break;
-      default:
-        dserror(
-            "The type of prestressing algorithm is unknown in the new time "
-            "integration framework!");
-        break;
-    }
+    // Choose special update action for elements in case of MULF
+    EvalData().SetActionType(DRT::ELEMENTS::struct_update_prestress);
   }
   else
   {

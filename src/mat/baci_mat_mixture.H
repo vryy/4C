@@ -183,9 +183,6 @@ namespace MAT
     void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int gp, Teuchos::ParameterList& params,
         int eleGID) override;
 
-    void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, int gp,
-        Teuchos::ParameterList& params, int eleGID) override;
-
     /// \brief This material law uses the extended update method
     bool UsesExtendedUpdate() override { return true; }
 

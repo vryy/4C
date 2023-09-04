@@ -292,31 +292,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
       switch (pstype_)
       {
-        case INPAR::STR::PreStress::material_iterative:
-        {
-          // get current displacements
-          CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xrefe;  // material coord. of element
-          CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xcurr;  // current  coord. of element
-          CORE::LINALG::Matrix<NUMNOD_SOTET10, NUMDIM_SOTET10> xdisp;
-          UTILS::EvaluateNodalCoordinates<DRT::Element::tet10, 3>(Nodes(), xrefe);
-          UTILS::EvaluateNodalDisplacements<DRT::Element::tet10, 3>(mydisp, xdisp);
-          UTILS::EvaluateCurrentNodalCoordinates<DRT::Element::tet10, 3>(xrefe, xdisp, xcurr);
-
-          for (unsigned gp = 0; gp < NUMGPT_SOTET10; ++gp)
-          {
-            // Compute deformation gradient
-            CORE::LINALG::Matrix<3, 3> defgrd(false);
-            CORE::LINALG::Matrix<3, 10> derivs(false);
-            so_tet10_derivs<CORE::DRT::UTILS::GaussRule3D::tet_4point>(derivs, gp);
-
-
-            UTILS::ComputeDeformationGradient<DRT::Element::tet10>(
-                defgrd, kintype_, xdisp, xcurr, invJ_[gp], derivs, pstype_, prestress_, gp);
-
-            SolidMaterial()->UpdatePrestress(defgrd, gp, params, Id());
-          }
-          break;
-        }
         case INPAR::STR::PreStress::mulf:
         {
           // build incremental def gradient for every gauss point

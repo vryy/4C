@@ -66,9 +66,6 @@ namespace MIXTURE
     void Update(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
         const int gp, const int eleGID) override;
 
-    void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params,
-        const int gp, const int eleGID) override;
-
     void Evaluate(const CORE::LINALG::Matrix<3, 3>& F, const CORE::LINALG::Matrix<6, 1>& E_strain,
         Teuchos::ParameterList& params, CORE::LINALG::Matrix<6, 1>& S_stress,
         CORE::LINALG::Matrix<6, 6>& cmat, int gp, int eleGID) override;

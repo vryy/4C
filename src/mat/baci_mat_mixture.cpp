@@ -274,19 +274,6 @@ void MAT::Mixture::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, const int gp
   mixture_rule_->Update(defgrd, params, gp, eleGID);
 }
 
-// This method is called between two timesteps during prestress
-void MAT::Mixture::UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd, const int gp,
-    Teuchos::ParameterList& params, const int eleGID)
-{
-  // Update all constituents
-  for (const auto& constituent : *constituents_)
-  {
-    constituent->UpdatePrestress(defgrd, params, gp, eleGID);
-  }
-
-  mixture_rule_->UpdatePrestress(defgrd, params, gp, eleGID);
-}
-
 // Evaluates the material
 void MAT::Mixture::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
     const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,

@@ -186,20 +186,12 @@ void MIXTURE::MixtureConstituent_ElastHyperBase::Update(CORE::LINALG::Matrix<3, 
 
   // loop map of associated potential summands
   for (auto& summand : potsum_) summand->Update();
-}
-
-// Updates all summands
-void MIXTURE::MixtureConstituent_ElastHyperBase::UpdatePrestress(
-    CORE::LINALG::Matrix<3, 3> const& defgrd, Teuchos::ParameterList& params, const int gp,
-    const int eleGID)
-{
-  MixtureConstituent::UpdatePrestress(defgrd, params, gp, eleGID);
 
   // do nothing in the default case
   if (params_->GetPrestressingMatId() > 0)
   {
-    prestressStrategy_->UpdatePrestress(cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp),
-        *this, defgrd, prestretch_[gp], params, gp, eleGID);
+    prestressStrategy_->Update(cosyAnisotropyExtension_.GetCoordinateSystemProvider(gp), *this,
+        defgrd, prestretch_[gp], params, gp, eleGID);
   }
 }
 

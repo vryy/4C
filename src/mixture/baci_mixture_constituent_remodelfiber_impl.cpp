@@ -126,13 +126,6 @@ void MIXTURE::MixtureConstituent_RemodelFiberImpl::Setup(Teuchos::ParameterList&
   UpdateHomeostaticValues(params, eleGID);
 }
 
-void MIXTURE::MixtureConstituent_RemodelFiberImpl::UpdatePrestress(
-    const CORE::LINALG::Matrix<3, 3>& F, Teuchos::ParameterList& params, const int gp,
-    const int eleGID)
-{
-  Update(F, params, gp, eleGID);
-}
-
 void MIXTURE::MixtureConstituent_RemodelFiberImpl::Update(const CORE::LINALG::Matrix<3, 3>& F,
     Teuchos::ParameterList& params, const int gp, const int eleGID)
 {

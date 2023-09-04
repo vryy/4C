@@ -192,22 +192,6 @@ namespace MIXTURE
     }
 
     /*!
-     * \brief Update of prestretch during the internal prestretching mechanism
-     *
-     * \param defgrd Deformation gradient that ensures global equilibrium in the deformed
-     * configuration
-     *
-     * \param params Container for additional information
-     * \param gp Gauss point
-     * \param eleGID Global element id
-     */
-    virtual void UpdatePrestress(CORE::LINALG::Matrix<3, 3> const& defgrd,
-        Teuchos::ParameterList& params, const int gp, const int eleGID)
-    {
-      // Do nothing in the default case
-    }
-
-    /*!
      *
      * @brief Method that is executed before the first evaluate call, once for each Gauss point
      *
