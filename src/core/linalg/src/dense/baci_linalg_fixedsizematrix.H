@@ -447,8 +447,8 @@ namespace CORE::LINALG
       \param in
         pointer to the matrix to be copied, size (\c i)x(\c j)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type* in);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_in>
+    inline void update(value_type_out* out, const value_type_in* in);
 
     /// Scaled copy: \e out = \e infac * \e in
     /*!
@@ -462,8 +462,9 @@ namespace CORE::LINALG
       \param in
         pointer to the matrix to read from, size (\c i)x(\c j)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type infac, const value_type* in);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_infac,
+        class value_type_in>
+    inline void update(value_type_out* out, const value_type_infac infac, const value_type_in* in);
 
     /// Addition: \e out = \e outfac * \e out + \e infac * \e in
     /*!
@@ -479,9 +480,10 @@ namespace CORE::LINALG
       \param in
         pointer to the matrix to be added, size (\c i)x(\c j)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(
-        const value_type outfac, value_type* out, const value_type infac, const value_type* in);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
+        class value_type_infac, class value_type_in>
+    inline void update(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_in* in);
 
     /// Addition: \e out = \e left + \e right
     /*!
@@ -496,8 +498,10 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c i)x(\c j)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_left,
+        class value_type_right>
+    inline void update(
+        value_type_out* out, const value_type_left* left, const value_type_right* right);
 
     /// Addition: \e out = \e leftfac * \e left + \e rightfac * \e right
     /*!
@@ -517,9 +521,11 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c i)x(\c j)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type leftfac, const value_type* left,
-        const value_type rightfac, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_leftfac,
+        class value_type_left, class value_type_rightfac, class value_type_right>
+    inline void update(value_type_out* out, const value_type_leftfac leftfac,
+        const value_type_left* left, const value_type_rightfac rightfac,
+        const value_type_right* right);
 
     /// Addition: \e out = \e outfac * \e out + \e leftfac * \e left + \e rightfac * \e right
     /*!
@@ -541,9 +547,12 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c i)x(\c j)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(const value_type outfac, value_type* out, const value_type leftfac,
-        const value_type* left, const value_type rightfac, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
+        class value_type_leftfac, class value_type_left, class value_type_rightfac,
+        class value_type_right>
+    inline void update(const value_type_outfac outfac, value_type_out* out,
+        const value_type_leftfac leftfac, const value_type_left* left,
+        const value_type_rightfac rightfac, const value_type_right* right);
 
     /// Transposed copy: \e out = \e in^T
     /*!
@@ -555,8 +564,8 @@ namespace CORE::LINALG
       \param in
         pointer to the matrix to be copied, size (\c j)x(\c i)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void updateT(value_type* out, const value_type* in);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_in>
+    inline void updateT(value_type_out* out, const value_type_in* in);
 
     /// Scaled transposed copy: \e out = \e infac * \e in^T
     /*!
@@ -570,8 +579,9 @@ namespace CORE::LINALG
       \param in
         pointer to the matrix to read from, size (\c j)x(\c i)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void updateT(value_type* out, const value_type infac, const value_type* in);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_infac,
+        class value_type_in>
+    inline void updateT(value_type_out* out, const value_type_infac infac, const value_type_in* in);
 
     /// Transposed addition: \e out = \e outfac * \e out + \e infac * \e in^T
     /*!
@@ -587,9 +597,10 @@ namespace CORE::LINALG
       \param in
         pointer to the matrix to be added, size (\c i)x(\c j)
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void updateT(
-        const value_type outfac, value_type* out, const value_type infac, const value_type* in);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
+        class value_type_infac, class value_type_in>
+    inline void updateT(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_in* in);
 
     /// Multiply element-wise, \e out(m,n) = \e out(m,n)*\e in(m,n)
     /*!
@@ -2335,36 +2346,47 @@ namespace CORE::LINALG
 
     /* add matrices */
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type* in)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_in>
+    inline void update(value_type_out* out, const value_type_in* in)
     {
+      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+      {
 #ifdef DEBUG
-      if (out == in) dserror("'out' and 'in' point to same memory location");
+        if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
-      // std::memcpy(out, in, i*j*sizeof(value_type));
-      std::copy(in, in + i * j, out);
+        // std::memcpy(out, in, i*j*sizeof(value_type));
+        std::copy(in, in + i * j, out);
+      }
+      else
+      {
+        update<value_type_out, i, j>(out, 1.0, in);
+      }
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type infac, const value_type* in)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_infac,
+        class value_type_in>
+    inline void update(value_type_out* out, const value_type_infac infac, const value_type_in* in)
     {
 #ifdef DEBUG
-      if (out == in) dserror("'out' and 'in' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+        if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
       *out = infac * (*in);
       for (unsigned int c = 1; c < i * j; ++c) *(++out) = infac * (*(++in));
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(
-        const value_type outfac, value_type* out, const value_type infac, const value_type* in)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
+        class value_type_infac, class value_type_in>
+    inline void update(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_in* in)
     {
 #ifdef DEBUG
-      if (out == in) dserror("'out' and 'in' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+        if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {  // cannot handle this case here, because 0*nan==nan
-        update<value_type, i, j>(out, infac, in);
+        update<value_type_out, i, j>(out, infac, in);
         return;
       }
       *out *= outfac;
@@ -2376,41 +2398,54 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type* left, const value_type* right)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_left,
+        class value_type_right>
+    inline void update(
+        value_type_out* out, const value_type_left* left, const value_type_right* right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       *out = *left + *right;
       for (unsigned int c = 1; c < i * j; ++c) *(++out) = *(++left) + *(++right);
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(value_type* out, const value_type leftfac, const value_type* left,
-        const value_type rightfac, const value_type* right)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_leftfac,
+        class value_type_left, class value_type_rightfac, class value_type_right>
+    inline void update(value_type_out* out, const value_type_leftfac leftfac,
+        const value_type_left* left, const value_type_rightfac rightfac,
+        const value_type_right* right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       *out = leftfac * (*left) + rightfac * (*right);
       for (unsigned int c = 1; c < i * j; ++c)
         *(++out) = leftfac * (*(++left)) + rightfac * (*(++right));
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void update(const value_type outfac, value_type* out, const value_type leftfac,
-        const value_type* left, const value_type rightfac, const value_type* right)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
+        class value_type_leftfac, class value_type_left, class value_type_rightfac,
+        class value_type_right>
+    inline void update(const value_type_outfac outfac, value_type_out* out,
+        const value_type_leftfac leftfac, const value_type_left* left,
+        const value_type_rightfac rightfac, const value_type_right* right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {  // cannot handle this case here, because 0*nan==nan
-        update<value_type, i, j>(out, leftfac, left, rightfac, right);
+        update<value_type_out, i, j>(out, leftfac, left, rightfac, right);
         return;
       }
       *out *= outfac;
@@ -2422,36 +2457,41 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void updateT(value_type* out, const value_type* in)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_in>
+    inline void updateT(value_type_out* out, const value_type_in* in)
     {
 #ifdef DEBUG
-      if (out == in) dserror("'out' and 'in' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+        if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
         for (unsigned int c1 = 0; c1 < i; c1 += 1) *(out++) = in[c2 + c1 * j];
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void updateT(value_type* out, const value_type infac, const value_type* in)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_infac,
+        class value_type_in>
+    inline void updateT(value_type_out* out, const value_type_infac infac, const value_type_in* in)
     {
 #ifdef DEBUG
-      if (out == in) dserror("'out' and 'in' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+        if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
         for (unsigned int c1 = 0; c1 < i; c1 += 1) *(out++) = infac * in[c2 + c1 * j];
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void updateT(
-        const value_type outfac, value_type* out, const value_type infac, const value_type* in)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_outfac,
+        class value_type_infac, class value_type_in>
+    inline void updateT(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_in* in)
     {
 #ifdef DEBUG
-      if (out == in) dserror("'out' and 'in' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_in>)
+        if (out == in) dserror("'out' and 'in' point to same memory location");
 #endif
       if (outfac > -1e-30 and outfac < 1e-30)
       {  // cannot handle this case here, because 0*nan==nan
-        updateT<value_type, i, j>(out, infac, in);
+        updateT<value_type_out, i, j>(out, infac, in);
         return;
       }
       for (unsigned int c2 = 0; c2 < j; c2 += 1)
@@ -3608,7 +3648,8 @@ namespace CORE::LINALG
       \param other
         matrix to copy
      */
-    inline void Update(const Matrix<rows, cols, value_type>& other)
+    template <class value_type_other>
+    inline void Update(const Matrix<rows, cols, value_type_other>& other)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(A(), other.values());
     }
@@ -3638,8 +3679,9 @@ namespace CORE::LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void Update(const value_type scalarOther, const Matrix<rows, cols, value_type>& other,
-        const value_type scalarThis)
+    template <class value_type_scalar_other, class value_type_other, class value_type_scalar_this>
+    inline void Update(const value_type_scalar_other scalarOther,
+        const Matrix<rows, cols, value_type_other>& other, const value_type_scalar_this scalarThis)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(scalarThis, A(), scalarOther, other.values());
     }
@@ -3653,8 +3695,9 @@ namespace CORE::LINALG
       \param right
         second matrix to add
      */
-    inline void Update(
-        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
+    template <class value_type_left, class value_type_right>
+    inline void Update(const Matrix<rows, cols, value_type_left>& left,
+        const Matrix<rows, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(A(), left.values(), right.values());
     }
@@ -3672,8 +3715,11 @@ namespace CORE::LINALG
       \param right
         second matrix to add
      */
-    inline void Update(const value_type scalarLeft, const Matrix<rows, cols, value_type>& left,
-        const value_type scalarRight, const Matrix<rows, cols, value_type>& right)
+    template <class value_type_scalar_left, class value_type_left, class value_type_scalar_right,
+        class value_type_right>
+    inline void Update(const value_type_scalar_left scalarLeft,
+        const Matrix<rows, cols, value_type_left>& left, const value_type_scalar_right scalarRight,
+        const Matrix<rows, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(
           A(), scalarLeft, left.values(), scalarRight, right.values());
@@ -3694,9 +3740,11 @@ namespace CORE::LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void Update(const value_type scalarLeft, const Matrix<rows, cols, value_type>& left,
-        const value_type scalarRight, const Matrix<rows, cols, value_type>& right,
-        const value_type scalarThis)
+    template <class value_type_scalar_left, class value_type_left, class value_type_scalar_right,
+        class value_type_right, class value_type_scalar_this>
+    inline void Update(const value_type_scalar_left scalarLeft,
+        const Matrix<rows, cols, value_type_left>& left, const value_type_scalar_right scalarRight,
+        const Matrix<rows, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(
           scalarThis, A(), scalarLeft, left.values(), scalarRight, right.values());
@@ -3709,7 +3757,8 @@ namespace CORE::LINALG
       \param other
         matrix to copy
      */
-    inline void UpdateT(const Matrix<cols, rows, value_type>& other)
+    template <class value_type_other>
+    inline void UpdateT(const Matrix<cols, rows, value_type_other>& other)
     {
       DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), other.values());
     }
@@ -3723,7 +3772,9 @@ namespace CORE::LINALG
       \param other
         matrix to read from
      */
-    inline void UpdateT(const value_type scalarOther, const Matrix<cols, rows, value_type>& other)
+    template <class value_type_other_scalar, class value_type_other>
+    inline void UpdateT(const value_type_other_scalar scalarOther,
+        const Matrix<cols, rows, value_type_other>& other)
     {
       DENSEFUNCTIONS::updateT<value_type, rows, cols>(A(), scalarOther, other.values());
     }
@@ -3739,8 +3790,9 @@ namespace CORE::LINALG
       \param scalarThis
         scaling factor for \e this
      */
-    inline void UpdateT(const value_type scalarOther, const Matrix<cols, rows, value_type>& other,
-        const value_type scalarThis)
+    template <class value_type_other_scalar, class value_type_other, class value_type_this_scalar>
+    inline void UpdateT(const value_type_other_scalar scalarOther,
+        const Matrix<cols, rows, value_type_other>& other, const value_type_this_scalar scalarThis)
     {
       DENSEFUNCTIONS::updateT<value_type, rows, cols>(scalarThis, A(), scalarOther, other.values());
     }
@@ -4291,7 +4343,9 @@ namespace CORE::LINALG
       \param other
         matrix to add
      */
-    inline Matrix<rows, cols, value_type>& operator+=(const Matrix<rows, cols, value_type>& other)
+    template <class value_type_other>
+    inline Matrix<rows, cols, value_type>& operator+=(
+        const Matrix<rows, cols, value_type_other>& other)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), 1.0, other.values());
       return *this;
@@ -4304,7 +4358,9 @@ namespace CORE::LINALG
       \param other
         matrix to subtract
      */
-    inline Matrix<rows, cols, value_type>& operator-=(const Matrix<rows, cols, value_type>& other)
+    template <class value_type_other>
+    inline Matrix<rows, cols, value_type>& operator-=(
+        const Matrix<rows, cols, value_type_other>& other)
     {
       DENSEFUNCTIONS::update<value_type, rows, cols>(1.0, A(), -1.0, other.values());
       return *this;
@@ -4611,7 +4667,6 @@ namespace CORE::LINALG
     matrix.Print(out);
     return out;
   }
-
 
   template <unsigned int rows, unsigned int cols, class value_type>
   inline Matrix<rows, cols, value_type>& Matrix<rows, cols, value_type>::operator=(
