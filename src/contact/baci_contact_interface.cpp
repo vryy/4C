@@ -183,8 +183,12 @@ CONTACT::CoInterface::CoInterface(const Teuchos::RCP<MORTAR::InterfaceDataContai
   if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
       icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra ||
       icontact.get<int>("PROBTYPE") == INPAR::CONTACT::fpi)
+  {
     SetPoroFlag(true);
-  if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) SetPoroScatraFlag(true);
+    SetPoroType(INPAR::MORTAR::poroelast);
+  }
+  if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
+    SetPoroType(INPAR::MORTAR::poroscatra);
 
   // set ehl contact
   if (icontact.get<int>("PROBTYPE") == INPAR::CONTACT::ehl) SetEhlFlag(true);
@@ -1381,7 +1385,7 @@ void CONTACT::CoInterface::Initialize()
     }
 
     // just do poro contact relevant stuff!
-    if (poro_)
+    if (InterfaceData().IsPoro())
     {
       cnode->CoPoroData().GetnCoup() = 0.0;
       cnode->CoPoroData().GetDerivnCoup().clear();

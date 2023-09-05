@@ -84,7 +84,7 @@ MORTAR::InterfaceDataContainer::InterfaceDataContainer()
       inttime_interface_(0.0),
       nurbs_(false),
       poro_(false),
-      poroscatra_(false),
+      porotype_(INPAR::MORTAR::other),
       ehl_(false),
       isinit_(false)
 {
@@ -132,8 +132,6 @@ MORTAR::MortarInterface::MortarInterface(Teuchos::RCP<MORTAR::InterfaceDataConta
       searchuseauxpos_(interfaceData_->SearchUseAuxPos()),
       inttime_interface_(interfaceData_->IntTimeInterface()),
       nurbs_(interfaceData_->IsNurbs()),
-      poro_(interfaceData_->IsPoro()),
-      poroscatra_(interfaceData_->IsPoroScatra()),
       ehl_(interfaceData_->IsEhl())
 {
   if (not interfaceData_->IsInit())
@@ -200,8 +198,6 @@ MORTAR::MortarInterface::MortarInterface(Teuchos::RCP<InterfaceDataContainer> in
       searchuseauxpos_(interfaceData_->SearchUseAuxPos()),
       inttime_interface_(interfaceData_->IntTimeInterface()),
       nurbs_(interfaceData_->IsNurbs()),
-      poro_(interfaceData_->IsPoro()),
-      poroscatra_(interfaceData_->IsPoroScatra()),
       ehl_(interfaceData_->IsEhl())
 {
   interfaceData_->SetIsInit(true);
@@ -577,9 +573,9 @@ void MORTAR::MortarInterface::FillComplete(
 
   // ghost also parent elements according to the ghosting strategy of the interface (atm just for
   // poro)
-  if (poro_)
+  if (interfaceData_->IsPoro())
   {
-    if (poroscatra_)
+    if (interfaceData_->PoroType() == INPAR::MORTAR::poroscatra)
       POROELASTSCATRA::UTILS::CreateVolumeGhosting(Discret());
     else
       POROELAST::UTILS::CreateVolumeGhosting(Discret());
@@ -896,11 +892,12 @@ void MORTAR::MortarInterface::InitializeDataContainer()
 
     // initialize container if not yet initialized before
     mnode->InitializeDataContainer();
-    if (poro_)  // initialize just for poro contact case!
+    if (interfaceData_->IsPoro())  // initialize just for poro contact case!
       mnode->InitializePoroDataContainer();
     if (ehl_) mnode->InitializeEhlDataContainer();
   }
-  if (poro_)  // as velocities of structure and fluid exist also on master nodes!!!
+  if (interfaceData_
+          ->IsPoro())  // as velocities of structure and fluid exist also on master nodes!!!
   {
     const Teuchos::RCP<Epetra_Map> masternodes = CORE::LINALG::AllreduceEMap(*(MasterRowNodes()));
     // initialize poro node data container for master nodes!!!
@@ -931,7 +928,7 @@ void MORTAR::MortarInterface::InitializeDataContainer()
     mele->InitializeDataContainer();
   }
 
-  if (poro_)
+  if (interfaceData_->IsPoro())
   {
     // initialize master element data container
     for (int i = 0; i < MasterColElements()->NumMyElements(); ++i)

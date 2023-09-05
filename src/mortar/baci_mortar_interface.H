@@ -329,9 +329,11 @@ namespace MORTAR
 
     inline bool IsPoro() const { return poro_; }
 
-    inline bool& IsPoroScatra() { return poroscatra_; }
 
-    inline bool IsPoroScatra() const { return poroscatra_; }
+
+    inline INPAR::MORTAR::Problemtype& PoroType() { return porotype_; }
+
+    inline INPAR::MORTAR::Problemtype PoroType() const { return porotype_; }
 
     inline Teuchos::RCP<DRT::Exporter>& SlExporterPtr() { return sl_exporter_; }
 
@@ -515,8 +517,9 @@ namespace MORTAR
     //! flag if poro contact problem!
     bool poro_;
 
-    //! flag if poroscatra contact problem!
-    bool poroscatra_;
+
+    //! value for poro problem type!
+    INPAR::MORTAR::Problemtype porotype_;
 
     //! flag if ehl contact problem!
     bool ehl_;
@@ -1300,8 +1303,8 @@ namespace MORTAR
     */
     void PrintShapeFcn() { std::cout << shapefcn_ << std::endl; };
 
-    void SetPoroFlag(bool poro) { poro_ = poro; }
-    void SetPoroScatraFlag(bool poroscatra) { poroscatra_ = poroscatra; }
+    void SetPoroFlag(bool poro) { interfaceData_->IsPoro() = poro; }
+    void SetPoroType(INPAR::MORTAR::Problemtype type) { interfaceData_->PoroType() = type; }
     void SetEhlFlag(bool ehl) { ehl_ = ehl; }
 
     //@}
@@ -1695,6 +1698,12 @@ namespace MORTAR
     */
     void CommunicateQuadSlaveStatusAmongAllProcs();
 
+    /*!
+    \brief Get a const reference to internal interface data
+
+    */
+    const InterfaceDataContainer& InterfaceData() const { return *interfaceData_; }
+
    private:
     /*!
     \brief Setup interface discretization
@@ -1777,10 +1786,8 @@ namespace MORTAR
     bool& searchuseauxpos_;      ///< ref. to use auxiliary position when computing dops
     double& inttime_interface_;  ///< ref. to integration time
 
-    bool& nurbs_;       ///< ref. to flag for nurbs shape functions
-    bool& poro_;        ///< ref. to flag if poro contact problem!
-    bool& poroscatra_;  ///< ref. to flag if poroscatra contact problem!
-    bool& ehl_;         ///< ref. to flag if ehl contact problem!
+    bool& nurbs_;  ///< ref. to flag for nurbs shape functions
+    bool& ehl_;    ///< ref. to flag if ehl contact problem!
 
     /// @}
   };  // class MortarInterface
