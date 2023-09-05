@@ -221,17 +221,7 @@ SSI::UTILS::SSIMatrices::SSIMatrices(Teuchos::RCP<const SSI::UTILS::SSIMaps> ssi
     : is_scatra_manifold_(is_scatra_manifold),
       scatra_matrixtype_(scatra_matrixtype),
       scatra_dofrowmap_(ssi_maps->ScaTraDofRowMap()),
-      scatramanifold_dofrowmap_(Teuchos::null),
-      structure_dofrowmap_(ssi_maps->StructureDofRowMap()),
-      system_matrix_(Teuchos::null),
-      scatra_matrix_(Teuchos::null),
-      scatramanifold_structure_matrix_(Teuchos::null),
-      scatra_structure_matrix_(Teuchos::null),
-      structure_scatra_matrix_(Teuchos::null),
-      structure_matrix_(Teuchos::null),
-      manifold_matrix_(Teuchos::null),
-      scatra_scatramanifold_matrix_(Teuchos::null),
-      scatramanifold_scatra_matrix_(Teuchos::null)
+      structure_dofrowmap_(ssi_maps->StructureDofRowMap())
 {
   // fill maps related to scalar transport manifold if relevant
   if (is_scatra_manifold_) scatramanifold_dofrowmap_ = ssi_maps->ScaTraManifoldDofRowMap();
@@ -534,9 +524,6 @@ Teuchos::RCP<CORE::LINALG::SparseMatrix> SSI::UTILS::SSIMatrices::SetupSparseMat
  *----------------------------------------------------------------------*/
 SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
     : block_maps_sub_problems_(),
-      block_map_system_matrix_(Teuchos::null),
-      map_system_matrix_(Teuchos::null),
-      maps_sub_problems_(Teuchos::null),
       scatra_matrixtype_(ssi_mono_algorithm.ScaTraField()->MatrixType()),
       scatra_manifold_matrixtype_(ssi_mono_algorithm.IsScaTraManifold()
                                       ? ssi_mono_algorithm.ScaTraManifold()->MatrixType()
@@ -656,43 +643,43 @@ SSI::UTILS::SSIMaps::SSIMaps(const SSI::SSIMono& ssi_mono_algorithm)
 
 /*--------------------------------------------------------------------------------------*
  *--------------------------------------------------------------------------------------*/
-Teuchos::RCP<std::vector<int>> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) const
+std::vector<int> SSI::UTILS::SSIMaps::GetBlockPositions(Subproblem subproblem) const
 {
   dsassert(
       ssi_matrixtype_ != CORE::LINALG::MatrixType::sparse, "Sparse matrices have just one block");
 
-  Teuchos::RCP<std::vector<int>> block_position = Teuchos::rcp(new std::vector<int>(0));
+  std::vector<int> block_position;
 
   switch (subproblem)
   {
     case Subproblem::structure:
     {
       if (scatra_matrixtype_ == CORE::LINALG::MatrixType::sparse)
-        block_position->emplace_back(1);
+        block_position.emplace_back(1);
       else
-        block_position->emplace_back(BlockMapScaTra()->NumMaps());
+        block_position.emplace_back(BlockMapScaTra()->NumMaps());
       break;
     }
     case Subproblem::scalar_transport:
     {
       if (scatra_matrixtype_ == CORE::LINALG::MatrixType::sparse)
-        block_position->emplace_back(0);
+        block_position.emplace_back(0);
       else
       {
-        for (int i = 0; i < BlockMapScaTra()->NumMaps(); ++i) block_position->emplace_back(i);
+        for (int i = 0; i < BlockMapScaTra()->NumMaps(); ++i) block_position.emplace_back(i);
       }
       break;
     }
     case Subproblem::manifold:
     {
       if (scatra_manifold_matrixtype_ == CORE::LINALG::MatrixType::sparse)
-        block_position->emplace_back(2);
+        block_position.emplace_back(2);
       else
       {
         auto scatra_manifold_num_block_maps = BlockMapScaTraManifold()->NumMaps();
 
         for (int i = 0; i < scatra_manifold_num_block_maps; ++i)
-          block_position->emplace_back(BlockMapScaTra()->NumMaps() + 1 + i);
+          block_position.emplace_back(BlockMapScaTra()->NumMaps() + 1 + i);
       }
       break;
     }
@@ -754,10 +741,10 @@ void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono&
 
   {
     auto block_positions_scatra = GetBlockPositions(Subproblem::scalar_transport);
-    partial_maps_system_matrix[block_positions_scatra->at(i)] = BlockMapScaTra()->Map(i);
+    partial_maps_system_matrix[block_positions_scatra.at(i)] = BlockMapScaTra()->Map(i);
   }
 
-  partial_maps_system_matrix.at(GetBlockPositions(Subproblem::structure)->at(0)) =
+  partial_maps_system_matrix.at(GetBlockPositions(Subproblem::structure).at(0)) =
       BlockMapStructure()->FullMap();
 
   if (ssi_mono_algorithm.IsScaTraManifold())
@@ -765,8 +752,7 @@ void SSI::UTILS::SSIMaps::CreateAndCheckBlockMapsSubProblems(const SSI::SSIMono&
     for (int i = 0; i < BlockMapScaTraManifold()->NumMaps(); ++i)
     {
       auto block_positions_manifold = GetBlockPositions(Subproblem::manifold);
-      partial_maps_system_matrix[block_positions_manifold->at(i)] =
-          BlockMapScaTraManifold()->Map(i);
+      partial_maps_system_matrix[block_positions_manifold.at(i)] = BlockMapScaTraManifold()->Map(i);
     }
   }
 
@@ -910,9 +896,6 @@ SSI::UTILS::SSIMeshTying::SSIMeshTying(const std::string& conditionname_coupling
     const bool check_over_constrained)
     : comm_(dis->Comm()),
       do_print_(dis->Comm().MyPID() == 0),
-      full_master_side_map_(Teuchos::null),
-      full_slave_side_map_(Teuchos::null),
-      interior_map_(Teuchos::null),
       meshtying_handlers_(),
       my_rank_(dis->Comm().MyPID()),
       num_proc_(dis->Comm().NumProc())
@@ -1399,7 +1382,6 @@ SSI::UTILS::SSIMeshTyingHandler::SSIMeshTyingHandler(
     Teuchos::RCP<CORE::ADAPTER::Coupling> slave_slave_transformation)
     : slave_master_coupling_(std::move(slave_master_coupling)),
       slave_master_extractor_(std::move(slave_master_extractor)),
-      slave_side_converter_(Teuchos::null),
       slave_slave_transformation_(std::move(slave_slave_transformation))
 {
   slave_side_converter_ =

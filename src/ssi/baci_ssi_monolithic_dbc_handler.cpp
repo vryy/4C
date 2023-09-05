@@ -14,7 +14,6 @@
 #include "baci_linalg_blocksparsematrix.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
-#include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_scatra_timint_implicit.H"
 #include "baci_ssi_monolithic.H"
 #include "baci_ssi_utils.H"
@@ -53,11 +52,8 @@ SSI::DBCHandlerBlock::DBCHandlerBlock(const bool is_scatra_manifold,
     Teuchos::RCP<SSI::UTILS::SSIMaps> ssi_maps,
     Teuchos::RCP<::ADAPTER::SSIStructureWrapper> structure)
     : DBCHandlerBase(is_scatra_manifold, scatra, scatra_manifold, ssi_maps, structure),
-      position_structure_(-1)
+      position_structure_(SSIMaps()->GetBlockPositions(SSI::Subproblem::structure).at(0))
 {
-  position_structure_ = SSIMaps()->GetBlockPositions(SSI::Subproblem::structure)->at(0);
-  // safety check
-  if (position_structure_ == -1) dserror("Cannot get position of structure block");
 }
 
 /*-------------------------------------------------------------------------*

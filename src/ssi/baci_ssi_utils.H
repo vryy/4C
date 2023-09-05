@@ -275,7 +275,7 @@ namespace SSI
       explicit SSIMaps(const SSI::SSIMono& ssi_mono_algorithm);
 
       //! get vector containing positions within system matrix for specific subproblem
-      Teuchos::RCP<std::vector<int>> GetBlockPositions(Subproblem subproblem) const;
+      std::vector<int> GetBlockPositions(Subproblem subproblem) const;
 
       //! get position within global dof map for specific sub problem
       static int GetProblemPosition(Subproblem subproblem);

@@ -358,10 +358,10 @@ namespace SSI
     const INPAR::SSI::FieldCoupling fieldcoupling_;
 
     //! flag indicating if class is initialized
-    bool isinit_;
+    bool isinit_ = false;
 
     //! flag indicating if class is setup
-    bool issetup_;
+    bool issetup_ = false;
 
     //! solve additional scatra field on manifolds
     const bool is_scatra_manifold_;
@@ -370,11 +370,11 @@ namespace SSI
     const bool is_manifold_meshtying_;
 
     //! flag indicating if an s2i kinetic condition with activated pseudo contact is available
-    bool is_s2i_kinetic_with_pseudo_contact_;
+    const bool is_s2i_kinetic_with_pseudo_contact_;
 
     //! counter for Newton-Raphson iterations (monolithic algorithm) or outer coupling
     //! iterations (partitioned algorithm)
-    int iter_;
+    int iter_ = 0;
 
     //! macro-micro scatra problem?
     const bool macro_scale_;
@@ -416,7 +416,7 @@ namespace SSI
     Teuchos::RCP<Epetra_Vector> temperature_vector_;
 
     //! Flag to indicate whether old structural time integration is used.
-    bool use_old_structure_;
+    const bool use_old_structure_;
 
     //! a zero vector of full length with structure dofs
     Teuchos::RCP<Epetra_Vector> zeros_structure_;

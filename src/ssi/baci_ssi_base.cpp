@@ -13,7 +13,6 @@
 #include "baci_adapter_str_factory.H"
 #include "baci_adapter_str_ssiwrapper.H"
 #include "baci_adapter_str_structure_new.H"
-#include "baci_coupling_adapter.H"
 #include "baci_inpar_ssi.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_io_control.H"
@@ -43,37 +42,25 @@ SSI::SSIBase::SSIBase(const Epetra_Comm& comm, const Teuchos::ParameterList& glo
           static_cast<int>(DRT::INPUT::IntegralValue<int>(globaltimeparams, "DIFFTIMESTEPSIZE"))),
       fieldcoupling_(Teuchos::getIntegralValue<INPAR::SSI::FieldCoupling>(
           DRT::Problem::Instance()->SSIControlParams(), "FIELDCOUPLING")),
-      isinit_(false),
-      issetup_(false),
       is_scatra_manifold_(
           DRT::INPUT::IntegralValue<bool>(globaltimeparams.sublist("MANIFOLD"), "ADD_MANIFOLD")),
       is_manifold_meshtying_(DRT::INPUT::IntegralValue<bool>(
           globaltimeparams.sublist("MANIFOLD"), "MESHTYING_MANIFOLD")),
-      is_s2i_kinetic_with_pseudo_contact_(false),
-      iter_(0),
+      is_s2i_kinetic_with_pseudo_contact_(CheckS2IKineticsConditionForPseudoContact("structure")),
       macro_scale_(DRT::Problem::Instance()->Materials()->FirstIdByType(
                        INPAR::MAT::m_scatra_multiscale) != -1 or
                    DRT::Problem::Instance()->Materials()->FirstIdByType(
                        INPAR::MAT::m_newman_multiscale) != -1),
-      meshtying_strategy_s2i_(Teuchos::null),
-      modelevaluator_ssi_base_(Teuchos::null),
-      scatra_base_algorithm_(Teuchos::null),
-      scatra_manifold_base_algorithm_(Teuchos::null),
-      ssi_structure_meshtying_(Teuchos::null),
-      ssicoupling_(Teuchos::null),
       ssiinterfacecontact_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceContact") !=
           nullptr),
       ssiinterfacemeshtying_(
           DRT::Problem::Instance()->GetDis("structure")->GetCondition("SSIInterfaceMeshtying") !=
           nullptr),
-      structure_(Teuchos::null),
-      struct_adapterbase_ptr_(Teuchos::null),
       temperature_funct_num_(
           DRT::Problem::Instance()->ELCHControlParams().get<int>("TEMPERATURE_FROM_FUNCT")),
-      temperature_vector_(Teuchos::null),
-      use_old_structure_(false),
-      zeros_structure_(Teuchos::null)
+      use_old_structure_(DRT::Problem::Instance()->StructuralDynamicParams().get<std::string>(
+                             "INT_STRATEGY") == "Old")
 {
   // Keep this constructor empty!
   // First do everything on the more basic objects like the discretizations, like e.g.
@@ -416,8 +403,6 @@ SSI::RedistributionType SSI::SSIBase::InitFieldCoupling(const std::string& struc
     }
     if (IsScaTraManifold() and fieldcoupling_ != INPAR::SSI::FieldCoupling::volumeboundary_match)
       dserror("Solving manifolds only in combination with matching volumes and boundaries");
-
-    is_s2i_kinetic_with_pseudo_contact_ = CheckS2IKineticsConditionForPseudoContact(struct_disname);
   }
 
   // build SSI coupling class
@@ -772,8 +757,6 @@ void SSI::SSIBase::InitTimeIntegrators(const Teuchos::ParameterList& globaltimep
     // build structure based on old structural time integration
     else if (structparams.get<std::string>("INT_STRATEGY") == "Old")
     {
-      use_old_structure_ = true;
-
       auto structure = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(
           *structtimeparams, const_cast<Teuchos::ParameterList&>(structparams), structdis));
       structure_ = Teuchos::rcp_dynamic_cast<::ADAPTER::SSIStructureWrapper>(

@@ -10,10 +10,8 @@
 
 #include "baci_adapter_scatra_base_algorithm.H"
 #include "baci_adapter_str_ssiwrapper.H"
-#include "baci_coupling_adapter.H"
 #include "baci_coupling_adapter_converter.H"
 #include "baci_lib_assemblestrategy.H"
-#include "baci_lib_discret.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_matrixtransform.H"

@@ -202,10 +202,10 @@ namespace SSI
 
    protected:
     //! position of scatra blocks in system matrix
-    Teuchos::RCP<std::vector<int>> BlockPositionScaTra() { return block_position_scatra_; }
+    const std::vector<int>& BlockPositionScaTra() const { return block_position_scatra_; }
 
     //! position of scatra manifold blocks in system matrix
-    Teuchos::RCP<std::vector<int>> BlockPositionScaTraManifold() const
+    const std::vector<int>& BlockPositionScaTraManifold() const
     {
       return block_position_scatra_manifold_;
     }
@@ -215,13 +215,13 @@ namespace SSI
 
    private:
     //! position of scatra blocks in system matrix
-    Teuchos::RCP<std::vector<int>> block_position_scatra_;
+    const std::vector<int> block_position_scatra_;
 
     //! position of scatra manifold blocks in system matrix
-    Teuchos::RCP<std::vector<int>> block_position_scatra_manifold_;
+    std::vector<int> block_position_scatra_manifold_;
 
     //! position of structure block in system matrix
-    int position_structure_;
+    const int position_structure_;
   };
 
   //! build specific mesh tying strategy
