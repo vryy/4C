@@ -86,8 +86,10 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(value_type* out, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
+    inline void multiply(value_type_out* out, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e left*\e right
     /*!
@@ -102,8 +104,10 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(value_type* out, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
+    inline void multiplyNN(value_type_out* out, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e left*\e right^T
     /*!
@@ -119,8 +123,10 @@ namespace CORE::LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(value_type* out, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
+    inline void multiplyNT(value_type_out* out, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e left^T*\e right
     /*!
@@ -136,8 +142,10 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(value_type* out, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
+    inline void multiplyTN(value_type_out* out, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e left^T*\e right^T
     /*!
@@ -154,8 +162,10 @@ namespace CORE::LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(value_type* out, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
+    inline void multiplyTT(value_type_out* out, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
@@ -172,9 +182,10 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(
-        value_type* out, const value_type infac, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiply(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right
     /*!
@@ -191,9 +202,10 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(
-        value_type* out, const value_type infac, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyNN(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left*\e right^T
     /*!
@@ -211,9 +223,10 @@ namespace CORE::LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(
-        value_type* out, const value_type infac, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyNT(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right
     /*!
@@ -231,9 +244,10 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(
-        value_type* out, const value_type infac, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyTN(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e infac * \e left^T*\e right^T
     /*!
@@ -252,9 +266,10 @@ namespace CORE::LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(
-        value_type* out, const value_type infac, const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyTT(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
@@ -273,9 +288,12 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiply(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right
     /*!
@@ -294,9 +312,12 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyNN(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left*\e right^T
     /*!
@@ -316,9 +337,12 @@ namespace CORE::LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyNT(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right
     /*!
@@ -338,9 +362,12 @@ namespace CORE::LINALG
       \param right
         pointer to the second factor, size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyTN(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Multiplication: \e out = \e outfac * \e out + \e infac * \e left^T*\e right^T
     /*!
@@ -361,9 +388,12 @@ namespace CORE::LINALG
         pointer to the second factor, size (\c k)x(\c j) so that \e
         right^T has size (\c j)x(\c k)
      */
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyTT(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right);
 
     /// Invert matrix: \e out = inv(\e in)
     /*!
@@ -1685,19 +1715,22 @@ namespace CORE::LINALG
      *
      */
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
     inline void multiply(
-        value_type* out, const value_type* const left, const value_type* const right)
+        value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3];
@@ -1708,19 +1741,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
     inline void multiplyNN(
-        value_type* out, const value_type* const left, const value_type* const right)
+        value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3];
@@ -1731,19 +1767,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
     inline void multiplyNT(
-        value_type* out, const value_type* const left, const value_type* const right)
+        value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3 * k];
@@ -1754,19 +1793,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
     inline void multiplyTN(
-        value_type* out, const value_type* const left, const value_type* const right)
+        value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i * j; c2 += j)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3] * right[c1 + c3];
@@ -1777,19 +1819,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_left, class value_type_right>
     inline void multiplyTT(
-        value_type* out, const value_type* const left, const value_type* const right)
+        value_type_out* out, const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
         for (unsigned int c2 = 0; c2 < i * j; c2 += j)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3] * right[c1 + c3 * k];
@@ -1800,19 +1845,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(value_type* out, const value_type infac, const value_type* const left,
-        const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiply(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3];
@@ -1823,19 +1871,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(value_type* out, const value_type infac, const value_type* const left,
-        const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyNN(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3];
@@ -1846,19 +1897,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(value_type* out, const value_type infac, const value_type* const left,
-        const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyNT(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3 * k];
@@ -1869,19 +1923,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(value_type* out, const value_type infac, const value_type* const left,
-        const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyTN(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i * j; c2 += j)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3] * right[c1 + c3];
@@ -1892,19 +1949,22 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(value_type* out, const value_type infac, const value_type* const left,
-        const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_infac, class value_type_left, class value_type_right>
+    inline void multiplyTT(value_type_out* out, const value_type_infac infac,
+        const value_type_left* const left, const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
         for (unsigned int c2 = 0; c2 < i * j; c2 += j)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3] * right[c1 + c3 * k];
@@ -1915,19 +1975,24 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiply(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* const left, const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiply(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3];
@@ -1938,19 +2003,24 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNN(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* const left, const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyNN(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3];
@@ -1961,19 +2031,24 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyNT(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* const left, const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyNT(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
         for (unsigned int c2 = 0; c2 < i; ++c2)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3 * i] * right[c1 + c3 * k];
@@ -1984,19 +2059,24 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTN(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* const left, const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyTN(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < j * k; c1 += j)
       {
         for (unsigned int c2 = 0; c2 < i * j; c2 += j)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3] * right[c1 + c3];
@@ -2007,19 +2087,24 @@ namespace CORE::LINALG
       }
     }
 
-    template <class value_type, unsigned int i, unsigned int j, unsigned int k>
-    inline void multiplyTT(const value_type outfac, value_type* out, const value_type infac,
-        const value_type* const left, const value_type* const right)
+    template <class value_type_out, unsigned int i, unsigned int j, unsigned int k,
+        class value_type_outfac, class value_type_infac, class value_type_left,
+        class value_type_right>
+    inline void multiplyTT(const value_type_outfac outfac, value_type_out* out,
+        const value_type_infac infac, const value_type_left* const left,
+        const value_type_right* const right)
     {
 #ifdef DEBUG
-      if (out == left) dserror("'out' and 'left' point to same memory location");
-      if (out == right) dserror("'out' and 'right' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_left>)
+        if (out == left) dserror("'out' and 'left' point to same memory location");
+      if constexpr (std::is_same_v<value_type_out, value_type_right>)
+        if (out == right) dserror("'out' and 'right' point to same memory location");
 #endif
       for (unsigned int c1 = 0; c1 < k; ++c1)
       {
         for (unsigned int c2 = 0; c2 < i * j; c2 += j)
         {
-          value_type tmp = left[c2] * right[c1];
+          value_type_out tmp = left[c2] * right[c1];
           for (unsigned int c3 = 1; c3 < j; ++c3)
           {
             tmp += left[c2 + c3] * right[c1 + c3 * k];
@@ -3880,9 +3965,9 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void Multiply(
-        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
+    template <unsigned int inner, class value_type_left, class value_type_right>
+    inline void Multiply(const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
@@ -3894,9 +3979,9 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyNN(
-        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
+    template <unsigned int inner, class value_type_left, class value_type_right>
+    inline void MultiplyNN(const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
@@ -3908,9 +3993,9 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyNT(
-        const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right)
+    template <unsigned int inner, class value_type_left, class value_type_right>
+    inline void MultiplyNT(const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<cols, inner, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
@@ -3922,9 +4007,9 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyTN(
-        const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right)
+    template <unsigned int inner, class value_type_left, class value_type_right>
+    inline void MultiplyTN(const Matrix<inner, rows, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
@@ -3936,9 +4021,9 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyTT(
-        const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right)
+    template <unsigned int inner, class value_type_left, class value_type_right>
+    inline void MultiplyTT(const Matrix<inner, rows, value_type_left>& left,
+        const Matrix<cols, inner, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(A(), left.values(), right.values());
     }
@@ -3953,9 +4038,11 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void Multiply(const value_type scalarOthers, const Matrix<rows, inner, value_type>& left,
-        const Matrix<inner, cols, value_type>& right)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right>
+    inline void Multiply(const value_type_scalar_other scalarOthers,
+        const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
           A(), scalarOthers, left.values(), right.values());
@@ -3972,9 +4059,11 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyNN(const value_type scalarOthers,
-        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right>
+    inline void MultiplyNN(const value_type_scalar_other scalarOthers,
+        const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
           A(), scalarOthers, left.values(), right.values());
@@ -3989,9 +4078,11 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyNT(const value_type scalarOthers,
-        const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right>
+    inline void MultiplyNT(const value_type_scalar_other scalarOthers,
+        const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<cols, inner, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(
           A(), scalarOthers, left.values(), right.values());
@@ -4006,9 +4097,11 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyTN(const value_type scalarOthers,
-        const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right>
+    inline void MultiplyTN(const value_type_scalar_other scalarOthers,
+        const Matrix<inner, rows, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(
           A(), scalarOthers, left.values(), right.values());
@@ -4023,9 +4116,11 @@ namespace CORE::LINALG
       \param right
         second factor
      */
-    template <unsigned int inner>
-    inline void MultiplyTT(const value_type scalarOthers,
-        const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right>
+    inline void MultiplyTT(const value_type_scalar_other scalarOthers,
+        const Matrix<inner, rows, value_type_left>& left,
+        const Matrix<cols, inner, value_type_right>& right)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(
           A(), scalarOthers, left.values(), right.values());
@@ -4044,9 +4139,11 @@ namespace CORE::LINALG
       \param scalarThis
         scalar factor for \e this
      */
-    template <unsigned int inner>
-    inline void Multiply(const value_type scalarOthers, const Matrix<rows, inner, value_type>& left,
-        const Matrix<inner, cols, value_type>& right, const value_type scalarThis)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right, class value_type_scalar_this>
+    inline void Multiply(const value_type_scalar_other scalarOthers,
+        const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
           scalarThis, A(), scalarOthers, left.values(), right.values());
@@ -4063,10 +4160,11 @@ namespace CORE::LINALG
       \param scalarThis
         scalar factor for \e this
      */
-    template <unsigned int inner>
-    inline void MultiplyNN(const value_type scalarOthers,
-        const Matrix<rows, inner, value_type>& left, const Matrix<inner, cols, value_type>& right,
-        const value_type scalarThis)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right, class value_type_scalar_this>
+    inline void MultiplyNN(const value_type_scalar_other scalarOthers,
+        const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DENSEFUNCTIONS::multiply<value_type, rows, inner, cols>(
           scalarThis, A(), scalarOthers, left.values(), right.values());
@@ -4083,10 +4181,11 @@ namespace CORE::LINALG
       \param scalarThis
         scalar factor for \e this
      */
-    template <unsigned int inner>
-    inline void MultiplyNT(const value_type scalarOthers,
-        const Matrix<rows, inner, value_type>& left, const Matrix<cols, inner, value_type>& right,
-        const value_type scalarThis)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right, class value_type_scalar_this>
+    inline void MultiplyNT(const value_type_scalar_other scalarOthers,
+        const Matrix<rows, inner, value_type_left>& left,
+        const Matrix<cols, inner, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DENSEFUNCTIONS::multiplyNT<value_type, rows, inner, cols>(
           scalarThis, A(), scalarOthers, left.values(), right.values());
@@ -4103,10 +4202,11 @@ namespace CORE::LINALG
       \param scalarThis
         scalar factor for \e this
      */
-    template <unsigned int inner>
-    inline void MultiplyTN(const value_type scalarOthers,
-        const Matrix<inner, rows, value_type>& left, const Matrix<inner, cols, value_type>& right,
-        const value_type scalarThis)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right, class value_type_scalar_this>
+    inline void MultiplyTN(const value_type_scalar_other scalarOthers,
+        const Matrix<inner, rows, value_type_left>& left,
+        const Matrix<inner, cols, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DENSEFUNCTIONS::multiplyTN<value_type, rows, inner, cols>(
           scalarThis, A(), scalarOthers, left.values(), right.values());
@@ -4123,10 +4223,11 @@ namespace CORE::LINALG
       \param scalarThis
         scalar factor for \e this
      */
-    template <unsigned int inner>
-    inline void MultiplyTT(const value_type scalarOthers,
-        const Matrix<inner, rows, value_type>& left, const Matrix<cols, inner, value_type>& right,
-        const value_type scalarThis)
+    template <unsigned int inner, class value_type_scalar_other, class value_type_left,
+        class value_type_right, class value_type_scalar_this>
+    inline void MultiplyTT(const value_type_scalar_other scalarOthers,
+        const Matrix<inner, rows, value_type_left>& left,
+        const Matrix<cols, inner, value_type_right>& right, const value_type_scalar_this scalarThis)
     {
       DENSEFUNCTIONS::multiplyTT<value_type, rows, inner, cols>(
           scalarThis, A(), scalarOthers, left.values(), right.values());
