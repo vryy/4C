@@ -763,8 +763,9 @@ namespace CORE::LINALG
         pointer to the second matrix, size (\c i)x(\c j)
       \return dot product
      */
-    template <class value_type, unsigned int i, unsigned int j>
-    inline value_type dot(const value_type* left, const value_type* right);
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_left,
+        class value_type_right>
+    inline value_type_out dot(const value_type_left* left, const value_type_right* right);
 
     /// Set matrix to zero
     /*!
@@ -2603,10 +2604,11 @@ namespace CORE::LINALG
       for (unsigned int c = 1; c < i * j; ++c) *(++mat) *= scalar;
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline value_type dot(const value_type* left, const value_type* right)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_left,
+        class value_type_right>
+    inline value_type_out dot(const value_type_left* left, const value_type_right* right)
     {
-      value_type res = (*left) * (*right);
+      value_type_out res = (*left) * (*right);
       for (unsigned int c = 1; c < i * j; ++c)
       {
         ++left;
@@ -2616,8 +2618,10 @@ namespace CORE::LINALG
       return res;
     }
 
-    template <class value_type, unsigned int i, unsigned int j>
-    inline void crossproduct(value_type* out, const value_type* left, const value_type* right)
+    template <class value_type_out, unsigned int i, unsigned int j, class value_type_left,
+        class value_type_right>
+    inline void crossproduct(
+        value_type_out* out, const value_type_left* left, const value_type_right* right)
     {
 #ifdef DEBUG
       if (i != 3 || j != 1) dserror("cross product only for 3x1 matrices available");
@@ -3540,9 +3544,10 @@ namespace CORE::LINALG
         second factor
       \return dot product
      */
-    inline value_type Dot(const Matrix<rows, cols, value_type>& other) const
+    template <class value_type_out = value_type, class value_type_other>
+    inline value_type_out Dot(const Matrix<rows, cols, value_type_other>& other) const
     {
-      return DENSEFUNCTIONS::dot<value_type, rows, cols>(A(), other.values());
+      return DENSEFUNCTIONS::dot<value_type_out, rows, cols>(A(), other.values());
     }
 
     /// Cross product
@@ -3553,8 +3558,9 @@ namespace CORE::LINALG
       \param right
       \return cross product
      */
-    inline void CrossProduct(
-        const Matrix<rows, cols, value_type>& left, const Matrix<rows, cols, value_type>& right)
+    template <class value_type_left, class value_type_right>
+    inline void CrossProduct(const Matrix<rows, cols, value_type_left>& left,
+        const Matrix<rows, cols, value_type_right>& right)
     {
       DENSEFUNCTIONS::crossproduct<value_type, rows, cols>(A(), left.values(), right.values());
     }
