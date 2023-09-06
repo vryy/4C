@@ -51,7 +51,7 @@ namespace IO
 
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
 }  // namespace DRT
 
 namespace STR
@@ -466,9 +466,9 @@ namespace STR
       const STR::TIMINT::BaseDataIO& GInOutput() const;
 
       //! Returns the (structural) discretization
-      DRT::DiscretizationInterface& Discret();
-      Teuchos::RCP<DRT::DiscretizationInterface>& DiscretPtr();
-      const DRT::DiscretizationInterface& Discret() const;
+      DRT::Discretization& Discret();
+      Teuchos::RCP<DRT::Discretization>& DiscretPtr();
+      const DRT::Discretization& Discret() const;
 
       //! Returns the underlying STR::Integrator object
       STR::Integrator& Int();
@@ -498,7 +498,7 @@ namespace STR
       Teuchos::RCP<STR::TIMINT::BaseDataIO> gio_ptr_;
 
       //! pointer to the problem discretization
-      Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
+      Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
       //! pointer to the structural (time) integrator
       Teuchos::RCP<STR::Integrator> int_ptr_;

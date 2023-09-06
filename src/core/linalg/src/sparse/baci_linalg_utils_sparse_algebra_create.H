@@ -97,8 +97,8 @@ namespace CORE::LINALG
       \author u.kue
       \date 02/08
      */
-  void CreateMapExtractorFromDiscretization(const ::DRT::DiscretizationInterface& dis, int ndim,
-      CORE::LINALG::MultiMapExtractor& extractor);
+  void CreateMapExtractorFromDiscretization(
+      const ::DRT::Discretization& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor);
 
   /*!
     \brief Creates MapExtractor to split dofs at certain position

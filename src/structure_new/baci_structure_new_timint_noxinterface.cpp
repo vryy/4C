@@ -641,7 +641,7 @@ void STR::TIMINT::NoxInterface::getDofsFromElements(
 {
   CheckInitSetup();
 
-  Teuchos::RCP<const DRT::DiscretizationInterface> discret_ptr = gstate_ptr_->GetDiscret();
+  Teuchos::RCP<const DRT::Discretization> discret_ptr = gstate_ptr_->GetDiscret();
 
   for (int egid : my_ele_gids)
   {

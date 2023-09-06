@@ -11,7 +11,6 @@
 #ifndef BACI_LIB_DISCRET_H
 #define BACI_LIB_DISCRET_H
 
-#include "baci_lib_discret_interface.H"
 #include "baci_lib_dofset_interface.H"
 #include "baci_lib_element.H"
 #include "baci_lib_globalproblem_enums.H"
@@ -21,21 +20,31 @@
 
 #include <Epetra_Comm.h>
 #include <Epetra_CrsGraph.h>
+#include <Epetra_IntVector.h>
 #include <Epetra_Map.h>
 #include <Epetra_MpiComm.h>
 #include <Epetra_Vector.h>
 #include <Teuchos_RCP.hpp>
 
+#include <vector>
+
+
 // forward declarations
+namespace Teuchos
+{
+  class ParameterList;
+}  // namespace Teuchos
+
 namespace COMM_UTILS
 {
   class Communicators;
-}
+}  // namespace COMM_UTILS
 
 namespace CORE::LINALG
 {
   class SparseOperator;
   class MapExtractor;
+  class SerialDenseVector;
 }  // namespace CORE::LINALG
 
 class PostProblem;
@@ -43,7 +52,7 @@ class PostProblem;
 namespace IO
 {
   class DiscretizationWriter;
-}
+}  // namespace IO
 
 namespace DRT
 {
@@ -120,34 +129,8 @@ namespace DRT
   The \ref DRT::Discretization class supports the ostream& operator <<
 
   */
-  class Discretization : public DiscretizationInterface
+  class Discretization
   {
-   public:
-    /** \brief Overriding base class overloaded functions
-     *
-     * "This is a common 'gotcha' in C++. Once a name match is found in a
-     *  class scope, the compiler doesn't look further up the inheritance tree
-     *  for overloads. By specifying the 'using' declaration, you bring all of
-     *  the overloads of a function 'A()' from the base class into the scope
-     *  of the derived class. Then overloading works properly.
-     *
-     *  Keep in mind that if there is existing code using the base class, its
-     *  meaning could be changed by the additional overloads. Or the additional
-     *  overloads could introduce ambiguity and the code will fail to compile.
-     *  This is pointed out in James Hopkin's answer."
-     *
-     *  See also
-     * http://stackoverflow.com/questions/888235/overriding-a-bases-overloaded-function-in-c for
-     * further information.
-     *
-     *  \author hiermeier */
-    using DiscretizationInterface::Dof;
-    using DiscretizationInterface::EvaluateCondition;
-    using DiscretizationInterface::EvaluateNeumann;
-    using DiscretizationInterface::GetState;
-    using DiscretizationInterface::NumDof;
-    using DiscretizationInterface::SetState;
-
    public:
     /*!
     \brief Standard Constructor
@@ -157,14 +140,14 @@ namespace DRT
     */
     Discretization(const std::string& name, Teuchos::RCP<Epetra_Comm> comm);
 
-    ~Discretization() override = default;
+    virtual ~Discretization() = default;
 
     //! @name Query methods
 
     /*!
     \brief Get communicator associated with this class
     */
-    inline const Epetra_Comm& Comm() const override { return *comm_; }
+    virtual inline const Epetra_Comm& Comm() const { return *comm_; }
 
     /*!
     \brief Get output writer for this discretization
@@ -172,17 +155,17 @@ namespace DRT
     \warning This routine does not verify if a valid IO::DiscretizationWriter has
     been set. If not, this will cause a segmentation fault.
     */
-    inline Teuchos::RCP<IO::DiscretizationWriter> Writer() const override { return writer_; }
+    virtual inline Teuchos::RCP<IO::DiscretizationWriter> Writer() const { return writer_; }
 
     /*!
     \brief Get flag indicating whether FillComplete() has been called
     */
-    inline bool Filled() const override { return filled_; }
+    virtual inline bool Filled() const { return filled_; }
 
     /*!
     \brief Get name of this discretization
     */
-    inline const std::string& Name() const override { return name_; }
+    virtual inline const std::string& Name() const { return name_; }
 
     /*!
     \brief Get flag indicating whether degrees of freedom where assigned
@@ -190,9 +173,9 @@ namespace DRT
     Degrees of freedom need to be assigned using AssignDegreesOfFreedom()
     before any calculations using this discretization can be made
     */
-    inline bool HaveDofs() const override { return havedof_; }
+    virtual inline bool HaveDofs() const { return havedof_; }
 
-    inline int NumDofSets() const override { return static_cast<int>(dofsets_.size()); }
+    virtual inline int NumDofSets() const { return static_cast<int>(dofsets_.size()); }
     /// @name Dof query methods for single dof set discretizations
 
     /*!
@@ -314,6 +297,20 @@ namespace DRT
     /// @name Dof query methods for multi dof set discretizations
 
     /*!
+    \brief Get number of dofs for given node at the default dofset (0).
+
+    Ask the current DofSet for the number of dofs of this node.
+    There is a variable number of DofSets and one is currently selected.
+    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    \param node (in)      : the node those number of dofs are requested
+    */
+    int NumDof(const Node* node) const
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      return NumDof(0, node);
+    }
+
+    /*!
     \brief Get number of dofs for given node.
 
     Ask the current DofSet for the number of dofs of this node.
@@ -322,7 +319,7 @@ namespace DRT
     \param nds (in)       : number of dofset
     \param node (in)      : the node those number of dofs are requested
     */
-    int NumDof(unsigned nds, const Node* node) const override
+    virtual int NumDof(unsigned nds, const Node* node) const
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       dsassert(havedof_, "no dofs assigned");
@@ -355,9 +352,24 @@ namespace DRT
      *  \param node (in)      : the node those number of DoF's are requested
      *
      *  \author hiermeier \date 10/16 */
-    int NumStandardDof(const unsigned& nds, const Node* node) const override
+    virtual int NumStandardDof(const unsigned& nds, const Node* node) const
     {
       return NumDof(nds, node);
+    }
+
+    /*!
+    \brief Get the gid of a dof for given node at the default dofset (0).
+
+    Ask the current DofSet for the gid of the dof of this node.
+    There is a variable number of DofSets and one is currently selected.
+    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    \param node (in)      : the node
+    \param dof (in)       : the node local dof number
+    */
+    int Dof(const Node* node, const int ldof) const
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      return Dof(0, node, ldof);
     }
 
     /*!
@@ -370,7 +382,7 @@ namespace DRT
     \param node (in)      : the node
     \param dof (in)       : the node local dof number
     */
-    int Dof(unsigned nds, const Node* node, const int dof) const override
+    virtual int Dof(unsigned nds, const Node* node, const int dof) const
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       dsassert(havedof_, "no dofs assigned");
@@ -395,6 +407,21 @@ namespace DRT
     }
 
     /*!
+    \brief Get the gid of all dofs of a node at the default dofset (0).
+
+    Ask the current DofSet for the gids of the dofs of this node. The
+    required vector is created and filled on the fly. So better keep it
+    if you need more than one dof gid.
+    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    \param node (in)      : the node
+    */
+    std::vector<int> Dof(const Node* node) const
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      return Dof(0, node);
+    }
+
+    /*!
     \brief Get the gid of all dofs of a node.
 
     Ask the current DofSet for the gids of the dofs of this node. The
@@ -404,7 +431,7 @@ namespace DRT
     \param nds (in)       : number of dofset
     \param node (in)      : the node
     */
-    std::vector<int> Dof(unsigned nds, const Node* node) const override
+    virtual std::vector<int> Dof(unsigned nds, const Node* node) const
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       dsassert(havedof_, "no dofs assigned");
@@ -428,8 +455,8 @@ namespace DRT
     \param nodaldofset (in) : number of nodal dofset
     \param element     (in) : the element (optionally)
     */
-    void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
-        const Element* element = nullptr) const override
+    virtual void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
+        const Element* element = nullptr) const
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       dsassert(havedof_, "no dofs assigned");
@@ -454,6 +481,22 @@ namespace DRT
     }
 
     /*!
+    \brief Get the gid of all dofs of a node at the default dofset (0).
+
+    Ask the current DofSet for the gids of the dofs of this node. The
+    required vector is created and filled on the fly. So better keep it
+    if you need more than one dof gid.
+    - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
+    \param node (in)      : the node
+    \param lm (in/out)    : lm vector the dofs are appended to
+    */
+    void Dof(const Node* node, std::vector<int>& lm) const
+    {
+      dsassert(NumDofSets() == 1, "expect just one dof set");
+      Dof((unsigned)0, node, lm);
+    }
+
+    /*!
     \brief Get the gid of all dofs of a node.
 
     Ask the current DofSet for the gids of the dofs of this node. The
@@ -464,7 +507,7 @@ namespace DRT
     \param node (in)      : the node
     \param lm (in/out)    : lm vector the dofs are appended to
     */
-    void Dof(unsigned nds, const Node* node, std::vector<int>& lm) const override
+    virtual void Dof(unsigned nds, const Node* node, std::vector<int>& lm) const
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       dsassert(havedof_, "no dofs assigned");
@@ -558,7 +601,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
     */
-    const Epetra_Map* DofRowMap(unsigned nds = 0) const override;
+    virtual const Epetra_Map* DofRowMap(unsigned nds = 0) const;
 
     /*!
     \brief Get degree of freedom column map (Filled()==true prerequisite)
@@ -580,7 +623,7 @@ namespace DRT
 
     \note This is a collective call
     */
-    void Print(std::ostream& os) const override;
+    virtual void Print(std::ostream& os) const;
 
 
     /*!
@@ -592,7 +635,7 @@ namespace DRT
 
     \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
-    const Epetra_Map* NodeRowMap() const override;
+    virtual const Epetra_Map* NodeRowMap() const;
 
     /*!
     \brief Get map associated with the distribution of nodes including ghosted nodes
@@ -613,7 +656,7 @@ namespace DRT
 
     \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
-    const Epetra_Map* ElementRowMap() const override;
+    virtual const Epetra_Map* ElementRowMap() const;
     /*!
     \brief Get map associated with the distribution of elements including ghosted elements
            (Filled()==true prerequisite)
@@ -637,7 +680,7 @@ namespace DRT
     \brief Get processor local number of elements owned by this processor
            (Filled()==true prerequisite)
     */
-    int NumMyRowElements() const override;
+    virtual int NumMyRowElements() const;
 
     /*!
     \brief Get processor local number of elements including ghost elements
@@ -655,7 +698,7 @@ namespace DRT
     \brief Get processor local number of nodes owned by this processor
            (Filled()==true prerequisite)
     */
-    int NumMyRowNodes() const override;
+    virtual int NumMyRowNodes() const;
 
     /*!
     \brief Get processor local number of nodes including ghost nodes
@@ -685,7 +728,7 @@ namespace DRT
     \return Address of element if element is owned by calling proc, returns nullptr
             otherwise
     */
-    DRT::Element* gElement(int gid) const override;
+    virtual DRT::Element* gElement(int gid) const;
 
     /*!
     \brief Get the element with local row id lid (Filled()==true prerequisite)
@@ -696,7 +739,7 @@ namespace DRT
 
     \return Address of element if element is owned by calling proc
     */
-    inline DRT::Element* lRowElement(int lid) const override
+    virtual inline DRT::Element* lRowElement(int lid) const
     {
       dsassert(Filled(), "Discretization not Filled().");
       return elerowptr_[lid];
@@ -749,7 +792,7 @@ namespace DRT
     this.
 
     */
-    bool HaveGlobalNode(int gid) const override;
+    virtual bool HaveGlobalNode(int gid) const;
 
     /*!
     \brief Get the node with global row id gid (Filled()==true NOT prerequisite)
@@ -760,7 +803,7 @@ namespace DRT
 
     \return Address of node if node is stored on calling proc
     */
-    DRT::Node* gNode(int gid) const override;
+    virtual DRT::Node* gNode(int gid) const;
 
     /*!
     \brief Get the node with local row id lid (Filled()==true prerequisite)
@@ -771,7 +814,7 @@ namespace DRT
 
     \return Address of node if node is owned and stored by calling proc
     */
-    inline DRT::Node* lRowNode(int lid) const override
+    virtual inline DRT::Node* lRowNode(int lid) const
     {
       dsassert(Filled(), "Discretization not Filled().");
       return noderowptr_[lid];
@@ -992,8 +1035,8 @@ namespace DRT
 
     \note Sets Filled()=true
     */
-    int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true) override;
+    virtual int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
+        bool doboundaryconditions = true);
 
     /*!
     \brief Synchronize filled_ flag on all processors
@@ -1067,10 +1110,10 @@ namespace DRT
 
     \return Returns out.size()=0 if condition with that name does not exist
     */
-    void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const override;
+    virtual void GetCondition(const std::string& name, std::vector<DRT::Condition*>& out) const;
 
-    void GetCondition(
-        const std::string& name, std::vector<Teuchos::RCP<Condition>>& out) const override;
+    virtual void GetCondition(
+        const std::string& name, std::vector<Teuchos::RCP<Condition>>& out) const;
 
     /*! \brief Get a condition with a certain name
 
@@ -1088,7 +1131,7 @@ namespace DRT
 
     \return Returns nullptr if condition with that name does not exist
     */
-    DRT::Condition* GetCondition(const std::string& name) const override;
+    virtual DRT::Condition* GetCondition(const std::string& name) const;
 
     /// return all condition names defined in this discretization
     virtual void GetConditionNames(std::vector<std::string>& names) const;
@@ -1383,6 +1426,29 @@ namespace DRT
     //! @name Evaluate methods
 
     /*!
+    \brief Set a reference to a data vector at the default dofset (0)
+
+    Using this method, a reference to a vector can
+    be supplied to the discretization. The elements can access
+    this vector by using the name of that vector.
+    The method expects state to be either of dof row map or of
+    dof column map.
+    If the vector is supplied in DofColMap() a reference to it will be stored.
+    If the vector is NOT supplied in DofColMap(), but in DofRowMap(),
+     a vector with column map is allocated and the supplied vector is exported to it.
+    Everything is stored/referenced using Teuchos::RCP.
+
+    \param name (in): Name of data
+    \param state (in): vector of some data
+
+    \note This class will not take ownership or in any way modify the solution vector.
+    */
+    void SetState(const std::string& name, Teuchos::RCP<const Epetra_Vector> state)
+    {
+      SetState(0, name, state);
+    }
+
+    /*!
     \brief Set a reference to a data vector
 
     Using this method, a reference to a vector can
@@ -1401,8 +1467,24 @@ namespace DRT
 
     \note This class will not take ownership or in any way modify the solution vector.
     */
-    void SetState(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) override;
+    virtual void SetState(
+        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
+
+    /*!
+    \brief Get a reference to a data vector at the default dofset (0)
+
+    Providing a name of a solution state, get a reference to the solution vector.
+    If a vector under the provided name does not exist, the method will throw
+    a lethal error message.
+
+    \param name (in): Name of solution state
+
+    \return Reference to solution state
+    */
+    Teuchos::RCP<const Epetra_Vector> GetState(const std::string& name) const
+    {
+      return GetState(0, name);
+    }
 
     /*!
     \brief Get a reference to a data vector
@@ -1416,7 +1498,7 @@ namespace DRT
 
     \return Reference to solution state
     */
-    Teuchos::RCP<const Epetra_Vector> GetState(unsigned nds, const std::string& name) const override
+    virtual Teuchos::RCP<const Epetra_Vector> GetState(unsigned nds, const std::string& name) const
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return Teuchos::null;
@@ -1445,7 +1527,7 @@ namespace DRT
 
     The method deletes references to any solution data
     */
-    void ClearState(bool clearalldofsets = false) override
+    virtual void ClearState(bool clearalldofsets = false)
     {
       // clear all states
       if (clearalldofsets) state_.clear();
@@ -1454,7 +1536,7 @@ namespace DRT
         state_[0].clear();
     }
 
-    void RedistributeState(unsigned nds, const std::string& name) override;
+    virtual void RedistributeState(unsigned nds, const std::string& name);
 
 
     /*!
@@ -1528,11 +1610,11 @@ namespace DRT
                                    the underlying assembly methods that add element
                                    contributions.
     */
-    void Evaluate(Teuchos::ParameterList& params,
+    virtual void Evaluate(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3) override;
+        Teuchos::RCP<Epetra_Vector> systemvector3);
 
     /// Call elements to evaluate
     virtual void Evaluate(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy);
@@ -1589,7 +1671,36 @@ namespace DRT
    */
     void Evaluate(Teuchos::ParameterList& params);
 
-    void Evaluate(const std::function<void(DRT::Element&)>& element_action) override;
+    virtual void Evaluate(const std::function<void(DRT::Element&)>& element_action);
+
+    /** \brief Evaluate Neumann boundary conditions
+     *
+     *  Loop all Neumann conditions attached to the discretization and evaluate them.
+     *  This method considers all conditions in condition_ with the names
+     *  "PointNeumann", LineNeumann", "SurfaceNeumann" and "VolumeNeumann".
+     *  It takes a current time from the parameter list params named "total time"
+     *  and evaluates the appropiate time curves at that time for each
+     *  Neumann condition separately. If "total time" is not included
+     *  in the parameters, no time curves are used.
+     *  Parameters recognized by this method:
+     *  \code
+     *  params.set("total time",acttime); // current total time
+     *  \endcode
+     *
+     *  \param params        (in): List of parameters
+     *  \param systemvector (out): Vector to assemble Neumann BCs to.
+     *                             The vector is NOT initialized to zero by
+     *                             this method.
+     *  \param systemvector (out): Optional matrix to assemble linearization
+     *                             of Neumann BCs to. */
+    void EvaluateNeumann(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
+        Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix = Teuchos::null)
+    {
+      if (systemmatrix.is_null())
+        EvaluateNeumann(params, *systemvector);
+      else
+        EvaluateNeumann(params, *systemvector, systemmatrix.get());
+    }
 
     /*!
     \brief Evaluate Neumann boundary conditions
@@ -1610,8 +1721,8 @@ namespace DRT
     \param systemvector (out): Vector to assemble Neumann BCs to.
                                The vector is NOT initialized to zero by this method.
     */
-    void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
-        CORE::LINALG::SparseOperator* systemmatrix = nullptr) override;
+    virtual void EvaluateNeumann(Teuchos::ParameterList& params, Epetra_Vector& systemvector,
+        CORE::LINALG::SparseOperator* systemmatrix = nullptr);
 
     /*!
     \brief Evaluate Dirichlet boundary conditions
@@ -1645,14 +1756,50 @@ namespace DRT
     \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to
                                   Dirichlet boundary conditions and the remaining/free DOFs
     */
-    void EvaluateDirichlet(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
-        Teuchos::RCP<Epetra_Vector> systemvectord, Teuchos::RCP<Epetra_Vector> systemvectordd,
-        Teuchos::RCP<Epetra_IntVector> toggle,
-        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const override;
+    virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
+        Teuchos::RCP<Epetra_Vector> systemvector, Teuchos::RCP<Epetra_Vector> systemvectord,
+        Teuchos::RCP<Epetra_Vector> systemvectordd, Teuchos::RCP<Epetra_IntVector> toggle,
+        Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmapextractor = Teuchos::null) const;
 
     /// Evaluate a specific condition using assemble strategy
     virtual void EvaluateCondition(Teuchos::ParameterList& params, DRT::AssembleStrategy& strategy,
         const std::string& condstring, const int condid = -1);
+
+    /** \brief Evaluate a specified condition
+     *
+     *  Loop all conditions attached to the discretization and evaluate them.
+     *  This method considers all conditions in condition_ with the names
+     *  matching the user-provided string condstring.
+     *  Calls more general EvaluateCondition method, see below.
+     *
+     *  \param params        (in): List of parameters for use at element level
+     *  \param systemvector (out): Vector to assemble BCs to.(NOT initialized to zero
+     *                             by this method)
+     *  \param condstring    (in): Name of condition to be evaluated
+     *  \param condid        (in): condition ID */
+    void EvaluateCondition(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_Vector> systemvector,
+        const std::string& condstring, const int condid = -1)
+    {
+      EvaluateCondition(params, Teuchos::null, Teuchos::null, systemvector, Teuchos::null,
+          Teuchos::null, condstring, condid);
+    }
+
+    /** \brief Evaluate a specified condition
+     *
+     *  Loop all conditions attached to the discretization and evaluate them.
+     *  This method considers all conditions in condition_ with the names
+     *  matching the user-provided string condstring.
+     *  Calls more general EvaluateCondition method, see below.
+     *
+     *  \param params     (in): List of parameters for use at element level
+     *  \param condstring (in): Name of condition to be evaluated
+     *  \param condid     (in): condition ID */
+    void EvaluateCondition(
+        Teuchos::ParameterList& params, const std::string& condstring, const int condid = -1)
+    {
+      EvaluateCondition(params, Teuchos::null, Teuchos::null, Teuchos::null, Teuchos::null,
+          Teuchos::null, condstring, condid);
+    }
 
     /*!
     \brief Evaluate a specific condition
@@ -1683,12 +1830,12 @@ namespace DRT
       \param condstring (in):    Name of condition to be evaluated
       \param condid (in):        Condition ID
       */
-    void EvaluateCondition(Teuchos::ParameterList& params,
+    virtual void EvaluateCondition(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
         Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
-        const int condid = -1) override;
+        const int condid = -1);
 
     /*!
     \brief Compute the nullspace of the discretization
@@ -1701,8 +1848,8 @@ namespace DRT
     \param solveparams (in): List of parameters
     \param recompute (in)  : force method to recompute the nullspace
     */
-    void ComputeNullSpaceIfNecessary(
-        Teuchos::ParameterList& solveparams, bool recompute = false) override;
+    virtual void ComputeNullSpaceIfNecessary(
+        Teuchos::ParameterList& solveparams, bool recompute = false);
 
     /*!
      * \brief Assemble scalar quantities across elements
@@ -1716,8 +1863,8 @@ namespace DRT
      *
      * \author bborn \date 08/08
      */
-    void EvaluateScalars(Teuchos::ParameterList& params,
-        Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars) override;
+    virtual void EvaluateScalars(
+        Teuchos::ParameterList& params, Teuchos::RCP<CORE::LINALG::SerialDenseVector> scalars);
 
     /*!
      * \brief Assemble scalar quantities across conditioned elements

@@ -21,7 +21,7 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -136,7 +136,7 @@ void FLD::UTILS::DbcHDG_Fluid::ReadDirichletCondition(const DRT::DiscretizationF
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {

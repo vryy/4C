@@ -109,8 +109,7 @@ void STR::MODELEVALUATOR::Contact::PostSetup(Teuchos::ParameterList& cparams)
         "OUTPUT_FILE_NAME", GInOutput().GetOutputPtr()->Output()->FileName());
     plot_params.set<std::string>(
         "INPUT_FILE_NAME", GInOutput().GetOutputPtr()->Output()->InputFileName());
-    plot_params.set<const DRT::DiscretizationInterface*>(
-        "DISCRETIZATION", GState().GetDiscret().get());
+    plot_params.set<const DRT::Discretization*>("DISCRETIZATION", GState().GetDiscret().get());
     plot_params.set<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR", this);
 
     STR::IMPLICIT::Generic& impl = dynamic_cast<STR::IMPLICIT::Generic&>(Int());

@@ -22,7 +22,6 @@ class Epetra_Comm;
 namespace DRT
 {
   class Discretization;
-  class DiscretizationInterface;
   class Condition;
   class Element;
   class Node;
@@ -98,10 +97,6 @@ namespace XFEM
        *
        *  \author hiermeier
        *  \date 06/16 */
-      int SetupXFEMDiscretization(const Teuchos::ParameterList& xgen_params,
-          Teuchos::RCP<DRT::DiscretizationInterface> src_dis,
-          Teuchos::RCP<DRT::DiscretizationInterface> target_dis,
-          const std::vector<DRT::Condition*>& boundary_conds) const;
       int SetupXFEMDiscretization(const Teuchos::ParameterList& xgen_params,
           Teuchos::RCP<DRT::Discretization> src_dis, Teuchos::RCP<DRT::Discretization> embedded_dis,
           const std::vector<DRT::Condition*>& boundary_conds) const;

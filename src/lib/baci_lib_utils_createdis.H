@@ -854,9 +854,9 @@ namespace DRT
     /// clone target discretization from a given condition of the source discretization
     template <class CloneStrategy>
     void CloneDiscretizationFromCondition(
-        const DRT::DiscretizationInterface& sourcedis,  ///< source discretization
-        DRT::DiscretizationInterface& targetdis,        ///< target discretization
-        const std::vector<DRT::Condition*>& conds       ///< source conditions to clone from
+        const DRT::Discretization& sourcedis,      ///< source discretization
+        DRT::Discretization& targetdis,            ///< target discretization
+        const std::vector<DRT::Condition*>& conds  ///< source conditions to clone from
     )
     {
       const DRT::Discretization* sourcedis_ptr =

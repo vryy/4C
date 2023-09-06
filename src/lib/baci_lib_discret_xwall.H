@@ -40,7 +40,7 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~DiscretizationXWall() { return; };
+    ~DiscretizationXWall() override = default;
 
     /*!
     \brief Get the gid of all dofs of a node.
@@ -59,8 +59,8 @@ namespace DRT
     \param node (in)        : the node
     \param element (in)     : the element (optionally)
     */
-    virtual void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
-        const Element* element = nullptr) const
+    void Dof(std::vector<int>& dof, const Node* node, unsigned nds, unsigned nodaldofset,
+        const Element* element = nullptr) const override
     {
       if (nds > 1) dserror("xwall discretization can only handle one dofset at the moment");
 

@@ -20,7 +20,7 @@ namespace IO
 }
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
 }
 namespace STR
 {
@@ -64,9 +64,8 @@ namespace STR
     ~MonitorDbc() = default;
 
     /// initialize class members
-    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr,
-        DRT::DiscretizationInterface& discret, STR::TIMINT::BaseDataGlobalState& gstate,
-        STR::Dbc& dbc);
+    void Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr, DRT::Discretization& discret,
+        STR::TIMINT::BaseDataGlobalState& gstate, STR::Dbc& dbc);
 
     /// setup new class members
     void Setup();
@@ -78,14 +77,14 @@ namespace STR
     int GetUniqueId(int tagged_id, DRT::Condition::GeometryType gtype) const;
 
     void CreateReactionForceCondition(
-        const DRT::Condition& tagged_cond, DRT::DiscretizationInterface& discret) const;
+        const DRT::Condition& tagged_cond, DRT::Discretization& discret) const;
 
     void GetTaggedCondition(std::vector<const DRT::Condition*>& tagged_conds,
         const std::string& cond_name, const std::string& tag_name,
-        const DRT::DiscretizationInterface& discret) const;
+        const DRT::Discretization& discret) const;
 
-    void CreateReactionMaps(const DRT::DiscretizationInterface& discret,
-        const DRT::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const;
+    void CreateReactionMaps(const DRT::Discretization& discret, const DRT::Condition& rcond,
+        Teuchos::RCP<Epetra_Map>* react_maps) const;
 
     void ReadResultsPriorRestartStepAndWriteToFile(
         const std::vector<std::string>& full_restart_filepaths, int restart_step) const;
@@ -130,7 +129,7 @@ namespace STR
     inline void ThrowIfNotSetup() const { dsassert(issetup_, "Call Setup() first!"); }
 
    private:
-    DRT::DiscretizationInterface* discret_ptr_ = nullptr;
+    DRT::Discretization* discret_ptr_ = nullptr;
     STR::TIMINT::BaseDataGlobalState* gstate_ptr_ = nullptr;
     STR::Dbc* dbc_ptr_ = nullptr;
 

@@ -77,7 +77,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::CreateMap(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::CreateMapExtractorFromDiscretization(
-    const ::DRT::DiscretizationInterface& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor)
+    const ::DRT::Discretization& dis, int ndim, CORE::LINALG::MultiMapExtractor& extractor)
 {
   std::set<int> conddofset;
   std::set<int> otherdofset;

@@ -40,7 +40,7 @@ STR::SOLVER::Factory::Factory()
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolvers(
     const std::set<enum INPAR::STR::ModelType>& modeltypes, const Teuchos::ParameterList& sdyn,
-    DRT::DiscretizationInterface& actdis) const
+    DRT::Discretization& actdis) const
 {
   // create a new standard map
   Teuchos::RCP<LinSolMap> linsolvers = Teuchos::rcp(new LinSolMap());
@@ -94,7 +94,7 @@ Teuchos::RCP<STR::SOLVER::Factory::LinSolMap> STR::SOLVER::Factory::BuildLinSolv
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver(
-    const Teuchos::ParameterList& sdyn, DRT::DiscretizationInterface& actdis) const
+    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
 {
   // get the linear solver number used for structural problems
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
@@ -180,7 +180,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildStructureLinSolver
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
-    DRT::DiscretizationInterface& actdis) const
+    DRT::Discretization& actdis) const
 {
   const Teuchos::ParameterList& mcparams = DRT::Problem::Instance()->ContactDynamicParams();
 
@@ -199,7 +199,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
-    DRT::DiscretizationInterface& actdis, enum INPAR::CONTACT::SolvingStrategy sol_type,
+    DRT::Discretization& actdis, enum INPAR::CONTACT::SolvingStrategy sol_type,
     enum INPAR::CONTACT::SystemType sys_type, const int lin_solver_id)
 {
   Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
@@ -324,7 +324,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildMeshtyingContactLi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLinSolver(
-    const Teuchos::ParameterList& sdyn, DRT::DiscretizationInterface& actdis) const
+    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
 {
   Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
 
@@ -411,7 +411,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildLagPenConstraintLi
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLinSolver(
-    const Teuchos::ParameterList& sdyn, DRT::DiscretizationInterface& actdis) const
+    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis) const
 {
   Teuchos::RCP<CORE::LINALG::Solver> linsolver = Teuchos::null;
 
@@ -480,7 +480,7 @@ Teuchos::RCP<CORE::LINALG::Solver> STR::SOLVER::Factory::BuildCardiovascular0DLi
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::map<enum INPAR::STR::ModelType, Teuchos::RCP<CORE::LINALG::Solver>>>
 STR::SOLVER::BuildLinSolvers(const std::set<enum INPAR::STR::ModelType>& modeltypes,
-    const Teuchos::ParameterList& sdyn, DRT::DiscretizationInterface& actdis)
+    const Teuchos::ParameterList& sdyn, DRT::Discretization& actdis)
 {
   Factory factory;
   return factory.BuildLinSolvers(modeltypes, sdyn, actdis);

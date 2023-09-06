@@ -339,8 +339,7 @@ namespace CORE::LINALG
    *
    *  \author hiermeier \date 03/18 */
   void ComputeDofMapsFromNodeMaps(const int dofset_id,
-      const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
-      const ::DRT::DiscretizationInterface& discret,
+      const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const ::DRT::Discretization& discret,
       std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps);
 
   /*! \brief Compute a dof map corresponding to the given node map
@@ -352,8 +351,8 @@ namespace CORE::LINALG
    *  \return corresponding dof map
    *
    *  \author hiermeier \date 03/18 */
-  Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(const int dofset_id, const Epetra_Map& node_map,
-      const ::DRT::DiscretizationInterface& discret);
+  Teuchos::RCP<Epetra_Map> ComputeDofMapFromNodeMap(
+      const int dofset_id, const Epetra_Map& node_map, const ::DRT::Discretization& discret);
 
   /*! \brief Write values from a std::vector to a Epetra_MultiVector
    *

@@ -92,9 +92,6 @@ namespace STR
       /// Access discretization (structure only)
       Teuchos::RCP<DRT::Discretization> Discretization() override;
 
-      /// Access generic discretization pointer
-      Teuchos::RCP<DRT::DiscretizationInterface> DiscretizationInterface() override;
-
       /// Access to pointer to DoF row map of the discretization (structure only)
       const Epetra_Map* DofRowMapView() override
       {

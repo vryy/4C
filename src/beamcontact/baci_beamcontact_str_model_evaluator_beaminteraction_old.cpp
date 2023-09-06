@@ -47,8 +47,7 @@ void STR::MODELEVALUATOR::BeamInteractionOld::Setup()
   f_beaminteract_np_ptr_ = Teuchos::rcp(new Epetra_Vector(*GState().DofRowMap(), true));
 
   // create beam contact manager
-  Teuchos::RCP<DRT::Discretization> discret_ptr =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
+  Teuchos::RCP<DRT::Discretization> discret_ptr = DiscretPtr();
   beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_ptr, 0.0));
 
   // gmsh output at beginning of simulation

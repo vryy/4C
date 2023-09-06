@@ -46,7 +46,7 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
 }  // namespace DRT
 
 namespace ADAPTER
@@ -434,9 +434,6 @@ namespace ADAPTER
     /// direct access to discretization
     Teuchos::RCP<DRT::Discretization> Discretization() override = 0;
 
-    /// Access generic discretization pointer
-    virtual Teuchos::RCP<DRT::DiscretizationInterface> DiscretizationInterface() = 0;
-
     /// are there any algebraic constraints?
     bool HaveConstraint() override = 0;
 
@@ -546,7 +543,7 @@ namespace ADAPTER
 
     /// initialize all class internal variables
     virtual void Init(const Teuchos::ParameterList& prbdyn, Teuchos::ParameterList& sdyn,
-        Teuchos::RCP<DRT::DiscretizationInterface> actdis);
+        Teuchos::RCP<DRT::Discretization> actdis);
 
     /// setup
     virtual void Setup();
@@ -660,7 +657,7 @@ namespace ADAPTER
     Teuchos::RCP<Teuchos::ParameterList> sdyn_;
 
     /// current discretization
-    Teuchos::RCP<DRT::DiscretizationInterface> actdis_;
+    Teuchos::RCP<DRT::Discretization> actdis_;
 
     /// init flag
     bool isinit_;

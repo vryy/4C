@@ -272,8 +272,8 @@ void CORE::ADAPTER::Coupling::SetupCoupling(const ::DRT::Discretization& masterd
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::SetupCoupling(const ::DRT::DiscretizationInterface& masterdis,
-    const ::DRT::DiscretizationInterface& slavedis, const Epetra_Map& masternodemap,
+void CORE::ADAPTER::Coupling::SetupCoupling(const ::DRT::Discretization& masterdis,
+    const ::DRT::Discretization& slavedis, const Epetra_Map& masternodemap,
     const Epetra_Map& slavenodemap, const Epetra_Map& permslavenodemap, const int numdof)
 {
   if (masternodemap.NumGlobalElements() != slavenodemap.NumGlobalElements())
@@ -400,8 +400,8 @@ void CORE::ADAPTER::Coupling::MatchNodes(const ::DRT::Discretization& masterdis,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::FinishCoupling(const ::DRT::DiscretizationInterface& masterdis,
-    const ::DRT::DiscretizationInterface& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
+void CORE::ADAPTER::Coupling::FinishCoupling(const ::DRT::Discretization& masterdis,
+    const ::DRT::Discretization& slavedis, Teuchos::RCP<Epetra_Map> masternodemap,
     Teuchos::RCP<Epetra_Map> slavenodemap, Teuchos::RCP<Epetra_Map> permslavenodemap,
     const std::vector<int>& masterdofs, const std::vector<int>& slavedofs, const int nds_master,
     const int nds_slave)
@@ -440,9 +440,8 @@ void CORE::ADAPTER::Coupling::FinishCoupling(const ::DRT::DiscretizationInterfac
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::BuildDofMaps(const ::DRT::DiscretizationInterface& masterdis,
-    const ::DRT::DiscretizationInterface& slavedis,
-    const Teuchos::RCP<const Epetra_Map>& masternodemap,
+void CORE::ADAPTER::Coupling::BuildDofMaps(const ::DRT::Discretization& masterdis,
+    const ::DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
     const Teuchos::RCP<const Epetra_Map>& slavenodemap,
     const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
     const Teuchos::RCP<const Epetra_Map>& permslavenodemap, const std::vector<int>& masterdofs,
@@ -473,7 +472,7 @@ std::vector<int> CORE::ADAPTER::Coupling::BuildDofVectorFromNumDof(const int num
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CORE::ADAPTER::Coupling::BuildDofMaps(const ::DRT::DiscretizationInterface& dis,
+void CORE::ADAPTER::Coupling::BuildDofMaps(const ::DRT::Discretization& dis,
     Teuchos::RCP<const Epetra_Map> nodemap, Teuchos::RCP<const Epetra_Map> permnodemap,
     Teuchos::RCP<const Epetra_Map>& dofmap, Teuchos::RCP<const Epetra_Map>& permdofmap,
     Teuchos::RCP<Epetra_Export>& exporter, const std::vector<int>& coupled_dofs,

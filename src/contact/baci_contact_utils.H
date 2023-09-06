@@ -20,7 +20,7 @@
 namespace DRT
 {
   class Condition;
-  class DiscretizationInterface;
+  class Discretization;
   class Node;
   class Element;
   class Condition;
@@ -42,7 +42,7 @@ namespace CONTACT
 
     /// Find the solid to solid contact conditions and combine them to contact condition groups
     int GetContactConditionGroups(std::vector<std::vector<DRT::Condition*>>& ccond_grps,
-        const DRT::DiscretizationInterface& discret_wrapper, const bool& throw_error = true);
+        const DRT::Discretization& discret_wrapper, const bool& throw_error = true);
 
     /// Combine the solid to solid contact conditions to contact condition groups
     void GetContactConditionGroups(std::vector<std::vector<DRT::Condition*>>& ccond_grps,
@@ -102,14 +102,14 @@ namespace CONTACT
        *                              contain at least one DBC slave node
        *
        *  \author hiermeier \date 01/18 */
-      static void DetectDbcSlaveNodesAndElements(const DRT::DiscretizationInterface& str_discret,
+      static void DetectDbcSlaveNodesAndElements(const DRT::Discretization& str_discret,
           const std::vector<std::vector<DRT::Condition*>>& ccond_grps,
           std::set<const DRT::Node*>& dbc_slave_nodes,
           std::set<const DRT::Element*>& dbc_slave_eles);
 
      private:
       static void DetectDbcSlaveNodes(std::map<const DRT::Node*, int>& dbc_slave_node_map,
-          const DRT::DiscretizationInterface& str_discret,
+          const DRT::Discretization& str_discret,
           const std::vector<const DRT::Condition*>& sl_conds);
 
       static void DetectDbcSlaveElements(std::set<const DRT::Element*>& dbc_slave_nodes,

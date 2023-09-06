@@ -45,9 +45,9 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 06/16 */
-      void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
-          const DRT::Condition& cond, double time, DbcInfo& info,
-          const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const override;
+      void ReadDirichletCondition(const DRT::Discretization& discret, const DRT::Condition& cond,
+          double time, DbcInfo& info, const Teuchos::RCP<std::set<int>>* dbcgids,
+          int hierarchical_order) const override;
       void ReadDirichletCondition(const DRT::DiscretizationFaces& discret,
           const DRT::Condition& cond, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
@@ -65,7 +65,7 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      virtual void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+      virtual void DoDirichletCondition(const DRT::Discretization& discret,
           const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
       void DoDirichletCondition(const DRT::DiscretizationFaces& discret, const DRT::Condition& cond,

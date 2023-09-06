@@ -471,8 +471,7 @@ void TSI::Algorithm::GetContactStrategy()
     // create the contact factory
     // ---------------------------------------------------------------------
     CONTACT::STRATEGY::Factory factory;
-    factory.Init(Teuchos::rcp_dynamic_cast<DRT::DiscretizationInterface>(
-        StructureField()->Discretization(), true));
+    factory.Init(StructureField()->Discretization());
     factory.Setup();
 
     // check the problem dimension

@@ -119,8 +119,7 @@ void CONTACT::AUG::ComboStrategy::CreateStrategyLinearSolvers(
   if (not cparams_interface)
     dserror("You have to provide a pointer to the CONTACT::ParamsInterface!");
 
-  DRT::DiscretizationInterface* str_discret =
-      cparams_interface->Get<DRT::DiscretizationInterface>();
+  DRT::Discretization* str_discret = cparams_interface->Get<DRT::Discretization>();
 
   strat_lin_solvers.push_back(STR::SOLVER::Factory::BuildMeshtyingContactLinSolver(
       *str_discret, strategy.Type(), strategy.SystemType(), ls_id));

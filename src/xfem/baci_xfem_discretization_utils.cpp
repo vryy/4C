@@ -232,20 +232,6 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
-    const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::DiscretizationInterface> src_dis,
-    Teuchos::RCP<DRT::DiscretizationInterface> target_dis,
-    const std::vector<DRT::Condition*>& boundary_conds) const
-{
-  Teuchos::RCP<DRT::Discretization> src_dis_ptr =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(src_dis, true);
-  Teuchos::RCP<DRT::Discretization> target_dis_ptr =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(target_dis, true);
-  return SetupXFEMDiscretization(xgen_params, src_dis_ptr, target_dis_ptr, boundary_conds);
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
     const Teuchos::ParameterList& xgen_params, Teuchos::RCP<DRT::Discretization> src_dis,
     Teuchos::RCP<DRT::Discretization> target_dis,
     const std::vector<DRT::Condition*>& boundary_conds) const

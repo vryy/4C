@@ -28,7 +28,7 @@
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr,
-    DRT::DiscretizationInterface& discret, STR::TIMINT::BaseDataGlobalState& gstate, STR::Dbc& dbc)
+    DRT::Discretization& discret, STR::TIMINT::BaseDataGlobalState& gstate, STR::Dbc& dbc)
 {
   issetup_ = false;
   isinit_ = false;
@@ -68,7 +68,7 @@ void STR::MonitorDbc::Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr,
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::GetTaggedCondition(std::vector<const DRT::Condition*>& tagged_conds,
     const std::string& cond_name, const std::string& tag_name,
-    const DRT::DiscretizationInterface& discret) const
+    const DRT::Discretization& discret) const
 {
   tagged_conds.clear();
 
@@ -109,7 +109,7 @@ int STR::MonitorDbc::GetUniqueId(int tagged_id, DRT::Condition::GeometryType gty
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void STR::MonitorDbc::CreateReactionForceCondition(
-    const DRT::Condition& tagged_cond, DRT::DiscretizationInterface& discret) const
+    const DRT::Condition& tagged_cond, DRT::Discretization& discret) const
 {
   const int new_id = GetUniqueId(tagged_cond.Id(), tagged_cond.GType());
 
@@ -184,7 +184,7 @@ void STR::MonitorDbc::Setup()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::MonitorDbc::CreateReactionMaps(const DRT::DiscretizationInterface& discret,
+void STR::MonitorDbc::CreateReactionMaps(const DRT::Discretization& discret,
     const DRT::Condition& rcond, Teuchos::RCP<Epetra_Map>* react_maps) const
 {
   const std::vector<int>* onoff = rcond.Get<std::vector<int>>("onoff");

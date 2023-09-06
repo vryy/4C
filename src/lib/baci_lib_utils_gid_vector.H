@@ -23,7 +23,7 @@
 
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
 
   namespace UTILS
   {
@@ -34,8 +34,7 @@ namespace DRT
      * @param[in] nodegid               nodal GID
      * @param[out] my_gid_vec           vector with my node GIDs
      */
-    void AddOwnedNodeGID(
-        const DiscretizationInterface& dis, int nodegid, std::vector<int>& my_gid_vec);
+    void AddOwnedNodeGID(const Discretization& dis, int nodegid, std::vector<int>& my_gid_vec);
 
     /*!
      * \brief Add nodal GIDs on this processor to existing vector from vector with global GIDs
@@ -44,7 +43,7 @@ namespace DRT
      * @param[in] gloabl_node_gid_vec   vector with all node GIDs
      * @param[out] my_gid_vec           vector with my node GIDs
      */
-    void AddOwnedNodeGIDVector(const DiscretizationInterface& dis,
+    void AddOwnedNodeGIDVector(const Discretization& dis,
         const std::vector<int>& global_node_gid_vec, std::vector<int>& my_gid_vec);
 
     /*!
@@ -54,7 +53,7 @@ namespace DRT
      * @param[in] node_gid              GID of node to be checked
      * @return                          indicates, whether node is owned by this processor
      */
-    bool IsNodeGIDOnThisProc(const DRT::DiscretizationInterface& dis, int node_gid);
+    bool IsNodeGIDOnThisProc(const DRT::Discretization& dis, int node_gid);
 
     /*!
      * \brief remove nodal GIDs from vector when they are owned by this processor
@@ -63,7 +62,7 @@ namespace DRT
      * @param[in] node_gids_to_remove   vector with node GIDs to remove
      * @param[in/out] node_gid_vec      vector to remove GIDs from
      */
-    void RemoveNodeGIDsFromVector(const DiscretizationInterface& dis,
+    void RemoveNodeGIDsFromVector(const Discretization& dis,
         const std::vector<int>& node_gids_to_remove, std::vector<int>& node_gid_vec);
 
     //! Merge map @p map_in (key of type @p T and value of type @p U) from all procs to a merged

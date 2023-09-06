@@ -47,7 +47,7 @@ void MORTAR::STRATEGY::Factory::Init(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::Init(Teuchos::RCP<DRT::DiscretizationInterface> dis)
+void MORTAR::STRATEGY::Factory::Init(Teuchos::RCP<DRT::Discretization> dis)
 {
   // call Setup() after Init()
   issetup_ = false;
@@ -103,7 +103,7 @@ const STR::TIMINT::BaseDataGlobalState& MORTAR::STRATEGY::Factory::GState() cons
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-DRT::DiscretizationInterface& MORTAR::STRATEGY::Factory::Discret()
+DRT::Discretization& MORTAR::STRATEGY::Factory::Discret()
 {
   CheckInit();
   return *discret_ptr_;
@@ -111,7 +111,7 @@ DRT::DiscretizationInterface& MORTAR::STRATEGY::Factory::Discret()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-const DRT::DiscretizationInterface& MORTAR::STRATEGY::Factory::Discret() const
+const DRT::Discretization& MORTAR::STRATEGY::Factory::Discret() const
 {
   CheckInit();
   return *discret_ptr_;
@@ -169,7 +169,7 @@ void MORTAR::STRATEGY::Factory::CheckDimension() const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::DiscretizationInterface& discret,
+void MORTAR::STRATEGY::Factory::PrepareNURBSElement(const DRT::Discretization& discret,
     Teuchos::RCP<DRT::Element> ele, Teuchos::RCP<MORTAR::MortarElement> cele) const
 {
   const DRT::NURBS::NurbsDiscretization* nurbsdis =

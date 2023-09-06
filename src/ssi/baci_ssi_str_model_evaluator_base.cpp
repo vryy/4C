@@ -48,9 +48,7 @@ void STR::MODELEVALUATOR::BaseSSI::DetermineStressStrain()
   }
 
   // export map to column format
-  DRT::Exporter exporter(*Discret().ElementRowMap(),
-      *Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr())->ElementColMap(),
-      Discret().Comm());
+  DRT::Exporter exporter(*Discret().ElementRowMap(), *Discret().ElementColMap(), Discret().Comm());
   exporter.Export(*stresses);
 
   // prepare nodal stress vectors

@@ -21,7 +21,7 @@
 // forward declarations
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
 }  // namespace DRT
 
 namespace CORE::LINALG
@@ -194,7 +194,7 @@ namespace STR
 
    private:
     //! our discretisation
-    Teuchos::RCP<const DRT::DiscretizationInterface> strudisc_;
+    Teuchos::RCP<const DRT::Discretization> strudisc_;
     // our solution
     //! global displacement DOFs
     Teuchos::RCP<const Epetra_Vector> disn_;

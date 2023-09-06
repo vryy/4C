@@ -386,7 +386,7 @@ std::ostream& operator<<(std::ostream& os, const DRT::DiscretizationHDG& dis)
 }
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, DRT::UTILS::Dbc::DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -501,7 +501,7 @@ void DRT::UTILS::DbcHDG::ReadDirichletCondition(const DRT::DiscretizationFaces& 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::DbcHDG::DoDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {

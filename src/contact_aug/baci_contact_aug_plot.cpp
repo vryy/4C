@@ -17,7 +17,6 @@ MATLAB, PGFPlot or other tools.
 #include "baci_inpar_contact.H"
 #include "baci_io_every_iteration_writer.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_discret_interface.H"
 #include "baci_lib_element.H"
 #include "baci_lib_epetra_utils.H"
 #include "baci_lib_node.H"
@@ -199,7 +198,7 @@ void CONTACT::AUG::Plot::Direction::SplitIntoSlaveMasterBody(const Epetra_Vector
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CONTACT::AUG::Plot::Direction::FindConnectedDofs(
-    const DRT::Node* node, const DRT::DiscretizationInterface& discret) const
+    const DRT::Node* node, const DRT::Discretization& discret) const
 {
   std::set<int> done_element_ids;
   std::set<int> connected_node_gids;
@@ -382,7 +381,7 @@ void CONTACT::AUG::Plot::Init(
     const Teuchos::ParameterList& plot_params, const CONTACT::CoAbstractStrategy* strat)
 {
   strat_ = dynamic_cast<const CONTACT::AUG::Strategy*>(strat);
-  discret_ = plot_params.get<const DRT::DiscretizationInterface*>("DISCRETIZATION");
+  discret_ = plot_params.get<const DRT::Discretization*>("DISCRETIZATION");
   model_ = plot_params.get<STR::MODELEVALUATOR::Contact*>("MODELEVALUATOR");
 
   const int output_precision = plot_params.get<int>("OUTPUT_PRECISION");

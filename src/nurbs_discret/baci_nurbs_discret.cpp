@@ -91,7 +91,7 @@ Teuchos::RCP<const DRT::NURBS::Knotvector> DRT::NURBS::NurbsDiscretization::GetK
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret, double time,
+void DRT::UTILS::DbcNurbs::Evaluate(const DRT::Discretization& discret, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, DRT::UTILS::Dbc::DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -140,7 +140,7 @@ void DRT::UTILS::DbcNurbs::Evaluate(const DRT::DiscretizationInterface& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -472,7 +472,7 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::DiscretizationInterfa
       new CORE::LINALG::Solver(p, discret.Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
   // FixMe actually the const qualifier could stay, if someone adds to each single
   // related ComputeNullSpace routine a "const"....
-  const_cast<DRT::DiscretizationInterface&>(discret).ComputeNullSpaceIfNecessary(solver->Params());
+  const_cast<DRT::Discretization&>(discret).ComputeNullSpaceIfNecessary(solver->Params());
 
   // solve for control point values
   solver->Solve(massmatrix->EpetraOperator(), dbcvector, rhs, refactor, reset);

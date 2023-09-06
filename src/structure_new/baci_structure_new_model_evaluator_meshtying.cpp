@@ -427,10 +427,8 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
   Teuchos::RCP<Epetra_Map> allreduceslavemap = CORE::LINALG::AllreduceEMap(*slavemap);
 
   // export modified node positions to column map of problem discretization
-  const Epetra_Map* dof_colmap =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true)->DofColMap();
-  const Epetra_Map* node_colmap =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true)->NodeColMap();
+  const Epetra_Map* dof_colmap = DiscretPtr()->DofColMap();
+  const Epetra_Map* node_colmap = DiscretPtr()->NodeColMap();
   Teuchos::RCP<Epetra_Vector> Xslavemodcol = CORE::LINALG::CreateVector(*dof_colmap, false);
   CORE::LINALG::Export(*Xslavemod, *Xslavemodcol);
 
@@ -470,8 +468,7 @@ void STR::MODELEVALUATOR::Meshtying::ApplyMeshInitialization(
   }
 
   // re-initialize finite elements
-  DRT::ParObjectFactory::Instance().InitializeElements(
-      *Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true));
+  DRT::ParObjectFactory::Instance().InitializeElements(Discret());
 
   return;
 }

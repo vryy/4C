@@ -49,8 +49,7 @@ void STR::MODELEVALUATOR::SpringDashpot::Setup()
   Discret().GetCondition("RobinSpringDashpot", springdashpots);
 
   // new instance of spring dashpot BC for each condition
-  Teuchos::RCP<DRT::Discretization> discret_ptr =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
+  Teuchos::RCP<DRT::Discretization> discret_ptr = DiscretPtr();
   for (auto& springdashpot : springdashpots)
     springs_.emplace_back(Teuchos::rcp(new UTILS::SpringDashpot(discret_ptr, springdashpot)));
 

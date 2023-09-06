@@ -12,7 +12,6 @@
 #include "baci_structure_new_nln_linearsystem_scaling.H"
 
 #include "baci_inpar_structure.H"
-#include "baci_lib_discret_interface.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -40,7 +39,7 @@ STR::NLN::LinSystem::StcScaling::StcScaling(
   Teuchos::ParameterList p;
 
   // get discretization
-  Teuchos::RCP<DRT::DiscretizationInterface> discret = GState.GetDiscret();
+  Teuchos::RCP<DRT::Discretization> discret = GState.GetDiscret();
 
   // action for elements
   discret->SetState("displacement", GState.GetDisNp());

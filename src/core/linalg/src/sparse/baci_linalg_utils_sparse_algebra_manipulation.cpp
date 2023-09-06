@@ -567,8 +567,8 @@ bool CORE::LINALG::SplitVector(const Epetra_Map& xmap, const Epetra_Vector& x,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CORE::LINALG::ComputeDofMapsFromNodeMaps(const int dofset_id,
-    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps,
-    const ::DRT::DiscretizationInterface& discret, std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps)
+    const std::vector<Teuchos::RCP<Epetra_Map>>& node_maps, const ::DRT::Discretization& discret,
+    std::vector<Teuchos::RCP<Epetra_Map>>& dof_maps)
 {
   dof_maps.reserve(dof_maps.size() + node_maps.size());
   for (const Teuchos::RCP<Epetra_Map>& node_map : node_maps)
@@ -578,7 +578,7 @@ void CORE::LINALG::ComputeDofMapsFromNodeMaps(const int dofset_id,
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> CORE::LINALG::ComputeDofMapFromNodeMap(
-    const int dofset_id, const Epetra_Map& node_map, const ::DRT::DiscretizationInterface& discret)
+    const int dofset_id, const Epetra_Map& node_map, const ::DRT::Discretization& discret)
 {
   std::set<int> dof_set;
   std::vector<int> dof_vec;

@@ -11,7 +11,7 @@
 
 #include "baci_lib_utils_discret.H"
 
-#include "baci_lib_discret_interface.H"
+#include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
 
@@ -20,7 +20,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::EvaluateInitialField(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::EvaluateInitialField(const DRT::Discretization& discret,
     const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
     const std::vector<int>& locids)
 {
@@ -58,7 +58,7 @@ void DRT::UTILS::EvaluateInitialField(const DRT::DiscretizationInterface& discre
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::DoInitialField(const DRT::DiscretizationInterface& discret, DRT::Condition& cond,
+void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Condition& cond,
     Epetra_Vector& fieldvector, const std::vector<int>& locids)
 {
   const std::vector<int> cond_nodeids = *cond.Nodes();

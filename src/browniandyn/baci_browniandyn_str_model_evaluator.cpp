@@ -54,7 +54,7 @@ void STR::MODELEVALUATOR::BrownianDyn::Setup()
   if (TimInt().GetDataSDynPtr()->GetDynamicType() != INPAR::STR::dyna_onesteptheta)
     dserror("Brownian dynamics simulation only consistent for one step theta schema.");
 
-  discret_ptr_ = Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
+  discret_ptr_ = DiscretPtr();
 
   // -------------------------------------------------------------------------
   // get pointer to biopolymer network data and init random number data

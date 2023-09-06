@@ -22,7 +22,6 @@ class Epetra_Vector;
 
 namespace DRT
 {
-  class DiscretizationInterface;
   class Discretization;
   class Condition;
 
@@ -68,7 +67,7 @@ namespace STR
     virtual ~Dbc(){};
 
     //! Initialize class variables
-    virtual void Init(const Teuchos::RCP<DRT::DiscretizationInterface>& discret,
+    virtual void Init(const Teuchos::RCP<DRT::Discretization>& discret,
         const Teuchos::RCP<Epetra_Vector>& freact,
         const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr);
 
@@ -232,7 +231,7 @@ namespace STR
     bool islocsys_;
 
     //! Discretization pointer
-    Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr_;
+    Teuchos::RCP<DRT::Discretization> discret_ptr_;
 
     //! pointer to the overlying time integrator (read-only)
     Teuchos::RCP<const STR::TIMINT::Base> timint_ptr_;
