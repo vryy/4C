@@ -502,6 +502,13 @@ void SSI::SSIMono::Init(const Epetra_Comm& comm, const Teuchos::ParameterList& g
       INPAR::SCATRA::velocity_Navier_Stokes)
     dserror("Invalid type of velocity field for scalar-structure interaction!");
 
+  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(structparams, "DYNAMICTYP") ==
+      INPAR::STR::DynamicType::dyna_statics)
+    dserror(
+        "Mass conservation is not fulfilled if 'Statics' time integration is chosen since the "
+        "deformation velocities are incorrectly calculated.\n"
+        "Use 'NEGLECTINERTIA Yes' in combination with another time integration scheme instead!");
+
   // initialize strategy for Newton-Raphson convergence check
   switch (
       Teuchos::getIntegralValue<INPAR::SSI::ScaTraTimIntType>(globaltimeparams, "SCATRATIMINTTYPE"))
