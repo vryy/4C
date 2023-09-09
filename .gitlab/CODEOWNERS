@@ -280,6 +280,8 @@ scatra_ele/baci_scatra_ele_calc_artery*         @baci/team_scatra @baci/team_red
 scatra_ele/baci_scatra_ele_calc_multiporo*      @baci/team_scatra @baci/team_poro
 scatra_ele/baci_scatra_ele_calc_poro*           @baci/team_scatra @baci/team_poro
 
+shell7p/                   @baci/team_structure
+
 so3/                       @baci/team_structure
 so3/baci_so3_poro*         @baci/team_structure @baci/team_poro
 
@@ -407,6 +409,8 @@ xfem/                      @baci/team_fluid
 /Input/roughcontact*               @baci/team_contact
 
 /Input/scatra*                     @baci/team_scatra
+
+/Input/shell7p*                    @baci/team_structure
 
 /Input/solid*                      @baci/team_structure
 
