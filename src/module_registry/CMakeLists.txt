@@ -25,6 +25,7 @@ set(_module_registry_dependencies
     rigidsphere
     s8
     scatra_ele
+    shell7p
     so3
     thermo
     torsion3

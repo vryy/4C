@@ -24,6 +24,7 @@ set(_adapter_dependencies
     porofluidmultiphase
     s8
     scatra
+    shell7p
     so3
     solid_ele
     ssi

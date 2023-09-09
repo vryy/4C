@@ -43,6 +43,7 @@
 #include "baci_lib_utils_parallel.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_s8.H"
+#include "baci_shell7p_ele.H"
 #include "baci_so3_hex8fbar.H"
 #include "baci_so3_plast_ssn_eletypes.H"
 #include "baci_so3_plast_ssn_sosh18.H"
@@ -585,6 +586,10 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
       if (shell8_ele != nullptr)
         if (shell8_ele->HaveEAS()) iseas_local = 1;
     }
+    DRT::ELEMENTS::Shell7p* shell7p = dynamic_cast<DRT::ELEMENTS::Shell7p*>(actele);
+    if (shell7p)
+      if (shell7p->GetEleTech().find(INPAR::STR::EleTech::eas) != shell7p->GetEleTech().end())
+        iseas_local = 1;
 
     DRT::ELEMENTS::Solid* solid = dynamic_cast<DRT::ELEMENTS::Solid*>(actele);
     if (solid)

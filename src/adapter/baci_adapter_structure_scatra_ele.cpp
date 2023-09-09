@@ -14,6 +14,7 @@
 #include "baci_lib_element.H"
 #include "baci_membrane_scatra.H"
 #include "baci_s8_scatra.H"
+#include "baci_shell7p_ele_scatra.H"
 #include "baci_so3_scatra.H"
 #include "baci_truss3_scatra.H"
 #include "baci_w1_scatra.H"
@@ -79,6 +80,11 @@ INPAR::SCATRA::ImplType ADAPTER::GetScaTraImplType(DRT::Element* ele)
   else if (eletypename == "Wall1ScatraType")
   {
     impltype = (dynamic_cast<DRT::ELEMENTS::Wall1_Scatra*>(ele))->ImplType();
+  }
+  // shell scatra elements
+  else if (eletypename == "Shell7pScatraType")
+  {
+    impltype = (dynamic_cast<DRT::ELEMENTS::Shell7pScatra*>(ele))->ImplType();
   }
   // shell scatra elements
   else if (eletypename == "Shell8ScatraType")
