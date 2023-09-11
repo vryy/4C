@@ -11,6 +11,7 @@
 
 #include "baci_structure_new_functions.H"
 
+#include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_stvenantkirchhoff.H"
@@ -28,75 +29,74 @@ namespace
     if (!fparams) dserror("Material does not cast to St.Venant-Kirchhoff structure material");
     return *fparams;
   }
+
+  /*----------------------------------------------------------------------*/
+  /*----------------------------------------------------------------------*/
+  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateStructureFunction(
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  {
+    if (function_line_defs.size() != 1) return Teuchos::null;
+
+    const auto& function_lin_def = function_line_defs.front();
+
+    if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
+    {
+      // read data
+      int mat_id_struc = -1;
+
+      function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
+
+      if (mat_id_struc <= 0)
+        dserror(
+            "Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
+
+      // get materials
+      auto fparams = GetSVKMatPars(mat_id_struc);
+
+      return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
+    }
+    else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
+    {
+      // read data
+      int mat_id_struc = -1;
+
+      function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
+
+      if (mat_id_struc <= 0)
+      {
+        dserror(
+            "Please give a (reasonable) 'MAT_STRUC' in "
+            "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
+      }
+
+      // get materials
+      auto fparams = GetSVKMatPars(mat_id_struc);
+
+      return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(fparams));
+    }
+    else
+    {
+      return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
+    }
+  }
 }  // namespace
 
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void STR::AddValidStructureFunctionLines(DRT::INPUT::Lines& lines)
+void STR::AddValidStructureFunctions(DRT::UTILS::FunctionManager& function_manager)
 {
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructure =
-      DRT::INPUT::LineDefinition::Builder()
-          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
-          .AddNamedInt("MAT_STRUC")
-          .Build();
+  std::vector<DRT::INPUT::LineDefinition> lines;
+  lines.emplace_back(DRT::INPUT::LineDefinition::Builder()
+                         .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE")
+                         .AddNamedInt("MAT_STRUC")
+                         .Build());
+  lines.emplace_back(DRT::INPUT::LineDefinition::Builder()
+                         .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
+                         .AddNamedInt("MAT_STRUC")
+                         .Build());
 
-  DRT::INPUT::LineDefinition weaklycompressibleetiennefsistructureforce =
-      DRT::INPUT::LineDefinition::Builder()
-          .AddTag("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE")
-          .AddNamedInt("MAT_STRUC")
-          .Build();
-
-  lines.Add(weaklycompressibleetiennefsistructure);
-  lines.Add(weaklycompressibleetiennefsistructureforce);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> STR::TryCreateStructureFunction(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
-{
-  if (function_line_defs.size() != 1) return Teuchos::null;
-
-  const auto& function_lin_def = function_line_defs.front();
-
-  if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE"))
-  {
-    // read data
-    int mat_id_struc = -1;
-
-    function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
-
-    if (mat_id_struc <= 0)
-      dserror("Please give a (reasonable) 'MAT_STRUC' in WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE");
-
-    // get materials
-    auto fparams = GetSVKMatPars(mat_id_struc);
-
-    return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureFunction(fparams));
-  }
-  else if (function_lin_def.HaveNamed("WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE"))
-  {
-    // read data
-    int mat_id_struc = -1;
-
-    function_lin_def.ExtractInt("MAT_STRUC", mat_id_struc);
-
-    if (mat_id_struc <= 0)
-    {
-      dserror(
-          "Please give a (reasonable) 'MAT_STRUC' in "
-          "WEAKLYCOMPRESSIBLE_ETIENNE_FSI_STRUCTURE_FORCE");
-    }
-
-    // get materials
-    auto fparams = GetSVKMatPars(mat_id_struc);
-
-    return Teuchos::rcp(new STR::WeaklyCompressibleEtienneFSIStructureForceFunction(fparams));
-  }
-  else
-  {
-    return Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime>(nullptr);
-  }
+  function_manager.AddFunctionDefinition(std::move(lines), CreateStructureFunction);
 }
 
 

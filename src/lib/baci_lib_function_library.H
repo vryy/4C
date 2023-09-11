@@ -16,9 +16,9 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "baci_lib_function.H"
 #include "baci_lib_function_of_scalar.H"
 
-namespace DRT::INPUT
+namespace DRT::UTILS
 {
-  class Lines;
+  class FunctionManager;
 }
 
 namespace DRT::UTILS
@@ -27,12 +27,7 @@ namespace DRT::UTILS
   class CubicSplineInterpolation;
 
   /// add valid function lines
-  void AddValidLibraryFunctionLines(DRT::INPUT::Lines& lines);
-
-  /// try to create functions from a given line definition
-  Teuchos::RCP<FunctionOfScalar> TryCreateLibraryFunctionScalar(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-
+  void AddValidLibraryFunctions(DRT::UTILS::FunctionManager& function_manager);
 
   /**
    * @brief special implementation of a 1D polynomial function

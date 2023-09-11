@@ -18,20 +18,15 @@ namespace DRT
 {
   class Discretization;
 
-  namespace INPUT
+  namespace UTILS
   {
-    class LineDefinition;
-    class Lines;
-  }  // namespace INPUT
+    class FunctionManager;
+  }  // namespace UTILS
 
   namespace UTILS
   {
     /// add valid combustion-specific function lines
-    void AddValidCombustFunctionLines(DRT::INPUT::Lines& lines);
-
-    /// try to create combustion-specific functions from a given line definition
-    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateCombustFunction(
-        const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+    void AddValidCombustFunctions(DRT::UTILS::FunctionManager& function_manager);
 
     /// special implementation for a level set test function "Zalesak's disk"
     class ZalesaksDiskFunction : public DRT::UTILS::FunctionOfSpaceTime
