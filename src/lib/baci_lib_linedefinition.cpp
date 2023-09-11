@@ -898,48 +898,69 @@ namespace DRT::INPUT
   std::vector<LineDefinition> Lines::Read(DatFileReader& reader, int suffix)
   {
     std::ostringstream name;
-    name << "--" << sectionname_;
+    name << sectionname_;
     if (suffix > 0) name << suffix;
 
-    std::vector<LineDefinition> lines;
+    auto [parsed_lines, unparsed_lines] = ReadMatchingLines(reader, name.str(), definitions_);
 
-    std::vector<const char*> section = reader.Section(name.str());
-    // these are the lines of the section stored in [0],[1],...
-    if (!section.empty())
+    // In this function, encountering unparsed lines is an error, so construct a nice message.
+    if (unparsed_lines.size() > 0)
     {
-      for (const auto& input_line : section)
+      std::stringstream out;
+      out << "Read failed in section " << std::quoted(name.str()) << '\n';
+      for (const auto& unparsed : unparsed_lines)
       {
-        const LineDefinition& filled_line_definition = std::invoke(
-            [&]()
-            {
-              for (auto& definition : definitions_)
-              {
-                std::stringstream l{input_line};
-                if (definition.Read(l))
-                {
-                  return definition;
-                }
-              }
-              {
-                std::stringstream out;
-                out << "Read failed in section " << std::quoted(name.str()) << ": line "
-                    << std::quoted(input_line) << "\n";
-                out << "Valid lines are:\n\n";
-                std::for_each(definitions_.begin(), definitions_.end(),
-                    [&](const LineDefinition& def)
-                    {
-                      def.Print(out);
-                      out << "\n";
-                    });
-                dserror(out.str().c_str());
-              }
-            });
-
-        lines.push_back(filled_line_definition);
+        out << "  " << std::quoted(unparsed) << '\n';
       }
+      out << "Valid lines are:\n";
+      std::for_each(definitions_.begin(), definitions_.end(),
+          [&](const LineDefinition& def)
+          {
+            def.Print(out);
+            out << '\n';
+          });
+      dserror(out.str().c_str());
     }
 
-    return lines;
+    return parsed_lines;
+  }
+
+
+  std::pair<std::vector<LineDefinition>, std::vector<std::string>> ReadMatchingLines(
+      DatFileReader& reader, const std::string& section,
+      const std::vector<LineDefinition>& possible_lines)
+  {
+    const std::vector<const char*> lines_in_section = reader.Section("--" + section);
+
+    std::vector<std::string> unparsed_lines;
+    std::vector<LineDefinition> parsed_lines;
+
+    const auto process_line = [&](const std::string& input_line)
+    {
+      for (const auto& definition : possible_lines)
+      {
+        std::stringstream l{input_line};
+
+        // Make a copy that potentially gets filled by the Read.
+        auto parsed_definition = definition;
+        if (parsed_definition.Read(l))
+        {
+          parsed_lines.emplace_back(std::move(parsed_definition));
+          return;
+        }
+      }
+      unparsed_lines.emplace_back(input_line);
+    };
+
+    for (const auto& input_line : lines_in_section)
+    {
+      process_line(input_line);
+    }
+
+    dsassert(
+        unparsed_lines.size() + parsed_lines.size() == lines_in_section.size(), "Internal error.");
+
+    return {parsed_lines, unparsed_lines};
   }
 
 
