@@ -147,7 +147,7 @@ namespace DRT
     /*!
     \brief Get communicator associated with this class
     */
-    virtual inline const Epetra_Comm& Comm() const { return *comm_; }
+    [[nodiscard]] virtual const Epetra_Comm& Comm() const { return *comm_; }
 
     /*!
     \brief Get output writer for this discretization
@@ -155,17 +155,17 @@ namespace DRT
     \warning This routine does not verify if a valid IO::DiscretizationWriter has
     been set. If not, this will cause a segmentation fault.
     */
-    virtual inline Teuchos::RCP<IO::DiscretizationWriter> Writer() const { return writer_; }
+    [[nodiscard]] virtual Teuchos::RCP<IO::DiscretizationWriter> Writer() const { return writer_; }
 
     /*!
     \brief Get flag indicating whether FillComplete() has been called
     */
-    virtual inline bool Filled() const { return filled_; }
+    [[nodiscard]] virtual bool Filled() const { return filled_; }
 
     /*!
     \brief Get name of this discretization
     */
-    virtual inline const std::string& Name() const { return name_; }
+    [[nodiscard]] virtual const std::string& Name() const { return name_; }
 
     /*!
     \brief Get flag indicating whether degrees of freedom where assigned
@@ -173,9 +173,9 @@ namespace DRT
     Degrees of freedom need to be assigned using AssignDegreesOfFreedom()
     before any calculations using this discretization can be made
     */
-    virtual inline bool HaveDofs() const { return havedof_; }
+    [[nodiscard]] virtual bool HaveDofs() const { return havedof_; }
 
-    virtual inline int NumDofSets() const { return static_cast<int>(dofsets_.size()); }
+    [[nodiscard]] virtual int NumDofSets() const { return static_cast<int>(dofsets_.size()); }
     /// @name Dof query methods for single dof set discretizations
 
     /*!
@@ -601,7 +601,7 @@ namespace DRT
     - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
 
     */
-    virtual const Epetra_Map* DofRowMap(unsigned nds = 0) const;
+    [[nodiscard]] virtual const Epetra_Map* DofRowMap(unsigned nds = 0) const;
 
     /*!
     \brief Get degree of freedom column map (Filled()==true prerequisite)
@@ -635,7 +635,7 @@ namespace DRT
 
     \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
-    virtual const Epetra_Map* NodeRowMap() const;
+    [[nodiscard]] virtual const Epetra_Map* NodeRowMap() const;
 
     /*!
     \brief Get map associated with the distribution of nodes including ghosted nodes
@@ -656,7 +656,7 @@ namespace DRT
 
     \return nullptr if Filled() is false. A call to FillComplete() is a prerequisite.
     */
-    virtual const Epetra_Map* ElementRowMap() const;
+    [[nodiscard]] virtual const Epetra_Map* ElementRowMap() const;
     /*!
     \brief Get map associated with the distribution of elements including ghosted elements
            (Filled()==true prerequisite)
@@ -680,7 +680,7 @@ namespace DRT
     \brief Get processor local number of elements owned by this processor
            (Filled()==true prerequisite)
     */
-    virtual int NumMyRowElements() const;
+    [[nodiscard]] virtual int NumMyRowElements() const;
 
     /*!
     \brief Get processor local number of elements including ghost elements
@@ -698,7 +698,7 @@ namespace DRT
     \brief Get processor local number of nodes owned by this processor
            (Filled()==true prerequisite)
     */
-    virtual int NumMyRowNodes() const;
+    [[nodiscard]] virtual int NumMyRowNodes() const;
 
     /*!
     \brief Get processor local number of nodes including ghost nodes
@@ -728,7 +728,7 @@ namespace DRT
     \return Address of element if element is owned by calling proc, returns nullptr
             otherwise
     */
-    virtual DRT::Element* gElement(int gid) const;
+    [[nodiscard]] virtual DRT::Element* gElement(int gid) const;
 
     /*!
     \brief Get the element with local row id lid (Filled()==true prerequisite)
@@ -739,7 +739,7 @@ namespace DRT
 
     \return Address of element if element is owned by calling proc
     */
-    virtual inline DRT::Element* lRowElement(int lid) const
+    [[nodiscard]] virtual DRT::Element* lRowElement(int lid) const
     {
       dsassert(Filled(), "Discretization not Filled().");
       return elerowptr_[lid];
@@ -754,7 +754,7 @@ namespace DRT
 
     \return Address of element if element is stored by calling proc
     */
-    virtual inline DRT::Element* lColElement(int lid) const
+    virtual DRT::Element* lColElement(int lid) const
     {
       dsassert(Filled(), "Discretization not Filled().");
       return elecolptr_[lid];
@@ -792,7 +792,7 @@ namespace DRT
     this.
 
     */
-    virtual bool HaveGlobalNode(int gid) const;
+    [[nodiscard]] virtual bool HaveGlobalNode(int gid) const;
 
     /*!
     \brief Get the node with global row id gid (Filled()==true NOT prerequisite)
@@ -803,7 +803,7 @@ namespace DRT
 
     \return Address of node if node is stored on calling proc
     */
-    virtual DRT::Node* gNode(int gid) const;
+    [[nodiscard]] virtual DRT::Node* gNode(int gid) const;
 
     /*!
     \brief Get the node with local row id lid (Filled()==true prerequisite)
@@ -814,7 +814,7 @@ namespace DRT
 
     \return Address of node if node is owned and stored by calling proc
     */
-    virtual inline DRT::Node* lRowNode(int lid) const
+    [[nodiscard]] virtual DRT::Node* lRowNode(int lid) const
     {
       dsassert(Filled(), "Discretization not Filled().");
       return noderowptr_[lid];
@@ -829,7 +829,7 @@ namespace DRT
 
     \return Address of node if node is stored by calling proc
     */
-    virtual inline DRT::Node* lColNode(int lid) const
+    virtual DRT::Node* lColNode(int lid) const
     {
       dsassert(Filled(), "Discretization not Filled().");
       return nodecolptr_[lid];
@@ -1131,7 +1131,7 @@ namespace DRT
 
     \return Returns nullptr if condition with that name does not exist
     */
-    virtual DRT::Condition* GetCondition(const std::string& name) const;
+    [[nodiscard]] virtual DRT::Condition* GetCondition(const std::string& name) const;
 
     /// return all condition names defined in this discretization
     virtual void GetConditionNames(std::vector<std::string>& names) const;
@@ -1481,7 +1481,7 @@ namespace DRT
 
     \return Reference to solution state
     */
-    Teuchos::RCP<const Epetra_Vector> GetState(const std::string& name) const
+    [[nodiscard]] Teuchos::RCP<const Epetra_Vector> GetState(const std::string& name) const
     {
       return GetState(0, name);
     }
@@ -1498,7 +1498,8 @@ namespace DRT
 
     \return Reference to solution state
     */
-    virtual Teuchos::RCP<const Epetra_Vector> GetState(unsigned nds, const std::string& name) const
+    [[nodiscard]] virtual Teuchos::RCP<const Epetra_Vector> GetState(
+        unsigned nds, const std::string& name) const
     {
       dsassert(nds < dofsets_.size(), "undefined dof set");
       if (state_.size() <= nds) return Teuchos::null;
