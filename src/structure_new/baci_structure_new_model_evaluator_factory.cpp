@@ -16,6 +16,7 @@
 #include "baci_beaminteraction_str_model_evaluator.H"
 #include "baci_browniandyn_str_model_evaluator.H"
 #include "baci_cardiovascular0d_structure_new_model_evaluator.H"
+#include "baci_constraint_framework_model_evaluator.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_struct_ale_str_model_evaluator.H"
@@ -88,7 +89,7 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
         (*model_map)[*mt_iter] = coupling_model_ptr;
         break;
       }
-      case INPAR::STR::model_basic_couping:
+      case INPAR::STR::model_basic_coupling:
       {
         if (coupling_model_ptr.is_null())
           dserror("The basic coupling model evaluator is not defined.");
@@ -97,6 +98,9 @@ Teuchos::RCP<STR::ModelEvaluator::Map> STR::MODELEVALUATOR::Factory::BuildModelE
       }
       case INPAR::STR::model_meshtying:
         (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Meshtying());
+        break;
+      case INPAR::STR::model_constraints:
+        (*model_map)[*mt_iter] = Teuchos::rcp(new STR::MODELEVALUATOR::Constraints());
         break;
       default:
         dserror("Not yet implemented!");

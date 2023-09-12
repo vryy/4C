@@ -86,8 +86,9 @@ namespace INPAR
           8,  ///< evaluate the model for contact/potential/... interactions of beams
       model_browniandyn = 9,       ///< evaluate the brownian dynamics model
       model_beaminteraction = 10,  ///< evaluate beaminteraction model
-      model_basic_couping = 11     ///< evaluate coupling contributions that are independent of
+      model_basic_coupling = 11,   ///< evaluate coupling contributions that are independent of
                                    ///< monolithic or partitioned coupling
+      model_constraints = 12       ///< evaluate the contributions of the constraint framework
     };
 
     /// Map model type to string
@@ -129,8 +130,11 @@ namespace INPAR
         case model_beaminteraction:
           return "BeamInteraction";
           break;
-        case model_basic_couping:
+        case model_basic_coupling:
           return "Basic-Coupling";
+          break;
+        case model_constraints:
+          return "Constraints";
           break;
         default:
           dserror("Cannot make std::string for model type %d", name);
@@ -165,7 +169,9 @@ namespace INPAR
       else if (name == "BeamInteraction")
         type = model_beaminteraction;
       else if (name == "Basic-Coupling")
-        type = model_basic_couping;
+        type = model_basic_coupling;
+      else if (name == "Constraints")
+        type = model_constraints;
       else
         dserror("Unkonwn INPAR::STR::ModelType with name '%s'.", name.c_str());
 

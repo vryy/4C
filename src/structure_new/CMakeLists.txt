@@ -10,6 +10,7 @@ set(_structure_new_dependencies
     cardiovascular0d
     comm
     constraint
+    constraint_framework
     contact
     contact_aug
     core

@@ -87,7 +87,7 @@ namespace STR::MODELEVALUATOR
 
     [[nodiscard]] INPAR::STR::ModelType Type() const override
     {
-      return INPAR::STR::model_basic_couping;
+      return INPAR::STR::model_basic_coupling;
     }
 
     void UpdateStepElement() override {}

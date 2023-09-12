@@ -460,7 +460,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
         if (coupling_model_ptr.is_null())
           dserror("The basic coupling model pointer is not allowed to be Teuchos::null!");
         // set the model type
-        modeltypes.insert(INPAR::STR::model_basic_couping);
+        modeltypes.insert(INPAR::STR::model_basic_coupling);
         // copy the coupling model object pointer into the (temporal) sdyn parameter list
         sdyn_->set<Teuchos::RCP<STR::MODELEVALUATOR::Generic>>(
             "Basic Coupling Model", coupling_model_ptr);
@@ -531,6 +531,13 @@ void ADAPTER::StructureBaseAlgorithmNew::SetModelTypes(
           "CONTACT_DISCRETIZATION") != INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::none or
       beampotconditions.size() > 0 or beampenaltycouplingconditions.size() > 0)
     modeltypes.insert(INPAR::STR::model_beaminteraction);
+
+  // ---------------------------------------------------------------------------
+  // check for constraints
+  // ---------------------------------------------------------------------------
+  // TODO: insert the conditions related to INPAR::STR::model_constraints:
+  // embedded mesh method and periodic boundary conditions for rves
+
 
   // hopefully we haven't forgotten anything
   return;

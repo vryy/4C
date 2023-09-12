@@ -124,12 +124,13 @@ enum NOX::NLN::SolutionType STR::NLN::ConvertModelType2SolType(
   {
     case INPAR::STR::model_structure:
     case INPAR::STR::model_springdashpot:
-    case INPAR::STR::model_basic_couping:
+    case INPAR::STR::model_basic_coupling:
     case INPAR::STR::model_monolithic_coupling:
     case INPAR::STR::model_partitioned_coupling:
     case INPAR::STR::model_beam_interaction_old:
     case INPAR::STR::model_browniandyn:
     case INPAR::STR::model_beaminteraction:
+    case INPAR::STR::model_constraints:
       soltype = NOX::NLN::sol_structure;
       break;
     case INPAR::STR::model_contact:
