@@ -320,11 +320,12 @@ namespace NOX
         quantity_contact_friction,    ///< check (semi-smooth) contact quantities (frictionless)
         quantity_meshtying,           ///< check meshtying quantities
         quantity_cardiovascular0d,    ///< check 0d cardiovascular quantities
-        quantity_lag_pen_constraint,  ///< check Lagrange/penalty enforced constraint quantites
+        quantity_lag_pen_constraint,  ///< check Lagrange/penalty enforced constraint quantities
         quantity_plasticity,          ///< check semi-smooth plasticity
         quantity_pressure,            ///< check pressure dofs
         quantity_eas,                 ///< check eas dofs
-        quantity_levelset_reinit      ///< check levelset reinitialization
+        quantity_levelset_reinit,     ///< check levelset reinitialization
+        quantity_constraints,         ///< check constraint framework quantities
       };
 
       /// Map quantity name to std::string
@@ -352,6 +353,8 @@ namespace NOX
             return "EAS";
           case quantity_levelset_reinit:
             return "LevelSet-Reinit";
+          case quantity_constraints:
+            return "Constraints";
           case quantity_unknown:
           default:
             return "unknown quantity type";
@@ -384,6 +387,8 @@ namespace NOX
           type = quantity_eas;
         else if (name == "LevelSet-Reinit")
           type = quantity_levelset_reinit;
+        else if (name == "Constraints")
+          type = quantity_constraints;
 
         return type;
       };

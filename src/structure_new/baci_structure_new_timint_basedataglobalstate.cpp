@@ -394,7 +394,7 @@ int STR::TIMINT::BaseDataGlobalState::SetupBlockInformation(
       model_block_id_[mt] = 0;
       break;
     }
-    case INPAR::STR::model_basic_couping:
+    case INPAR::STR::model_basic_coupling:
     case INPAR::STR::model_monolithic_coupling:
     case INPAR::STR::model_partitioned_coupling:
     {
@@ -1134,7 +1134,7 @@ int STR::TIMINT::BaseDataGlobalState::GetLastLinIterationNumber(const unsigned s
       case INPAR::STR::model_springdashpot:
       case INPAR::STR::model_browniandyn:
       case INPAR::STR::model_beaminteraction:
-      case INPAR::STR::model_basic_couping:
+      case INPAR::STR::model_basic_coupling:
       case INPAR::STR::model_monolithic_coupling:
       case INPAR::STR::model_partitioned_coupling:
       case INPAR::STR::model_beam_interaction_old:
