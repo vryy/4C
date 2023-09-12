@@ -56,7 +56,7 @@ int CONTACT::UTILS::GetContactConditions(std::vector<DRT::Condition*>& ccond,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 int CONTACT::UTILS::GetContactConditionGroups(std::vector<std::vector<DRT::Condition*>>& ccond_grps,
-    const DRT::DiscretizationInterface& discret, const bool& throw_error)
+    const DRT::Discretization& discret, const bool& throw_error)
 {
   // vector that contains solid-to-solid and beam-to-solid contact pairs
   std::vector<DRT::Condition*> beamandsolidcontactconditions(0);
@@ -400,7 +400,7 @@ void CONTACT::UTILS::WriteConservationDataToFile(const int mypid, const int inte
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
-    const DRT::DiscretizationInterface& str_discret,
+    const DRT::Discretization& str_discret,
     const std::vector<std::vector<DRT::Condition*>>& ccond_grps,
     std::set<const DRT::Node*>& dbc_slave_nodes, std::set<const DRT::Element*>& dbc_slave_eles)
 {
@@ -455,8 +455,7 @@ void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodesAndElements(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void CONTACT::UTILS::DbcHandler::DetectDbcSlaveNodes(
-    std::map<const DRT::Node*, int>& dbc_slave_node_map,
-    const DRT::DiscretizationInterface& str_discret,
+    std::map<const DRT::Node*, int>& dbc_slave_node_map, const DRT::Discretization& str_discret,
     const std::vector<const DRT::Condition*>& sl_conds)
 {
   std::vector<DRT::Condition*> dconds;

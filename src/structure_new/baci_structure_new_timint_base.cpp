@@ -94,7 +94,7 @@ void STR::TIMINT::Base::Setup()
    * unfortunately this wasn't considered during the implementation of the
    * discretization routines. Therefore many methods need a slight modification
    * (most times adding a "const" should fix the problem).          hiermeier */
-  Teuchos::RCP<DRT::DiscretizationInterface> discret_ptr = DataGlobalState().GetDiscret();
+  Teuchos::RCP<DRT::Discretization> discret_ptr = DataGlobalState().GetDiscret();
   dbc_ptr_->Init(discret_ptr, DataGlobalState().GetFreactNp(), Teuchos::rcp(this, false));
   dbc_ptr_->Setup();
 
@@ -675,8 +675,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         dserror("Requested stress type is not supported!");
         break;
     }
-    output_ptr->WriteVector(
-        text, evaldata.StressData(), *(DiscretizationInterface()->ElementRowMap()));
+    output_ptr->WriteVector(text, evaldata.StressData(), *(Discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.StressDataPtr() = Teuchos::null;
@@ -726,8 +725,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         dserror("Requested strain type is not supported!");
         break;
     }
-    output_ptr->WriteVector(
-        text, evaldata.StrainData(), *(DiscretizationInterface()->ElementRowMap()));
+    output_ptr->WriteVector(text, evaldata.StrainData(), *(Discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.StrainDataPtr() = Teuchos::null;
@@ -751,7 +749,7 @@ void STR::TIMINT::Base::OutputStressStrain()
         break;
     }
     output_ptr->WriteVector(
-        text, evaldata.PlasticStrainData(), *(DiscretizationInterface()->ElementRowMap()));
+        text, evaldata.PlasticStrainData(), *(Discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.PlasticStrainDataPtr() = Teuchos::null;
@@ -811,8 +809,7 @@ void STR::TIMINT::Base::OutputOptionalQuantity()
         dserror("Requested optional quantity type is not supported!");
         break;
     }
-    output_ptr->WriteVector(
-        text, evaldata.OptQuantityData(), *(DiscretizationInterface()->ElementRowMap()));
+    output_ptr->WriteVector(text, evaldata.OptQuantityData(), *(Discretization()->ElementRowMap()));
   }
   // we don't need this anymore
   evaldata.OptQuantityDataPtr() = Teuchos::null;
@@ -973,16 +970,6 @@ void STR::TIMINT::Base::ReadRestart(const int stepn)
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> STR::TIMINT::Base::Discretization()
-{
-  CheckInit();
-  Teuchos::RCP<DRT::Discretization> discret =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(dataglobalstate_->GetDiscret(), true);
-  return discret;
-}
-
-/*----------------------------------------------------------------------------*
- *----------------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DiscretizationInterface> STR::TIMINT::Base::DiscretizationInterface()
 {
   CheckInit();
   return dataglobalstate_->GetDiscret();

@@ -832,7 +832,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     // ------------------------------------------------------------------------
     // create the desired interface object
     // ------------------------------------------------------------------------
-    const auto& discret = Teuchos::rcp<const DRT::DiscretizationInterface>(&Discret(), false);
+    const auto& discret = Teuchos::rcp<const DRT::Discretization>(&Discret(), false);
 
     Teuchos::RCP<CONTACT::CoInterface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
         icparams, isself[0], discret, Teuchos::null, contactconstitutivelawid);
@@ -1260,7 +1260,7 @@ int CONTACT::STRATEGY::Factory::IdentifyFullSubset(
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(const int id,
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
-    const bool selfcontact, const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
+    const bool selfcontact, const Teuchos::RCP<const DRT::Discretization>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
     const int contactconstitutivelawid)
 {
@@ -1275,7 +1275,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface(
     const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
-    const Teuchos::RCP<const DRT::DiscretizationInterface>& parent_dis,
+    const Teuchos::RCP<const DRT::Discretization>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr, const int contactconstitutivelawid)
 {
   Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
@@ -1407,7 +1407,7 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
 void CONTACT::STRATEGY::Factory::SetPoroParentElement(
     enum MORTAR::MortarElement::PhysicalType& slavetype,
     enum MORTAR::MortarElement::PhysicalType& mastertype, Teuchos::RCP<CONTACT::CoElement>& cele,
-    Teuchos::RCP<DRT::Element>& ele, const DRT::DiscretizationInterface& discret) const
+    Teuchos::RCP<DRT::Element>& ele, const DRT::Discretization& discret) const
 {
   // ints to communicate decision over poro bools between processors on every interface
   // safety check - because there may not be mixed interfaces and structural slave elements

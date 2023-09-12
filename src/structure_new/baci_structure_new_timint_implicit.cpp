@@ -355,7 +355,7 @@ INPAR::STR::ConvergenceStatus STR::TIMINT::Implicit::PerformErrorAction(
       double proc_randnum_get = ((double)rand() / (double)RAND_MAX);
       double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
-      const Epetra_Comm& comm = DiscretizationInterface()->Comm();
+      const Epetra_Comm& comm = Discretization()->Comm();
       comm.SumAll(&proc_randnum, &randnum, 1);
       const double numproc = comm.NumProc();
       randnum /= numproc;

@@ -173,9 +173,8 @@ namespace XFEM
        *
        *  \author  hiermeier
        *  \date 09/16  */
-      virtual void BuildDofMaps(const DRT::DiscretizationInterface& masterdis,
-          const DRT::DiscretizationInterface& slavedis,
-          const Teuchos::RCP<const Epetra_Map>& masternodemap,
+      virtual void BuildDofMaps(const DRT::Discretization& masterdis,
+          const DRT::Discretization& slavedis, const Teuchos::RCP<const Epetra_Map>& masternodemap,
           const Teuchos::RCP<const Epetra_Map>& slavenodemap,
           const Teuchos::RCP<const Epetra_Map>& permmasternodemap,
           const Teuchos::RCP<const Epetra_Map>& permslavenodemap,
@@ -201,15 +200,13 @@ namespace XFEM
        *  This method takes all current DoF's of each node in the min-dof-discretization
        *  and sets the necessary maps for the coupling.
        */
-      void BuildMinDofMaps(const DRT::DiscretizationInterface& min_dis,
-          const Epetra_Map& min_nodemap, const Epetra_Map& min_permnodemap,
-          Teuchos::RCP<const Epetra_Map>& min_dofmap,
+      void BuildMinDofMaps(const DRT::Discretization& min_dis, const Epetra_Map& min_nodemap,
+          const Epetra_Map& min_permnodemap, Teuchos::RCP<const Epetra_Map>& min_dofmap,
           Teuchos::RCP<const Epetra_Map>& min_permdofmap, Teuchos::RCP<Epetra_Export>& min_exporter,
           const Epetra_Map& max_nodemap, std::map<int, unsigned>& my_mindofpernode) const;
 
-      void BuildMaxDofMaps(const DRT::DiscretizationInterface& max_dis,
-          const Epetra_Map& max_nodemap, const Epetra_Map& max_permnodemap,
-          Teuchos::RCP<const Epetra_Map>& max_dofmap,
+      void BuildMaxDofMaps(const DRT::Discretization& max_dis, const Epetra_Map& max_nodemap,
+          const Epetra_Map& max_permnodemap, Teuchos::RCP<const Epetra_Map>& max_dofmap,
           Teuchos::RCP<const Epetra_Map>& max_permdofmap, Teuchos::RCP<Epetra_Export>& max_exporter,
           const std::map<int, unsigned>& my_mindofpernode) const;
 

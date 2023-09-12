@@ -106,8 +106,7 @@ STR::TIMINT::BaseDataGlobalState& STR::TIMINT::BaseDataGlobalState::operator=(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::TIMINT::BaseDataGlobalState::Init(
-    const Teuchos::RCP<DRT::DiscretizationInterface> discret,
+void STR::TIMINT::BaseDataGlobalState::Init(const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::ParameterList& sdynparams, const Teuchos::RCP<const BaseDataSDyn> datasdyn)
 {
   // We have to call Setup() after Init()
@@ -523,8 +522,7 @@ void STR::TIMINT::BaseDataGlobalState::SetupRotVecMapExtractor(
     }
     else
     {
-      Teuchos::RCP<DRT::Discretization> discret =
-          Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_, true);
+      Teuchos::RCP<DRT::Discretization> discret = discret_;
       nodaladditdofs = beameleptr->GetAdditiveDofGIDs(*discret, *nodeptr);
       nodalrotvecdofs = beameleptr->GetRotVecDofGIDs(*discret, *nodeptr);
 

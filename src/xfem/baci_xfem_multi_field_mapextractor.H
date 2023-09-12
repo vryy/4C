@@ -26,7 +26,7 @@
 class Epetra_Map;
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
   class Discretization;
   class Node;
   class Element;
@@ -126,7 +126,7 @@ namespace XFEM
    *  \date 09/16 */
   class MultiFieldMapExtractor
   {
-    typedef std::vector<Teuchos::RCP<const DRT::DiscretizationInterface>> XDisVec;
+    typedef std::vector<Teuchos::RCP<const DRT::Discretization>> XDisVec;
 
     // number of map extractor types
     static const unsigned NUM_MAP_TYPES = 2;
@@ -151,7 +151,7 @@ namespace XFEM
      *
      *  \author hiermeier
      *  \date 09/16 */
-    void Init(const std::vector<Teuchos::RCP<const DRT::DiscretizationInterface>>& dis_vec,
+    void Init(const std::vector<Teuchos::RCP<const DRT::Discretization>>& dis_vec,
         int max_num_reserved_dofs_per_node);
 
     /** \brief Setup member variables
@@ -572,11 +572,11 @@ namespace XFEM
       return *idiscret_;
     }
 
-    inline const DRT::DiscretizationInterface& SlDiscret(enum FieldName field) const
+    inline const DRT::Discretization& SlDiscret(enum FieldName field) const
     {
       return SlDiscret(SlaveId(field));
     }
-    const DRT::DiscretizationInterface& SlDiscret(unsigned dis_id) const
+    const DRT::Discretization& SlDiscret(unsigned dis_id) const
     {
       CheckInit();
 
@@ -642,7 +642,7 @@ namespace XFEM
 
     int SlaveId(enum FieldName field) const;
 
-    const std::vector<Teuchos::RCP<const DRT::DiscretizationInterface>>& SlDisVec() const
+    const std::vector<Teuchos::RCP<const DRT::Discretization>>& SlDisVec() const
     {
       return slave_discret_vec_;
     }
@@ -681,7 +681,7 @@ namespace XFEM
     Teuchos::RCP<const Epetra_Comm> comm_;
 
     /// vector containing pointers to all the input discretizations
-    std::vector<Teuchos::RCP<const DRT::DiscretizationInterface>> slave_discret_vec_;
+    std::vector<Teuchos::RCP<const DRT::Discretization>> slave_discret_vec_;
 
     /// mapping between the FieldName enumerator and the slave vector entry number
     std::map<enum FieldName, int> slave_discret_id_map_;

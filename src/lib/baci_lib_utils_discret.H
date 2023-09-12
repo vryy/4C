@@ -29,7 +29,7 @@ namespace Teuchos
 namespace DRT
 {
   class AssembleStrategy;
-  class DiscretizationInterface;
+  class Discretization;
   class DiscretizationFaces;
   namespace UTILS
   {
@@ -100,8 +100,8 @@ namespace DRT
      *  non-member functions to call the dbc public routines
      *
      *  \author hiermeier \date 10/16 */
-    void EvaluateDirichlet(const DRT::DiscretizationInterface& discret,
-        const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
+    void EvaluateDirichlet(const DRT::Discretization& discret, const Teuchos::ParameterList& params,
+        const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
         const Teuchos::RCP<Epetra_IntVector>& toggle,
@@ -113,7 +113,7 @@ namespace DRT
      *  See the corresponding called function for more detailed information.
      *
      *  \author hiermeier \date 10/16 */
-    inline void EvaluateDirichlet(const DRT::DiscretizationInterface& discret,
+    inline void EvaluateDirichlet(const DRT::Discretization& discret,
         const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
         const Teuchos::RCP<Epetra_Vector>& systemvectord,
         const Teuchos::RCP<Epetra_Vector>& systemvectordd,
@@ -135,9 +135,8 @@ namespace DRT
     contain only the local pressure DOF id, namely {3}.
 
     */
-    void EvaluateInitialField(const DRT::DiscretizationInterface& discret,
-        const std::string& fieldstring, Teuchos::RCP<Epetra_Vector> fieldvector,
-        const std::vector<int>& locids);
+    void EvaluateInitialField(const DRT::Discretization& discret, const std::string& fieldstring,
+        Teuchos::RCP<Epetra_Vector> fieldvector, const std::vector<int>& locids);
 
 
     /*!
@@ -146,7 +145,7 @@ namespace DRT
     This is the actual evaluation method.
 
     */
-    void DoInitialField(const DRT::DiscretizationInterface& discret, DRT::Condition& cond,
+    void DoInitialField(const DRT::Discretization& discret, DRT::Condition& cond,
         Epetra_Vector& fieldvector, const std::vector<int>& locids);
 
     /** \brief Build a Dbc object
@@ -154,7 +153,7 @@ namespace DRT
      *  The Dbc object is build in dependency of the given discretization.
      *
      *  \author hiermeier \date 10/16 */
-    Teuchos::RCP<const Dbc> BuildDbc(const DRT::DiscretizationInterface* discret_ptr);
+    Teuchos::RCP<const Dbc> BuildDbc(const DRT::Discretization* discret_ptr);
 
     /** \brief Default Dirchilet boundary condition evaluation class
      *
@@ -233,8 +232,8 @@ namespace DRT
        *  evaluation process can start
        *
        *  \author hiermeier \date 10/16 */
-      void operator()(const DRT::DiscretizationInterface& discret,
-          const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
+      void operator()(const DRT::Discretization& discret, const Teuchos::ParameterList& params,
+          const Teuchos::RCP<Epetra_Vector>& systemvector,
           const Teuchos::RCP<Epetra_Vector>& systemvectord,
           const Teuchos::RCP<Epetra_Vector>& systemvectordd,
           const Teuchos::RCP<Epetra_IntVector>& toggle,
@@ -286,7 +285,7 @@ namespace DRT
        *
        *  \author mwgee (original) \date 02/08
        *  \author rauch \date 06/16 */
-      virtual void Evaluate(const DRT::DiscretizationInterface& discret, double time,
+      virtual void Evaluate(const DRT::Discretization& discret, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
           Teuchos::RCP<std::set<int>>* dbcgids) const;
 
@@ -323,12 +322,12 @@ namespace DRT
        *  definition of a lower entity.
        *
        *  \author rauch \date 06/16 */
-      void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+      void ReadDirichletCondition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and read the given type
-      void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+      void ReadDirichletCondition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids,
           const enum DRT::Condition::ConditionType& type) const;
@@ -360,7 +359,7 @@ namespace DRT
        *  corresponding entries in the systemvectors remain untouched.
        *
        *  \author rauch \date 06/16 */
-      virtual void ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+      virtual void ReadDirichletCondition(const DRT::Discretization& discret,
           const DRT::Condition& cond, double time, DbcInfo& info,
           const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const;
 
@@ -372,13 +371,13 @@ namespace DRT
        *  (4) Assign PointDirichlet DBC GIDs
        *
        *  \author hiermeier \date 10/16 */
-      void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+      void DoDirichletCondition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /// loop over the conditions and assign the given type
-      void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+      void DoDirichletCondition(const DRT::Discretization& discret,
           const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
           const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
           const Teuchos::RCP<std::set<int>>* dbcgids,
@@ -424,14 +423,14 @@ namespace DRT
        *
        *  \author mwgee (original) \date 02/08
        *  \author rauch (modified) \date 06/2016 */
-      virtual void DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+      virtual void DoDirichletCondition(const DRT::Discretization& discret,
           const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
 
       /** \brief Create a Dbc map extractor, if desired
        *
        *  \author hiermeier \date 10/16 */
-      void BuildDbcMapExtractor(const DRT::DiscretizationInterface& discret,
+      void BuildDbcMapExtractor(const DRT::Discretization& discret,
           const Teuchos::RCP<const std::set<int>>& dbcrowgids,
           const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const;
 

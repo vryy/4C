@@ -33,7 +33,6 @@ namespace CORE::LINALG
 }  // namespace CORE::LINALG
 namespace DRT
 {
-  class DiscretizationInterface;
   class Discretization;
 }  // namespace DRT
 namespace CORE::GEO
@@ -69,7 +68,7 @@ namespace STR
       virtual ~BaseDataSDyn(){};
 
       /// initialize class variables (already existing)
-      virtual void Init(const Teuchos::RCP<DRT::DiscretizationInterface> discret,
+      virtual void Init(const Teuchos::RCP<DRT::Discretization> discret,
           const Teuchos::ParameterList& sDynParams, const Teuchos::ParameterList& xparams,
           const Teuchos::RCP<std::set<enum INPAR::STR::ModelType>> modeltypes,
           const Teuchos::RCP<std::set<enum INPAR::STR::EleTech>> eletechs,

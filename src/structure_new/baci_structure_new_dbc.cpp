@@ -42,7 +42,7 @@ STR::Dbc::Dbc()
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void STR::Dbc::Init(const Teuchos::RCP<DRT::DiscretizationInterface>& discret_ptr,
+void STR::Dbc::Init(const Teuchos::RCP<DRT::Discretization>& discret_ptr,
     const Teuchos::RCP<Epetra_Vector>& freact_ptr,
     const Teuchos::RCP<const STR::TIMINT::Base>& timint_ptr)
 {
@@ -131,7 +131,7 @@ void STR::Dbc::CheckInitSetup() const
 Teuchos::RCP<DRT::Discretization> STR::Dbc::DiscretPtr()
 {
   CheckInit();
-  return Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_ptr_, true);
+  return discret_ptr_;
 }
 
 /*----------------------------------------------------------------------------*

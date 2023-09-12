@@ -24,7 +24,7 @@ vectors and matrices.
 /*-------------------------------------------------------------------*
  |  ctor (public)                                         meier 06/13|
  *-------------------------------------------------------------------*/
-DRT::UTILS::LocsysManager::LocsysManager(DRT::DiscretizationInterface& discret)
+DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
     : discret_(discret), dim_(-1), numlocsys_(-1), locsysfunct_(false)
 {
   // get problem dimension (2D or 3D) and store into dim_
@@ -462,6 +462,12 @@ void DRT::UTILS::LocsysManager::Print() const
     IO::cout << "-------------------------------------------------------------\n\n";
   }
 }
+
+
+/*----------------------------------------------------------------------*
+ |  Get the communicator                                                |
+ *----------------------------------------------------------------------*/
+inline const Epetra_Comm& DRT::UTILS::LocsysManager::Comm() const { return discret_.Comm(); }
 
 
 /*----------------------------------------------------------------------*

@@ -79,7 +79,7 @@ ADAPTER::StructureBaseAlgorithmNew::StructureBaseAlgorithmNew()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithmNew::Init(const Teuchos::ParameterList& prbdyn,
-    Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::DiscretizationInterface> actdis)
+    Teuchos::ParameterList& sdyn, Teuchos::RCP<DRT::Discretization> actdis)
 {
   issetup_ = false;
 
@@ -166,8 +166,7 @@ void ADAPTER::StructureBaseAlgorithmNew::SetupTimInt()
   // ---------------------------------------------------------------------------
   if (actdis_->GetCondition("PointCoupling") != nullptr)
   {
-    std::vector<Teuchos::RCP<DRT::Discretization>> actdis_vec(
-        1, Teuchos::rcp_dynamic_cast<DRT::Discretization>(actdis_, true));
+    std::vector<Teuchos::RCP<DRT::Discretization>> actdis_vec(1, actdis_);
     actdis_vec[0]->FillComplete(false, false, false);
     DRT::UTILS::RedistributeDiscretizationsByBinning(actdis_vec, true);
   }

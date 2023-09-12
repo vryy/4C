@@ -17,7 +17,7 @@
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::EvaluateDirichlet(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::EvaluateDirichlet(const DRT::Discretization& discret,
     const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
     const Teuchos::RCP<Epetra_Vector>& systemvectord,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
@@ -30,8 +30,7 @@ void DRT::UTILS::EvaluateDirichlet(const DRT::DiscretizationInterface& discret,
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-Teuchos::RCP<const DRT::UTILS::Dbc> DRT::UTILS::BuildDbc(
-    const DRT::DiscretizationInterface* discret_ptr)
+Teuchos::RCP<const DRT::UTILS::Dbc> DRT::UTILS::BuildDbc(const DRT::Discretization* discret_ptr)
 {
   // HDG discretization
   if (dynamic_cast<const DRT::DiscretizationHDG*>(discret_ptr) != nullptr)
@@ -47,7 +46,7 @@ Teuchos::RCP<const DRT::UTILS::Dbc> DRT::UTILS::BuildDbc(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::operator()(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::operator()(const DRT::Discretization& discret,
     const Teuchos::ParameterList& params, const Teuchos::RCP<Epetra_Vector>& systemvector,
     const Teuchos::RCP<Epetra_Vector>& systemvectord,
     const Teuchos::RCP<Epetra_Vector>& systemvectordd, const Teuchos::RCP<Epetra_IntVector>& toggle,
@@ -134,7 +133,7 @@ Teuchos::RCP<Epetra_IntVector> DRT::UTILS::Dbc::CreateToggleVector(
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::Evaluate(const DRT::DiscretizationInterface& discret, double time,
+void DRT::UTILS::Dbc::Evaluate(const DRT::Discretization& discret, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, DbcInfo& info,
     Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -153,7 +152,7 @@ void DRT::UTILS::Dbc::Evaluate(const DRT::DiscretizationInterface& discret, doub
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -170,7 +169,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids,
     const enum DRT::Condition::ConditionType& type) const
@@ -207,7 +206,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, DbcInfo& info,
     const Teuchos::RCP<std::set<int>>* dbcgids, int hierarchical_order) const
 {
@@ -402,7 +401,7 @@ void DRT::UTILS::Dbc::ReadDirichletCondition(const DRT::DiscretizationInterface&
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids) const
@@ -419,7 +418,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     const std::vector<Teuchos::RCP<DRT::Condition>>& conds, double time,
     const Teuchos::RCP<Epetra_Vector>* systemvectors, const Epetra_IntVector& toggle,
     const Teuchos::RCP<std::set<int>>* dbcgids,
@@ -436,7 +435,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::Discretization& discret,
     const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
     const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const
 {
@@ -548,7 +547,7 @@ void DRT::UTILS::Dbc::DoDirichletCondition(const DRT::DiscretizationInterface& d
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::DiscretizationInterface& discret,
+void DRT::UTILS::Dbc::BuildDbcMapExtractor(const DRT::Discretization& discret,
     const Teuchos::RCP<const std::set<int>>& dbcrowgids,
     const Teuchos::RCP<CORE::LINALG::MapExtractor>& dbcmapextractor) const
 {

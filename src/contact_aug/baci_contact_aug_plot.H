@@ -25,7 +25,7 @@ namespace Teuchos
 }
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
   class Node;
 }  // namespace DRT
 namespace STR
@@ -212,7 +212,7 @@ namespace CONTACT
         bool ExtendFileName(std::string& file_name, const std::string& file_path) const;
 
         Teuchos::RCP<Epetra_Map> FindConnectedDofs(
-            const DRT::Node* node, const DRT::DiscretizationInterface& discret) const;
+            const DRT::Node* node, const DRT::Discretization& discret) const;
       };
 
       struct Options
@@ -245,7 +245,7 @@ namespace CONTACT
       const CONTACT::AUG::Strategy* strat_ = nullptr;
 
       /// full discretization
-      const DRT::DiscretizationInterface* discret_ = nullptr;
+      const DRT::Discretization* discret_ = nullptr;
 
       STR::MODELEVALUATOR::Contact* model_ = nullptr;
 

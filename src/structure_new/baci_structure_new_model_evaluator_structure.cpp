@@ -1005,9 +1005,7 @@ void STR::MODELEVALUATOR::Structure::InitOutputRuntimeVtkBeams()
       TimInt().GetDataSDynPtr()->GetPeriodicBoundingBox();
 
   // initialize the writer object with current displacement state
-  beam_vtu_writer_ptr_->Initialize(
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(
-          const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(), true),
+  beam_vtu_writer_ptr_->Initialize(const_cast<STR::MODELEVALUATOR::Structure*>(this)->DiscretPtr(),
       beam_vtu_output_params.UseAbsolutePositions(),
       beam_vtu_output_params.GetNumberVisualizationSubsegments(), bounding_box_ptr);
 }
@@ -1179,8 +1177,7 @@ void STR::MODELEVALUATOR::Structure::EvaluateInternalSpecifiedElements(Teuchos::
   // this is about to go, once the old time integration is deleted
   ParamsInterface2ParameterList(EvalDataPtr(), p);
 
-  DRT::UTILS::Evaluate(*(Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true)), p,
-      *eval_mat, *eval_vec, ele_map_to_be_evaluated);
+  DRT::UTILS::Evaluate(*DiscretPtr(), p, *eval_mat, *eval_vec, ele_map_to_be_evaluated);
 
   Discret().ClearState();
 }

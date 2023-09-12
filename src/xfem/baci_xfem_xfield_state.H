@@ -20,7 +20,7 @@ class Epetra_Map;
 
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
 }  // namespace DRT
 namespace CORE::GEO
 {
@@ -47,8 +47,8 @@ namespace XFEM
     void Init(const Teuchos::RCP<XFEM::ConditionManager>& condition_manager,
         const Teuchos::RCP<CORE::GEO::CutWizard>& wizard,
         const Teuchos::RCP<XFEM::XFEMDofSet>& xdofset,
-        const Teuchos::RCP<DRT::DiscretizationInterface>& xfielddiscret,
-        const Teuchos::RCP<DRT::DiscretizationInterface>& fielddiscret);
+        const Teuchos::RCP<DRT::Discretization>& xfielddiscret,
+        const Teuchos::RCP<DRT::Discretization>& fielddiscret);
 
     /// setup the stored state objects
     virtual void Setup() = 0;
@@ -58,9 +58,9 @@ namespace XFEM
 
     /// transfer the old to a new state object
     virtual void TransferToNewState(
-        const DRT::DiscretizationInterface& new_discret, XFEM::XFieldState& new_xstate) const = 0;
+        const DRT::Discretization& new_discret, XFEM::XFieldState& new_xstate) const = 0;
 
-    virtual void ResetNonStandardDofs(const DRT::DiscretizationInterface& full_discret) = 0;
+    virtual void ResetNonStandardDofs(const DRT::Discretization& full_discret) = 0;
 
     virtual void SetNewState(const XFEM::XFieldState& xstate);
 
@@ -102,7 +102,7 @@ namespace XFEM
     Teuchos::RCP<XFEM::XFEMDofSet>& XDofSetPtr() { return xdofset_; }
 
     /// Returns the xFEM field discretizaton
-    DRT::DiscretizationInterface& XFieldDiscret()
+    DRT::Discretization& XFieldDiscret()
     {
       if (xfield_discret_ptr_.is_null()) dserror("xfield_discret_ptr_ is nullptr!");
 
@@ -110,10 +110,10 @@ namespace XFEM
     }
 
     /// Returns a pointer to the xFEM discretization
-    Teuchos::RCP<DRT::DiscretizationInterface>& XFieldDiscretPtr() { return xfield_discret_ptr_; }
+    Teuchos::RCP<DRT::Discretization>& XFieldDiscretPtr() { return xfield_discret_ptr_; }
 
     /// Returns the standard field discretizaton
-    DRT::DiscretizationInterface& FieldDiscret()
+    DRT::Discretization& FieldDiscret()
     {
       if (field_discret_ptr_.is_null()) dserror("field_discret_ptr_ is nullptr!");
 
@@ -121,7 +121,7 @@ namespace XFEM
     }
 
     /// Returns a pointer to the standard discretization
-    Teuchos::RCP<DRT::DiscretizationInterface>& FieldDiscretPtr() { return field_discret_ptr_; }
+    Teuchos::RCP<DRT::Discretization>& FieldDiscretPtr() { return field_discret_ptr_; }
 
     /// @}
 
@@ -157,10 +157,10 @@ namespace XFEM
     Teuchos::RCP<XFEM::XFEMDofSet> xdofset_;
 
     /// XFEM field discretization pointer
-    Teuchos::RCP<DRT::DiscretizationInterface> xfield_discret_ptr_;
+    Teuchos::RCP<DRT::Discretization> xfield_discret_ptr_;
 
     /// field discretization pointer
-    Teuchos::RCP<DRT::DiscretizationInterface> field_discret_ptr_;
+    Teuchos::RCP<DRT::Discretization> field_discret_ptr_;
   };  // class XFieldState
 }  // namespace XFEM
 

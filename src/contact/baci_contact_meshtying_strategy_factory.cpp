@@ -464,8 +464,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
       {
         int gid = (*nodeids)[k];
         // do only nodes that I have in my discretization
-        if (!Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_ptr_)->NodeColMap()->MyGID(gid))
-          continue;
+        if (!discret_ptr_->NodeColMap()->MyGID(gid)) continue;
         DRT::Node* node = Discret().gNode(gid);
         if (!node) dserror("Cannot find node with gid %", gid);
 
@@ -550,8 +549,7 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         // get knotvector, normal factor and zero-size information for nurbs
         if (nurbs)
         {
-          MORTAR::UTILS::PrepareNURBSElement(
-              *Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_ptr_), ele, mtele, dim);
+          MORTAR::UTILS::PrepareNURBSElement(*discret_ptr_, ele, mtele, dim);
         }
 
         interface->AddMortarElement(mtele);

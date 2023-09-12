@@ -1120,7 +1120,7 @@ void ELEMAG::ElemagTimeInt::SpySysmat(std::ostream &out)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> ELEMAG::ElemagTimeInt::Discretization()
 {
-  return Teuchos::rcp_dynamic_cast<DRT::Discretization>(discret_);
+  return discret_;
 }  // Discretization
 
 /*----------------------------------------------------------------------*

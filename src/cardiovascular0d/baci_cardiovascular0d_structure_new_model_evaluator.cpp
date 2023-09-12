@@ -43,8 +43,7 @@ void STR::MODELEVALUATOR::Cardiovascular0D::Setup()
 {
   CheckInit();
 
-  Teuchos::RCP<DRT::Discretization> dis =
-      Teuchos::rcp_dynamic_cast<DRT::Discretization>(DiscretPtr(), true);
+  Teuchos::RCP<DRT::Discretization> dis = DiscretPtr();
 
   // setup the displacement pointer
   disnp_ptr_ = GState().GetDisNp();

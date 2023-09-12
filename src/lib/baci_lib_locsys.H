@@ -14,7 +14,7 @@
 
 #include "baci_ale_ale3.H"
 #include "baci_fluid_ele_action.H"
-#include "baci_lib_discret_interface.H"
+#include "baci_lib_discret.H"
 
 #include <Teuchos_RCP.hpp>
 
@@ -98,7 +98,7 @@ namespace DRT
        *                                to be applied on sysmatrix, if true
        *
        */
-      explicit LocsysManager(DRT::DiscretizationInterface& discret);
+      explicit LocsysManager(DRT::Discretization& discret);
 
       /*!
        * \brief Set-up stuff common to all constructors
@@ -115,7 +115,7 @@ namespace DRT
        * \brief Get Epetra communicator
        *
        */
-      inline const Epetra_Comm& Comm() const { return discret_.Comm(); };
+      inline const Epetra_Comm& Comm() const;
 
       //! @name Access methods
 
@@ -123,7 +123,7 @@ namespace DRT
        * \brief Get discretization
        *
        */
-      inline DRT::DiscretizationInterface& Discret() const { return discret_; };
+      inline DRT::Discretization& Discret() const { return discret_; };
 
       /*!
        * \brief Get problem dimension
@@ -257,7 +257,7 @@ namespace DRT
       //@{
 
       /// current discretization
-      DRT::DiscretizationInterface& discret_;
+      DRT::Discretization& discret_;
 
       /// id of locsys condition
       std::vector<int> id_;

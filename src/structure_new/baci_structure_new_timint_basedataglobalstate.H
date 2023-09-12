@@ -27,7 +27,7 @@
 // forward declaration
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
   namespace ELEMENTS
   {
     class Beam3Base;
@@ -94,7 +94,7 @@ namespace STR
        * @param sdynparams Parameter list for structural dynamics from input file
        * @param datasdyn Structural dynamics data container
        */
-      void Init(const Teuchos::RCP<DRT::DiscretizationInterface> discret,
+      void Init(const Teuchos::RCP<DRT::Discretization> discret,
           const Teuchos::ParameterList& sdynparams,
           const Teuchos::RCP<const BaseDataSDyn> datasdyn);
 
@@ -267,7 +267,7 @@ namespace STR
       ///@{
 
       /// attached discretisation
-      Teuchos::RCP<const DRT::DiscretizationInterface> GetDiscret() const
+      Teuchos::RCP<const DRT::Discretization> GetDiscret() const
       {
         CheckInit();
         return discret_;
@@ -567,7 +567,7 @@ namespace STR
       /// @name Get general purpose algorithm members (read only access)
       ///@{
       /// attached discretization
-      Teuchos::RCP<DRT::DiscretizationInterface> GetDiscret()
+      Teuchos::RCP<DRT::Discretization> GetDiscret()
       {
         CheckInit();
         return discret_;
@@ -911,7 +911,7 @@ namespace STR
       ///@{
 
       /// attached discretisation
-      Teuchos::RCP<DRT::DiscretizationInterface> discret_;
+      Teuchos::RCP<DRT::Discretization> discret_;
 
       /// communicator
       Teuchos::RCP<const Epetra_Comm> comm_;

@@ -15,7 +15,7 @@
 
 namespace DRT
 {
-  class DiscretizationInterface;
+  class Discretization;
 
   namespace INPUT
   {
