@@ -54,7 +54,8 @@ Teuchos::RCP<CONTACT::CoIntegrator> CONTACT::INTEGRATOR::Factory::BuildIntegrato
         integrator =
             Teuchos::rcp(new CONTACT::CoIntegratorNitscheSsiElch(p_mortar, slave_type, comm));
       }
-      else if (p_mortar.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+      else if (p_mortar.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+               p_mortar.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
       {
         integrator = Teuchos::rcp(new CONTACT::CoIntegratorNitschePoro(p_mortar, slave_type, comm));
       }

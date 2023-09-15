@@ -147,7 +147,8 @@ namespace INPAR
       structure,      ///< structural contact problem
       tsi,            ///< coupled TSI problem with contact
       structalewear,  ///< wear problem including ALE shape changes
-      poro,           ///< poroelasticity problem with contact
+      poroelast,      ///< poroelasticity problem with contact
+      poroscatra,     ///< poroscatra problem with contact
       ehl,            ///< elasto-hydrodymanic lubrication
       fsi,            ///< coupled FSI problem with contact
       fpi,            ///< coupled FPI problem with contact

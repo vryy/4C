@@ -488,7 +488,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
             Teuchos::rcp(new CONTACT::CoElement(ele->Id() + ggsize, ele->Owner(), ele->Shape(),
                 ele->NumNode(), ele->NodeIds(), isslave[j], nurbs));
 
-        if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
+        if ((contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+                contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) &&
             algo != INPAR::MORTAR::algorithm_gpts)
           SetPoroParentElement(slavetype, mastertype, cele, ele);
 
@@ -534,7 +535,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
     else
       interface->FillComplete(true, maxdof);
 
-    if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
+    if ((contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+            contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) &&
         algo != INPAR::MORTAR::algorithm_gpts)
       FindPoroInterfaceTypes(
           poromaster, poroslave, structmaster, structslave, slavetype, mastertype);
@@ -562,7 +564,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   }
   else if (stype == INPAR::CONTACT::solution_lagmult)
   {
-    if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro)
+    if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+        contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra)
     {
       strategy_ = Teuchos::rcp(
           new PoroLagrangeStrategy(data_ptr, Discret().DofRowMap(), Discret().NodeRowMap(),
@@ -590,7 +593,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
   else if (algo == INPAR::MORTAR::algorithm_gpts &&
            (stype == INPAR::CONTACT::solution_nitsche || stype == INPAR::CONTACT::solution_penalty))
   {
-    if (contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poro &&
+    if ((contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+            contactParams.get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) &&
         stype == INPAR::CONTACT::solution_nitsche)
     {
       strategy_ = Teuchos::rcp(new CoNitscheStrategyPoro(data_ptr, Discret().DofRowMap(),
@@ -1004,8 +1008,8 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
     // *********************************************************************
     // poroelastic contact
     // *********************************************************************
-    if (problemtype == ProblemType::poroelast || problemtype == ProblemType::fpsi ||
-        problemtype == ProblemType::fpsi_xfem)
+    if (problemtype == ProblemType::poroelast || problemtype == ProblemType::poroscatra ||
+        problemtype == ProblemType::fpsi || problemtype == ProblemType::fpsi_xfem)
     {
       const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
       if ((DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar, "LM_SHAPEFCN") !=
@@ -1167,10 +1171,14 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   {
     cparams.set<int>("PROBTYPE", INPAR::CONTACT::structalewear);
   }
-  else if (problemtype == ProblemType::poroelast or problemtype == ProblemType::fpsi)
+  else if (problemtype == ProblemType::poroelast or problemtype == ProblemType::fpsi or
+           problemtype == ProblemType::poroscatra)
   {
     const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-    cparams.set<int>("PROBTYPE", INPAR::CONTACT::poro);
+    if (problemtype == ProblemType::poroelast or problemtype == ProblemType::fpsi)
+      cparams.set<int>("PROBTYPE", INPAR::CONTACT::poroelast);
+    else if (problemtype == ProblemType::poroscatra)
+      cparams.set<int>("PROBTYPE", INPAR::CONTACT::poroscatra);
     // porotimefac = 1/(theta*dt) --- required for derivation of structural displacements!
     double porotimefac =
         1 / (stru.sublist("ONESTEPTHETA").get<double>("THETA") * stru.get<double>("TIMESTEP"));
@@ -1253,7 +1261,8 @@ void CONTACT::CoManager::ReadRestart(IO::DiscretizationReader& reader,
   }
 
   // If Parent Elements are required, we need to reconnect them before contact restart!
-  if (GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poro ||
+  if ((GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poroelast ||
+          GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::poroscatra) ||
       GetStrategy().Params().get<int>("PROBTYPE") == INPAR::CONTACT::fpi)
     ReconnectParentElements();
 

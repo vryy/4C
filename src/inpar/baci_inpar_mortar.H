@@ -57,6 +57,14 @@ namespace INPAR
       search_binarytree  ///< binary tree element based
     };
 
+    /// Local definition of problemtype to avoid use of globalproblem.H
+    enum Problemtype
+    {
+      poroelast,   ///< poroelasticity problem with mortar
+      poroscatra,  ///< poroscatra problem with mortar
+      other        ///< other problemtypes
+    };
+
     /// Type of binary tree update
     /// (this enum represents the input file parameter BINARYTREE_UPDATETYPE)
     enum BinaryTreeUpdateType
