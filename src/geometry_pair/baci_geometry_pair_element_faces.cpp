@@ -54,8 +54,9 @@ void GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>::SetState(
   std::vector<scalar_type> patch_displacement_fad(n_patch_dof);
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
   {
-    patch_displacement_fad[i_dof] = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
-        n_patch_dof + n_beam_dof_, n_beam_dof_ + i_dof, patch_displacement[i_dof]);
+    patch_displacement_fad[i_dof] =
+        CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(n_patch_dof + n_dof_other_element_,
+            n_dof_other_element_ + i_dof, patch_displacement[i_dof]);
     if (i_dof < surface::n_dof_)
       face_position_(i_dof) = face_reference_position_(i_dof) + patch_displacement_fad[i_dof];
   }
@@ -237,7 +238,8 @@ void GEOMETRYPAIR::FaceElementPatchTemplate<surface, scalar_type>::SetState(
   for (unsigned int i_dof = 0; i_dof < n_patch_dof; i_dof++)
   {
     patch_displacement_fad[i_dof] = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
-        n_patch_dof + this->n_beam_dof_, this->n_beam_dof_ + i_dof, patch_displacement[i_dof]);
+        n_patch_dof + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
+        patch_displacement[i_dof]);
     if (i_dof < surface::n_dof_)
       this->face_position_(i_dof) =
           this->face_reference_position_(i_dof) + patch_displacement_fad[i_dof];
@@ -528,7 +530,7 @@ void GEOMETRYPAIR::FaceElementTemplateExtendedVolume<surface, scalar_type, volum
   for (unsigned int i_dof = 0; i_dof < volume::n_dof_; i_dof++)
   {
     volume_position_(i_dof) = CORE::FADUTILS::HigherOrderFadValue<scalar_type>::apply(
-        volume::n_dof_ + this->n_beam_dof_, this->n_beam_dof_ + i_dof,
+        volume::n_dof_ + this->n_dof_other_element_, this->n_dof_other_element_ + i_dof,
         volume_displacement[i_dof] + volume_reference_position_(i_dof));
   }
   this->face_position_.PutScalar(0.0);

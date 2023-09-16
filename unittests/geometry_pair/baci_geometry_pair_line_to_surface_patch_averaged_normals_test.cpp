@@ -52,9 +52,9 @@ namespace
      * \brief Get the number of dofs for the beam.
      */
     template <typename A>
-    unsigned int GetNBeamDof(A& face_element)
+    unsigned int GetNOtherDof(A& face_element)
     {
-      return face_element->n_beam_dof_;
+      return face_element->n_dof_other_element_;
     }
 
     //! Pointer to the discretization object that holds the geometry for the tests.
@@ -92,7 +92,7 @@ namespace
         face_elements_map[investigated_face_element_volume_id]);
 
     // Offset in the derivatives for the beam dof.
-    const unsigned int beam_dof_offset = GetNBeamDof(face_element);
+    const unsigned int dof_offset = GetNOtherDof(face_element);
 
     // Setup all face elements and get the patch information.
     for (auto& face_element_map_iterator : face_elements_map)
@@ -159,13 +159,13 @@ namespace
         for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
         {
           EXPECT_NEAR(CORE::FADUTILS::CastToDouble(
-                          (*face_element->GetCurrentNormals())(i_dof).dx(beam_dof_offset + i_der)),
+                          (*face_element->GetCurrentNormals())(i_dof).dx(dof_offset + i_der)),
               current_normals_derivative[i_dof][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
           {
             EXPECT_NEAR(CORE::FADUTILS::CastToDouble((*face_element->GetCurrentNormals())(i_dof)
-                                                         .dx(beam_dof_offset + i_der)
-                                                         .dx(beam_dof_offset + i_der_2)),
+                                                         .dx(dof_offset + i_der)
+                                                         .dx(dof_offset + i_der_2)),
                 current_normals_derivative_2[i_dof][i_der][i_der_2], eps);
           }
         }
@@ -184,11 +184,11 @@ namespace
         EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim)), position[i_dim], eps);
         for (unsigned int i_der = 0; i_der < face_element->GetPatchGID().size(); i_der++)
         {
-          EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim).dx(beam_dof_offset + i_der)),
+          EXPECT_NEAR(CORE::FADUTILS::CastToDouble(r(i_dim).dx(dof_offset + i_der)),
               position_derivative[i_dim][i_der], eps);
           for (unsigned int i_der_2 = 0; i_der_2 < face_element->GetPatchGID().size(); i_der_2++)
             EXPECT_NEAR(CORE::FADUTILS::CastToDouble(
-                            r(i_dim).dx(beam_dof_offset + i_der).dx(beam_dof_offset + i_der_2)),
+                            r(i_dim).dx(dof_offset + i_der).dx(dof_offset + i_der_2)),
                 position_derivative_2[i_dim][i_der][i_der_2], eps);
         }
       }
