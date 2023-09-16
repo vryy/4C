@@ -14,11 +14,64 @@
 
 #ifdef __cplusplus
 
+#include "baci_config.H"
+
+#include <boost/stacktrace.hpp>
+
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
 #include <stdexcept>
 #include <string>
+#include <utility>
+
+BACI_NAMESPACE_OPEN
+
+namespace CORE
+{
+  /**
+   * @brief Base class for all BACI exceptions.
+   *
+   * Any exceptions generated directly by BACI will have this or a derived type. This allows to
+   * catch BACI exceptions specifically by using this type in the `catch` clause.
+   */
+  class Exception : public std::exception
+  {
+   public:
+    /**
+     * Generate an Exception with the given message. A stacktrace is automatically attached to this
+     * Exception.
+     */
+    explicit Exception(std::string message);
+
+    /**
+     * Return a message that describes what happened and includes a stack trace.
+     */
+    [[nodiscard]] const char* what() const noexcept override;
+
+   private:
+    /**
+     * A user-defined message that explains what happened.
+     */
+    std::string message;
+
+    /**
+     * The generated stacktrace which is used to construct a nice error message when calling what().
+     */
+    std::unique_ptr<boost::stacktrace::stacktrace> stacktrace;
+
+    /**
+     * The full message that is returned by what. This message is composed of all the other
+     * information stored in this class.
+     *
+     * @note This needs to be stored here since we only return a `const char*` from what().
+     */
+    mutable std::string what_message_;
+  };
+
+}  // namespace CORE
+
+BACI_NAMESPACE_CLOSE
 
 
 extern "C" [[noreturn]] void cpp_dserror_func(
@@ -50,9 +103,11 @@ void run_time_error_latest(const std::string file, const std::string func, const
 /** throws a run time error during a catch block and forwards the existing
  *  extended error message */
 [[noreturn]] void run_time_error_func(const std::string& errorMsg, const std::runtime_error& e);
+[[noreturn]] void run_time_error_func(const std::string& errorMsg, const BACI::CORE::Exception& e);
 
 /// throws a run time error during a catch block and forwards the existing error message
 [[noreturn]] void run_time_error_func(const std::runtime_error& e);
+[[noreturn]] void run_time_error_func(const BACI::CORE::Exception& e);
 
 /// actual called macro definition
 #define run_time_error \

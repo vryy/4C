@@ -12,6 +12,7 @@
 
 #include "baci_io.H"
 #include "baci_io_linedefinition.H"
+#include "baci_utils_exceptions.H"
 #include "baci_utils_function_manager.H"
 #include "baci_utils_functionvariables.H"
 
@@ -288,7 +289,7 @@ Teuchos::RCP<CORE::UTILS::FunctionOfSpaceTime> CORE::UTILS::TryCreateSymbolicFun
     {
       call();
     }
-    catch (const std::runtime_error& e)
+    catch (const CORE::Exception& e)
     {
     }
   };
