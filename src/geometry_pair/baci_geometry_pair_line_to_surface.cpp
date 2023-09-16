@@ -11,6 +11,7 @@
 
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_geometry_pair_constants.H"
+#include "baci_geometry_pair_element.H"
 #include "baci_geometry_pair_element_functions.H"
 #include "baci_geometry_pair_scalar_types.H"
 #include "baci_geometry_pair_utility_classes.H"
@@ -539,6 +540,60 @@ void GEOMETRYPAIR::GeometryPairLineToSurfaceFADWrapper<scalar_type, line, surfac
  */
 namespace GEOMETRYPAIR
 {
+  template class GeometryPairLineToSurface<double, t_line2, t_tri3>;
+  template class GeometryPairLineToSurface<double, t_line2, t_tri6>;
+  template class GeometryPairLineToSurface<double, t_line2, t_quad4>;
+  template class GeometryPairLineToSurface<double, t_line2, t_quad8>;
+  template class GeometryPairLineToSurface<double, t_line2, t_quad9>;
+  template class GeometryPairLineToSurface<double, t_line2, t_nurbs9>;
+
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
+      t_tri3>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
+      t_tri6>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
+      t_quad4>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
+      t_quad8>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type_1st_order, t_line2,
+      t_quad9>;
+  template class GeometryPairLineToSurface<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_tri3>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_tri6>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad4>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad8>;
+  template class GeometryPairLineToSurface<line_to_surface_patch_scalar_type, t_line2, t_quad9>;
+  template class GeometryPairLineToSurface<
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_tri3>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_tri6>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_quad4>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_quad8>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_quad9>;
+  template class GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
+      t_tri3>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
+      t_tri6>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
+      t_quad4>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
+      t_quad8>;
+  template class GeometryPairLineToSurfaceFADWrapper<line_to_surface_patch_scalar_type, t_line2,
+      t_quad9>;
+  template class GeometryPairLineToSurfaceFADWrapper<
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
   template class GeometryPairLineToSurface<double, t_hermite, t_tri3>;
   template class GeometryPairLineToSurface<double, t_hermite, t_tri6>;
   template class GeometryPairLineToSurface<double, t_hermite, t_quad4>;
