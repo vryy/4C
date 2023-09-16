@@ -850,9 +850,13 @@ namespace BEAMINTERACTION
 
   // Helper types for the macro initialization. The compiler has troubles inserting the templated
   // typenames into the macros.
-  using line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9 =
+  using line_to_surface_patch_scalar_type_fixed_size_1st_order_line2_nurbs_9 =
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>;
+  using line_to_surface_patch_scalar_type_fixed_size_line2_nurbs_9 =
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>;
+  using line_to_surface_patch_scalar_type_fixed_size_1st_order_hermite_nurbs_9 =
       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>;
-  using line_to_surface_patch_scalar_type_fixed_size_nurbs_9 =
+  using line_to_surface_patch_scalar_type_fixed_size_hermite_nurbs_9 =
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>;
 
 #define initialize_template_penalty(scalar_type)                                       \
@@ -863,9 +867,12 @@ namespace BEAMINTERACTION
 
   initialize_template_penalty(double);
   initialize_template_penalty(line_to_surface_patch_scalar_type_1st_order);
-  initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9);
+  initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_1st_order_line2_nurbs_9);
+  initialize_template_penalty(
+      line_to_surface_patch_scalar_type_fixed_size_1st_order_hermite_nurbs_9);
   initialize_template_penalty(line_to_surface_patch_scalar_type);
-  initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_nurbs_9);
+  initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_line2_nurbs_9);
+  initialize_template_penalty(line_to_surface_patch_scalar_type_fixed_size_hermite_nurbs_9);
 
 
 #define initialize_template_get_solid_rotation_vector(a, fad_order)                              \

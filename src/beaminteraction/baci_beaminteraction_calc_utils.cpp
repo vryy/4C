@@ -1295,6 +1295,8 @@ namespace BEAMINTERACTION
         std::vector<CORE::LINALG::SerialDenseVector>&,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>&);
 
+    template void GetElementCenterlineGIDIndices<6>(
+        DRT::Discretization const&, const DRT::Element*, CORE::LINALG::Matrix<6, 1, int>&);
     template void GetElementCenterlineGIDIndices<12>(
         DRT::Discretization const&, const DRT::Element*, CORE::LINALG::Matrix<12, 1, int>&);
 
