@@ -630,6 +630,9 @@ buildtest_full_release_asan:
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  after_script:
+  - *post-process-log-files
+  - ${CI_PROJECT_DIR}/utilities/grep_asan_failures.sh test.log > asan_summary.log
   tags:
   - buildtest
   needs:
