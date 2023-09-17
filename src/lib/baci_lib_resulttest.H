@@ -29,7 +29,7 @@ namespace DRT
   }  // namespace INPUT
 
   /*!
-    \brief Pure virtual base class of all field test classes
+    \brief Base class of all field test classes
 
     The idea is to have a subclass of this for every algorithm class
     that needs result testing. The Match method needs to be defined to
@@ -46,6 +46,11 @@ namespace DRT
    public:
     /// not yet documented
     explicit ResultTest(std::string name = "NONE");
+
+    /**
+     * Virtual destructor.
+     */
+    virtual ~ResultTest() = default;
 
     /// perform element value test
     virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
