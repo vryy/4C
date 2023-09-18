@@ -538,10 +538,19 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
     INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization coupling_discretization =
         beam_to_surface_params->GetContactDiscretization();
 
+    bool rotational_coupling = beam_to_surface_params->GetIsRotationalCoupling();
+
     switch (coupling_discretization)
     {
       case INPAR::BEAMTOSOLID::BeamToSolidContactDiscretization::gauss_point_to_segment:
       {
+        if (rotational_coupling)
+        {
+          dserror(
+              "Beam-to-solid surface coupling with a Gauss-point-to-segment approach is not "
+              "implemented for rotational coupling");
+        }
+
         switch (coupling_type)
         {
           case INPAR::BEAMTOSOLID::BeamToSolidSurfaceCoupling::
@@ -639,7 +648,6 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
       {
         INPAR::BEAMTOSOLID::BeamToSolidMortarShapefunctions mortar_shapefunction =
             beam_to_surface_params->GetMortarShapeFunctionType();
-        bool rotational_coupling = beam_to_surface_params->GetIsRotationalCoupling();
 
         switch (coupling_type)
         {
