@@ -93,4 +93,6 @@ function(baci_add_google_test_executable TESTNAME)
     )
 
   add_dependencies(unittests ${TESTNAME})
+
+  message(DEBUG "Picked up unit tests ${TESTNAME}")
 endfunction()
