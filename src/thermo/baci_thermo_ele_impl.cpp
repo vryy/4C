@@ -27,6 +27,8 @@
 #include "baci_thermo_ele_action.H"
 #include "baci_thermo_element.H"  // only for visualization of element data
 
+#include <algorithm>
+
 DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT::Element* ele)
 {
   switch (ele->Shape())
@@ -2701,13 +2703,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
       xrefe(i, 2) = x[2];
     }
 
-    // (SPATIAL) FUNCTION BUSINESS
-    const auto* funct = myneumcond[0]->Get<std::vector<int>>("funct");
-    CORE::LINALG::Matrix<nsd_, 1> xrefegp(false);
-    bool havefunct = false;
-    if (funct)
-      for (int dim = 0; dim < nsd_; dim++)
-        if ((*funct)[dim] > 0) havefunct = true;
 
     // integrations points and weights
     CORE::DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(
@@ -2727,6 +2722,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     else if (detJ < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
+    const auto* funct = myneumcond[0]->Get<std::vector<int>>("funct");
+    const bool havefunct =
+        funct ? std::any_of(funct->begin(), funct->end(), [](int index) { return index > 0; })
+              : false;
+
+    CORE::LINALG::Matrix<nsd_, 1> xrefegp(false);
     // material/reference co-ordinates of Gauss point
     if (havefunct)
     {
@@ -2739,6 +2740,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(DRT::Element* ele, const doub
     }
 
     // function evaluation
+    dsassert(funct->size() == 1, "Need exactly one function.");
     const int functnum = (funct) ? (*funct)[0] : -1;
     const double functfac = (functnum > 0)
                                 ? DRT::Problem::Instance()
