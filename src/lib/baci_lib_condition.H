@@ -434,6 +434,11 @@ namespace DRT
     virtual void Print(std::ostream& os) const;
 
     /*!
+    Return the id and the name of the condition
+    */
+    std::string Name() const;
+
+    /*!
     \brief Return type of condition
     */
     inline virtual ConditionType Type() const { return type_; }
