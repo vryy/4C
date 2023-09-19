@@ -103,6 +103,9 @@ find_package(MIRCO)
 
 ### end of configuration and feature detection
 
+# Enable testing right away since we encounter src and tests interspersed in modules
+enable_testing()
+
 # Get the global compile definitions which have been populated until here
 get_property(BACI_GLOBAL_COMPILE_DEFINITIONS GLOBAL PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS)
 
@@ -155,8 +158,6 @@ if(BACI_WITH_ADDRESS_SANITIZER)
   string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
   set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
 endif()
-
-enable_testing()
 
 add_subdirectory(unittests)
 add_subdirectory(tests/cut_test)
