@@ -99,38 +99,12 @@ void CORE::LINALG::Equilibration::ComputeInvColSums(const CORE::LINALG::SparseMa
 void CORE::LINALG::Equilibration::ComputeInvSymmetry(
     const CORE::LINALG::SparseMatrix& matrix, Teuchos::RCP<Epetra_Vector> invsymmetry) const
 {
-  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(matrix.RowMap(), true);
+  Teuchos::RCP<Epetra_Vector> diag = CORE::LINALG::CreateVector(matrix.RangeMap(), true);
   matrix.ExtractDiagonalCopy(*diag);
-  // get my rows of matrix
-  for (int lid_row = 0; lid_row < matrix.RowMap().NumMyElements(); ++lid_row)
+
+  for (int my_row = 0; my_row < diag->Map().NumMyElements(); ++my_row)
   {
-    const int gid_row = matrix.RowMap().GID(lid_row);
-
-    const int length_row = matrix.EpetraMatrix()->NumGlobalEntries(gid_row);
-    int numentries = 0;
-    std::vector<double> values(length_row, 0.);
-    std::vector<int> indices(length_row, 0);
-
-    // only if this processor owns entries
-    if (length_row > 0)
-    {
-      matrix.EpetraMatrix()->ExtractGlobalRowCopy(
-          gid_row, length_row, numentries, values.data(), indices.data());
-
-      double maximum = 0;
-      for (int j = 0; j < numentries; j++)
-      {
-        const int gid_col = indices[j];
-        const int lid_col = matrix.RowMap().LID(gid_col);
-        const double d_col = invsymmetry->operator[](lid_col);
-        const double fac_col = d_col * values[j];
-        if ((gid_col < gid_row) and (fac_col > maximum)) maximum = fac_col;
-      }
-      const double sqrtTii = std::sqrt(diag->operator[](lid_row));
-      const double d_col = 1 / (maximum > sqrtTii ? maximum : sqrtTii);
-
-      invsymmetry->ReplaceGlobalValue(gid_row, 0, d_col);
-    }
+    (*invsymmetry)[my_row] = 1.0 / std::sqrt((*diag)[my_row]);
   }
 }
 
@@ -457,7 +431,8 @@ void CORE::LINALG::EquilibrationBlockSpecific::EquilibrateMatrix(
     }
     if (method == EquilibrationMethod::symmetry)
     {
-      auto invsymmetry = Teuchos::rcp(new Epetra_Vector(blocksparsematrix->Matrix(i, i).RowMap()));
+      auto invsymmetry =
+          CORE::LINALG::CreateVector(blocksparsematrix->Matrix(i, i).RangeMap(), true);
 
       ComputeInvSymmetry(blocksparsematrix->Matrix(i, i), invsymmetry);
 
