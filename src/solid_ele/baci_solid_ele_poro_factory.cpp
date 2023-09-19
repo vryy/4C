@@ -13,8 +13,7 @@
 
 
 
-std::unique_ptr<DRT::ELEMENTS::SolidPoroEleCalcInterface>
-DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
+DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
     DRT::Element& ele, INPAR::PORO::PoroType porotype)
 {
   switch (ele.Shape())
@@ -44,27 +43,27 @@ DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
       dserror("unknown distype provided");
       break;
   }
-  return nullptr;
+  return {};
 }
 
 template <DRT::Element::DiscretizationType distype>
-std::unique_ptr<DRT::ELEMENTS::SolidPoroEleCalcInterface>
-DRT::ELEMENTS::CreateSolidPoroCalculationInterface(INPAR::PORO::PoroType porotype)
+DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInterface(
+    INPAR::PORO::PoroType porotype)
 {
   // here we go into the different cases for poro type
   switch (porotype)
   {
     case INPAR::PORO::PoroType::pressure_velocity_based:
       dserror("POROTYPE: 'pressure_velocity_based' not yet implemented!");
-      return nullptr;
+      return {};
       break;
     case INPAR::PORO::PoroType::pressure_based:
     {
-      return std::make_unique<DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>>();
+      return DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>();
       break;
     }
     default:
       dserror("Wrong POROTYPE for evaluation in SolidPoro elements!");
   }
-  return nullptr;
+  return {};
 }

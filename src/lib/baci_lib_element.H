@@ -21,6 +21,8 @@
 #include <Teuchos_ParameterList.hpp>
 #include <Teuchos_RCP.hpp>
 
+#include <variant>
+
 // forward declarations
 namespace MAT
 {
@@ -1594,6 +1596,34 @@ namespace DRT
   template <DRT::Element::DiscretizationType distype>
   inline static constexpr bool is_line_v = is_line<distype>::value;
   /// @}
+
+  //! @name Compile time lists of types with discretization type as template argument
+  ///@{
+  template <typename... Ts>
+  using BaseTypeList = std::tuple<Ts...>;
+
+  template <typename... t>
+  struct Join
+  {
+    using type = decltype(std::tuple_cat(std::declval<t>()...));
+  };
+  template <typename... t>
+  using Join_t = typename Join<t...>::type;
+  ///@}
+
+  //! @name Compile time lists of discretization types
+  ///@{
+  template <DRT::Element::DiscretizationType... distypes>
+  struct DiscretizationTypeList
+  {
+    template <template <DRT::Element::DiscretizationType> typename Base>
+    using Apply = BaseTypeList<Base<distypes>...>;
+  };
+
+  template <template <DRT::Element::DiscretizationType> typename Base,
+      typename DiscretizationTypeList>
+  using ApplyToBase = typename DiscretizationTypeList::template Apply<Base>;
+  ///@}
 
   /*!
    * \brief translate to string for screen output

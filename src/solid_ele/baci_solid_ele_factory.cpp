@@ -18,27 +18,28 @@
 namespace
 {
   template <DRT::Element::DiscretizationType distype>
-  std::unique_ptr<DRT::ELEMENTS::SolidEleCalcInterface> CreateFBarSolidCalculationInterface(
+  DRT::ELEMENTS::SolidCalcVariant CreateFBarSolidCalculationInterface(
       INPAR::STR::KinemType kinem_type)
   {
-    if constexpr (distype != DRT::Element::hex8 && distype != DRT::Element::pyramid5)
-    {
-      dserror("FBAR is only implemented for hex8 and pyramid5 elements.");
-      return nullptr;
-    }
-
     if (kinem_type != INPAR::STR::KinemType::kinem_nonlinearTotLag)
     {
       dserror("FBAR only usable for KINEM nonlinear (you are using %s).", kinem_type);
     }
-    return std::make_unique<DRT::ELEMENTS::SolidEleCalcFbar<distype>>();
+
+    if constexpr (distype == DRT::Element::DiscretizationType::hex8 ||
+                  distype == DRT::Element::pyramid5)
+    {
+      return DRT::ELEMENTS::SolidEleCalcFbar<distype>();
+    }
+
+    dserror("FBAR is only implemented for hex8 and pyramid5 elements.");
+    return {};
   }
 }  // namespace
 
-std::unique_ptr<DRT::ELEMENTS::SolidEleCalcInterface>
-DRT::ELEMENTS::CreateSolidCalculationInterface(const DRT::Element& ele,
-    const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
-    STR::ELEMENTS::EasType eastype)
+DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
+    const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech,
+    INPAR::STR::KinemType kinem_type, STR::ELEMENTS::EasType eastype)
 {
   switch (ele.Shape())
   {
@@ -76,21 +77,20 @@ DRT::ELEMENTS::CreateSolidCalculationInterface(const DRT::Element& ele,
       dserror("unknown distype provided");
       break;
   }
-  return nullptr;
+  return {};
 }
 
 template <DRT::Element::DiscretizationType distype>
-std::unique_ptr<DRT::ELEMENTS::SolidEleCalcInterface>
-DRT::ELEMENTS::CreateSolidCalculationInterface(const DRT::Element& ele,
-    const std::set<INPAR::STR::EleTech>& eletech, INPAR::STR::KinemType kinem_type,
-    STR::ELEMENTS::EasType eastype)
+DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
+    const DRT::Element& ele, const std::set<INPAR::STR::EleTech>& eletech,
+    INPAR::STR::KinemType kinem_type, STR::ELEMENTS::EasType eastype)
 {
   // here we go into the different cases for element technology
   switch (eletech.size())
   {
     // no element technology
     case 0:
-      return std::make_unique<DRT::ELEMENTS::SolidEleCalc<distype>>();
+      return DRT::ELEMENTS::SolidEleCalc<distype>();
       break;
     // simple: just one element technology
     case 1:
@@ -106,11 +106,11 @@ DRT::ELEMENTS::CreateSolidCalculationInterface(const DRT::Element& ele,
             switch (eastype)
             {
               case ::STR::ELEMENTS::EasType::eastype_h8_9:
-                return std::make_unique<DRT::ELEMENTS::SolidEleCalcEas<distype,
-                    ::STR::ELEMENTS::EasType::eastype_h8_9>>();
+                return DRT::ELEMENTS::SolidEleCalcEas<distype,
+                    ::STR::ELEMENTS::EasType::eastype_h8_9>();
               case ::STR::ELEMENTS::EasType::eastype_h8_21:
-                return std::make_unique<DRT::ELEMENTS::SolidEleCalcEas<distype,
-                    ::STR::ELEMENTS::EasType::eastype_h8_21>>();
+                return DRT::ELEMENTS::SolidEleCalcEas<distype,
+                    ::STR::ELEMENTS::EasType::eastype_h8_21>();
               default:
                 dserror("EAS type %d is not implemented %d.", (int)eastype);
             }
@@ -126,5 +126,5 @@ DRT::ELEMENTS::CreateSolidCalculationInterface(const DRT::Element& ele,
       dserror("unknown combination of element technologies.");
     }
   }
-  return nullptr;
+  return {};
 }

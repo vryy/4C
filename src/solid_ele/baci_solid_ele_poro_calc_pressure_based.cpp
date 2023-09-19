@@ -16,8 +16,7 @@ implementation
 
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::SolidPoroPressureBasedEleCalc()
-    : DRT::ELEMENTS::SolidPoroEleCalcInterface::SolidPoroEleCalcInterface(),
-      gauss_integration_(
+    : gauss_integration_(
           CreateGaussIntegration<distype>(GetGaussRuleStiffnessMatrixPoro<distype>()))
 {
 }

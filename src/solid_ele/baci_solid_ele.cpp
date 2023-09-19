@@ -175,38 +175,6 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidType::ComputeNullSpace(
 
 DRT::ELEMENTS::Solid::Solid(int id, int owner) : DRT::Element(id, owner) {}
 
-DRT::ELEMENTS::Solid::Solid(const DRT::ELEMENTS::Solid& old)
-    : DRT::Element(old),
-      distype_(old.distype_),
-      kintype_(old.kintype_),
-      eletech_(old.eletech_),
-      eastype_(old.eastype_),
-      interface_ptr_(old.interface_ptr_),
-      material_post_setup_(old.material_post_setup_)
-{
-  // create own solid interface on copy
-  solid_interface_ =
-      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
-}
-
-DRT::ELEMENTS::Solid& DRT::ELEMENTS::Solid::operator=(const DRT::ELEMENTS::Solid& other)
-{
-  if (this == &other) return *this;
-
-  DRT::Element::operator=(other);
-  distype_ = other.distype_;
-  kintype_ = other.kintype_;
-  eletech_ = other.eletech_;
-  eastype_ = other.eastype_;
-  interface_ptr_ = other.interface_ptr_;
-  material_post_setup_ = other.material_post_setup_;
-
-  // create own solid interface on copy assignment
-  solid_interface_ =
-      CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
-
-  return *this;
-}
 
 DRT::Element* DRT::ELEMENTS::Solid::Clone() const { return new Solid(*this); }
 
@@ -320,10 +288,7 @@ void DRT::ELEMENTS::Solid::Pack(DRT::PackBuffer& data) const
 
   data.AddtoPack(material_post_setup_);
 
-  // optional data, e.g., EAS data
-  std::shared_ptr<Serializable> serializable_interface =
-      std::dynamic_pointer_cast<Serializable>(solid_interface_);
-  if (serializable_interface != nullptr) serializable_interface->Pack(data);
+  DRT::ELEMENTS::Pack(solid_calc_variant_, data);
 }
 
 void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
@@ -348,11 +313,10 @@ void DRT::ELEMENTS::Solid::Unpack(const std::vector<char>& data)
   DRT::ParObject::ExtractfromPack(position, data, material_post_setup_);
 
   // reset solid interface
-  solid_interface_ =
+  solid_calc_variant_ =
       CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
-  std::shared_ptr<Serializable> serializable_interface =
-      std::dynamic_pointer_cast<Serializable>(solid_interface_);
-  if (serializable_interface != nullptr) serializable_interface->Unpack(position, data);
+
+  DRT::ELEMENTS::Unpack(solid_calc_variant_, position, data);
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d", (int)data.size(), position);
@@ -396,9 +360,10 @@ bool DRT::ELEMENTS::Solid::ReadElement(
     eletech_.insert(INPAR::STR::EleTech::fbar);
   }
 
-  solid_interface_ =
+  solid_calc_variant_ =
       CreateSolidCalculationInterface(*this, GetEleTech(), GetKinemType(), GetEASType());
-  solid_interface_->Setup(*SolidMaterial(), linedef);
+  std::visit(
+      [&](auto& interface) { interface->Setup(*SolidMaterial(), linedef); }, solid_calc_variant_);
   return true;
 }
 
