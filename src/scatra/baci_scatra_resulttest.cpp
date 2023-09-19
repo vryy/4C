@@ -386,39 +386,25 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
   }
 
   // test parallel distribution of scatra-scatra coupling interface
-  else if (!quantity.compare(0, 9, "s2inumdof"))
+  else if (!quantity.compare(0, 10, "s2inumdof_"))
   {
-    // extract string part behind "s2inumdof"
-    std::string suffix = quantity.substr(9);
+    // extract string part behind "s2inumdof_"
+    // it has the structure "intx_procy". We are searching for the values of x and y
+    const std::string suffix = quantity.substr(10);
 
     // check syntax
-    if (suffix.compare(0, 4, "_int")) dserror("Wrong syntax!");
+    if (suffix.compare(0, 3, "int") and suffix.find("_proc") == std::string::npos)
+      dserror("Wrong syntax!");
 
-    // initialize auxiliary variables
-    const char* index(suffix.substr(4).c_str());
-    char* locator(nullptr);
+    const std::string interface_string = suffix.substr(3, suffix.find('_') - 3);
+    const int interface_num = std::stoi(interface_string);
 
-    // extract interface ID
-    const int interface = strtol(index, &locator, 10);
-    if (locator == index) dserror("Couldn't read interface ID!");
-
-    // extract string part behind interface ID
-    suffix.assign(locator);
-
-    // check syntax
-    if (suffix.compare(0, 5, "_proc")) dserror("Wrong syntax!");
-
-    // move index to processor ID
-    index = suffix.substr(5).c_str();
+    std::string proc_string = suffix.substr(suffix.find("_proc") + 5);
+    const int proc_num = std::stoi(proc_string);
 
     // extract processor ID
-    const int processor = strtol(index, &locator, 10);
-    if (locator == index) dserror("Couldn't read processor ID!");
-    if (processor >= scatratimint_->Discretization()->Comm().NumProc())
+    if (proc_num >= scatratimint_->Discretization()->Comm().NumProc())
       dserror("Invalid processor ID!");
-
-    // check syntax
-    if (*locator != '\0') dserror("Wrong syntax!");
 
     // extract scatra-scatra interface meshtying strategy class
     const Teuchos::RCP<const SCATRA::MeshtyingStrategyS2I> strategy =
@@ -428,8 +414,8 @@ double SCATRA::ScaTraResultTest::ResultSpecial(
 
     // extract number of degrees of freedom owned by specified processor at specified scatra-scatra
     // coupling interface
-    result = strategy->MortarDiscretization(interface).DofRowMap()->NumMyElements();
-    scatratimint_->Discretization()->Comm().Broadcast(&result, 1, processor);
+    result = strategy->MortarDiscretization(interface_num).DofRowMap()->NumMyElements();
+    scatratimint_->Discretization()->Comm().Broadcast(&result, 1, proc_num);
   }
 
   // test relaxation parameters for partitioned simulations
