@@ -13,6 +13,7 @@
 
 
 #include "baci_lib_function.H"
+#include "baci_lib_linedefinition.H"
 #include "baci_utils_demangle.H"
 #include "baci_utils_exceptions.H"
 
@@ -37,11 +38,29 @@ namespace DRT
     class FunctionManager
     {
      public:
+      /**
+       * Type used to pass functions that create BACI Functions from a number of parsed lines.
+       */
+      using FunctionFactory = std::function<std::any(const std::vector<INPUT::LineDefinition>&)>;
+
+      FunctionManager();
+
       /// Return all known input lines that define a DRT::Function.
-      static DRT::INPUT::Lines ValidFunctionLines();
+      DRT::INPUT::Lines ValidFunctionLines();
 
       /// read the baci input file and set up all functions
       void ReadInput(DRT::INPUT::DatFileReader& reader);
+
+      /**
+       * Tell the FunctionManager how to parse a set of @p possoble_lines into a Function object.
+       * When the ReadInput() function is called, this class will try to read lines encountered in
+       * the input file according to the @p possible_lines that were previously passed in this
+       * function. If one or more of these lines match, they are parsed and the @p function_factory
+       * that was passed alongside these lines is called with the parsed data. @p function_factory
+       * needs to return the actual function object wrapped in a Teuchos::RCP.
+       */
+      void AddFunctionDefinition(
+          std::vector<INPUT::LineDefinition> possible_lines, FunctionFactory function_factory);
 
       /**
        * Get a Function by its @p id in the input file. In addition, you need to specify the type of
@@ -60,10 +79,21 @@ namespace DRT
       /// Internal storage for all functions. We use type erasure via std::any to store various
       /// Function objects belonging to distinct interfaces.
       std::vector<std::any> functions_;
+
+
+      /**
+       * Store the lines we can read and how to convert them into a BACI Function.
+       */
+      std::vector<std::pair<std::vector<INPUT::LineDefinition>, FunctionFactory>>
+          attached_function_data_;
     };
 
-    /// add valid function lines
-    void AddValidFunctionFunctionLines(DRT::INPUT::Lines& lines);
+    /**
+     * Add valid built-in functions that are always available.
+     * This includes space- and time-dependent functions and a generic function
+     * depending on arbitrary variables.
+     */
+    void AddValidBuiltinFunctions(FunctionManager& function_manager);
   }  // namespace UTILS
 
 }  // namespace DRT

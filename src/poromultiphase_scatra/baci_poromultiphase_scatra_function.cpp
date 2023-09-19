@@ -9,11 +9,95 @@
 
 #include "baci_poromultiphase_scatra_function.H"
 
+#include "baci_lib_function_manager.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_poromultiphase_scatra_utils.H"
 #include "baci_utils_fad.H"
 
 #include <Teuchos_RCP.hpp>
+
+namespace
+{
+
+  template <int dim>
+  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> CreatePoroFunction(
+      const std::string& type, const std::vector<std::pair<std::string, double>>& params)
+  {
+    if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
+      return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>(params));
+    else if (type == "NECROSIS_LAW_HEAVISIDE")
+      return Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>(params));
+    else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
+      return Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>(params));
+    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
+      return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>(params));
+    else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
+      return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>(params));
+    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
+    {
+      return Teuchos::rcp(
+          new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>(params));
+    }
+    else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
+    {
+      return Teuchos::rcp(
+          new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>(params));
+    }
+    else if (type == "LUNG_OXYGEN_EXCHANGE_LAW")
+    {
+      return Teuchos::rcp(new POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>(params));
+    }
+    else
+    {
+      dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
+      return Teuchos::RCP<DRT::UTILS::FunctionOfAnything>(nullptr);
+    }
+  }
+
+
+
+  template <int dim>
+  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> TryCreatePoroFunction(
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  {
+    if (function_line_defs.size() != 1) return Teuchos::null;
+
+    const auto& function_lin_def = function_line_defs.front();
+
+    if (function_lin_def.HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
+    {
+      std::string type;
+      function_lin_def.ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
+
+      std::vector<std::pair<std::string, double>> params;
+      if (function_lin_def.HaveNamed("PARAMS"))
+        function_lin_def.ExtractPairOfStringAndDoubleVector("PARAMS", params);
+
+      return CreatePoroFunction<dim>(type, params);
+    }
+    else
+    {
+      return Teuchos::RCP<DRT::UTILS::FunctionOfAnything>(nullptr);
+    }
+  }
+
+  auto TryCreatePoroFunctionDispatch(
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  {
+    switch (DRT::Problem::Instance()->NDim())
+    {
+      case 1:
+        return TryCreatePoroFunction<1>(function_line_defs);
+      case 2:
+        return TryCreatePoroFunction<2>(function_line_defs);
+      case 3:
+        return TryCreatePoroFunction<3>(function_line_defs);
+      default:
+        dserror("Unsupported dimension %d.", DRT::Problem::Instance()->NDim());
+    }
+  }
+}  // namespace
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -25,80 +109,18 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraFunction<dim>::PoroMultiPhaseScaTraFun
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROMULTIPHASESCATRA::AddValidPoroFunctionLines(DRT::INPUT::Lines& lines)
+void POROMULTIPHASESCATRA::AddValidPoroFunctions(DRT::UTILS::FunctionManager& function_manager)
 {
-  DRT::INPUT::LineDefinition poromultiphasescatra_funct =
-      DRT::INPUT::LineDefinition::Builder()
-          .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
-          .AddOptionalNamedInt("NUMPARAMS")
-          .AddOptionalNamedPairOfStringAndDoubleVector(
-              "PARAMS", DRT::INPUT::LengthFromIntNamed("NUMPARAMS"))
-          .Build();
-
-  lines.Add(poromultiphasescatra_funct);
+  function_manager.AddFunctionDefinition(
+      {DRT::INPUT::LineDefinition::Builder()
+              .AddNamedString("POROMULTIPHASESCATRA_FUNCTION")
+              .AddOptionalNamedInt("NUMPARAMS")
+              .AddOptionalNamedPairOfStringAndDoubleVector(
+                  "PARAMS", DRT::INPUT::LengthFromIntNamed("NUMPARAMS"))
+              .Build()},
+      TryCreatePoroFunctionDispatch);
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-template <int dim>
-Teuchos::RCP<DRT::UTILS::FunctionOfAnything> POROMULTIPHASESCATRA::TryCreatePoroFunction(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
-{
-  if (function_line_defs.size() != 1) return Teuchos::null;
-
-  const auto& function_lin_def = function_line_defs.front();
-
-  if (function_lin_def.HaveNamed("POROMULTIPHASESCATRA_FUNCTION"))
-  {
-    std::string type;
-    function_lin_def.ExtractString("POROMULTIPHASESCATRA_FUNCTION", type);
-
-    std::vector<std::pair<std::string, double>> params;
-    if (function_lin_def.HaveNamed("PARAMS"))
-      function_lin_def.ExtractPairOfStringAndDoubleVector("PARAMS", params);
-
-    return CreatePoroFunction<dim>(type, params);
-  }
-  else
-  {
-    return Teuchos::RCP<DRT::UTILS::FunctionOfAnything>(nullptr);
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-template <int dim>
-Teuchos::RCP<DRT::UTILS::FunctionOfAnything> POROMULTIPHASESCATRA::CreatePoroFunction(
-    const std::string& type, const std::vector<std::pair<std::string, double>>& params)
-{
-  if (type == "TUMOR_GROWTH_LAW_HEAVISIDE")
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>(params));
-  else if (type == "NECROSIS_LAW_HEAVISIDE")
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>(params));
-  else if (type == "OXYGEN_CONSUMPTION_LAW_HEAVISIDE")
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>(params));
-  else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_OXY")
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>(params));
-  else if (type == "TUMOR_GROWTH_LAW_HEAVISIDE_NECRO")
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>(params));
-  else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT")
-  {
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>(params));
-  }
-  else if (type == "OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC")
-  {
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>(params));
-  }
-  else if (type == "LUNG_OXYGEN_EXCHANGE_LAW")
-  {
-    return Teuchos::rcp(new POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>(params));
-  }
-  else
-  {
-    dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
-    return Teuchos::RCP<DRT::UTILS::FunctionOfAnything>(nullptr);
-  }
-}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1617,13 +1639,3 @@ template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<3>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<1>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<2>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>;
-
-template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
-POROMULTIPHASESCATRA::TryCreatePoroFunction<1>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
-POROMULTIPHASESCATRA::TryCreatePoroFunction<2>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-template Teuchos::RCP<DRT::UTILS::FunctionOfAnything>
-POROMULTIPHASESCATRA::TryCreatePoroFunction<3>(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);

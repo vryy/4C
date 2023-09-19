@@ -9,10 +9,32 @@
 
 #include "baci_fluid_xfluid_functions_combust.H"
 
+#include "baci_lib_function_manager.H"
 #include "baci_lib_linedefinition.H"
 
+namespace
+{
+  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> CreateCombustFunction(
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  {
+    if (function_line_defs.size() != 1) return Teuchos::null;
 
-void DRT::UTILS::AddValidCombustFunctionLines(DRT::INPUT::Lines& lines)
+    if (function_line_defs.front().HaveNamed("ZALESAKSDISK"))
+    {
+      return Teuchos::rcp(new DRT::UTILS::ZalesaksDiskFunction());
+    }
+    else if (function_line_defs.front().HaveNamed("COLLAPSINGWATERCOLUMN"))
+    {
+      return Teuchos::rcp(new DRT::UTILS::CollapsingWaterColumnFunction());
+    }
+    else
+    {
+      return Teuchos::null;
+    }
+  }
+}  // namespace
+
+void DRT::UTILS::AddValidCombustFunctions(DRT::UTILS::FunctionManager& function_manager)
 {
   DRT::INPUT::LineDefinition zalesaksdisk =
       DRT::INPUT::LineDefinition::Builder().AddTag("ZALESAKSDISK").Build();
@@ -20,28 +42,10 @@ void DRT::UTILS::AddValidCombustFunctionLines(DRT::INPUT::Lines& lines)
   DRT::INPUT::LineDefinition collapsingwatercolumn =
       DRT::INPUT::LineDefinition::Builder().AddTag("COLLAPSINGWATERCOLUMN").Build();
 
-  lines.Add(zalesaksdisk);
-  lines.Add(collapsingwatercolumn);
+  function_manager.AddFunctionDefinition(
+      {std::move(zalesaksdisk), std::move(collapsingwatercolumn)}, CreateCombustFunction);
 }
 
-Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> DRT::UTILS::TryCreateCombustFunction(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
-{
-  if (function_line_defs.size() != 1) return Teuchos::null;
-
-  if (function_line_defs.front().HaveNamed("ZALESAKSDISK"))
-  {
-    return Teuchos::rcp(new ZalesaksDiskFunction());
-  }
-  else if (function_line_defs.front().HaveNamed("COLLAPSINGWATERCOLUMN"))
-  {
-    return Teuchos::rcp(new CollapsingWaterColumnFunction());
-  }
-  else
-  {
-    return Teuchos::null;
-  }
-}
 
 
 double DRT::UTILS::ZalesaksDiskFunction::Evaluate(

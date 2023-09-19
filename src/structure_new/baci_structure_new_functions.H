@@ -18,21 +18,17 @@
 namespace DRT
 {
   class Discretization;
-  namespace INPUT
+  namespace UTILS
   {
-    class LineDefinition;
-  }  // namespace INPUT
+    class FunctionManager;
+  }
 }  // namespace DRT
 
 
 namespace STR
 {
   /// add valid structure-specific function lines
-  void AddValidStructureFunctionLines(DRT::INPUT::Lines& lines);
-
-  /// try to create structure-specific functions from a given line definition
-  Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateStructureFunction(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+  void AddValidStructureFunctions(DRT::UTILS::FunctionManager& function_manager);
 
   /// special implementation for weakly compressible flow - Etienne FSI problem
   class WeaklyCompressibleEtienneFSIStructureFunction : public DRT::UTILS::FunctionOfSpaceTime

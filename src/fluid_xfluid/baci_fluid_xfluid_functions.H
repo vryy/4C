@@ -17,20 +17,15 @@ namespace DRT
 {
   class Discretization;
 
-  namespace INPUT
+  namespace UTILS
   {
-    class LineDefinition;
-    class Lines;
-  }  // namespace INPUT
+    class FunctionManager;
+  }  // namespace UTILS
 
   namespace UTILS
   {
     /// add valid xfluid-specific function lines
-    void AddValidXfluidFunctionLines(DRT::INPUT::Lines& lines);
-
-    /// try to create xfluid-specific functions from a given line definition
-    Teuchos::RCP<DRT::UTILS::FunctionOfSpaceTime> TryCreateXfluidFunction(
-        const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
+    void AddValidXfluidFunctions(DRT::UTILS::FunctionManager& function_manager);
 
     /// special implementation level set cut utilizing xfluid
     class GerstenbergerForwardfacingStep : public FunctionOfSpaceTime

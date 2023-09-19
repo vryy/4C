@@ -18,9 +18,9 @@
 #ifndef BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
 #define BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
 
-namespace DRT::INPUT
+namespace DRT::UTILS
 {
-  class Lines;
+  class FunctionManager;
 }
 
 namespace POROMULTIPHASESCATRA
@@ -67,18 +67,8 @@ namespace POROMULTIPHASESCATRA
     mutable bool order_checked_;
   };
 
-  /// add valid poro-specific function lines
-  void AddValidPoroFunctionLines(DRT::INPUT::Lines& lines);
-
-  /// try to create poro-specific functions from a given line definition
-  template <int dim>
-  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> TryCreatePoroFunction(
-      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs);
-
-  //! create poro-specific functions from a given line definition
-  template <int dim>
-  Teuchos::RCP<DRT::UTILS::FunctionOfAnything> CreatePoroFunction(
-      const std::string& type, const std::vector<std::pair<std::string, double>>& params);
+  /// Attach poro-specific functions to the @p function_manager.
+  void AddValidPoroFunctions(DRT::UTILS::FunctionManager& function_manager);
 
   /*!
    * @brief standard growth law for tumor cells <--> IF (with lysis) and pressure dependency:

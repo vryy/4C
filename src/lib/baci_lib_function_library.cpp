@@ -16,6 +16,7 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include "baci_io_csv_reader.H"
 #include "baci_lib_cubic_spline_interpolation.H"
 #include "baci_lib_function.H"
+#include "baci_lib_function_manager.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 
@@ -24,10 +25,48 @@ The functions in this file are not problem-specific and may be useful for a numb
 #include <filesystem>
 #include <utility>
 
+namespace
+{
+
+  Teuchos::RCP<DRT::UTILS::FunctionOfScalar> CreateLibraryFunctionScalar(
+      const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
+  {
+    if (function_line_defs.size() != 1) return Teuchos::null;
+
+    const auto& function_lin_def = function_line_defs.front();
+
+    if (function_lin_def.HaveNamed("FASTPOLYNOMIAL"))
+    {
+      std::vector<double> coefficients;
+      function_lin_def.ExtractDoubleVector("COEFF", coefficients);
+
+      return Teuchos::rcp(new DRT::UTILS::FastPolynomialFunction(std::move(coefficients)));
+    }
+    else if (function_lin_def.HaveNamed("CUBIC_SPLINE_FROM_CSV"))
+    {
+      std::string csv_file;
+      function_lin_def.ExtractString("CSV", csv_file);
+
+      // safety check
+      if (csv_file.empty())
+        dserror("You forgot to specify the *.csv file for cubic spline interpolation!");
+
+      const std::string input_file = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      std::filesystem::path input_file_path =
+          DRT::Problem::Instance()->OutputControlFile()->InputFileName();
+      const auto csv_file_path = input_file_path.replace_filename(csv_file);
+
+      return Teuchos::rcp(new DRT::UTILS::CubicSplineFromCSV(csv_file_path.string()));
+    }
+    else
+      return {Teuchos::null};
+  }
+}  // namespace
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::AddValidLibraryFunctionLines(DRT::INPUT::Lines& lines)
+void DRT::UTILS::AddValidLibraryFunctions(DRT::UTILS::FunctionManager& function_manager)
 {
   using namespace DRT::INPUT;
 
@@ -41,43 +80,11 @@ void DRT::UTILS::AddValidLibraryFunctionLines(DRT::INPUT::Lines& lines)
   LineDefinition cubicsplinefromcsv_funct =
       LineDefinition::Builder().AddTag("CUBIC_SPLINE_FROM_CSV").AddNamedString("CSV").Build();
 
-  lines.Add(fastpolynomial_funct);
-  lines.Add(cubicsplinefromcsv_funct);
+  function_manager.AddFunctionDefinition(
+      {std::move(fastpolynomial_funct), std::move(cubicsplinefromcsv_funct)},
+      CreateLibraryFunctionScalar);
 }
 
-Teuchos::RCP<DRT::UTILS::FunctionOfScalar> DRT::UTILS::TryCreateLibraryFunctionScalar(
-    const std::vector<DRT::INPUT::LineDefinition>& function_line_defs)
-{
-  if (function_line_defs.size() != 1) return Teuchos::null;
-
-  const auto& function_lin_def = function_line_defs.front();
-
-  if (function_lin_def.HaveNamed("FASTPOLYNOMIAL"))
-  {
-    std::vector<double> coefficients;
-    function_lin_def.ExtractDoubleVector("COEFF", coefficients);
-
-    return Teuchos::rcp(new FastPolynomialFunction(std::move(coefficients)));
-  }
-  else if (function_lin_def.HaveNamed("CUBIC_SPLINE_FROM_CSV"))
-  {
-    std::string csv_file;
-    function_lin_def.ExtractString("CSV", csv_file);
-
-    // safety check
-    if (csv_file.empty())
-      dserror("You forgot to specify the *.csv file for cubic spline interpolation!");
-
-    const std::string input_file = DRT::Problem::Instance()->OutputControlFile()->InputFileName();
-    std::filesystem::path input_file_path =
-        DRT::Problem::Instance()->OutputControlFile()->InputFileName();
-    const auto csv_file_path = input_file_path.replace_filename(csv_file);
-
-    return Teuchos::rcp(new DRT::UTILS::CubicSplineFromCSV(csv_file_path.string()));
-  }
-  else
-    return {Teuchos::null};
-}
 
 
 DRT::UTILS::FastPolynomialFunction::FastPolynomialFunction(std::vector<double> coefficients)

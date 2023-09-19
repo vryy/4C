@@ -15,6 +15,7 @@
 #include "baci_lib_inputreader.H"
 
 #include <iostream>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -309,6 +310,17 @@ namespace DRT::INPUT
     /// All possible LineDefinitions
     std::vector<LineDefinition> definitions_;
   };
+
+
+  /**
+   * Read all lines in a @p section of @p reader that match the @p possible_lines. This implies
+   * that, potentially, no lines are read at all, resulting in an empty returned vector. In
+   * addition to the vector of parsed lines, the second returned value contains all unparsed input
+   * lines.
+   */
+  std::pair<std::vector<LineDefinition>, std::vector<std::string>> ReadMatchingLines(
+      DatFileReader& reader, const std::string& section,
+      const std::vector<LineDefinition>& possible_lines);
 
   /**
    * Helper functor to parse the length of a vector input from an integer component. This
