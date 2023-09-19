@@ -93,6 +93,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surfa
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>>(
           face_element, true);
 
+  // Set the number of (centerline) degrees of freedom for the beam element in the face element
+  face_element_->SetNumberOfDofOtherElement(
+      UTILS::GetNumberOfElementCenterlineDof(this->Element1()));
+
   // The second element in the pair has to be the face element.
   CastGeometryPair()->SetElement2(face_element_->GetDrtFaceElement());
 }
@@ -143,6 +147,33 @@ BEAMINTERACTION::BeamToSolidSurfaceContactPairBase<scalar_type, beam, surface>::
 namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
+
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_tri3>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_tri6>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_quad4>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_quad8>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type_1st_order,
+      t_line2, t_quad9>;
+  template class BeamToSolidSurfaceContactPairBase<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type, t_line2,
+      t_tri3>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type, t_line2,
+      t_tri6>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type, t_line2,
+      t_quad4>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type, t_line2,
+      t_quad8>;
+  template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type, t_line2,
+      t_quad9>;
+  template class BeamToSolidSurfaceContactPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
 
   template class BeamToSolidSurfaceContactPairBase<line_to_surface_patch_scalar_type_1st_order,
       t_hermite, t_tri3>;

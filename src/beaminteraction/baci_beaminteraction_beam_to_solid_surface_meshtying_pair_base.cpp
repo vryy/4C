@@ -191,6 +191,10 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairBase<scalar_type, beam,
       Teuchos::rcp_dynamic_cast<GEOMETRYPAIR::FaceElementTemplate<surface, scalar_type>>(
           face_element, true);
 
+  // Set the number of (centerline) degrees of freedom for the beam element in the face element
+  face_element_->SetNumberOfDofOtherElement(
+      UTILS::GetNumberOfElementCenterlineDof(this->Element1()));
+
   // The second element in the pair has to be the face element.
   CastGeometryPair()->SetElement2(face_element_->GetDrtFaceElement());
 }

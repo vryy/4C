@@ -23,10 +23,6 @@ namespace DRT
 {
   class Element;
 }
-namespace GEOMETRYPAIR
-{
-  class GeometryEvaluationDataGlobal;
-}
 
 
 namespace GEOMETRYPAIR

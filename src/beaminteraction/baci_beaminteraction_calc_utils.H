@@ -222,6 +222,12 @@ namespace BEAMINTERACTION
      *----------------------------------------------------------------------------*/
 
     /**
+     * \brief Get the number of centerline DOFs for a given beam element.
+     * @param ele (in) Pointer to the element.
+     */
+    unsigned int GetNumberOfElementCenterlineDof(const DRT::Element* elerline_gid);
+
+    /**
      * \brief Get the global indices of the centerline DOFs of a beam element.
      * @param discret (in) Pointer to the discretization.
      * @param ele (in) Pointer to the element.

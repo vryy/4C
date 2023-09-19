@@ -20,12 +20,6 @@
 #include "baci_io_visualization_manager.H"
 
 // forward declaration ...
-namespace GEOMETRYPAIR
-{
-  class GeometryEvaluationDataGlobal;
-}
-
-
 namespace DRT
 {
   class Element;

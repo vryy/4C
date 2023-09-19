@@ -187,6 +187,7 @@ namespace BEAMINTERACTION
 {
   using namespace GEOMETRYPAIR;
 
+  // Beam-to-volume pairs
   template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex8>, double,
       t_hermite, t_hex8>;
   template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_hex20>, double,
@@ -199,6 +200,62 @@ namespace BEAMINTERACTION
       t_hermite, t_tet10>;
   template class BeamToSolidPairBase<line_to_volume_scalar_type<t_hermite, t_nurbs27>, double,
       t_hermite, t_nurbs27>;
+
+  // Beam-to-surface pairs
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_line2, t_quad4>, double, t_line2,
+      t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_line2, t_quad8>, double, t_line2,
+      t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_line2, t_quad9>, double, t_line2,
+      t_quad9>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_line2, t_tri3>, double, t_line2,
+      t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_line2, t_tri6>, double, t_line2,
+      t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_scalar_type<t_line2, t_nurbs9>, double,
+      t_line2, t_nurbs9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_line2, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_line2, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_line2, t_quad9>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_line2, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type, double, t_line2, t_tri6>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, double, t_line2, t_nurbs9>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_fixed_size<t_line2, t_hex8>,
+      double, t_line2, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_fixed_size<t_line2, t_hex20>,
+      double, t_line2, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_fixed_size<t_line2, t_hex27>,
+      double, t_line2, t_quad9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type_1st_order,
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>,
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_line2, t_tri3>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_line2, t_tri6>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_line2, t_quad4>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_line2, t_quad8>;
+  template class BeamToSolidPairBase<line_to_surface_patch_scalar_type,
+      line_to_surface_patch_scalar_type, t_line2, t_quad9>;
+  template class BeamToSolidPairBase<
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>,
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
 
   template class BeamToSolidPairBase<line_to_surface_scalar_type<t_hermite, t_quad4>, double,
       t_hermite, t_quad4>;

@@ -531,9 +531,13 @@ namespace GEOMETRYPAIR
 
   // Helper types for the macro initialization. The compiler has troubles inserting the templated
   // typenames into the macros.
-  using line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9 =
+  using line_to_surface_patch_scalar_type_fixed_size_1st_order_line2_nurbs9 =
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>;
+  using line_to_surface_patch_scalar_type_fixed_size_line2_nurbs9 =
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>;
+  using line_to_surface_patch_scalar_type_fixed_size_1st_order_hermite_nurbs9 =
       line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>;
-  using line_to_surface_patch_scalar_type_fixed_size_nurbs_9 =
+  using line_to_surface_patch_scalar_type_fixed_size_hermite_nurbs9 =
       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>;
 
   // Define line-to-surface Gauss point projection pairs.
@@ -550,6 +554,34 @@ namespace GEOMETRYPAIR
       const CORE::LINALG::Matrix<b::n_dof_, 1, a>&, const CORE::LINALG::Matrix<c::n_dof_, 1, a>&, \
       std::vector<LineSegment<a>>&, const CORE::LINALG::Matrix<3 * c::n_nodes_, 1, a>*);
 
+  initialize_template_surface_gauss_point(double, t_line2, t_quad4);
+  initialize_template_surface_gauss_point(double, t_line2, t_quad8);
+  initialize_template_surface_gauss_point(double, t_line2, t_quad9);
+  initialize_template_surface_gauss_point(double, t_line2, t_nurbs9);
+  initialize_template_surface_gauss_point(double, t_line2, t_tri3);
+  initialize_template_surface_gauss_point(double, t_line2, t_tri6);
+
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_fixed_size_1st_order_line2_nurbs9, t_line2, t_nurbs9);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6);
+
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_line2, t_quad4);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_line2, t_quad8);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_line2, t_quad9);
+  initialize_template_surface_gauss_point(
+      line_to_surface_patch_scalar_type_fixed_size_line2_nurbs9, t_line2, t_nurbs9);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_line2, t_tri3);
+  initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_line2, t_tri6);
+
   initialize_template_surface_gauss_point(double, t_hermite, t_quad4);
   initialize_template_surface_gauss_point(double, t_hermite, t_quad8);
   initialize_template_surface_gauss_point(double, t_hermite, t_quad9);
@@ -564,7 +596,7 @@ namespace GEOMETRYPAIR
   initialize_template_surface_gauss_point(
       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9);
   initialize_template_surface_gauss_point(
-      line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9, t_hermite, t_nurbs9);
+      line_to_surface_patch_scalar_type_fixed_size_1st_order_hermite_nurbs9, t_hermite, t_nurbs9);
   initialize_template_surface_gauss_point(
       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3);
   initialize_template_surface_gauss_point(
@@ -574,7 +606,7 @@ namespace GEOMETRYPAIR
   initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_quad8);
   initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_quad9);
   initialize_template_surface_gauss_point(
-      line_to_surface_patch_scalar_type_fixed_size_nurbs_9, t_hermite, t_nurbs9);
+      line_to_surface_patch_scalar_type_fixed_size_hermite_nurbs9, t_hermite, t_nurbs9);
   initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_tri3);
   initialize_template_surface_gauss_point(line_to_surface_patch_scalar_type, t_hermite, t_tri6);
 
@@ -585,6 +617,34 @@ namespace GEOMETRYPAIR
       const GeometryPairLineToSurfaceSegmentation<a, b, c>*,                                      \
       const CORE::LINALG::Matrix<b::n_dof_, 1, a>&, const CORE::LINALG::Matrix<c::n_dof_, 1, a>&, \
       std::vector<LineSegment<a>>&, const CORE::LINALG::Matrix<3 * c::n_nodes_, 1, a>*);
+
+  initialize_template_surface_segmentation(double, t_line2, t_quad4);
+  initialize_template_surface_segmentation(double, t_line2, t_quad8);
+  initialize_template_surface_segmentation(double, t_line2, t_quad9);
+  initialize_template_surface_segmentation(double, t_line2, t_nurbs9);
+  initialize_template_surface_segmentation(double, t_line2, t_tri3);
+  initialize_template_surface_segmentation(double, t_line2, t_tri6);
+
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_fixed_size_1st_order_line2_nurbs9, t_line2, t_nurbs9);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6);
+
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_line2, t_quad4);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_line2, t_quad8);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_line2, t_quad9);
+  initialize_template_surface_segmentation(
+      line_to_surface_patch_scalar_type_fixed_size_line2_nurbs9, t_line2, t_nurbs9);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_line2, t_tri3);
+  initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_line2, t_tri6);
 
   initialize_template_surface_segmentation(double, t_hermite, t_quad4);
   initialize_template_surface_segmentation(double, t_hermite, t_quad8);
@@ -600,7 +660,7 @@ namespace GEOMETRYPAIR
   initialize_template_surface_segmentation(
       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9);
   initialize_template_surface_segmentation(
-      line_to_surface_patch_scalar_type_fixed_size_1st_order_nurbs_9, t_hermite, t_nurbs9);
+      line_to_surface_patch_scalar_type_fixed_size_1st_order_hermite_nurbs9, t_hermite, t_nurbs9);
   initialize_template_surface_segmentation(
       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3);
   initialize_template_surface_segmentation(
@@ -610,7 +670,7 @@ namespace GEOMETRYPAIR
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_quad8);
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_quad9);
   initialize_template_surface_segmentation(
-      line_to_surface_patch_scalar_type_fixed_size_nurbs_9, t_hermite, t_nurbs9);
+      line_to_surface_patch_scalar_type_fixed_size_hermite_nurbs9, t_hermite, t_nurbs9);
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri3);
   initialize_template_surface_segmentation(line_to_surface_patch_scalar_type, t_hermite, t_tri6);
 }  // namespace GEOMETRYPAIR

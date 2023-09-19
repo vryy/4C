@@ -98,6 +98,30 @@ namespace GEOMETRYPAIR
     };
 
     /**
+     * \brief Evaluate the first derivative of the 1D shape functions of the element.
+     * @param dN (out) Array to store shape function derivatives in.
+     * @param xi (in) Local coordinates on the element.
+     * @param element (in) Pointer to the element. In this case it is not needed.
+     * @param dimension (in) A type to overload the method, in order to evaluate the correct shape
+     * functions for the dimension of the element.
+     */
+    template <typename V, typename T>
+    inline static void EvaluateShapeFunctionDeriv1(
+        V& dN, const T& xi, t_1D_element dimension, const DRT::Element* element = nullptr)
+    {
+      // Throw a compiler error if this function is called from an element with dim_ != 1.
+      static_assert(
+          base::dim_ == 1, "EvaluateShapeFunctionDeriv1 can only be called for 1D elements!");
+
+      // We need to redefine the discretization here, as otherwise the compiler has problems
+      // passing the static const member of the base class as a reference.
+      DRT::Element::DiscretizationType discretization = base::discretization_;
+
+      // Evaluate the shape functions.
+      CORE::DRT::UTILS::shape_function_1D_deriv1(dN, xi, discretization);
+    };
+
+    /**
      * \brief Evaluate the 2D shape functions of the element.
      * @param N (out) Array to store shape function values in.
      * @param xi (in) Local coordinates on the element.

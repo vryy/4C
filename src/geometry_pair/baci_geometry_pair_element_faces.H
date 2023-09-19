@@ -206,7 +206,10 @@ namespace GEOMETRYPAIR
      * \brief Constructor (derived).
      */
     FaceElementTemplate(const Teuchos::RCP<const DRT::FaceElement>& face_element)
-        : FaceElement(face_element), face_reference_position_(true), face_position_(true){};
+        : FaceElement(face_element),
+          face_reference_position_(true),
+          face_position_(true),
+          n_dof_other_element_(0){};
 
     /**
      * \brief Destructor.
@@ -277,6 +280,30 @@ namespace GEOMETRYPAIR
         CORE::LINALG::Matrix<3, 1, double>& n, const bool reference,
         const bool averaged_normal) const override;
 
+    /**
+     * \brief Return the number of DOFs of the interacting element.
+     */
+    [[nodiscard]] unsigned int GetNumberOfDofOtherElement() const { return n_dof_other_element_; }
+
+    /**
+     * \brief Return the number of DOFs of the interacting element.
+     */
+    void SetNumberOfDofOtherElement(const unsigned int n_dof_other_element)
+    {
+      if (n_dof_other_element_ == 0)
+      {
+        n_dof_other_element_ = n_dof_other_element;
+      }
+      else if (n_dof_other_element_ != n_dof_other_element)
+      {
+        dserror(
+            "FaceElementTemplate only allows other elements with the same number of DOFs. You "
+            "already have an other element with %d DOFs and now want to set another one with %d "
+            "DOFs",
+            n_dof_other_element_, n_dof_other_element);
+      }
+    }
+
    protected:
     //! Reference position.
     CORE::LINALG::Matrix<surface::n_dof_, 1, double> face_reference_position_;
@@ -284,8 +311,10 @@ namespace GEOMETRYPAIR
     //! Current position.
     CORE::LINALG::Matrix<surface::n_dof_, 1, scalar_type> face_position_;
 
-    //! Number of DOFs used for a beam element.
-    static const unsigned int n_beam_dof_ = 12;
+    //! Number of DOFs used for the element that will be interacting with this face. This is
+    //! required to correctly set the FAD types. For now, a single face element can only be used in
+    //! interactions with other elements of the same type.
+    unsigned int n_dof_other_element_;
   };
 
 

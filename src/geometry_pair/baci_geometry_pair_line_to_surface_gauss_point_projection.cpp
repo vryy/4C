@@ -98,6 +98,40 @@ std::vector<bool>& GEOMETRYPAIR::GeometryPairLineToSurfaceGaussPointProjection<s
  */
 namespace GEOMETRYPAIR
 {
+
+  template class GeometryPairLineToSurfaceGaussPointProjection<double, t_line2, t_tri3>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<double, t_line2, t_tri6>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<double, t_line2, t_quad4>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<double, t_line2, t_quad8>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<double, t_line2, t_quad9>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<double, t_line2, t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceGaussPointProjection<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class GeometryPairLineToSurfaceGaussPointProjection<line_to_surface_patch_scalar_type,
+      t_line2, t_tri3>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<line_to_surface_patch_scalar_type,
+      t_line2, t_tri6>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<line_to_surface_patch_scalar_type,
+      t_line2, t_quad4>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<line_to_surface_patch_scalar_type,
+      t_line2, t_quad8>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<line_to_surface_patch_scalar_type,
+      t_line2, t_quad9>;
+  template class GeometryPairLineToSurfaceGaussPointProjection<
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
   template class GeometryPairLineToSurfaceGaussPointProjection<double, t_hermite, t_tri3>;
   template class GeometryPairLineToSurfaceGaussPointProjection<double, t_hermite, t_tri6>;
   template class GeometryPairLineToSurfaceGaussPointProjection<double, t_hermite, t_quad4>;

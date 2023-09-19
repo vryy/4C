@@ -618,6 +618,23 @@ namespace BEAMINTERACTION
     /**
      *
      */
+    unsigned int GetNumberOfElementCenterlineDof(const DRT::Element* ele)
+    {
+      std::vector<unsigned int> local_centerline_dof_indices;
+      auto beam_element = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(ele);
+      if (beam_element != nullptr)
+      {
+        beam_element->CenterlineDofIndicesOfElement(local_centerline_dof_indices);
+        return local_centerline_dof_indices.size();
+      }
+      else
+        dserror("GetNumberOfElementCenterlineDof: The given element has to be a beam element.");
+    }
+
+
+    /**
+     *
+     */
     template <unsigned int n_centerline_dof>
     void GetElementCenterlineGIDIndices(DRT::Discretization const& discret, const DRT::Element* ele,
         CORE::LINALG::Matrix<n_centerline_dof, 1, int>& centerline_gid)
@@ -1278,6 +1295,8 @@ namespace BEAMINTERACTION
         std::vector<CORE::LINALG::SerialDenseVector>&,
         std::vector<std::vector<CORE::LINALG::SerialDenseMatrix>>&);
 
+    template void GetElementCenterlineGIDIndices<6>(
+        DRT::Discretization const&, const DRT::Element*, CORE::LINALG::Matrix<6, 1, int>&);
     template void GetElementCenterlineGIDIndices<12>(
         DRT::Discretization const&, const DRT::Element*, CORE::LINALG::Matrix<12, 1, int>&);
 

@@ -287,6 +287,32 @@ namespace BEAMINTERACTION
   using namespace GEOMETRYPAIR;
 
   template class BeamToSolidSurfaceContactPairGapVariation<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3>;
+  template class BeamToSolidSurfaceContactPairGapVariation<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6>;
+  template class BeamToSolidSurfaceContactPairGapVariation<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4>;
+  template class BeamToSolidSurfaceContactPairGapVariation<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8>;
+  template class BeamToSolidSurfaceContactPairGapVariation<
+      line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9>;
+  template class BeamToSolidSurfaceContactPairGapVariation<
+      line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type, t_line2,
+      t_tri3>;
+  template class BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type, t_line2,
+      t_tri6>;
+  template class BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type, t_line2,
+      t_quad4>;
+  template class BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type, t_line2,
+      t_quad8>;
+  template class BeamToSolidSurfaceContactPairPotential<line_to_surface_patch_scalar_type, t_line2,
+      t_quad9>;
+  template class BeamToSolidSurfaceContactPairPotential<
+      line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2, t_nurbs9>;
+
+  template class BeamToSolidSurfaceContactPairGapVariation<
       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3>;
   template class BeamToSolidSurfaceContactPairGapVariation<
       line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6>;
