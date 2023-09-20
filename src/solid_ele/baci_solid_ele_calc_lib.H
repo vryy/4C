@@ -210,6 +210,34 @@ namespace DRT::ELEMENTS
   };
 
   /*!
+   * @brief Extracts the nodal displacements of the element from the discretization
+   *
+   * @tparam distype
+   * @param discretization (in) : Discretization with displacement state
+   * @param lm (in) : Location vector of the element
+   * @return CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> : Nodal
+   * displacements of the element
+   */
+  template <DRT::Element::DiscretizationType distype>
+  CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> GetNodalDisplacements(
+      const DRT::Discretization& discretization, const std::vector<int>& lm)
+  {
+    const Epetra_Vector& displacements = *discretization.GetState("displacement");
+    std::vector<double> mydisp(lm.size());
+    DRT::UTILS::ExtractMyValues(displacements, mydisp, lm);
+
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>> nodal_displacements;
+    for (int i = 0; i < DETAIL::num_nodes<distype>; ++i)
+    {
+      for (int d = 0; d < DETAIL::num_dim<distype>; ++d)
+      {
+        nodal_displacements(i, d) = mydisp[i * DETAIL::num_dim<distype> + d];
+      }
+    }
+    return nodal_displacements;
+  }
+
+  /*!
    * @brief Evaluates the nodal coordinates from the previous iteration (old)
    *
    * Extracts the displacement from the previous iteration from the discretization and computes the

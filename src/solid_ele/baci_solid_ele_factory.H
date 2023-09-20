@@ -13,6 +13,7 @@
 #include "baci_solid_ele_calc.H"
 #include "baci_solid_ele_calc_eas.H"
 #include "baci_solid_ele_calc_fbar.H"
+#include "baci_solid_ele_calc_mulf.H"
 #include "baci_solid_ele_factory_lib.H"
 
 #include <variant>
@@ -41,8 +42,10 @@ namespace DRT::ELEMENTS
                                                 STR::ELEMENTS::EasType::eastype_h8_9>,
         SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
             STR::ELEMENTS::EasType::eastype_h8_21>>;
+    using MulfEvaluators = DRT::ApplyToBase<SolidEleCalcMulf, ImplementedSolidDiscretizationTypes>;
 
-    using SolidEvaluators = DRT::Join_t<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators>;
+    using SolidEvaluators =
+        DRT::Join_t<DisplacementBasedEvaluators, FbarEvaluators, EASEvaluators, MulfEvaluators>;
   }  // namespace DETAILS
 
   using SolidCalcVariant = CreateVariantType<DETAILS::SolidEvaluators>;
