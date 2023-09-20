@@ -56,17 +56,17 @@ namespace DRT::UTILS
      * This is the only supported evaluation call for this class
      *
      * @param argument point to evaluate
-     * @return value of the polynomial at `argument`
+     * @return value of the polynomial at @argument
      */
     [[nodiscard]] double Evaluate(const double argument) const override;
 
     /**
-     * Evaluate first derivative of polynomial.
+     * Evaluate the @deriv_order derivative of polynomial.
      *
      * @param argument point to evaluate
-     * @return value of first derivative of polynomial at `argument`
+     * @return value of @deriv_order derivative of polynomial at @argument
      */
-    [[nodiscard]] double EvaluateDerivative(const double argument) const override;
+    [[nodiscard]] double EvaluateDerivative(double argument, int deriv_order) const override;
 
    private:
     //! internal polynomial representation
@@ -100,7 +100,7 @@ namespace DRT::UTILS
 
     [[nodiscard]] double Evaluate(double scalar) const override;
 
-    [[nodiscard]] double EvaluateDerivative(double scalar) const override;
+    [[nodiscard]] double EvaluateDerivative(double scalar, int deriv_order) const override;
 
    private:
     std::unique_ptr<CubicSplineInterpolation> cubic_spline_;

@@ -68,73 +68,54 @@ void DRT::UTILS::CubicSplineInterpolation::BuildMatrixAndRhs(
 }
 
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::CubicSplineInterpolation::EvaluateScalar(const double x) const
+double DRT::UTILS::CubicSplineInterpolation::Evaluate(const double x) const
 {
   // safety check
   if (x < x_.front() or x > x_.back())
     dserror("Sampling point x = %lf lies outside sampling point range!", x);
 
-  double value(0.0);
+  auto greater_equal_x = [x](const double val) { return val >= x; };
+  auto right_position = std::find_if(x_.begin(), x_.end(), greater_equal_x);
+  dsassert(right_position != x_.begin(), "Internal error.");
+  // the left side of the sought interval is found by deleting 1
+  const auto left_position = std::distance(x_.begin(), right_position) - 1;
 
-  // evaluate cubic spline interpolation
-  for (std::size_t i = 0; i < x_.size() - 1; ++i)
-  {
-    if (x <= x_[i + 1])
-    {
-      const double delta_x = x - x_[i];
-      value =
-          a_[i] + b_[i] * delta_x + c_[i] * std::pow(delta_x, 2.0) + d_[i] * std::pow(delta_x, 3.0);
-      break;
-    }
-  }
-
-  return value;
+  const double delta_x = x - x_[left_position];
+  return a_[left_position] + b_[left_position] * delta_x + c_[left_position] * delta_x * delta_x +
+         d_[left_position] * delta_x * delta_x * delta_x;
 }
 
 /*----------------------------------------------------------------------*/
-double DRT::UTILS::CubicSplineInterpolation::EvaluateScalarFirstDerivative(const double x) const
+double DRT::UTILS::CubicSplineInterpolation::EvaluateDerivative(
+    const double x, const int deriv_order) const
 {
   // safety check
   if (x < x_.front() or x > x_.back())
     dserror("Sampling point x = %lf lies outside sampling point range!", x);
 
-  double first_derivative(0.0);
+  auto greater_equal_x = [x](const double val) { return val >= x; };
+  auto right_position = std::find_if(x_.begin(), x_.end(), greater_equal_x);
+  dsassert(right_position != x_.begin(), "Internal error.");
+  // the left side of the sought interval is found by deleting 1
+  const auto left_position = std::distance(x_.begin(), right_position) - 1;
 
-  // evaluate cubic spline interpolation
-  for (std::size_t i = 0; i < x_.size() - 1; ++i)
+  switch (deriv_order)
   {
-    if (x <= x_[i + 1])
+    case 1:
     {
-      const double delta_x = x - x_[i];
-      first_derivative = b_[i] + 2.0 * c_[i] * delta_x + 3.0 * d_[i] * std::pow(delta_x, 2.0);
-      break;
+      const double delta_x = x - x_[left_position];
+      return b_[left_position] + 2.0 * c_[left_position] * delta_x +
+             3.0 * d_[left_position] * delta_x * delta_x;
+    }
+    case 2:
+    {
+      const double delta_x = x - x_[left_position];
+      return 2.0 * c_[left_position] + 6.0 * d_[left_position] * delta_x;
     }
   }
 
-  return first_derivative;
-}
-
-/*----------------------------------------------------------------------*/
-double DRT::UTILS::CubicSplineInterpolation::EvaluateScalarSecondDerivative(const double x) const
-{
-  // safety check
-  if (x < x_.front() or x > x_.back())
-    dserror("Sampling point x = %lf lies outside sampling point range!", x);
-
-  double second_derivative(0.0);
-
-  // evaluate cubic spline interpolation
-  for (std::size_t i = 0; i < x_.size() - 1; ++i)
-  {
-    if (x <= x_[i + 1])
-    {
-      const double delta_x = x - x_[i];
-      second_derivative = 2.0 * c_[i] + 6.0 * d_[i] * delta_x;
-      break;
-    }
-  }
-
-  return second_derivative;
+  dserror(
+      "Evaluation of %i derivative is not implemented for CubicSplineInterpolation", deriv_order);
 }
 
 /*----------------------------------------------------------------------*/

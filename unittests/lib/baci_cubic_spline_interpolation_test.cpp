@@ -48,11 +48,11 @@ namespace
   {
     const std::vector<double> x_test = {0.2, 0.5};
 
-    for (std::size_t i = 0; i < x_test.size(); ++i)
+    for (double x : x_test)
     {
-      EXPECT_THROW(cubic_spline_->EvaluateScalar(x_test[i]), std::runtime_error);
-      EXPECT_THROW(cubic_spline_->EvaluateScalarFirstDerivative(x_test[i]), std::runtime_error);
-      EXPECT_THROW(cubic_spline_->EvaluateScalarSecondDerivative(x_test[i]), std::runtime_error);
+      EXPECT_THROW((void)cubic_spline_->Evaluate(x), std::runtime_error);
+      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 1), std::runtime_error);
+      EXPECT_THROW((void)cubic_spline_->EvaluateDerivative(x, 2), std::runtime_error);
     }
   }
 
@@ -62,26 +62,24 @@ namespace
     const std::vector<double> reference_solution = {4.33232, 4.29, 4.25, 4.20152};
 
     for (std::size_t i = 0; i < x_test.size(); ++i)
-      EXPECT_NEAR(cubic_spline_->EvaluateScalar(x_test[i]), reference_solution[i], 1.0e-12);
+      EXPECT_NEAR(cubic_spline_->Evaluate(x_test[i]), reference_solution[i], 1.0e-12);
   }
 
-  TEST_F(CubicSplineInterpolationTest, EvaluateScalarFirstDerivative)
+  TEST_F(CubicSplineInterpolationTest, EvaluateFirstDerivative)
   {
     const std::vector<double> x_test = {0.33, 0.36, 0.4, 0.42};
     const std::vector<double> reference_solution = {-1.968, -0.84, -1.8, -2.952};
 
     for (std::size_t i = 0; i < x_test.size(); ++i)
-      EXPECT_NEAR(
-          cubic_spline_->EvaluateScalarFirstDerivative(x_test[i]), reference_solution[i], 1.0e-12);
+      EXPECT_NEAR(cubic_spline_->EvaluateDerivative(x_test[i], 1), reference_solution[i], 1.0e-12);
   }
 
-  TEST_F(CubicSplineInterpolationTest, EvaluateScalarSecondDerivative)
+  TEST_F(CubicSplineInterpolationTest, EvaluateSecondDerivative)
   {
     const std::vector<double> x_test = {0.33, 0.36, 0.4, 0.42};
     const std::vector<double> reference_solution = {28.8, 24.0, -72.0, -43.2};
 
     for (std::size_t i = 0; i < x_test.size(); ++i)
-      EXPECT_NEAR(
-          cubic_spline_->EvaluateScalarSecondDerivative(x_test[i]), reference_solution[i], 1.0e-12);
+      EXPECT_NEAR(cubic_spline_->EvaluateDerivative(x_test[i], 2), reference_solution[i], 1.0e-12);
   }
 }  // namespace
