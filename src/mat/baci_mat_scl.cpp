@@ -149,7 +149,7 @@ double MAT::Scl::ComputeFirstDerivTrans(const double cint) const
   {
     return DRT::Problem::Instance()
         ->FunctionById<DRT::UTILS::FunctionOfScalar>(TransNrCurve() - 1)
-        .EvaluateDerivative(cint);
+        .EvaluateDerivative(cint, 1);
   }
 }
 

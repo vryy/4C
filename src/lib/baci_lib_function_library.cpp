@@ -97,9 +97,10 @@ double DRT::UTILS::FastPolynomialFunction::Evaluate(const double argument) const
   return mypoly_.Evaluate(argument);
 }
 
-double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(const double argument) const
+double DRT::UTILS::FastPolynomialFunction::EvaluateDerivative(
+    const double argument, const int deriv_order) const
 {
-  return mypoly_.EvaluateDerivative(argument, 1);
+  return mypoly_.EvaluateDerivative(argument, deriv_order);
 }
 
 
@@ -114,11 +115,12 @@ DRT::UTILS::CubicSplineFromCSV::CubicSplineFromCSV(const std::string& csv_file)
 
 double DRT::UTILS::CubicSplineFromCSV::Evaluate(const double scalar) const
 {
-  return cubic_spline_->EvaluateScalar(scalar);
+  return cubic_spline_->Evaluate(scalar);
 }
 
 
-double DRT::UTILS::CubicSplineFromCSV::EvaluateDerivative(const double scalar) const
+double DRT::UTILS::CubicSplineFromCSV::EvaluateDerivative(
+    const double scalar, const int deriv_order) const
 {
-  return cubic_spline_->EvaluateScalarFirstDerivative(scalar);
+  return cubic_spline_->EvaluateDerivative(scalar, deriv_order);
 }

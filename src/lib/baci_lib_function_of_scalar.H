@@ -26,9 +26,9 @@ namespace DRT::UTILS
     [[nodiscard]] virtual double Evaluate(double scalar) const = 0;
 
     /**
-     * Evaluate the derivative of the function for the given @p scalar.
+     * Evaluate the @deriv_order derivative of the function for the given @p scalar.
      */
-    [[nodiscard]] virtual double EvaluateDerivative(double scalar) const = 0;
+    [[nodiscard]] virtual double EvaluateDerivative(double scalar, int deriv_order) const = 0;
   };
 }  // namespace DRT::UTILS
 

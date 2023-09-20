@@ -33,12 +33,12 @@ namespace
     {
       std::ofstream test_csv_file{csv_template_file_name};
       // include header line
-      test_csv_file << "#x,y" << std::endl;
+      test_csv_file << "#x,y" << '\n';
       // include four test lines
-      test_csv_file << "0.30,4.40" << std::endl;
-      test_csv_file << "0.35,4.30" << std::endl;
-      test_csv_file << "0.40,4.25" << std::endl;
-      test_csv_file << "0.45,4.10" << std::endl;
+      test_csv_file << "0.30,4.40" << '\n';
+      test_csv_file << "0.35,4.30" << '\n';
+      test_csv_file << "0.40,4.25" << '\n';
+      test_csv_file << "0.45,4.10" << '\n';
     }
 
     Teuchos::RCP<DRT::UTILS::FunctionOfScalar> cubic_spline_from_csv_;
@@ -59,6 +59,6 @@ namespace
     const std::vector<double> solutions = {-1.968, -8.4e-1, -1.8, -2.952};
 
     for (std::size_t i = 0; i < x_test.size(); ++i)
-      EXPECT_NEAR(cubic_spline_from_csv_->EvaluateDerivative(x_test[i]), solutions[i], 1.0e-12);
+      EXPECT_NEAR(cubic_spline_from_csv_->EvaluateDerivative(x_test[i], 1), solutions[i], 1.0e-12);
   }
 }  // namespace
