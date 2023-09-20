@@ -106,6 +106,18 @@ find_package(MIRCO)
 # Enable testing right away since we encounter src and tests interspersed in modules
 enable_testing()
 
+# NOTE: --mca orte_tmpdir_base [...] can be removed for openmpi >= 4.1.1 according to
+# https://github.com/open-mpi/ompi/issues/8510#issuecomment-1329297350
+set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
+    "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
+    )
+
+if(BACI_WITH_ADDRESS_SANITIZER)
+  # Do not detect leaks, we only care about UB inducing memory issues
+  string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
+  set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
+endif()
+
 # Get the global compile definitions which have been populated until here
 get_property(BACI_GLOBAL_COMPILE_DEFINITIONS GLOBAL PROPERTY BACI_GLOBAL_COMPILE_DEFINITIONS)
 
@@ -147,17 +159,6 @@ add_subdirectory(doc/doxygen EXCLUDE_FROM_ALL)
 add_subdirectory(doc/readthedocs EXCLUDE_FROM_ALL)
 
 ###------------------------------------------------------------------ Tests
-# NOTE: --mca orte_tmpdir_base [...] can be removed for openmpi >= 4.1.1 according to
-# https://github.com/open-mpi/ompi/issues/8510#issuecomment-1329297350
-set(MPIEXEC_EXTRA_OPTS_FOR_TESTING
-    "--bind-to none --mca orte_tmpdir_base ${PROJECT_BINARY_DIR}/tmp"
-    )
-
-if(BACI_WITH_ADDRESS_SANITIZER)
-  # Do not detect leaks, we only care about UB inducing memory issues
-  string(APPEND MPIEXEC_EXTRA_OPTS_FOR_TESTING " -x LSAN_OPTIONS=detect_leaks=0")
-  set(BACI_WITH_ADDRESS_SANITIZER_TEST_OPTIONS "LSAN_OPTIONS=detect_leaks=0")
-endif()
 
 add_subdirectory(unittests)
 add_subdirectory(tests/cut_test)
