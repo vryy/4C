@@ -11,6 +11,7 @@
 #include "baci_mat_anisotropy_extension_default.H"
 
 #include "baci_lib_parobject.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_service.H"
 
@@ -157,8 +158,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoElementFiberInitialization()
       {
         // initialize fiber vector with local coordinate system
         CORE::LINALG::Matrix<3, 3> locsys(true);
-        CORE::LINALG::Matrix<3, 3> Id(true);
-        MAT::IdentityMatrix(Id);
+        const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
         this->GetAnisotropy()->GetElementCylinderCoordinateSystem().EvaluateLocalCoordinateSystem(
             locsys);
 
@@ -234,8 +234,7 @@ bool MAT::DefaultAnisotropyExtension<numfib>::DoGPFiberInitialization()
 template <unsigned int numfib>
 void MAT::DefaultAnisotropyExtension<numfib>::DoExternalFiberInitialization()
 {
-  CORE::LINALG::Matrix<3, 3> Id(false);
-  MAT::IdentityMatrix(Id);
+  const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
   SetFiberVecs(-1.0, Id, Id);
 }
 

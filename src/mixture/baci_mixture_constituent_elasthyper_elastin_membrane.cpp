@@ -10,6 +10,7 @@
 #include "baci_mixture_constituent_elasthyper_elastin_membrane.H"
 
 #include "baci_lib_globalproblem.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"
@@ -61,7 +62,8 @@ void MIXTURE::ElastinMembraneAnisotropyExtension::OnGlobalDataInitialized()
 
   for (unsigned gp = 0; gp < orthogonalStructuralTensor_.size(); ++gp)
   {
-    MAT::IdentityMatrix(orthogonalStructuralTensor_[gp]);
+    orthogonalStructuralTensor_[gp] = CORE::LINALG::IdentityMatrix<3>();
+
     orthogonalStructuralTensor_[gp].Update(-1.0, GetStructuralTensor(gp, 0), 1.0);
   }
 }
@@ -290,10 +292,9 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::EvaluateMembraneStre
     CORE::LINALG::Matrix<6, 1>& S, Teuchos::ParameterList& params, int gp, int eleGID)
 {
   CORE::LINALG::Matrix<6, 6> cmat(false);
-  CORE::LINALG::Matrix<3, 3> Id(false);
+  const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
   CORE::LINALG::Matrix<3, 3> iFin(false);
 
-  MAT::IdentityMatrix(Id);
   iFin.MultiplyNN(Id, PrestretchTensor(gp));
 
   EvaluateStressCMatMembrane(Id, iFin, params, S, cmat, gp, eleGID);
@@ -373,7 +374,7 @@ void MIXTURE::MixtureConstituent_ElastHyperElastinMembrane::
   Aradgr.MultiplyNT(iCin.Dot(anisotropyExtension_.GetStructuralTensor(gp, 0)), FinArad, Fin, 0.0);
 
   // Compute orthogonal (to radial) structural tensor in grown configuration
-  MAT::IdentityMatrix(Aorthgr);
+  Aorthgr = CORE::LINALG::IdentityMatrix<3>();
   Aorthgr.Update(-1.0, Aradgr, 1.0);
 }
 

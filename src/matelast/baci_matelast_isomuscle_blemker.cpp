@@ -11,6 +11,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_muscle_utils.H"
 #include "baci_mat_par_material.H"
@@ -149,8 +150,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
 
   // matrix terms for stress evaluation
   // unitary 3x3 matrix
-  CORE::LINALG::Matrix<3, 3> Id3(false);
-  MAT::IdentityMatrix(Id3);
+  const CORE::LINALG::Matrix<3, 3> Id3 = CORE::LINALG::IdentityMatrix<3>();
   CORE::LINALG::Matrix<6, 1> Id3v(false);
   ::UTILS::VOIGT::IdentityMatrix(Id3v);
 

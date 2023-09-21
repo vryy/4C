@@ -9,6 +9,7 @@
 #include "baci_mixture_growth_strategy_stiffness.H"
 
 #include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 #include "baci_mixture_growth_strategy.H"
@@ -35,7 +36,7 @@ void MIXTURE::StiffnessGrowthStrategy::EvaluateInverseGrowthDeformationGradient(
     CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
-  MAT::IdentityMatrix(iFgM);
+  iFgM = CORE::LINALG::IdentityMatrix<3>();
 }
 
 void MIXTURE::StiffnessGrowthStrategy::EvaluateGrowthStressCmat(

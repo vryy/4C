@@ -15,6 +15,7 @@ See the header file for a detailed description.
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
@@ -410,7 +411,7 @@ void MAT::CrystalPlasticity::Setup(int numgp, DRT::INPUT::LineDefinition* linede
   }
 
   // set up 3x3 identity matrix
-  CORE::LINALG::IdentityMatrix(identity3);
+  const CORE::LINALG::Matrix<3, 3> identity3 = CORE::LINALG::IdentityMatrix<3>();
 
   // initialize history variables
   deform_grad_last_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<3, 3>>);
@@ -1516,7 +1517,8 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   // take unimodular part of I + L_p to ensure plastic incompressibility
   CORE::LINALG::Matrix<3, 3> unimod_identity_plus_plastic_velocity_grad_trial(true);
 
-  unimod_identity_plus_plastic_velocity_grad_trial.Update(identity3, plastic_velocity_grad_trial);
+  unimod_identity_plus_plastic_velocity_grad_trial.Update(
+      CORE::LINALG::IdentityMatrix<3>(), plastic_velocity_grad_trial);
   unimod_identity_plus_plastic_velocity_grad_trial.Scale(
       std::pow(unimod_identity_plus_plastic_velocity_grad_trial.Determinant(), -1.0 / 3.0));
 
@@ -1548,7 +1550,7 @@ void MAT::CrystalPlasticity::SetupFlowRule(CORE::LINALG::Matrix<3, 3> deform_gra
   // - inv_elastic_right_cauchy_green)
 
   second_pk_stress_trial.Update(lambda_ * ln_jacobi_det_trial, inv_elastic_right_cauchy_green, 1.0);
-  second_pk_stress_trial.Update(mue_, identity3, 1.0);
+  second_pk_stress_trial.Update(mue_, CORE::LINALG::IdentityMatrix<3>(), 1.0);
   second_pk_stress_trial.Update(-mue_, inv_elastic_right_cauchy_green, 1.0);
 
   // Mandel stress

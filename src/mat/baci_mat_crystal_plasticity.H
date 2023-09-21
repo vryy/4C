@@ -467,9 +467,6 @@ namespace MAT
     //! indicator whether the material model has been initialized already
     bool isinit_ = false;
 
-    //! 3x3 identity matrix
-    CORE::LINALG::Matrix<3, 3> identity3;
-
     //-----------------------------------------------------------------------------
     /** @}                                                                       */
     /*  end of General Parameters                                                */
