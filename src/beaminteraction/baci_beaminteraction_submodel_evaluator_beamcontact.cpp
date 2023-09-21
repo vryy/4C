@@ -376,8 +376,6 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::UpdateStepElement(bool rep
 {
   CheckInitSetup();
 
-  PrintActiveBeamContactSet(IO::cout.os(IO::standard));
-
   nearby_elements_map_.clear();
   FindAndStoreNeighboringElements();
   CreateBeamContactElementPairs();
