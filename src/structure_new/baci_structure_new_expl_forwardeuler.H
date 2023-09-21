@@ -101,8 +101,8 @@ namespace STR
       //@}
 
      private:
-      bool modexpleuler_;  //!< modified explicit Euler equation (veln_ instead of vel_ for calc of
-                           //!< disn_), default: true
+      bool modexpleuler_;  //!< modified explicit Euler equation (veln_ instead of vel_ for
+                           //!< calc of disn_), default: true
 
       //! viscous force vector F_viscous F_{viscous;n+1}
       Teuchos::RCP<Epetra_Vector> fvisconp_ptr_;

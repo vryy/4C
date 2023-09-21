@@ -62,9 +62,8 @@ void STR::EXPLICIT::AdamsBashforth2::Setup()
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
-  SetInitialDisplacement(DRT::INPUT::IntegralValue<INPAR::STR::InitialDisp>(params, "INITIALDISP"),
-      params.get<int>("STARTFUNCNO"));
+  SetInitialDisplacement(
+      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the PostSetup() routine is called!
   issetup_ = true;

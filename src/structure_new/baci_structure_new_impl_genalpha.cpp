@@ -121,9 +121,8 @@ void STR::IMPLICIT::GenAlpha::Setup()
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
-  SetInitialDisplacement(DRT::INPUT::IntegralValue<INPAR::STR::InitialDisp>(params, "INITIALDISP"),
-      params.get<int>("STARTFUNCNO"));
+  SetInitialDisplacement(
+      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
   // Has to be set before the PostSetup() routine is called!
   issetup_ = true;
@@ -512,8 +511,6 @@ void STR::IMPLICIT::GenAlpha::PredictConstDisConsistVelAcc(
    * update part and have to consider only the old state at t_{n}.
    *           disnp-disn = 0.0                                 */
   accnp.Update(-1.0 / (beta_ * dt), *veln, (2.0 * beta_ - 1.0) / (2.0 * beta_), *accn, 0.0);
-
-  return;
 }
 
 /*----------------------------------------------------------------------------*

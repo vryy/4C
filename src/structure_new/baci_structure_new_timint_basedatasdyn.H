@@ -648,6 +648,24 @@ namespace STR
         return coupling_model_ptr_;
       }
       ///@}
+
+      /// @name Get the initial displacement method
+      ///@{
+      /// Returns type of initial displacement
+      enum INPAR::STR::InitialDisp GetInitialDisp() const
+      {
+        CheckInitSetup();
+        return initial_disp_;
+      };
+
+      /// Returns the function index to initialize the displacement
+      int StartFuncNo() const
+      {
+        CheckInitSetup();
+        return start_func_no_;
+      }
+      ///@}
+
      protected:
       /** \brief returns the structural dynamics parameter list (internal use only!)
        *
@@ -951,6 +969,15 @@ namespace STR
 
       ///@}
 
+      /// @name initial displacement variables
+      ///@{
+
+      /// type of initial displacement initialization
+      enum INPAR::STR::InitialDisp initial_disp_;
+      int start_func_no_;
+
+      ///@}
+
       /// @name pointer to model specific data container
       ///@{
 
@@ -1052,7 +1079,7 @@ namespace STR
       double rhoinf_;
     };
 
-    /** \brief Generalized alpha structural dynamics data container
+    /** \brief One-step Theta structural dynamics data container
      *
      * This data container is derived from the standard structural dynamics data container
      * and contains some special OneStepTheta input parameters.
@@ -1086,6 +1113,42 @@ namespace STR
      private:
       //! Time integration parameter \f$\theta \in [0,1]\f$
       double theta_;
+    };
+
+    /** \brief Forward Euler structural dynamics data container
+     *
+     * This data container is derived from the standard structural dynamics data container
+     * and contains some special Forward Euler input parameters.
+     *
+     */
+    class ExplEulerDataSDyn : public BaseDataSDyn
+    {
+     public:
+      //! contructor
+      ExplEulerDataSDyn();
+
+      //! destructor
+      virtual ~ExplEulerDataSDyn(){};
+
+      //! Setup function [derived]
+      void Setup() override;
+
+     public:
+      //! @name Read-only accessors
+      //! @{
+
+      //! Return time integration parameter \f$\theta\f$
+      bool GetModifiedForwardEuler() const
+      {
+        CheckInitSetup();
+        return modexpleuler_;
+      };
+
+      //! @}
+
+     private:
+      //! Modified forward Euler flag
+      bool modexpleuler_;
     };
 
   }  // namespace TIMINT

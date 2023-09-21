@@ -122,6 +122,9 @@ Teuchos::RCP<STR::TIMINT::BaseDataSDyn> STR::TIMINT::Factory::BuildDataSDyn(
     case INPAR::STR::dyna_onesteptheta:
       sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::OneStepThetaDataSDyn());
       break;
+    case INPAR::STR::dyna_expleuler:
+      sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::ExplEulerDataSDyn());
+      break;
     default:
       sdyndata_ptr = Teuchos::rcp(new STR::TIMINT::BaseDataSDyn());
       break;

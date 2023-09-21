@@ -50,12 +50,12 @@ void STR::EXPLICIT::ForwardEuler::Setup()
   // -------------------------------------------------------------------
   // set initial displacement
   // -------------------------------------------------------------------
-  const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
-  SetInitialDisplacement(DRT::INPUT::IntegralValue<INPAR::STR::InitialDisp>(params, "INITIALDISP"),
-      params.get<int>("STARTFUNCNO"));
+  SetInitialDisplacement(
+      TimInt().GetDataSDyn().GetInitialDisp(), TimInt().GetDataSDyn().StartFuncNo());
 
   // mode of Forward Euler interpolation
-  modexpleuler_ = (DRT::INPUT::IntegralValue<int>(params, "MODIFIEDEXPLEULER") == 1);
+  modexpleuler_ = dynamic_cast<const STR::TIMINT::ExplEulerDataSDyn&>(TimInt().GetDataSDyn())
+                      .GetModifiedForwardEuler();
 
   // Has to be set before the PostSetup() routine is called!
   issetup_ = true;
