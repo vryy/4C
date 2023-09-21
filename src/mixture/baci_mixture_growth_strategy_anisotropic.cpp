@@ -9,6 +9,7 @@
 #include "baci_mixture_growth_strategy_anisotropic.H"
 
 #include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
@@ -62,8 +63,7 @@ void MIXTURE::AnisotropicGrowthStrategy::EvaluateInverseGrowthDeformationGradien
     CORE::LINALG::Matrix<3, 3>& iFgM, const MIXTURE::MixtureRule& mixtureRule,
     double currentReferenceGrowthScalar, int gp) const
 {
-  CORE::LINALG::Matrix<3, 3> Id(false);
-  MAT::IdentityMatrix(Id);
+  const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
 
   iFgM.Update(1.0 / currentReferenceGrowthScalar - 1.0,
       anisotropyExtension_.GetStructuralTensor(gp, 0), 1.0, Id);

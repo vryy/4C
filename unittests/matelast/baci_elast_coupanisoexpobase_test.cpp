@@ -13,6 +13,7 @@
 
 #include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_coupanisoexpo.H"
@@ -119,8 +120,7 @@ namespace
               })),
           summand_(&parameters_)
     {
-      CORE::LINALG::Matrix<3, 3> Id(false);
-      MAT::IdentityMatrix(Id);
+      const CORE::LINALG::Matrix<3, 3> Id = CORE::LINALG::IdentityMatrix<3>();
 
       C1_(0, 0) = 1.484;
       C1_(1, 1) = 2.3;

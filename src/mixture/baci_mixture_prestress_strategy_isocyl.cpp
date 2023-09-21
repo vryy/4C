@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_prestress_strategy_isocyl.H"
 
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_coordinate_system_provider.H"
 #include "baci_mat_par_bundle.H"
@@ -190,11 +191,10 @@ double MIXTURE::IsotropicCylinderPrestressStrategy::EvaluateMueFrac(MixtureRule&
         "strategy!");
   }
 
-  CORE::LINALG::Matrix<3, 3> F(false);
+  CORE::LINALG::Matrix<3, 3> F = CORE::LINALG::IdentityMatrix<3>();
   CORE::LINALG::Matrix<6, 1> E_strain(true);
   CORE::LINALG::Matrix<6, 1> S_stress(true);
   CORE::LINALG::Matrix<6, 6> cmat(true);
-  MAT::IdentityMatrix(F);
 
 
   mixtureRule.Evaluate(F, E_strain, params, S_stress, cmat, gp, eleGID);

@@ -9,6 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_mixture_prestress_strategy_iterative.H"
 
+#include "baci_linalg_fixedsizematrix_generators.H"
 #include "baci_linalg_utils_densematrix_svd.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_par_bundle.H"
@@ -52,7 +53,7 @@ void MIXTURE::IterativePrestressStrategy::EvaluatePrestress(const MixtureRule& m
     Teuchos::ParameterList& params, int gp, int eleGID)
 {
   // Start with zero prestretch
-  MAT::IdentityMatrix(G);
+  G = CORE::LINALG::IdentityMatrix<3>();
 }
 
 void MIXTURE::IterativePrestressStrategy::Update(
