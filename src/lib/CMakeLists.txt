@@ -8,7 +8,6 @@ set(_lib_dependencies
     comm
     contact_constitutivelaw
     core
-    elemag
     fiber
     fluid
     fluid_ele
@@ -20,7 +19,6 @@ set(_lib_dependencies
     particle_engine
     poromultiphase_scatra
     rebalance
-    scatra_ele
     structure_new
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_lib_dependencies})

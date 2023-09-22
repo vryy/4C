@@ -15,6 +15,7 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_elemag_ele_action.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_discret_hdg.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
@@ -66,7 +67,22 @@ int DRT::ELEMENTS::ElemagDiffEleCalc<distype>::Evaluate(DRT::ELEMENTS::Elemag* e
   usescompletepoly_ = hdgele->UsesCompletePolynomialSpace();
   // else dserror("cannot cast element to elemag element");
 
-  const ELEMAG::Action action = DRT::INPUT::get<ELEMAG::Action>(params, "action");
+  ELEMAG::Action action;
+  if (params.get<bool>("hdg_action", false))
+  {
+    switch (Teuchos::getIntegralValue<DRT::HDGAction>(params, "action"))
+    {
+      case DRT::HDGAction::project_dirich_field:
+        action = ELEMAG::Action::project_dirich_field;
+        break;
+      default:
+        dserror("HDG Action type not supported");
+    }
+  }
+  else
+  {
+    action = DRT::INPUT::get<ELEMAG::Action>(params, "action");
+  }
 
   InitializeShapes(hdgele);
 
