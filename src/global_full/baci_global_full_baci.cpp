@@ -13,6 +13,7 @@
 #include "baci_comm_utils.H"
 #include "baci_config_revision.H"
 #include "baci_config_trilinos_version.H"
+#include "baci_global_legacy_module.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_inpar_validcontactconstitutivelaw.H"
 #include "baci_inpar_validmaterials.H"
@@ -22,7 +23,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils_createdis.H"
-#include "baci_module_registry_parobjectregister.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_MpiComm.h>
@@ -265,7 +265,7 @@ int main(int argc, char *argv[])
     printf("Total number of processors: %d\n", gcomm->NumProc());
   }
 
-  DRT::ForceRegistrationOfParObjectTypes();
+  BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   if ((argc == 2) && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0)))
   {

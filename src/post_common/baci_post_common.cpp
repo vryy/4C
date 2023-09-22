@@ -13,6 +13,7 @@
 
 #include "baci_post_common.H"
 
+#include "baci_global_legacy_module.H"
 #include "baci_inpar_problemtype.H"
 #include "baci_io_legacy_table_cpp.h"
 #include "baci_lib_condition_utils.H"
@@ -20,7 +21,6 @@
 #include "baci_lib_exporter.H"
 #include "baci_lib_parobject.H"
 #include "baci_lib_periodicbc.H"
-#include "baci_module_registry_parobjectregister.H"
 #include "baci_nurbs_discret.H"
 #include "baci_rigidsphere.H"
 
@@ -46,7 +46,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP, int argc, char** ar
 {
   MPI_Init(&argc, &argv);
 
-  DRT::ForceRegistrationOfParObjectTypes();
+  BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   std::string file = "xxx";
   std::string output;

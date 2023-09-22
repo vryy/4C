@@ -20,6 +20,7 @@ its parameters and conditions.
 #include "baci_pre_exodus.H"
 
 #include "baci_comm_utils.H"
+#include "baci_global_legacy_module.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_inpar_validmaterials.H"
 #include "baci_inpar_validparameters.H"
@@ -28,7 +29,6 @@ its parameters and conditions.
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_resulttest.H"
 #include "baci_lib_utils_createdis.H"
-#include "baci_module_registry_parobjectregister.H"
 #include "baci_pre_exodus_centerline.H"
 #include "baci_pre_exodus_readbc.H"
 #include "baci_pre_exodus_reader.H"
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
   // communication
   MPI_Init(&argc, &argv);
 
-  DRT::ForceRegistrationOfParObjectTypes();
+  BACI::GlobalLegacyModuleCallbacks().RegisterParObjectTypes();
 
   // create a problem instance
   DRT::Problem* problem = DRT::Problem::Instance();
