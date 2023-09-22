@@ -161,10 +161,6 @@ int DRT::ELEMENTS::Shell7p::Evaluate(Teuchos::ParameterList& params,
       shell_interface_->Update(
           *this, *SolidMaterial(), discretization, nodal_directors_, dof_index_array, params);
     }
-    case ELEMENTS::struct_calc_reset_all:
-    {
-      shell_interface_->ResetAll(*this, *SolidMaterial());
-    }
     break;
     case ELEMENTS::struct_calc_reset_istep:
     {

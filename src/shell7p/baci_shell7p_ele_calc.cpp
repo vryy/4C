@@ -77,13 +77,6 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::MaterialPostSetup(
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Shell7pEleCalc<distype>::ResetAll(
-    DRT::Element& ele, MAT::So3Material& solid_material)
-{
-  solid_material.ResetAll(intpoints_midsurface_.NumPoints());
-}
-
-template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Shell7pEleCalc<distype>::ResetToLastConverged(
     DRT::Element& ele, MAT::So3Material& solid_material)
 {

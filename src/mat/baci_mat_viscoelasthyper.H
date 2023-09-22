@@ -192,9 +192,6 @@ namespace MAT
     /// setup material description
     virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
-    /// reset all history variables
-    virtual void ResetAll(const int numgp);
-
     /// update history variables
     virtual void Update();
 

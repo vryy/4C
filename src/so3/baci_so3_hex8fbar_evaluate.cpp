@@ -84,8 +84,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
       act = ELEMENTS::struct_calc_update_istep;
     else if (action == "calc_struct_reset_istep")
       act = ELEMENTS::struct_calc_reset_istep;
-    else if (action == "calc_struct_reset_all")
-      act = ELEMENTS::struct_calc_reset_all;
     else if (action == "multi_readrestart")
       act = ELEMENTS::multi_readrestart;
     else if (action == "multi_calc_dens")
@@ -301,40 +299,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //==================================================================================
-    case ELEMENTS::struct_calc_reset_all:
-    {
-      // Reset of history for materials
-      SolidMaterial()->ResetAll(NUMGPT_SOH8);
-
-      // Reset prestress
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
-      {
-        time_ = 0.0;
-        CORE::LINALG::Matrix<3, 3> Id(true);
-        Id(0, 0) = Id(1, 1) = Id(2, 2) = 1.0;
-        for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
-        {
-          prestress_->MatrixtoStorage(gp, Id, prestress_->FHistory());
-          prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
-        }
-        prestress_->MatrixtoStorage(NUMGPT_SOH8, Id, prestress_->FHistory());
-        CORE::LINALG::Matrix<NUMNOD_SOH8, NUMDIM_SOH8> xrefe;
-        for (int i = 0; i < NUMNOD_SOH8; ++i)
-        {
-          xrefe(i, 0) = Nodes()[i]->X()[0];
-          xrefe(i, 1) = Nodes()[i]->X()[1];
-          xrefe(i, 2) = Nodes()[i]->X()[2];
-        }
-        CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> N_rst_0;
-        CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, hex8);
-        CORE::LINALG::Matrix<NUMDIM_SOH8, NUMDIM_SOH8> invJ_0;
-        invJ_0.Multiply(N_rst_0, xrefe);
-        invJ_0.Invert();
-        prestress_->MatrixtoStorage(NUMGPT_SOH8, invJ_0, prestress_->JHistory());
-      }
-    }
-    break;
-
     case ELEMENTS::multi_calc_dens:
     {
       soh8_homog(params);

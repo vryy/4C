@@ -390,27 +390,6 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //==================================================================================
-    case calc_struct_reset_all:
-    {
-      // Reset of history for materials
-      SolidMaterial()->ResetAll(NUMGPT_WEG6);
-
-      // Reset prestress
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
-      {
-        time_ = 0.0;
-        CORE::LINALG::Matrix<3, 3> Id(true);
-        Id(0, 0) = Id(1, 1) = Id(2, 2) = 1.0;
-        for (int gp = 0; gp < NUMGPT_WEG6; ++gp)
-        {
-          prestress_->MatrixtoStorage(gp, Id, prestress_->FHistory());
-          prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
-        }
-      }
-    }
-    break;
-
-    //==================================================================================
     // in case of prestressing, make a snapshot of the current green-Lagrange strains and add them
     // to the previously stored GL strains in an incremental manner
     case prestress_update:

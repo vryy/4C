@@ -48,10 +48,8 @@ namespace DRT
       struct_calc_reset_istep,  //!< reset elementwise internal variables, during iteration to last
                                 //!< converged state
       struct_calc_store_istep,  //!< store internal information in history
-      struct_calc_recover_istep,  //!< recover internal information from history
-      struct_calc_reset_all,  //!< reset elementwise internal variables to state in the beginning of
-                              //!< the computation
-      struct_calc_energy,     //!< compute internal energy
+      struct_calc_recover_istep,            //!< recover internal information from history
+      struct_calc_energy,                   //!< compute internal energy
       struct_calc_errornorms,               //!< compute error norms (L2,H1,energy)
       struct_postprocess_thickness,         //!< postprocess thickness of membrane finite elements
       struct_init_gauss_point_data_output,  //!< initialize quantities for output of gauss point
@@ -121,8 +119,6 @@ namespace DRT
         return struct_calc_store_istep;
       else if (action == "calc_struct_recover_istep")
         return struct_calc_recover_istep;
-      else if (action == "calc_struct_reset_all")
-        return struct_calc_reset_all;
       else if (action == "calc_struct_energy")
         return struct_calc_energy;
       else if (action == "calc_struct_errornorms")
@@ -202,8 +198,6 @@ namespace DRT
           return "struct_calc_store_istep";
         case struct_calc_recover_istep:
           return "struct_calc_recover_istep";
-        case struct_calc_reset_all:
-          return "struct_calc_reset_all";
         case struct_calc_energy:
           return "struct_calc_energy";
         case struct_calc_errornorms:

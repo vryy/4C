@@ -374,22 +374,6 @@ void MAT::Membrane_ActiveStrain::ResetStep()
 }  // MAT::Membrane_ActiveStrain::ResetStep
 
 /*----------------------------------------------------------------------*
- |  ResetAll                                       brandstaeter 05/2018 |
- *----------------------------------------------------------------------*/
-void MAT::Membrane_ActiveStrain::ResetAll(const int numgp)
-{
-  matpassive_->ResetAll(numgp);
-
-  for (int gp = 0; gp < numgp; ++gp)
-  {
-    voltage_->at(gp) = 0.0;
-    activation_->at(gp) = 0.0;
-  }
-  return;
-
-}  // MAT::Membrane_ActiveStrain::ResetAll()
-
-/*----------------------------------------------------------------------*
  |                                                 brandstaeter 05/2018 |
  *----------------------------------------------------------------------*/
 void MAT::Membrane_ActiveStrain::VisNames(std::map<std::string, int>& names)

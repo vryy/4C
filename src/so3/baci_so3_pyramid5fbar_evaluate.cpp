@@ -278,41 +278,6 @@ int DRT::ELEMENTS::So_pyramid5fbar::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    //==================================================================================
-    case calc_struct_reset_all:
-    {
-      // Reset of history for materials
-      SolidMaterial()->ResetAll(NUMGPT_SOP5);
-
-      // Reset prestress
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
-      {
-        time_ = 0.0;
-        CORE::LINALG::Matrix<3, 3> Id(true);
-        Id(0, 0) = Id(1, 1) = Id(2, 2) = 1.0;
-        for (int gp = 0; gp < NUMGPT_SOP5; ++gp)
-        {
-          prestress_->MatrixtoStorage(gp, Id, prestress_->FHistory());
-          prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
-        }
-        prestress_->MatrixtoStorage(NUMGPT_SOP5, Id, prestress_->FHistory());
-        CORE::LINALG::Matrix<NUMNOD_SOP5, NUMDIM_SOP5> xrefe;
-        for (int i = 0; i < NUMNOD_SOP5; ++i)
-        {
-          xrefe(i, 0) = Nodes()[i]->X()[0];
-          xrefe(i, 1) = Nodes()[i]->X()[1];
-          xrefe(i, 2) = Nodes()[i]->X()[2];
-        }
-        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMNOD_SOP5> N_rst_0;
-        CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.25, pyramid5);
-        CORE::LINALG::Matrix<NUMDIM_SOP5, NUMDIM_SOP5> invJ_0;
-        invJ_0.Multiply(N_rst_0, xrefe);
-        invJ_0.Invert();
-        prestress_->MatrixtoStorage(NUMGPT_SOP5, invJ_0, prestress_->JHistory());
-      }
-    }
-    break;
-
     case multi_calc_dens:
     {
       sop5_homog(params);

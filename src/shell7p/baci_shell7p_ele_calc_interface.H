@@ -166,15 +166,6 @@ namespace DRT
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) = 0;
 
       /*!
-       * @brief Reset internal variables of material to state in the beginning of the computation
-       * (needed for inverse analysis)
-       *
-       * @param ele  (in) : Reference to the element
-       * @param solid_material (in) : Solid material of the element
-       */
-      virtual void ResetAll(DRT::Element& ele, MAT::So3Material& solid_material) = 0;
-
-      /*!
        * @brief Reset time step of material (for time adaptivity)
        *
        * @param ele  (in) : Reference to the element

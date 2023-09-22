@@ -169,10 +169,6 @@ namespace MAT
     /// number of materials
     //    virtual int NumMat() const { return params_->nummat_; }
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse
-    /// analysis)
-    virtual void ResetAll(int numgp);
-
     /// Update
     virtual void Update();
 

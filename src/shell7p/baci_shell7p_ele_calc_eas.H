@@ -99,8 +99,6 @@ namespace DRT
           const CORE::LINALG::SerialDenseMatrix& nodal_directors,
           const std::vector<int>& dof_index_array, Teuchos::ParameterList& params) override;
 
-      void ResetAll(DRT::Element& ele, MAT::So3Material& solid_material) override;
-
       void ResetToLastConverged(DRT::Element& ele, MAT::So3Material& solid_material) override;
 
       void VisData(const std::string& name, std::vector<double>& data) override;

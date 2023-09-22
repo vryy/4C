@@ -87,8 +87,6 @@ namespace DRT
           const MAT::So3Material& solid_material,
           STR::MODELEVALUATOR::GaussPointDataOutputManager& gp_data_output_manager) const;
 
-      void ResetAll(const DRT::Element& ele, MAT::So3Material& solid_material);
-
       void ResetToLastConverged(const DRT::Element& ele, MAT::So3Material& solid_material);
 
      private:
