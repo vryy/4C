@@ -40,7 +40,6 @@
 #include "baci_thermo_dyn.H"
 #include "baci_tsi_dyn.H"
 #include "baci_tutorial_dyn.H"
-#include "baci_two_phase_flow_dyn.H"
 #include "baci_wear_dyn.H"
 
 /*----------------------------------------------------------------------*
@@ -191,13 +190,6 @@ void ntacal()
 
     case ProblemType::elemag:
       electromagnetics_drt();
-      break;
-
-    case ProblemType::two_phase_flow:
-      two_phase_dyn(restart);
-      break;
-    case ProblemType::fluid_xfem_ls:
-      fluid_xfem_ls_drt(restart);  // Exists in two_phase_flow subfolder
       break;
 
     case ProblemType::tutorial:

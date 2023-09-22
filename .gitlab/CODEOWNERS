@@ -323,8 +323,6 @@ tsi/                       @baci/team_thermo
 
 tutorial/                  @baci/team_infrastructure
 
-two_phase_flow/            @baci/team_fluid
-
 w1/                        @baci/team_structure
 w1/baci_wall1_poro*        @baci/team_structure @baci/team_poro
 
