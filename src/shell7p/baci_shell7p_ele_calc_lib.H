@@ -645,7 +645,8 @@ namespace DRT::ELEMENTS::SHELL
    * @param zeta (in) : Thickness coordinate of gaussian point (scaled via SDC)
    */
   template <DRT::Element::DiscretizationType distype>
-  void ModifyKovariantMetrics(DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_reference,
+  void ModifyKovariantMetricsStandart(
+      DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_reference,
       DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_current,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,
       const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_current, const double& zeta)
@@ -717,7 +718,7 @@ namespace DRT::ELEMENTS::SHELL
   }
 
   /*!
-   * @brief Modify the kovariant metric tensors of the element due to trnasverse shear strain ANS
+   * @brief Modify the kovariant metric tensors of the element due to transverse shear strain ANS
    *
    * @Note : After the modification: g_ij != g_i*g_j
    *
@@ -818,6 +819,57 @@ namespace DRT::ELEMENTS::SHELL
     g_reference.metric_kontravariant_.Update(g_reference.metric_kovariant_);
     detJ = g_reference.metric_kontravariant_.Invert();
     g_reference.detJ_ = std::sqrt(detJ);
+  }
+
+
+  /*!
+   * @brief Modify the kovariant metric tensors of the element
+   *
+   *
+   * @tparam distype :  The discretization type known at compile time
+   * @param g_reference (in/out) : An object holding the reference basis vectors and metric
+   * tensors of the shell body
+   * @param g_current (in/out) : An object holding the current basis vectors and metric
+   * tensors of the shell body
+   * @param a_reference (in) : An object holding the reference basis vectors and metric
+   * tensors of the midsurface
+   * @param a_current (in) : An object holding the current basis vectors and metric tensors
+   * tensors of the midsurface
+   * @param zeta (in) : thickness coordinate of gaussian point (scaled via SDC)
+   * @param shapefunctions_ans (in) : Vector holding the ANS shapefunctions and derivatives
+   * @param metrics_collocation_reference (in) : vector holding the reference basis vectors and
+   * metric tensors of the midsurface at collocation points
+   * @param metrics_collocation_current (in) : Vector holding the current basis vectors and metric
+   * tensors of the midsurface at collocation points
+   * @param numansq (in) : Number of ANS collocation points
+   */
+  template <DRT::Element::DiscretizationType distype>
+  void ModifyKovariantMetrics(DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_reference,
+      DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& g_current,
+      const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_reference,
+      const DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>& a_current, const double& zeta,
+      const std::vector<double>& shapefunctions_ans,
+      const std::vector<DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>>&
+          metrics_collocation_reference,
+      const std::vector<DRT::ELEMENTS::SHELL::BasisVectorsAndMetrics<distype>>&
+          metrics_collocation_current,
+      const int& numansq)
+  {
+    std::invoke(
+        [&]()
+        {
+          if (numansq == 0)
+          {
+            ModifyKovariantMetricsStandart(g_reference, g_current, a_reference, a_current, zeta);
+          }
+          else
+          {
+            // modify the current kovariant metric tensor due to transverse shear strain ANS
+            ModifyKovariantMetricsAns(g_reference, g_current, a_reference, a_current, zeta,
+                shapefunctions_ans, metrics_collocation_reference, metrics_collocation_current,
+                numansq);
+          }
+        });
   }
 
   /*!
@@ -943,7 +995,7 @@ namespace DRT::ELEMENTS::SHELL
    * @return shapefunctions for ANS
    */
   template <DRT::Element::DiscretizationType distype>
-  static std::vector<double> GetShapefunctionsForAns(const std::array<double, 2>& xi_gp)
+  static std::vector<double> SetShapefunctionsForAns(const std::array<double, 2>& xi_gp)
   {
     std::vector<double> shapefunctions;
     double r = xi_gp[0];
@@ -997,6 +1049,33 @@ namespace DRT::ELEMENTS::SHELL
     return shapefunctions;
   }
 
+  /*!
+   * @brief Get the shapefunctions evaluated at the gaussian points to remedy transverse shear
+   * strains within the ANS method
+   *
+   * @tparam distype : The discretization type known at compile time
+   * @params xi_gp (in) : Coordinate of the integration point in the parameter space
+   * @params num_ans (in) : Number of ANS collocation points
+   * @return shapefunctions for ANS
+   */
+  template <DRT::Element::DiscretizationType distype>
+  std::vector<double> GetShapefunctionsForAns(
+      const std::array<double, 2>& xi_gp, const int& num_ans)
+  {
+    const std::vector<double> shape_functions_ans = std::invoke(
+        [&]()
+        {
+          if (num_ans == 0)
+          {
+            return std::vector<double>{};
+          }
+          else
+          {
+            return SHELL::SetShapefunctionsForAns<distype>(xi_gp);
+          }
+        });
+    return shape_functions_ans;
+  }
   /*!
    * @brief Transform the Green-Lagrange strains to Euler-Almansi strains
    *
