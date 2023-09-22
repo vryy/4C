@@ -37,6 +37,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                             .AddNamedString("KINEM")
                             .AddOptionalNamedString("EAS")
                             .AddOptionalTag("FBAR")
+                            .AddOptionalTag("MULF")
                             .AddOptionalNamedDoubleVector("RAD", 3)
                             .AddOptionalNamedDoubleVector("AXI", 3)
                             .AddOptionalNamedDoubleVector("CIR", 3)
@@ -49,6 +50,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("HEX18", 18)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
+                             .AddOptionalTag("MULF")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -61,6 +63,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("HEX20", 20)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
+                             .AddOptionalTag("MULF")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -73,6 +76,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("HEX27", 27)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
+                             .AddOptionalTag("MULF")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -85,6 +89,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                             .AddIntVector("TET4", 4)
                             .AddNamedInt("MAT")
                             .AddNamedString("KINEM")
+                            .AddOptionalTag("MULF")
                             .AddOptionalNamedDoubleVector("RAD", 3)
                             .AddOptionalNamedDoubleVector("AXI", 3)
                             .AddOptionalNamedDoubleVector("CIR", 3)
@@ -97,6 +102,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                              .AddIntVector("TET10", 10)
                              .AddNamedInt("MAT")
                              .AddNamedString("KINEM")
+                             .AddOptionalTag("MULF")
                              .AddOptionalNamedDoubleVector("RAD", 3)
                              .AddOptionalNamedDoubleVector("AXI", 3)
                              .AddOptionalNamedDoubleVector("CIR", 3)
@@ -109,6 +115,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                               .AddIntVector("WEDGE6", 6)
                               .AddNamedInt("MAT")
                               .AddNamedString("KINEM")
+                              .AddOptionalTag("MULF")
                               .AddOptionalNamedDoubleVector("RAD", 3)
                               .AddOptionalNamedDoubleVector("AXI", 3)
                               .AddOptionalNamedDoubleVector("CIR", 3)
@@ -122,6 +129,7 @@ void DRT::ELEMENTS::SolidType::SetupElementDefinition(
                                 .AddNamedInt("MAT")
                                 .AddNamedString("KINEM")
                                 .AddOptionalTag("FBAR")
+                                .AddOptionalTag("MULF")
                                 .AddOptionalNamedDoubleVector("RAD", 3)
                                 .AddOptionalNamedDoubleVector("AXI", 3)
                                 .AddOptionalNamedDoubleVector("CIR", 3)
@@ -358,6 +366,11 @@ bool DRT::ELEMENTS::Solid::ReadElement(
   if (linedef->HaveNamed("FBAR"))
   {
     eletech_.insert(INPAR::STR::EleTech::fbar);
+  }
+
+  if (linedef->HaveNamed("MULF"))
+  {
+    eletech_.insert(INPAR::STR::EleTech::ps_mulf);
   }
 
   solid_calc_variant_ =

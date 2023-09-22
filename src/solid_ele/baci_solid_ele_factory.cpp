@@ -11,6 +11,7 @@
 #include "baci_solid_ele_calc.H"
 #include "baci_solid_ele_calc_eas.H"
 #include "baci_solid_ele_calc_fbar.H"
+#include "baci_solid_ele_calc_mulf.H"
 #include "baci_utils_exceptions.H"
 
 #include <memory>
@@ -34,6 +35,17 @@ namespace
 
     dserror("FBAR is only implemented for hex8 and pyramid5 elements.");
     return {};
+  }
+
+  template <DRT::Element::DiscretizationType distype>
+  DRT::ELEMENTS::SolidCalcVariant CreateMulfSolidCalculationInterface(
+      INPAR::STR::KinemType kinem_type)
+  {
+    if (kinem_type != INPAR::STR::KinemType::kinem_nonlinearTotLag)
+    {
+      dserror("MULF only usable for KINEM nonlinear (you are using %s).", kinem_type);
+    }
+    return DRT::ELEMENTS::SolidEleCalcMulf<distype>();
   }
 }  // namespace
 
@@ -117,6 +129,8 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
           }
         case INPAR::STR::EleTech::fbar:
           return CreateFBarSolidCalculationInterface<distype>(kinem_type);
+        case INPAR::STR::EleTech::ps_mulf:
+          return CreateMulfSolidCalculationInterface<distype>(kinem_type);
         default:
           dserror("unknown element technology");
       }

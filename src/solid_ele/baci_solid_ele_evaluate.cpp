@@ -12,10 +12,10 @@ Evaluate(...), EvaluateNeumann(...), etc.
 #include "baci_solid_ele.H"
 #include "baci_solid_ele_calc_interface.H"
 #include "baci_solid_ele_calc_lib.H"
+#include "baci_solid_ele_calc_mulf.H"
 #include "baci_solid_ele_neumann_evaluator.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"
-
 
 int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm,
@@ -110,6 +110,11 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
           { interface->Update(*this, *SolidMaterial(), discretization, lm, params); },
           solid_calc_variant_);
 
+      return 0;
+    }
+    case DRT::ELEMENTS::struct_update_prestress:
+    {
+      UpdatePrestress(solid_calc_variant_, *this, *SolidMaterial(), discretization, lm, params);
       return 0;
     }
     case DRT::ELEMENTS::struct_calc_recover:
