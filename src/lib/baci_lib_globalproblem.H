@@ -195,8 +195,8 @@ namespace DRT
     /// input of conditions
     void ReadConditions(DRT::INPUT::DatFileReader& reader);
 
-    /// input of time curves, functions and result tests
-    void ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader);
+    /// input of result tests
+    void ReadResult(DRT::INPUT::DatFileReader& reader);
 
     /// input of knots for isogeometric analysis
     void ReadKnots(DRT::INPUT::DatFileReader& reader);
@@ -599,6 +599,14 @@ namespace DRT
 
     /// Return the class that handles restart initiating -> to be extended
     DRT::UTILS::RestartManager* RestartManager() { return &restartmanager_; }
+
+    /**
+     * Set the @p function_manager which contains all parsed functions.
+     *
+     * @note The parsing of functions must take place before. This calls wants a filled
+     * FunctionManager.
+     */
+    void SetFunctionManager(UTILS::FunctionManager&& function_manager);
 
    private:
     /// private default constructor to disallow creation of instances

@@ -15,6 +15,7 @@ Validate a given BACI input file (after all preprocessing steps)
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_global_legacy_module.H"
 #include "baci_io_control.H"  //for writing to the error file
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_inputreader.H"
@@ -49,9 +50,14 @@ void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::
   std::cout << "...Read field setup" << std::endl;
   problem->ReadFields(reader, false);  // option false is important here!
 
-  // read and validate all condition definitions
   std::cout << "...";
-  problem->ReadTimeFunctionResult(reader);
+  {
+    DRT::UTILS::FunctionManager function_manager;
+    BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+    function_manager.ReadInput(reader);
+  }
+
+  problem->ReadResult(reader);
   problem->ReadConditions(reader);
 
   // input of materials of cloned fields (if needed)

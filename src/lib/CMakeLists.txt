@@ -13,6 +13,7 @@ set(_lib_dependencies
     fluid
     fluid_ele
     fluid_xfluid
+    global_legacy_module
     inpar
     io
     mat
