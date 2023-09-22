@@ -17,6 +17,7 @@
 #include "baci_linear_solver_preconditioner_ifpack.H"
 
 #include <Ifpack_LocalFilter.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------------*/
 FSI::OverlappingBlockMatrixHybridSchwarz::OverlappingBlockMatrixHybridSchwarz(

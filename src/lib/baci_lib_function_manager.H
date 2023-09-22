@@ -12,7 +12,6 @@
 #define BACI_LIB_FUNCTION_MANAGER_H
 
 
-#include "baci_lib_function.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_utils_demangle.H"
 #include "baci_utils_exceptions.H"

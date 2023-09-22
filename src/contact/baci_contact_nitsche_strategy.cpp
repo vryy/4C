@@ -20,7 +20,7 @@
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_FEVector.h>
-#include <Epetra_Operator.h>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  | global evaluation method called from time integrator     seitz 10/16 |

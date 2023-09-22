@@ -18,6 +18,7 @@
 #include "baci_io.H"
 #include "baci_io_control.H"
 #include "baci_io_gmsh.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"

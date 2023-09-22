@@ -24,6 +24,8 @@ The current implementation does not scale at all!
 #include "baci_linalg_utils_densematrix_communication.H"
 
 #include <Teuchos_Time.hpp>
+#include <Teuchos_TimeMonitor.hpp>
+
 /*----------------------------------------------------------------------*/
 
 FBI::FBIGeometryCoupler::FBIGeometryCoupler()

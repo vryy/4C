@@ -27,6 +27,7 @@
 #include "baci_io_pstream.H"
 #include "baci_lib_assemblestrategy.H"
 #include "baci_lib_condition_selector.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_periodicbc.H"
 #include "baci_lib_utils_gid_vector.H"

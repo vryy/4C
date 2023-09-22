@@ -15,6 +15,7 @@
 #include "baci_io.H"
 #include "baci_io_pstream.H"  // has to go before io.H
 #include "baci_lib_condition_utils.H"
+#include "baci_lib_function.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"

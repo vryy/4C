@@ -19,6 +19,7 @@
 #include "baci_fluid_ele_poro.H"
 #include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_lib_element_integration_select.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_elasthyper.H"
 #include "baci_mat_fluidporo.H"

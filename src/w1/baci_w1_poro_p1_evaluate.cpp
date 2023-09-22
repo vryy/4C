@@ -10,6 +10,7 @@
 /*---------------------------------------------------------------------------*/
 
 #include "baci_lib_discret.H"
+#include "baci_lib_function.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_structporo.H"
 #include "baci_structure_new_elements_paramsinterface.H"

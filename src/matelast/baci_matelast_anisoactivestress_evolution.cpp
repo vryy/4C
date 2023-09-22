@@ -8,6 +8,7 @@
 
 #include "baci_matelast_anisoactivestress_evolution.H"
 
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_anisotropy_extension.H"
 #include "baci_mat_material.H"

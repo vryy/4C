@@ -10,6 +10,7 @@
  *---------------------------------------------------------------------------*/
 #include "baci_particle_algorithm_initial_field.H"
 
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_particle_algorithm_utils.H"
 #include "baci_particle_engine_container.H"

@@ -14,6 +14,7 @@
 #include "baci_inpar_browniandyn.H"
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_function.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
@@ -460,7 +461,7 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       // specific-for----------------------------------Frenet Serret
       // Get hermite derivatives N'xi, N''xi and N'''xi
       CORE::DRT::UTILS::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
-// end--------------------------------------------------------
+      // end--------------------------------------------------------
 #else
       dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
@@ -541,16 +542,16 @@ int DRT::ELEMENTS::Beam3eb::EvaluateNeumann(Teuchos::ParameterList& params,
       // Clear matrix for shape functions
       N_i.Clear();
 
-// evaluation of shape funcitons at Gauss points
+      // evaluation of shape funcitons at Gauss points
 #if (NODALDOFS == 2)
       // Get hermite derivatives N'xi and N''xi (jacobi_*2.0 is length of the element)
       CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, jacobi_ * 2.0, distype);
-// end--------------------------------------------------------
+      // end--------------------------------------------------------
 #elif (NODALDOFS == 3)
       // specific-for----------------------------------Frenet Serret
       // Get hermite derivatives N'xi, N''xi and N'''xi
       CORE::DRT::UTILS::shape_function_hermite_1D_order5(N_i, xi, jacobi_ * 2.0, distype);
-// end--------------------------------------------------------
+      // end--------------------------------------------------------
 #else
       dserror("Only the values NODALDOFS = 2 and NODALDOFS = 3 are valid!");
 #endif
@@ -1092,7 +1093,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     CORE::LINALG::Matrix<nnode * dofpn, 1, FAD> Res_orthopressure;
 #endif
 
-// some matrices necessary for ANS approach
+    // some matrices necessary for ANS approach
 #ifdef ANS_BEAM3EB
 #if (NODALDOFS == 3)
     dserror(
@@ -1172,7 +1173,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
     if (tangentnorm1 < 1.0e-12 or tangentnorm2 < 1.0e-12)
       dserror("Tangent of norm zero --> deformation to large!!!");
 
-// Calculate epsilon at collocation points
+      // Calculate epsilon at collocation points
 #ifdef ANS_BEAM3EB
     CORE::LINALG::Matrix<3, 1> epsilon_cp(true);
     CORE::LINALG::Matrix<3, 3> tangent_cp(true);
@@ -1494,7 +1495,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
         }
       }
 
-// calculate quantities necessary for ANS approach
+      // calculate quantities necessary for ANS approach
 #ifdef ANS_BEAM3EB
       CORE::DRT::UTILS::shape_function_1D(L_i, xi, line3);
       epsilon_ANS = 0.0;
@@ -1550,7 +1551,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       // assemble internal stiffness matrix / R = d/(dd) Res in thesis Meier
       if (stiffmatrix != nullptr)
       {
-// assemble parts from tension
+        // assemble parts from tension
 #ifndef ANS_BEAM3EB
         R_tension = NTildex;
         R_tension.Scale(tension);

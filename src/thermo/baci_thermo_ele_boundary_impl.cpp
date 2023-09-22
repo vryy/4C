@@ -18,6 +18,7 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_inpar_thermo.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_function.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_nurbs_discret.H"

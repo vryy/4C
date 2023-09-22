@@ -37,6 +37,7 @@ in saddle-point formulation with Lagrange multipliers discretized on the fluid i
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Comm.h>
+#include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/

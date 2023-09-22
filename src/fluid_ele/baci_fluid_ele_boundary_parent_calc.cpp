@@ -17,6 +17,7 @@
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_fluid_ele.H"
 #include "baci_lib_element_integration_select.H"
+#include "baci_lib_function.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"

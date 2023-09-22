@@ -19,6 +19,7 @@
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_inpar_material.H"
 #include "baci_lib_element_integration_select.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_arrhenius_pv.H"
 #include "baci_mat_carreauyasuda.H"

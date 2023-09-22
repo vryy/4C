@@ -12,6 +12,7 @@
 #include "baci_lib_utils_discret.H"
 
 #include "baci_lib_discret.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_node.H"
 

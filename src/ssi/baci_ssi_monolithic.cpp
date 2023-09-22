@@ -38,6 +38,7 @@
 #include "baci_ssi_utils.H"
 #include "baci_structure_new_model_evaluator_contact.H"
 
+#include <Teuchos_TimeMonitor.hpp>
 
 /*--------------------------------------------------------------------------*
  *--------------------------------------------------------------------------*/

@@ -17,6 +17,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_elementtype.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_math.H"

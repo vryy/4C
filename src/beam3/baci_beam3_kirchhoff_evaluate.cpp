@@ -19,6 +19,7 @@
 #include "baci_inpar_structure.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_exporter.H"
+#include "baci_lib_function.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_fixedsizematrix.H"

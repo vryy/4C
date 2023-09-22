@@ -18,6 +18,7 @@
 #include "baci_fluid_rotsym_periodicbc.H"
 #include "baci_immersed_problem_immersed_base.H"
 #include "baci_lib_condition_utils.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fluid_linear_density_viscosity.H"
 #include "baci_mat_fluid_murnaghantait.H"
