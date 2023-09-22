@@ -152,6 +152,10 @@ double DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateInternalEnergy(DRT::Elem
           SHELL::BasisVectorsAndMetrics<distype>& a_reference, double gpweight, double da, int gp)
       {
         double integration_factor = gpweight * da;
+
+        const std::vector<double> shape_functions_ans =
+            SHELL::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+
         // integration loop in thickness direction, here we prescribe 2 integration points
         for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
         {
@@ -161,17 +165,9 @@ double DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateInternalEnergy(DRT::Elem
 
           // modify the current kovariant metric tensor to neglect the quadratic terms in thickness
           // directions
-          if (shell_data_.num_ans > 0)
-          {
-            // modify the current kovariant metric tensor due to transverse shear strain ANS
-            SHELL::ModifyKovariantMetricsAns(g_reference, g_current, a_reference, a_current, zeta,
-                shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
-                shell_data_.num_ans);
-          }
-          else
-          {
-            SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta);
-          }
+          SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+              shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
+              shell_data_.num_ans);
 
           // evaluate Green-Lagrange strains and deformation gradient in cartesian coordinate system
           auto strains = EvaluateStrains(g_reference, g_current);
@@ -229,7 +225,6 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Eleme
       ele.Nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // Assumed Natural Strains (ANS) Technology to remedy transverse shear strain locking
-  std::vector<double> shape_functions_ans(true);
   // for a_13 and a_23 each
   const int total_ansq = 2 * shell_data_.num_ans;
   std::vector<SHELL::ShapefunctionsAndDerivatives<distype>> shapefunctions_collocation(total_ansq);
@@ -268,6 +263,9 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Eleme
           SHELL::BasisVectorsAndMetrics<distype>& a_current,
           SHELL::BasisVectorsAndMetrics<distype>& a_reference, double gpweight, double da, int gp)
       {
+        const std::vector<double> shape_functions_ans =
+            SHELL::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+
         // integration loop in thickness direction, here we prescribe 2 integration points
         for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
         {
@@ -276,17 +274,9 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::CalculateStressesStrains(DRT::Eleme
 
           // modify the current kovariant metric tensor to neglect the quadratic terms in thickness
           // directions
-          if (shell_data_.num_ans > 0)
-          {
-            // modify the current kovariant metric tensor due to transverse shear strain ANS
-            SHELL::ModifyKovariantMetricsAns(g_reference, g_current, a_reference, a_current, zeta,
-                shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
-                shell_data_.num_ans);
-          }
-          else
-          {
-            SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta);
-          }
+          SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+              shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
+              shell_data_.num_ans);
 
           // evaluate Green-Lagrange strains and deformation gradient in global cartesian coordinate
           // system
@@ -339,8 +329,6 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
       ele.Nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
   // Assumed Natural Strains (ANS) Technology to remedy transverse shear strain locking
-  std::vector<double> shape_functions_ans(true);
-
   // for a_13 and a_23 each
   const int total_ansq = 2 * shell_data_.num_ans;
   std::vector<SHELL::ShapefunctionsAndDerivatives<distype>> shapefunctions_collocation(total_ansq);
@@ -389,13 +377,20 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
         CORE::LINALG::SerialDenseMatrix Bop = SHELL::CalcBOperator<distype>(
             a_current.kovariant_, a_current.partial_derivative_, shape_functions);
 
+        const std::vector<double> shape_functions_ans =
+            SHELL::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+
         // modifications due to ANS with B-bar method (Hughes (1980))
-        if (shell_data_.num_ans > 0)
-        {
-          shape_functions_ans = SHELL::GetShapefunctionsForAns<distype>(xi_gp);
-          ModifyBOperatorAns(Bop, shape_functions_ans, shapefunctions_collocation,
-              metrics_collocation_current, shell_data_.num_ans);
-        }
+        std::invoke(
+            [&]()
+            {
+              if (shell_data_.num_ans > 0)
+              {
+                ModifyBOperatorAns(Bop, shape_functions_ans, shapefunctions_collocation,
+                    metrics_collocation_current, shell_data_.num_ans);
+              }
+            });
+
 
         // integration loop in thickness direction, here we prescribe 2 integration points
         for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
@@ -407,17 +402,9 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::EvaluateNonlinearForceStiffnessMass
 
           // modify the current kovariant metric tensor to neglect the quadratic terms in thickness
           // directions
-          if (shell_data_.num_ans > 0)
-          {
-            // modify the current kovariant metric tensor due to transverse shear strain ANS
-            SHELL::ModifyKovariantMetricsAns(g_reference, g_current, a_reference, a_current, zeta,
-                shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
-                shell_data_.num_ans);
-          }
-          else
-          {
-            SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta);
-          }
+          SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+              shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
+              shell_data_.num_ans);
 
           // calc shell shifter and put it in the integration factor
           const double shifter = (1.0 / condfac) * (g_reference.detJ_ / da);
@@ -524,8 +511,6 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(DRT::Element& ele,
         ele.Nodes(), displacement, shell_data_.thickness, nodal_directors, condfac);
 
     // Assumed Natural Strains (ANS) Technology to remedy transverse shear strain locking
-    std::vector<double> shape_functions_ans(true);
-
     // for a_13 and a_23 each
     const int total_ansq = 2 * shell_data_.num_ans;
     std::vector<SHELL::ShapefunctionsAndDerivatives<distype>> shapefunctions_collocation(
@@ -555,6 +540,9 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(DRT::Element& ele,
             SHELL::BasisVectorsAndMetrics<distype>& a_current,
             SHELL::BasisVectorsAndMetrics<distype>& a_reference, double gpweight, double da, int gp)
         {
+          const std::vector<double> shape_functions_ans =
+              SHELL::GetShapefunctionsForAns<distype>(xi_gp, shell_data_.num_ans);
+
           // integration loop in thickness direction, here we prescribe 2 integration points
           for (int gpt = 0; gpt < intpoints_thickness_.NumPoints(); ++gpt)
           {
@@ -565,17 +553,9 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::Update(DRT::Element& ele,
 
             // modify the current kovariant metric tensor to neglect the quadratic terms in
             // thickness directions
-            if (shell_data_.num_ans > 0)
-            {
-              // modify the current kovariant metric tensor due to transverse shear strain ANS
-              SHELL::ModifyKovariantMetricsAns(g_reference, g_current, a_reference, a_current, zeta,
-                  shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
-                  shell_data_.num_ans);
-            }
-            else
-            {
-              SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta);
-            }
+            SHELL::ModifyKovariantMetrics(g_reference, g_current, a_reference, a_current, zeta,
+                shape_functions_ans, metrics_collocation_reference, metrics_collocation_current,
+                shell_data_.num_ans);
 
             auto strains = EvaluateStrains(g_reference, g_current);
 
