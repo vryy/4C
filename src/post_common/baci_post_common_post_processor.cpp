@@ -452,7 +452,6 @@ void runEnsightVtuFilter(PostProblem& problem)
     case ProblemType::fsi_xfem:
     case ProblemType::fpsi_xfem:
     case ProblemType::fluid_xfem_ls:
-    case ProblemType::two_phase_flow:
     {
       std::cout << "|=============================================================================|"
                 << std::endl;

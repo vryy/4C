@@ -347,10 +347,6 @@ namespace DRT
     {
       return getParameterList()->sublist("FLUID DYNAMIC");
     }
-    const Teuchos::ParameterList& TwoPhaseFlowParams() const
-    {
-      return getParameterList()->sublist("TWO PHASE FLOW");
-    }
     const Teuchos::ParameterList& LubricationDynamicParams() const
     {
       return getParameterList()->sublist("LUBRICATION DYNAMIC");

@@ -65,7 +65,6 @@
 #include "baci_inpar_thermo.H"
 #include "baci_inpar_tsi.H"
 #include "baci_inpar_turbulence.H"
-#include "baci_inpar_twophase.H"
 #include "baci_inpar_volmortar.H"
 #include "baci_inpar_wear.H"
 #include "baci_inpar_xfem.H"
@@ -406,7 +405,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::TSI::SetValidParameters(list);
 
   INPAR::FLUID::SetValidParameters(list);
-  INPAR::TWOPHASE::SetValidParameters(list);
   INPAR::LOMA::SetValidParameters(list);
   INPAR::CUT::SetValidParameters(list);
   INPAR::XFEM::SetValidParameters(list);

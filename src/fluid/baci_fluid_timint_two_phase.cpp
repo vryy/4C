@@ -246,7 +246,6 @@ void FLD::TimIntTwoPhase::SetElementCustomParameter()
 {
   Teuchos::ParameterList eleparams;
 
-  eleparams.set<int>("action", FLD::set_two_phase_parameter);
   eleparams.sublist("SMEARED") = params_->sublist("SMEARED");
   eleparams.sublist("SURFACE TENSION") = params_->sublist("SURFACE TENSION");
 

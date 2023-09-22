@@ -1828,7 +1828,6 @@ int main(int argc, char** argv)
     }
     case ProblemType::structure:
     case ProblemType::loma:
-    case ProblemType::two_phase_flow:
     case ProblemType::fluid_xfem_ls:
     case ProblemType::fluid:
     case ProblemType::fluid_redmodels:

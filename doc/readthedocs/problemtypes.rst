@@ -435,8 +435,3 @@ Tutorial
 
 One has to define solvers for the following dynamics: 
 
-Two_Phase_Flow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-One has to define solvers for the following dynamics: 
-

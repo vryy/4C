@@ -53,8 +53,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
       tau_gp_(false),             // standard evaluation of tau at the element center
       interface_thickness_(0.0),  // two phase parameters
       enhanced_gaussrule_(false),
-      include_surface_tension_(false),  // include the surface tension in the calculations.
-      eval_surfacetension_(INPAR::TWOPHASE::surface_tension_approx_none),
+      include_surface_tension_(false),           // include the surface tension in the calculations.
       turb_mod_action_(INPAR::FLUID::no_model),  // turbulence parameters
       Cs_(0.0),
       Cs_averaged_(false),
@@ -470,14 +469,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTwoPhaseParameter(Teuchos::Para
   Teuchos::ParameterList& smearedlist = params.sublist("SMEARED");
   interface_thickness_ = smearedlist.get<double>("INTERFACE_THICKNESS");
   enhanced_gaussrule_ = DRT::INPUT::IntegralValue<int>(smearedlist, "ENHANCED_GAUSSRULE");
-
-  // Surface tension specific parameters
-  Teuchos::ParameterList& surftenslist = params.sublist("SURFACE TENSION");
-  eval_surfacetension_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SurfaceTensionApprox>(
-      surftenslist, "SURFTENSAPPROX");
-
-  if (eval_surfacetension_ != INPAR::TWOPHASE::surface_tension_approx_none)
-    include_surface_tension_ = true;
 
   return;
 }

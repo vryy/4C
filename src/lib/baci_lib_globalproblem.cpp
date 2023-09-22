@@ -256,9 +256,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);
   reader.ReadSection("--FLUID DYNAMIC/TURBULENT INFLOW", *list);
   reader.ReadSection("--FLUID DYNAMIC/NONLINEAR SOLVER TOLERANCES", *list);
-  reader.ReadSection("--TWO PHASE FLOW", *list);
-  reader.ReadSection("--TWO PHASE FLOW/SURFACE TENSION", *list);
-  reader.ReadSection("--TWO PHASE FLOW/SMEARED", *list);
   reader.ReadSection("--LUBRICATION DYNAMIC", *list);
   reader.ReadSection("--SCALAR TRANSPORT DYNAMIC", *list);
   reader.ReadSection("--SCALAR TRANSPORT DYNAMIC/NONLINEAR", *list);
@@ -1515,7 +1512,6 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
       break;
     }
 
-    case ProblemType::two_phase_flow:
     case ProblemType::fluid_xfem_ls:
     {
       // create empty discretizations

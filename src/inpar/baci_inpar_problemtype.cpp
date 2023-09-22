@@ -114,7 +114,6 @@ std::map<std::string, ProblemType> INPAR::PROBLEMTYPE::StringToProblemTypeMap()
     string2prbtype["Thermo_Structure_Interaction"] = ProblemType::tsi;
     string2prbtype["Thermo_Fluid_Structure_Interaction"] = ProblemType::thermo_fsi;
     string2prbtype["Tutorial"] = ProblemType::tutorial;
-    string2prbtype["Two_Phase_Flow"] = ProblemType::two_phase_flow;
   }
 
   return string2prbtype;

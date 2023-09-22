@@ -15,9 +15,6 @@
 #include "baci_adapter_scatra_fluid_coupling_algorithm.H"
 #include "baci_linalg_mapextractor.H"
 
-// Needed for input parameter
-#include "baci_inpar_twophase.H"
-
 
 namespace XFLUIDLEVELSET
 {
@@ -134,7 +131,6 @@ namespace XFLUIDLEVELSET
     /// compute geometric quantities (normalvector field and curvatures) from level set field
     void ComputeGeometricQuantities(const bool require_smoothedgradphi,
         const bool require_nodalcurvature, const Teuchos::RCP<const Epetra_Vector>& phinp,
-        const INPAR::TWOPHASE::SmoothGradPhi smoothedgradphitype,
         Teuchos::RCP<Epetra_MultiVector>& smoothedgradphi,
         Teuchos::RCP<Epetra_Vector>& nodalcurvature);
 
@@ -165,11 +161,6 @@ namespace XFLUIDLEVELSET
     void OutputInitialField();
 
 
-    /// Get smoothed LevelSet gradient
-    Teuchos::RCP<Epetra_MultiVector> GetSmoothedLevelSetGradient(
-        const Teuchos::RCP<const Epetra_Vector>& phinp,
-        INPAR::TWOPHASE::SmoothGradPhi smoothedgradphi);
-
    private:
     /// time-step length, maximum time and maximum number of steps
     double dt_;
@@ -185,10 +176,6 @@ namespace XFLUIDLEVELSET
 
     /// masscenter output
     bool write_center_of_mass_;
-
-    /// Two Phase Specific parameter
-    INPAR::TWOPHASE::SmoothGradPhi smoothedgradphitype_;
-    bool scalesmoothedgradients_;
 
     /// Outer-loop convergence variables:
     Teuchos::RCP<Epetra_Vector> velnpi_;

@@ -14,7 +14,6 @@
 #include "baci_inpar_xfem.H"
 
 #include "baci_inpar_cut.H"
-#include "baci_inpar_twophase.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
 
@@ -661,11 +660,6 @@ void INPAR::XFEM::SetValidConditions(
   // interface transport in all directions or just in normal direction?
   xfem_levelset_combustion->AddComponent(
       Teuchos::rcp(new SeparatorConditionComponent("TRANSPORT_DIRECTIONS")));
-  xfem_levelset_combustion->AddComponent(Teuchos::rcp(new StringConditionComponent(
-      "TRANSPORT_DIRECTIONS", "all", Teuchos::tuple<std::string>("all", "normal"),
-      Teuchos::tuple<int>(
-          INPAR::TWOPHASE::transport_dir_all, INPAR::TWOPHASE::transport_dir_normal),
-      true)));
 
 
   // define if the curvature shall be accounted for in computing the transport velocity

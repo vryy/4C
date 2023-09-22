@@ -4565,8 +4565,6 @@ void FLD::XFluid::SetInitialFlowField(
 
     Teuchos::RCP<XFEM::LevelSetCoupling> levelset_condition =
         condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
-    Teuchos::RCP<XFEM::LevelSetCouplingCombustion> combustion_condition =
-        Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingCombustion>(levelset_condition, true);
 
 
     // vector of DOF-IDs which are Dirichlet BCs for ghost penalty reconstruction method
@@ -4613,11 +4611,6 @@ void FLD::XFluid::SetInitialFlowField(
     if (dens_b != 0.157)
       dserror("burnt density should be 0.157 for the 'flame-vortex-interaction' case");
 
-    double dens = dens_u;
-
-    // get interface specific parameter from condition manager and underlying conditions
-    const XFEM::EleCoupCond& coup_cond = combustion_condition->GetCouplingCondition(ele->Id());
-    double flamespeed = coup_cond.second->GetDouble("laminar_flamespeed");
 
     // number space dimensions
     const int nsd = 3;
@@ -4640,13 +4633,6 @@ void FLD::XFluid::SetInitialFlowField(
     xyz0_right(1) = 75.0;  // y-coordinate right vortex
     xyz0_right(2) = 0.0;   // z-coordinate is 0 (2D problem)
 
-    // get laminar burning velocity (flame speed)
-    if (flamespeed != 1.0)
-      dserror("flame speed should be 1.0 for the 'flame-vortex-interaction' case");
-    // vortex strength C (scaled by laminar burning velocity)
-    const double C = 70.0 * flamespeed;
-    // (squared) vortex radius R
-    const double R_squared = 16.0;
 
     //--------------------------------
     // loop all nodes on the processor
@@ -4683,52 +4669,21 @@ void FLD::XFluid::SetInitialFlowField(
         //-------------------------------------------
         CORE::GEO::CUT::Point::PointPosition pos = nodaldofsets[i]->Position();
 
-        //-------------------------------------------
-        // get values for flamevortex interaction
-        //-------------------------------------------
-
-        // compute preliminary values for both vortices
-        const double r_squared_left = ((xyz(0) - xyz0_left(0)) * (xyz(0) - xyz0_left(0)) +
-                                          (xyz(1) - xyz0_left(1)) * (xyz(1) - xyz0_left(1))) /
-                                      R_squared;
-        const double r_squared_right = ((xyz(0) - xyz0_right(0)) * (xyz(0) - xyz0_right(0)) +
-                                           (xyz(1) - xyz0_right(1)) * (xyz(1) - xyz0_right(1))) /
-                                       R_squared;
-
         //----------------------------------------
         // set density with respect to flame front
         //----------------------------------------
-        const double tmp_vortex =
-            -0.5 * (C * C / R_squared) * (exp(-r_squared_left) + exp(-r_squared_right));
 
         if (pos ==
             CORE::GEO::CUT::Point::inside)  // plus/burnt domain -> burnt material (
                                             // CORE::GEO::CUT::Position is inside ) / slave side
         {
-          dens = dens_b;
           pres = 0.0;  // matching the zero pressure condition at outflow
-        }
-        else if (pos == CORE::GEO::CUT::Point::outside)  // minus/unburnt domain -> unburnt
-                                                         // material / master side
-        {
-          dens = dens_u;
-          double jump_dens_inverse = 1.0 / dens_u - 1.0 / dens_b;
-          pres = -flamespeed * flamespeed * dens_u * dens_u * jump_dens_inverse;
         }
         else
         {
           dserror("what to do now?");
         }
-        pres += tmp_vortex;
 
-        //----------------------------------------------
-        // compute components of initial velocity vector
-        //----------------------------------------------
-        vel(0) = (C / R_squared) * (-(xyz(1) - xyz0_left(1)) * exp(-r_squared_left / 2.0) +
-                                       (xyz(1) - xyz0_right(1)) * exp(-r_squared_right / 2.0));
-        vel(1) = (C / R_squared) * ((xyz(0) - xyz0_left(0)) * exp(-r_squared_left / 2.0) -
-                                       (xyz(0) - xyz0_right(0)) * exp(-r_squared_right / 2.0)) +
-                 flamespeed * dens_u / dens;
         // 2D problem -> vel_z = 0.0
         vel(2) = 0.0;
 
@@ -4802,23 +4757,6 @@ void FLD::XFluid::WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra_Vector>& s
 
 void FLD::XFluid::ExportGeometricQuantities() { condition_manager_->ExportGeometricQuantities(); }
 
-const Teuchos::RCP<const Epetra_Vector> FLD::XFluid::GetTransportVelocity()
-{
-  // Only supported for 1 levelset so far.
-  if (condition_manager_->NumLevelSetCoupling() != 1)
-    dserror(
-        "There is either no LevelSetCoupling or more than 1. Exactly 1 is expected and supported "
-        "at this point!");
-
-  Teuchos::RCP<XFEM::LevelSetCouplingTwoPhase> levelsetcoupling_twophase =
-      Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(
-          condition_manager_->GetLevelSetCoupling(0), true);
-
-  const Teuchos::RCP<const Epetra_Vector>& transport_velocity =
-      levelsetcoupling_twophase->ComputeTransportVelocity(state_->Wizard(), state_->velnp_);
-
-  return transport_velocity;
-}
 
 // -------------------------------------------------------------------
 // set general fluid parameter (AE 01/2011)

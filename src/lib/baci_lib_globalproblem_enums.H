@@ -63,7 +63,6 @@ enum class ProblemType
   thermo_fsi,            // thermo-fluid-structure-interaction problem
   tsi,                   // thermal structure interaction
   tutorial,              // student's c++/baci tutorial
-  two_phase_flow,        // two phase flow problem using the fluid and levelset modules
 };
 
 

@@ -417,14 +417,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
             xfdyn.sublist("GENERAL").get<double>("XFLUIDFLUID_SEARCHRADIUS"));
   }
 
-  // sublist for two phase flow specific parameters
-  /* Transfers two phase specific problems                 05/14 winter */
-  if (probtype == ProblemType::two_phase_flow)
-  {
-    fluidtimeparams->sublist("SMEARED") = prbdyn.sublist("SMEARED");
-    fluidtimeparams->sublist("SURFACE TENSION") = prbdyn.sublist("SURFACE TENSION");
-  }
-
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective
   // time-integration (or stationary) scheme
@@ -764,22 +756,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
           else
             dserror("Unknown time integration for this fluid problem type\n");
         }
-      }
-      break;
-      case ProblemType::two_phase_flow:
-      {
-        if (timeint == INPAR::FLUID::timeint_stationary)
-          fluid_ = Teuchos::rcp(
-              new FLD::TimIntTwoPhaseStat(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == INPAR::FLUID::timeint_one_step_theta)
-          fluid_ = Teuchos::rcp(
-              new FLD::TimIntTwoPhaseOst(actdis, solver, fluidtimeparams, output, isale));
-        else if (timeint == INPAR::FLUID::timeint_afgenalpha or
-                 timeint == INPAR::FLUID::timeint_npgenalpha)
-          fluid_ = Teuchos::rcp(
-              new FLD::TimIntTwoPhaseGenAlpha(actdis, solver, fluidtimeparams, output, isale));
-        else
-          dserror("Unknown time integration for this fluid problem type\n");
       }
       break;
       case ProblemType::fluid_xfem:

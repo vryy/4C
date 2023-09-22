@@ -33,7 +33,6 @@ interface
 #include "baci_fluid_implicit_integration.H"
 #include "baci_fluid_xfluid_state.H"
 #include "baci_inpar_cut.H"
-#include "baci_inpar_twophase.H"
 #include "baci_inpar_xfem.H"
 
 /*==========================================================================*/
