@@ -431,20 +431,12 @@ void INPAR::SSI::SetValidConditions(
         std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreduced;
         // total number of existing scalars
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-        // string separator in front of integer stoichiometry vector in input file line
-        std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
-        intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
-        // integer vector of stoichiometric coefficients
-        std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
-        intvectcomp.emplace_back(
-            Teuchos::rcp(new IntVectorConditionComponent("stoichiometries", 0)));
-        // empty vector --> no separators for real vectors needed
-        std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp;
-        // empty vector --> no real vectors needed
-        std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp;
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
+        butlervolmerreduced.emplace_back(
+            Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(
-            new IntRealBundle("stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")),
-                intsepcomp, intvectcomp, realsepcomp, realvectcomp)));
+            new IntVectorConditionComponent("stoichiometries", LengthFromInt("numscal"))));
+
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_R")));

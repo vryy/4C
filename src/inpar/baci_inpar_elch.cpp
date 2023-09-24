@@ -368,22 +368,6 @@ void INPAR::ELCH::SetValidConditions(
     reactionmodel.emplace_back(
         Teuchos::rcp(new CondCompBundle("Nernst", nernst, INPAR::ELCH::nernst)));
 
-    // input: stoichiometry for reaction mechanism (IntRealBundle)
-    // definition separator for int vectors
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepveccomp;
-    intsepveccomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICH")));
-
-    // definition int vectors
-    std::vector<Teuchos::RCP<IntVectorConditionComponent>> intveccomp;
-    intveccomp.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("stoich", 2)));
-
-    // definition separator for real vectors: length of the real vector is zero -> nothing is read
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepveccomp;
-
-    // definition real vectors: length of the real vector is zero -> nothing is read
-    std::vector<Teuchos::RCP<RealVectorConditionComponent>> realveccomp;
-
-
     std::vector<Teuchos::RCP<ConditionComponent>> elechemcomponents;
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
@@ -392,9 +376,11 @@ void INPAR::ELCH::SetValidConditions(
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("funct", true, true)));
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-    elechemcomponents.emplace_back(Teuchos::rcp(
-        new IntRealBundle("intreal bundle", Teuchos::rcp(new IntConditionComponent("numscal")),
-            intsepveccomp, intveccomp, realsepveccomp, realveccomp)));
+    elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
+    elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICH")));
+    elechemcomponents.emplace_back(
+        Teuchos::rcp(new IntVectorConditionComponent("stoich", LengthFromInt("numscal"))));
+
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
     // porosity of electrode boundary, set to -1 if equal to porosity of electrolyte domain
@@ -470,24 +456,12 @@ void INPAR::ELCH::SetValidConditions(
       electrodedomainkineticscomponents.emplace_back(
           Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
 
-      // input: stoichiometry for reaction mechanism (IntRealBundle)
-      // definition separator for int vectors
-      std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepveccomp;
-      intsepveccomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICH")));
-
-      // definition int vectors
-      std::vector<Teuchos::RCP<IntVectorConditionComponent>> intveccomp;
-      intveccomp.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("stoich", 2)));
-
-      // definition separator for real vectors: length of the real vector is zero -> nothing is read
-      std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepveccomp;
-
-      // definition real vectors: length of the real vector is zero -> nothing is read
-      std::vector<Teuchos::RCP<RealVectorConditionComponent>> realveccomp;
-
-      electrodedomainkineticscomponents.emplace_back(Teuchos::rcp(
-          new IntRealBundle("intreal bundle", Teuchos::rcp(new IntConditionComponent("numscal")),
-              intsepveccomp, intveccomp, realsepveccomp, realveccomp)));
+      electrodedomainkineticscomponents.emplace_back(
+          Teuchos::rcp(new IntConditionComponent("numscal")));
+      electrodedomainkineticscomponents.emplace_back(
+          Teuchos::rcp(new SeparatorConditionComponent("STOICH")));
+      electrodedomainkineticscomponents.emplace_back(
+          Teuchos::rcp(new IntVectorConditionComponent("stoich", LengthFromInt("numscal"))));
 
       electrodedomainkineticscomponents.emplace_back(
           Teuchos::rcp(new SeparatorConditionComponent("E-")));

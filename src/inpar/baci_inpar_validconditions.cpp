@@ -407,19 +407,13 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Point coupling (e.g. joints - couple X out of Y nodal DoFs)
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> couplingintsepveccomponents;
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> couplingintveccomponents;
   std::vector<Teuchos::RCP<ConditionComponent>> couplingcomponents;
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> couplingrealsepveccomponents;
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> couplingrealveccomponents;
 
-  couplingintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  couplingintveccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
-
-  couplingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-  couplingcomponents.push_back(Teuchos::rcp(new IntRealBundle("couplingbund",
-      Teuchos::rcp(new IntConditionComponent("numdof")), couplingintsepveccomponents,
-      couplingintveccomponents, couplingrealsepveccomponents, couplingrealveccomponents)));
+  couplingcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  couplingcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
+  couplingcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  couplingcomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numdof"))));
 
   Teuchos::RCP<ConditionDefinition> pointcoupling =
       Teuchos::rcp(new ConditionDefinition("DESIGN POINT COUPLING CONDITIONS", "PointCoupling",
@@ -429,10 +423,10 @@ DRT::INPUT::ValidConditions()
       new ConditionDefinition("DESIGN POINT THERMO COUPLING CONDITIONS", "PointThermoCoupling",
           "Point Coupling", DRT::Condition::PointCoupling, false, DRT::Condition::Point));
 
-  for (unsigned i = 0; i < couplingcomponents.size(); ++i)
+  for (const auto& couplingcomponent : couplingcomponents)
   {
-    pointcoupling->AddComponent(couplingcomponents[i]);
-    pointthermocoupling->AddComponent(couplingcomponents[i]);
+    pointcoupling->AddComponent(couplingcomponent);
+    pointthermocoupling->AddComponent(couplingcomponent);
   }
 
   condlist.push_back(pointcoupling);
@@ -1027,29 +1021,17 @@ DRT::INPUT::ValidConditions()
 
     std::vector<Teuchos::RCP<ConditionComponent>> rigidbodymodecomponents;
 
-    rigidbodymodecomponents.push_back(Teuchos::rcp(new StringConditionComponent("discretization",
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new StringConditionComponent("discretization",
         "fluid", Teuchos::tuple<std::string>("fluid", "scatra", "solid"),
         Teuchos::tuple<std::string>("fluid", "scatra", "solid"))));
 
-    // input: trigger as int-vector using an IntRealBundle
-    // definition separator for int vectors
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepveccomp;
-    intsepveccomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-    // definition int vectors
-    std::vector<Teuchos::RCP<IntVectorConditionComponent>> intveccomp;
-    intveccomp.push_back(Teuchos::rcp(new IntVectorConditionComponent("ONOFF", 1)));
-    // definition separator for real vectors: length of the real vector is zero -> nothing is
-    // read
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepveccomp;
-    // definition real vectors: length of the real vector is zero -> nothing is read
-    std::vector<Teuchos::RCP<RealVectorConditionComponent>> realveccomp;
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMMODES")));
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("NUMMODES")));
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+    rigidbodymodecomponents.emplace_back(
+        Teuchos::rcp(new IntVectorConditionComponent("ONOFF", LengthFromInt("NUMMODES"))));
 
-    rigidbodymodecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMMODES")));
-    rigidbodymodecomponents.push_back(Teuchos::rcp(
-        new IntRealBundle("intreal bundle", Teuchos::rcp(new IntConditionComponent("NUMMODES")),
-            intsepveccomp, intveccomp, realsepveccomp, realveccomp)));
-
-    rigidbodymodecomponents.push_back(
+    rigidbodymodecomponents.emplace_back(
         Teuchos::rcp(new StringConditionComponent("weight vector definition", "integration",
             Teuchos::tuple<std::string>("integration", "pointvalues"),
             Teuchos::tuple<std::string>("integration", "pointvalues"))));
