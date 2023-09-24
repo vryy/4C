@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <string>
+#include <variant>
 #include <vector>
 
 
@@ -245,6 +246,26 @@ namespace DRT
     };
 
 
+    /**
+     * A function type used to determine the length of other components from the
+     * @p already_parsed_condition.
+     */
+    using LengthDefinition = std::function<int(const Condition& already_parsed_condition)>;
+
+    struct LengthFromInt
+    {
+      /**
+       * Determine the length of the vector component at runtime from an IntConditionComponent of
+       * given @p name.
+       */
+      LengthFromInt(std::string name) : name_(std::move(name)) {}
+      int operator()(const Condition& already_read_line) { return already_read_line.GetInt(name_); }
+
+     private:
+      std::string name_;
+    };
+
+
     /// condition line part that is a vector of integer numbers
     /*!
 
@@ -273,6 +294,14 @@ namespace DRT
       IntVectorConditionComponent(std::string name, int length, bool fortranstyle = false,
           bool noneallowed = false, bool optional = false);
 
+      /**
+       * Construct an IntVectorConditionComponent similar to the other constructor but use the
+       * given @p length_from_component function to determine the number of vector elements at
+       * runtime.
+       */
+      IntVectorConditionComponent(std::string name, LengthDefinition length_from_component,
+          bool fortranstyle = false, bool noneallowed = false, bool optional = false);
+
       void DefaultLine(std::ostream& stream) override;
 
       std::string WriteReadTheDocs() override;
@@ -286,7 +315,7 @@ namespace DRT
       virtual void SetLength(int newlength);
 
      private:
-      int length_;
+      std::variant<int, LengthDefinition> length_;
       bool fortranstyle_;
       bool noneallowed_;
       bool optional_;
@@ -343,6 +372,14 @@ namespace DRT
        */
       RealVectorConditionComponent(std::string name, int length, bool optional = false);
 
+      /**
+       * Construct an RealVectorConditionComponent similar to the other constructor but use the
+       * given @p length_from_component function to determine the number of vector elements at
+       * runtime.
+       */
+      RealVectorConditionComponent(
+          std::string name, LengthDefinition length_from_component, bool optional = false);
+
       void DefaultLine(std::ostream& stream) override;
 
       std::string WriteReadTheDocs() override;
@@ -357,52 +394,8 @@ namespace DRT
       virtual void SetLength(int newlength);
 
      private:
-      int length_;
+      std::variant<int, LengthDefinition> length_;
       bool optional_;
-    };
-
-    /// Dirichlet and Neumann boundary condition specific condition component
-    /*!
-      \see ConditionDefinition
-
-      \author AP and TK
-      \date 03/12
-     */
-    class DirichletNeumannBundle : public ConditionComponent
-    {
-     public:
-      /*! construct a condition component tailored for Dirichlet and Neumann with flexible
-       vector length for onoff, val, curve and funct
-
-        The number of dofs and corresponding vectors are expected from the dat-file
-
-        \param name variable name in DRT::Condition
-        \param length number of double values expected
-       */
-      DirichletNeumannBundle(std::string name, Teuchos::RCP<IntConditionComponent> intcomp,
-          std::vector<Teuchos::RCP<SeparatorConditionComponent>> intvectsepcomp,
-          std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp,
-          std::vector<Teuchos::RCP<SeparatorConditionComponent>> realvectsepcomp,
-          std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp);
-
-      void DefaultLine(std::ostream& stream) override;
-
-      std::string WriteReadTheDocs() override;
-
-      Teuchos::Array<std::string> GetOptions() override;
-
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
-
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
-
-     private:
-      Teuchos::RCP<IntConditionComponent> intcomp_;
-      std::vector<Teuchos::RCP<SeparatorConditionComponent>> intvectsepcomp_;
-      std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp_;
-      std::vector<Teuchos::RCP<SeparatorConditionComponent>> realvectsepcomp_;
-      std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp_;
     };
 
     /// int and real vector boundary condition specific condition component
@@ -419,17 +412,17 @@ namespace DRT
        * (int and/or real) separated by an optional separator
        * generalized DirichletNeumannBundle
 
-        The number of condition components and corresponding vectors are expected from the dat-file
-        and the validconditions.cpp
+        The number of condition components and corresponding vectors are expected from the
+       dat-file and the validconditions.cpp
 
         Attention: number of type real is passed to int vector -> numbers after dot are ignored
                    number of type int is passed to real vector -> number is interpreted as a real
 
         \param name variable name in DRT::Condition
-        \param intcomp expected number of condition components per Int/Real-VectorConditionComponent
-        \param intsepcomp vector defining an optional separator for the different
-       IntVectorConditionComponents (optional: Teuchos::null -> no separator) \param intvectcomp
-       vector containing various IntVectorConditionComponents:
+        \param intcomp expected number of condition components per
+       Int/Real-VectorConditionComponent \param intsepcomp vector defining an optional separator
+       for the different IntVectorConditionComponents (optional: Teuchos::null -> no separator)
+       \param intvectcomp vector containing various IntVectorConditionComponents:
                - number of IntVectorConditionComponents in intvectcomp is defined in
        inpar_validconditions.cpp
                - number of condition components in a IntVectorConditionComponent is defined by
@@ -489,8 +482,8 @@ namespace DRT
     class CondCompBundle : public ConditionComponent
     {
      public:
-      /*! construct a condition component handling the a condition component bundle associated to a
-        special model
+      /*! construct a condition component handling the a condition component bundle associated to
+        a special model
 
         \param name variable name in DRT::Condition
         \param condcomp vector containing condition components associated to a model

@@ -323,25 +323,43 @@ DRT::INPUT::IntVectorConditionComponent::IntVectorConditionComponent(
 }
 
 
+DRT::INPUT::IntVectorConditionComponent::IntVectorConditionComponent(std::string name,
+    LengthDefinition length_from_component, bool fortranstyle, bool noneallowed, bool optional)
+    : ConditionComponent(std::move(name)),
+      length_(std::move(length_from_component)),
+      fortranstyle_(fortranstyle),
+      noneallowed_(noneallowed),
+      optional_(optional)
+{
+}
+
+
+namespace
+{
+  struct DefaultLengthVisitor
+  {
+    int operator()(int length) { return length; }
+    int operator()(const DRT::INPUT::LengthDefinition& length) { return 1; }
+  };
+}  // namespace
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::IntVectorConditionComponent::DefaultLine(std::ostream& stream)
 {
-  if (noneallowed_)
-  {
-    for (int i = 0; i < length_; ++i) stream << "none ";
-  }
-  else
-  {
-    if (fortranstyle_)
-    {
-      for (int i = 0; i < length_; ++i) stream << -1 << " ";
-    }
-    else
-    {
-      for (int i = 0; i < length_; ++i) stream << 0 << " ";
-    }
-  }
+  const int default_length = std::visit(DefaultLengthVisitor{}, length_);
+  const char* default_value = std::invoke(
+      [&]()
+      {
+        if (noneallowed_) return "none ";
+        if (fortranstyle_)
+          return "-1 ";
+        else
+          return "0 ";
+      });
+
+  for (int i = 0; i < default_length; ++i) stream << default_value;
 }
 
 std::string DRT::INPUT::IntVectorConditionComponent::WriteReadTheDocs()
@@ -377,6 +395,18 @@ void DRT::INPUT::IntVectorConditionComponent::Print(
 }
 
 
+namespace
+{
+  struct LengthVisitor
+  {
+    int operator()(int length) { return length; }
+    int operator()(const DRT::INPUT::LengthDefinition& length) { return length(condition); }
+
+    const DRT::Condition& condition;
+  };
+}  // namespace
+   //
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
@@ -384,10 +414,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
     Teuchos::RCP<DRT::Condition> condition)
 {
   // in order to initialize fortran style input correctly if optional_ is true
-  int initialize_value = 0;
-  if (fortranstyle_) initialize_value = -1;
-
-  std::vector<int> nnumbers(length_, initialize_value);
+  const int initialize_value = fortranstyle_ ? -1 : 0;
+  const int dynamic_length = std::visit(LengthVisitor{*condition}, length_);
+  std::vector<int> nnumbers(dynamic_length, initialize_value);
 
   for (auto& current_nnumber : nnumbers)
   {
@@ -410,7 +439,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
     else
     {
       current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
-          snumber, Name(), def->SectionName(), length_, optional_);
+          snumber, Name(), def->SectionName(), dynamic_length, optional_);
     }
 
     if (fortranstyle_)
@@ -498,12 +527,22 @@ DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(
 }
 
 
+
+DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(
+    std::string name, LengthDefinition length, bool optional)
+    : ConditionComponent(std::move(name)), length_(std::move(length)), optional_(optional)
+{
+}
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::RealVectorConditionComponent::DefaultLine(std::ostream& stream)
 {
-  for (int i = 0; i < length_; ++i) stream << "0.0 ";
+  const int default_length = std::visit(DefaultLengthVisitor{}, length_);
+  for (int i = 0; i < default_length; ++i) stream << "0.0 ";
 }
+
 
 std::string DRT::INPUT::RealVectorConditionComponent::WriteReadTheDocs()
 {
@@ -535,7 +574,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
     DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
     Teuchos::RCP<DRT::Condition> condition)
 {
-  std::vector<double> nnumbers(length_, 0.0);
+  const int dynamic_length = std::visit(LengthVisitor{*condition}, length_);
+  std::vector<double> nnumbers(dynamic_length, 0.0);
 
   for (auto& current_nnumber : nnumbers)
   {
@@ -554,7 +594,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
     else
     {
       current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
-          snumber, Name(), def->SectionName(), length_, optional_);
+          snumber, Name(), def->SectionName(), dynamic_length, optional_);
     }
   }
 
@@ -566,103 +606,6 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
  *----------------------------------------------------------------------*/
 void DRT::INPUT::RealVectorConditionComponent::SetLength(int length) { length_ = length; }
 
-DRT::INPUT::DirichletNeumannBundle::DirichletNeumannBundle(std::string name,
-    Teuchos::RCP<IntConditionComponent> intcomp,
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> intvectsepcomp,
-    std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp,
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> realvectsepcomp,
-    std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp)
-    : ConditionComponent(std::move(name)),
-      intcomp_(std::move(intcomp)),
-      intvectsepcomp_(std::move(intvectsepcomp)),
-      intvectcomp_(std::move(intvectcomp)),
-      realvectsepcomp_(std::move(realvectsepcomp)),
-      realvectcomp_(std::move(realvectcomp))
-{
-}
-
-void DRT::INPUT::DirichletNeumannBundle::DefaultLine(std::ostream& stream)
-{
-  intcomp_->DefaultLine(stream);
-  stream << "  ";
-  intvectsepcomp_[0]->DefaultLine(stream);
-  stream << " ";
-  intvectcomp_[0]->DefaultLine(stream);
-  stream << " ";
-  realvectsepcomp_[0]->DefaultLine(stream);
-  stream << " ";
-  realvectcomp_[0]->DefaultLine(stream);
-  stream << " ";
-  intvectsepcomp_[1]->DefaultLine(stream);
-  stream << " ";
-  intvectcomp_[1]->DefaultLine(stream);
-  stream << " ";
-}
-
-std::string DRT::INPUT::DirichletNeumannBundle::WriteReadTheDocs()
-{
-  std::string parameterstring = "";
-  // numdof int
-  parameterstring += intcomp_->WriteReadTheDocs() + " ";
-  // ONOFF
-  parameterstring += intvectsepcomp_[0]->WriteReadTheDocs() + " ";
-  // onoff vector
-  parameterstring += intvectcomp_[0]->WriteReadTheDocs() + " ";
-  // VAL
-  parameterstring += realvectsepcomp_[0]->WriteReadTheDocs() + " ";
-  // val vector
-  parameterstring += realvectcomp_[0]->WriteReadTheDocs() + " ";
-  // FUNCT
-  parameterstring += intvectsepcomp_[1]->WriteReadTheDocs() + " ";
-  // funct vector
-  parameterstring += intvectcomp_[1]->WriteReadTheDocs() + " ";
-  return parameterstring;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::Array<std::string> DRT::INPUT::DirichletNeumannBundle::GetOptions()
-{
-  return Teuchos::Array<std::string>();
-}
-
-
-void DRT::INPUT::DirichletNeumannBundle::Print(std::ostream& stream, const DRT::Condition* cond)
-{
-  intcomp_->Print(stream, cond);
-  stream << "  ";
-  intvectsepcomp_[0]->Print(stream, cond);
-  stream << " ";
-  intvectcomp_[0]->Print(stream, cond);
-  stream << " ";
-  realvectsepcomp_[0]->Print(stream, cond);
-  stream << " ";
-  realvectcomp_[0]->Print(stream, cond);
-  stream << " ";
-  intvectsepcomp_[1]->Print(stream, cond);
-  stream << " ";
-  intvectcomp_[1]->Print(stream, cond);
-  stream << " ";
-}
-
-Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(ConditionDefinition* def,
-    Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition)
-{
-  intcomp_->Read(def, condline, condition);
-  int length = condition->GetInt(intcomp_->Name());
-
-  intvectsepcomp_[0]->Read(def, condline, condition);
-  intvectcomp_[0]->SetLength(length);
-  intvectcomp_[0]->Read(def, condline, condition);
-  realvectsepcomp_[0]->Read(def, condline, condition);
-  realvectcomp_[0]->SetLength(length);
-  realvectcomp_[0]->Read(def, condline, condition);
-  intvectsepcomp_[1]->Read(def, condline, condition);
-  intvectcomp_[1]->SetLength(length);
-  intvectcomp_[1]->Read(def, condline, condition);
-
-  return condline;
-}
 
 /* -----------------------------------------------------------------------------------------------*
  | Class IntRealBundle                                                                  ehrl 09/12|
@@ -1096,7 +1039,8 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
         {
           dserror(
               "Failed to read design object number '%s' in '%s'. Unable to read %s, so the "
-              "specified number format is probably not supported. The design object number has to "
+              "specified number format is probably not supported. The design object number has "
+              "to "
               "be an integer.",
               number.c_str(), sectionname_.c_str(), ptr, number.c_str());
         }
