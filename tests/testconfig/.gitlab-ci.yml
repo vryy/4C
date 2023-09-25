@@ -506,30 +506,6 @@ pages: # job name needs to be pages
   tags:
   - pages
 
-doxygen-web:
-  extends: .doxygen
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-  tags:
-  - doxygen
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - doxygen.log
-    when: on_failure
-    expire_in: 1 day
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "3"
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "web"
-  - if: $CI_MERGE_REQUEST_IID
-  interruptible: true
-  needs:
-  - job: build-base-dependencies
-    optional: true
-
 doxygen:
   extends: .doxygen
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
@@ -541,13 +517,15 @@ doxygen:
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - doxygen.log
     - doxygen/
+    - doxygen.log
     when: always
     expire_in: 1 day
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
   needs:
   - job: build-base-dependencies
     optional: true
@@ -669,30 +647,6 @@ build-verify-headers:
   - !reference [checkcode, rules]
   interruptible: true
 
-readthedocs-web:
-  extends: .readthedocs
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-  tags:
-  - readthedocs
-  artifacts:
-    name: $CI_JOB_NAME-$CI_JOB_ID
-    paths:
-    - readthedocs.log
-    when: always
-    expire_in: 1 day
-  rules:
-  - if: $GITLAB_SCHEDULER_TYPE == "3"
-    when: never
-  - if: $CI_PIPELINE_SOURCE == "web"
-  - if: $CI_MERGE_REQUEST_IID
-  interruptible: true
-  needs:
-  - job: build-base-dependencies
-    optional: true
-
 readthedocs:
   extends: .readthedocs
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
@@ -704,13 +658,15 @@ readthedocs:
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
-    - readthedocs.log
     - readthedocs/
+    - readthedocs.log
     when: always
     expire_in: 1 day
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
+  - if: $CI_PIPELINE_SOURCE == "web"
+  - if: $CI_MERGE_REQUEST_IID
   needs:
   - job: build-base-dependencies
     optional: true
