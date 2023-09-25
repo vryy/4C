@@ -1989,8 +1989,7 @@ void SCATRA::ScaTraTimIntImpl::ScaleGradientsToOne(Teuchos::RCP<Epetra_MultiVect
 }
 
 /*--------------------------------------------------------------------------------------------------------------------*
- | convergence check (only for two-way coupled problems, e.g., low-Mach-number flow, two phase flow,
- ...)    vg 09/11 |
+ | convergence check (only for two-way coupled problems, e.g., low-Mach-number flow, ...) |
  *--------------------------------------------------------------------------------------------------------------------*/
 bool SCATRA::ScaTraTimIntImpl::ConvergenceCheck(int itnum, int itmax, const double ittol)
 {

@@ -1466,18 +1466,6 @@ namespace DRT
      - |  < v >,   t   |   with t = [sigma * n]
         \             /     */
 
-        // Two-Phase Flow:
-        //
-        //     t_{n+1}          [| sigma*n |] =      gamma * curv * n
-        //                                                             with curv =
-        //                                                             div(grad(phi)/||grad(phi)||)
-        //
-        //      t_{n}           [| sigma*n |] = [|  -pI + \mu*[\nabla u + (\nabla u)^T]  |] * n
-        //
-
-        // Combustion:        TO BE IMPLEMENTED.
-        //
-
         // All else:            [| sigma*n |] = 0
 
 

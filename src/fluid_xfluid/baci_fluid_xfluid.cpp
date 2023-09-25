@@ -231,12 +231,10 @@ void FLD::XFluid::Init(bool createinitialstate)
   // set include inner flag
   // -------------------------------------------------------------------
 
-  Teuchos::RCP<XFEM::LevelSetCoupling> two_phase_coupl =
-      condition_manager_->GetLevelSetCoupling("XFEMLevelsetTwophase");
   Teuchos::RCP<XFEM::LevelSetCoupling> combust_coupl =
       condition_manager_->GetLevelSetCoupling("XFEMLevelsetCombustion");
 
-  if (two_phase_coupl != Teuchos::null or combust_coupl != Teuchos::null)
+  if (combust_coupl != Teuchos::null)
   {
     include_inner_ = true;
 
