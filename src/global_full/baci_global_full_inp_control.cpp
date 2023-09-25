@@ -8,6 +8,7 @@
 *----------------------------------------------------------------------*/
 
 #include "baci_comm_utils.H"
+#include "baci_global_legacy_module.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
@@ -54,8 +55,14 @@ void ntainp_ccadiscret(
   // input of materials of cloned fields (if needed)
   problem->ReadCloningMaterialMap(reader);
 
-  // input of time curves, functions and result tests
-  problem->ReadTimeFunctionResult(reader);
+  {
+    DRT::UTILS::FunctionManager function_manager;
+    BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+    function_manager.ReadInput(reader);
+    problem->SetFunctionManager(std::move(function_manager));
+  }
+
+  problem->ReadResult(reader);
 
   // input of particles
   problem->ReadParticles(reader);

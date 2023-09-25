@@ -19,7 +19,7 @@ namespace BACI
    * @note This function exists for historic reasons. Its internals need to be split up to remove
    * forced dependencies on the main apps.
    */
-  ModuleCallbacks GlobalLegacyModuleCallbacks();
+  [[nodiscard]] ModuleCallbacks GlobalLegacyModuleCallbacks();
 }  // namespace BACI
 
 #endif

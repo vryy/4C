@@ -43,8 +43,6 @@ namespace DRT
        */
       using FunctionFactory = std::function<std::any(const std::vector<INPUT::LineDefinition>&)>;
 
-      FunctionManager();
-
       /// Return all known input lines that define a DRT::Function.
       DRT::INPUT::Lines ValidFunctionLines();
 

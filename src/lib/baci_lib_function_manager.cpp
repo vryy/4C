@@ -8,17 +8,11 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_fluid_functions.H"
-#include "baci_fluid_xfluid_functions.H"
-#include "baci_fluid_xfluid_functions_combust.H"
 #include "baci_io.H"
 #include "baci_lib_function.H"
-#include "baci_lib_function_library.H"
 #include "baci_lib_function_of_time.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_poromultiphase_scatra_function.H"
-#include "baci_structure_new_functions.H"
 #include "baci_utils_exceptions.H"
 
 #include <stdexcept>
@@ -153,19 +147,6 @@ void DRT::UTILS::AddValidBuiltinFunctions(DRT::UTILS::FunctionManager& function_
           .Build()};
 
   function_manager.AddFunctionDefinition(possible_lines, CreateBuiltinFunctionDispatch);
-}
-
-DRT::UTILS::FunctionManager::FunctionManager()
-{
-  // Legacy: attach all function directly in the constructor
-  // TODO these calls need to move into their respective modules
-  AddValidBuiltinFunctions(*this);
-  STR::AddValidStructureFunctions(*this);
-  FLD::AddValidFluidFunctions(*this);
-  AddValidCombustFunctions(*this);
-  AddValidXfluidFunctions(*this);
-  AddValidLibraryFunctions(*this);
-  POROMULTIPHASESCATRA::AddValidPoroFunctions(*this);
 }
 
 

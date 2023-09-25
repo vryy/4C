@@ -14,6 +14,7 @@
 #include "baci_comm_utils.H"
 #include "baci_contact_constitutivelaw_bundle.H"
 #include "baci_contact_constitutivelaw_constitutivelaw_definition.H"
+#include "baci_global_legacy_module.H"
 #include "baci_inpar_problemtype.H"
 #include "baci_inpar_validconditions.H"
 #include "baci_inpar_validcontactconstitutivelaw.H"
@@ -641,13 +642,7 @@ void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::ReadTimeFunctionResult(DRT::INPUT::DatFileReader& reader)
-{
-  //---------------------------------------- input of spatial functions
-  functionmanager_.ReadInput(reader);
-  //-------------------------------------- input of result descriptions
-  resulttest_.ReadInput(reader);
-}
+void DRT::Problem::ReadResult(DRT::INPUT::DatFileReader& reader) { resulttest_.ReadInput(reader); }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -2394,9 +2389,15 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
 
         micromeshreader.ReadAndPartition();
 
-        // read conditions of microscale
-        // -> note that no time curves and spatial functions can be read!
-        micro_problem->ReadTimeFunctionResult(micro_reader);
+
+        {
+          DRT::UTILS::FunctionManager function_manager;
+          BACI::GlobalLegacyModuleCallbacks().AttachFunctionDefinitions(function_manager);
+          function_manager.ReadInput(micro_reader);
+          micro_problem->SetFunctionManager(std::move(function_manager));
+        }
+
+        micro_problem->ReadResult(micro_reader);
         micro_problem->ReadConditions(micro_reader);
 
         // At this point, everything for the microscale is read,
@@ -2645,3 +2646,9 @@ void DRT::Problem::SetRestartStep(int r)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::Problem::SetProblemType(ProblemType targettype) { probtype_ = targettype; }
+
+
+void DRT::Problem::SetFunctionManager(DRT::UTILS::FunctionManager&& function_manager_in)
+{
+  functionmanager_ = std::move(function_manager_in);
+}

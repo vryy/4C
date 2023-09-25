@@ -41,6 +41,10 @@
 #include "baci_fluid_ele_immersed.H"
 #include "baci_fluid_ele_poro.H"
 #include "baci_fluid_ele_xwall.H"
+#include "baci_fluid_functions.H"
+#include "baci_fluid_xfluid_functions.H"
+#include "baci_fluid_xfluid_functions_combust.H"
+#include "baci_lib_function_library.H"
 #include "baci_lib_immersed_node.H"
 #include "baci_lubrication_ele.H"
 #include "baci_mat_aaa_mixedeffects.H"
@@ -123,6 +127,7 @@
 #include "baci_nurbs_discret_control_point.H"
 #include "baci_particle_engine_object.H"
 #include "baci_porofluidmultiphase_ele.H"
+#include "baci_poromultiphase_scatra_function.H"
 #include "baci_red_airways_elementbase.H"
 #include "baci_rigidsphere.H"
 #include "baci_s8.H"
@@ -160,6 +165,7 @@
 #include "baci_so3_weg6.H"
 #include "baci_solid_ele.H"
 #include "baci_solid_ele_poro.H"
+#include "baci_structure_new_functions.H"
 #include "baci_thermo_element.H"
 #include "baci_torsion3.H"
 #include "baci_truss3.H"
@@ -380,11 +386,23 @@ namespace
       << PARTICLEENGINE::ParticleObjectType::Instance().Name() << " ";
   }
 
+  void AttachFunctionDefinitions(DRT::UTILS::FunctionManager& function_manager)
+  {
+    AddValidBuiltinFunctions(function_manager);
+    STR::AddValidStructureFunctions(function_manager);
+    FLD::AddValidFluidFunctions(function_manager);
+    AddValidCombustFunctions(function_manager);
+    AddValidXfluidFunctions(function_manager);
+    AddValidLibraryFunctions(function_manager);
+    POROMULTIPHASESCATRA::AddValidPoroFunctions(function_manager);
+  }
+
 }  // namespace
 
 BACI::ModuleCallbacks BACI::GlobalLegacyModuleCallbacks()
 {
   BACI::ModuleCallbacks callbacks;
   callbacks.RegisterParObjectTypes = RegisterParObjectTypes;
+  callbacks.AttachFunctionDefinitions = AttachFunctionDefinitions;
   return callbacks;
 }
