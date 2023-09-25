@@ -104,28 +104,23 @@ DRT::INPUT::ValidConditions()
 
   /*--------------------------------------------------------------------*/
   // Neumann
-
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> neumannintsepveccomponents;
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> neumannintveccomponents;
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> neumannrealsepveccomponents;
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> neumannrealveccomponents;
   std::vector<Teuchos::RCP<ConditionComponent>> neumanncomponents;
 
-  neumannintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  neumannintveccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
-  neumannrealsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
-  neumannrealveccomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
-  neumannintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
-  neumannintveccomponents.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, false)));
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  neumanncomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
 
-  neumanncomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-  neumanncomponents.push_back(Teuchos::rcp(new DirichletNeumannBundle("neumannbund",
-      Teuchos::rcp(new IntConditionComponent("numdof")), neumannintsepveccomponents,
-      neumannintveccomponents, neumannrealsepveccomponents, neumannrealveccomponents)));
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  neumanncomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numdof"))));
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  neumanncomponents.emplace_back(
+      Teuchos::rcp(new RealVectorConditionComponent("val", LengthFromInt("numdof"))));
+  neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  neumanncomponents.emplace_back(Teuchos::rcp(
+      new IntVectorConditionComponent("funct", LengthFromInt("numdof"), false, true, false)));
 
   // optional
-  neumanncomponents.push_back(Teuchos::rcp(new StringConditionComponent("type", "Live",
+  neumanncomponents.emplace_back(Teuchos::rcp(new StringConditionComponent("type", "Live",
       Teuchos::tuple<std::string>("Live", "Dead", "PrescribedDomainLoad", "constHydro_z",
           "increaseHydro_z", "pseudo_orthopressure", "orthopressure", "LAS", "PressureGrad",
           "Torque"),
@@ -133,7 +128,7 @@ DRT::INPUT::ValidConditions()
           "neum_increhydro_z", "neum_pseudo_orthopressure", "neum_orthopressure", "neum_LAS",
           "neum_pgrad", "neum_torque"),
       true)));
-  neumanncomponents.push_back(Teuchos::rcp(new StringConditionComponent("surface", "Mid",
+  neumanncomponents.emplace_back(Teuchos::rcp(new StringConditionComponent("surface", "Mid",
       Teuchos::tuple<std::string>("Mid", "Top", "Bot"),
       Teuchos::tuple<std::string>("mid", "top", "bot"), true)));
 
@@ -196,28 +191,28 @@ DRT::INPUT::ValidConditions()
       new ConditionDefinition("DESIGN VOL PORO NEUMANN CONDITIONS", "PoroVolumeNeumann",
           "Volume Neumann", DRT::Condition::VolumeNeumann, true, DRT::Condition::Volume));
 
-  for (unsigned i = 0; i < neumanncomponents.size(); ++i)
+  for (const auto& neumanncomponent : neumanncomponents)
   {
-    pointneumann->AddComponent(neumanncomponents[i]);
-    pointneumanneb->AddComponent(neumanncomponents[i]);
-    lineneumann->AddComponent(neumanncomponents[i]);
-    surfneumann->AddComponent(neumanncomponents[i]);
-    volneumann->AddComponent(neumanncomponents[i]);
+    pointneumann->AddComponent(neumanncomponent);
+    pointneumanneb->AddComponent(neumanncomponent);
+    lineneumann->AddComponent(neumanncomponent);
+    surfneumann->AddComponent(neumanncomponent);
+    volneumann->AddComponent(neumanncomponent);
 
-    pointtransportneumann->AddComponent(neumanncomponents[i]);
-    linetransportneumann->AddComponent(neumanncomponents[i]);
-    surftransportneumann->AddComponent(neumanncomponents[i]);
-    voltransportneumann->AddComponent(neumanncomponents[i]);
+    pointtransportneumann->AddComponent(neumanncomponent);
+    linetransportneumann->AddComponent(neumanncomponent);
+    surftransportneumann->AddComponent(neumanncomponent);
+    voltransportneumann->AddComponent(neumanncomponent);
 
-    pointthermoneumann->AddComponent(neumanncomponents[i]);
-    linethermoneumann->AddComponent(neumanncomponents[i]);
-    surfthermoneumann->AddComponent(neumanncomponents[i]);
-    volthermoneumann->AddComponent(neumanncomponents[i]);
+    pointthermoneumann->AddComponent(neumanncomponent);
+    linethermoneumann->AddComponent(neumanncomponent);
+    surfthermoneumann->AddComponent(neumanncomponent);
+    volthermoneumann->AddComponent(neumanncomponent);
 
-    pointporoneumann->AddComponent(neumanncomponents[i]);
-    lineporoneumann->AddComponent(neumanncomponents[i]);
-    surfporoneumann->AddComponent(neumanncomponents[i]);
-    volporoneumann->AddComponent(neumanncomponents[i]);
+    pointporoneumann->AddComponent(neumanncomponent);
+    lineporoneumann->AddComponent(neumanncomponent);
+    surfporoneumann->AddComponent(neumanncomponent);
+    volporoneumann->AddComponent(neumanncomponent);
   }
 
   condlist.push_back(pointneumann);
@@ -244,28 +239,24 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Dirichlet
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> dirichletintsepveccomponents;
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> dirichletintveccomponents;
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> dirichletrealsepveccomponents;
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> dirichletrealveccomponents;
   std::vector<Teuchos::RCP<ConditionComponent>> dirichletbundcomponents;
 
-  dirichletintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  dirichletintveccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
-  dirichletrealsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
-  dirichletrealveccomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
-  dirichletintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
-  dirichletintveccomponents.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, false)));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
 
-  dirichletbundcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-  dirichletbundcomponents.push_back(Teuchos::rcp(new DirichletNeumannBundle("dirichbund",
-      Teuchos::rcp(new IntConditionComponent("numdof")), dirichletintsepveccomponents,
-      dirichletintveccomponents, dirichletrealsepveccomponents, dirichletrealveccomponents)));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  dirichletbundcomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numdof"))));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  dirichletbundcomponents.emplace_back(
+      Teuchos::rcp(new RealVectorConditionComponent("val", LengthFromInt("numdof"))));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(
+      new IntVectorConditionComponent("funct", LengthFromInt("numdof"), false, true, false)));
 
   // optional
-  dirichletbundcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("TAG", true)));
-  dirichletbundcomponents.push_back(Teuchos::rcp(new StringConditionComponent("tag", "none",
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("TAG", true)));
+  dirichletbundcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent("tag", "none",
       Teuchos::tuple<std::string>("none", "monitor_reaction"),
       Teuchos::tuple<std::string>("none", "monitor_reaction"), true)));
 
@@ -416,19 +407,13 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Point coupling (e.g. joints - couple X out of Y nodal DoFs)
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> couplingintsepveccomponents;
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> couplingintveccomponents;
   std::vector<Teuchos::RCP<ConditionComponent>> couplingcomponents;
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> couplingrealsepveccomponents;
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> couplingrealveccomponents;
 
-  couplingintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  couplingintveccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
-
-  couplingcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-  couplingcomponents.push_back(Teuchos::rcp(new IntRealBundle("couplingbund",
-      Teuchos::rcp(new IntConditionComponent("numdof")), couplingintsepveccomponents,
-      couplingintveccomponents, couplingrealsepveccomponents, couplingrealveccomponents)));
+  couplingcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  couplingcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
+  couplingcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  couplingcomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numdof"))));
 
   Teuchos::RCP<ConditionDefinition> pointcoupling =
       Teuchos::rcp(new ConditionDefinition("DESIGN POINT COUPLING CONDITIONS", "PointCoupling",
@@ -438,10 +423,10 @@ DRT::INPUT::ValidConditions()
       new ConditionDefinition("DESIGN POINT THERMO COUPLING CONDITIONS", "PointThermoCoupling",
           "Point Coupling", DRT::Condition::PointCoupling, false, DRT::Condition::Point));
 
-  for (unsigned i = 0; i < couplingcomponents.size(); ++i)
+  for (const auto& couplingcomponent : couplingcomponents)
   {
-    pointcoupling->AddComponent(couplingcomponents[i]);
-    pointthermocoupling->AddComponent(couplingcomponents[i]);
+    pointcoupling->AddComponent(couplingcomponent);
+    pointthermocoupling->AddComponent(couplingcomponent);
   }
 
   condlist.push_back(pointcoupling);
@@ -491,8 +476,8 @@ DRT::INPUT::ValidConditions()
   condlist.push_back(volinitfields);
 
   /*--------------------------------------------------------------------*/
-  // define initial field that can be set on thermo simulations that use the ScaTra discretization
-  // e.g. STI, SSTI
+  // define initial field that can be set on thermo simulations that use the ScaTra
+  // discretization e.g. STI, SSTI
   std::vector<Teuchos::RCP<ConditionComponent>> initial_field_components_thermo_on_scatra_dis;
   initial_field_components_thermo_on_scatra_dis.emplace_back(
       Teuchos::rcp(new StringConditionComponent("Field", "Undefined",
@@ -539,8 +524,8 @@ DRT::INPUT::ValidConditions()
   condlist.push_back(volthermoinitfields);
 
   /*--------------------------------------------------------------------*/
-  // compute domain integrals, i.e., cumulative volumes of 3D domain elements or cumulative surface
-  // areas of 2D domain elements
+  // compute domain integrals, i.e., cumulative volumes of 3D domain elements or cumulative
+  // surface areas of 2D domain elements
   {
     // definition of surface and volume conditions for domain integral computation
     Teuchos::RCP<ConditionDefinition> domainintegralsurf =
@@ -1036,28 +1021,17 @@ DRT::INPUT::ValidConditions()
 
     std::vector<Teuchos::RCP<ConditionComponent>> rigidbodymodecomponents;
 
-    rigidbodymodecomponents.push_back(Teuchos::rcp(new StringConditionComponent("discretization",
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new StringConditionComponent("discretization",
         "fluid", Teuchos::tuple<std::string>("fluid", "scatra", "solid"),
         Teuchos::tuple<std::string>("fluid", "scatra", "solid"))));
 
-    // input: trigger as int-vector using an IntRealBundle
-    // definition separator for int vectors
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepveccomp;
-    intsepveccomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-    // definition int vectors
-    std::vector<Teuchos::RCP<IntVectorConditionComponent>> intveccomp;
-    intveccomp.push_back(Teuchos::rcp(new IntVectorConditionComponent("ONOFF", 1)));
-    // definition separator for real vectors: length of the real vector is zero -> nothing is read
-    std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepveccomp;
-    // definition real vectors: length of the real vector is zero -> nothing is read
-    std::vector<Teuchos::RCP<RealVectorConditionComponent>> realveccomp;
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMMODES")));
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("NUMMODES")));
+    rigidbodymodecomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+    rigidbodymodecomponents.emplace_back(
+        Teuchos::rcp(new IntVectorConditionComponent("ONOFF", LengthFromInt("NUMMODES"))));
 
-    rigidbodymodecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMMODES")));
-    rigidbodymodecomponents.push_back(Teuchos::rcp(
-        new IntRealBundle("intreal bundle", Teuchos::rcp(new IntConditionComponent("NUMMODES")),
-            intsepveccomp, intveccomp, realsepveccomp, realveccomp)));
-
-    rigidbodymodecomponents.push_back(
+    rigidbodymodecomponents.emplace_back(
         Teuchos::rcp(new StringConditionComponent("weight vector definition", "integration",
             Teuchos::tuple<std::string>("integration", "pointvalues"),
             Teuchos::tuple<std::string>("integration", "pointvalues"))));

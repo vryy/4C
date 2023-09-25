@@ -204,30 +204,21 @@ void INPAR::THR::SetValidConditions(
 
   std::vector<Teuchos::RCP<ConditionComponent>> thermorobincomponents;
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> Robinintsepveccompstoich;
-  Robinintsepveccompstoich.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  // definition int vectors
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> Robinintveccompstoich;
-  Robinintveccompstoich.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
-  // definition separator for real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> Robinrealsepveccompstoich;
-  // definition real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> Robinrealveccompstoich;
+  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  thermorobincomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numscal"))));
 
-  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-  thermorobincomponents.push_back(Teuchos::rcp(new IntRealBundle("intreal bundle numscal",
-      Teuchos::rcp(new IntConditionComponent("numscal")), Robinintsepveccompstoich,
-      Robinintveccompstoich, Robinrealsepveccompstoich, Robinrealveccompstoich)));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("prefactor")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFVALUE")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("refvalue")));
 
-  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
-  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("prefactor")));
-  thermorobincomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("REFVALUE")));
-  thermorobincomponents.push_back(Teuchos::rcp(new RealConditionComponent("refvalue")));
-
-  for (unsigned i = 0; i < thermorobincomponents.size(); ++i)
+  for (const auto& thermorobincomponent : thermorobincomponents)
   {
-    thermorobinline->AddComponent(thermorobincomponents[i]);
-    thermorobinsurf->AddComponent(thermorobincomponents[i]);
+    thermorobinline->AddComponent(thermorobincomponent);
+    thermorobinsurf->AddComponent(thermorobincomponent);
   }
 
   condlist.push_back(thermorobinline);

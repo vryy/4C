@@ -536,21 +536,12 @@ void INPAR::SCATRA::SetValidConditions(
 
   std::vector<Teuchos::RCP<ConditionComponent>> scatracoupcomponents;
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> KKintsepveccompstoich;
-  KKintsepveccompstoich.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  // definition int vectors
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> KKintveccompstoich;
-  KKintveccompstoich.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
-  // definition separator for real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> KKrealsepveccompstoich;
-  // definition real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> KKrealveccompstoich;
-
-
   scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-  scatracoupcomponents.emplace_back(Teuchos::rcp(new IntRealBundle("intreal bundle numscal",
-      Teuchos::rcp(new IntConditionComponent("numscal")), KKintsepveccompstoich, KKintveccompstoich,
-      KKrealsepveccompstoich, KKrealveccompstoich)));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
+  scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  scatracoupcomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numscal"))));
+
   scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
   scatracoupcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
   scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
@@ -593,21 +584,12 @@ void INPAR::SCATRA::SetValidConditions(
 
   std::vector<Teuchos::RCP<ConditionComponent>> scatrarobincomponents;
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> Robinintsepveccompstoich;
-  Robinintsepveccompstoich.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  // definition int vectors
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> Robinintveccompstoich;
-  Robinintveccompstoich.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 2)));
-  // definition separator for real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> Robinrealsepveccompstoich;
-  // definition real vectors: length of the real vector is zero -> nothing is read
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> Robinrealveccompstoich;
-
 
   scatrarobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-  scatrarobincomponents.emplace_back(Teuchos::rcp(new IntRealBundle("intreal bundle numscal",
-      Teuchos::rcp(new IntConditionComponent("numscal")), Robinintsepveccompstoich,
-      Robinintveccompstoich, Robinrealsepveccompstoich, Robinrealveccompstoich)));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
+  scatrarobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  scatrarobincomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numscal"))));
 
   scatrarobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
   scatrarobincomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("prefactor")));

@@ -431,20 +431,12 @@ void INPAR::SSI::SetValidConditions(
         std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreduced;
         // total number of existing scalars
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-        // string separator in front of integer stoichiometry vector in input file line
-        std::vector<Teuchos::RCP<SeparatorConditionComponent>> intsepcomp;
-        intsepcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
-        // integer vector of stoichiometric coefficients
-        std::vector<Teuchos::RCP<IntVectorConditionComponent>> intvectcomp;
-        intvectcomp.emplace_back(
-            Teuchos::rcp(new IntVectorConditionComponent("stoichiometries", 0)));
-        // empty vector --> no separators for real vectors needed
-        std::vector<Teuchos::RCP<SeparatorConditionComponent>> realsepcomp;
-        // empty vector --> no real vectors needed
-        std::vector<Teuchos::RCP<RealVectorConditionComponent>> realvectcomp;
+        butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
+        butlervolmerreduced.emplace_back(
+            Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(
-            new IntRealBundle("stoichiometries", Teuchos::rcp(new IntConditionComponent("numscal")),
-                intsepcomp, intvectcomp, realsepcomp, realvectcomp)));
+            new IntVectorConditionComponent("stoichiometries", LengthFromInt("numscal"))));
+
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_R")));
@@ -486,30 +478,29 @@ void INPAR::SSI::SetValidConditions(
       new ConditionDefinition("DESIGN SURF MANIFOLD DIRICH CONDITIONS", "ManifoldDirichlet",
           "Surface Dirichlet", DRT::Condition::SurfaceDirichlet, false, DRT::Condition::Surface));
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> dirichletintsepveccomponents;
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> dirichletintveccomponents;
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> dirichletrealsepveccomponents;
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> dirichletrealveccomponents;
-  std::vector<Teuchos::RCP<ConditionComponent>> dirichletbundcomponents;
-
-  dirichletintsepveccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  dirichletintveccomponents.emplace_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
-  dirichletrealsepveccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
-  dirichletrealveccomponents.emplace_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
-  dirichletintsepveccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
-  dirichletintveccomponents.emplace_back(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, false)));
-
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-  dirichletbundcomponents.emplace_back(Teuchos::rcp(new DirichletNeumannBundle("dirichbund",
-      Teuchos::rcp(new IntConditionComponent("numdof")), dirichletintsepveccomponents,
-      dirichletintveccomponents, dirichletrealsepveccomponents, dirichletrealveccomponents)));
-
-  for (auto& dirichletbundcomponent : dirichletbundcomponents)
+  const auto add_dirichlet_manifold_components = [](ConditionDefinition& definition)
   {
-    pointmanifolddirichlet->AddComponent(dirichletbundcomponent);
-    linemanifolddirichlet->AddComponent(dirichletbundcomponent);
-    surfmanifolddirichlet->AddComponent(dirichletbundcomponent);
+    definition.AddComponent(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+    definition.AddComponent(Teuchos::rcp(new IntConditionComponent("numdof")));
+
+    definition.AddComponent(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+    definition.AddComponent(
+        Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numdof"))));
+
+    definition.AddComponent(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+    definition.AddComponent(
+        Teuchos::rcp(new RealVectorConditionComponent("val", LengthFromInt("numdof"))));
+
+    definition.AddComponent(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+    definition.AddComponent(
+        Teuchos::rcp(new IntVectorConditionComponent("funct", LengthFromInt("numdof"),
+            /*fortranstyle=*/false, /*noneallowed=*/true, /*optional=*/false)));
+  };
+
+  {
+    add_dirichlet_manifold_components(*pointmanifolddirichlet);
+    add_dirichlet_manifold_components(*linemanifolddirichlet);
+    add_dirichlet_manifold_components(*surfmanifolddirichlet);
   }
 
   condlist.push_back(pointmanifolddirichlet);

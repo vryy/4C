@@ -116,24 +116,19 @@ void INPAR::ELEMAG::SetValidConditions(
 {
   using namespace DRT::INPUT;
 
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> abcintsepveccomponents;
-  std::vector<Teuchos::RCP<IntVectorConditionComponent>> abcintveccomponents;
-  std::vector<Teuchos::RCP<SeparatorConditionComponent>> abcrealsepveccomponents;
-  std::vector<Teuchos::RCP<RealVectorConditionComponent>> abcrealveccomponents;
   std::vector<Teuchos::RCP<ConditionComponent>> abcbundcomponents;
 
-  abcintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  abcintveccomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 1)));
-  abcintsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
-  abcintveccomponents.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, true, false)));
-  abcrealsepveccomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
-  abcrealveccomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
-
-  abcbundcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-  abcbundcomponents.push_back(Teuchos::rcp(new IntRealBundle("abcbound",
-      Teuchos::rcp(new IntConditionComponent("numdof")), abcintsepveccomponents,
-      abcintveccomponents, abcrealsepveccomponents, abcrealveccomponents)));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  abcbundcomponents.emplace_back(
+      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numdof"))));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(
+      new IntVectorConditionComponent("funct", LengthFromInt("numdof"), false, true, false)));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+  abcbundcomponents.emplace_back(
+      Teuchos::rcp(new RealVectorConditionComponent("val", LengthFromInt("numdof"))));
 
   //*--------------------------------------------------------------------* /
   // absorbing boundary condition for electromagnetic problems
