@@ -15,6 +15,7 @@
 #include "baci_discretization_fem_general_utils_polynomial.H"
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_discret_hdg.H"
 #include "baci_lib_elementtype.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_utils_densematrix_multiply.H"
@@ -176,7 +177,22 @@ int DRT::ELEMENTS::ScaTraEleCalcHDG<distype, probdim>::EvaluateService(DRT::Elem
 
   // get the action required
 
-  const auto act = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
+  SCATRA::Action act;
+  if (params.get<bool>("hdg_action", false))
+  {
+    switch (Teuchos::getIntegralValue<DRT::HDGAction>(params, "action"))
+    {
+      case DRT::HDGAction::project_dirich_field:
+        act = SCATRA::Action::project_dirich_field;
+        break;
+      default:
+        dserror("HDG Action type not supported");
+    }
+  }
+  else
+  {
+    act = Teuchos::getIntegralValue<SCATRA::Action>(params, "action");
+  }
 
   InitializeShapes(ele, discretization.Name());
 

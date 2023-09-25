@@ -9,7 +9,6 @@
 
 #include "baci_fluid_DbcHDG.h"
 
-#include "baci_elemag_ele_action.H"
 #include "baci_fluid_ele_action.H"
 #include "baci_fluid_ele_calc.H"
 #include "baci_fluid_ele_calc_hdg.H"
@@ -17,7 +16,6 @@
 #include "baci_lib_discret_hdg.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
-#include "baci_scatra_ele_action.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -196,11 +194,10 @@ void FLD::UTILS::DbcHDG_Fluid::DoDirichletCondition(const DRT::DiscretizationFac
     CORE::LINALG::SerialDenseMatrix elemat1, elemat2;
     DRT::Element::LocationArray dummy(1);
     Teuchos::ParameterList initParams;
-    if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag)
-      initParams.set<int>("action", ELEMAG::project_dirich_field);
-    else if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::scatra)
-      DRT::UTILS::AddEnumClassToParameterList<SCATRA::Action>(
-          "action", SCATRA::Action::project_dirich_field, initParams);
+    if (DRT::Problem::Instance(0)->GetProblemType() == ProblemType::elemag or
+        DRT::Problem::Instance(0)->GetProblemType() == ProblemType::scatra)
+      DRT::UTILS::AddEnumClassToParameterList<DRT::HDGAction>(
+          "action", DRT::HDGAction::project_dirich_field, initParams);
     else
       initParams.set<int>(
           "action", FLD::project_fluid_field);  // TODO: Introduce a general action type that is

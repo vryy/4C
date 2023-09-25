@@ -31,6 +31,11 @@ namespace CORE::LINALG
 
 namespace DRT
 {
+  enum class HDGAction
+  {
+    project_dirich_field  ///< project dirichlet field
+  };
+
   class DiscretizationHDG : public DiscretizationFaces
   {
    public:
