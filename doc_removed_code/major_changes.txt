@@ -1,8 +1,15 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Two phase flow
+- removed in commits 62c2d195a842fcec1758591f6218c1c86a7491f7,
+  25f9da4fefa4bbdadc8c94453634385b656226f5 and abdaa08842f87946eba5ffdb1cc9225ac917f941
+  on 25/09/2023
+- reasons: implementation no longer in use, was discussed in a PMM
+- removed by Janina Datz
+
 LOCA Bifurcation tracking
 - removed in commit be368fb01964fc1a07e7f1298b963a895f9df964 on 11/08/2023
-- resons: it is not completely implemented, and not tested (0% coverage)
+- reasons: it is not completely implemented, and not tested (0% coverage)
 - removed by Ingo Scheider
 
 Inverse analysis
