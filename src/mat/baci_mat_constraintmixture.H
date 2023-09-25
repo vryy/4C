@@ -225,7 +225,7 @@ namespace MAT
     );
 
     /// SetupHistory
-    virtual void ResetAll(const int numgp);
+    void ResetAll(const int numgp);
 
     /// Update
     virtual void Update();

@@ -400,58 +400,6 @@ void MAT::ViscoElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   return;
 }
 
-/*------------------------------------------------------------------------------------------*
-|  Setup internal stress variables (public)
- *-------------------------------------------------------------------------------------------*/
-void MAT::ViscoElastHyper::ResetAll(const int numgp)
-{
-  // Initialise/allocate history variables 09/13
-  const CORE::LINALG::Matrix<6, 1> emptyvec(true);
-  CORE::LINALG::Matrix<6, 1> idvec(true);
-  for (int i = 0; i < 3; ++i) idvec(i) = 1.;
-
-  histscgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>(numgp, idvec));
-  histscglast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>(numgp, idvec));
-  histmodrcgcurr_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>(numgp, idvec));
-  histmodrcglast_ = Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<6, 1>>(numgp, idvec));
-  histstresscurr_ =
-      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
-  histstresslast_ =
-      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
-  histartstresscurr_ =
-      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
-  histartstresslast_ =
-      Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
-
-
-  if (viscogeneralizedgenmax_)
-  {
-    const std::vector<CORE::LINALG::Matrix<6, 1>> emptybigvec(true);
-    histbranchstresscurr_ = Teuchos::rcp(
-        new std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-    histbranchstresslast_ = Teuchos::rcp(
-        new std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-    histbranchelaststresscurr_ = Teuchos::rcp(
-        new std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-    histbranchelaststresslast_ = Teuchos::rcp(
-        new std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>(numgp, emptybigvec));
-  }
-
-  // in case of FSLS-model
-  if (viscofract_)
-  {
-    histfractartstresscurr_ =
-        Teuchos::rcp(new std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>(numgp, emptyvec));
-    histfractartstresslastall_ =
-        Teuchos::rcp(new std::vector<std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>>(
-            numgp, std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>>(true)));
-  }
-
-  isinitvis_ = true;
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

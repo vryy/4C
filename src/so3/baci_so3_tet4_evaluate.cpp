@@ -582,27 +582,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList& params,
     break;
 
     //==================================================================================
-    case calc_struct_reset_all:
-    {
-      // Reset of history for materials
-      SolidMaterial()->ResetAll(NUMGPT_SOTET4);
-
-      // Reset prestress
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
-      {
-        time_ = 0.0;
-        CORE::LINALG::Matrix<3, 3> Id(true);
-        Id(0, 0) = Id(1, 1) = Id(2, 2) = 1.0;
-        for (int gp = 0; gp < NUMGPT_SOTET4; ++gp)
-        {
-          prestress_->MatrixtoStorage(gp, Id, prestress_->FHistory());
-          prestress_->MatrixtoStorage(gp, nxyz_, prestress_->JHistory());
-        }
-      }
-    }
-    break;
-
-    //==================================================================================
     case calc_struct_errornorms:
     {
       // IMPORTANT NOTES (popp 10/2010):

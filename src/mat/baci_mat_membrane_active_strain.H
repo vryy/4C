@@ -200,10 +200,6 @@ namespace MAT
     /// Reset internal variables
     virtual void ResetStep();
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse
-    /// analysis)
-    virtual void ResetAll(int numgp);
-
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 

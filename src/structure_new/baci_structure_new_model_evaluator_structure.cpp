@@ -1967,9 +1967,6 @@ void STR::MODELEVALUATOR::Structure::ParamsInterface2ParameterList(
     case DRT::ELEMENTS::struct_calc_recover_istep:
       action = "calc_struct_recover_istep";
       break;
-    case DRT::ELEMENTS::struct_calc_reset_all:
-      action = "calc_struct_reset_all";
-      break;
     case DRT::ELEMENTS::struct_calc_energy:
       action = "calc_struct_energy";
       break;

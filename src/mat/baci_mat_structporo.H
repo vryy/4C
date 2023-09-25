@@ -334,8 +334,6 @@ namespace MAT
 
     void ResetStep() override { mat_->ResetStep(); }
 
-    void ResetAll(int numgp) override { mat_->ResetAll(numgp); }
-
     //!@}
 
     //! @name Visualization methods

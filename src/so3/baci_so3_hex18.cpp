@@ -512,14 +512,6 @@ int DRT::ELEMENTS::So_hex18::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    //==================================================================================
-    case calc_struct_reset_all:
-    {
-      // Reset of history for materials
-      SolidMaterial()->ResetAll(NUMGPT_SOH18);
-    }
-    break;
-
     case calc_recover:
     {
       Teuchos::RCP<const Epetra_Vector> res = discretization.GetState("residual displacement");

@@ -167,10 +167,6 @@ namespace MAT
     /// Setup
     void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse
-    /// analysis)
-    void ResetAll(int numgp) override;
-
     /// Update
     void Update() override;
 

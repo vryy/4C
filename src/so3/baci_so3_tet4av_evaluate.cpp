@@ -177,14 +177,6 @@ int DRT::ELEMENTS::So_tet4av::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    //==================================================================================
-    case calc_struct_reset_all:
-    {
-      // Reset of history for materials
-      SolidMaterial()->ResetAll(NUMGPT_SOTET4av);
-    }
-    break;
-
     default:
       dserror("Unknown type of action for so_tet4");
       break;

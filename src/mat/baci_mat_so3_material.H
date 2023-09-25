@@ -208,10 +208,6 @@ namespace MAT
     /// Reset time step (for time adaptivity)
     virtual void ResetStep(){/* do nothing for simple material models */};
 
-    /// Reset internal variables to state in the beginning of the computation (needed for inverse
-    /// analysis)
-    virtual void ResetAll(int numgp){/* do nothing for simple material models */};
-
     /// Store internal history variables to be eventually reset at some point
     virtual void StoreHistory(int timestep)
     { /* do nothing for simple material models */

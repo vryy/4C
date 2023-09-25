@@ -354,13 +354,6 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateGaussPointDataOutput(const DR
 }
 
 template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::SolidEleCalc<distype>::ResetAll(
-    const DRT::Element& ele, MAT::So3Material& solid_material)
-{
-  solid_material.ResetAll(stiffness_matrix_integration_.NumPoints());
-}
-
-template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::SolidEleCalc<distype>::ResetToLastConverged(
     const DRT::Element& ele, MAT::So3Material& solid_material)
 {

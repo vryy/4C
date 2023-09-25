@@ -187,13 +187,6 @@ int DRT::ELEMENTS::Solid::Evaluate(Teuchos::ParameterList& params,
 
       return 0;
     }
-    case ELEMENTS::struct_calc_reset_all:
-    {
-      std::visit([&](auto& interface) { interface->ResetAll(*this, *SolidMaterial()); },
-          solid_calc_variant_);
-
-      return 0;
-    }
     case ELEMENTS::struct_calc_reset_istep:
     {
       std::visit([&](auto& interface) { interface->ResetToLastConverged(*this, *SolidMaterial()); },

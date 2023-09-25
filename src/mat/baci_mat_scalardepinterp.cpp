@@ -304,13 +304,6 @@ void MAT::ScalarDepInterp::Unpack(const std::vector<char>& data)
 }
 
 /*----------------------------------------------------------------------------*/
-void MAT::ScalarDepInterp::ResetAll(const int numgp)
-{
-  lambda_zero_mat_->ResetAll(numgp);
-  lambda_unit_mat_->ResetAll(numgp);
-}
-
-/*----------------------------------------------------------------------------*/
 void MAT::ScalarDepInterp::Update()
 {
   lambda_zero_mat_->Update();

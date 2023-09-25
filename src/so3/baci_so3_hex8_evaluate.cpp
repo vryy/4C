@@ -716,32 +716,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     //==================================================================================
-    case ELEMENTS::struct_calc_reset_all:
-    {
-      // Reset of history for materials
-      SolidMaterial()->ResetAll(NUMGPT_SOH8);
-
-      // Reset prestress
-      if (::UTILS::PRESTRESS::IsMulf(pstype_))
-      {
-        time_ = 0.0;
-        CORE::LINALG::Matrix<3, 3> Id(true);
-        Id(0, 0) = Id(1, 1) = Id(2, 2) = 1.0;
-        for (unsigned gp = 0; gp < NUMGPT_SOH8; ++gp)
-        {
-          prestress_->MatrixtoStorage(gp, Id, prestress_->FHistory());
-          prestress_->MatrixtoStorage(gp, invJ_[gp], prestress_->JHistory());
-        }
-      }
-
-      // reset EAS parameters:
-      if (eastype_ != DRT::ELEMENTS::So_hex8::soh8_easnone)
-      {
-        soh8_easinit();
-      }
-    }
-    break;
-    //==================================================================================
     case ELEMENTS::struct_calc_energy:
     {
       // initialization of internal energy
