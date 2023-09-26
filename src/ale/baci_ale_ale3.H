@@ -375,8 +375,7 @@ namespace DRT
         calc_ale_laplace_spatial,   ///< compute stiffness based on laplacian smoothing based on
                                     ///< spatial configuration
         calc_ale_node_normal,       ///< Calculate boundary node normal
-        ba_calc_ale_node_normal,    ///< Calculate boundary node normal TODO (@ HAHN unused action
-                                    ///< please fix me!)
+        ba_calc_ale_node_normal,    ///< Calculate boundary node normal
         setup_material,             ///< Setup material in case of ElastHyper Tool Box
         calc_det_jac  ///< calculate Jacobian determinant and mesh quality measure according to
                       ///< [Oddy et al. 1988]

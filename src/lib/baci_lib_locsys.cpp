@@ -64,17 +64,14 @@ DRT::UTILS::LocsysManager::LocsysManager(DRT::Discretization& discret)
 
   // Set boolean that indicates, if a locsys warning has already been thrown, to false
   warningThrown_ = false;
-
-  // First Setup is made in the constructor. If we have no time dependent locsys conditions
-  // in our problem, this is the only time where the whole setup routine is conducted.
-  Setup(-1.0);
 }
 
 /*-------------------------------------------------------------------*
- |  set-up                                                meier 06/13|
  *-------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::Setup(const double time)
+void DRT::UTILS::LocsysManager::Update(
+    const double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals)
 {
+  nodenormals_ = std::move(nodenormals);
   // IMPORTANT NOTE:
   // The definition of local coordinate systems only makes sense in
   // combination with Dirichlet boundary conditions. This means that
@@ -329,9 +326,11 @@ void DRT::UTILS::LocsysManager::Setup(const double time)
       if (fabs(vec1(0)) < 1e-9 || fabs(vec2(1)) < 1e-9 || fabs(vec3(2)) < 1e-9) sanity_check = true;
       // test how big numdofs are
       if (numdof > 3)
+      {
         dserror(
             "The locsys condition is not implemented for elements with numdof "
             "exceeding 3");
+      }
       // trafo for 2D case
       if (Dim() == 2)
       {
@@ -575,37 +574,17 @@ void DRT::UTILS::LocsysManager::CalcRotationVectorForNormalSystem(int numLocsysC
 
   // Calculate (non-normalized) mass-consistent node normals for a given locsys condition
   // *****+++++++++++++++++**************************************************************
-  // Create parameter list
-  Teuchos::ParameterList nodeNormalParams;
 
-  // Set action for elements
-  if (discret_.Name() == "ale")
-  {
-    if (DRT::Problem::Instance()->NDim() == 2)
-      dserror("Locsys: For type 'ale', only 3D case is implemented.");
-    else
-      nodeNormalParams.set<int>("action", DRT::ELEMENTS::Ale3::ba_calc_ale_node_normal);
-  }
-  else if (discret_.Name() == "fluid")
-    nodeNormalParams.set<int>("action", FLD::ba_calc_node_normal);
-  else
+  // check if the normals were set
+  if (nodenormals_.empty())
   {
     dserror(
-        "Locsys: Only types 'ale' and 'fluid' are configured to be used with the "
-        "mass-consistent-node-normal-system option.");
-    // Note: The functionality can easily be adapted for structures by simply providing
-    // an action that returns the structural node normals. For fluids (all 3D), the
-    // vectors dispnp and massConsistentNodeNormals contain 4 dofs per node and for an
-    // ale field only 3 dofs, but the node normals are always stored in the first 3
-    // dofs, so there should be no problem (and this can be done for structures as well).
+        "The option massConsistentNodeNormals of the Local SYS BC needs the current normals of the "
+        "problem. Before calling Setup, please provide the Node Normals.");
   }
 
   // Declare node normal variable
-  Teuchos::RCP<Epetra_Vector> massConsistentNodeNormals =
-      CORE::LINALG::CreateVector(*Discret().DofRowMap(), true);
-
-  // Evaluate boundary action
-  discret_.EvaluateCondition(nodeNormalParams, massConsistentNodeNormals, "Locsys", numLocsysCond);
+  Teuchos::RCP<Epetra_Vector> massConsistentNodeNormals = nodenormals_[numLocsysCond];
 
   // Loop through all nodes in the condition
   // *******************************************************************

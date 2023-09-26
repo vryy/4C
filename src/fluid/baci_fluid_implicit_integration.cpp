@@ -24,11 +24,13 @@
 
 #include "baci_fluid_implicit_integration.H"
 
+#include "baci_ale_ale3.H"
 #include "baci_comm_utils.H"
 #include "baci_coupling_adapter_mortar.H"
 #include "baci_discretization_geometry_position_array.H"
 #include "baci_fluid_DbcHDG.h"
 #include "baci_fluid_ele.H"
+#include "baci_fluid_ele_action.H"
 #include "baci_fluid_ele_intfaces_calc.H"
 #include "baci_fluid_impedancecondition.H"
 #include "baci_fluid_meshtying.H"
@@ -220,6 +222,7 @@ void FLD::FluidImplicitTimeInt::Init()
     {
       // Initialize locsys manager
       locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+      SetupLocsysDirichletBC(-1.0);
     }
   }
 
@@ -383,6 +386,7 @@ void FLD::FluidImplicitTimeInt::Init()
     CreateFacesExtension();
   }
   reconstructder_ = DRT::INPUT::IntegralValue<int>(*stabparams, "Reconstruct_Sec_Der");
+
 }  // FluidImplicitTimeInt::Init()
 
 /*----------------------------------------------------------------------*
@@ -629,6 +633,47 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
 }  // FluidImplicitTimeInt::TimeLoop
 
 
+void FLD::FluidImplicitTimeInt::SetupLocsysDirichletBC(double time)
+{
+  // Check how many locsys conditions exist
+  std::vector<DRT::Condition*> locsysconds_;
+  discret_->GetCondition("Locsys", locsysconds_);
+  int numlocsys = (int)locsysconds_.size();
+
+  if (numlocsys > 0)
+  {
+    // estimate the normals for every locsys condition
+    std::vector<Teuchos::RCP<Epetra_Vector>> loc_sys_node_normals;
+    loc_sys_node_normals.resize(numlocsys);
+
+    for (int i = 0; i < numlocsys; ++i)
+    {
+      loc_sys_node_normals[i] = CORE::LINALG::CreateVector(*discret_->DofRowMap(), true);
+
+      Teuchos::ParameterList nodeNormalParams;
+
+      // Set action for elements
+      if (discret_->Name() == "ale")
+      {
+        if (numdim_ == 2)
+          dserror("Locsys: Node Normal for type 'ale', only 3D case is implemented.");
+        else
+          nodeNormalParams.set<int>("action", DRT::ELEMENTS::Ale3::ba_calc_ale_node_normal);
+      }
+      else
+      {
+        nodeNormalParams.set<int>("action", FLD::ba_calc_node_normal);
+      }
+      discret_->EvaluateCondition(nodeNormalParams, loc_sys_node_normals[i], "Locsys", i);
+    }
+    locsysman_->Update(time, loc_sys_node_normals);
+  }
+  else
+    locsysman_->Update(time, {});
+
+  discret_->ClearState();
+}
+
 /*----------------------------------------------------------------------*
  | setup the variables to do a new time step                 u.kue 06/07|
  *----------------------------------------------------------------------*/
@@ -685,8 +730,8 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   {
     discret_->ClearState();
     if (alefluid_) discret_->SetState(ndsale_, "dispnp", dispnp_);
-    locsysman_->Setup(time_);
-    discret_->ClearState();
+
+    SetupLocsysDirichletBC(time_);
   }
 
 
@@ -936,8 +981,8 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
   {
     discret_->ClearState();
     discret_->SetState(ndsale_, "dispnp", dispnp_);
-    locsysman_->Setup(time_);
-    discret_->ClearState();
+
+    SetupLocsysDirichletBC(time_);
   }
 
   // apply Dirichlet boundary conditions to system of equations

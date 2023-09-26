@@ -12,8 +12,7 @@
 #ifndef BACI_LIB_LOCSYS_H
 #define BACI_LIB_LOCSYS_H
 
-#include "baci_ale_ale3.H"
-#include "baci_fluid_ele_action.H"
+#include "baci_lib_condition.H"
 #include "baci_lib_discret.H"
 
 #include <Teuchos_RCP.hpp>
@@ -28,10 +27,6 @@ namespace CORE::LINALG
 
 namespace DRT
 {
-  namespace ELEMENTS
-  {
-    class Ale3;
-  }
 
   namespace UTILS
   {
@@ -101,9 +96,10 @@ namespace DRT
       explicit LocsysManager(DRT::Discretization& discret);
 
       /*!
-       * \brief Set-up stuff common to all constructors
+       * Set current @p time and @p nodenormals to the locsys manager. The vector of @p
+       * nodenormals my remain empty. It is only required for CalcRotationVectorForNormalSystem().
        */
-      void Setup(const double time);
+      void Update(double time, std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals);
 
       /*!
        *\brief Print this Manager
@@ -234,13 +230,6 @@ namespace DRT
       void RotateLocalToGlobal(Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat) const;
 
       /*!
-       * \brief Add displacement offset value in order to apply Dirichlet conditions on local
-       * systems
-       *
-       */
-      void AddOffset(Teuchos::RCP<Epetra_Vector> vec, bool inverse) const;
-
-      /*!
        * \brief Calculate rotation vector for (mass-consistent) normal system
        *
        */
@@ -270,6 +259,9 @@ namespace DRT
 
       /// number of local systems
       int numlocsys_;
+
+      /// list of Node Normals for massConsistent BC
+      std::vector<Teuchos::RCP<Epetra_Vector>> nodenormals_;
 
       /// types of local system conditions
       std::vector<DRT::Condition::ConditionType> typelocsys_;

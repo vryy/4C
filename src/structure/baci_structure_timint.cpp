@@ -286,6 +286,9 @@ void STR::TimInt::Setup()
     if (locsysconditions.size())
     {
       locsysman_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_));
+      // in case we have no time dependent locsys conditions in our problem,
+      // this is the only time where the whole setup routine is conducted.
+      locsysman_->Update(-1.0, {});
     }
   }
 
