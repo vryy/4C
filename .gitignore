@@ -108,3 +108,6 @@ doc/readthedocs-config/baci-python-rtd-venv
 
 # clangd
 .clangd
+
+# Ruby
+.bundle
