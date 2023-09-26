@@ -398,18 +398,18 @@ namespace DRT
             dserror("Illegal line in section '%s': '%s'\n%s found, where %s was expected",
                 marker.c_str(), l, dname.substr(0, name.length()).c_str(), name.c_str());
         }
-        // copy all design object entries
-        for (auto& topo : topology)
+        if (topology.size() > 0)
         {
-          if (topo.first >= static_cast<int>(dobj_fenode.size()))
+          int max_num_dobj = topology.rbegin()->first;
+          if (max_num_dobj >= static_cast<int>(dobj_fenode.size()))
+            dobj_fenode.resize(max_num_dobj + 1);
+          // copy all design object entries
+          for (auto& topo : topology)
           {
-            dserror("Illegal design object number %d in section '%s'", topo.first + 1,
-                sectionname.c_str());
+            // we copy from a std::set, thus the gids are sorted
+            dobj_fenode[topo.first].reserve(topo.second.size());
+            dobj_fenode[topo.first].assign(topo.second.begin(), topo.second.end());
           }
-
-          // we copy from a std::set, thus the gids are sorted
-          dobj_fenode[topo.first].reserve(topo.second.size());
-          dobj_fenode[topo.first].assign(topo.second.begin(), topo.second.end());
         }
       }
 
@@ -1126,6 +1126,7 @@ namespace DRT
       // the following section names are always regarded as valid
       knownsections_["--END"] = true;
       knownsections_["--TITLE"] = true;
+      knownsections_["--DESIGN DESCRIPTION"] = true;
       knownsections_["--FUNCT1"] = true;
       knownsections_["--FUNCT2"] = true;
       knownsections_["--FUNCT3"] = true;
