@@ -34,9 +34,6 @@ int EXODUS::WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
   // write "header"
   EXODUS::WriteDatHead(headfile, dat);
 
-  // write "design description"
-  EXODUS::WriteDatDesign(condefs, dat);
-
   // write conditions
   EXODUS::WriteDatConditions(condefs, mymesh, dat);
 
@@ -97,9 +94,8 @@ void EXODUS::WriteDatHead(const std::string& headfile, std::ostream& dat)
   header.close();
   std::string headstring = head.str();
 
-  // delete sections which will be written by WriteDatDesign()
+  // delete sections which has been written by WriteDatIntro already
   RemoveDatSection("PROBLEM SIZE", headstring);
-  RemoveDatSection("DESIGN DESCRIPTION", headstring);
 
   // delete very first line with comment "//"
   if (headstring.find("//") == 0)
@@ -135,46 +131,6 @@ void EXODUS::RemoveDatSection(const std::string& secname, std::string& headstrin
     const size_t sectionend = headstring.find("---", secpos);
     headstring.erase(sectionbegin, sectionend - sectionbegin);
   }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void EXODUS::WriteDatDesign(const std::vector<EXODUS::cond_def>& condefs, std::ostream& dat)
-{
-  int ndp = 0;
-  int ndl = 0;
-  int nds = 0;
-  int ndv = 0;
-
-  for (const auto& condition_definition : condefs)
-  {
-    switch (condition_definition.gtype)
-    {
-      case DRT::Condition::Volume:
-        ++ndv;
-        break;
-      case DRT::Condition::Surface:
-        ++nds;
-        break;
-      case DRT::Condition::Line:
-        ++ndl;
-        break;
-      case DRT::Condition::Point:
-        ++ndp;
-        break;
-      case DRT::Condition::NoGeom:
-        // do nothing
-        break;
-      default:
-        dserror("Cannot identify Condition GeometryType");
-        break;
-    }
-  }
-  dat << "------------------------------------------------DESIGN DESCRIPTION" << std::endl;
-  dat << "NDPOINT " << ndp << std::endl;
-  dat << "NDLINE  " << ndl << std::endl;
-  dat << "NDSURF  " << nds << std::endl;
-  dat << "NDVOL   " << ndv << std::endl;
 }
 
 /*----------------------------------------------------------------------*/

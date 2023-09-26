@@ -188,7 +188,6 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadSection("--IO/RUNTIME VTK OUTPUT/STRUCTURE", *list);
   reader.ReadSection("--IO/RUNTIME VTK OUTPUT/BEAMS", *list);
   reader.ReadSection("--IO/RUNTIME VTP OUTPUT STRUCTURE", *list);
-  reader.ReadSection("--DESIGN DESCRIPTION", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/TIMEADAPTIVITY", *list);
   reader.ReadSection("--STRUCTURAL DYNAMIC/GENALPHA", *list);
@@ -655,29 +654,21 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
     IO::cout.flush();
   }
 
-  //------------------------------- read number of design objects we have
-  // this currently serves to determine how many node sets we might have
-  const Teuchos::ParameterList& design = DesignDescriptionParams();
-  int ndnode = design.get<int>("NDPOINT");
-  int ndline = design.get<int>("NDLINE");
-  int ndsurf = design.get<int>("NDSURF");
-  int ndvol = design.get<int>("NDVOL");
-
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
-  std::vector<std::vector<int>> dnode_fenode(ndnode);
+  std::vector<std::vector<int>> dnode_fenode;
   reader.ReadDesign("DNODE", dnode_fenode);
 
   // read design lines <-> nodes
-  std::vector<std::vector<int>> dline_fenode(ndline);
+  std::vector<std::vector<int>> dline_fenode;
   reader.ReadDesign("DLINE", dline_fenode);
 
   // read design surfaces <-> nodes
-  std::vector<std::vector<int>> dsurf_fenode(ndsurf);
+  std::vector<std::vector<int>> dsurf_fenode;
   reader.ReadDesign("DSURF", dsurf_fenode);
 
   // read design volumes <-> nodes
-  std::vector<std::vector<int>> dvol_fenode(ndvol);
+  std::vector<std::vector<int>> dvol_fenode;
   reader.ReadDesign("DVOL", dvol_fenode);
 
   // check for meshfree discretisation to add node set topologies

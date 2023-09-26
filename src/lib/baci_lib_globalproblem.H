@@ -307,10 +307,6 @@ namespace DRT
       return getParameterList()->sublist("BOUNDINGVOLUME STRATEGY");
     }
     const Teuchos::ParameterList& IOParams() const { return getParameterList()->sublist("IO"); }
-    const Teuchos::ParameterList& DesignDescriptionParams() const
-    {
-      return getParameterList()->sublist("DESIGN DESCRIPTION");
-    }
     const Teuchos::ParameterList& StructuralDynamicParams() const
     {
       return getParameterList()->sublist("STRUCTURAL DYNAMIC");
