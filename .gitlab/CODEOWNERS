@@ -253,8 +253,6 @@ post_ensight/              @baci/team_output
 
 post_monitor/              @baci/team_output
 
-post_s8convert/            @baci/team_output
-
 post_vtk/                  @baci/team_output
 
 pre_exodus/                @baci/team_input
