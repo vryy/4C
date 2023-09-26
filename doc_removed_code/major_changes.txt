@@ -1,5 +1,14 @@
 List of major features that were removed from BACI, including date and revision where code was removed
 
+Shell8 and post_s8convert
+- removed in commits 85aa45c0e2061e8a086e8b95fa4a8e8112dda2ce and
+  186f7c4db1997b1939f90e6ec67db7247cdd157b on 26/09/2023
+- reasons: the shell8 element implementation was reworked and replaced by shell7p
+  in 18088b4f632507d78de51bbf7942a96d53d47eee
+- the post_s8convert was not used for some years and currently the implementation does not work
+  due to segmentation fault errors
+- removed by Maire Henke
+
 Two phase flow
 - removed in commits 62c2d195a842fcec1758591f6218c1c86a7491f7,
   25f9da4fefa4bbdadc8c94453634385b656226f5 and abdaa08842f87946eba5ffdb1cc9225ac917f941
