@@ -267,8 +267,6 @@ red_airways/               @baci/team_reduced_fluid_models
 
 rigidsphere/               @baci/team_structure
 
-s8/                        @baci/team_structure
-
 scatra/                    @baci/team_scatra
 scatra/baci_scatra_timint_meshtying_strategy_artery*  @baci/team_scatra @baci/team_reduced_fluid_models
 scatra/baci_scatra_timint_poro*                       @baci/team_scatra @baci/team_poro

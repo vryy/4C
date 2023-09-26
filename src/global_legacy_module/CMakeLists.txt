@@ -24,7 +24,6 @@ set(_dependencies
     porofluidmultiphase_ele
     red_airways
     rigidsphere
-    s8
     scatra_ele
     shell7p
     so3

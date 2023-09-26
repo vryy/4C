@@ -140,7 +140,7 @@ elements and elements using projection methods (Küttler)
 Structure
 ^^^^^^^^^
 
-Wall und Brick Elemente, Shell8
+Wall und Brick Elemente, Shell7p
 
 ALE mesh dynamics
 ^^^^^^^^^^^^^^^^^

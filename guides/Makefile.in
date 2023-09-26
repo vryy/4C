@@ -23,7 +23,6 @@ src/xfem/xfem.tex
 src/brick1/brick1.tex
 src/wall1/wall1.tex
 src/wallge/wallge.tex
-src/shell8/shell8.tex
 src/shell9/shell9.tex
 src/axishell/axishell.tex
 src/beam3/beam3.tex

@@ -42,7 +42,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parallel.H"
 #include "baci_mat_par_bundle.H"
-#include "baci_s8.H"
 #include "baci_shell7p_ele.H"
 #include "baci_so3_hex8fbar.H"
 #include "baci_so3_plast_ssn_eletypes.H"
@@ -584,14 +583,7 @@ void ADAPTER::StructureBaseAlgorithmNew::DetectElementTechnologies(
     {
       if (so_base_ele->HaveEAS()) iseas_local = 1;
     }
-    /* additional check for shell8 elements, since these elements are not derived
-     * from the So_base class */
-    else
-    {
-      DRT::ELEMENTS::Shell8* shell8_ele = dynamic_cast<DRT::ELEMENTS::Shell8*>(actele);
-      if (shell8_ele != nullptr)
-        if (shell8_ele->HaveEAS()) iseas_local = 1;
-    }
+
     DRT::ELEMENTS::Shell7p* shell7p = dynamic_cast<DRT::ELEMENTS::Shell7p*>(actele);
     if (shell7p)
       if (shell7p->GetEleTech().find(INPAR::STR::EleTech::eas) != shell7p->GetEleTech().end())
