@@ -81,6 +81,9 @@ void STR::Dbc::Setup()
   if (locsysconditions.size())
   {
     locsysman_ptr_ = Teuchos::rcp(new DRT::UTILS::LocsysManager(*discret_ptr_));
+    // in case we have no time dependent locsys conditions in our problem,
+    // this is the only time where the whole setup routine is conducted.
+    locsysman_ptr_->Update(-1.0, {});
     islocsys_ = true;
   }
 
@@ -149,7 +152,7 @@ void STR::Dbc::UpdateLocSysManager()
   if (!IsLocSys()) return;
 
   DiscretPtr()->SetState("dispnp", GState().GetDisNp());
-  locsysman_ptr_->Setup(GState().GetTimeNp());
+  locsysman_ptr_->Update(GState().GetTimeNp(), {});
   DiscretPtr()->ClearState();
 }
 

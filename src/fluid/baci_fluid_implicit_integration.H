@@ -1412,6 +1412,12 @@ namespace FLD
     */
     virtual void RecomputeMeanCsgsB();
 
+
+    /*! \brief Prepares the locsys manager by calculating the node normals
+     *
+     */
+    void SetupLocsysDirichletBC(const double time);
+
     /// prepares and evalutes egde-based internal face integrals
     void EvaluateFluidEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::ParameterList edgebasedparams);

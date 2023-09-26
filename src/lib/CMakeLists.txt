@@ -2,7 +2,6 @@ baci_auto_define_module()
 
 set(_lib_dependencies
     # cmake-format: sortable
-    ale
     beaminteraction
     binstrategy
     comm
@@ -10,7 +9,6 @@ set(_lib_dependencies
     core
     fiber
     fluid
-    fluid_ele
     fluid_xfluid
     global_legacy_module
     inpar

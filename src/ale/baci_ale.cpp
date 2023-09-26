@@ -570,7 +570,7 @@ void ALE::Ale::PrepareTimeStep()
   {
     discret_->ClearState();
     discret_->SetState("dispnp", dispnp_);
-    locsysman_->Setup(time_);
+    locsysman_->Update(time_, {});
     discret_->ClearState();
   }
 
