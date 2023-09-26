@@ -195,16 +195,6 @@ namespace XFEM
         levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingNavierSlip(
             bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
       }
-      else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_TWOPHASE)
-      {
-        levelset_coupl_.push_back(Teuchos::rcp(
-            new LevelSetCouplingTwoPhase(bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
-      }
-      else if (CondType_stringToEnum(cond_name) == INPAR::XFEM::CouplingCond_LEVELSET_COMBUSTION)
-      {
-        levelset_coupl_.push_back(Teuchos::rcp(new LevelSetCouplingCombustion(
-            bg_dis_, cond_name, cond_dis, coupling_id, time_, step_)));
-      }
       else
       {
         levelset_coupl_.push_back(Teuchos::rcp(
@@ -605,8 +595,6 @@ namespace XFEM
     }
 
     void SetLevelSetField(const double time);
-
-    void SetPointerBetweenCouplingObjects();
 
     void WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
         Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf,

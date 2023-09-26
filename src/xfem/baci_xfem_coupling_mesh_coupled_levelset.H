@@ -38,11 +38,6 @@ namespace XFEM
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
     );
 
-    //! destructor
-    virtual ~MeshCouplingNavierSlipTwoPhase() { return; }
-
-    void SetTwoPhaseCouplingPointer(
-        Teuchos::RCP<XFEM::LevelSetCouplingTwoPhase> twophase_coupling_object);
 
     /*!
     Return prescribed velocities and traction vectors for a GNBC boundary condition.
@@ -100,7 +95,6 @@ namespace XFEM
         // Add this to the veljump!
 
         double sliplength = 0.0;
-        GetSliplengthAtGP<DISTYPE>(sliplength, eid, cond, funct, derxy);
 
         if (sliplength < 0.0) dserror("The slip length can not be negative.");
 
@@ -171,8 +165,6 @@ namespace XFEM
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double sliplength = 0.0;
 
-      int eid = ele->Id();
-
       if (ele->Shape() == DRT::Element::hex8)
       {
         const DRT::Element::DiscretizationType shape = DRT::Element::hex8;
@@ -181,7 +173,6 @@ namespace XFEM
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
-        GetSliplengthAtGP<DRT::Element::hex8>(sliplength, eid, cond, funct_, derxy_);
       }
       else if (ele->Shape() == DRT::Element::hex27)
       {
@@ -191,7 +182,6 @@ namespace XFEM
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
-        GetSliplengthAtGP<DRT::Element::hex27>(sliplength, eid, cond, funct_, derxy_);
       }
       else if (ele->Shape() == DRT::Element::hex20)
       {
@@ -201,15 +191,11 @@ namespace XFEM
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
-        GetSliplengthAtGP<DRT::Element::hex20>(sliplength, eid, cond, funct_, derxy_);
       }
       else
         dserror("Element not considered.");
 
       if (sliplength < 0.0) dserror("The slip length can not be negative.");
-
-      // Extract correct slip length - bool pair for this condition ID.
-      double& scaled_normal_pen = scalednormalpenalty_map_.find(cond->Id())->second;
 
       if (sliplength != 0.0)
       {
@@ -233,52 +219,9 @@ namespace XFEM
         configuration_map_[INPAR::XFEM::F_Adj_t_Row].second = 1.0;
         configuration_map_[INPAR::XFEM::FStr_Adj_t_Col] = std::pair<bool, double>(false, 0.0);
       }
-
-      // Configuration of Penalty Terms
-      configuration_map_[INPAR::XFEM::F_Pen_n_Row].second =
-          scaled_normal_pen * full_stab;  // full_stab <-- to keep results!
-    };
-
-   protected:
-    template <DRT::Element::DiscretizationType DISTYPE, class M1, class M2>
-    void GetSliplengthAtGP(double& sliplength,  ///< phi at gausspoint
-        int eid,                                ///< element ID
-        const DRT::Condition* cond,
-        M1& funct,  ///< local shape function for Gauss Point (from fluid element)
-        M2& derxy   ///< local derivatives of shape function for Gauss Point (from fluid element)
-    )
-    {
-      double phi_at_gp = 0.0;
-      if (twophase_coupling_object_ == Teuchos::null)
-        dserror("twophase_coupling_object_, object is null-pointer.");
-
-      twophase_coupling_object_->GetPhiAtGP<DISTYPE>(phi_at_gp, eid, funct, derxy);
-
-      // Extract correct slip length - bool pair for this condition ID.
-      double& slipsmear_length = slipsmear_map_.find(cond->Id())->second;
-      // Extract correct slip length - bool pair for this condition ID.
-      std::pair<double, bool>& tmp_pair = sliplength_map_.find(cond->Id())->second;
-
-      // max smearlength at phi = 0;
-      if (abs(phi_at_gp) <= slipsmear_length)
-      {
-        sliplength = tmp_pair.first;  // 1000.0;
-        // double max_smearlength = 100;
-        // double sqrt_max_smearlength = sqrt(max_smearlength);
-        // sliplength=(0.5*(sqrt_max_smearlength +
-        // sqrt_max_smearlength*std::cos(M_PI*phi_at_gp/slipsmear_length)))^2;
-      }
     };
 
     virtual void SetConditionSpecificParameters();
-
-   private:
-    //! two-phase coupling object
-    Teuchos::RCP<XFEM::LevelSetCouplingTwoPhase> twophase_coupling_object_;
-
-    //       Coupling Surface (E 1)  Length of slip smear
-    std::map<int, double> slipsmear_map_;
-    std::map<int, double> scalednormalpenalty_map_;
   };
 
 }  // namespace XFEM

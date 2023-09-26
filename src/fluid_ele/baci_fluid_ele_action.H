@@ -61,7 +61,6 @@ namespace FLD
     xwall_l2_projection,
     xwall_calc_mk,
     tauw_via_gradient,
-    set_two_phase_parameter,
     project_fluid_field,
     interpolate_hdg_to_node,
     interpolate_hdg_for_hit,

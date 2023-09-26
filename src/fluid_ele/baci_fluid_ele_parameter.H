@@ -19,7 +19,6 @@ be set in problem specific parameter lists derived from this class.
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_inpar_fluid.H"
 #include "baci_inpar_turbulence.H"
-#include "baci_inpar_twophase.H"
 #include "baci_utils_exceptions.H"
 
 #include <Teuchos_StandardParameterEntryValidators.hpp>
@@ -124,10 +123,6 @@ namespace DRT
       double GetInterfaceThickness() const { return interface_thickness_; };
       bool GetEnhancedGaussRuleInInterface() const { return enhanced_gaussrule_; }
       bool GetIncludeSurfaceTension() const { return include_surface_tension_; };
-      INPAR::TWOPHASE::SurfaceTensionApprox GetSurfaceTensionApprox() const
-      {
-        return eval_surfacetension_;
-      };
 
 
       /*----------------------------------------------------*/
@@ -274,7 +269,6 @@ namespace DRT
       double interface_thickness_;
       bool enhanced_gaussrule_;
       bool include_surface_tension_;
-      INPAR::TWOPHASE::SurfaceTensionApprox eval_surfacetension_;
 
       /*----------------------------------------------------*/
       //! @name turbulence model

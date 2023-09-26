@@ -1607,43 +1607,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::AddSurfaceTensionForce(
     //==================================================
 
     static CORE::LINALG::Matrix<nsd_, 1> gradphi;
-    double Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * gaussescaaf / epsilon));
 
     // NON-smoothed gradient!!! Should be correct
     gradphi.Multiply(derxy_, escaaf);
 
-    // Smoothed gradient (egradphi, should not be used!!!)
-    if (fldpara_->GetSurfaceTensionApprox() ==
-        INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
-    {
-      double gausscurvature;
-      gausscurvature = funct_.Dot(ecurvature);
-      double scalar_fac = Dheavyside_epsilon * gamma_ * gausscurvature;
-      generalbodyforce_.Update(scalar_fac, gradphi, 1.0);
-    }
-    else
-      dserror(
-          "Other means of approximation than nodal curvature is not available at the moment! "
-          "Implement it!");
-
     if (fldparatimint_->IsNewOSTImplementation())
     {
-      double gaussescan;
       static CORE::LINALG::Matrix<nsd_, 1> gradphin;
-      gaussescan = funct_.Dot(escaam);
       gradphin.Multiply(derxy_, escaam);
-
-      Dheavyside_epsilon = 1.0 / (2.0 * epsilon) * (1.0 + cos(M_PI * gaussescan / epsilon));
-
-      // Smoothed gradient (egradphi, should not be used!!!)
-      if (fldpara_->GetSurfaceTensionApprox() ==
-          INPAR::TWOPHASE::surface_tension_approx_nodal_curvature)
-      {
-        double gausscurvaturen;
-        gausscurvaturen = funct_.Dot(ecurvaturen);
-        double scalar_fac = Dheavyside_epsilon * gamma_ * gausscurvaturen;
-        generalbodyforcen_.Update(scalar_fac, gradphin, 1.0);
-      }
     }
   }
 

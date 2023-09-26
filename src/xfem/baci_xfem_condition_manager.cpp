@@ -303,8 +303,6 @@ void XFEM::ConditionManager::Init()
     levelset_coupl_[lc]->Init();
   }
 
-  SetPointerBetweenCouplingObjects();
-
   isinit_ = true;
 }
 
@@ -398,27 +396,6 @@ void XFEM::ConditionManager::SetLevelSetField(const double time)
   }
 }
 
-void XFEM::ConditionManager::SetPointerBetweenCouplingObjects()
-{
-  for (int m = 0; m < NumMeshCoupling(); m++)
-  {
-    if (mesh_coupl_[m]->GetName() == "XFEMSurfNavierSlipTwoPhase")
-    {
-      // TOOD: when using two-phase in combination with other levelset, how to access to the right
-      // coupling twophase coupling object?
-      // TODO: safety check, that there is a unique two-phase coupling object!?
-      if (levelset_coupl_.size() != 1)
-        dserror(
-            "level-set field is not unique, for the mesh condition XFEMSurfNavierSlipTwoPhase only "
-            "a two-phase levelset may be present!!");
-
-      Teuchos::rcp_dynamic_cast<XFEM::MeshCouplingNavierSlipTwoPhase>(mesh_coupl_[m], true)
-          ->SetTwoPhaseCouplingPointer(
-              Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(levelset_coupl_[0], true));
-    }
-  }
-}
-
 
 void XFEM::ConditionManager::WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra_Vector>& scalaraf,
     Teuchos::RCP<Epetra_MultiVector>& smoothed_gradphiaf, Teuchos::RCP<Epetra_Vector>& curvatureaf)
@@ -430,10 +407,6 @@ void XFEM::ConditionManager::WriteAccess_GeometricQuantities(Teuchos::RCP<Epetra
     dserror("level-set field is not unique, which level-set field to be set by given vector?");
 
   is_levelset_uptodate_ = false;
-
-  // update the unique level-set field
-  Teuchos::rcp_dynamic_cast<XFEM::LevelSetCouplingTwoPhase>(levelset_coupl_[0], true)
-      ->WriteAccess_GeometricQuantities(scalaraf, smoothed_gradphiaf, curvatureaf);
 }
 
 

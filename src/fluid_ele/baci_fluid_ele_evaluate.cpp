@@ -64,11 +64,6 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization& dis, Teuchos::Pa
     DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
     fldpara->SetElementLomaParameter(p);
   }
-  else if (action == FLD::set_two_phase_parameter)
-  {
-    DRT::ELEMENTS::FluidEleParameterStd* fldpara = DRT::ELEMENTS::FluidEleParameterStd::Instance();
-    fldpara->SetElementTwoPhaseParameter(p);
-  }
   else if (action == FLD::set_general_fluid_xfem_parameter)
   {
     DRT::ELEMENTS::FluidEleParameterXFEM* fldpara =
@@ -722,7 +717,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList& params,
     case FLD::set_time_parameter:
     case FLD::set_turbulence_parameter:
     case FLD::set_loma_parameter:
-    case FLD::set_two_phase_parameter:
       //    case FLD::calc_adjoint_neumann: // this is done by the surface elements
       break;
     //-----------------------------------------------------------------------

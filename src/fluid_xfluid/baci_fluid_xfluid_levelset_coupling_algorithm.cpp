@@ -34,8 +34,6 @@ XFLUIDLEVELSET::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::Par
       ittol_(1.0),
       upres_(-1),
       write_center_of_mass_(false),
-      smoothedgradphitype_(INPAR::TWOPHASE::smooth_grad_phi_l2_projection),
-      scalesmoothedgradients_(false),
       velnpi_(Teuchos::null),
       phinpi_(Teuchos::null),
       prbdyn_(prbdyn),
@@ -86,12 +84,6 @@ void XFLUIDLEVELSET::Algorithm::Init(
   itmax_ = prbdyn_.get<int>("ITEMAX");
 
   upres_ = prbdyn_.get<int>("RESULTSEVRY");
-
-  // TODO: Put this into condition manager
-  smoothedgradphitype_ = DRT::INPUT::IntegralValue<INPAR::TWOPHASE::SmoothGradPhi>(
-      prbdyn.sublist("SURFACE TENSION"), "SMOOTHGRADPHI");
-  scalesmoothedgradients_ = DRT::INPUT::IntegralValue<bool>(
-      prbdyn.sublist("SURFACE TENSION"), "SCALE_SMOOTHED_GRADIENTS");
 
   // Instantiate vectors contatining outer loop increment data
   fsvelincnorm_.reserve(itmax_);
@@ -441,10 +433,6 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
   bool require_smoothedgradphi = (fluid_smoothedgradphi == Teuchos::null) ? false : true;
   bool require_nodalcurvature = (fluid_nodalcurvature == Teuchos::null) ? false : true;
 
-  // set level set in fluid field
-  ComputeGeometricQuantities(require_smoothedgradphi, require_nodalcurvature, scatra_phinp,
-      smoothedgradphitype_, scatra_smoothedgradphi, scatra_nodalcurvature);
-
   // map geometric quantities from scatra dof-based to fluid node based vectors
   CopyGeometricQuantities(require_smoothedgradphi, require_nodalcurvature, scatra_phinp,
       scatra_smoothedgradphi, scatra_nodalcurvature, fluid_phinp, fluid_smoothedgradphi,
@@ -452,67 +440,6 @@ void XFLUIDLEVELSET::Algorithm::SetScaTraValuesInFluid()
 
   // export row to col vectors
   xfluid->ExportGeometricQuantities();
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- | Set relevant values from ScaTra field in the Fluid field.            |
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> XFLUIDLEVELSET::Algorithm::GetSmoothedLevelSetGradient(
-    const Teuchos::RCP<const Epetra_Vector>& phinp, INPAR::TWOPHASE::SmoothGradPhi smoothedgradphi)
-{
-  bool normalize_gradients = scalesmoothedgradients_;
-
-  switch (smoothedgradphi)
-  {
-    case INPAR::TWOPHASE::smooth_grad_phi_l2_projection:
-    {
-      return ScaTraField()->ReconstructGradientAtNodesL2Projection(phinp, normalize_gradients);
-      break;
-    }
-    case INPAR::TWOPHASE::smooth_grad_phi_superconvergent_patch_recovery_3D:
-    {
-      return ScaTraField()->ReconstructGradientAtNodesPatchRecon(phinp, 3, normalize_gradients);
-      break;
-    }
-    case INPAR::TWOPHASE::smooth_grad_phi_superconvergent_patch_recovery_2Dz:
-    {
-      return ScaTraField()->ReconstructGradientAtNodesPatchRecon(phinp, 2, normalize_gradients);
-      break;
-    }
-    case INPAR::TWOPHASE::smooth_grad_phi_meanvalue:
-    {
-      return ScaTraField()->ReconstructGradientAtNodesMeanAverage(phinp, normalize_gradients);
-      break;
-    }
-    default:
-      dserror("The chosen smoothing is not as of yet supported!");
-      break;
-  }
-
-  return Teuchos::null;
-}
-
-/*----------------------------------------------------------------------*
- | Set relevant values from Fluid field in the ScaTra field.            |
- *----------------------------------------------------------------------*/
-void XFLUIDLEVELSET::Algorithm::ComputeGeometricQuantities(const bool require_smoothedgradphi,
-    const bool require_nodalcurvature, const Teuchos::RCP<const Epetra_Vector>& phinp,
-    const INPAR::TWOPHASE::SmoothGradPhi smoothedgradphitype,
-    Teuchos::RCP<Epetra_MultiVector>& smoothedgradphi, Teuchos::RCP<Epetra_Vector>& nodalcurvature)
-{
-  smoothedgradphi = Teuchos::null;
-  nodalcurvature = Teuchos::null;
-
-  // compute the smoothed geometric quantities
-  if (require_smoothedgradphi)
-    smoothedgradphi = GetSmoothedLevelSetGradient(phinp, smoothedgradphitype);
-
-  if (require_nodalcurvature)
-    nodalcurvature =
-        Teuchos::rcp_dynamic_cast<SCATRA::LevelSetAlgorithm>(ScaTraField(), true)
-            ->GetNodalCurvature(phinp, GetSmoothedLevelSetGradient(phinp, smoothedgradphitype));
 
   return;
 }

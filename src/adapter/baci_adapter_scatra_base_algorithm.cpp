@@ -284,9 +284,8 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
     }
   }
 
-  // levelset and two phase flow
-  else if (probtype == ProblemType::level_set or probtype == ProblemType::two_phase_flow or
-           probtype == ProblemType::fluid_xfem_ls)
+  // levelset
+  else if (probtype == ProblemType::level_set or probtype == ProblemType::fluid_xfem_ls)
   {
     Teuchos::RCP<Teuchos::ParameterList> lsparams = Teuchos::null;
     switch (probtype)
@@ -294,15 +293,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       case ProblemType::level_set:
         lsparams = Teuchos::rcp(new Teuchos::ParameterList(prbdyn));
         break;
-      case ProblemType::two_phase_flow:
-      {
-        // Give access to smoothing parameter for levelset calculations.
-        lsparams =
-            Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->LevelSetControl()));
-        lsparams->set<double>("INTERFACE_THICKNESS_TPF",
-            prbdyn.sublist("SMEARED").get<double>("INTERFACE_THICKNESS"));
-        // !!! no break !!!
-      }
       default:
       {
         if (lsparams.is_null())
@@ -359,16 +349,6 @@ void ADAPTER::ScaTraBaseAlgorithm::Init(
       {
         switch (probtype)
         {
-          case ProblemType::two_phase_flow:
-          {
-            std::cout << "\n\n\n WARNING: Level set algorithm does not yet support gen-alpha. You "
-                         "thus get a standard Scatra!\n\n\n"
-                      << std::endl;
-            // create instance of time integration class (call the constructor)
-            scatra_ = Teuchos::rcp(
-                new SCATRA::TimIntGenAlpha(discret, solver, scatratimeparams, extraparams, output));
-            break;
-          }
           default:
             dserror("Unknown time-integration scheme for level-set problem");
             exit(EXIT_FAILURE);
