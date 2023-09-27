@@ -140,7 +140,6 @@ add_custom_target(framework DEPENDS pre_exodus post)
 set(FULL_TARGETS
     post_processor
     post_monitor
-    post_s8convert
     pre_exodus
     pre_locsys
     create_rtd

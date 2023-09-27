@@ -22,7 +22,6 @@ set(_adapter_dependencies
     pasi
     poroelast
     porofluidmultiphase
-    s8
     scatra
     shell7p
     so3

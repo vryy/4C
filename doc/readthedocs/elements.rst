@@ -21,7 +21,6 @@ Originally, there were some files with old elements, which are not valid anymore
 
 -  xfem
 -  brick1
--  shell8
 -  beam3
 
 There were also the following files, but the corresponding elements do not exist:

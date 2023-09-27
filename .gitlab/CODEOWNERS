@@ -253,8 +253,6 @@ post_ensight/              @baci/team_output
 
 post_monitor/              @baci/team_output
 
-post_s8convert/            @baci/team_output
-
 post_vtk/                  @baci/team_output
 
 pre_exodus/                @baci/team_input
@@ -266,8 +264,6 @@ rebalance/                 @baci/team_discretization
 red_airways/               @baci/team_reduced_fluid_models
 
 rigidsphere/               @baci/team_structure
-
-s8/                        @baci/team_structure
 
 scatra/                    @baci/team_scatra
 scatra/baci_scatra_timint_meshtying_strategy_artery*  @baci/team_scatra @baci/team_reduced_fluid_models
