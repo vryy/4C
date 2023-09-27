@@ -25,6 +25,7 @@
 
 1. Review **Action Items** from the previous meeting <!-- Link to previous meeting -->
 1. Questions regarding the notes from the maintainer meeting
+1. Update from the task forces
 1. TO BE ADDED
 
 ## Action Items
