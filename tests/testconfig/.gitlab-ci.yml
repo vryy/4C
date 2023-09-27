@@ -249,6 +249,39 @@ before_script:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "4"
 
+# codeclimate job
+.codeclimate:
+  stage: checkcode
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  script:
+  - *clean-build-folder
+  - mkdir ../baci-build/ && cd ../baci-build/
+    # configure to get a compilation database
+  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DBACI_BUILD_READTHEDOCS=OFF --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
+    # create  and activate virtual environment
+  - python3 -m venv venv
+  - . venv/bin/activate
+  - pip install wheel
+  - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
+    # run clang tidy and export report
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j 12 -p . -extra-arg="-I/usr/lib/x86_64-linux-gnu/openmpi/include/"
+    -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json -header-filter
+    ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
+  - cd ${CI_PROJECT_DIR}
+  variables:
+    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
+    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+  artifacts:
+    paths: [codeclimate.json]
+    reports:
+      codequality: codeclimate.json
+  allow_failure: true
+  tags:
+  - codeclimate
+  needs:
+  - job: build-base-dependencies
+    optional: true
+
 # Doxygen job
 .doxygen:
   stage: documentation
@@ -441,42 +474,17 @@ imcs-buildtest_release_trilinos_develop:
 # Docker---------------------------------------------------------------------------
 
 codeclimate:
-  stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
-  script:
-  - *clean-build-folder
-  - mkdir ../baci-build/ && cd ../baci-build/
-    # configure to get a compilation database
-  - ${CMAKE_COMMAND} ${CI_PROJECT_DIR} -DBACI_BUILD_READTHEDOCS=OFF --preset=${CTEST_BUILD_PRESETS_RELEASE_GITLAB}
-    # create  and activate virtual environment
-  - python3 -m venv venv
-  - . venv/bin/activate
-  - pip install wheel
-  - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
-    # run clang tidy and export report
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j 12 -p . -extra-arg="-I/usr/lib/x86_64-linux-gnu/openmpi/include/"
-    -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json -header-filter
-    ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
-  - cd ${CI_PROJECT_DIR}
-  variables:
-    CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-  artifacts:
-    paths: [codeclimate.json]
-    reports:
-      codequality: codeclimate.json
+  extends: .codeclimate
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  - if: $CI_PIPELINE_SOURCE == "schedule"
+
+codeclimate-mr:
+  extends: .codeclimate
+  rules:
   - if: $CI_PIPELINE_SOURCE == "web"
   - if: $CI_MERGE_REQUEST_IID
-  - if: $CI_PIPELINE_SOURCE == "schedule"
-  allow_failure: true
-  tags:
-  - codeclimate
   interruptible: true
-  needs:
-  - job: build-base-dependencies
-    optional: true
 
 buildtest_coverage:
   extends: .buildtest_coverage
