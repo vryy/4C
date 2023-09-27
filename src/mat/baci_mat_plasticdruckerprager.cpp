@@ -360,6 +360,39 @@ void MAT::PlasticDruckerPrager::EvaluateFAD(const CORE::LINALG::Matrix<3, 3>* de
   }
 }
 
+void MAT::PlasticDruckerPrager::RegisterOutputDataNames(
+    std::unordered_map<std::string, int>& names_and_size) const
+{
+  names_and_size["accumulated_plastic_strain"] = 1;
+  names_and_size["plastic_strain"] = 6;
+}
+
+bool MAT::PlasticDruckerPrager::EvaluateOutputData(
+    const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const
+{
+  if (name == "accumulated_plastic_strain")
+  {
+    for (std::size_t gp = 0; gp < strainbarplcurr_.size(); ++gp)
+    {
+      data(gp, 0) = strainbarplcurr_.at(int(gp));
+    }
+    return true;
+  }
+  if (name == "plastic_strain")
+  {
+    for (std::size_t gp = 0; gp < strainplcurr_.size(); ++gp)
+    {
+      const double* values = strainplcurr_.at(gp).A();
+      for (std::size_t i = 0; i < 6; ++i)
+      {
+        data(gp, i) = values[i];
+      }
+    }
+    return true;
+  }
+  return false;
+}
+
 template <typename T>
 void MAT::PlasticDruckerPrager::Stress(const T p,
     const CORE::LINALG::Matrix<NUM_STRESS_3D, 1, T>& devstress,

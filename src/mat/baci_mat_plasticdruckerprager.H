@@ -183,6 +183,11 @@ namespace MAT
     template <typename T>
     std::pair<T, T> ReturnToApexFunctAndDeriv(T dstrainv, T p, T kappa, T strainbar_p);
     bool Initialized() const { return (isinit_ and !strainplcurr_.empty()); }
+    void RegisterOutputDataNames(
+        std::unordered_map<std::string, int>& names_and_size) const override;
+
+    bool EvaluateOutputData(
+        const std::string& name, CORE::LINALG::SerialDenseMatrix& data) const override;
 
    private:
     MAT::PAR::PlasticDruckerPrager* params_;
@@ -190,8 +195,6 @@ namespace MAT
     std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>> strainplcurr_;
     std::vector<double> strainbarpllast_;
     std::vector<double> strainbarplcurr_;
-    std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>> backstresslast_;
-    std::vector<CORE::LINALG::Matrix<NUM_STRESS_3D, 1>> backstresscurr_;
     bool isinit_;
   };
 }  // namespace MAT
