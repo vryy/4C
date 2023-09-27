@@ -51,22 +51,22 @@ namespace NOX
         /** \brief Computes the Lagrangian merit function
          *
          *  \f$ f = \mathcal{L}(x,\lambda) \f$. */
-        virtual double computef(const NOX::Abstract::Group& grp) const;
+        double computef(const NOX::Abstract::Group& grp) const override;
 
         /** \brief Computes the gradient
          *
          *  \f$ g = \nabla_{x,\lambda_N} f = [ r_s - \nabla_x \tilde{g}_N^{\mathcal{A}}
          *          \lambda_{N}^{\mathcal{A}}, -\tilde{g}_N^{\mathcal{A}}, -\frac{2}{c_N}
          * A^{\mathcal{I}} \lambda_{N}^{\mathcal{I}} ] \f$. */
-        virtual void computeGradient(
-            const NOX::Abstract::Group& group, NOX::Abstract::Vector& result) const
+        void computeGradient(
+            const NOX::Abstract::Group& group, NOX::Abstract::Vector& result) const override
         {
           dserror("computeGradient is not implemented.");
         }
 
         //! Compute the slope of the Lagrangian merit function.
-        virtual double computeSlope(
-            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const;
+        double computeSlope(
+            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const override;
 
         double computeMixed2ndOrderTerms(
             const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const;
@@ -74,16 +74,16 @@ namespace NOX
         /** \brief Computes the quadratic model.
          *
          *  An alternative is the SaddlePointModel. */
-        virtual double computeQuadraticModel(
-            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const
+        double computeQuadraticModel(
+            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const override
         {
           dserror("computeQuadraticModel is not implemented.");
           return 0.0;
         }
 
         //! Computes the quadratic model minimizer.
-        virtual void computeQuadraticMinimizer(
-            const NOX::Abstract::Group& grp, NOX::Abstract::Vector& result) const
+        void computeQuadraticMinimizer(
+            const NOX::Abstract::Group& grp, NOX::Abstract::Vector& result) const override
         {
           dserror("computeQuadraticMinimizer is not implemented.");
         }
@@ -104,7 +104,7 @@ namespace NOX
             const NOX::Abstract::Group& grp) const;
 
         //! return the name of the merit function
-        virtual const std::string& name() const;
+        const std::string& name() const override;
 
         //! return the name of the merit function
         inline enum MeritFctName Type() const { return lagrangian_type_; }

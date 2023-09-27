@@ -46,30 +46,30 @@ namespace NOX
         virtual ~Infeasibility(){};
 
         //! Computes the merit function, \f$ f(x) \f$.
-        virtual double computef(const NOX::Abstract::Group& grp) const;
+        double computef(const NOX::Abstract::Group& grp) const override;
 
         /*! Computes the gradient of the merit function, \f$ \nabla f \f$, and
          *  returns the result in the \c result vector. */
-        virtual void computeGradient(
-            const NOX::Abstract::Group& group, NOX::Abstract::Vector& result) const;
+        void computeGradient(
+            const NOX::Abstract::Group& group, NOX::Abstract::Vector& result) const override;
 
         /*! Computes the inner product of the given direction and the gradient
          *  associated with the merit function. Returns the steepest descent
          *  direction in the \c result vector. */
-        virtual double computeSlope(
-            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const;
+        double computeSlope(
+            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const override;
 
         //! Compute the quadratic model,\f$ m(d) \f$, for the given merit function.
-        virtual double computeQuadraticModel(
-            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const;
+        double computeQuadraticModel(
+            const NOX::Abstract::Vector& dir, const NOX::Abstract::Group& grp) const override;
 
         /*! Computes the vector in the steepest descent direction that minimizes
          *  the quadratic model. */
-        virtual void computeQuadraticMinimizer(
-            const NOX::Abstract::Group& grp, NOX::Abstract::Vector& result) const;
+        void computeQuadraticMinimizer(
+            const NOX::Abstract::Group& grp, NOX::Abstract::Vector& result) const override;
 
         //! Returns the name of the merit function.
-        virtual const std::string& name() const;
+        const std::string& name() const override;
 
         //! return the name of the merit function as enumerator
         enum MeritFctName Type() const;

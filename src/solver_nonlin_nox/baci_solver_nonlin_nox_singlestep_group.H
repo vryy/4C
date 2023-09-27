@@ -40,7 +40,7 @@ namespace NOX
         Group(const NOX::NLN::SINGLESTEP::Group& source, NOX::CopyType type = NOX::DeepCopy);
 
         //! generate a clone of the given object concerning the given \c CopyType
-        Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const;
+        Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const override;
 
         //! assign operator
         NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;

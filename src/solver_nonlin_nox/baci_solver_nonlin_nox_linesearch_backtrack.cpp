@@ -240,7 +240,7 @@ bool NOX::NLN::LineSearch::Backtrack::compute(NOX::Abstract::Group& grp, double&
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const int& NOX::NLN::LineSearch::Backtrack::GetNumIterations() const { return lsIters_; }
+int NOX::NLN::LineSearch::Backtrack::GetNumIterations() const { return lsIters_; }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -266,7 +266,7 @@ const NOX::Abstract::Vector& NOX::NLN::LineSearch::Backtrack::GetSearchDirection
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const double& NOX::NLN::LineSearch::Backtrack::GetStepLength() const
+double NOX::NLN::LineSearch::Backtrack::GetStepLength() const
 {
   if (stepPtr_ == nullptr) throwError("GetStepLength", "Step pointer is nullptr!");
 

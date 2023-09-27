@@ -61,34 +61,32 @@ namespace NOX
         /// weak reset
         void reset();
 
-        // derived
         bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
-            const NOX::Solver::Generic& s);
+            const NOX::Solver::Generic& s) override;
 
-        /// derived
         NOX::NLN::INNER::StatusTest::StatusType CheckInnerStatus(const NOX::Solver::Generic& solver,
             const NOX::Abstract::Group& grp, NOX::StatusTest::CheckType checkType) const override;
 
         //! @name Access functionality
         //@{
         //! get the number of line search iterations
-        virtual const int& GetNumIterations() const;
+        int GetNumIterations() const override;
 
         //! get the merit function
-        virtual const NOX::MeritFunction::Generic& GetMeritFunction() const;
+        const NOX::MeritFunction::Generic& GetMeritFunction() const override;
 
         //! get the current search direction
-        virtual const NOX::Abstract::Vector& GetSearchDirection() const;
+        const NOX::Abstract::Vector& GetSearchDirection() const override;
 
         //! get current step length
-        const double& GetStepLength() const;
+        double GetStepLength() const override;
 
         //!@}
 
         //! @name Mutator functionality
         //! @{
         //! set current step length
-        virtual void SetStepLength(double step);
+        void SetStepLength(double step) override;
         //! @}
 
        protected:

@@ -133,7 +133,7 @@ namespace NOX
       void resetPrePostOperator(Teuchos::ParameterList& p);
 
       //! Evaluate the Jacobian
-      bool computeJacobian(const NOX::Epetra::Vector& x);
+      bool computeJacobian(const NOX::Epetra::Vector& x) override;
 
       //! Evaluate the Jacobian and the right hand side based on the solution vector x at once.
       virtual bool computeFandJacobian(const NOX::Epetra::Vector& x, NOX::Epetra::Vector& rhs);
@@ -144,26 +144,20 @@ namespace NOX
       bool applyJacobianBlock(const NOX::Epetra::Vector& input,
           Teuchos::RCP<NOX::Epetra::Vector>& result, unsigned rbid, unsigned cbid) const;
 
-      //! derived
-      virtual bool applyJacobian(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
+      bool applyJacobian(
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
 
-      //! derived
-      virtual bool applyJacobianTranspose(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
+      bool applyJacobianTranspose(
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
 
-      //! derived
-      virtual bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result);
+      bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) override;
 
-      //! derived
-      virtual bool applyRightPreconditioning(bool useTranspose,
-          Teuchos::ParameterList& linearSolverParams, const NOX::Epetra::Vector& input,
-          NOX::Epetra::Vector& result) const;
+      bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& linearSolverParams,
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
 
-      //! derived
-      virtual bool createPreconditioner(const NOX::Epetra::Vector& x,
-          Teuchos::ParameterList& linearSolverParams, bool recomputeGraph) const;
+      bool createPreconditioner(const NOX::Epetra::Vector& x,
+          Teuchos::ParameterList& linearSolverParams, bool recomputeGraph) const override;
 
       //! adjust the pseudo time step (using a least squares approximation)
       void adjustPseudoTimeStep(double& delta, const double& stepSize,
@@ -202,54 +196,44 @@ namespace NOX
       void replaceDiagonalOfJacobian(const Epetra_Vector& new_diag, unsigned diag_bid);
 
       //! Returns Jacobian Epetra_Operator pointer
-      Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const;
+      Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const override;
 
       /// return jacobian operator
-      Teuchos::RCP<Epetra_Operator> getJacobianOperator();
+      Teuchos::RCP<Epetra_Operator> getJacobianOperator() override;
 
       //! Returns the operator type of the jacobian
       const enum NOX::NLN::LinSystem::OperatorType& getJacobianOperatorType() const;
 
       //! Set the jacobian operator
       //! Derived function: Check if the input operator is a LINALG_SparseOperator
-      void setJacobianOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solveJacOp);
+      void setJacobianOperatorForSolve(
+          const Teuchos::RCP<const Epetra_Operator>& solveJacOp) override;
 
       //! Set the jacobian operator of this class
       void SetJacobianOperatorForSolve(
           const Teuchos::RCP<const CORE::LINALG::SparseOperator>& solveJacOp);
 
-      //! derived
-      Teuchos::RCP<NOX::Epetra::Scaling> getScaling();
+      Teuchos::RCP<NOX::Epetra::Scaling> getScaling() override;
 
-      //! derived
-      void resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject);
+      void resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& scalingObject) override;
 
-      //! derived
-      bool destroyPreconditioner() const;
+      bool destroyPreconditioner() const override;
 
-      //! derived
       bool recomputePreconditioner(
-          const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const;
+          const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const override;
 
-      //! derived
       NOX::Epetra::LinearSystem::PreconditionerReusePolicyType getPreconditionerPolicy(
-          bool advanceReuseCounter);
+          bool advanceReuseCounter) override;
 
-      //! derived
-      bool isPreconditionerConstructed() const;
+      bool isPreconditionerConstructed() const override;
 
-      //! derived
-      bool hasPreconditioner() const;
+      bool hasPreconditioner() const override;
 
-      //! derived
-      Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const;
+      Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const override;
 
-      //! derived
-      Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator();
+      Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator() override;
 
-      //!  derived
-      void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp);
-
+      void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp) override;
 
       //! destroy the jacobian ptr
       bool DestroyJacobian();

@@ -38,11 +38,10 @@ namespace NOX
         Newton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
         //! Destructor
-        virtual ~Newton(){};
+        ~Newton() override = default;
 
-        // derived
-        virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-            const NOX::Solver::Generic& solver);
+        bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+            const NOX::Solver::Generic& solver) override;
 
        private:
         // throw NOX error

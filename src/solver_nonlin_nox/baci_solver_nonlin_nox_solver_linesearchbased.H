@@ -63,7 +63,7 @@ namespace NOX
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
         //! Destructor
-        virtual ~LineSearchBased(){};
+        ~LineSearchBased() override = default;
 
         //! Necessary for the pre/post operator class
         //! Be careful: This version allows you to actually change the parameter list entries
@@ -94,11 +94,11 @@ namespace NOX
             const NOX::NLN::StatusTest::QuantityType qtype) const;
 
         //! Returns the NOX::Utils object
-        const NOX::Utils& GetUtils() const;
+        [[nodiscard]] const NOX::Utils& GetUtils() const;
 
         //! Returns the global status of the given test name
         template <class T>
-        NOX::StatusTest::StatusType GetStatus() const;
+        [[nodiscard]] NOX::StatusTest::StatusType GetStatus() const;
 
         /// access the direction object
         NOX::Direction::Generic& GetDirection() const;
@@ -107,7 +107,6 @@ namespace NOX
         //! initialize additional variables or overwrite base class initialization
         virtual void init(const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
 
-        // derived
         void printUpdate() override;
       };  // class LineSearchBased
     }     // namespace Solver

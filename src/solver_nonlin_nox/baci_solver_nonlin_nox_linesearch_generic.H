@@ -41,7 +41,7 @@ namespace NOX
         virtual const NOX::Abstract::Vector& GetSearchDirection() const = 0;
 
         //! returns the stepSize
-        virtual const double& GetStepLength() const = 0;
+        virtual double GetStepLength() const = 0;
 
         //! sets the stepSize
         virtual void SetStepLength(double step) = 0;
@@ -49,18 +49,17 @@ namespace NOX
 
         //! @name NOX::LineSearch::Generic
         //! @{
-        //! [derived]
-        virtual bool compute(NOX::Abstract::Group& grp, double& step,
-            const NOX::Abstract::Vector& dir, const NOX::Solver::Generic& s) = 0;
+        bool compute(NOX::Abstract::Group& grp, double& step, const NOX::Abstract::Vector& dir,
+            const NOX::Solver::Generic& s) override = 0;
         //! @}
 
         //! @name NOX::NLN::INNER::StatusTest::Interface::Required
         //! @{
         //! get the number of line search iterations
-        virtual const int& GetNumIterations() const = 0;
+        int GetNumIterations() const override = 0;
 
         //! get the merit function
-        virtual const NOX::MeritFunction::Generic& GetMeritFunction() const = 0;
+        const NOX::MeritFunction::Generic& GetMeritFunction() const override = 0;
         //! @}
 
        protected:

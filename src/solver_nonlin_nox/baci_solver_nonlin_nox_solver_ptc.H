@@ -161,14 +161,14 @@ namespace NOX
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
         //! destructor
-        virtual ~PseudoTransient(){};
+        ~PseudoTransient() override = default;
 
         //! reset the non-linear solver
         void reset(const NOX::Abstract::Vector& initialGuess,
             const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests,
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
-        virtual void reset(const NOX::Abstract::Vector& initialGuess,
-            const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests);
+        void reset(const NOX::Abstract::Vector& initialGuess,
+            const Teuchos::RCP<NOX::StatusTest::Generic>& outerTests) override;
 
         void createScalingOperator();
 
@@ -176,11 +176,9 @@ namespace NOX
 
         void createGroupPrePostOperator();
 
-        //! Evaluated the current nonlinear solver step. (derived)
-        virtual NOX::StatusTest::StatusType step();
+        NOX::StatusTest::StatusType step() override;
 
-        //! Solve the stated non-linear problem of the current load/time step (derived)
-        virtual NOX::StatusTest::StatusType solve();
+        NOX::StatusTest::StatusType solve() override;
 
         //! Returns the inverse pseudo time step
         const double& getInversePseudoTimeStep() const;
@@ -202,7 +200,7 @@ namespace NOX
 
        protected:
         //! Initialize the PTC specific variables and call the init function of the base class
-        virtual void init();
+        void init() override;
 
         //! Print the non-linear solver update
         void printUpdate() override;
@@ -398,16 +396,13 @@ namespace NOX
               const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
           //! destructor
-          virtual ~PseudoTransient(){};
+          ~PseudoTransient() override = default;
 
-          //! derived
-          virtual void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac,
-              const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys);
+          void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
+              const NOX::NLN::LinearSystem& linsys) override;
 
-          //! derived
-          virtual void runPostComputeFandJacobian(Epetra_Vector& rhs,
-              CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
-              const NOX::NLN::LinearSystem& linsys);
+          void runPostComputeFandJacobian(Epetra_Vector& rhs, CORE::LINALG::SparseOperator& jac,
+              const Epetra_Vector& x, const NOX::NLN::LinearSystem& linsys) override;
 
          protected:
           //! modify the jacobian as defined by the scaling operator type
@@ -444,13 +439,11 @@ namespace NOX
               const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
           //! destructor
-          virtual ~PseudoTransient(){};
+          ~PseudoTransient() override = default;
 
-          //! derived
-          virtual void runPreComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp);
+          void runPreComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
 
-          //! derived
-          virtual void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp);
+          void runPostComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
 
          protected:
           Teuchos::RCP<NOX::Epetra::Vector> evalPseudoTransientFUpdate(const NOX::NLN::Group& grp);
