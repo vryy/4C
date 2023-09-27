@@ -563,6 +563,7 @@ doxygen:
     - doxygen.log
     when: always
     expire_in: 1 day
+  interruptible: true
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
@@ -704,6 +705,7 @@ readthedocs:
     - readthedocs.log
     when: always
     expire_in: 1 day
+  interruptible: true
   rules:
   - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   - if: $CI_PIPELINE_SOURCE == "schedule"
