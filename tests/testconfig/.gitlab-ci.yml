@@ -104,7 +104,7 @@ before_script:
 - cd ${CI_PROJECT_DIR}/../baci-build
 - ${CI_PROJECT_DIR}/utilities/baci-python-venv/bin/python ${CI_PROJECT_DIR}/utilities/sort_pipeline_output.py
   test.log test.log
-    # Write selection of the output into the terminal and therefore to GITLAB
+  # Write selection of the output into the terminal and therefore to GITLAB
   # Output 200 lines for any failing test
 - grep -B 200 '*Failed\|*Timeout' test.log || true
 - sed -n '/tests passed,/,//p' test.log
@@ -420,6 +420,12 @@ danger-review:
     "$GITLAB_DANGERFILES_VERSION"'
   - '[[ ! -f "Gemfile.lock" ]] || bundle config set --local frozen "true"'
   - bundle install
+  - apt-get update && apt-get install -y python3-venv
+    # create  and activate virtual environment
+  - python3 -m venv venv
+  - . venv/bin/activate
+  - pip install wheel
+  - pip install -r ${CI_PROJECT_DIR}/utilities/danger/requirements.txt
   script:
     # ${DANGER_DANGERFILE} is used by Jihulab for customizing danger support: https://jihulab.com/gitlab-cn/gitlab/-/blob/main-jh/jh/.gitlab-ci.yml
   - |
