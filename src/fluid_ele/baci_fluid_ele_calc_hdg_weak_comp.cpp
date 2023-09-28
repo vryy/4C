@@ -716,13 +716,6 @@ int DRT::ELEMENTS::FluidEleCalcHDGWeakComp<distype>::InterpolateSolutionToNodes(
         sum_density += values(k) * solvalues[msd_ * shapes_->ndofs_ + k];
       elevec1(msd_ * nen_ + i) = sum_density;
     }
-    for (unsigned int d = 0; d <= nsd_; ++d)
-    {
-      double sum_momentum = 0.0;
-      for (unsigned int k = 0; k < shapes_->ndofs_; ++k)
-        sum_momentum += values(k) * solvalues[(msd_ + 1 + d) * shapes_->ndofs_ + k];
-      elevec1((msd_ + 1 + d) * nen_ + i) = sum_momentum;
-    }
   }
 
   // get trace solution values

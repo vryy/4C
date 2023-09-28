@@ -647,8 +647,7 @@ namespace
       const Teuchos::RCP<Epetra_Vector>& interiorValues,
       const Teuchos::RCP<Epetra_Vector>& traceValues, const int ndim,
       Teuchos::RCP<Epetra_MultiVector>& mixedvar, Teuchos::RCP<Epetra_Vector>& density,
-      Teuchos::RCP<Epetra_MultiVector>& momentum, Teuchos::RCP<Epetra_Vector>& traceden,
-      Teuchos::RCP<Epetra_MultiVector>& tracemom)
+      Teuchos::RCP<Epetra_Vector>& traceden)
   {
     const int msd = ndim * (ndim + 1.0) / 2.0;
 
@@ -657,10 +656,8 @@ namespace
     {
       mixedvar.reset(new Epetra_MultiVector(*dis.NodeRowMap(), msd));
       density.reset(new Epetra_Vector(*dis.NodeRowMap()));
-      momentum.reset(new Epetra_MultiVector(*dis.NodeRowMap(), ndim));
     }
     traceden.reset(new Epetra_Vector(density->Map()));
-    tracemom.reset(new Epetra_MultiVector(momentum->Map(), ndim));
 
     // call element routine for interpolate HDG to elements
     Teuchos::ParameterList params;
@@ -674,7 +671,6 @@ namespace
     std::vector<unsigned char> touchCount(dis.NumMyRowNodes());
     mixedvar->PutScalar(0.);
     density->PutScalar(0.);
-    momentum->PutScalar(0.);
 
     for (int el = 0; el < dis.NumMyColElements(); ++el)
     {
@@ -694,11 +690,7 @@ namespace
         for (int m = 0; m < msd; ++m)
           (*mixedvar)[m][localIndex] += interpolVec(i + m * ele->NumNode());
         (*density)[localIndex] += interpolVec(i + msd * ele->NumNode());
-        for (int d = 0; d < ndim; ++d)
-          (*momentum)[d][localIndex] += interpolVec(i + (msd + 1 + d) * ele->NumNode());
         (*traceden)[localIndex] += interpolVec(i + (msd + 1 + ndim) * ele->NumNode());
-        for (int d = 0; d < ndim; ++d)
-          (*tracemom)[d][localIndex] += interpolVec(i + (msd + 1 + ndim + 1 + d) * ele->NumNode());
       }
     }
 
@@ -706,9 +698,7 @@ namespace
     {
       for (int m = 0; m < msd; ++m) (*mixedvar)[m][i] /= touchCount[i];
       (*density)[i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*momentum)[d][i] /= touchCount[i];
       (*traceden)[i] /= touchCount[i];
-      for (int d = 0; d < ndim; ++d) (*tracemom)[d][i] /= touchCount[i];
     }
     dis.ClearState();
   }
@@ -735,8 +725,8 @@ void FLD::TimIntHDGWeakComp::Output()
     Teuchos::RCP<Epetra_MultiVector> traceMom;
 
     // get node vectors
-    getNodeVectorsHDGWeakComp(*discret_, intvelnp_, velnp_, nsd, interpolatedMixedVar_,
-        interpolatedDensity_, interpolatedMomentum_, traceDen, traceMom);
+    getNodeVectorsHDGWeakComp(
+        *discret_, intvelnp_, velnp_, nsd, interpolatedMixedVar_, interpolatedDensity_, traceDen);
 
     // get weakly compressible material
     int id = DRT::Problem::Instance()->Materials()->FirstIdByType(
@@ -748,13 +738,9 @@ void FLD::TimIntHDGWeakComp::Output()
     // evaluate derived variables
     Teuchos::RCP<Epetra_MultiVector> interpolatedVelocity;
     Teuchos::RCP<Epetra_Vector> interpolatedPressure;
-    interpolatedVelocity.reset(new Epetra_MultiVector(interpolatedMomentum_->Map(), nsd));
     interpolatedPressure.reset(new Epetra_Vector(interpolatedDensity_->Map()));
     for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
     {
-      for (unsigned int d = 0; d < nsd; ++d)
-        (*interpolatedVelocity)[d][i] = (*interpolatedMomentum_)[d][i] / (*interpolatedDensity_)[i];
-
       (*interpolatedPressure)[i] =
           actmat->refpressure_ +
           1.0 / actmat->comprcoeff_ * ((*interpolatedDensity_)[i] - actmat->refdensity_);
@@ -763,19 +749,16 @@ void FLD::TimIntHDGWeakComp::Output()
     // write solution variables
     output_->WriteVector("Mixedvar", interpolatedMixedVar_, IO::nodevector);
     output_->WriteVector("Density", interpolatedDensity_, IO::nodevector);
-    output_->WriteVector("Momentum", interpolatedMomentum_, IO::nodevector);
     output_->WriteVector("Trace_density", traceDen, IO::nodevector);
-    output_->WriteVector("Trace_momentum", traceMom, IO::nodevector);
 
     // write derived variables
-    output_->WriteVector("Velocity", interpolatedVelocity, IO::nodevector);
     output_->WriteVector("Pressure", interpolatedPressure, IO::nodevector);
 
     // write ALE variables
     if (alefluid_)
     {
       Teuchos::RCP<Epetra_MultiVector> AleDisplacement;
-      AleDisplacement.reset(new Epetra_MultiVector(interpolatedMomentum_->Map(), nsd));
+      AleDisplacement.reset(new Epetra_MultiVector(*discret_->NodeRowMap(), nsd));
       for (int i = 0; i < interpolatedDensity_->MyLength(); ++i)
         for (unsigned int d = 0; d < nsd; ++d) (*AleDisplacement)[d][i] = (*dispnp_)[(i * nsd) + d];
 

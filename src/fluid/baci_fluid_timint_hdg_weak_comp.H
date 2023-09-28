@@ -183,7 +183,6 @@ namespace FLD
     //! @name other HDG-specific auxiliary vectors for output
     Teuchos::RCP<Epetra_MultiVector> interpolatedMixedVar_;
     Teuchos::RCP<Epetra_Vector> interpolatedDensity_;
-    Teuchos::RCP<Epetra_MultiVector> interpolatedMomentum_;
     //@}
 
 
