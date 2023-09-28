@@ -1,5 +1,6 @@
 from codeowners import CodeOwners
 import argparse
+import sys
 
 """
 Support script for danger bot: determine all code owners for a given list of
@@ -24,14 +25,20 @@ def all_code_owners(codeowner_file, file_list):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("codeowner_file", type=str)
-    parser.add_argument("--files", nargs="*", type=str)
     parser.add_argument("--exclude_owners", nargs="*", type=str)
     args = parser.parse_args()
 
+    # read files from stdin
+    files = []
+    for line in sys.stdin:
+        files.append(line.strip())
+
+    exclude_owners = []
+    if args.exclude_owners is not None:
+        exclude_owners.extend(args.exclude_owners)
+
     print(
         " ".join(
-            all_code_owners(args.codeowner_file, args.files).difference(
-                set(args.exclude_owners)
-            )
+            all_code_owners(args.codeowner_file, files).difference(set(exclude_owners))
         )
     )
