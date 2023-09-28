@@ -31,12 +31,3 @@ Closes (will automatically close mentioned issue if merged), Blocks, Related to
 Go over all the following points, and put an `x` in all the boxes that apply. If you are unsure about any of these, please ask; we are here to help.
 -->
 - [ ] These changes maintain backwards compatibility.
-
-## Interested Parties / Possible Reviewers
-<!--
-If there's any team or developer, who you think should be looped in on this merge request, feel free to @mention them here. In particular, @mention affected teams, such that they will be notified about the approval request.
--->
-
-Code owners/teams:
-
-Other interested parties:
