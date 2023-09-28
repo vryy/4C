@@ -59,14 +59,14 @@ endfunction(set_timeout)
 
 # DEFAULT BACI TEST - run simulation with .dat file
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # optional: <label>: add a label to the test
 macro(baci_test name_of_input_file num_proc restart_step)
   set(name_of_test ${name_of_input_file}-p${num_proc})
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
-  set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
+  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
 
   add_test(
     NAME ${name_of_input_file}-p${num_proc}
@@ -100,7 +100,7 @@ endmacro(baci_test)
 
 # BACI TEST TIMEOUT - run simulation with .dat file and manually defined time for timeout
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_extended_timeout(<name_of_input_file> <num_proc> <restart_step> <testtimeout>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # <testtimeout>: manually defined duration for test timeout
@@ -113,7 +113,7 @@ macro(
   )
   set(name_of_test ${name_of_input_file}-p${num_proc})
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
-  set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
+  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
 
   # scale testtimeout with the global test timeout scale
   math(EXPR actualtesttimeout "${GLOBAL_TEST_TIMEOUT_SCALE} * ${testtimeout}")
@@ -146,7 +146,7 @@ endmacro(baci_test_extended_timeout)
 
 # DEFAULT BACI TEST WITH OpenMP - run simulation with .dat file for tests using OpenMP
 # Usage in TestingFrameworkListOfTests.cmake: "baci_omp_test(<name_of_input_file> <num_proc> <num_omp_threads> <restart_step> optional: <label>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of mpi-processors the test should use
 # <num_omp_threads>: number of OpenMP threads per proccessor the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
@@ -162,7 +162,7 @@ macro(
   set(test_directory
       ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc}_t${num_omp_threads}
       )
-  set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
+  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
 
   add_test(
     NAME ${name_of_input_file}-p${num_proc}-t${num_omp_threads}
@@ -199,13 +199,13 @@ endmacro(baci_omp_test)
 
 # DEFAULT BACI TEST + POST ENSIGHT - run BACI test and subsequent post ensight test in serial and parallel
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_and_post_ensight_test(<name_of_input_file> <num_proc> <restart_step> optional: <label>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <restart_step>: number of restart step; <""> indicates no restart
 # optional: <label>: add a label to the test
 macro(baci_test_and_post_ensight_test name_of_input_file num_proc restart_step)
   set(test_directory framework_test_output/${name_of_input_file}_p${num_proc})
-  set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
+  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
 
   # run normal testing
   if("${ARGN}" STREQUAL "")
@@ -258,7 +258,7 @@ endmacro(baci_test_and_post_ensight_test)
 # RESTART SIMULATION
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_restartonly(<name_of_input_file> <num_proc> <restart_step> <optional: identifier>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <name_of_input_file_restart>: the name of an input file the current restart can base on
 # <num_proc>: number of processors the test should use
 # <num_proc_base_run>: number of processors of precursor base run
@@ -280,7 +280,7 @@ macro(
   endif()
 
   set(name_of_test ${name_of_input_file}-p${num_proc})
-  set(source_file ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat)
+  set(source_file ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file}_p${num_proc})
 
   add_test(
@@ -303,8 +303,8 @@ endmacro(baci_test_restartonly)
 ###########
 # NESTED PARALLELISM
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par(<name_of_input_file_1> <name_of_input_file_2> <restart_step>)"
-# <name_of_input_file_1>: must equal the name of a .dat file in directory Input for the first test; without ".dat". This test will be executed using 1 process.
-# <name_of_input_file_2>: must equal the name of a .dat file in directory Input for the second test; without ".dat". This test will be executed using 2 processes.
+# <name_of_input_file_1>: must equal the name of a .dat file in directory tests/input_files for the first test; without ".dat". This test will be executed using 1 process.
+# <name_of_input_file_2>: must equal the name of a .dat file in directory tests/input_files for the second test; without ".dat". This test will be executed using 2 processes.
 # <restart_step>: number of restart step; <""> indicates no restart
 macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_step)
   set(test_directory ${PROJECT_BINARY_DIR}/framework_test_output/${name_of_input_file_1})
@@ -313,7 +313,7 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
     NAME ${name_of_input_file_1}-nestedPar
     COMMAND
       bash -c
-      "mkdir -p ${test_directory} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_1}.dat ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional"
+      "mkdir -p ${test_directory} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional"
     )
 
   require_fixture(${name_of_input_file_1}-nestedPar test_cleanup)
@@ -326,7 +326,7 @@ macro(baci_test_Nested_Par name_of_input_file_1 name_of_input_file_2 restart_ste
       NAME ${name_of_input_file_1}-nestedPar-restart
       COMMAND
         bash -c
-        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_1}.dat ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional restart=${restart_step}"
+        "${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np 3 $<TARGET_FILE:${baciname}> -ngroup=2 -glayout=1,2 -nptype=separateDatFiles ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_1}.dat ${test_directory}/xxx restart=${restart_step} ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file_2}.dat ${test_directory}/xxxAdditional restart=${restart_step}"
       )
 
     require_fixture(
@@ -339,7 +339,7 @@ endmacro(baci_test_Nested_Par)
 ###########
 # NESTED PARALLELISM WITH COPYDATFILE
 # Usage in TestingFrameworkListOfTests.cmake: "baci_test_Nested_Par_CopyDat(<name_of_input_file> <num_proc> <num_groups> optional: <label>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <num_groups>: the number of groups
 # optional: <label>: add a label to the test
@@ -350,7 +350,7 @@ macro(baci_test_Nested_Par_CopyDat name_of_input_file num_proc num_groups)
     NAME ${name_of_input_file}-nestedPar_CopyDat-p${num_proc}
     COMMAND
       bash -c
-      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}.dat ${test_directory}/xxx"
+      "mkdir -p ${PROJECT_BINARY_DIR}/${test_directory} &&  ${MPI_RUN} ${MPIEXEC_EXTRA_OPTS_FOR_TESTING} -np ${num_proc} $<TARGET_FILE:${baciname}> -ngroup=${num_groups} -nptype=copyDatFile ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}.dat ${test_directory}/xxx"
     )
 
   require_fixture(${name_of_input_file}-nestedPar_CopyDat-p${num_proc} test_cleanup)
@@ -374,7 +374,9 @@ macro(baci_framework_test name_of_input_file num_proc xml_filename)
 
   if(NOT ${xml_filename} STREQUAL "")
     # if a XML file name is given, it is copied from the baci input directory to the build directory
-    set(RUNCOPYXML "cp ${PROJECT_SOURCE_DIR}/Input/${xml_filename} ./${test_directory}/")
+    set(RUNCOPYXML
+        "cp ${PROJECT_SOURCE_DIR}/tests/input_files/${xml_filename} ./${test_directory}/"
+        )
   else()
     # no-op command to do nothing
     set(RUNCOPYXML :)
@@ -509,7 +511,7 @@ macro(
     NAME "${name_of_test}"
     COMMAND
       sh -c
-      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/Input/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
+      " ${RUNPOSTFILTER_PAR} && ${RUNPOSTFILTER_SER} && ${PVPYTHON} ${PROJECT_SOURCE_DIR}/tests/post_processing_test/comparison.py ${test_directory}/xxx${IDENTIFIER}_PAR_${name_of_input_file}${FIELD}*.case ${test_directory}/xxx${IDENTIFIER}_SER_${name_of_input_file}${FIELD}*.case ${PROJECT_SOURCE_DIR}/tests/input_files/${name_of_input_file}${IDENTIFIER}${FIELD}.csv ${test_directory}"
     )
 
   require_fixture("${name_of_test}" "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
@@ -526,7 +528,7 @@ endmacro(post_processing)
 # Implementation can be found in 'utilities/diff_with_tolerance.py'
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "result_file_abs(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <num_proc_base_run>: number of processors of precursor base run
 # <filetag>: add tag to test name
@@ -554,8 +556,8 @@ macro(
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
-      ${test_directory}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename} abs_tol
-      0.0
+      ${test_directory}/${resultfilename}
+      ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} abs_tol 0.0
     )
 
   require_fixture(
@@ -571,7 +573,7 @@ endmacro(result_file_abs)
 # Implementation can be found in 'utilities/diff_with_tolerance.py'
 # CAUTION: This tests bases on results of a previous simulation/test
 # Usage in TestingFrameworkListOfTests.cmake: "result_file_rel(<name_of_input_file> <num_proc> <filetag> <resultfilename> <referencefilename> <tolerance>)"
-# <name_of_input_file>: must equal the name of a .dat file in directory Input; without ".dat"
+# <name_of_input_file>: must equal the name of a .dat file in directory tests/input_files; without ".dat"
 # <num_proc>: number of processors the test should use
 # <num_proc_base_run>: number of processors of precursor base run
 # <filetag>: add tag to test name
@@ -601,8 +603,8 @@ macro(
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/utilities/diff_with_tolerance.py ${tolerance}
-      ${test_directory}/${resultfilename} ${PROJECT_SOURCE_DIR}/Input/${referencefilename} rel_tol
-      ${min_val}
+      ${test_directory}/${resultfilename}
+      ${PROJECT_SOURCE_DIR}/tests/input_files/${referencefilename} rel_tol ${min_val}
     )
 
   require_fixture(${name_of_test} "${name_of_input_file}-p${num_proc_base_run};test_cleanup")
@@ -651,8 +653,8 @@ macro(
     COMMAND
       ${PROJECT_SOURCE_DIR}/utilities/baci-python-venv/bin/python3
       ${PROJECT_SOURCE_DIR}/tests/output_test/vtk_compare.py ${test_directory}
-      ${PROJECT_SOURCE_DIR}/Input/${pvd_referencefilename} ${tolerance} ${num_extra_args}
-      ${extra_macro_args}
+      ${PROJECT_SOURCE_DIR}/tests/input_files/${pvd_referencefilename} ${tolerance}
+      ${num_extra_args} ${extra_macro_args}
     )
 
   require_fixture(

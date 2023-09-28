@@ -20,7 +20,7 @@ support scripts. The important subdirectories are the following:
 
 :``src``: contains the real ``BACI`` code in several subdirectories
 
-:``Input``:   contains various valid and running ``*``\ ``.dat`` files, ``BACI``
+:``tests/input_files``:   contains various valid and running ``*``\ ``.dat`` files, ``BACI``
     input files that are used for (automatic) testing.
 
 :``utilities``:  contains configuration scripts needed to setup a ``BACI`` Makefile,
@@ -65,13 +65,13 @@ You'll find more information about the ``BACI`` installation in the ``readme.md`
 Running examples
 ~~~~~~~~~~~~~~~~
 
-In ``Input`` there are test examples; all necessary “packages” must have
+In ``tests/input_files`` there are test examples; all necessary “packages” must have
 been activated in the defines-file that was used to configure the
 ``BACI`` at hand. For example,
 
 ::
 
-   ./baci-release Input/f2_drivencavity20x20_drt.dat xxx
+   ./baci-release tests/input_files/f2_drivencavity20x20_drt.dat xxx
 
 runs the 2d fluid driven cavity example and writes the output to files
 beginning with ``xxx``. 
@@ -80,12 +80,12 @@ command like this:
 
 ::
 
-   mpirun -np 1 ./baci-release Input/f2_drivencavity20x20_drt.dat xxx
+   mpirun -np 1 ./baci-release tests/input_files/f2_drivencavity20x20_drt.dat xxx
 
 Testing
 -------
 
-The BACI code is tested by all tests included in the Input directory, whenever modifications enter the code.
+The BACI code is tested by all tests included in the tests/input_files directory, whenever modifications enter the code.
 However, after changing something in the code locally, it is a good idea to run the test environment yourself.
 This is done by
 
