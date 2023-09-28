@@ -13,6 +13,7 @@
 
 #include "baci_io_pstream.H"
 #include "baci_lib_epetra_utils.H"
+#include "baci_lib_globalproblem.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_solver_nonlin_nox_aux.H"
 #include "baci_structure_new_dbc.H"
@@ -91,6 +92,61 @@ void STR::Integrator::Setup()
   mt_energy_.Setup();
 
   // the issetup_ flag is not set here!!!
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::Integrator::SetInitialDisplacement(
+    const INPAR::STR::InitialDisp init, const int startfuncno)
+{
+  switch (init)
+  {
+    case INPAR::STR::initdisp_zero_disp:
+    {
+      GlobalState().GetDisN()->PutScalar(0.0);
+      GlobalState().GetDisNp()->PutScalar(0.0);
+
+      break;
+    }
+    case INPAR::STR::initdisp_disp_by_function:
+    {
+      const Epetra_Map* dofrowmap = GlobalState().GetDiscret()->DofRowMap();
+
+      // loop all nodes on the processor
+      for (int lnodeid = 0; lnodeid < GlobalState().GetDiscret()->NumMyRowNodes(); lnodeid++)
+      {
+        // get the processor local node
+        const DRT::Node* lnode = GlobalState().GetDiscret()->lRowNode(lnodeid);
+
+        // the set of degrees of freedom associated with the node
+        const std::vector<int> nodedofset = GlobalState().GetDiscret()->Dof(0, lnode);
+
+        // loop nodal dofs
+        for (unsigned int d = 0; d < nodedofset.size(); ++d)
+        {
+          const int dofgid = nodedofset[d];
+          const int doflid = dofrowmap->LID(dofgid);
+
+          // evaluate component k of spatial function
+          const double initialval =
+              DRT::Problem::Instance()
+                  ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
+                  .Evaluate(lnode->X(), GlobalState().GetTimeN(), d);
+
+          const int err = GlobalState().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);
+          if (err != 0) dserror("dof not on proc");
+        }
+      }
+
+      // initialize also the solution vector
+      GlobalState().GetDisNp()->Update(1.0, *GlobalState().GetDisN(), 0.0);
+
+      break;
+    }
+    default:
+      dserror("Unknown option for initial displacement: %d", init);
+      break;
+  }
 }
 
 /*----------------------------------------------------------------------------*

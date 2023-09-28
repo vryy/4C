@@ -1,6 +1,6 @@
-// Free vibration analysis of a beam. The initial displacement is obtained
-// from the static analysis, see structure_new_dynamics_statics_restart_input.dat.
-// This is to test if a dynamics analysis can (re-)start from a statics one.
+// Free vibration analysis of a beam using (explicit) Adams-Bashforth scheme.
+// The initial displacement is obtained from the static analysis,
+// see structure_new_dynamics_statics_restart_input.dat.
 -----------------------------------------------------------------------TITLE
 BACI Structural Analysis
 ----------------------------------------------------------------PROBLEM SIZE
@@ -13,10 +13,7 @@ NUMDF                            3
 PROBLEMTYP                       Structure
 RESTART                          0
 --------------------------------------------------------------DISCRETISATION
-NUMFLUIDDIS                      0
 NUMSTRUCDIS                      1
-NUMALEDIS                        0
-NUMTHERMDIS                      0
 --------------------------------------------------------------------------IO
 OUTPUT_BIN                       Yes
 STRUCT_DISP                      Yes
@@ -26,13 +23,13 @@ FILESTEPS                        1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                    1
 INT_STRATEGY                     Standard
-DYNAMICTYP                       GenAlpha
+DYNAMICTYP                       AdamsBashforth4
 PREDICT                          ConstDis
-RESULTSEVRY                      1
-RESTARTEVRY                      1
-NLNSOL                           fullnewton
-TIMESTEP                         0.1
-NUMSTEP                          12
+LUMPMASS                         Yes
+RESULTSEVRY                      100
+RESTARTEVRY                      100
+TIMESTEP                         0.01
+NUMSTEP                          100
 TIMEINIT                         0.0
 MAXTIME                          100.0
 DAMPING                          No
@@ -44,14 +41,11 @@ NORM_RESF                        Abs
 NORM_DISP                        Abs
 NORMCOMBI_RESFDISP               And
 MAXITER                          20
-----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                           TrLike
-RHO_INF                          0.9
 --------------------------------------------------------------------SOLVER 1
 NAME                             Structure_Solver
 SOLVER                           UMFPACK
 ----------------------------------------------------------------------FUNCT1
-COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1*t
+SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1*t
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                          0
 NDLINE                           1
@@ -128,9 +122,9 @@ NODE 44 COORD 10.0000000000 0.0000000000 0.0000000000
 9 SOLIDH8 HEX8 37 33 35 38 39 34 36 40 MAT 1 KINEM linear EAS none
 10 SOLIDH8 HEX8 41 37 38 43 42 39 40 44 MAT 1 KINEM linear EAS none
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.0e6 NUE 0.3 DENS 7620.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2.0e6 NUE 0.3000000000 DENS 7620.0000000000
 --------------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 44 QUANTITY dispx VALUE 7.37261377220925843e-03 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 44 QUANTITY dispy VALUE 9.97356971307517548e-02 TOLERANCE 1e-12
-STRUCTURE DIS structure NODE 44 QUANTITY dispz VALUE -5.33533080018096954e-07 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 44 QUANTITY dispx VALUE 6.75804634897578336e-03 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 44 QUANTITY dispy VALUE 9.65180450058498313e-02 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 44 QUANTITY dispz VALUE 1.31328401278375939e-05 TOLERANCE 1e-12
 -------------------------------------------------------------------------END

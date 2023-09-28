@@ -74,6 +74,9 @@ namespace NOX
        protected:
         //! initialize additional variables after base class initialization
         void init(const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests);
+
+        // derived
+        void printUpdate() override;
       };  // class SingleStep
     }     // namespace Solver
   }       // namespace NLN

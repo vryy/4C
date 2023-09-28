@@ -285,6 +285,14 @@ void STR::TIMINT::BaseDataSDyn::Init(const Teuchos::RCP<DRT::Discretization> dis
     sdynparams_ptr_ = Teuchos::rcpFromRef(sdynparams);
   }
 
+  // -------------------------------------------------------------------------
+  // initial displacement variables
+  // -------------------------------------------------------------------------
+  {
+    initial_disp_ = DRT::INPUT::IntegralValue<INPAR::STR::InitialDisp>(sdynparams, "INITIALDISP");
+    start_func_no_ = sdynparams.get<int>("STARTFUNCNO");
+  }
+
   isinit_ = true;
 
   return;
@@ -740,6 +748,29 @@ void STR::TIMINT::OneStepThetaDataSDyn::Setup()
   STR::TIMINT::BaseDataSDyn::Setup();
 
   theta_ = GetSDynParams().sublist("ONESTEPTHETA").get<double>("THETA");
+
+  issetup_ = true;
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+STR::TIMINT::ExplEulerDataSDyn::ExplEulerDataSDyn() : modexpleuler_(true)
+{
+  // empty constructor
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+void STR::TIMINT::ExplEulerDataSDyn::Setup()
+{
+  CheckInit();
+
+  // call base class setup
+  STR::TIMINT::BaseDataSDyn::Setup();
+
+  modexpleuler_ =
+      (DRT::INPUT::IntegralValue<int>(
+           DRT::Problem::Instance()->StructuralDynamicParams(), "MODIFIEDEXPLEULER") == 1);
 
   issetup_ = true;
 }

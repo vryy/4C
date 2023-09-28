@@ -99,6 +99,9 @@ namespace STR
     //! Set state variables
     virtual void SetState(const Epetra_Vector& x) = 0;
 
+    //! Set initial displacement field
+    virtual void SetInitialDisplacement(const INPAR::STR::InitialDisp init, const int startfuncno);
+
     /*! \brief Reset state variables of all models
      *  (incl. the structural dynamic state variables)
      *
