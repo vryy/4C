@@ -32,8 +32,6 @@
 
 /docker/                           @baci/baci_maintainer @baci/team_infrastructure
 
-/guides/                           @baci/team_infrastructure
-
 /presets/                          @baci/team_infrastructure
 
 /tests/                            @baci/team_testing

@@ -1,6 +1,0 @@
-
-MATHCOMMAND=.
-for i in *.fig ; do
-   echo $i
-   figtex2eps $i  -a $MATHCOMMAND/math-commands.tex
-done

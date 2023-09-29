@@ -59,11 +59,6 @@ xxx*.err
 xxx*.p?.pos
 xxx*.p??.pos
 
-# Guides
-guides/build
-guides/reports
-guides/src/*/*/*.pdf
-
 # Doxygen
 doc/html/
 doc/Doxyfile.defs
