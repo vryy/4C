@@ -51,7 +51,7 @@ namespace XFEM
             {
               Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(mat)->Destroy();
             }
-            catch (const std::runtime_error& e)
+            catch (const CORE::Exception& e)
             {
               run_time_error(e);
             }
@@ -68,7 +68,7 @@ namespace XFEM
                       mat, true);
               block_mat->Destroy(false);
             }
-            catch (const std::runtime_error& e)
+            catch (const CORE::Exception& e)
             {
               run_time_error(e);
             }

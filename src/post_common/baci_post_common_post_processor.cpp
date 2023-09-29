@@ -924,7 +924,7 @@ int main(int argc, char** argv)
       dserror("Unknown filter %s given, supported filters: [ensight|vtu|vti]", filter.c_str());
 
   }  // try
-  catch (std::runtime_error& err)
+  catch (CORE::Exception& err)
   {
     char line[] = "=========================================================================\n";
     std::cout << "\n\n" << line << err.what() << "\n" << line << "\n" << std::endl;

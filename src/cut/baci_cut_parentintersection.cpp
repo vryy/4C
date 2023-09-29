@@ -983,7 +983,7 @@ void CORE::GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
 
     //     if(integrationcells.size()==0)
     //     {
-    //       throw std::runtime_error("VolumeCell contains 0 integration cells.");
+    //       throw CORE::Exception("VolumeCell contains 0 integration cells.");
     //     }
     //++++++++++++++++++++
   }
@@ -1026,7 +1026,7 @@ void CORE::GEO::CUT::ParentIntersection::DebugCut(Mesh& m)
   }
   if (error)
   {
-    throw std::runtime_error("Volume predicted by one of the methods is wrong.");
+    throw CORE::Exception("Volume predicted by one of the methods is wrong.");
     // std::cout << "Volume predicted by one of the methods is wrong." << std::endl;
   }
   //------------------------------------------------------

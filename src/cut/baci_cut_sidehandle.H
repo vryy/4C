@@ -73,7 +73,7 @@ namespace CORE::GEO
         CORE::LINALG::Matrix<2, nen> xie;
 
         const std::vector<CORE::GEO::CUT::Point*>& cpoints = bc->Points();
-        if (cpoints.size() != nen) throw std::runtime_error("non-matching number of points");
+        if (cpoints.size() != nen) throw CORE::Exception("non-matching number of points");
 
         for (unsigned i = 0; i < nen; ++i)
         {

@@ -117,7 +117,7 @@ void CORE::UTILS::AddValidBuiltinFunctions(CORE::UTILS::FunctionManager& functio
                   already_read_line.ExtractInt("NUMPOINTS", length);
                   return length - 1;
                 }
-                catch (const std::runtime_error& e)
+                catch (const CORE::Exception& e)
                 {
                   // When NUMPOINTS is not set, then we still allow for a single DESCRIPTION entry
                   return 1;

@@ -589,7 +589,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   if (m_numnode != static_cast<int>(nds_master.size()))
   {
-    throw std::runtime_error("wrong number of nodes for master element");
+    throw CORE::Exception("wrong number of nodes for master element");
   }
 
   //-----------------------------------------------------------------------
@@ -598,7 +598,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
 
   if (s_numnode != static_cast<int>(nds_slave.size()))
   {
-    throw std::runtime_error("wrong number of nodes for slave element");
+    throw CORE::Exception("wrong number of nodes for slave element");
   }
 
   //-----------------------------------------------------------------------
@@ -751,7 +751,7 @@ void DRT::ELEMENTS::ElemagIntFace::PatchLocationVector(
       }
     }
     else
-      throw std::runtime_error("face's nodes not contained in masternodes_offset map");
+      throw CORE::Exception("face's nodes not contained in masternodes_offset map");
   }
 
   return;

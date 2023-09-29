@@ -544,14 +544,14 @@ namespace CORE::GEO
       bool operator()(Point& p1, Point& p2) const
       {
         if (not p1.IsCut(edge_) or not p2.IsCut(edge_))
-          throw std::runtime_error("point position compare only on cut edges");
+          throw CORE::Exception("point position compare only on cut edges");
         return p1.t(edge_) < p2.t(edge_);
       }
 
       bool operator()(Point* p1, Point* p2) const
       {
         if (not p1->IsCut(edge_) or not p2->IsCut(edge_))
-          throw std::runtime_error("point position compare only on cut edges");
+          throw CORE::Exception("point position compare only on cut edges");
         return p1->t(edge_) < p2->t(edge_);
       }
 

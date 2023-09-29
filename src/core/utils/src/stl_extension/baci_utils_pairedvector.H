@@ -15,6 +15,7 @@
 
 #include "baci_config.H"
 
+#include "baci_utils_exceptions.H"
 #include "baci_utils_pairedobj_insert_policy.H"
 
 #include <algorithm>
@@ -22,7 +23,6 @@
 #include <iomanip>
 #include <map>
 #include <ostream>
-#include <stdexcept>
 #include <utility>
 #include <vector>
 
@@ -265,7 +265,7 @@ namespace CORE::GEN
      *  @param  k  The key for which data should be retrieved.
      *  @return A reference to the data whose key is equivalent to @a k, if
      *          such a data is present in the %pairedvector.
-     *  @throw  std::runtime_error("invalid key")  If no such data is present.
+     *  @throw  CORE::Exception("invalid key")  If no such data is present.
      */
     T& at(const Key k) { return base_type::at(k, _m, _entries); }
 
@@ -274,7 +274,7 @@ namespace CORE::GEN
      *  @param  k  The key for which data should be retrieved.
      *  @return A reference to the data whose key is equivalent to @a k, if
      *          such a data is present in the %pairedvector.
-     *  @throw  std::runtime_error("invalid key")  If no such data is present.
+     *  @throw  CORE::Exception("invalid key")  If no such data is present.
      */
     const T& at(const Key k) const { return base_type::at(k, _m, _entries); }
 
@@ -294,7 +294,7 @@ namespace CORE::GEN
      */
     void erase(const Key k)
     {
-      throw std::runtime_error("entries cannot be removed");
+      throw CORE::Exception("entries cannot be removed");
       return;
     }
 

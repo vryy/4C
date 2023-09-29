@@ -881,7 +881,7 @@ void CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     ci.WritetoGmsh(file);
     file.close();
   }
-  catch (std::runtime_error& e)
+  catch (CORE::Exception& e)
   {
     dserror("Cautch error in the cut_intersection:  \n%s . Current tolerance must be increased",
         e.what());
@@ -960,7 +960,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
       {
         conv = ComputeEdgeSideIntersection(itol, true);
       }
-      catch (std::runtime_error& e)
+      catch (CORE::Exception& e)
       {
         GenerateGmshDump();
         dserror("Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
@@ -1008,7 +1008,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
         {
           tri_status[tri] = ComputeEdgeTri3IntersectionQuad4Split(tri, &close_to_shared_edge[tri]);
         }
-        catch (std::runtime_error& e)
+        catch (CORE::Exception& e)
         {
           GenerateGmshDump();
           dserror(
@@ -1093,7 +1093,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
             }
             GenerateGmshDump();
 
-            throw std::runtime_error(err_msg.str());
+            throw CORE::Exception(err_msg.str());
           }
           else
           {
@@ -1174,7 +1174,7 @@ bool CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, debug, dimedge, d
     {
       conv = ComputeEdgeSideIntersection(itol, true);
     }
-    catch (const std::runtime_error& e)
+    catch (const CORE::Exception& e)
     {
       GenerateGmshDump();
       dserror("Cautch error in cut kernel. Current tolerance must be increased! Error is: \n %s ",
@@ -1438,7 +1438,7 @@ std::pair<bool, bool> CORE::GEO::CUT::Intersection<probdim, edgetype, sidetype, 
       }
       default:
       {
-        throw std::runtime_error("Unexpected floattype for KERNEL::ComputeDistance!");
+        throw CORE::Exception("Unexpected floattype for KERNEL::ComputeDistance!");
       }
     }
     if (conv)

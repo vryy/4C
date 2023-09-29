@@ -226,7 +226,7 @@ CORE::FE::GaussIntegration::GaussIntegration(CORE::FE::CellType distype)
       gp_ = GaussPointCache::Instance().Create(CORE::FE::CellType::hex27, 4);
       break;
     default:
-      throw std::runtime_error("unsupported element shape");
+      throw CORE::Exception("unsupported element shape");
   }
 }
 
@@ -307,7 +307,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::FE::GaussPointCache::Create(
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Line<3>>(degree));
       break;
     default:
-      throw std::runtime_error("unsupported element shape");
+      throw CORE::Exception("unsupported element shape");
   }
 
   gp_cache_[std::make_pair(distype, degree)] = gp;

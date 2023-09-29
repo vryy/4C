@@ -490,7 +490,7 @@ int main(int argc, char** argv)
       EXODUS::ValidateInputFile(comm, datfile);
     }
   }
-  catch (std::runtime_error& err)
+  catch (CORE::Exception& err)
   {
     char line[] = "=========================================================================\n";
     std::cout << "\n\n" << line << err.what() << "\n" << line << "\n" << std::endl;

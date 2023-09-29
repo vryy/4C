@@ -412,7 +412,7 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
       break;
     }
     default:
-      throw std::runtime_error("unsupported integration cell type");
+      throw CORE::Exception("unsupported integration cell type");
   }
 
   return;

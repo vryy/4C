@@ -8,6 +8,7 @@
 #include <gtest/gtest.h>
 
 #include "baci_unittest_utils_assertions_test.H"
+#include "baci_utils_exceptions.H"
 #include "baci_utils_symbolic_expression.H"
 
 BACI_NAMESPACE_OPEN
@@ -138,7 +139,7 @@ namespace
   TEST(SymbolicExpressionTest, InvalidOperatorThrows)
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2 ** 4"), std::runtime_error,
+        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2 ** 4"), CORE::Exception,
         "unexpected token 7");
   }
 
@@ -146,15 +147,15 @@ namespace
   TEST(SymbolicExpressionTest, MissingBracketsThrows)
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + 1"),
-        std::runtime_error, "')' expected");
+        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + 1"), CORE::Exception,
+        "')' expected");
   }
 
   TEST(SymbolicExpressionTest, IncompleteFunctionThrows)
   {
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + "),
-        std::runtime_error, "unexpected token 1");
+        CORE::UTILS::SymbolicExpression<double> symbolicexpression("2*4 - (3 + "), CORE::Exception,
+        "unexpected token 1");
   }
 
 

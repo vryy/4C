@@ -37,6 +37,7 @@
 #include "baci_mortar_coupling3d.H"
 #include "baci_mortar_element.H"
 #include "baci_mortar_utils.H"
+#include "baci_utils_exceptions.H"
 #include "baci_utils_pairedvector.H"
 
 #include <Teuchos_Time.hpp>
@@ -993,14 +994,14 @@ void CORE::VOLMORTAR::VolMortarCoupl::EvaluateSegments3D(DRT::Element* Aele, DRT
       bool switched_conf = false;
       PerformCut(Aele, Bele, switched_conf);
     }
-    catch (std::runtime_error& err1)
+    catch (CORE::Exception& err1)
     {
       try
       {
         bool switched_conf = true;
         PerformCut(Bele, Aele, switched_conf);
       }
-      catch (std::runtime_error& err2)
+      catch (CORE::Exception& err2)
       {
         std::cout << "runtime error 2 = " << err2.what() << std::endl;
       }

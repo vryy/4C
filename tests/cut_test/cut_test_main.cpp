@@ -312,7 +312,7 @@ void testfunction(std::map<std::string, testfunct>::const_iterator iterator,
     std::cout << "Testing " << iterator->first << " ...\n";
     (*iterator->second)();
   }
-  catch (std::runtime_error& err)
+  catch (CORE::Exception& err)
   {
     std::cout << "FAILED: " << err.what() << "\n";
     failures.push_back(iterator->first);

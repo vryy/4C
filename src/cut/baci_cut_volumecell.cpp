@@ -214,7 +214,7 @@ void CORE::GEO::CUT::VolumeCell::CreateTet4IntegrationCells(Mesh& mesh,
     const std::vector<Point*>& tet = *i;
     if (tet.size() != 4)
     {
-      throw std::runtime_error("tet expected");
+      throw CORE::Exception("tet expected");
     }
     NewTet4Cell(mesh, tet);
   }
@@ -226,7 +226,7 @@ void CORE::GEO::CUT::VolumeCell::CreateTet4IntegrationCells(Mesh& mesh,
     const std::vector<Point*>& points = i->second;
 
     std::size_t length = points.size();
-    if (length % 3 != 0) throw std::runtime_error("expect list of triangles");
+    if (length % 3 != 0) throw CORE::Exception("expect list of triangles");
 
     length /= 3;
     std::vector<Point*> p(3);
@@ -765,7 +765,7 @@ void CORE::GEO::CUT::VolumeCell::TestSurface()
         {
           for (unsigned l = 0; l < facetlineindex.size(); l++)
             if (facetlineindex[k] == facetlineindex[l] and k != l)
-              throw std::runtime_error("volume cut facets not closed!!");
+              throw CORE::Exception("volume cut facets not closed!!");
         }
 
         //        //Find the connection.
@@ -784,7 +784,7 @@ void CORE::GEO::CUT::VolumeCell::TestSurface()
         // probably be best implemented
         // with some sort of tree structure.
 
-        throw std::runtime_error("volume cut facets not closed");
+        throw CORE::Exception("volume cut facets not closed");
       }
     }
   }
@@ -1034,7 +1034,7 @@ Teuchos::RCP<CORE::FE::GaussPoints> CORE::GEO::CUT::VolumeCell::CreateProjected(
   CORE::LINALG::Matrix<3, nen> xie;
 
   const std::vector<CORE::GEO::CUT::Point*>& cpoints = ic->Points();
-  if (cpoints.size() != nen) throw std::runtime_error("non-matching number of points");
+  if (cpoints.size() != nen) throw CORE::Exception("non-matching number of points");
 
   for (unsigned i = 0; i < nen; ++i)
   {
@@ -1541,7 +1541,7 @@ void CORE::GEO::CUT::VolumeCell::DirectDivergenceGaussRule(
     Element* elem, Mesh& mesh, bool include_inner, INPAR::CUT::BCellGaussPts BCellgausstype)
 {
   if (elem->Shape() != CORE::FE::CellType::hex8 && elem->Shape() != CORE::FE::CellType::hex20)
-    throw std::runtime_error("DirectDivergenceGaussRule: Just hex8 and hex20 avaiable yet in DD!");
+    throw CORE::Exception("DirectDivergenceGaussRule: Just hex8 and hex20 avaiable yet in DD!");
 
   if (BCellgausstype != INPAR::CUT::BCellGaussPts_Tessellation)
     dserror(
@@ -1809,7 +1809,7 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
 
   if (iter == 1000 && !done)
   {
-    throw std::runtime_error(
+    throw CORE::Exception(
         "SetPositionCutSideBased failed: too many iterations (theoretically a facet with many "
         "points could also lead to this)!");
     return false;
@@ -1835,7 +1835,7 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
       if ((on->second && prod > 0) || (!on->second && prod < 0))  // this means that the
       {
         if (posi != Point::undecided && posi != Point::inside)
-          throw std::runtime_error(
+          throw CORE::Exception(
               "SetPositionCutSideBased: posi != Point::undecided && posi != Point::inside (Are all "
               "you Cut Sides oriented correct?)");
         // dserror("SetPositionCutSideBased: posi != Point::undecided && posi != Point::inside (Are
@@ -1845,7 +1845,7 @@ bool CORE::GEO::CUT::VolumeCell::SetPositionCutSideBased()
       else
       {
         if (posi != Point::undecided && posi != Point::outside)
-          throw std::runtime_error(
+          throw CORE::Exception(
               "SetPositionCutSideBased: posi != Point::undecided && posi != Point::outside (Are "
               "all you Cut Sides oriented correct?)");
         // dserror("SetPositionCutSideBased: posi != Point::undecided && posi != Point::outside (Are

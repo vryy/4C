@@ -13,12 +13,12 @@
 
 #include "baci_config.H"
 
-#include "baci_cut_tolerance.H"  // for info whether debug or not
+#include "baci_cut_tolerance.H"     // for info whether debug or not
+#include "baci_utils_exceptions.H"  // for info whether debug or not
 
 #include <cstddef>  // for size_T
 #include <iostream>
 #include <map>
-#include <stdexcept>  // for std_runtime_error
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -87,7 +87,7 @@ namespace CORE::GEO
           }
         }
         else
-          throw std::runtime_error("Not supported");
+          throw CORE::Exception("Not supported");
         linear_ = false;
       }
       // Free all memory
@@ -246,7 +246,7 @@ namespace CORE::GEO
       GenericMemoryPool& GetMemoryPoolAllocator()
       {
         if (mem_ == nullptr)
-          throw std::runtime_error("Memory pool allocator was not yet created");
+          throw CORE::Exception("Memory pool allocator was not yet created");
         else
           return (*dynamic_cast<GenericMemoryPool*>(mem_));
       }
@@ -337,7 +337,7 @@ namespace CORE::GEO
         if (state_ == normal)
         {
           if (not prev_)
-            throw std::runtime_error("Memory pool allocator was not yet created");
+            throw CORE::Exception("Memory pool allocator was not yet created");
           else
             return (*dynamic_cast<GenericMemoryPool*>(prev_));
         }

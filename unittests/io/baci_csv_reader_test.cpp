@@ -69,8 +69,7 @@ namespace
     test_csv_file << "0.30,4.40" << std::endl;
     test_csv_file << "0.30," << std::endl;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsv(3, test_csv_file), std::runtime_error, "same length");
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(3, test_csv_file), CORE::Exception, "same length");
   }
 
   TEST(CsvReaderTest, TrailingCommaThrows)
@@ -80,7 +79,7 @@ namespace
     test_csv_file << "0.30,4.40," << std::endl;
 
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsv(2, test_csv_file), std::runtime_error, "trailing comma");
+        IO::ReadCsv(2, test_csv_file), CORE::Exception, "trailing comma");
   }
 
   TEST(CsvReaderTest, WrongColumnNumberThrows)
@@ -89,7 +88,7 @@ namespace
     test_csv_file << "#x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(3, test_csv_file), std::runtime_error, "");
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(3, test_csv_file), CORE::Exception, "");
   }
 
   TEST(CsvReaderTest, WrongHeaderStyleThrows)
@@ -98,7 +97,7 @@ namespace
     test_csv_file << "x,y" << std::endl;
     test_csv_file << "0.30,4.40" << std::endl;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), std::runtime_error, "header");
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), CORE::Exception, "header");
   }
 
   TEST(CsvReaderTest, WrongInputDataTypeThrows)
@@ -107,7 +106,7 @@ namespace
     test_csv_file << "x,y" << std::endl;
     test_csv_file << "0.30,a" << std::endl;
 
-    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), std::runtime_error, "numbers");
+    BACI_EXPECT_THROW_WITH_MESSAGE(IO::ReadCsv(2, test_csv_file), CORE::Exception, "numbers");
   }
 
   TEST(CsvReaderTest, WrongSeparatorThrows)
@@ -117,7 +116,7 @@ namespace
     test_csv_file << "0.30;4.40" << std::endl;
 
     BACI_EXPECT_THROW_WITH_MESSAGE(
-        IO::ReadCsv(2, test_csv_file), std::runtime_error, "separated by commas");
+        IO::ReadCsv(2, test_csv_file), CORE::Exception, "separated by commas");
   }
 
 }  // namespace

@@ -452,6 +452,6 @@ namespace
     // Create and evaluate the geometry pairs.
     BACI_EXPECT_THROW_WITH_MESSAGE(CreateEvaluatePairs(geometry_pairs, q_line_elements,
                                        q_rot_line_elements, q_volume_elements, segments_vector),
-        std::runtime_error, "Error when projecting the Gauss points.");
+        CORE::Exception, "Error when projecting the Gauss points.");
   }
 }  // namespace

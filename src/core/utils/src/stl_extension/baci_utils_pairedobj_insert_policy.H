@@ -18,6 +18,8 @@
 
 #include "baci_config.H"
 
+#include "baci_utils_exceptions.H"
+
 #include <algorithm>
 #include <cstddef>
 #include <iomanip>
@@ -26,13 +28,8 @@
 #include <map>
 #include <ostream>
 #include <sstream>
-#include <stdexcept>
 #include <utility>
 #include <vector>
-
-#if defined(DEBUG_INSERT_POLICY) || defined(BACI_DEBUG)
-#include "baci_utils_exceptions.H"
-#endif
 
 BACI_NAMESPACE_OPEN
 
@@ -103,7 +100,7 @@ namespace CORE::GEN
     {
       iterator last = data.begin() + entries;
       iterator it = find(k, data, entries);
-      if (it == last) throw std::runtime_error("pairedvector::at(): invalid key");
+      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -112,7 +109,7 @@ namespace CORE::GEN
     {
       const_iterator last = data.begin() + entries;
       const_iterator it = find(k, data, entries);
-      if (it == last) throw std::runtime_error("pairedvector::at(): invalid key");
+      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -149,7 +146,7 @@ namespace CORE::GEN
       msg << __LINE__ << " - " << __FUNCTION__ << " in " << __FILE__ << ":\n";
       msg << "Set the define \"DEBUG_INSERT_POLICY\" first to"
              " use the debug functionality!";
-      throw std::runtime_error(msg.str());
+      throw CORE::Exception(msg.str());
 #endif
     }
 
@@ -205,7 +202,7 @@ namespace CORE::GEN
     {
       iterator last = data.begin() + entries;
       iterator it = find(k, data, entries);
-      if (it == last) throw std::runtime_error("pairedvector::at(): invalid key");
+      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -215,7 +212,7 @@ namespace CORE::GEN
     {
       const_iterator last = data.begin() + entries;
       const_iterator it = find(k, data, entries);
-      if (it == last) throw std::runtime_error("pairedvector::at(): invalid key");
+      if (it == last) throw CORE::Exception("pairedvector::at(): invalid key");
 
       return it->second;
     }
@@ -360,7 +357,7 @@ namespace CORE::GEN
           std::stringstream msg;
           msg << "Size (== " << _id_map.size() << " ) <--> count (== " << _id_index
               << " ) mismatch!\n";
-          throw std::runtime_error(msg.str());
+          throw CORE::Exception(msg.str());
         }
       }
 
@@ -466,7 +463,7 @@ namespace CORE::GEN
         msg << "quick_insert_policy::subsequent_access(): Mismatch of stored "
                "key and given key: "
             << curr_pair.first << " <--> " << k << "\n";
-        throw std::runtime_error(msg.str());
+        throw CORE::Exception(msg.str());
       }
 
       return curr_pair.second;
@@ -688,7 +685,7 @@ namespace CORE::GEN
         msg << "LINE " << linenumber << " in " << functname
             << ": access denied! "
                "call complete first.";
-        throw std::runtime_error(msg.str());
+        throw CORE::Exception(msg.str());
       }
     }
 

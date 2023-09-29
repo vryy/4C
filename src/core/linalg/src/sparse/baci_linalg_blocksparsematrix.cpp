@@ -51,7 +51,7 @@ bool CORE::LINALG::BlockSparseMatrixBase::Destroy(bool throw_exception_for_block
       block.Destroy(throw_exception_for_blocks);
       ++cblock;
     }
-    catch (const std::runtime_error& e)
+    catch (const CORE::Exception& e)
     {
       std::stringstream msg;
       msg << "The block num = " << cblock << " could not be deleted!";

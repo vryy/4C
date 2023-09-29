@@ -359,7 +359,7 @@ CORE::GEO::CUT::ElementHandle* SCATRA::LEVELSET::Intersection::Cut(
   {
     levelset.Cut(true, cut_screenoutput);
   }
-  catch (std::runtime_error& err)
+  catch (CORE::Exception& err)
   {
     std::cerr << "\n--- failed to cut element ---\n"
               << "coordinates:\n";
