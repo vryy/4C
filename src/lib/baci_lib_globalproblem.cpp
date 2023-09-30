@@ -36,13 +36,13 @@
 #include "baci_lib_materialdefinition.H"
 #include "baci_lib_meshreader.H"
 #include "baci_lib_nodereader.H"
-#include "baci_lib_particlereader.H"
 #include "baci_lib_utils_createdis.H"
 #include "baci_mat_elchmat.H"
 #include "baci_mat_elchphase.H"
 #include "baci_mat_micromaterial.H"
 #include "baci_mat_newman_multiscale.H"
 #include "baci_mat_scatra_mat_multiscale.H"
+#include "baci_particle_engine_particlereader.H"
 #include "baci_rebalance.H"
 
 #include <Epetra_Comm.h>
