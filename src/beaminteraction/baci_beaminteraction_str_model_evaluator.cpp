@@ -178,8 +178,8 @@ void STR::MODELEVALUATOR::BeamInteraction::Setup()
   PostSetup();
 
   // some screen output
-  REBALANCE::UTILS::PrintParallelDistribution(*ia_discret_);
-  REBALANCE::UTILS::PrintParallelDistribution(*bindis_);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*ia_discret_);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*bindis_);
 
   issetup_ = true;
 }

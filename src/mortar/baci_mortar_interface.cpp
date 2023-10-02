@@ -1120,13 +1120,15 @@ void MORTAR::MortarInterface::Redistribute()
     ss_slave << "MORTAR::MortarInterface::Redistribute of '" << Discret().Name() << "' (slave)";
     TEUCHOS_FUNC_TIME_MONITOR(ss_slave.str());
 
-    Teuchos::RCP<const Epetra_CrsGraph> snodegraph = REBALANCE::BuildGraph(idiscret_, sroweles);
+    Teuchos::RCP<const Epetra_CrsGraph> snodegraph =
+        CORE::REBALANCE::BuildGraph(idiscret_, sroweles);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(sproc));
     rebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance_tol));
 
-    std::tie(srownodes, scolnodes) = REBALANCE::RebalanceNodeMaps(snodegraph, rebalanceParams);
+    std::tie(srownodes, scolnodes) =
+        CORE::REBALANCE::RebalanceNodeMaps(snodegraph, rebalanceParams);
   }
 
   //**********************************************************************
@@ -1182,13 +1184,13 @@ void MORTAR::MortarInterface::RedistributeMasterSide(Teuchos::RCP<Epetra_Map>& r
   if (not HasMaSharingRefInterface())
   {
     // call parallel redistribution
-    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(idiscret_, roweles);
+    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = CORE::REBALANCE::BuildGraph(idiscret_, roweles);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(parts));
     rebalanceParams.set<std::string>("imbalance tol", std::to_string(imbalance));
 
-    std::tie(rownodes, colnodes) = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+    std::tie(rownodes, colnodes) = CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
   }
   else
   {

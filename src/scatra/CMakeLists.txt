@@ -14,7 +14,6 @@ set(_scatra_dependencies
     mortar
     nurbs_discret
     poromultiphase_scatra
-    rebalance
     scatra_ele
     solver_nonlin_nox
     )

@@ -11,7 +11,6 @@ set(_contact_dependencies
     lib
     mat
     mortar
-    rebalance
     scatra
     scatra_ele
     so3

@@ -16,7 +16,6 @@ set(_fluid_dependencies
     mortar
     nurbs_discret
     poroelast
-    rebalance
     red_airways
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_fluid_dependencies})

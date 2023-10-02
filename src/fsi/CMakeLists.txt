@@ -18,7 +18,6 @@ set(_fsi_dependencies
     mat
     mortar
     poroelast
-    rebalance
     so3
     solver_nonlin_nox
     structure

@@ -302,12 +302,13 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(
         new Epetra_Map(-1, (int)myrowelements.size(), myrowelements.data(), -1, *icomm));
 
-    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(commondis, roweles);
+    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = CORE::REBALANCE::BuildGraph(commondis, roweles);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(lcomm->NumProc()));
 
-    const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+    const auto& [rownodes, colnodes] =
+        CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
     commondis->Redistribute(*rownodes, *colnodes, false, false, false);
   }
@@ -444,12 +445,13 @@ void DRT::NPDuplicateDiscretization(const int sgroup, const int rgroup,
     Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(
         -1, targetrowele.NumMyElements(), targetrowele.MyGlobalElements(), -1, *lcomm));
 
-    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(dis, roweles);
+    Teuchos::RCP<const Epetra_CrsGraph> nodegraph = CORE::REBALANCE::BuildGraph(dis, roweles);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(lcomm->NumProc()));
 
-    const auto& [rownodes, colnodes] = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+    const auto& [rownodes, colnodes] =
+        CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
     dis->Redistribute(*rownodes, *colnodes, false, false, false);
     dis->SetWriter(Teuchos::rcp(new IO::DiscretizationWriter(dis)));

@@ -223,8 +223,8 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
 
   SetupXFEMDiscretization(xgen_params, xdis, numdof);
 
-  REBALANCE::UTILS::PrintParallelDistribution(*dis);
-  REBALANCE::UTILS::PrintParallelDistribution(*embedded_dis);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*dis);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*embedded_dis);
 
   return;
 }
@@ -255,8 +255,8 @@ int XFEM::UTILS::XFEMDiscretizationBuilder::SetupXFEMDiscretization(
   if (!Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(target_dis).is_null())
     SetupXFEMDiscretization(xgen_params, target_dis, num_dof_per_node);
 
-  REBALANCE::UTILS::PrintParallelDistribution(*src_dis);
-  REBALANCE::UTILS::PrintParallelDistribution(*target_dis);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*src_dis);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*target_dis);
 
   return num_dof_per_node;
 }
@@ -449,11 +449,11 @@ void XFEM::UTILS::XFEMDiscretizationBuilder::Redistribute(Teuchos::RCP<DRT::Disc
   if (!dis->Filled()) dis->Redistribute(*noderowmap, *nodecolmap);
 
   Teuchos::RCP<Epetra_Map> elerowmap = Teuchos::rcp(new Epetra_Map(*dis->ElementRowMap()));
-  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = REBALANCE::BuildGraph(dis, elerowmap);
+  Teuchos::RCP<const Epetra_CrsGraph> nodegraph = CORE::REBALANCE::BuildGraph(dis, elerowmap);
 
   Teuchos::ParameterList rebalanceParams;
   rebalanceParams.set("num parts", std::to_string(comm->NumProc()));
-  std::tie(noderowmap, nodecolmap) = REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
+  std::tie(noderowmap, nodecolmap) = CORE::REBALANCE::RebalanceNodeMaps(nodegraph, rebalanceParams);
 
   auto const& [roweles, coleles] = dis->BuildElementRowColumn(*noderowmap, *nodecolmap);
 

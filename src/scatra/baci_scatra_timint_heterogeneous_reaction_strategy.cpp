@@ -153,7 +153,7 @@ void SCATRA::HeterogeneousReactionStrategy::SetupMeshtying()
 
     if (com->MyPID() == 0 and com->NumProc() > 1)
       std::cout << "parallel distribution of auxiliary discr. with standard ghosting" << std::endl;
-    REBALANCE::UTILS::PrintParallelDistribution(*discret_);
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret_);
   }
 
   SetIsSetup(true);

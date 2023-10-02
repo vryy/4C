@@ -17,7 +17,6 @@ set(_lib_dependencies
     nurbs_discret
     particle_engine
     poromultiphase_scatra
-    rebalance
     structure_new
     )
 baci_add_dependency(${AUTO_DEFINED_MODULE_NAME} ${_lib_dependencies})

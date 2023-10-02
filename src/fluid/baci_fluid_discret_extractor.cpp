@@ -380,13 +380,13 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     // Starting from the current partitioning of the discretization, compute nodal maps with a
     // hopefully better partitioning
     Teuchos::RCP<const Epetra_CrsGraph> sepcondnodemap =
-        REBALANCE::BuildGraph(childdiscret_, sepcondelenodesmap);
+        CORE::REBALANCE::BuildGraph(childdiscret_, sepcondelenodesmap);
 
     Teuchos::ParameterList rebalanceParams;
     rebalanceParams.set<std::string>("num parts", std::to_string(comm->NumProc()));
 
     const auto& [sepcondrownodes, sepcondcolnodes] =
-        REBALANCE::RebalanceNodeMaps(sepcondnodemap, rebalanceParams);
+        CORE::REBALANCE::RebalanceNodeMaps(sepcondnodemap, rebalanceParams);
 
     if (childdiscret_->Comm().MyPID() == 0)
     {

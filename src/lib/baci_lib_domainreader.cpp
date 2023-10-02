@@ -228,7 +228,7 @@ namespace DRT
       if (!myrank && !reader_.MyOutputFlag())
         IO::cout << time.totalElapsedTime(true) << " secs" << IO::endl;
 
-      REBALANCE::UTILS::PrintParallelDistribution(*dis_);
+      CORE::REBALANCE::UTILS::PrintParallelDistribution(*dis_);
     }
 
   }  // namespace INPUT

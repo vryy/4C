@@ -9,7 +9,6 @@ set(_ssi_dependencies
     io
     lib
     mat
-    rebalance
     scatra
     scatra_ele
     solver_nonlin_nox
