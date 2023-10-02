@@ -53,9 +53,6 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
   BoolParameter("BEAMS_BTSOL", "No",
       "decide, if also the contact between beams and solids is possible", &beamcontact);
 
-  BoolParameter("BEAMS_BTSPH", "No",
-      "decide, if also the contact between beams and spheres is possible", &beamcontact);
-
   BoolParameter("BEAMS_ENDPOINTPENALTY", "No",
       "Additional consideration of endpoint-line and endpoint-endpoint contacts", &beamcontact);
 
@@ -73,8 +70,6 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "Penalty parameter per unit length for beam-to-beam line contact", &beamcontact);
   DoubleParameter(
       "BEAMS_BTSPENALTYPARAM", 0.0, "Penalty parameter for beam-to-solid contact", &beamcontact);
-  DoubleParameter("BEAMS_BTSPH_PENALTYPARAM", 0.0,
-      "Penalty parameter for beam-to-rigidsphere penalty", &beamcontact);
   DoubleParameter(
       "BEAMS_DAMPINGPARAM", -1000.0, "Damping parameter for contact damping force", &beamcontact);
   DoubleParameter("BEAMS_DAMPREGPARAM1", -1000.0,

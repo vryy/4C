@@ -44,11 +44,7 @@
  *----------------------------------------------------------------------*/
 Beam3ContactOctTree::Beam3ContactOctTree(
     Teuchos::ParameterList& params, DRT::Discretization& discret, DRT::Discretization& searchdis)
-    : btsph_(false),
-      btsol_(false),
-      discret_(discret),
-      searchdis_(searchdis),
-      basisnodes_(discret.NumGlobalNodes())
+    : btsol_(false), discret_(discret), searchdis_(searchdis), basisnodes_(discret.NumGlobalNodes())
 {
   extrusionvalue_ = Teuchos::rcp(new std::vector<double>);
   extrusionvalue_->clear();
@@ -87,7 +83,6 @@ Beam3ContactOctTree::Beam3ContactOctTree(
     // max number of bounding boxes per leaf octant
     minbboxesinoctant_ = params.get<int>("BEAMS_BOXESINOCT", 8);
 
-    btsph_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSPH");
     btsol_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSOL");
   }
   else if (params.name() == "DAT FILE->BEAM POTENTIAL")
@@ -101,7 +96,6 @@ Beam3ContactOctTree::Beam3ContactOctTree(
     // max number of bounding boxes per leaf octant
     minbboxesinoctant_ = params.get<int>("BEAMPOT_BOXESINOCT", 8);
 
-    btsph_ = DRT::INPUT::IntegralValue<int>(params, "BEAMPOT_BTSPH");
     btsol_ = DRT::INPUT::IntegralValue<int>(params, "BEAMPOT_BTSOL");
   }
   else
@@ -148,9 +142,6 @@ Beam3ContactOctTree::Beam3ContactOctTree(
       if (btsol_)
         dserror(
             "Only axis aligned or spherical bounding boxes possible for beam-to-solid contact!");
-      else if (btsph_)
-        dserror(
-            "Only axis-aligned or spherical bounding boxes possible for beam-to-sphere contact!");
     }
     break;
     case INPAR::BEAMCONTACT::boct_spbb:

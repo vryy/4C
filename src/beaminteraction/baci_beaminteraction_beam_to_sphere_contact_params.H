@@ -49,7 +49,7 @@ namespace BEAMINTERACTION
       if (!IsInit()) dserror("Init() has not been called, yet!");
     }
 
-    inline double BeamToSpherePenaltyParam() const { return BTSPH_penalty_param_; }
+    inline double BeamToSpherePenaltyParam() const { return penalty_parameter_; }
 
    private:
     bool isinit_;
@@ -57,7 +57,7 @@ namespace BEAMINTERACTION
     bool issetup_;
 
     //! beam-to-sphere penalty parameter
-    double BTSPH_penalty_param_;
+    double penalty_parameter_;
   };
 
 }  // namespace BEAMINTERACTION

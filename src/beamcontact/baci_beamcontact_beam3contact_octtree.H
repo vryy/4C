@@ -236,9 +236,6 @@ class Beam3ContactOctTree
   //!\brief flag indicating
   bool additiveextrusion_;
 
-  //!\brief flag indicating whether search shall include (beam,sphere) contact element pairs
-  bool btsph_;
-
   //!\brief flag indicating whether search shall include (beam,solid) contact element pairs
   bool btsol_;
 

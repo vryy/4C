@@ -62,7 +62,7 @@ BEAMS_BTBPENALTYPARAM           1e+01
 BEAMS_NEWGAP                    Yes
 BEAMS_SMOOTHING                 None
 BEAMS_PENALTYLAW                LinPen
-BEAMS_OCTREE                    none
+BEAMS_OCTREE                    octree_axisaligned
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
 --------------------------------------------------------------------SOLVER 1

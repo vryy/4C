@@ -83,7 +83,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   oldcontactpairmap_.clear();
   btsolpairmap_.clear();
   oldbtsolpairmap_.clear();
-  btsphpairmap_.clear();
   btbpotpairmap_.clear();
   btsphpotpairmap_.clear();
 
@@ -93,17 +92,14 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   scontact_ = DRT::Problem::Instance()->ContactDynamicParams();
   sstructdynamic_ = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  // indicate if beam-to-solid meshtying, beam-to-solid contact or beam-to-sphere contact is applied
+  // indicate if beam-to-solid contact is applied
   btsol_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSOL");
-  btsph_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSPH");
-
 
   InitBeamContactDiscret();
 
   // check input parameters
   if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0 ||
-      sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM") < 0.0 ||
-      sbeamcontact_.get<double>("BEAMS_BTSPH_PENALTYPARAM") < 0.0)
+      sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM") < 0.0)
   {
     dserror("ERROR: The penalty parameter has to be positive.");
   }
@@ -116,9 +112,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   btsolpairs_.resize(0);
   oldbtsolpairs_.resize(0);
 
-  // initialize beam-to-sphere contact element pairs
-  btsphpairs_.resize(0);
-
   // initialize potential-based interaction pairs
   btbpotpairs_.resize(0);
   btsphpotpairs_.resize(0);
@@ -126,17 +119,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   // initialize input parameters
   currentpp_ = sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM");
   btspp_ = sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM");
-
-  if (btsph_)
-  {
-    btsphpp_ = sbeamcontact_.get<double>("BEAMS_BTSPH_PENALTYPARAM");
-    if (btsphpp_ == 0.0)
-    {
-      btsphpp_ = currentpp_;
-    }
-    else if (btsphpp_ < 0.0)
-      dserror("ERROR: The beam-to-sphere penalty parameter has to be positive. Check input file!");
-  }
 
   if (!pdiscret_.Comm().MyPID())
   {
@@ -659,7 +641,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
       BTSolDiscret().AddNode(newnode);
       nodedofs[node->Id()] = ProblemDiscret().Dof(0, node);
     }
-    else if (BEAMCONTACT::RigidsphereNode(*newnode) and btsph_)
+    else if (BEAMCONTACT::RigidsphereNode(*newnode))
     {
       BTSolDiscret().AddNode(newnode);
       nodedofs[node->Id()] = ProblemDiscret().Dof(0, node);
@@ -1193,44 +1175,6 @@ void CONTACT::Beam3cmanager::SetState(
     btsolpairs_[i]->UpdateElePos(ele1pos, ele2pos);
   }
 
-  // Do the same for the beam-to-sphere contact pairs
-  for (int i = 0; i < (int)btsphpairs_.size(); ++i)
-  {
-    // temporary matrices to store nodal coordinates of each element
-    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    CORE::LINALG::SerialDenseMatrix ele2pos(3, 1);
-    // Positions: Loop over all nodes of element 1 (beam element)
-    for (int m = 0; m < numnodes_; m++)
-    {
-      int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-
-      // store updated nodal coordinates
-      for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
-      // store updated nodal tangents
-    }
-    if (numnodalvalues_ == 2)
-    {
-      // Tangents: Loop over all nodes of element 1
-      for (int m = 0; m < numnodes_; m++)
-      {
-        int tempGID = ((btsphpairs_[i]->Element1())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
-
-        // store updated nodal tangents
-        for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
-      }
-    }
-    // Positions: (rigid sphere element)
-    int tempGID = ((btsphpairs_[i]->Element2())->NodeIds())[0];
-    CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-    // store updated nodal coordinates
-    for (int n = 0; n < 3; n++) ele2pos(n, 0) = temppos(n);
-
-    // finally update nodal positions in contact pair objects
-    btsphpairs_[i]->UpdateElePos(ele1pos, ele2pos);
-  }
-
   // loop over all btbpotpairs
   for (int i = 0; i < (int)btbpotpairs_.size(); ++i)
   {
@@ -1408,22 +1352,6 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
     if (firstisincolmap || secondisincolmap)
     {
       btsolpairs_[i]->Evaluate(*stiffc_, *fc_, btspp_);
-    }
-  }
-
-  // Loop over all BTSPH contact pairs
-  for (int i = 0; i < (int)btsphpairs_.size(); ++i)
-  {
-    // only evaluate pair for those procs owning or ghosting at
-    // least one node of one of the two elements of the pair
-    int firsteleid = (btsphpairs_[i]->Element1())->Id();
-    int secondeleid = (btsphpairs_[i]->Element2())->Id();
-    bool firstisincolmap = ColElements()->MyGID(firsteleid);
-    bool secondisincolmap = ColElements()->MyGID(secondeleid);
-    // evaluate additional contact forces and stiffness
-    if (firstisincolmap || secondisincolmap)
-    {
-      btsphpairs_[i]->Evaluate(*stiffc_, *fc_, btsphpp_);
     }
   }
 
@@ -1662,16 +1590,6 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
           dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
       }
     }
-    // beam-to-sphere pair
-    else if (BEAMCONTACT::RigidsphereElement(*(formattedelementpairs[k])[1]))
-    {
-      if (btsphpairmap_.find(std::make_pair(currid1, currid2)) == btsphpairmap_.end())
-      {
-        btsphpairs_.push_back(CONTACT::Beam3tospherecontactinterface::Impl(numnodes_,
-            numnodalvalues_, ProblemDiscret(), BTSolDiscret(), dofoffsetmap_, ele1, ele2));
-        btsphpairmap_[std::make_pair(currid1, currid2)] = btsphpairs_[btsphpairs_.size() - 1];
-      }
-    }
     // beam-to-solid contact pair
     else if (BEAMCONTACT::SolidContactElement(*(formattedelementpairs[k])[1]))
     {
@@ -1724,18 +1642,6 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
 
   if (pdiscret_.Comm().MyPID() == 0)
     IO::cout(IO::standard) << "\t Total number of BTB contact pairs:     " << numpairs << IO::endl;
-
-  if (btsph_)
-  {
-    numpairs = 0;
-    numpairsthisproc = btsphpairs_.size();
-
-    pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
-
-    if (pdiscret_.Comm().MyPID() == 0)
-      IO::cout(IO::standard) << "\t Total number of BTSPH contact pairs:    " << numpairs
-                             << IO::endl;
-  }
 
   if (btsol_)
   {
@@ -2412,7 +2318,6 @@ void CONTACT::Beam3cmanager::Update(
 
   // clear potential contact pairs
   contactpairmap_.clear();
-  btsphpairmap_.clear();
   btsolpairmap_.clear();
 
   btbpotpairmap_.clear();
@@ -2423,9 +2328,7 @@ void CONTACT::Beam3cmanager::Update(
 
   btsolpairs_.clear();
   btsolpairs_.resize(0);
-
-  btsphpairs_.clear();
-  btsphpairs_.resize(0);
+  ;
 
   btbpotpairs_.clear();
   btbpotpairs_.resize(0);
@@ -3801,33 +3704,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
       }
     }
 
-    // loop over all btsph pairs
-    for (int i = 0; i < (int)btsphpairs_.size(); ++i)
-    {
-      // check if this pair is active
-      if (btsphpairs_[i]->GetContactFlag())
-      {
-        // make sure to print each pair only once
-        int firsteleid = (btsphpairs_[i]->Element1())->Id();
-        bool firstisinrowmap = RowElements()->MyGID(firsteleid);
-
-        // print some output (use printf-method for formatted output)
-        if (firstisinrowmap)
-        {
-          IO::cout(IO::verbose) << "    " << std::setw(14) << std::left
-                                << (btsphpairs_[i]->Element1())->Id() << " " << std::setw(5)
-                                << std::left << (btsphpairs_[i]->Element2())->Id() << "(SPH)    "
-                                << "   - " << std::setw(9) << std::left << std::setprecision(2)
-                                << btsphpairs_[i]->GetClosestPoint() << "--       "
-                                << "--       " << std::setw(12) << std::left << std::scientific
-                                << btsphpairs_[i]->GetGap() << "--          "
-                                << std::setprecision(6) << std::resetiosflags(std::ios::scientific)
-                                << std::right << IO::endl
-                                << IO::flush;
-        }
-      }
-    }
-
     Comm().Barrier();
 
 #ifdef PRINTGAPSOVERLENGTHFILE
@@ -4891,17 +4767,6 @@ void CONTACT::Beam3cmanager::GMSH_sphere(const CORE::LINALG::SerialDenseMatrix& 
   }
   else
     dserror("GMSH_sphere can only handle elements of Type Rigidsphere!");
-
-  // loop over BTSPH pairs (if any), here we only need to check Element2 (Rigidsphere ele)
-  for (int i = 0; i < (int)btsphpairs_.size(); ++i)
-  {
-    // abbreviations
-    int id2 = (btsphpairs_[i]->Element2())->Id();
-    bool active = btsphpairs_[i]->GetContactFlag();
-
-    // if element is member of an active contact pair, choose different color
-    if (thisele->Id() == id2 && active) color = 0.875;
-  }
 
   // ********************** Visualization as a point ***********************************************
   // syntax for scalar point:  SP( coordinates x,y,z ){value at point (determines the color)}

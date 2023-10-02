@@ -15,7 +15,6 @@
 #include "baci_beamcontact_beam3contactnew.H"
 #include "baci_beamcontact_beam3tobeampotential.H"
 #include "baci_beamcontact_beam3tosolidcontact.H"
-#include "baci_beamcontact_beam3tospherecontact.H"
 #include "baci_beamcontact_beam3tospherepotential.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_contact_element.H"
@@ -113,10 +112,6 @@ namespace CONTACT
     inline const std::vector<Teuchos::RCP<Beam3contactinterface>>& Pairs() const
     {
       return oldpairs_;
-    }
-    inline const std::vector<Teuchos::RCP<Beam3tospherecontactinterface>>& BTSPHPairs() const
-    {
-      return btsphpairs_;
     }
 
     inline const Teuchos::RCP<Beam3ContactOctTree> OcTree() const { return tree_; }
@@ -259,9 +254,6 @@ namespace CONTACT
     //! Flag from input file indicating if beam-to-solid contact is applied or not (default: false)
     bool btsol_;
 
-    //! Flag from input file indicating if beam-to-sphere contact is applied or not (default: false)
-    bool btsph_;
-
     //! Flag from input file indicating if beam-to-solid potential-based interaction is applied or
     //! not (default: false)
     bool potbtsol_;
@@ -328,8 +320,6 @@ namespace CONTACT
     //! total vector of solid meyhtying nodes
     std::vector<Teuchos::RCP<MORTAR::MortarNode>> solmeshtyingnodes_;
 
-    //! vector of close beam to sphere contact pairs (pairs of elements, which might get in contact)
-    std::vector<Teuchos::RCP<Beam3tospherecontactinterface>> btsphpairs_;
     //! vector of potential-based interaction (beam,beam) pairs
     std::vector<Teuchos::RCP<Beam3tobeampotentialinterface>> btbpotpairs_;
     //! vector of potential-based interaction (beam,sphere) pairs
@@ -344,9 +334,6 @@ namespace CONTACT
 
     // beam-to-beam pair map of last time step
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>> oldcontactpairmap_;
-
-    // beam-to-sphere pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tospherecontactinterface>> btsphpairmap_;
 
     // beam-to-solid contact pair map
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3tosolidcontactinterface>> btsolpairmap_;
@@ -411,9 +398,6 @@ namespace CONTACT
 
     //! current BTB penalty parameter (might be modified within augmented Lagrange strategy)
     double currentpp_;
-
-    //! BTSPH penalty parameter
-    double btsphpp_;
 
     //! beam-to-solid contact penalty parameter
     double btspp_;

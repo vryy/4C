@@ -158,6 +158,9 @@ void INPAR::BEAMINTERACTION::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       tuple<std::string>("None", "none", "Penalty", "penalty"),
       tuple<int>(bstr_none, bstr_none, bstr_penalty, bstr_penalty), &beamtospherecontact);
 
+  DoubleParameter("PENALTY_PARAMETER", 0.0, "Penalty parameter for beam-to-rigidsphere contact",
+      &beamtospherecontact);
+
   // ...
 
   /*----------------------------------------------------------------------*/
