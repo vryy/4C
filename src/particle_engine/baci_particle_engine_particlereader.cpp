@@ -12,7 +12,7 @@
 /*---------------------------------------------------------------------------*
  | headers                                                    sfuchs 04/2018 |
  *---------------------------------------------------------------------------*/
-#include "baci_lib_particlereader.H"
+#include "baci_particle_engine_particlereader.H"
 
 #include "baci_io_pstream.H"
 #include "baci_particle_engine_enums.H"
@@ -21,13 +21,15 @@
 
 #include <Teuchos_Time.hpp>
 
+#include <utility>
+
 
 /*---------------------------------------------------------------------------*
  | constructor                                                sfuchs 03/2018 |
  *---------------------------------------------------------------------------*/
 DRT::INPUT::ParticleReader::ParticleReader(
     const DRT::INPUT::DatFileReader& reader, std::string sectionname)
-    : reader_(reader), comm_(reader.Comm()), sectionname_(sectionname)
+    : reader_(reader), comm_(reader.Comm()), sectionname_(std::move(sectionname))
 {
   // empty constructor
 }
@@ -41,7 +43,7 @@ void DRT::INPUT::ParticleReader::Read(std::vector<PARTICLEENGINE::ParticleObjShr
   const int numproc = comm_->NumProc();
   std::string inputfile_name = reader_.MyInputfileName();
 
-  int numparticles = reader_.ExcludedSectionLength(sectionname_);
+  const int numparticles = reader_.ExcludedSectionLength(sectionname_);
 
   // proceed only if particles are given in .dat-file
   if (numparticles > 0)
