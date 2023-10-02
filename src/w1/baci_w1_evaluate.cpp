@@ -19,6 +19,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_element.H"
 #include "baci_lib_exporter.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_elements.H"

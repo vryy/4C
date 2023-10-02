@@ -35,6 +35,7 @@ interface
 #include "baci_lib_discret_xfem.H"
 #include "baci_lib_dofset_predefineddofnumber.H"
 #include "baci_lib_dofset_transparent_independent.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_parobjectfactory.H"

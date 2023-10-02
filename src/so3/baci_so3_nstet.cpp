@@ -19,6 +19,8 @@
 #include "baci_so3_utils.H"
 #include "baci_utils_exceptions.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 DRT::ELEMENTS::NStetType DRT::ELEMENTS::NStetType::instance_;
 
 DRT::ELEMENTS::NStetType& DRT::ELEMENTS::NStetType::Instance() { return instance_; }

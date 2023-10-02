@@ -14,6 +14,7 @@
 #include "baci_io_pstream.H"
 #include "baci_levelset_algorithm.H"
 #include "baci_levelset_intersection_utils.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_parameter_list.H"
 #include "baci_linalg_utils_densematrix_communication.H"

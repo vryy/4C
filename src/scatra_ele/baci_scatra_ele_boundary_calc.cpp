@@ -11,6 +11,7 @@
 
 #include "baci_discretization_fem_general_utils_boundary_integration.H"
 #include "baci_fluid_rotsym_periodicbc.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_list.H"

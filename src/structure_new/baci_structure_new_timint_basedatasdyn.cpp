@@ -20,6 +20,8 @@
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_structure_new_utils.H"
 
+#include <Teuchos_Time.hpp>
+
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 STR::TIMINT::BaseDataSDyn::BaseDataSDyn()

@@ -13,6 +13,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_element_vtk_cell_type_register.H"
 #include "baci_lib_elements_paramsinterface.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils.H"
 #include "baci_linalg_serialdensevector.H"

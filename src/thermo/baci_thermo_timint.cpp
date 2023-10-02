@@ -12,6 +12,7 @@
 
 #include "baci_contact_nitsche_strategy_tsi.H"
 #include "baci_io_control.H"
+#include "baci_lib_function.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_thermo_ele_action.H"

@@ -10,6 +10,7 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_integration.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"

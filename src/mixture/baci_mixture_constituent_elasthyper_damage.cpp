@@ -8,6 +8,7 @@
 
 #include "baci_mixture_constituent_elasthyper_damage.H"
 
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_multiplicative_split_defgrad_elasthyper_service.H"
 #include "baci_mat_par_bundle.H"

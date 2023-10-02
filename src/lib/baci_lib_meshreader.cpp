@@ -19,6 +19,8 @@
 #include "baci_rebalance.H"
 #include "baci_rebalance_utils.H"
 
+#include <Teuchos_TimeMonitor.hpp>
+
 #include <string>
 
 /*----------------------------------------------------------------------*/

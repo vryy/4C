@@ -14,6 +14,7 @@ thereby builds the bridge between the xfluid class and the cut-library
 
 #include "baci_fluid_ele_parameter_xfem.H"
 #include "baci_lib_condition_utils.H"
+#include "baci_lib_function.H"
 #include "baci_mat_newtonianfluid.H"
 #include "baci_xfem_interface_utils.H"
 #include "baci_xfem_utils.H"

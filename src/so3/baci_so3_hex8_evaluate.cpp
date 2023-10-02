@@ -16,6 +16,7 @@
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_fluid_ele_parameter_timint.H"
 #include "baci_lib_discret.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"

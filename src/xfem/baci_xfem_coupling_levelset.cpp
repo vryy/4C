@@ -23,6 +23,7 @@ bridge between the xfluid class and the cut-library
 #include "baci_io_pstream.H"
 #include "baci_lib_condition_utils.H"
 #include "baci_lib_discret_xfem.H"
+#include "baci_lib_function.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mat_newtonianfluid.H"

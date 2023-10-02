@@ -11,6 +11,7 @@
 #include "baci_mat_scatra_reaction_mat.H"
 
 #include "baci_comm_utils.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_scatra_reaction_coupling.H"
@@ -334,20 +335,6 @@ double MAT::ScatraReactionMat::ReacCoeff(const std::vector<std::pair<std::string
     reaccoeff *= (DRT::Problem::Instance()
                       ->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(DisFunctReacCoeffID() - 1)
                       .Evaluate(gpcoord, time, 0));
-
-    // TODO:(thon) the following is nicer but works only for VARFUNCTION Function :(
-    //    try
-    //    {
-    //      DRT::UTILS::FunctionOfAnything& funct =
-    //      dynamic_cast<DRT::UTILS::FunctionOfAnything&>(DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfAnything>(DisFunctReacCoeffID()-1));
-    //      reaccoeff *= (funct.Evaluate(0,constants));
-    //    }
-    //    catch(std::bad_cast & exp)
-    //    {
-    //      dserror("Cast to VarExp Function failed! For phase law definition only 'VARFUNCTION'
-    //      functions are allowed!\n"
-    //          "Check your input file!");
-    //    }
   }
 
   return reaccoeff;

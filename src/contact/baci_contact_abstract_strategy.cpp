@@ -32,6 +32,7 @@
 #include "baci_solver_nonlin_nox_group.H"
 
 #include <Epetra_SerialComm.h>
+#include <Teuchos_Time.hpp>
 
 
 /*----------------------------------------------------------------------*

@@ -15,6 +15,7 @@
 #include "baci_discretization_fem_general_utils_integration.H"
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_io_control.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_serialdensevector.H"

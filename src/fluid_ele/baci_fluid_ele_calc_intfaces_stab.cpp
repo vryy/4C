@@ -26,6 +26,7 @@ convection-diffusion-reaction equation E.Burman, M.A.Fernandez Comput. Methods A
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_discretization_fem_general_utils_gder2.H"
 #include "baci_inpar_fluid.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_mat_fluidporo.H"
 #include "baci_mat_list.H"
