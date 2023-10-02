@@ -46,7 +46,6 @@ Beam3ContactOctTree::Beam3ContactOctTree(
     Teuchos::ParameterList& params, DRT::Discretization& discret, DRT::Discretization& searchdis)
     : btsph_(false),
       btsol_(false),
-      btsolmt_(false),
       discret_(discret),
       searchdis_(searchdis),
       basisnodes_(discret.NumGlobalNodes())
@@ -90,7 +89,6 @@ Beam3ContactOctTree::Beam3ContactOctTree(
 
     btsph_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSPH");
     btsol_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSOL");
-    btsolmt_ = DRT::INPUT::IntegralValue<int>(params, "BEAMS_BTSOLMT");
   }
   else if (params.name() == "DAT FILE->BEAM POTENTIAL")
   {
@@ -150,9 +148,6 @@ Beam3ContactOctTree::Beam3ContactOctTree(
       if (btsol_)
         dserror(
             "Only axis aligned or spherical bounding boxes possible for beam-to-solid contact!");
-      else if (btsolmt_)
-        dserror(
-            "Only axis aligned or spherical bounding boxes possible for beam-to-solid meshtying!");
       else if (btsph_)
         dserror(
             "Only axis-aligned or spherical bounding boxes possible for beam-to-sphere contact!");

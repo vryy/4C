@@ -15,7 +15,6 @@
 #include "baci_beamcontact_beam3contactnew.H"
 #include "baci_beamcontact_beam3tobeampotential.H"
 #include "baci_beamcontact_beam3tosolidcontact.H"
-#include "baci_beamcontact_beam3tosolidmeshtying.H"
 #include "baci_beamcontact_beam3tospherecontact.H"
 #include "baci_beamcontact_beam3tospherepotential.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
@@ -324,9 +323,6 @@ namespace CONTACT
     //! total vector of solid contact nodes
     std::vector<Teuchos::RCP<CONTACT::CoNode>> solcontactnodes_;
 
-    //! vector of close beam to solid meshtying groups (groups of elements, which might be in
-    //! meshtying)
-    std::vector<Teuchos::RCP<Beam3tosolidmeshtyinginterface>> btsolmtgroups_;
     //! total vector of solid meshtying elements
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> solmeshtyingeles_;
     //! total vector of solid meyhtying nodes
@@ -421,9 +417,6 @@ namespace CONTACT
 
     //! beam-to-solid contact penalty parameter
     double btspp_;
-
-    //! beam-to-solid meshtying penalty parameter
-    double btsmtpp_;
 
     //! maximal converged absolute gap during the simulation
     double maxtotalsimgap_;

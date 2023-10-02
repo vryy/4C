@@ -172,9 +172,7 @@ void BEAMINTERACTION::BeamToBeamContactParams::Init()
     dserror("get rid of BEAMS_INACTIVESTIFF flag; no longer supported!");
 
   /****************************************************************************/
-  if (DRT::INPUT::IntegralValue<int>(beam_contact_params_list, "BEAMS_BTSOLMT") or
-      DRT::INPUT::IntegralValue<int>(beam_contact_params_list, "BEAMS_BTSOL") or
-      beam_contact_params_list.get<double>("BEAMS_BTSMTPENALTYPARAM") != 0.0 or
+  if (DRT::INPUT::IntegralValue<int>(beam_contact_params_list, "BEAMS_BTSOL") or
       beam_contact_params_list.get<double>("BEAMS_BTSPENALTYPARAM") != 0.0)
     dserror("currently only beam-to-(BEAM/SPHERE) contact supported!");
 

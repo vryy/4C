@@ -50,9 +50,6 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       "time step",
       &beamcontact);
 
-  BoolParameter("BEAMS_BTSOLMT", "No",
-      "decide, if also meshtying between beams and solids is possible", &beamcontact);
-
   BoolParameter("BEAMS_BTSOL", "No",
       "decide, if also the contact between beams and solids is possible", &beamcontact);
 
@@ -74,8 +71,6 @@ void INPAR::BEAMCONTACT::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList>
       &beamcontact);
   DoubleParameter("BEAMS_BTBLINEPENALTYPARAM", -1.0,
       "Penalty parameter per unit length for beam-to-beam line contact", &beamcontact);
-  DoubleParameter("BEAMS_BTSMTPENALTYPARAM", 0.0, "Penalty parameter for beam-to-solid meshtying",
-      &beamcontact);
   DoubleParameter(
       "BEAMS_BTSPENALTYPARAM", 0.0, "Penalty parameter for beam-to-solid contact", &beamcontact);
   DoubleParameter("BEAMS_BTSPH_PENALTYPARAM", 0.0,

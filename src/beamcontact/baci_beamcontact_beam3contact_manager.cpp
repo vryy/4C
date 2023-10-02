@@ -94,7 +94,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   sstructdynamic_ = DRT::Problem::Instance()->StructuralDynamicParams();
 
   // indicate if beam-to-solid meshtying, beam-to-solid contact or beam-to-sphere contact is applied
-  btsolmt_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSOLMT");
   btsol_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSOL");
   btsph_ = DRT::INPUT::IntegralValue<int>(BeamContactParameters(), "BEAMS_BTSPH");
 
@@ -104,8 +103,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   // check input parameters
   if (sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM") < 0.0 ||
       sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM") < 0.0 ||
-      sbeamcontact_.get<double>("BEAMS_BTSPH_PENALTYPARAM") < 0.0 ||
-      sbeamcontact_.get<double>("BEAMS_BTSMTPENALTYPARAM") < 0.0)
+      sbeamcontact_.get<double>("BEAMS_BTSPH_PENALTYPARAM") < 0.0)
   {
     dserror("ERROR: The penalty parameter has to be positive.");
   }
@@ -118,9 +116,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   btsolpairs_.resize(0);
   oldbtsolpairs_.resize(0);
 
-  // initialize beam-to-solid meshtying element groups
-  btsolmtgroups_.resize(0);
-
   // initialize beam-to-sphere contact element pairs
   btsphpairs_.resize(0);
 
@@ -131,7 +126,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   // initialize input parameters
   currentpp_ = sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM");
   btspp_ = sbeamcontact_.get<double>("BEAMS_BTSPENALTYPARAM");
-  btsmtpp_ = sbeamcontact_.get<double>("BEAMS_BTSMTPENALTYPARAM");
 
   if (btsph_)
   {
@@ -167,9 +161,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
       std::cout << "BTB-CO penalty         = " << currentpp_ << std::endl;
 
     if (!pdiscret_.Comm().MyPID()) std::cout << "BTS-CO penalty         = " << btspp_ << std::endl;
-
-    if (!pdiscret_.Comm().MyPID())
-      std::cout << "BTS-MT penalty         = " << btsmtpp_ << std::endl;
 
     tree_ = Teuchos::rcp(new Beam3ContactOctTree(sbeamcontact_, pdiscret_, *btsoldiscret_));
   }
@@ -1202,53 +1193,6 @@ void CONTACT::Beam3cmanager::SetState(
     btsolpairs_[i]->UpdateElePos(ele1pos, ele2pos);
   }
 
-  // Do the same for the beam-to-solid meshtying groups
-  for (int i = 0; i < (int)btsolmtgroups_.size(); ++i)
-  {
-    int numnodessol = ((btsolmtgroups_[i])->Element2()[0])->NumNode();
-    int numele2 = (int)(btsolmtgroups_[i]->Element2().size());
-    // temporary matrices to store nodal coordinates of each element
-    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    std::vector<CORE::LINALG::SerialDenseMatrix> ele2pos(numele2);
-    for (int e = 0; e < numele2; e++) ele2pos[e].shape(3, numnodessol);
-    // Positions: Loop over all nodes of element 1 (beam element)
-    for (int m = 0; m < numnodes_; m++)
-    {
-      int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-
-      // store updated nodal coordinates
-      for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
-      // store updated nodal tangents
-    }
-    if (numnodalvalues_ == 2)
-    {
-      // Tangents: Loop over all nodes of element 1
-      for (int m = 0; m < numnodes_; m++)
-      {
-        int tempGID = ((btsolmtgroups_[i]->Element1())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
-
-        // store updated nodal tangents
-        for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
-      }
-    }
-    // Positions: Loop over all nodes of all elements 2 (solid surface elements)
-    for (int e = 0; e < numele2; e++)
-    {
-      for (int m = 0; m < (btsolmtgroups_[i]->Element2()[e])->NumNode(); m++)
-      {
-        int tempGID = ((btsolmtgroups_[i]->Element2()[e])->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-        // store updated nodal coordinates
-        for (int n = 0; n < 3; n++) (ele2pos[e])(n, m) = temppos(n);
-      }
-    }
-
-    // finally update nodal positions in meshtying group objects
-    btsolmtgroups_[i]->UpdateElePos(ele1pos, ele2pos);
-  }
-
   // Do the same for the beam-to-sphere contact pairs
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
   {
@@ -1467,27 +1411,6 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
     }
   }
 
-  // Loop over all BTSOL meshtying groups
-  for (int i = 0; i < (int)btsolmtgroups_.size(); ++i)
-  {
-    // only evaluate pair for those procs owning or ghosting at
-    // least one node of one of the elements of the pair
-    int firsteleid = (btsolmtgroups_[i]->Element1())->Id();
-    bool firstisincolmap = ColElements()->MyGID(firsteleid);
-    bool secondisincolmap = false;
-    std::vector<DRT::Element*> ele2 = btsolmtgroups_[i]->Element2();
-    for (int m = 0; m < (int)ele2.size(); ++m)
-    {
-      int secondeleid = ele2[m]->Id();
-      secondisincolmap = secondisincolmap || ColElements()->MyGID(secondeleid);
-    }
-    // evaluate additional meshtying forces and stiffness
-    if (firstisincolmap || secondisincolmap)
-    {
-      btsolmtgroups_[i]->Evaluate(*stiffc_, *fc_, btsmtpp_);
-    }
-  }
-
   // Loop over all BTSPH contact pairs
   for (int i = 0; i < (int)btsphpairs_.size(); ++i)
   {
@@ -1638,11 +1561,6 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
   // Besides beam-to-beam contact we also can handle beam-to-solid contact and beam to sphere
   // contact(will be implemented in the future). In all cases element 1 has to be the beam element.
 
-  // ALWAYS START FROM SCRATCH with beam-to-solid meshtying groups
-  std::map<int, std::vector<int>> localbtsmtgroups;
-  btsolmtgroups_.clear();
-  btsolmtgroups_.resize(0);
-
   // All other element pairs (solid-solid, sphere-solid etc.) will be sorted out later.
   for (int i = 0; i < (int)elementpairs.size(); i++)
   {
@@ -1791,76 +1709,12 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
           dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
       }
     }
-    // beam-to-solid meyhtying pair
-    else if (BEAMCONTACT::SolidMeshtyingElement(*(formattedelementpairs[k])[1]))
-    {
-      bool isalreadyinpairs = false;
-
-      if (localbtsmtgroups.find(currid1) != localbtsmtgroups.end())
-      {
-        std::vector<int> master = localbtsmtgroups[currid1];
-        for (int m = 0; m < (int)master.size(); ++m)
-        {
-          if (master[m] == currid2) isalreadyinpairs = true;
-        }
-      }
-
-      if (!isalreadyinpairs)
-      {
-        if (currid1 <= currid2)
-          localbtsmtgroups[currid1].push_back(currid2);
-        else
-          dserror("Element 1 has to have the smaller element-ID. Adapt your contact search!");
-      }
-    }
     else
     {
       dserror(
           "ERROR: Unknown element type in beam contact pairs (none of BTB, BTSco, BTSmt, BTSPH)");
     }
   }
-
-  // finish construction of beam-to-solid meshtying groups (this has to be done here after having
-  // collected the groups of master (solid surface) elements belonging to one slave (beam) element
-  std::map<int, std::vector<int>>::iterator iter;
-  for (iter = localbtsmtgroups.begin(); iter != localbtsmtgroups.end(); ++iter)
-  {
-    // ID of element 1 (slave = beam)
-    int ele1id = iter->first;
-
-    // IDs of list of elements 2 (master = solid surface)
-    std::vector<int> ele2id = iter->second;
-
-    // get element 1
-    DRT::Element* ele1 = BTSolDiscret().gElement(ele1id);
-
-    // get list of elements 2
-    std::vector<DRT::Element*> ele2;
-    for (int m = 0; m < (int)ele2id.size(); ++m) ele2.push_back(BTSolDiscret().gElement(ele2id[m]));
-
-    // currently all solid elements must be of same type...
-    int numnodessol = 0;
-    for (int m = 0; m < (int)ele2.size(); ++m)
-    {
-      if (m == 0)
-        numnodessol = ele2[m]->NumNode();
-      else
-      {
-        int temp = ele2[m]->NumNode();
-        if (temp != numnodessol)
-          dserror("ERROR: All BTS meshtying solid elements must still be of same type");
-      }
-    }
-
-    // add new meyhtying group object: The auxiliary_instance of the abstract class
-    // Beam3tosolidmeyhtyinginterface is only needed here in order to call the function Impl() which
-    // creates an instance of the templated class Beam3tosolidmeshtying<numnodessol,numnodes,
-    // numnodalvalues>s
-    btsolmtgroups_.push_back(
-        CONTACT::Beam3tosolidmeshtyinginterface::Impl(numnodessol, numnodes_, numnodalvalues_,
-            ProblemDiscret(), BTSolDiscret(), dofoffsetmap_, ele1, ele2, sbeamcontact_));
-  }
-
 
   // screen output
   int numpairs = 0;
@@ -1892,18 +1746,6 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
 
     if (pdiscret_.Comm().MyPID() == 0)
       IO::cout(IO::standard) << "\t Total number of BTSOL contact pairs:    " << numpairs
-                             << IO::endl;
-  }
-
-  if (btsolmt_)
-  {
-    numpairs = 0;
-    numpairsthisproc = btsolmtgroups_.size();
-
-    pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
-
-    if (pdiscret_.Comm().MyPID() == 0)
-      IO::cout(IO::standard) << "\t Total number of BTSOL meshtying groups: " << numpairs
                              << IO::endl;
   }
 }
@@ -2581,9 +2423,6 @@ void CONTACT::Beam3cmanager::Update(
 
   btsolpairs_.clear();
   btsolpairs_.resize(0);
-
-  btsolmtgroups_.clear();
-  btsolmtgroups_.resize(0);
 
   btsphpairs_.clear();
   btsphpairs_.resize(0);
