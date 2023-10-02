@@ -13,9 +13,7 @@
 
 #include "baci_beamcontact_beam3contact.H"
 #include "baci_beamcontact_beam3contactnew.H"
-#include "baci_beamcontact_beam3tobeampotential.H"
 #include "baci_beamcontact_beam3tosolidcontact.H"
-#include "baci_beamcontact_beam3tospherepotential.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
@@ -211,13 +209,6 @@ namespace CONTACT
     void ConsoleOutput();
 
     /*!
-    \brief Write Bearing Reactions into a csv-file
-
-    */
-    void Reactions(
-        const Epetra_Vector& fint, const Epetra_Vector& dirichtoggle, const int& timestep);
-
-    /*!
     \brief Get total potential energy of penalty approach
     */
     double GetTotEnergy() { return totpenaltyenergy_; };
@@ -320,11 +311,6 @@ namespace CONTACT
     //! total vector of solid meyhtying nodes
     std::vector<Teuchos::RCP<MORTAR::MortarNode>> solmeshtyingnodes_;
 
-    //! vector of potential-based interaction (beam,beam) pairs
-    std::vector<Teuchos::RCP<Beam3tobeampotentialinterface>> btbpotpairs_;
-    //! vector of potential-based interaction (beam,sphere) pairs
-    std::vector<Teuchos::RCP<Beam3tospherepotentialinterface>> btsphpotpairs_;
-
     //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair
     //! directly by the two element-iD's of the pair.
     // It is not needed at the moment due to the direct neigbour determination in the constructor
@@ -340,12 +326,6 @@ namespace CONTACT
 
     // beam-to-solid pair map of last time step
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3tosolidcontactinterface>> oldbtsolpairmap_;
-
-    // beam-to-beam pot pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tobeampotentialinterface>> btbpotpairmap_;
-
-    // beam-to-sphere pot pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tospherepotentialinterface>> btsphpotpairmap_;
 
     //! parameter list for beam contact options
     Teuchos::ParameterList sbeamcontact_;

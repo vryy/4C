@@ -21,7 +21,6 @@
 #include "baci_contact_node.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_beampotential.H"
-#include "baci_inpar_contact.H"
 #include "baci_inpar_structure.H"
 #include "baci_io.H"
 #include "baci_io_pstream.H"
@@ -83,8 +82,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   oldcontactpairmap_.clear();
   btsolpairmap_.clear();
   oldbtsolpairmap_.clear();
-  btbpotpairmap_.clear();
-  btsphpotpairmap_.clear();
 
   // read parameter lists from DRT::Problem
   sbeamcontact_ = DRT::Problem::Instance()->BeamContactParams();
@@ -111,10 +108,6 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   // initialize beam-to-solid contact element pairs
   btsolpairs_.resize(0);
   oldbtsolpairs_.resize(0);
-
-  // initialize potential-based interaction pairs
-  btbpotpairs_.resize(0);
-  btsphpotpairs_.resize(0);
 
   // initialize input parameters
   currentpp_ = sbeamcontact_.get<double>("BEAMS_BTBPENALTYPARAM");
@@ -1175,97 +1168,6 @@ void CONTACT::Beam3cmanager::SetState(
     btsolpairs_[i]->UpdateElePos(ele1pos, ele2pos);
   }
 
-  // loop over all btbpotpairs
-  for (int i = 0; i < (int)btbpotpairs_.size(); ++i)
-  {
-    // temporary matrices to store nodal coordinates of each element
-    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    CORE::LINALG::SerialDenseMatrix ele2pos(3 * numnodalvalues_, numnodes_);
-    // Positions: Loop over all nodes of element 1
-    for (int m = 0; m < numnodes_; m++)
-    {
-      int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-
-      // store updated nodal coordinates
-      for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
-      // store updated nodal tangents
-    }
-    if (numnodalvalues_ == 2)
-    {
-      // Tangents: Loop over all nodes of element 1
-      for (int m = 0; m < numnodes_; m++)
-      {
-        int tempGID = ((btbpotpairs_[i]->Element1())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
-
-        // store updated nodal tangents
-        for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
-      }
-    }
-    // Positions: Loop over all nodes of element 2
-    for (int m = 0; m < numnodes_; m++)
-    {
-      int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-      // store updated nodal coordinates
-      for (int n = 0; n < 3; n++) ele2pos(n, m) = temppos(n);
-    }
-    if (numnodalvalues_ == 2)
-    {
-      // Tangents: Loop over all nodes of element 2
-      for (int m = 0; m < numnodes_; m++)
-      {
-        int tempGID = ((btbpotpairs_[i]->Element2())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
-
-        // store updated nodal tangents
-        for (int n = 0; n < 3; n++) ele2pos(n + 3, m) = temptan(n);
-      }
-    }
-    // finally update nodal positions in contact pair objects
-    btbpotpairs_[i]->UpdateElePos(ele1pos, ele2pos);
-  }
-
-
-  // Do the same for the beam-to-sphere potential pairs
-  for (int i = 0; i < (int)btsphpotpairs_.size(); ++i)
-  {
-    // temporary matrices to store nodal coordinates of each element
-    CORE::LINALG::SerialDenseMatrix ele1pos(3 * numnodalvalues_, numnodes_);
-    CORE::LINALG::SerialDenseMatrix ele2pos(3, 1);
-    // Positions: Loop over all nodes of element 1 (beam element)
-    for (int m = 0; m < numnodes_; m++)
-    {
-      int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
-      CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-
-      // store updated nodal coordinates
-      for (int n = 0; n < 3; n++) ele1pos(n, m) = temppos(n);
-      // store updated nodal tangents
-    }
-    if (numnodalvalues_ == 2)
-    {
-      // Tangents: Loop over all nodes of element 1
-      for (int m = 0; m < numnodes_; m++)
-      {
-        int tempGID = ((btsphpotpairs_[i]->Element1())->NodeIds())[m];
-        CORE::LINALG::Matrix<3, 1> temptan = currenttangents[tempGID];
-
-        // store updated nodal tangents
-        for (int n = 0; n < 3; n++) ele1pos(n + 3, m) = temptan(n);
-      }
-    }
-    // Positions: (rigid sphere element)
-    int tempGID = ((btsphpotpairs_[i]->Element2())->NodeIds())[0];
-    CORE::LINALG::Matrix<3, 1> temppos = currentpositions[tempGID];
-    // store updated nodal coordinates
-    for (int n = 0; n < 3; n++) ele2pos(n, 0) = temppos(n);
-
-    // finally update nodal positions in contact pair objects
-    btsphpotpairs_[i]->UpdateElePos(ele1pos, ele2pos);
-  }
-
   return;
 }
 
@@ -1354,124 +1256,6 @@ void CONTACT::Beam3cmanager::EvaluateAllPairs(Teuchos::ParameterList timeintpara
       btsolpairs_[i]->Evaluate(*stiffc_, *fc_, btspp_);
     }
   }
-
-  // Loop over all BTB potential pairs
-  for (int i = 0; i < (int)btbpotpairs_.size(); ++i)
-  {
-    // only evaluate pair for those procs owning or ghosting at
-    // least one node of one of the two elements of the pair
-    int firsteleid = (btbpotpairs_[i]->Element1())->Id();
-    int secondeleid = (btbpotpairs_[i]->Element2())->Id();
-    bool firstisincolmap = ColElements()->MyGID(firsteleid);
-    bool secondisincolmap = ColElements()->MyGID(secondeleid);
-    // evaluate additional contact forces and stiffness
-    if (firstisincolmap || secondisincolmap)
-    {
-      // since only the nodes know about their conditions, we need this workaround
-      // we assume that a linecharge condition is always applied to the entire physical beam, i.e.
-      // it is sufficient to check only one node
-      const DRT::Element* ele1 = btbpotpairs_[i]->Element1();
-      const DRT::Element* ele2 = btbpotpairs_[i]->Element2();
-
-      const DRT::Node* const* nodes1;
-      const DRT::Node* const* nodes2;
-      nodes1 = ele1->Nodes();
-      nodes2 = ele2->Nodes();
-
-      dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
-      dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
-
-      std::vector<DRT::Condition*> conds1;
-      std::vector<DRT::Condition*> conds2;
-      nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
-      nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
-
-      for (unsigned int k = 0; k < conds1.size(); ++k)
-      {
-        int npotlaw1 = conds1[k]->GetInt("potlaw");
-
-        for (unsigned int j = 0; j < conds2.size(); ++j)
-        {
-          int npotlaw2 = conds2[j]->GetInt("potlaw");
-
-          if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
-          {
-            std::vector<DRT::Condition*> currconds;
-            currconds.clear();
-            currconds.push_back(conds1[k]);
-            currconds.push_back(conds2[j]);
-            // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index
-            // 0
-            if (npotlaw1 > (int)ki_->size())
-              dserror(
-                  "number of potential law specified in line charge condition exceeds number of "
-                  "defined potential laws!");
-            btbpotpairs_[i]->Evaluate(
-                *stiffc_, *fc_, currconds, ki_->at(npotlaw1 - 1), mi_->at(npotlaw1 - 1));
-          }
-        }
-      }
-    }
-  }  // end: Loop over all BTB potential pairs
-
-  // Loop over all BTSPH potential pairs
-  for (int i = 0; i < (int)btsphpotpairs_.size(); ++i)
-  {
-    // only evaluate pair for those procs owning or ghosting at
-    // least one node of one of the two elements of the pair
-    int firsteleid = (btsphpotpairs_[i]->Element1())->Id();
-    int secondeleid = (btsphpotpairs_[i]->Element2())->Id();
-    bool firstisincolmap = ColElements()->MyGID(firsteleid);
-    bool secondisincolmap = ColElements()->MyGID(secondeleid);
-    // evaluate additional contact forces and stiffness
-    if (firstisincolmap || secondisincolmap)
-    {
-      // since only the nodes know about their conditions, we need this workaround
-      // we assume that a linecharge condition is always applied to the entire physical beam, i.e.
-      // it is sufficient to check only one node
-      const DRT::Element* ele1 = btsphpotpairs_[i]->Element1();
-      const DRT::Element* ele2 = btsphpotpairs_[i]->Element2();
-
-      const DRT::Node* const* nodes1;
-      const DRT::Node* const* nodes2;
-      nodes1 = ele1->Nodes();
-      nodes2 = ele2->Nodes();
-
-      dsassert(nodes1 != nullptr and nodes2 != nullptr, "pointer to nodes is nullptr!");
-      dsassert(nodes1[0] != nullptr and nodes2[0] != nullptr, "pointer to nodes is nullptr!");
-
-      std::vector<DRT::Condition*> conds1;
-      std::vector<DRT::Condition*> conds2;
-      nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
-      nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
-
-      for (unsigned int k = 0; k < conds1.size(); ++k)
-      {
-        int npotlaw1 = conds1[k]->GetInt("potlaw");
-
-        for (unsigned int j = 0; j < conds2.size(); ++j)
-        {
-          int npotlaw2 = conds2[j]->GetInt("potlaw");
-
-          if (npotlaw1 == npotlaw2 and npotlaw1 > 0)
-          {
-            std::vector<DRT::Condition*> currconds;
-            currconds.clear();
-            currconds.push_back(conds1[k]);
-            currconds.push_back(conds2[j]);
-            // be careful here, as npotlaw =1 corresponds to first entry of ki_/mi_, therefore index
-            // 0
-            if (npotlaw1 > (int)ki_->size())
-              dserror(
-                  "number of potential law specified in line charge condition exceeds number of "
-                  "defined potential laws!");
-            btsphpotpairs_[i]->Evaluate(
-                *stiffc_, *fc_, currconds, ki_->at(npotlaw1 - 1), mi_->at(npotlaw1 - 1));
-          }
-        }
-      }
-    }
-  }  // end: Loop over all BTSPH potential pairs
 
   return;
 }
@@ -1743,8 +1527,6 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
       }
     }
 
-    int currid1 = ele1->Id();
-    int currid2 = ele2->Id();
     if (validinteraction)
     {
       // beam-to-beam pair
@@ -1754,26 +1536,6 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
         // Beam3tobeampotentialinterface is only needed here in order to call the function Impl()
         // which creates an instance of the templated class Beam3tobeampotential<numnodes,
         // numnodalvalues> !
-        if (btbpotpairmap_.find(std::make_pair(currid1, currid2)) == btbpotpairmap_.end())
-        {
-          btbpotpairs_.push_back(
-              CONTACT::Beam3tobeampotentialinterface::Impl(numnodes_, numnodalvalues_,
-                  ProblemDiscret(), BTSolDiscret(), dofoffsetmap_, ele1, ele2, sbeampotential_));
-          btbpotpairmap_[std::make_pair(currid1, currid2)] = btbpotpairs_[btbpotpairs_.size() - 1];
-        }
-      }
-      // beam-to-sphere pair
-      else if (BEAMCONTACT::RigidsphereElement(*(formattedelementpairs[k])[1]) and potbtsph_)
-      {
-        // basically same procedure as for beam-to-beam pair (see above)
-        if (btsphpotpairmap_.find(std::make_pair(currid1, currid2)) == btsphpotpairmap_.end())
-        {
-          btsphpotpairs_.push_back(
-              CONTACT::Beam3tospherepotentialinterface::Impl(numnodes_, numnodalvalues_,
-                  ProblemDiscret(), BTSolDiscret(), dofoffsetmap_, ele1, ele2, sbeampotential_));
-          btsphpotpairmap_[std::make_pair(currid1, currid2)] =
-              btsphpotpairs_[btsphpotpairs_.size() - 1];
-        }
       }
       // beam-to-solid pair, beam-to-??? pair
       else
@@ -1783,27 +1545,6 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
             "No other types of elements allowed!");
       }
     }
-  }
-
-  // screen output
-  int numpairs = 0;
-  int numpairsthisproc = btbpotpairs_.size();
-
-  pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
-
-  if (pdiscret_.Comm().MyPID() == 0)
-    IO::cout(IO::standard) << "\t Total number of BTB pot pairs:     " << numpairs << IO::endl;
-
-
-  if (potbtsph_)
-  {
-    numpairs = 0;
-    numpairsthisproc = btsphpotpairs_.size();
-
-    pdiscret_.Comm().SumAll(&numpairsthisproc, &numpairs, 1);
-
-    if (pdiscret_.Comm().MyPID() == 0)
-      IO::cout(IO::standard) << "\t Total number of BTSPH pot pairs:    " << numpairs << IO::endl;
   }
 }
 
@@ -2320,21 +2061,11 @@ void CONTACT::Beam3cmanager::Update(
   contactpairmap_.clear();
   btsolpairmap_.clear();
 
-  btbpotpairmap_.clear();
-  btsphpotpairmap_.clear();
-
   pairs_.clear();
   pairs_.resize(0);
 
   btsolpairs_.clear();
   btsolpairs_.resize(0);
-  ;
-
-  btbpotpairs_.clear();
-  btbpotpairs_.resize(0);
-
-  btsphpotpairs_.clear();
-  btsphpotpairs_.resize(0);
 
   return;
 }
@@ -3863,59 +3594,6 @@ void CONTACT::Beam3cmanager::ConsoleOutput()
     Comm().Barrier();
     if (Comm().MyPID() == 0) IO::cout(IO::standard) << IO::endl;
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Write reaction forces and moments into a csv-file         popp 04/10|
- *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Reactions(
-    const Epetra_Vector& fint, const Epetra_Vector& dirichtoggle, const int& timestep)
-{
-  dserror("Reaction Forces are not implemented up to now!");
-
-  // we need to address the nodes / dofs via the beam contact
-  // discretization, because only this is exported to full overlap
-  Epetra_Vector fintbc(fint);
-  fintbc.ReplaceMap(*BTSolDiscret().DofRowMap());
-  Epetra_Vector dirichtogglebc(dirichtoggle);
-  dirichtogglebc.ReplaceMap(*BTSolDiscret().DofRowMap());
-
-  // compute bearing reactions from fint via dirichtoggle
-  // Note: dirichtoggle is 1 for DOFs with DBC and 0 elsewise
-  Epetra_Vector fbearing(*BTSolDiscret().DofRowMap());
-  fbearing.Multiply(1.0, dirichtogglebc, fintbc, 0.0);
-
-  // std::stringstream for filename
-  std::ostringstream filename;
-  filename << "o/gmsh_output/reaction_forces_moments.csv";
-
-  // do output to file in c-style
-  FILE* fp = nullptr;
-
-  // open file to write output data into
-  if (timestep == 1)
-    fp = fopen(filename.str().c_str(), "w");
-  else
-    fp = fopen(filename.str().c_str(), "a");
-
-  // std::stringstream for file content
-  std::ostringstream CSVcontent;
-  CSVcontent << std::endl << timestep << ",";
-
-  // only implemented for one single node
-  int i = 0;  // CHOOSE YOUR NODE ID HERE!!!
-  const DRT::Node* thisnode = BTSolDiscret().gNode(i);
-  const std::vector<int> DofGIDs = BTSolDiscret().Dof(thisnode);
-  CSVcontent << i;
-
-  // write reaction forces and moments
-  for (int j = 0; j < 6; ++j) CSVcontent << "," << fbearing[i * 6 + j];
-
-  // write content into file and close
-  fprintf(fp, CSVcontent.str().c_str());
-  fclose(fp);
-
   return;
 }
 
