@@ -13,6 +13,7 @@
 
 #include "baci_io_pstream.H"
 #include "baci_lib_epetra_utils.H"
+#include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_sparsematrix.H"
 #include "baci_solver_nonlin_nox_aux.H"
