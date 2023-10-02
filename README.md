@@ -204,7 +204,7 @@ It needs to be invoked together with an input (`.dat`) file via
 ```
 
 where `<jobName>` is the name of the simulation file and `<outputName>` denotes the name of the corresponding output file(s). 
-A collection of working `.dat` files is located under `<sourceDir>/Input/`. 
+A collection of working `.dat` files is located under `<sourceDir>/tests/input_files/`. 
   
 In case you used the binary output option, your simulation results can be accessed using the `post_processor` 
 script which is located in the build directory. 

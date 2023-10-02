@@ -85,7 +85,10 @@ def path_contains(test, path):
 
 
 def is_input_file(fname):
-    return path_contains("Input", fname) and os.path.splitext(fname)[1] == ".dat"
+    return (
+        path_contains("tests/input_files", fname)
+        and os.path.splitext(fname)[1] == ".dat"
+    )
 
 
 def is_checked_file(fname):

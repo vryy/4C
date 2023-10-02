@@ -326,107 +326,107 @@ xfem/                      @baci/team_fluid
 
 
 
-# --- specify code owner of files in Baci Input directory ------------------------------------------------------------ #
-/Input/**                          @baci/baci_developers
+# --- specify code owner of files in tests/input_files directory ------------------------------------------------------------ #
+/tests/input_files/**                          @baci/baci_developers
 
-/Input/ale*                        @baci/team_fluid
+/tests/input_files/ale*                        @baci/team_fluid
 
-/Input/beam3*                      @baci/team_structure
+/tests/input_files/beam3*                      @baci/team_structure
 
-/Input/cardiovascular0d*           @baci/team_reduced_fluid_models
+/tests/input_files/cardiovascular0d*           @baci/team_reduced_fluid_models
 
-/Input/constr*                     @baci/team_structure
+/tests/input_files/constr*                     @baci/team_structure
 
-/Input/contact*                    @baci/team_contact
+/tests/input_files/contact*                    @baci/team_contact
 
-/Input/ehl*                        @baci/team_scatra
+/tests/input_files/ehl*                        @baci/team_scatra
 
-/Input/elasthyper*                 @baci/team_material
+/tests/input_files/elasthyper*                 @baci/team_material
 
-/Input/elch_*                      @baci/team_scatra
+/tests/input_files/elch_*                      @baci/team_scatra
 
-/Input/elemag*                     @baci/team_scatra
+/tests/input_files/elemag*                     @baci/team_scatra
 
-/Input/f2_*                        @baci/team_fluid
-/Input/f3_*                        @baci/team_fluid
+/tests/input_files/f2_*                        @baci/team_fluid
+/tests/input_files/f3_*                        @baci/team_fluid
 
-/Input/fbi_*                       @baci/team_fsi
+/tests/input_files/fbi_*                       @baci/team_fsi
 
-/Input/fpsi_*                      @baci/team_fsi @baci/team_poro
+/tests/input_files/fpsi_*                      @baci/team_fsi @baci/team_poro
 
-/Input/fsi_*                       @baci/team_fsi
+/tests/input_files/fsi_*                       @baci/team_fsi
 
-/Input/homogenized-constrained-mixture* @baci/team_structure
+/tests/input_files/homogenized-constrained-mixture* @baci/team_structure
 
-/Input/loma*                       @baci/team_fluid
+/tests/input_files/loma*                       @baci/team_fluid
 
-/Input/mat*                        @baci/team_material
+/tests/input_files/mat*                        @baci/team_material
 
-/Input/membrane*                   @baci/team_structure
+/tests/input_files/membrane*                   @baci/team_structure
 
-/Input/meshtying*                  @baci/team_contact
+/tests/input_files/meshtying*                  @baci/team_contact
 
-/Input/mixture*                    @baci/team_structure
+/tests/input_files/mixture*                    @baci/team_structure
 
-/Input/new_solid_ele*              @baci/team_structure
+/tests/input_files/new_solid_ele*              @baci/team_structure
 
-/Input/one_d_3_artery*             @baci/team_reduced_fluid_models
+/tests/input_files/one_d_3_artery*             @baci/team_reduced_fluid_models
 
-/Input/particle_dem*               @baci/team_particle
-/Input/particle_nointer*           @baci/team_particle
-/Input/particle_sph*               @baci/team_particle
-/Input/pasi*                       @baci/team_particle
+/tests/input_files/particle_dem*               @baci/team_particle
+/tests/input_files/particle_nointer*           @baci/team_particle
+/tests/input_files/particle_sph*               @baci/team_particle
+/tests/input_files/pasi*                       @baci/team_particle
 
-/Input/plastic*                    @baci/team_material
+/tests/input_files/plastic*                    @baci/team_material
 
-/Input/poro*                       @baci/team_poro
+/tests/input_files/poro*                       @baci/team_poro
 
-/Input/prestress*                  @baci/team_structure
+/tests/input_files/prestress*                  @baci/team_structure
 
-/Input/red_airways*                @baci/team_reduced_fluid_models
+/tests/input_files/red_airways*                @baci/team_reduced_fluid_models
 
-/Input/ref/beam*/**/*              @baci/team_structure
-/Input/ref/fluid*/**/*             @baci/team_fluid
-/Input/ref/fsi*/**/*               @baci/team_fluid @baci/team_fsi
-/Input/ref/particle*/**/*          @baci/team_particle
-/Input/ref/pasi*/**/*              @baci/team_particle
-/Input/ref/sohex8fbar*/**/*        @baci/team_structure
-/Input/ref/solid*/**/*             @baci/team_structure
-/Input/ref/ssi*/**/*               @baci/team_scatra
-/Input/ref/ssti*/**/*              @baci/team_scatra
-/Input/ref/structure*/**/*         @baci/team_structure
+/tests/input_files/ref/beam*/**/*              @baci/team_structure
+/tests/input_files/ref/fluid*/**/*             @baci/team_fluid
+/tests/input_files/ref/fsi*/**/*               @baci/team_fluid @baci/team_fsi
+/tests/input_files/ref/particle*/**/*          @baci/team_particle
+/tests/input_files/ref/pasi*/**/*              @baci/team_particle
+/tests/input_files/ref/sohex8fbar*/**/*        @baci/team_structure
+/tests/input_files/ref/solid*/**/*             @baci/team_structure
+/tests/input_files/ref/ssi*/**/*               @baci/team_scatra
+/tests/input_files/ref/ssti*/**/*              @baci/team_scatra
+/tests/input_files/ref/structure*/**/*         @baci/team_structure
 
-/Input/rigidsphere*                @baci/team_structure
+/tests/input_files/rigidsphere*                @baci/team_structure
 
-/Input/roughcontact*               @baci/team_contact
+/tests/input_files/roughcontact*               @baci/team_contact
 
-/Input/scatra*                     @baci/team_scatra
+/tests/input_files/scatra*                     @baci/team_scatra
 
-/Input/shell7p*                    @baci/team_structure
+/tests/input_files/shell7p*                    @baci/team_structure
 
-/Input/solid*                      @baci/team_structure
+/tests/input_files/solid*                      @baci/team_structure
 
-/Input/spring_dashpot*             @baci/team_discretization
+/tests/input_files/spring_dashpot*             @baci/team_discretization
 
-/Input/ssi*                        @baci/team_scatra
-/Input/ssti*                       @baci/team_scatra
-/Input/sti*                        @baci/team_scatra
+/tests/input_files/ssi*                        @baci/team_scatra
+/tests/input_files/ssti*                       @baci/team_scatra
+/tests/input_files/sti*                        @baci/team_scatra
 
-/Input/stru*                       @baci/team_structure
+/tests/input_files/stru*                       @baci/team_structure
 
-/Input/thermo*                     @baci/team_thermo
+/tests/input_files/thermo*                     @baci/team_thermo
 
-/Input/truss3*                     @baci/team_structure
+/tests/input_files/truss3*                     @baci/team_structure
 
-/Input/tsi*                        @baci/team_thermo
+/tests/input_files/tsi*                        @baci/team_thermo
 
-/Input/volmortar*                  @baci/team_contact
+/tests/input_files/volmortar*                  @baci/team_contact
 
-/Input/w1*                         @baci/team_structure
+/tests/input_files/w1*                         @baci/team_structure
 
-/Input/wear*                       @baci/team_contact
+/tests/input_files/wear*                       @baci/team_contact
 
-/Input/xfluid_*                    @baci/team_fluid
+/tests/input_files/xfluid_*                    @baci/team_fluid
 
 # infrastructure configuration files
 
