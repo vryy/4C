@@ -7,8 +7,8 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_BEAMINTERACTION_BEAM3CONTACT_DEFINES_H
-#define BACI_BEAMINTERACTION_BEAM3CONTACT_DEFINES_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_H
+#define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_DEFINES_H
 
 #include <Sacado.hpp>
 

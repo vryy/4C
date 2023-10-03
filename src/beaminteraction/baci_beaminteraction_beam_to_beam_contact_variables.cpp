@@ -12,9 +12,9 @@
 
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_pair.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"

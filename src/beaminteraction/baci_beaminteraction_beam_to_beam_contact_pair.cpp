@@ -14,10 +14,10 @@
 #include "baci_beam3_kirchhoff.H"
 #include "baci_beam3_reissner.H"
 #include "baci_beam3_spatial_discretization_utils.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_beaminteraction_beam_to_beam_contact_params.H"
+#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_beam_to_beam_contact_variables.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_beaminteraction_contact_params.H"
@@ -73,8 +73,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
     ele2pos_(i) = 0.0;
   }
 
-  R1_ = BEAMCONTACT::CalcEleRadius(Element1());
-  R2_ = BEAMCONTACT::CalcEleRadius(Element2());
+  R1_ = BEAMINTERACTION::CalcEleRadius(Element1());
+  R2_ = BEAMINTERACTION::CalcEleRadius(Element2());
 
   maxactivegap_ = GetMaxActiveDist();
 
@@ -90,8 +90,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::Setup()
 
   if (determine_neighbors)
   {
-    neighbors1_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(Element1());
-    neighbors2_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(Element2());
+    neighbors1_ = BEAMINTERACTION::B3TANGENTSMOOTHING::DetermineNeigbors(Element1());
+    neighbors2_ = BEAMINTERACTION::B3TANGENTSMOOTHING::DetermineNeigbors(Element2());
 
     bool leftboundarynode1 = false;
     bool rightboundarynode1 = false;
@@ -854,7 +854,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
           // TODO: This procedure can also be made more efficient by deleting all segments of
           // curintsegpairs which are not relevant for the following Gauss points anymore (see
           // intersection of integration intervals and segment pairs)
-          if (BEAMCONTACT::WithinInterval(eta1_slave, eta1_segleft, eta1_segright))
+          if (BEAMINTERACTION::WithinInterval(eta1_slave, eta1_segleft, eta1_segright))
           {
             double eta2_segleft = (curintsegpairs[k]).second;
             double eta2_master = 0.0;
@@ -872,8 +872,8 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetActive
               {
                 TYPE eta1 = eta1_slave;
                 TYPE eta2 = eta2_master;
-                int leftpoint_id1 = BEAMCONTACT::GetSegmentId(eta1_slave, numseg1_);
-                int leftpoint_id2 = BEAMCONTACT::GetSegmentId(eta2_master, numseg2_);
+                int leftpoint_id1 = BEAMINTERACTION::GetSegmentId(eta1_slave, numseg1_);
+                int leftpoint_id2 = BEAMINTERACTION::GetSegmentId(eta2_master, numseg2_);
                 std::pair<TYPE, TYPE> closestpoint(std::make_pair(eta1, eta2));
                 std::pair<int, int> integration_ids = std::make_pair(numgp, interval);
                 std::pair<int, int> leftpoint_ids = std::make_pair(leftpoint_id1, leftpoint_id2);
@@ -1965,8 +1965,8 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::CheckSegm
   CORE::LINALG::Matrix<3, 1, double> diffvec(true);
   diffvec = CORE::FADUTILS::DiffVector(rm_lin, rm);
   dist = (double)CORE::FADUTILS::VectorNorm<3>(diffvec);
-  angle1 = (double)BEAMCONTACT::CalcAngle(t1, t_lin);
-  angle2 = (double)BEAMCONTACT::CalcAngle(t2, t_lin);
+  angle1 = (double)BEAMINTERACTION::CalcAngle(t1, t_lin);
+  angle2 = (double)BEAMINTERACTION::CalcAngle(t2, t_lin);
 
   if (std::fabs(angle1) < segangle and
       std::fabs(angle2) < segangle)  // segment distribution is fine enough
@@ -2037,13 +2037,13 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetCloseS
       r2_b = endpoints2[j + 1];
       t2 = CORE::FADUTILS::DiffVector(r2_b, r2_a);
 
-      angle = BEAMCONTACT::CalcAngle(t1, t2);
+      angle = BEAMINTERACTION::CalcAngle(t1, t2);
 
       //*******1) intersection between two parallel
       // cylinders*********************************************************
       if (std::fabs(angle) < ANGLETOL)
       {
-        if (BEAMCONTACT::IntersectParallelCylinders(r1_a, r1_b, r2_a, r2_b, distancelimit))
+        if (BEAMINTERACTION::IntersectParallelCylinders(r1_a, r1_b, r2_a, r2_b, distancelimit))
         {
           CORE::LINALG::Matrix<3, 1, double> segmentdata(true);
           segmentdata(0) = angle;   // segment angle
@@ -2072,7 +2072,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::GetCloseS
       {
         std::pair<double, double> closestpoints(std::make_pair(0.0, 0.0));
         bool etaset = false;
-        if (BEAMCONTACT::IntersectArbitraryCylinders(
+        if (BEAMINTERACTION::IntersectArbitraryCylinders(
                 r1_a, r1_b, r2_a, r2_b, distancelimit, closestpoints, etaset))
         {
           CORE::LINALG::Matrix<3, 1, double> segmentdata(true);
@@ -2488,8 +2488,9 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ClosestPo
             CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm<3>(r2_xi)) < 1.0e-8)
           dserror("Tangent vector of zero length, choose smaller time step!");
 
-        double angle = fabs(BEAMCONTACT::CalcAngle(CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r1_xi),
-            CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r2_xi)));
+        double angle =
+            fabs(BEAMINTERACTION::CalcAngle(CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r1_xi),
+                CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r2_xi)));
 
         double perpshiftangle1 =
             Params()->BeamToBeamContactParams()->BeamToBeamPerpShiftingAngle1();
@@ -2856,8 +2857,9 @@ bool BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::PointToLi
           dserror("Tangent vector of zero length, choose smaller time step!");
 
         bool relevant_angle = true;
-        double angle = fabs(BEAMCONTACT::CalcAngle(CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r1_xi),
-            CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r2_xi)));
+        double angle =
+            fabs(BEAMINTERACTION::CalcAngle(CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r1_xi),
+                CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r2_xi)));
         if (smallanglepair)
         {
           double parshiftangle2 =
@@ -4791,7 +4793,7 @@ void BEAMINTERACTION::BeamToBeamContactPair<numnodes, numnodalvalues>::ComputeNo
 
   variables->SetGap(gap);
   variables->SetNormal(normal);
-  variables->SetAngle(BEAMCONTACT::CalcAngle(CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r1_xi),
+  variables->SetAngle(BEAMINTERACTION::CalcAngle(CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r1_xi),
       CORE::FADUTILS::CastToDouble<TYPE, 3, 1>(r2_xi)));
 
   // Fixme

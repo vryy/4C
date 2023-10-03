@@ -12,9 +12,9 @@
 
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_reissner.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
@@ -119,8 +119,8 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
   // for tangent smoothing but also in order to determine the vector normalold_ of the neighbor,
   // which is needed to perform sliding contact (with changing active pairs) for slender beams.
   {
-    neighbors1_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(element1);
-    neighbors2_ = CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(element2);
+    neighbors1_ = BEAMINTERACTION::B3TANGENTSMOOTHING::DetermineNeigbors(element1);
+    neighbors2_ = BEAMINTERACTION::B3TANGENTSMOOTHING::DetermineNeigbors(element2);
   }
 
   // Calculate initial length of beam elements (approximation for initially curved elements!)
@@ -163,7 +163,7 @@ CONTACT::Beam3contactnew<numnodes, numnodalvalues>::Beam3contactnew(
     // TODO: Here we need a warning in case we have no additive bounding box extrusion value!
   }
 
-  searchboxinc_ = BEAMCONTACT::DetermineSearchboxInc(beamcontactparams);
+  searchboxinc_ = BEAMINTERACTION::DetermineSearchboxInc(beamcontactparams);
 
   if (searchboxinc_ < 0.0)
     dserror("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
@@ -2328,9 +2328,9 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::ClosestPointProjection(
 
     // Evaluate nodal tangents in each case. However, they are used only if
     // smoothing_=INPAR::BEAMCONTACT::bsm_cpp
-    CONTACT::B3TANGENTSMOOTHING::ComputeTangentsAndDerivs<numnodes, numnodalvalues>(
+    BEAMINTERACTION::B3TANGENTSMOOTHING::ComputeTangentsAndDerivs<numnodes, numnodalvalues>(
         t1, t1_xi, nodaltangentssmooth1_, N1, N1_xi);
-    CONTACT::B3TANGENTSMOOTHING::ComputeTangentsAndDerivs<numnodes, numnodalvalues>(
+    BEAMINTERACTION::B3TANGENTSMOOTHING::ComputeTangentsAndDerivs<numnodes, numnodalvalues>(
         t2, t2_xi, nodaltangentssmooth2_, N2, N2_xi);
 
     // evaluate f at current eta1, eta2
@@ -3548,14 +3548,14 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::UpdateEleSmoothTangents
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
   for (int i = 0; i < 3 * numnodes; i++) elepos_aux(i) = CORE::FADUTILS::CastToDouble(ele1pos_(i));
 
-  nodaltangentssmooth1_ = CONTACT::B3TANGENTSMOOTHING::CalculateNodalTangents<numnodes>(
+  nodaltangentssmooth1_ = BEAMINTERACTION::B3TANGENTSMOOTHING::CalculateNodalTangents<numnodes>(
       currentpositions, elepos_aux, element1_, neighbors1_);
 
   elepos_aux.Clear();
   // Tangent smoothing only possible with data type double (not with Sacado FAD)
   for (int i = 0; i < 3 * numnodes; i++) elepos_aux(i) = CORE::FADUTILS::CastToDouble(ele2pos_(i));
 
-  nodaltangentssmooth2_ = CONTACT::B3TANGENTSMOOTHING::CalculateNodalTangents<numnodes>(
+  nodaltangentssmooth2_ = BEAMINTERACTION::B3TANGENTSMOOTHING::CalculateNodalTangents<numnodes>(
       currentpositions, elepos_aux, element2_, neighbors2_);
 }
 /*----------------------------------------------------------------------*

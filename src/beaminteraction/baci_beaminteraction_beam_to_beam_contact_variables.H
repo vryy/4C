@@ -12,9 +12,9 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_VARIABLES_H
 
 
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"

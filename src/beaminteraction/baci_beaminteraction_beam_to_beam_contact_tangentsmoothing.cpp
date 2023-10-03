@@ -8,14 +8,14 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
+#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_node.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CONTACT::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
+BEAMINTERACTION::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
     const DRT::Element* right_neighbor, int connecting_node_left, int connecting_node_right)
     : left_neighbor_(left_neighbor),
       right_neighbor_(right_neighbor),
@@ -27,7 +27,7 @@ CONTACT::B3CNeighbor::B3CNeighbor(const DRT::Element* left_neighbor,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbors(
+Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> BEAMINTERACTION::B3TANGENTSMOOTHING::DetermineNeigbors(
     const DRT::Element* element1)
 {
   const DRT::Element* left_neighbor = nullptr;
@@ -116,14 +116,14 @@ Teuchos::RCP<CONTACT::B3CNeighbor> CONTACT::B3TANGENTSMOOTHING::DetermineNeigbor
     }
   }
 
-  return Teuchos::rcp(new CONTACT::B3CNeighbor(
+  return Teuchos::rcp(new BEAMINTERACTION::B3CNeighbor(
       left_neighbor, right_neighbor, connecting_node_left, connecting_node_right));
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int CONTACT::B3TANGENTSMOOTHING::GetBoundaryNode(const int nnode)
+int BEAMINTERACTION::B3TANGENTSMOOTHING::GetBoundaryNode(const int nnode)
 {
   if (nnode == 2)
     return 1;
@@ -134,7 +134,7 @@ int CONTACT::B3TANGENTSMOOTHING::GetBoundaryNode(const int nnode)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double CONTACT::B3TANGENTSMOOTHING::GetEleLength(
+double BEAMINTERACTION::B3TANGENTSMOOTHING::GetEleLength(
     const CORE::LINALG::SerialDenseMatrix& elepos, const int nright)
 {
   double length = 0.0;
@@ -147,8 +147,9 @@ double CONTACT::B3TANGENTSMOOTHING::GetEleLength(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-CORE::LINALG::SerialDenseMatrix CONTACT::B3TANGENTSMOOTHING::GetNodalDerivatives(const int node,
-    const int nnode, const double length, const DRT::Element::DiscretizationType distype)
+CORE::LINALG::SerialDenseMatrix BEAMINTERACTION::B3TANGENTSMOOTHING::GetNodalDerivatives(
+    const int node, const int nnode, const double length,
+    const DRT::Element::DiscretizationType distype)
 {
   CORE::LINALG::SerialDenseMatrix deriv1(1, nnode);
 

@@ -14,7 +14,7 @@
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_reissner.H"
 #include "baci_beamcontact_beam3contact_manager.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_lib_discret.H"
@@ -501,7 +501,8 @@ void Beam3ContactOctTree::InitializeOctreeSearch()
         else if (eot == DRT::ELEMENTS::RigidsphereType::Instance())
           (*diameter_)[i] = 2.0 * (dynamic_cast<DRT::ELEMENTS::Rigidsphere*>(element))->Radius();
         // If we have a solid element, we don't need its diameter and can it set to zero:
-        else if (!BEAMCONTACT::BeamElement(*element) and !BEAMCONTACT::RigidsphereElement(*element))
+        else if (!BEAMINTERACTION::BeamElement(*element) and
+                 !BEAMINTERACTION::RigidsphereElement(*element))
           (*diameter_)[i] = 0.0;
         // feasibility check
         if ((*diameter_)[i] < 0.0) dserror("ERROR: Did not receive feasible element radius.");
@@ -551,7 +552,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
       // store nodal positions into matrix coords
       CORE::LINALG::SerialDenseMatrix coord(3, 2, true);
 
-      if (BEAMCONTACT::BeamElement(*element))
+      if (BEAMINTERACTION::BeamElement(*element))
       {
         for (int i = 0; i < 2; i++)
         {
@@ -560,7 +561,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(
           for (int j = 0; j < 3; j++) coord(j, i) = coord_aux(j);
         }
       }
-      else if (BEAMCONTACT::RigidsphereElement(*element))
+      else if (BEAMINTERACTION::RigidsphereElement(*element))
       {
         int gid = element->Nodes()[0]->Id();
         CORE::LINALG::Matrix<3, 1> coord_aux = currentpositions[gid];
@@ -881,7 +882,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
   DRT::Element* element = searchdis_.lColElement(elecolid);
   double diameter = 0.0;
 
-  if (BEAMCONTACT::BeamElement(*element))
+  if (BEAMINTERACTION::BeamElement(*element))
   {
     if (coord.numRows() == 3 and coord.numCols() == 2)
     {
@@ -892,7 +893,7 @@ void Beam3ContactOctTree::CreateSPBB(CORE::LINALG::SerialDenseMatrix& coord, con
     else
       dserror("coord matrix of nodal positions has wrong dimensions here!");
   }
-  else if (BEAMCONTACT::RigidsphereElement(*element))
+  else if (BEAMINTERACTION::RigidsphereElement(*element))
   {
     diameter = (*diameter_)[elecolid];
   }
@@ -1554,7 +1555,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(
           // should not get into contact. In contrary to a former criterion based on filament
           // numbers (which forbids self contact), this method works for arbitrary element types and
           // still allows for self contact!!!
-          if (BEAMCONTACT::ElementsShareNode(*element1, *element2)) considerpair = false;
+          if (BEAMINTERACTION::ElementsShareNode(*element1, *element2)) considerpair = false;
         }
         if (considerpair)
         {
@@ -1783,7 +1784,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
       //      double t_02 = Teuchos::Time::wallTime();
       t1 = CORE::FADUTILS::DiffVector(r1_b, r1_a);
       t2 = CORE::FADUTILS::DiffVector(r2_b, r2_a);
-      double angle = BEAMCONTACT::CalcAngle(t1, t2);
+      double angle = BEAMINTERACTION::CalcAngle(t1, t2);
       //      std::cout<<"(i,j) = "<<i<<", "<<j<<",  Angle Calc : "<<
       //      Teuchos::Time::wallTime()-t_02<<std::endl;
 
@@ -1793,7 +1794,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
       {
         std::pair<double, double> closestpoints(std::make_pair(0.0, 0.0));
         bool etaset = false;
-        intersection = BEAMCONTACT::IntersectArbitraryCylinders(
+        intersection = BEAMINTERACTION::IntersectArbitraryCylinders(
             r1_a, r1_b, r2_a, r2_b, distancelimit, closestpoints, etaset);
         //        std::cout<<"(i,j) = "<<i<<", "<<j<<",  Isec nonpar: "<<
         //        Teuchos::Time::wallTime()-t_03<<std::endl;
@@ -1801,7 +1802,7 @@ bool Beam3ContactOctTree::IntersectionCOBB(
       else  // parallel case
       {
         intersection =
-            BEAMCONTACT::IntersectParallelCylinders(r1_a, r1_b, r2_a, r2_b, distancelimit);
+            BEAMINTERACTION::IntersectParallelCylinders(r1_a, r1_b, r2_a, r2_b, distancelimit);
         //        std::cout<<"(i,j) = "<<i<<", "<<j<<",  Isec par   : "<<
         //        Teuchos::Time::wallTime()-t_03<<std::endl;
       }
