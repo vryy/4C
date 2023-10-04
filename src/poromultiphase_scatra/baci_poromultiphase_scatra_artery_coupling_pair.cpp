@@ -910,6 +910,7 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
 
   double etaA = 0.0;
   double etaB = 0.0;
+  double integrated_diam = 0.0;
 
   switch (couplmethod_)
   {
@@ -923,6 +924,9 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
       // actual evaluate
       EvaluateGPTS(myEta, myXi, segmentlengths, forcevec1, forcevec2, stiffmat11, stiffmat12,
           stiffmat21, stiffmat22);
+
+      // case where diameter is constant
+      integrated_diam = arterydiamref_ * segmentlengths[segmentid_];
       break;
     }
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::mp:
@@ -934,6 +938,9 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
       RecomputeEtaAndXiInDeformedConfiguration(segmentlengths, myEta, myXi, etaA, etaB);
       // actual evaluate
       EvaluateDMKappa(myEta, myXi, segmentlengths, D_ele, M_ele, Kappa_ele);
+
+      // case where diameter is constant
+      integrated_diam = arterydiamref_ * segmentlengths[segmentid_];
       break;
     }
     case INPAR::ARTNET::ArteryPoroMultiphaseScatraCouplingMethod::ntp:
@@ -943,15 +950,13 @@ double POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, 
       myXi = xi_;
       // actual evaluate
       EvaluateNTP(eta_, xi_, forcevec1, forcevec2, stiffmat11, stiffmat12, stiffmat21, stiffmat22);
+      integrated_diam = arterydiamref_ * segmentlengths[0];
       break;
     }
     default:
       dserror("Unknown coupling type for artery to poro coupling");
       break;
   }
-
-  // case where diameter is constant
-  double integrated_diam = arterydiamref_ * segmentlengths[segmentid_];
 
   // evaluate the function coupling (with possibly varying diameter)
   if (funct_coupl_active_)

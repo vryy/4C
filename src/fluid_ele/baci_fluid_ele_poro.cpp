@@ -108,10 +108,14 @@ void DRT::ELEMENTS::FluidPoro::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, kintype_);
 
   // anisotropic_permeability_directions_
-  for (int dim = 0; dim < 3; ++dim) AddtoPack(data, anisotropic_permeability_directions_[dim]);
+  auto size = static_cast<int>(anisotropic_permeability_directions_.size());
+  AddtoPack(data, size);
+  for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_directions_[i]);
 
   // anisotropic_permeability_nodal_coeffs_
-  for (int dim = 0; dim < 3; ++dim) AddtoPack(data, anisotropic_permeability_nodal_coeffs_[dim]);
+  size = static_cast<int>(anisotropic_permeability_nodal_coeffs_.size());
+  AddtoPack(data, size);
+  for (int i = 0; i < size; ++i) AddtoPack(data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // add base class Element
   Fluid::Pack(data);
@@ -129,12 +133,18 @@ void DRT::ELEMENTS::FluidPoro::Unpack(const std::vector<char>& data)
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
 
   // anisotropic_permeability_directions_
-  for (int dim = 0; dim < 3; ++dim)
-    ExtractfromPack(position, data, anisotropic_permeability_directions_[dim]);
+  int size = 0;
+  ExtractfromPack(position, data, size);
+  anisotropic_permeability_directions_.resize(size, std::vector<double>(3, 0.0));
+  for (int i = 0; i < size; ++i)
+    ExtractfromPack(position, data, anisotropic_permeability_directions_[i]);
 
   // anisotropic_permeability_nodal_coeffs_
-  for (int dim = 0; dim < 3; ++dim)
-    ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[dim]);
+  size = 0;
+  ExtractfromPack(position, data, size);
+  anisotropic_permeability_nodal_coeffs_.resize(size, std::vector<double>(this->NumNode(), 0.0));
+  for (int i = 0; i < size; ++i)
+    ExtractfromPack(position, data, anisotropic_permeability_nodal_coeffs_[i]);
 
   // extract base class Element
   std::vector<char> basedata(0);
