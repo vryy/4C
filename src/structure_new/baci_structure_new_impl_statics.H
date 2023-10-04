@@ -95,6 +95,45 @@ namespace STR
           Epetra_Vector& disnp, Epetra_Vector& velnp, Epetra_Vector& accnp) const override;
       //! @}
 
+      //! @name Attribute access functions
+      //@{
+
+      //! Return name
+      enum INPAR::STR::DynamicType MethodName() const override { return INPAR::STR::dyna_statics; }
+
+      //! Provide number of steps, a single-step method returns 1
+      int MethodSteps() const override { return 1; }
+
+      //! Give local order of accuracy of displacement part
+      int MethodOrderOfAccuracyDis() const override
+      {
+        dserror("Sensible to ask?");
+        return 0;
+      }
+
+      //! Give local order of accuracy of velocity part
+      int MethodOrderOfAccuracyVel() const override
+      {
+        dserror("Sensible to ask?");
+        return 0;
+      }
+
+      //! Return linear error coefficient of displacements
+      double MethodLinErrCoeffDis() const override
+      {
+        dserror("Sensible to ask?");
+        return 0.0;
+      }
+
+      //! Return linear error coefficient of velocities
+      double MethodLinErrCoeffVel() const override
+      {
+        dserror("Sensible to ask?");
+        return 0.0;
+      }
+
+      //@}
+
      protected:
       /*! \brief Add the viscous and mass contributions to the right hand side (TR-rule)
        *

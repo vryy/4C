@@ -306,3 +306,43 @@ void STR::TIMINT::Explicit::UseBlockMatrix(
 {
   dserror("UseBlockMatrix() is not available for explicit time integration");
 }
+///@}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+enum INPAR::STR::DynamicType STR::TIMINT::Explicit::MethodName() const
+{
+  return explint_ptr_->MethodName();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Explicit::MethodSteps() const { return explint_ptr_->MethodSteps(); }
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Explicit::MethodOrderOfAccuracyDis() const
+{
+  return explint_ptr_->MethodOrderOfAccuracyDis();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+int STR::TIMINT::Explicit::MethodOrderOfAccuracyVel() const
+{
+  return explint_ptr_->MethodOrderOfAccuracyVel();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::Explicit::MethodLinErrCoeffDis() const
+{
+  return explint_ptr_->MethodLinErrCoeffDis();
+}
+
+/*----------------------------------------------------------------------------*
+ *----------------------------------------------------------------------------*/
+double STR::TIMINT::Explicit::MethodLinErrCoeffVel() const
+{
+  return explint_ptr_->MethodLinErrCoeffVel();
+}

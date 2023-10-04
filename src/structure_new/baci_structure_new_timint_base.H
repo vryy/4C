@@ -146,6 +146,9 @@ namespace STR
       /// Update routine for coupled problems with monolithic approach
       void Update() override;
 
+      /// Update routine for coupled problems with monolithic approach with time adaptivity
+      void Update(double endtime) override = 0;
+
       /// Update time and step counter
       virtual void UpdateStepTime();
 
@@ -653,6 +656,13 @@ namespace STR
         return *int_ptr_;
       }
 
+      /// Get the global state
+      const BaseDataGlobalState& DataGlobalState() const
+      {
+        CheckInit();
+        return *dataglobalstate_;
+      }
+
       /// Get internal TimIntBase data for structural dynamics quantities (read and write access)
       BaseDataSDyn& DataSDyn()
       {
@@ -669,14 +679,53 @@ namespace STR
 
       [[nodiscard]] bool HasFinalStateBeenWritten() const override;
 
-      ///@}
-     protected:
       /// get the indicator state
       [[nodiscard]] inline const bool& IsInit() const { return isinit_; }
 
       /// get the indicator state
       [[nodiscard]] inline const bool& IsSetup() const { return issetup_; }
 
+      //! @name Attribute access functions
+      //@{
+
+      //! Provide Name
+      virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+
+      //! Provide title
+      std::string MethodTitle() const { return INPAR::STR::DynamicTypeString(MethodName()); }
+
+      //! Return true, if time integrator is implicit
+      virtual bool IsImplicit() const = 0;
+
+      //! Return true, if time integrator is explicit
+      virtual bool IsExplicit() const = 0;
+
+      //! Provide number of steps, e.g. a single-step method returns 1,
+      //! a \f$m\f$-multistep method returns \f$m\f$
+      virtual int MethodSteps() const = 0;
+
+      //! Give order of accuracy
+      int MethodOrderOfAccuracy() const
+      {
+        return std::min(MethodOrderOfAccuracyDis(), MethodOrderOfAccuracyVel());
+      }
+
+      //! Give local order of accuracy of displacement part
+      virtual int MethodOrderOfAccuracyDis() const = 0;
+
+      //! Give local order of accuracy of velocity part
+      virtual int MethodOrderOfAccuracyVel() const = 0;
+
+      //! Return linear error coefficient of displacements
+      virtual double MethodLinErrCoeffDis() const = 0;
+
+      //! Return linear error coefficient of velocities
+      virtual double MethodLinErrCoeffVel() const = 0;
+
+      //@}
+
+      ///@}
+     protected:
       /// Check if Init() and Setup() have been called, yet.
       inline void CheckInitSetup() const
       {
@@ -686,13 +735,15 @@ namespace STR
       /// Check if Init() has been called
       inline void CheckInit() const { dsassert(IsInit(), "Call Init() first!"); }
 
+      /// Get the global state
       BaseDataGlobalState& DataGlobalState()
       {
         CheckInit();
         return *dataglobalstate_;
       }
 
-      const Teuchos::RCP<BaseDataGlobalState>& DataGlobalStatePtr()
+      /// Get the pointer to global state
+      const Teuchos::RCP<BaseDataGlobalState>& DataGlobalStatePtr() const
       {
         CheckInit();
         return dataglobalstate_;

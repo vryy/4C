@@ -434,6 +434,27 @@ namespace STR
 
       //! @}
 
+      //! @name internal accessors
+      //! @{
+      //! Returns the model evaluator data container
+      const STR::MODELEVALUATOR::Data& EvalData() const;
+
+      //! Returns the global state data container
+      const STR::TIMINT::BaseDataGlobalState& GState() const;
+
+      //! Returns the global input/output data container
+      const STR::TIMINT::BaseDataIO& GInOutput() const;
+
+      //! Returns the (structural) discretization
+      const DRT::Discretization& Discret() const;
+
+      //! Returns the underlying STR::Integrator object
+      const STR::Integrator& Int() const;
+
+      //! Returns the underlying STR::TIMINT object
+      const STR::TIMINT::Base& TimInt() const;
+      //! @}
+
      protected:
       /*! \brief Check the evaluation procedures for possible errors
        *
@@ -451,32 +472,24 @@ namespace STR
       //! @name internal accessors
       //! @{
       //! Returns the model evaluator data container
-      const STR::MODELEVALUATOR::Data& EvalData() const;
       STR::MODELEVALUATOR::Data& EvalData();
       Teuchos::RCP<STR::MODELEVALUATOR::Data>& EvalDataPtr();
 
       //! Returns the global state data container
       STR::TIMINT::BaseDataGlobalState& GState();
       Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& GStatePtr();
-      const STR::TIMINT::BaseDataGlobalState& GState() const;
 
       //! Returns the global input/output data container
       STR::TIMINT::BaseDataIO& GInOutput();
       Teuchos::RCP<STR::TIMINT::BaseDataIO> GInOutputPtr();
-      const STR::TIMINT::BaseDataIO& GInOutput() const;
 
       //! Returns the (structural) discretization
       DRT::Discretization& Discret();
       Teuchos::RCP<DRT::Discretization>& DiscretPtr();
-      const DRT::Discretization& Discret() const;
 
       //! Returns the underlying STR::Integrator object
       STR::Integrator& Int();
-      const STR::Integrator& Int() const;
       Teuchos::RCP<STR::Integrator>& IntPtr();
-
-      //! Returns the underlying STR::TIMINT object
-      const STR::TIMINT::Base& TimInt() const;
 
       const int& DofOffset() const;
       //! @}

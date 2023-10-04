@@ -113,6 +113,50 @@ namespace STR
        *  See the SetState() routine for the iterative update of the current state. */
       void UpdateConstantStateContributions() override;
 
+      //! @name Attributes access functions
+      //@{
+
+      //! Return name
+      enum INPAR::STR::DynamicType MethodName() const override
+      {
+        return INPAR::STR::dyna_onesteptheta;
+      }
+
+      //! Provide number of steps, a single-step method returns 1
+      int MethodSteps() const override { return 1; }
+
+      //! Give local order of accuracy of displacement part
+      int MethodOrderOfAccuracyDis() const override
+      {
+        return fabs(MethodLinErrCoeff1()) < 1e-6 ? 2 : 1;
+      }
+
+      //! Give local order of accuracy of velocity part
+      int MethodOrderOfAccuracyVel() const override { return MethodOrderOfAccuracyDis(); }
+
+      //! Return linear error coefficient of displacements
+      double MethodLinErrCoeffDis() const override
+      {
+        if (MethodOrderOfAccuracyDis() == 1)
+          return MethodLinErrCoeff1();
+        else
+          return MethodLinErrCoeff2();
+      }
+
+      //! Return linear error coefficient of velocities
+      double MethodLinErrCoeffVel() const override { return MethodLinErrCoeffDis(); }
+
+      //! Linear error coefficient if 1st order accurate
+      double MethodLinErrCoeff1() const { return 1. / 2. - theta_; }
+
+      //! Linear error coefficient if 2nd order accurate
+      double MethodLinErrCoeff2() const
+      {
+        return 1. / 6. - theta_ / 2.;  // this is -1/12
+      }
+
+      //@}
+
      protected:
       //! reset the time step dependent parameters for the element evaluation [derived]
       void ResetEvalParams() override;

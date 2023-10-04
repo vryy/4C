@@ -79,6 +79,15 @@ namespace STR
       //! print summary after step
       void PrintStep() override;
 
+      //! @name Attribute access functions
+      //@{
+
+      bool IsImplicit() const override { return true; }
+
+      bool IsExplicit() const override { return false; }
+
+      ///@}
+
      protected:
       /// Returns the current solution group (pure virtual)
       virtual const NOX::Abstract::Group& GetSolutionGroup() const = 0;

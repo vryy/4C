@@ -172,7 +172,29 @@ namespace STR
         return nlnsolver_ptr_;
       };
 
+      //! @name Attribute access functions
+      //@{
 
+      //! Provide Name
+      enum INPAR::STR::DynamicType MethodName() const override;
+
+      //! Provide number of steps, e.g. a single-step method returns 1,
+      //! a \f$m\f$-multistep method returns \f$m\f$
+      int MethodSteps() const override;
+
+      //! Give local order of accuracy of displacement part
+      int MethodOrderOfAccuracyDis() const override;
+
+      //! Give local order of accuracy of velocity part
+      int MethodOrderOfAccuracyVel() const override;
+
+      //! Return linear error coefficient of displacements
+      double MethodLinErrCoeffDis() const override;
+
+      //! Return linear error coefficient of velocities
+      double MethodLinErrCoeffVel() const override;
+
+      ///@}
 
      private:
       //! ptr to the implicit time integrator object
