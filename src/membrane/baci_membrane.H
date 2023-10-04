@@ -486,14 +486,14 @@ namespace DRT
           CORE::LINALG::Matrix<noddof_, noddof_>& Q_trafo) const;
 
       //! pushforward of 2nd Piola-Kirchhoff stresses to Cauchy stresses at Gauss point
-      void mem_PK2toCauchy(const CORE::LINALG::Matrix<3, 3>& pkstress_global,
+      void mem_PK2toCauchy(const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
           const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
-          CORE::LINALG::Matrix<3, 3>& cauchy) const;
+          CORE::LINALG::Matrix<noddof_, noddof_>& cauchy) const;
 
       // pushforward of Green-Lagrange to Euler-Almansi strains at Gauss point
-      void mem_GLtoEA(const CORE::LINALG::Matrix<3, 3>& glstrain_global,
+      void mem_GLtoEA(const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_global,
           const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
-          CORE::LINALG::Matrix<3, 3>& euler_almansi) const;
+          CORE::LINALG::Matrix<noddof_, noddof_>& euler_almansi) const;
 
       // determine deformation gradient in global frame on membrane surface
       void mem_defgrd_global(const CORE::LINALG::Matrix<noddof_, 1>& dXds1,

@@ -76,6 +76,8 @@ namespace
   {
     double value_ = 0.0;
     explicit CustomScalarType(double value) : value_(value) {}
+
+    explicit operator double() const { return value_; }
   };
 
   bool operator>(CustomScalarType x, CustomScalarType y) { return x.value_ > y.value_; }
