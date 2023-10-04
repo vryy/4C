@@ -263,10 +263,13 @@ before_script:
   - . venv/bin/activate
   - pip install wheel
   - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
+  # get extra arguments for mpi
+  - get_mpi_extra_args() { OUT="`OMPI_CXX=clang++ mpic++ --showme:compile`"; for i
+    in $OUT; do echo -n "-extra-arg=\"$i\" "; done; echo;}
     # run clang tidy and export report
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j 12 -p . -extra-arg="-I/usr/lib/x86_64-linux-gnu/openmpi/include/"
-    -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json -header-filter
-    ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j `nproc` -p
+    . `get_mpi_extra_args` -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json
+    -header-filter ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
   - cd ${CI_PROJECT_DIR}
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
@@ -275,7 +278,6 @@ before_script:
     paths: [codeclimate.json]
     reports:
       codequality: codeclimate.json
-  allow_failure: true
   tags:
   - codeclimate
   needs:

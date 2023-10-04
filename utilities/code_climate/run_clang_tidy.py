@@ -119,10 +119,11 @@ def run_tidy(args, tmpdir, build_path, queue, lock, failed_files):
             stderr=subprocess.PIPE,
             shell=True,
         )
-        _, stderr = process.communicate()
+        stdout, stderr = process.communicate()
         with lock:
             if process.returncode != 0:
                 failed_files.append(name)
+                sys.stdout.buffer.write(stdout)
                 sys.stderr.buffer.write(stderr)
         queue.task_done()
 
@@ -282,6 +283,8 @@ def main():
 
     if tmpdir:
         shutil.rmtree(tmpdir)
+
+    sys.exit(return_code)
 
 
 if __name__ == "__main__":
