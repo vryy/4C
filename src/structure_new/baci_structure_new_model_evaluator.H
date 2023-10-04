@@ -347,6 +347,9 @@ namespace STR
     //! Update everything on element level after time step and after output
     void UpdateStepElement();
 
+    //! Compute the residual by difference of {n+1} and {n} state
+    void UpdateResidual();
+
     //! calculation of stresses and strains
     void DetermineStressStrain();
 
@@ -376,6 +379,11 @@ namespace STR
      * This is used for example to output the last successfull timestep.
      */
     void ResetStepState();
+
+    /*! \brief Recover the current state
+     *
+     * Necessary for condensed systems, e.g. EAS, dual mortar, etc.*/
+    void RunRecover() const;
 
     /*! \brief Recover the current state
      *

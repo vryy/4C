@@ -257,6 +257,10 @@ namespace STR
        *         the respective model evaluators, e.g. condensed variables.*/
       virtual void Predict(const INPAR::STR::PredEnum& pred_type) = 0;
 
+      /*! \brief Recover condensed solution variables, meant to be called by RunPostComputeX
+       */
+      virtual void RunRecover(){};
+
       /*! \brief Recover condensed solution variables
        *
        *  This method is supposed to be used to recover condensed solution variables.
@@ -334,7 +338,13 @@ namespace STR
         return;
       };
 
+      //! Update the element by end of the time step
       virtual void UpdateStepElement() = 0;
+
+      //! Compute the residual by difference of {n+1} and {n} state
+      virtual void UpdateResidual()
+      { /* do nothing by default */
+      }
 
       /*! \brief calculate the stress/strain contributions of each model evaluator
        *

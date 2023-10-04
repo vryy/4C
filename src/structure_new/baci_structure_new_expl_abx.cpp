@@ -153,6 +153,12 @@ void STR::EXPLICIT::AdamsBashforthX<TOrder>::SetState(const Epetra_Vector& x)
       GlobalState().GetDisNp()->Update(c * dt, (*(GlobalState().GetMultiVel()))[-i], 1.0);
     }
   }
+
+  // ---------------------------------------------------------------------------
+  // update the elemental state
+  // ---------------------------------------------------------------------------
+  ModelEval().UpdateResidual();
+  ModelEval().RunRecover();
 }
 
 /*----------------------------------------------------------------------------*

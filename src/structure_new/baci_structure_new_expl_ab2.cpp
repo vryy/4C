@@ -107,6 +107,12 @@ void STR::EXPLICIT::AdamsBashforth2::SetState(const Epetra_Vector& x)
   GlobalState().GetDisNp()->Update(1.0, (*(GlobalState().GetMultiDis()))[0], 0.0);
   GlobalState().GetDisNp()->Update(
       dta, (*(GlobalState().GetMultiVel()))[0], dtb, (*(GlobalState().GetMultiVel()))[-1], 1.0);
+
+  // ---------------------------------------------------------------------------
+  // update the elemental state
+  // ---------------------------------------------------------------------------
+  ModelEval().UpdateResidual();
+  ModelEval().RunRecover();
 }
 
 /*----------------------------------------------------------------------------*
