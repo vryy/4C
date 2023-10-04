@@ -647,11 +647,17 @@ namespace INPAR
     /// type of adaptivity in time
     enum TimAdaKind
     {
-      timada_kind_none,        ///< no time adaptivity
-      timada_kind_zienxie,     ///< Zienkiewicz-Xie indicator
-      timada_kind_ab2,         ///< Adams-Bahsforth2 indicator
-      timada_kind_expleuler,   ///< Explicit Euler indicator
-      timada_kind_centraldiff  ///< Central difference indicator
+      timada_kind_none,            ///< no time adaptivity
+      timada_kind_zienxie,         ///< Zienkiewicz-Xie indicator
+      timada_kind_joint_explicit,  ///< Auxiliary explitcit time integration indicator
+      timada_kind_ab2,          ///< Adams-Bahsforth2 indicator // to be removed with the old time
+                                ///< integration
+      timada_kind_ab4,          ///< Adams-Bahsforth4 indicator // to be removed with the old time
+                                ///< integration
+      timada_kind_expleuler,    ///< Explicit Euler indicator // to be removed with the old time
+                                ///< integration
+      timada_kind_centraldiff,  ///< Central difference indicator // to be removed with the old time
+                                ///< integration
     };
 
     //!@}
