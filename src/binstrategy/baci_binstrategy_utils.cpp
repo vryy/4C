@@ -62,7 +62,7 @@ namespace BINSTRATEGY
       // print distribution after standard ghosting
       if (discret->Comm().MyPID() == 0)
         std::cout << "parallel distribution with extended ghosting" << std::endl;
-      REBALANCE::UTILS::PrintParallelDistribution(*discret);
+      CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret);
 #endif
 
       return;

@@ -10,6 +10,7 @@
 
 #include "baci_lib_meshreader.H"
 
+#include "baci_inpar_rebalance.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_domainreader.H"
@@ -119,8 +120,8 @@ void DRT::INPUT::MeshReader::Rebalance()
     // We want to be able to read empty fields. If we have such a beast
     // just skip the building of the node  graph and do a proper initialization
     if (numnodes)
-      graph_[i] =
-          REBALANCE::BuildGraph(element_readers_[i].GetDis(), element_readers_[i].GetRowElements());
+      graph_[i] = CORE::REBALANCE::BuildGraph(
+          element_readers_[i].GetDis(), element_readers_[i].GetRowElements());
     else
       graph_[i] = Teuchos::null;
 
@@ -145,7 +146,8 @@ void DRT::INPUT::MeshReader::Rebalance()
         if (!graph_[i].is_null())
         {
           // here we can reuse the graph, which was calculated before, this saves us some time
-          std::tie(rowmap, colmap) = REBALANCE::RebalanceNodeMaps(graph_[i], *rebalanceParams);
+          std::tie(rowmap, colmap) =
+              CORE::REBALANCE::RebalanceNodeMaps(graph_[i], *rebalanceParams);
         }
         else
           rowmap = colmap = Teuchos::rcp(new Epetra_Map(-1, 0, nullptr, 0, *comm_));
@@ -166,7 +168,7 @@ void DRT::INPUT::MeshReader::Rebalance()
           element_readers_[i].GetDis()->Redistribute(*rowmap, *colmap, false, false, false);
           Teuchos::RCP<Epetra_MultiVector> coordinates =
               element_readers_[i].GetDis()->BuildNodeCoordinates();
-          std::tie(rowmap, colmap) = REBALANCE::RebalanceNodeMaps(
+          std::tie(rowmap, colmap) = CORE::REBALANCE::RebalanceNodeMaps(
               graph_[i], *rebalanceParams, Teuchos::null, Teuchos::null, coordinates);
         }
         else
@@ -182,7 +184,7 @@ void DRT::INPUT::MeshReader::Rebalance()
 
     element_readers_[i].GetDis()->Redistribute(*rowmap, *colmap, false, false, false);
 
-    REBALANCE::UTILS::PrintParallelDistribution(*element_readers_[i].GetDis());
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(*element_readers_[i].GetDis());
   }
 }
 

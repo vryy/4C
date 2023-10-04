@@ -11,9 +11,6 @@
 #ifndef BACI_REBALANCE_H
 #define BACI_REBALANCE_H
 
-#include "baci_inpar_rebalance.H"
-
-#include <Epetra_Comm.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_Map.h>
 #include <Epetra_MultiVector.h>
@@ -25,7 +22,7 @@ namespace DRT
   class Discretization;
 }
 
-namespace REBALANCE
+namespace CORE::REBALANCE
 {
   /*!
   \brief Compute rebalanced node maps for a given discretization considering weights to model
@@ -100,7 +97,7 @@ namespace REBALANCE
   @return Node and edge weights to be used for repartitioning
   */
   std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> BuildWeights(
-      const DRT::Discretization& dis);
+      const ::DRT::Discretization& dis);
 
   /*!
   \brief Build node graph of a given  discretization
@@ -113,8 +110,8 @@ namespace REBALANCE
   @return Uncompleted node graph of input discretization
   */
   Teuchos::RCP<const Epetra_CrsGraph> BuildGraph(
-      Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
+      Teuchos::RCP<::DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles);
 
-}  // namespace REBALANCE
+}  // namespace CORE::REBALANCE
 
 #endif

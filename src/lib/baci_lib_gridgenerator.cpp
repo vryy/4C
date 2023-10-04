@@ -214,17 +214,18 @@ namespace DRT
       if (inputData.autopartition_)
       {
         Teuchos::RCP<const Epetra_CrsGraph> nodeGraph =
-            REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+            CORE::REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
 
         Teuchos::ParameterList rebalanceParams;
         rebalanceParams.set<std::string>("num parts", std::to_string(comm.NumProc()));
 
-        std::tie(nodeRowMap, nodeColMap) = REBALANCE::RebalanceNodeMaps(nodeGraph, rebalanceParams);
+        std::tie(nodeRowMap, nodeColMap) =
+            CORE::REBALANCE::RebalanceNodeMaps(nodeGraph, rebalanceParams);
       }
       else  // do not destroy our manual partitioning
       {
         Teuchos::RCP<const Epetra_CrsGraph> graph =
-            REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
+            CORE::REBALANCE::BuildGraph(Teuchos::rcp(&dis, false), elementRowMap);
         nodeRowMap = Teuchos::rcp(new Epetra_Map(
             -1, graph->RowMap().NumMyElements(), graph->RowMap().MyGlobalElements(), 0, comm));
         nodeColMap = Teuchos::rcp(new Epetra_Map(

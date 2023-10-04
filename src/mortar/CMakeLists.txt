@@ -11,7 +11,6 @@ set(_mortar_dependencies
     mat
     nurbs_discret
     poroelast
-    rebalance
     so3
     solver_nonlin_nox
     structure_new

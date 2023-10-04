@@ -11,7 +11,6 @@ set(_binstrategy_dependencies
     io
     lib
     mortar
-    rebalance
     rigidsphere
     scatra_ele
     so3

@@ -266,7 +266,7 @@ std::map<int, std::set<int>> POROFLUIDMULTIPHASE::UTILS::ExtendedGhostingArteryD
 
   // fill and inform user
   artdis->FillComplete();
-  REBALANCE::UTILS::PrintParallelDistribution(*artdis);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*artdis);
 
   // user output
   if (contdis->Comm().MyPID() == 0)

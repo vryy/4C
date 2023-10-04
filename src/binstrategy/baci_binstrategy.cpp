@@ -802,7 +802,7 @@ void BINSTRATEGY::BinningStrategy::DistributeBinsRecursCoordBisection(
   sublist.set("RCB_RECTILINEAR_BLOCKS", "1");
 
   std::tie(bincenters, binweights) =
-      REBALANCE::RebalanceCoordinates(*bincenters.getConst(), params, *binweights.getConst());
+      CORE::REBALANCE::RebalanceCoordinates(*bincenters.getConst(), params, *binweights.getConst());
 
   // create bin row map
   binrowmap = Teuchos::rcp(new Epetra_Map(-1, bincenters->Map().NumMyElements(),
@@ -1254,7 +1254,7 @@ BINSTRATEGY::BinningStrategy::DoWeightedPartitioningOfBinsAndExtendGhostingOfDis
     // fillcomplete discret with extended ghosting
     discret[i]->FillComplete();
     if (myrank_ == 0) std::cout << "parallel distribution with extended ghosting" << std::endl;
-    REBALANCE::UTILS::PrintParallelDistribution(*discret[i]);
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret[i]);
   }
 
   return newrowbins;
@@ -1386,7 +1386,7 @@ Teuchos::RCP<Epetra_Map> BINSTRATEGY::BinningStrategy::WeightedDistributionOfBin
     sublist.set("LB_APPROACH", "PARTITION");
 
   Teuchos::RCP<Epetra_CrsGraph> balanced_bingraph =
-      REBALANCE::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
+      CORE::REBALANCE::RebalanceGraph(*bingraph.getConst(), paramlist, vweights);
 
   // extract repartitioned bin row map
   const Epetra_BlockMap& rbinstmp = balanced_bingraph->RowMap();
@@ -1611,7 +1611,7 @@ void BINSTRATEGY::BinningStrategy::StandardDiscretizationGhosting(
   // print distribution after standard ghosting
   // some output after standard ghosting
   if (myrank_ == 0) std::cout << "parallel distribution with standard ghosting" << std::endl;
-  REBALANCE::UTILS::PrintParallelDistribution(*discret);
+  CORE::REBALANCE::UTILS::PrintParallelDistribution(*discret);
 #endif
 
   return;
@@ -1692,7 +1692,7 @@ void BINSTRATEGY::BinningStrategy::RevertExtendedGhosting(
     // fillcomplete discret with standard ghosting
     dis[i]->FillComplete();
     if (myrank_ == 0) std::cout << "parallel distribution with reverted ghosting" << std::endl;
-    REBALANCE::UTILS::PrintParallelDistribution(*dis[i]);
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(*dis[i]);
   }
 }
 

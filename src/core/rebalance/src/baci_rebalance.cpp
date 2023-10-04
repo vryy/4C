@@ -22,7 +22,7 @@
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::RebalanceNodeMaps(
+std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> CORE::REBALANCE::RebalanceNodeMaps(
     Teuchos::RCP<const Epetra_CrsGraph> initialGraph, const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
@@ -47,7 +47,7 @@ std::pair<Teuchos::RCP<Epetra_Map>, Teuchos::RCP<Epetra_Map>> REBALANCE::Rebalan
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_CrsGraph> REBALANCE::RebalanceGraph(const Epetra_CrsGraph& initialGraph,
+Teuchos::RCP<Epetra_CrsGraph> CORE::REBALANCE::RebalanceGraph(const Epetra_CrsGraph& initialGraph,
     const Teuchos::ParameterList& rebalanceParams,
     const Teuchos::RCP<Epetra_Vector>& initialNodeWeights,
     const Teuchos::RCP<Epetra_CrsMatrix>& initialEdgeWeights,
@@ -83,7 +83,7 @@ Teuchos::RCP<Epetra_CrsGraph> REBALANCE::RebalanceGraph(const Epetra_CrsGraph& i
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::pair<Teuchos::RCP<Epetra_MultiVector>, Teuchos::RCP<Epetra_MultiVector>>
-REBALANCE::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
+CORE::REBALANCE::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
     const Teuchos::ParameterList& rebalanceParams, const Epetra_MultiVector& initialWeights)
 {
   TEUCHOS_FUNC_TIME_MONITOR("REBALANCE::RebalanceCoordinates");
@@ -98,8 +98,8 @@ REBALANCE::RebalanceCoordinates(const Epetra_MultiVector& initialCoordinates,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> REBALANCE::BuildWeights(
-    const DRT::Discretization& dis)
+std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>>
+CORE::REBALANCE::BuildWeights(const ::DRT::Discretization& dis)
 {
   const Epetra_Map* noderowmap = dis.NodeRowMap();
 
@@ -110,8 +110,8 @@ std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> REBALANCE
   // loop all row elements and get their cost of evaluation
   for (int i = 0; i < dis.ElementRowMap()->NumMyElements(); ++i)
   {
-    DRT::Element* ele = dis.lRowElement(i);
-    DRT::Node** nodes = ele->Nodes();
+    ::DRT::Element* ele = dis.lRowElement(i);
+    ::DRT::Node** nodes = ele->Nodes();
     const int numnode = ele->NumNode();
     std::vector<int> lm(numnode);
     std::vector<int> lmrowowner(numnode);
@@ -137,8 +137,8 @@ std::pair<Teuchos::RCP<Epetra_Vector>, Teuchos::RCP<Epetra_CrsMatrix>> REBALANCE
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<const Epetra_CrsGraph> REBALANCE::BuildGraph(
-    Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
+Teuchos::RCP<const Epetra_CrsGraph> CORE::REBALANCE::BuildGraph(
+    Teuchos::RCP<::DRT::Discretization> dis, Teuchos::RCP<const Epetra_Map> roweles)
 {
   const int myrank = dis->Comm().MyPID();
   const int numproc = dis->Comm().NumProc();
@@ -147,7 +147,7 @@ Teuchos::RCP<const Epetra_CrsGraph> REBALANCE::BuildGraph(
   std::set<int> mynodes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    DRT::Element* ele = dis->gElement(roweles->GID(lid));
+    ::DRT::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->NumNode();
     const int* nodeids = ele->NodeIds();
     copy(nodeids, nodeids + numnode, inserter(mynodes, mynodes.begin()));
@@ -198,7 +198,7 @@ Teuchos::RCP<const Epetra_CrsGraph> REBALANCE::BuildGraph(
   std::map<int, std::set<int>> remotes;
   for (int lid = 0; lid < roweles->NumMyElements(); ++lid)
   {
-    DRT::Element* ele = dis->gElement(roweles->GID(lid));
+    ::DRT::Element* ele = dis->gElement(roweles->GID(lid));
     const int numnode = ele->NumNode();
     const int* nodeids = ele->NodeIds();
     for (int i = 0; i < numnode; ++i)

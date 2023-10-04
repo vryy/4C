@@ -11,7 +11,6 @@ set(_beaminteraction_dependencies
     io
     lib
     mat
-    rebalance
     rigidsphere
     so3
     structure

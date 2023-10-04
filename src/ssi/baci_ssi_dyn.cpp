@@ -106,10 +106,10 @@ void ssi_drt()
     problem->GetDis("scatra")->FillComplete(true, false, true);
     if (is_scatra_manifold) problem->GetDis("scatra_manifold")->FillComplete(true, false, true);
 
-    REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("structure"));
-    REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra"));
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("structure"));
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra"));
     if (is_scatra_manifold)
-      REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra_manifold"));
+      CORE::REBALANCE::UTILS::PrintParallelDistribution(*problem->GetDis("scatra_manifold"));
 
     // 3.1.4 Setup the coupled problem
     // now as we redistributed our discretizations we can construct all

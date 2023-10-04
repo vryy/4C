@@ -827,7 +827,7 @@ Teuchos::RCP<Epetra_CrsGraph> FSI::BlockMonolithic::CallPartitioner(
 
   if (parts != -1) paramlist.set("NUM_PARTS", std::to_string(parts));
 
-  return REBALANCE::RebalanceGraph(*initgraph_manip, paramlist);
+  return CORE::REBALANCE::RebalanceGraph(*initgraph_manip, paramlist);
 }
 
 

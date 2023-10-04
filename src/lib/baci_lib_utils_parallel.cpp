@@ -216,7 +216,7 @@ void DRT::UTILS::MatchNodalDistributionOfMatchingDiscretizations(
     );
 
     // print to screen
-    REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
   }  // if more than one proc
 }  // MatchDistributionOfMatchingDiscretizations
 
@@ -301,7 +301,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations(
     if (err) dserror("FillComplete() returned err=%d", err);
 
     // print to screen
-    REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
   }  // if more than one proc
 }  // DRT::UTILS::MatchElementDistributionOfMatchingDiscretizations
 
@@ -584,7 +584,7 @@ void DRT::UTILS::MatchElementDistributionOfMatchingConditionedElements(
     if (err) dserror("FillComplete() returned err=%d", err);
 
     // print to screen
-    REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
+    CORE::REBALANCE::UTILS::PrintParallelDistribution(dis_to_redistribute);
 
   }  // if more than one proc
 }  // MatchElementDistributionOfMatchingConditionedElements

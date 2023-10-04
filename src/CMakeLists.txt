@@ -88,7 +88,6 @@ add_subdirectory(wear)
 add_subdirectory(xfem)
 add_subdirectory(post_ensight)
 add_subdirectory(post_vtk)
-add_subdirectory(rebalance)
 add_subdirectory(solver_nonlin_nox)
 
 # After defining all modules, enter the directories that contain executables
