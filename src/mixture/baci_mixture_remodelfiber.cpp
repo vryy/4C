@@ -272,7 +272,7 @@ CORE::LINALG::Matrix<2, 2, T> MIXTURE::IMPLEMENTATION::RemodelFiberImplementatio
     if (iteration >= 500)
     {
       dserror("The local newton didn't converge within 500 iterations. Residuum is %.3e > %.3e",
-          CORE::FADUTILS::VectorNorm(b), 1e-10);
+          CORE::FADUTILS::CastToDouble(CORE::FADUTILS::VectorNorm(b)), 1e-10);
     }
     K.Invert();
     x_np.MultiplyNN(-1, K, b, 1.0);

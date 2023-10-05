@@ -286,7 +286,7 @@ namespace GEOMETRYPAIR
             "The segment is created with eta_a=%f and eta_b=%f, this is not possible, as eta_a "
             "has "
             "to be smaller than eta_b!",
-            GetEtaA(), GetEtaB());
+            CORE::FADUTILS::CastToDouble(GetEtaA()), CORE::FADUTILS::CastToDouble(GetEtaB()));
     }
 
     /**

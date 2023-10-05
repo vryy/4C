@@ -159,7 +159,7 @@ namespace CORE::UTILS
         dserror(
             "The local Newton method did not converge within %d iterations. Residuum is %.3e > "
             "%.3e.",
-            max_iterations, L2Norm(residuum), tolerance);
+            max_iterations, FADUTILS::CastToDouble(L2Norm(residuum)), tolerance);
       }
 
       LocalNewtonIteration(x_0, residuum, std::move(jacobian));

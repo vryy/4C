@@ -19,11 +19,25 @@
 
 namespace CORE::FADUTILS
 {
+  namespace DETAILS
+  {
+    template <typename T, typename AlwaysVoid = void>
+    constexpr bool is_double_convertible = false;
+
+    template <typename T>
+    constexpr bool is_double_convertible<T,
+        std::void_t<decltype(static_cast<double>(std::declval<std::remove_cv_t<T>>()))>> = true;
+  }  // namespace DETAILS
 
   /*!
-   * \brief Overload of CastToDouble() for double.
+   * \brief Overload of CastToDouble() for any type that is convertible to double.
    */
-  inline double CastToDouble(double a) { return a; }
+  template <typename ScalarType,
+      std::enable_if_t<DETAILS::is_double_convertible<ScalarType>, bool> = true>
+  inline double CastToDouble(ScalarType a)
+  {
+    return static_cast<double>(a);
+  }
 
   /**
    * \brief Cast of FAD to double.

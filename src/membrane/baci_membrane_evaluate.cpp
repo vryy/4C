@@ -1353,20 +1353,20 @@ void DRT::ELEMENTS::Membrane<distype>::mem_orthonormalbase(
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
-    const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_glob,
-    const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_glob,
+    const CORE::LINALG::Matrix<noddof_, noddof_>& pkstress_global,
+    const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
     CORE::LINALG::Matrix<noddof_, noddof_>& cauchy) const
 {
   // calculate the Jacobi-deterinant
-  const double detF = defgrd_glob.Determinant();
+  const double detF = defgrd.Determinant();
 
   // check determinant of deformation gradient
   if (detF == 0) dserror("Zero Determinant of Deformation Gradient.");
 
   // determine the cauchy stresses
   CORE::LINALG::Matrix<noddof_, noddof_> temp;
-  temp.Multiply((1.0 / detF), defgrd_glob, pkstress_glob, 0.0);
-  cauchy.MultiplyNT(1.0, temp, defgrd_glob, 1.0);
+  temp.Multiply((1.0 / detF), defgrd, pkstress_global, 0.0);
+  cauchy.MultiplyNT(1.0, temp, defgrd, 1.0);
 
   return;
 
@@ -1377,21 +1377,21 @@ void DRT::ELEMENTS::Membrane<distype>::mem_PK2toCauchy(
  *-------------------------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Membrane<distype>::mem_GLtoEA(
-    const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_glob,
-    const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd_glob,
+    const CORE::LINALG::Matrix<noddof_, noddof_>& glstrain_global,
+    const CORE::LINALG::Matrix<noddof_, noddof_>& defgrd,
     CORE::LINALG::Matrix<noddof_, noddof_>& euler_almansi) const
 {
   // check determinant of deformation gradient
-  if (defgrd_glob.Determinant() == 0)
+  if (defgrd.Determinant() == 0)
     dserror("Inverse of Deformation Gradient can not be calcualated due to a zero Determinant.");
 
   // inverse of deformation gradient
   CORE::LINALG::Matrix<noddof_, noddof_> invdefgrd(true);
-  invdefgrd.Invert(defgrd_glob);
+  invdefgrd.Invert(defgrd);
 
   // determine the euler-almansi strains
   CORE::LINALG::Matrix<noddof_, noddof_> temp;
-  temp.Multiply(1.0, glstrain_glob, invdefgrd, 0.0);
+  temp.Multiply(1.0, glstrain_global, invdefgrd, 0.0);
   euler_almansi.MultiplyTN(1.0, invdefgrd, temp, 1.0);
 
   return;
