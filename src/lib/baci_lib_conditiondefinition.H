@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <string>
+#include <type_traits>
 #include <variant>
 #include <vector>
 
@@ -398,55 +399,32 @@ namespace DRT
       bool optional_;
     };
 
-    class CondCompBundle : public ConditionComponent
+    /**
+     * This component contains a series of ConditionComponents that are selected by a key parameter.
+     */
+    class SwitchConditionComponent : public ConditionComponent
     {
-     public:
-      /*! construct a condition component handling the a condition component bundle associated to
-        a special model
+      //! This component only supports integers for keys. Unscoped enums convert automatically to
+      //! int and can be used to increase readability.
+      using KeyType = int;
 
-        \param name variable name in DRT::Condition
-        \param condcomp vector containing condition components associated to a model
-        \param model specification of model type (enum->int) as a security check:
-               elements of the vector<CondCompBundle> need to have the same order as the enum
-        defining your model
+     public:
+      /**
+       * Define a component that selects one of the @p choices at runtime. This component lets the
+       * user create composite structures of nested components. Depending on the integer, the
+       * corresponding vector of components from the @p choices map is selected and reading
+       * continues with these components. By default, the selection is made based on @p default_key.
        */
-      CondCompBundle(
-          std::string name, std::vector<Teuchos::RCP<ConditionComponent>> condcomp, int model);
+      SwitchConditionComponent(std::string name, const KeyType& default_key,
+          std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+              choices);
 
       void DefaultLine(std::ostream& stream) override;
 
       std::string WriteReadTheDocs() override;
 
-      Teuchos::Array<std::string> GetOptions() override;
-
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
-
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
-
-      int Model() { return model_; };
-
-     private:
-      std::vector<Teuchos::RCP<ConditionComponent>> condcomp_;
-      const int model_;
-    };
-
-
-    /// Selector to get specific condition components by model (ID)
-    class CondCompBundleSelector : public ConditionComponent
-    {
-     public:
-      //! \param name_condition_components  name of condition components
-      //! \param condcomp                   vector of all components as bundle
-      CondCompBundleSelector(std::string name_condition_components,
-          const std::vector<Teuchos::RCP<CondCompBundle>>& condcomp);
-
-      void DefaultLine(std::ostream& stream) override;
       std::vector<std::string> WriteReadTheDocsLines();
 
-      std::string WriteReadTheDocs() override;
-
       Teuchos::Array<std::string> GetOptions() override;
 
       void Print(std::ostream& stream, const DRT::Condition* cond) override;
@@ -456,14 +434,13 @@ namespace DRT
           Teuchos::RCP<DRT::Condition> condition) override;
 
      private:
-      //! handling of the model type
-      Teuchos::RCP<StringConditionComponent> stringcomp_;
-      //! map containing different conditions assigned to different models
-      std::map<int, Teuchos::RCP<CondCompBundle>> condcomp_;
+      KeyType default_key_;
+      std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+          choices_;
+
+      //! Helper component to read the selected key from input.
+      std::unique_ptr<StringConditionComponent> component_for_key_;
     };
-
-    //--------------------------------------------------------------------------------------------------
-
 
     //--------------------------------------------------------------
 
@@ -586,5 +563,6 @@ namespace DRT
     }
   }  // namespace INPUT
 }  // namespace DRT
+
 
 #endif

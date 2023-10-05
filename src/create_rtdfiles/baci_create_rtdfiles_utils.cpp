@@ -485,14 +485,13 @@ namespace DRT
           std::ostringstream parametercell;
           stringComponent->DefaultLine(parametercell);
           tablerow[1] = parametercell.str();
-          std::string optionscell("");
           Teuchos::Array<std::string> datfilevalues = stringComponent->GetOptions();
           tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
           parametertable.AddRow(tablerow);
         }
         // if the component is a bundleselector (bundle of variables following a string keyword):
         if (auto *compBundleSelector =
-                dynamic_cast<DRT::INPUT::CondCompBundleSelector *>(condparameter.get()))
+                dynamic_cast<DRT::INPUT::SwitchConditionComponent *>(condparameter.get()))
         {
           condCompName = compBundleSelector->Name();
           std::vector<std::string> bundle = compBundleSelector->WriteReadTheDocsLines();
@@ -500,7 +499,6 @@ namespace DRT
           tablerow[0] = condCompName;
           Teuchos::Array<std::string> datfilevalues = compBundleSelector->GetOptions();
           tablerow[1] = datfilevalues[0];
-          std::string optionscell("");
           tablerow[2] = boost::algorithm::join(datfilevalues, ", ");
           parametertable.AddRow(tablerow);
         }

@@ -406,7 +406,8 @@ void INPAR::SSI::SetValidConditions(
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new IntConditionComponent("ManifoldConditionID")));
 
-    std::vector<Teuchos::RCP<CondCompBundle>> kineticmodels;
+    std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+        kinetic_model_choices;
     {
       {
         std::vector<Teuchos::RCP<ConditionComponent>> constantinterfaceresistance;
@@ -422,8 +423,8 @@ void INPAR::SSI::SetValidConditions(
         constantinterfaceresistance.emplace_back(new SeparatorConditionComponent("E-"));
         constantinterfaceresistance.emplace_back(new IntConditionComponent("e-"));
 
-        kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("ConstantInterfaceResistance",
-            constantinterfaceresistance, INPAR::S2I::kinetics_constantinterfaceresistance)));
+        kinetic_model_choices.emplace(INPAR::S2I::kinetics_constantinterfaceresistance,
+            std::make_pair("ConstantInterfaceResistance", constantinterfaceresistance));
       }
 
       {
@@ -446,22 +447,22 @@ void INPAR::SSI::SetValidConditions(
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
 
-        kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-VolmerReduced",
-            butlervolmerreduced, INPAR::S2I::kinetics_butlervolmerreduced)));
+        kinetic_model_choices.emplace(INPAR::S2I::kinetics_butlervolmerreduced,
+            std::make_pair("Butler-VolmerReduced", butlervolmerreduced));
       }
 
       {
         std::vector<Teuchos::RCP<ConditionComponent>> noflux;
 
-        kineticmodels.emplace_back(Teuchos::rcp(
-            new CondCompBundle("NoInterfaceFlux", noflux, INPAR::S2I::kinetics_nointerfaceflux)));
+        kinetic_model_choices.emplace(
+            INPAR::S2I::kinetics_nointerfaceflux, std::make_pair("NoInterfaceFlux", noflux));
       }
     }
 
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new SeparatorConditionComponent("KINETIC_MODEL")));
-    surfmanifoldkinetics->AddComponent(
-        Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
+    surfmanifoldkinetics->AddComponent(Teuchos::rcp(new SwitchConditionComponent(
+        "kinetic model", INPAR::S2I::kinetics_constantinterfaceresistance, kinetic_model_choices)));
   }
 
   condlist.emplace_back(surfmanifoldkinetics);

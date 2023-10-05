@@ -607,199 +607,110 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
 void DRT::INPUT::RealVectorConditionComponent::SetLength(int length) { length_ = length; }
 
 
-/* -----------------------------------------------------------------------------------------------*
- | Class CondCompBundle                                                                 ehrl 09/12|
- * -----------------------------------------------------------------------------------------------*/
 
-/*----------------------------------------------------------------------*
- | CondCompBundle::Constructor()                              ehrl 09/12|
- *----------------------------------------------------------------------*/
-DRT::INPUT::CondCompBundle::CondCompBundle(
-    std::string name, std::vector<Teuchos::RCP<ConditionComponent>> condcomp, int model)
-    : ConditionComponent(std::move(name)), condcomp_(std::move(condcomp)), model_(model)
+DRT::INPUT::SwitchConditionComponent::SwitchConditionComponent(std::string name,
+    const KeyType& default_key,
+    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+        choices)
+    : ConditionComponent(std::move(name)), default_key_(default_key), choices_(std::move(choices))
 {
+  Teuchos::Array<int> keys;
+  keys.reserve(choices_.size());
+  Teuchos::Array<std::string> names_for_keys;
+  names_for_keys.reserve(choices_.size());
+
+  for (const auto& [key, choice] : choices_)
+  {
+    keys.push_back(key);
+    names_for_keys.push_back(choice.first);
+  }
+
+  component_for_key_ = std::make_unique<StringConditionComponent>(
+      Name(), choices_[default_key_].first, names_for_keys, keys);
 }
 
 
-/*----------------------------------------------------------------------*
- | CondCompBundle::DefaultLine()                              ehrl 09/12|
- *----------------------------------------------------------------------*/
-void DRT::INPUT::CondCompBundle::DefaultLine(std::ostream& stream)
+
+void DRT::INPUT::SwitchConditionComponent::DefaultLine(std::ostream& stream)
 {
-  // default line of selected condition component bundle
-  for (auto& i : condcomp_)
+  component_for_key_->DefaultLine(stream);
+  stream << " ";
+
+  for (const auto& component : choices_[default_key_].second)
   {
-    i->DefaultLine(stream);
+    component->DefaultLine(stream);
     stream << " ";
   }
 }
 
-std::string DRT::INPUT::CondCompBundle::WriteReadTheDocs()
+
+
+std::vector<std::string> DRT::INPUT::SwitchConditionComponent::WriteReadTheDocsLines()
 {
-  std::string parameterstring;
-  for (auto& component : condcomp_)
-  {
-    parameterstring += component->WriteReadTheDocs() + " ";
-  }
-  return parameterstring;
+  std::vector<std::string> all_choices_as_rtd;
+  std::transform(choices_.begin(), choices_.end(), std::back_inserter(all_choices_as_rtd),
+      [this](const auto& key_components)
+      {
+        const auto& [key, components] = key_components;
+
+        std::stringstream stream;
+        stream << choices_[key].first << " ";
+        for (const auto& c : components.second) stream << c->WriteReadTheDocs() << " ";
+        return stream.str();
+      });
+
+  return all_choices_as_rtd;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::Array<std::string> DRT::INPUT::CondCompBundle::GetOptions()
+
+std::string DRT::INPUT::SwitchConditionComponent::WriteReadTheDocs()
 {
-  return Teuchos::Array<std::string>();
+  return component_for_key_->WriteReadTheDocs() + " [further parameters]";
 }
 
 
-/*----------------------------------------------------------------------*
- | CondCompBundle::Print()                                    ehrl 09/12|
- *----------------------------------------------------------------------*/
-void DRT::INPUT::CondCompBundle::Print(std::ostream& stream, const DRT::Condition* cond)
+
+Teuchos::Array<std::string> DRT::INPUT::SwitchConditionComponent::GetOptions()
 {
-  // printing of selected condition component bundle
-  for (auto& i : condcomp_)
+  return component_for_key_->GetOptions();
+}
+
+
+
+void DRT::INPUT::SwitchConditionComponent::Print(std::ostream& stream, const DRT::Condition* cond)
+{
+  component_for_key_->Print(stream, cond);
+  stream << " ";
+
+  const KeyType selected_key = static_cast<KeyType>(cond->GetInt(component_for_key_->Name()));
+
+  dsassert(choices_.count(selected_key) == 1, "Internal error.");
+  for (const auto& component : choices_[selected_key].second)
   {
-    i->Print(stream, cond);
+    component->Print(stream, cond);
     stream << " ";
   }
 }
 
-/*----------------------------------------------------------------------*
- | CondCompBundle::Read()                                     ehrl 09/12|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundle::Read(ConditionDefinition* def,
+
+
+Teuchos::RCP<std::stringstream> DRT::INPUT::SwitchConditionComponent::Read(ConditionDefinition* def,
     Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition)
 {
-  // reading of selected condition component bundle
-  for (auto& i : condcomp_) i->Read(def, condline, condition);
+  component_for_key_->Read(def, condline, condition);
+  const KeyType key = static_cast<KeyType>(condition->GetInt(component_for_key_->Name()));
+
+  dsassert(choices_.count(key) == 1, "Internal error.");
+
+  for (const auto& component : choices_[key].second)
+  {
+    component->Read(def, condline, condition);
+  }
 
   return condline;
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::INPUT::CondCompBundleSelector::CondCompBundleSelector(std::string name_condition_components,
-    const std::vector<Teuchos::RCP<CondCompBundle>>& condcomp)
-    : ConditionComponent(name_condition_components),  // + "_selector_internal"),
-      stringcomp_(),
-      condcomp_()
-{
-  Teuchos::Array<std::string> names;
-  Teuchos::Array<int> models;
 
-  for (const auto& component : condcomp)
-  {
-    if (condcomp_.find(component->Model()) != condcomp_.end())
-      dserror("condition model number is not unique.");
-
-    condcomp_.emplace(component->Model(), component);
-    names.push_back(component->Name());
-    models.push_back(component->Model());
-  }
-
-  stringcomp_ = Teuchos::rcp(
-      new StringConditionComponent(std::move(name_condition_components), names[0], names, models));
-}
-
-/*----------------------------------------------------------------------*
- | CondCompBundleSelector::DefaultLine()                      ehrl 09/12|
- *----------------------------------------------------------------------*/
-void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
-{
-  // Attention: default value defined here may not be identical to the printed condition component
-  // bundle
-  stringcomp_->DefaultLine(stream);
-  stream << " ";
-
-  // compare default std::string with std::vector<std::string> of model types
-  std::ostringstream str;
-  stringcomp_->DefaultLine(str);
-  std::string defaultvalue = str.str();
-
-  for (auto& ii : condcomp_)
-  {
-    if (defaultvalue == ii.second->Name())
-    {
-      // print default condition component bundle (default bundle)
-      ii.second->DefaultLine(stream);
-      break;
-    }
-  }
-}
-/*----------------------------------------------------------------------*
-| CondCompBundleSelector::DefaultLines()                      ische 03/21|
-*----------------------------------------------------------------------*/
-std::vector<std::string> DRT::INPUT::CondCompBundleSelector::WriteReadTheDocsLines()
-{
-  std::vector<std::string> condCompStrings;
-  for (auto& componentBundle : condcomp_)
-  {
-    std::string condCompString(componentBundle.second->Name() + " ");
-    // print default condition component bundle (default bundle)
-    condCompString += componentBundle.second->WriteReadTheDocs();
-    condCompStrings.push_back(condCompString);
-  }
-  return condCompStrings;
-}
-
-std::string DRT::INPUT::CondCompBundleSelector::WriteReadTheDocs()
-{
-  std::string parameterstring = "";
-  parameterstring += stringcomp_->WriteReadTheDocs() + " [further parameters]";
-  return parameterstring;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::Array<std::string> DRT::INPUT::CondCompBundleSelector::GetOptions()
-{
-  return stringcomp_->GetOptions();
-}
-
-
-/*----------------------------------------------------------------------*
- | CondCompBundleSelector::Print()                            ehrl 09/12|
- *----------------------------------------------------------------------*/
-void DRT::INPUT::CondCompBundleSelector::Print(std::ostream& stream, const DRT::Condition* cond)
-{
-  // Attention: default value defined here may not be identical to the printed condition component
-  // bundle
-  stringcomp_->Print(stream, cond);
-  stream << " ";
-
-  // compare default std::string with std::vector<std::string> of model types
-  std::ostringstream str;
-  stringcomp_->DefaultLine(str);
-  std::string defaultvalue = str.str();
-
-  for (auto& ii : condcomp_)
-  {
-    if (defaultvalue == ii.second()->Name())
-    {
-      // print default condition component bundle (default bundle)
-      ii.second->DefaultLine(stream);
-      break;
-    }
-  }
-}
-
-/*----------------------------------------------------------------------*
- | CondCompBundleSelector::Read()                             ehrl 09/12|
- *----------------------------------------------------------------------*/
-Teuchos::RCP<std::stringstream> DRT::INPUT::CondCompBundleSelector::Read(ConditionDefinition* def,
-    Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition)
-{
-  stringcomp_->Read(def, condline, condition);
-  // get model (number is associated with a enum)
-  const int model = condition->GetInt(stringcomp_->Name());
-
-  // read associated parameters
-  condcomp_[model]->Read(def, condline, condition);
-
-  return condline;
-}
 
 /* -----------------------------------------------------------------------------------------------*
  | Class ConditionDefinition                                                                      |
