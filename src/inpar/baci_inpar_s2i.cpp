@@ -215,23 +215,22 @@ void INPAR::S2I::SetValidConditions(
       s2icomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
       // interface sides for scatra-scatra interface kinetics
-      std::vector<Teuchos::RCP<CondCompBundle>> interfacesides;
+      std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+          interface_choices;
       {
         {
           // undefined side
-          std::vector<Teuchos::RCP<ConditionComponent>> undefinedside;
-
-          // insert undefined-side condition components into vector of interface sides
-          interfacesides.emplace_back(Teuchos::rcp(
-              new CondCompBundle("Undefined", undefinedside, INPAR::S2I::side_undefined)));
+          std::vector<Teuchos::RCP<ConditionComponent>> undefined_side;
+          interface_choices.emplace(side_undefined, std::make_pair("Undefined", undefined_side));
         }
 
         {
           // slave side
           std::vector<Teuchos::RCP<ConditionComponent>> slaveside;
 
-          // kinetic models for scatra-scatra interface kinetics
-          std::vector<Teuchos::RCP<CondCompBundle>> kineticmodels;
+          // Collect the diffent model selection choices in a map.
+          std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+              kinetic_model_choices;
           {
             {
               // constant permeability
@@ -248,8 +247,8 @@ void INPAR::S2I::SetValidConditions(
                   Teuchos::rcp(new SeparatorConditionComponent("IS_PSEUDO_CONTACT")));
               constperm.emplace_back(Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-                  "ConstantPermeability", constperm, INPAR::S2I::kinetics_constperm)));
+              kinetic_model_choices.emplace(INPAR::S2I::kinetics_constperm,
+                  std::make_pair("ConstantPermeability", std::move(constperm)));
             }
 
             {
@@ -275,21 +274,15 @@ void INPAR::S2I::SetValidConditions(
               butlervolmer.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-                  "Butler-Volmer", butlervolmer, INPAR::S2I::kinetics_butlervolmer)));
-
-              // same components needed for linearized Butler-Volmer
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer_Linearized",
-                  butlervolmer, INPAR::S2I::kinetics_butlervolmerlinearized)));
-
-              // same components needed for reduced Butler-Volmer
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-                  "Butler-VolmerReduced", butlervolmer, INPAR::S2I::kinetics_butlervolmerreduced)));
-
-              // same components needed for linearized, reduced Butler-Volmer
-              kineticmodels.emplace_back(
-                  Teuchos::rcp(new CondCompBundle("Butler-VolmerReduced_Linearized", butlervolmer,
-                      INPAR::S2I::kinetics_butlervolmerreducedlinearized)));
+              // same components can be reused for multiple models
+              kinetic_model_choices.emplace(
+                  kinetics_butlervolmer, std::make_pair("Butler-Volmer", butlervolmer));
+              kinetic_model_choices.emplace(kinetics_butlervolmerlinearized,
+                  std::make_pair("Butler-Volmer_Linearized", butlervolmer));
+              kinetic_model_choices.emplace(kinetics_butlervolmerreduced,
+                  std::make_pair("Butler-VolmerReduced", butlervolmer));
+              kinetic_model_choices.emplace(kinetics_butlervolmerreducedlinearized,
+                  std::make_pair("Butler-VolmerReduced_Linearized", butlervolmer));
             }
 
             {
@@ -322,8 +315,8 @@ void INPAR::S2I::SetValidConditions(
                   Teuchos::rcp(new SeparatorConditionComponent("PELTIER")));
               butlervolmerpeltier.emplace_back(Teuchos::rcp(new RealConditionComponent("peltier")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer-Peltier",
-                  butlervolmerpeltier, INPAR::S2I::kinetics_butlervolmerpeltier)));
+              kinetic_model_choices.emplace(kinetics_butlervolmerpeltier,
+                  std::make_pair("Butler-Volmer-Peltier", std::move(butlervolmerpeltier)));
             }
 
             {
@@ -364,9 +357,9 @@ void INPAR::S2I::SetValidConditions(
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-                  "Butler-VolmerReduced_Capacitance", butlervolmerreducedcapacitance,
-                  INPAR::S2I::kinetics_butlervolmerreducedcapacitance)));
+              kinetic_model_choices.emplace(kinetics_butlervolmerreducedcapacitance,
+                  std::make_pair("Butler-VolmerReduced_Capacitance",
+                      std::move(butlervolmerreducedcapacitance)));
             }
 
             {
@@ -413,8 +406,8 @@ void INPAR::S2I::SetValidConditions(
               butlervolmerresistance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("ITEMAX_IMPLBUTLERVOLMER")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle("Butler-Volmer_Resistance",
-                  butlervolmerresistance, INPAR::S2I::kinetics_butlervolmerresistance)));
+              kinetic_model_choices.emplace(kinetics_butlervolmerresistance,
+                  std::make_pair("Butler-Volmer_Resistance", std::move(butlervolmerresistance)));
             }
 
             {
@@ -463,9 +456,9 @@ void INPAR::S2I::SetValidConditions(
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("ITEMAX_IMPLBUTLERVOLMER")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-                  "Butler-VolmerReduced_Resistance", butlervolmerreducedwithresistance,
-                  INPAR::S2I::kinetics_butlervolmerreducedresistance)));
+              kinetic_model_choices.emplace(kinetics_butlervolmerreducedresistance,
+                  std::make_pair("Butler-VolmerReduced_Resistance",
+                      std::move(butlervolmerreducedwithresistance)));
             }
 
             {
@@ -508,9 +501,9 @@ void INPAR::S2I::SetValidConditions(
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new RealConditionComponent("molar_heat_capacity")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-                  "Butler-VolmerReduced_ThermoResistance", butlervolmerreducedthermo,
-                  INPAR::S2I::kinetics_butlervolmerreducedthermoresistance)));
+              kinetic_model_choices.emplace(kinetics_butlervolmerreducedthermoresistance,
+                  std::make_pair(
+                      "Butler-VolmerReduced_ThermoResistance", butlervolmerreducedthermo));
             }
 
             {
@@ -532,46 +525,41 @@ void INPAR::S2I::SetValidConditions(
               constantinterfaceresistance.emplace_back(
                   Teuchos::rcp(new IntConditionComponent("is_pseudo_contact")));
 
-              kineticmodels.emplace_back(Teuchos::rcp(
-                  new CondCompBundle("ConstantInterfaceResistance", constantinterfaceresistance,
-                      INPAR::S2I::kinetics_constantinterfaceresistance)));
+              kinetic_model_choices.emplace(kinetics_constantinterfaceresistance,
+                  std::make_pair(
+                      "ConstantInterfaceResistance", std::move(constantinterfaceresistance)));
             }
 
             {
               // no interface flux
               std::vector<Teuchos::RCP<ConditionComponent>> nointerfaceflux;
-
-              kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-                  "NoInterfaceFlux", nointerfaceflux, INPAR::S2I::kinetics_nointerfaceflux)));
+              kinetic_model_choices.emplace(
+                  kinetics_nointerfaceflux, std::make_pair("NoInterfaceFlux", nointerfaceflux));
             }
           }  // kinetic models for scatra-scatra interface kinetics
 
           // insert kinetic models into vector with slave-side condition components
           slaveside.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("KINETIC_MODEL")));
-          slaveside.emplace_back(
-              Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
+          slaveside.emplace_back(Teuchos::rcp(new SwitchConditionComponent(
+              "kinetic model", kinetics_butlervolmer, kinetic_model_choices)));
 
           // add all components from slave side to multi-scale condition
           for (const auto& component : slaveside) multiscalecouplingpoint->AddComponent(component);
 
           // insert slave-side condition components into vector of interface sides
-          interfacesides.emplace_back(
-              Teuchos::rcp(new CondCompBundle("Slave", slaveside, INPAR::S2I::side_slave)));
+          interface_choices.emplace(side_slave, std::make_pair("Slave", slaveside));
         }
 
         {
           // master side
-          std::vector<Teuchos::RCP<ConditionComponent>> masterside;
-
-          // insert master-side condition components into vector of interface sides
-          interfacesides.emplace_back(
-              Teuchos::rcp(new CondCompBundle("Master", masterside, INPAR::S2I::side_master)));
+          std::vector<Teuchos::RCP<ConditionComponent>> master_side;
+          interface_choices.emplace(side_master, std::make_pair("Master", master_side));
         }
       }  // interface sides for scatra-scatra interface mesh tying
 
       // insert interface sides into vector with input file line components
-      s2icomponents.emplace_back(
-          Teuchos::rcp(new CondCompBundleSelector("interface side", interfacesides)));
+      s2icomponents.emplace_back(Teuchos::rcp(
+          new SwitchConditionComponent("interface side", side_undefined, interface_choices)));
     }
 
     // insert input file line components into condition definitions
@@ -614,55 +602,47 @@ void INPAR::S2I::SetValidConditions(
       // interface ID
       s2igrowthcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
-      // kinetic models for scatra-scatra interface coupling involving interface layer growth
-      std::vector<Teuchos::RCP<CondCompBundle>> kineticmodels;
-      {
-        {
-          // Butler-Volmer
-          std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-          butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
-          butlervolmer.emplace_back(
-              Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
-          butlervolmer.emplace_back(Teuchos::rcp(
-              new IntVectorConditionComponent("stoichiometries", LengthFromInt("numscal"))));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
-          butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_R")));
-          butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
-          butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
-          butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("MOLMASS")));
-          butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("molar mass")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DENSITY")));
-          butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("density")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("CONDUCTIVITY")));
-          butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("conductivity")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REGTYPE")));
-          butlervolmer.emplace_back(
-              Teuchos::rcp(new StringConditionComponent("regularization type", "trigonometrical",
-                  Teuchos::tuple<std::string>("none", "polynomial", "Hein", "trigonometrical"),
-                  Teuchos::tuple<int>(INPAR::S2I::regularization_none,
-                      INPAR::S2I::regularization_polynomial, INPAR::S2I::regularization_hein,
-                      INPAR::S2I::regularization_trigonometrical))));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REGPAR")));
-          butlervolmer.emplace_back(
-              Teuchos::rcp(new RealConditionComponent("regularization parameter")));
-          butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("INITTHICKNESS")));
-          butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("initial thickness")));
-
-          kineticmodels.emplace_back(Teuchos::rcp(new CondCompBundle(
-              "Butler-Volmer", butlervolmer, INPAR::S2I::growth_kinetics_butlervolmer)));
-        }
-      }  // kinetic models for scatra-scatra interface coupling involving interface layer growth
+      // Butler-Volmer
+      std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
+      butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));
+      butlervolmer.emplace_back(Teuchos::rcp(
+          new IntVectorConditionComponent("stoichiometries", LengthFromInt("numscal"))));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E-")));
+      butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("e-")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_R")));
+      butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("k_r")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
+      butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
+      butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_c")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("MOLMASS")));
+      butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("molar mass")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("DENSITY")));
+      butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("density")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("CONDUCTIVITY")));
+      butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("conductivity")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REGTYPE")));
+      butlervolmer.emplace_back(
+          Teuchos::rcp(new StringConditionComponent("regularization type", "trigonometrical",
+              Teuchos::tuple<std::string>("none", "polynomial", "Hein", "trigonometrical"),
+              Teuchos::tuple<int>(INPAR::S2I::regularization_none,
+                  INPAR::S2I::regularization_polynomial, INPAR::S2I::regularization_hein,
+                  INPAR::S2I::regularization_trigonometrical))));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REGPAR")));
+      butlervolmer.emplace_back(
+          Teuchos::rcp(new RealConditionComponent("regularization parameter")));
+      butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("INITTHICKNESS")));
+      butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("initial thickness")));
 
       // insert kinetic models into vector with input file line components
       s2igrowthcomponents.emplace_back(
           Teuchos::rcp(new SeparatorConditionComponent("KINETIC_MODEL")));
       s2igrowthcomponents.emplace_back(
-          Teuchos::rcp(new CondCompBundleSelector("kinetic model", kineticmodels)));
+          Teuchos::rcp(new SwitchConditionComponent("kinetic model", growth_kinetics_butlervolmer,
+              {{growth_kinetics_butlervolmer,
+                  std::make_pair("Butler-Volmer", std::move(butlervolmer))}})));
     }
 
     // insert input file line components into condition definitions
