@@ -27,30 +27,9 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::INPUT::MaterialComponent::MaterialComponent(std::string name, bool optional)
-    : optional_(optional), name_(std::move(name))
-{
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<std::stringstream> DRT::INPUT::MaterialComponent::PushBack(
-    const std::string& token, const Teuchos::RCP<std::stringstream>& stream)
-{
-  Teuchos::RCP<std::stringstream> out = Teuchos::rcp(new std::stringstream());
-  (*out) << token << " ";
-  std::copy(std::istream_iterator<std::string>(*stream), std::istream_iterator<std::string>(),
-      std::ostream_iterator<std::string>(*out, " "));
-  return out;
-}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 DRT::INPUT::StringMaterialComponent::StringMaterialComponent(
     std::string name, std::string defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional), defaultvalue_(std::move(defaultvalue))
+    : ::INPUT::LineComponent(std::move(name), optional), defaultvalue_(std::move(defaultvalue))
 {
 }
 
@@ -65,10 +44,9 @@ void DRT::INPUT::StringMaterialComponent::DefaultLine(std::ostream& stream)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::StringMaterialComponent::Print(
-    std::ostream& stream, const MAT::PAR::Material* cond)
+void DRT::INPUT::StringMaterialComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  stream << *cond->Get<std::string>(Name());
+  stream << *cond.Get<std::string>(Name());
 }
 
 
@@ -81,8 +59,8 @@ void DRT::INPUT::StringMaterialComponent::Describe(std::ostream& stream) {}
  | Read string parameter value from material line of input file   fang 08/14 |
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
-    DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<MAT::PAR::Material> material)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& material)
 {
   // initialize string parameter value to be read
   std::string str = defaultvalue_;
@@ -100,7 +78,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
     // return error in case the extraction was not successful
     if (str.empty())
       dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-          Name().c_str(), def->Name().c_str());
+          Name().c_str(), section_name.c_str());
 
     // remove string parameter value from stringstream "condline"
     condline->str(condline->str().erase((size_t)condline->tellg() - str.size(), str.size()));
@@ -110,7 +88,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
   }
 
   // add double parameter value to material parameter list
-  material->Add(Name(), str);
+  material.Add(Name(), str);
 
   return condline;
 }
@@ -120,7 +98,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::SeparatorMaterialComponent::SeparatorMaterialComponent(
     std::string separator, std::string description, bool optional)
-    : MaterialComponent("*SEPARATOR*", optional),
+    : ::INPUT::LineComponent("*SEPARATOR*", optional),
       separator_(std::move(separator)),
       description_(std::move(description))
 {
@@ -137,8 +115,7 @@ void DRT::INPUT::SeparatorMaterialComponent::DefaultLine(std::ostream& stream)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::SeparatorMaterialComponent::Print(
-    std::ostream& stream, const MAT::PAR::Material* cond)
+void DRT::INPUT::SeparatorMaterialComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
   stream << separator_;
 }
@@ -170,8 +147,8 @@ std::vector<std::string> DRT::INPUT::SeparatorMaterialComponent::WriteReadTheDoc
  | Find material parameter label in material line of input file     fang 08/14 |
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorMaterialComponent::Read(
-    DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<MAT::PAR::Material> material)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& material)
 {
   // try to find material parameter label "separator_" (with leading and trailing white spaces for
   // uniqueness) in stringstream "condline"
@@ -186,7 +163,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorMaterialComponent::Read(
     else
       // return error in case a required material parameter is not specified
       dserror("Required parameter '%s' for material '%s' not specified in input file!",
-          separator_.c_str(), def->Name().c_str());
+          separator_.c_str(), section_name.c_str());
   }
   // case: found material parameter label "separator_"
   else
@@ -211,7 +188,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntMaterialComponent::IntMaterialComponent(
     std::string name, const int defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
+    : ::INPUT::LineComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -226,9 +203,9 @@ void DRT::INPUT::IntMaterialComponent::DefaultLine(std::ostream& stream)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::IntMaterialComponent::Print(std::ostream& stream, const MAT::PAR::Material* cond)
+void DRT::INPUT::IntMaterialComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  stream << cond->GetInt(Name());
+  stream << cond.GetInt(Name());
 }
 
 
@@ -241,8 +218,8 @@ void DRT::INPUT::IntMaterialComponent::Describe(std::ostream& stream) {}
  | Read integer parameter value from material line of input file   fang 08/14 |
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
-    DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<MAT::PAR::Material> material)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& material)
 {
   // initialize integer parameter value to be read
   int nnumber = defaultvalue_;
@@ -259,7 +236,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
     *condline >> snumber;
 
     nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
-        snumber, Name(), def->Name(), 1, optional_);
+        snumber, Name(), section_name, 1, optional_);
 
     // remove parameter value from stringstream "condline"
     condline->str(
@@ -270,7 +247,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
   }
 
   // add int parameter value to material parameter list
-  material->Add(Name(), nnumber);
+  material.Add(Name(), nnumber);
 
   return condline;
 }
@@ -280,7 +257,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
     std::string name, int length, const int defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional),
+    : ::INPUT::LineComponent(std::move(name), optional),
       length_(length),
       lengthname_("*UNDEFINED*"),
       defaultvalue_(defaultvalue)
@@ -291,7 +268,7 @@ DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorMaterialComponent::IntVectorMaterialComponent(
     std::string name, std::string lengthname, const int defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional),
+    : ::INPUT::LineComponent(std::move(name), optional),
       length_(-1),
       lengthname_(std::move(lengthname)),
       defaultvalue_(defaultvalue)
@@ -310,10 +287,9 @@ void DRT::INPUT::IntVectorMaterialComponent::DefaultLine(std::ostream& stream)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::IntVectorMaterialComponent::Print(
-    std::ostream& stream, const MAT::PAR::Material* cond)
+void DRT::INPUT::IntVectorMaterialComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  const auto* v = cond->Get<std::vector<int>>(Name());
+  const auto* v = cond.Get<std::vector<int>>(Name());
   for (int i : *v)
   {
     //    stream << (*v)[i]+1 << " ";  // ??? : this is used in
@@ -332,10 +308,10 @@ void DRT::INPUT::IntVectorMaterialComponent::Describe(std::ostream& stream) {}
  | Read integer parameter vector from material line of input file   fang 08/14 |
  *-----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
-    DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<MAT::PAR::Material> material)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& material)
 {
-  if (lengthname_ != "*UNDEFINED*") length_ = material->GetInt(lengthname_);
+  if (lengthname_ != "*UNDEFINED*") length_ = material.GetInt(lengthname_);
   if (length_ == -1) dserror("Trouble to get length of integer vector material component.");
 
   // initialize integer parameter vector to be read
@@ -356,7 +332,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
       *condline >> snumber;
 
       current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
-          snumber, Name(), def->Name(), length_, optional_);
+          snumber, Name(), section_name, length_, optional_);
 
       // remove parameter value from stringstream "condline"
       condline->str(
@@ -368,7 +344,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   }
 
   // add int parameter vector to material parameter list
-  material->Add(Name(), nnumbers);
+  material.Add(Name(), nnumbers);
 
   return condline;
 }
@@ -378,7 +354,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealMaterialComponent::RealMaterialComponent(
     std::string name, const double defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
+    : ::INPUT::LineComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -393,9 +369,9 @@ void DRT::INPUT::RealMaterialComponent::DefaultLine(std::ostream& stream)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::RealMaterialComponent::Print(std::ostream& stream, const MAT::PAR::Material* cond)
+void DRT::INPUT::RealMaterialComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  stream << cond->GetDouble(Name());
+  stream << cond.GetDouble(Name());
 }
 
 
@@ -408,8 +384,8 @@ void DRT::INPUT::RealMaterialComponent::Describe(std::ostream& stream) {}
  | Read double parameter value from material line of input file   fang 08/14 |
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
-    DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<MAT::PAR::Material> material)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& material)
 {
   // initialize double parameter value to be read
   double nnumber = defaultvalue_;
@@ -426,7 +402,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
     *condline >> snumber;
 
     nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
-        snumber, Name(), def->Name(), 1, optional_);
+        snumber, Name(), section_name, 1, optional_);
 
     // remove parameter value from stringstream "condline"
     condline->str(
@@ -437,7 +413,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
   }
 
   // add double parameter value to material parameter list
-  material->Add(Name(), nnumber);
+  material.Add(Name(), nnumber);
 
   return condline;
 }
@@ -447,7 +423,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealMaterialComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
     std::string name, int length, const double defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional),
+    : ::INPUT::LineComponent(std::move(name), optional),
       length_(length),
       lengthname_("*UNDEFINED*"),
       defaultvalue_(defaultvalue)
@@ -458,7 +434,7 @@ DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorMaterialComponent::RealVectorMaterialComponent(
     std::string name, std::string lengthname, const double defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional),
+    : ::INPUT::LineComponent(std::move(name), optional),
       length_(-1),
       lengthname_(std::move(lengthname)),
       defaultvalue_(defaultvalue)
@@ -479,9 +455,9 @@ void DRT::INPUT::RealVectorMaterialComponent::DefaultLine(std::ostream& stream)
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::RealVectorMaterialComponent::Print(
-    std::ostream& stream, const MAT::PAR::Material* cond)
+    std::ostream& stream, const DRT::Container& cond)
 {
-  const auto* v = cond->Get<std::vector<double>>(Name());
+  const auto* v = cond.Get<std::vector<double>>(Name());
   for (double i : *v) stream << i << " ";
 }
 
@@ -495,11 +471,11 @@ void DRT::INPUT::RealVectorMaterialComponent::Describe(std::ostream& stream) {}
  | Read double parameter vector from material line of input file   fang 08/14 |
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
-    DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<MAT::PAR::Material> material)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& material)
 {
   if (lengthname_ != "*UNDEFINED*")
-    length_ = material->GetInt(lengthname_);
+    length_ = material.GetInt(lengthname_);
   else if (length_ < 0)
     dserror("Trouble to get length of real vector material component.");
 
@@ -521,7 +497,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
       *condline >> snumber;
 
       current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
-          snumber, Name(), def->Name(), length_, optional_);
+          snumber, Name(), section_name, length_, optional_);
 
       // remove parameter value from stringstream "condline"
       condline->str(
@@ -533,7 +509,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   }
 
   // add double parameter vector to material parameter list
-  material->Add(Name(), nnumbers);
+  material.Add(Name(), nnumbers);
 
   return condline;
 }
@@ -545,7 +521,7 @@ const std::string DRT::INPUT::BoolMaterialComponent::lineTrue_ = "Yes";
 const std::string DRT::INPUT::BoolMaterialComponent::lineFalse_ = "No";
 DRT::INPUT::BoolMaterialComponent::BoolMaterialComponent(
     std::string name, const bool defaultvalue, bool optional)
-    : MaterialComponent(std::move(name), optional), defaultvalue_(defaultvalue)
+    : ::INPUT::LineComponent(std::move(name), optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -559,9 +535,9 @@ void DRT::INPUT::BoolMaterialComponent::DefaultLine(std::ostream& stream)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::BoolMaterialComponent::Print(std::ostream& stream, const MAT::PAR::Material* cond)
+void DRT::INPUT::BoolMaterialComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  const bool value = (bool)cond->GetInt(Name());
+  const bool value = (bool)cond.GetInt(Name());
   PrintYesNo(stream, value);
 }
 
@@ -584,8 +560,8 @@ void DRT::INPUT::BoolMaterialComponent::Describe(std::ostream& stream) {}
  | Read boolean parameter value from material line of input file   fang 08/14 |
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
-    DRT::INPUT::MaterialDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<MAT::PAR::Material> material)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& material)
 {
   // initialize boolean parameter value to be read
   bool boolean = defaultvalue_;
@@ -611,7 +587,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
     else
       // return error in case the conversion was not successful
       dserror("Value of parameter '%s' for material '%s' not properly specified in input file!",
-          Name().c_str(), def->Name().c_str());
+          Name().c_str(), section_name.c_str());
 
     // remove boolean parameter value from stringstream "condline"
     condline->str(
@@ -622,7 +598,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
   }
 
   // add boolean parameter value to material parameter list
-  material->Add(Name(), boolean);
+  material.Add(Name(), boolean);
 
   return condline;
 }
@@ -640,7 +616,7 @@ DRT::INPUT::MaterialDefinition::MaterialDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<MaterialComponent>& c)
+void DRT::INPUT::MaterialDefinition::AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -702,7 +678,7 @@ void DRT::INPUT::MaterialDefinition::Read(
             Teuchos::rcp(new MAT::PAR::Material(matid, mattype_, materialname_));
         // fill the latter
 
-        for (auto& j : inputline_) condline = j->Read(this, condline, material);
+        for (auto& j : inputline_) condline = j->Read(Name(), condline, *material);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)

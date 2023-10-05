@@ -150,7 +150,7 @@ void INPAR::SSTI::SetValidConditions(
           DRT::Condition::SSTIInterfaceMeshtying, true, DRT::Condition::Surface));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<ConditionComponent>> sstiinterfacemeshtyingcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> sstiinterfacemeshtyingcomponents;
   sstiinterfacemeshtyingcomponents.emplace_back(
       Teuchos::rcp(new IntConditionComponent("ConditionID")));
   sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent(

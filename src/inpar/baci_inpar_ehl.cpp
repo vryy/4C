@@ -145,7 +145,7 @@ void INPAR::EHL::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // ehl mortar coupling
 
-  std::vector<Teuchos::RCP<ConditionComponent>> ehlcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> ehlcomponents;
 
   ehlcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
   ehlcomponents.push_back(Teuchos::rcp(

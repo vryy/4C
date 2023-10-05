@@ -14,31 +14,13 @@
 
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
+#include "baci_lib_linecomponent.H"
 #include "baci_lib_utils_cond_and_mat_definition.H"
 #include "baci_lib_utils_reader.H"
 
 #include <algorithm>
 #include <iterator>
 #include <utility>
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-DRT::INPUT::ConditionComponent::ConditionComponent(std::string name) : name_(std::move(name)) {}
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(
-    const std::string& token, const Teuchos::RCP<std::stringstream>& stream)
-{
-  Teuchos::RCP<std::stringstream> out = Teuchos::rcp(new std::stringstream());
-  (*out) << token << " ";
-  std::copy(std::istream_iterator<std::string>(*stream), std::istream_iterator<std::string>(),
-      std::ostream_iterator<std::string>(*out, " "));
-  return out;
-}
-
-
 
 /* -----------------------------------------------------------------------------------------------*
  | Class StringConditionComponent                                                       ehrl 09/12|
@@ -50,7 +32,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::ConditionComponent::PushBack(
 DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
     std::string defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
     const Teuchos::Array<std::string>& stringcondvalues, bool optional)
-    : ConditionComponent(std::move(name)),
+    : ::INPUT::LineComponent(std::move(name)),
       defaultvalue_(std::move(defaultvalue)),
       datfilevalues_(datfilevalues),
       stringcondvalues_(stringcondvalues),
@@ -75,7 +57,7 @@ DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
 DRT::INPUT::StringConditionComponent::StringConditionComponent(std::string name,
     std::string defaultvalue, const Teuchos::Array<std::string>& datfilevalues,
     const Teuchos::Array<int>& intcondvalues, bool optional)
-    : ConditionComponent(std::move(name)),
+    : ::INPUT::LineComponent(std::move(name)),
       defaultvalue_(std::move(defaultvalue)),
       datfilevalues_(datfilevalues),
       stringcondvalues_(Teuchos::tuple<std::string>("notdefined")),
@@ -113,17 +95,17 @@ Teuchos::Array<std::string> DRT::INPUT::StringConditionComponent::GetOptions()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::StringConditionComponent::Print(std::ostream& stream, const Condition* cond)
+void DRT::INPUT::StringConditionComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  stream << *cond->Get<std::string>(Name());
+  stream << *cond.Get<std::string>(Name());
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
-    DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<DRT::Condition> condition)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& condition)
 {
   std::string value;
   (*condline) >> value;
@@ -136,7 +118,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
     std::stringstream error_message;
     error_message << "\n \nUnrecognized std::string '" << value.c_str()
                   << "' while reading variable '" << Name().c_str() << "' in '"
-                  << def->SectionName().c_str() << "'.\n"
+                  << section_name.c_str() << "'.\n"
                   << "Possible values are: \n";
 
     for (const auto& datfilevalue : datfilevalues_)
@@ -149,9 +131,9 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
   const unsigned pos = std::distance(datfilevalues_.begin(), i);
   // choose, if we have an array based on std::string or int
   if (stringtostring_)
-    condition->Add(Name(), stringcondvalues_[pos]);
+    condition.Add(Name(), stringcondvalues_[pos]);
   else
-    condition->Add(Name(), intcondvalues_[pos]);
+    condition.Add(Name(), intcondvalues_[pos]);
 
   return condline;
 }
@@ -161,7 +143,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::SeparatorConditionComponent::SeparatorConditionComponent(
     std::string separator, bool optional)
-    : ConditionComponent("*SEPARATOR*"), separator_(std::move(separator)), optional_(optional)
+    : ::INPUT::LineComponent("*SEPARATOR*"), separator_(std::move(separator)), optional_(optional)
 {
 }
 
@@ -179,7 +161,7 @@ std::string DRT::INPUT::SeparatorConditionComponent::WriteReadTheDocs() { return
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::SeparatorConditionComponent::Print(
-    std::ostream& stream, const DRT::Condition* cond)
+    std::ostream& stream, const DRT::Container& cond)
 {
   stream << separator_;
 }
@@ -196,8 +178,8 @@ Teuchos::Array<std::string> DRT::INPUT::SeparatorConditionComponent::GetOptions(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(
-    DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<DRT::Condition> condition)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& condition)
 {
   std::string sep;
   (*condline) >> sep;
@@ -209,12 +191,12 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(
       // not given, fall back to default line
       condline = PushBack(separator_, condline);
       // recursive call -- fix from 01/18 by hiermeier
-      Read(def, condline, condition);
+      Read(section_name, condline, condition);
     }
     else
     {
       dserror("word '%s' expected but found '%s' while reading '%s'", separator_.c_str(),
-          sep.c_str(), def->SectionName().c_str());
+          sep.c_str(), section_name.c_str());
     }
   }
   return condline;
@@ -225,7 +207,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::SeparatorConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntConditionComponent::IntConditionComponent(
     std::string name, bool fortranstyle, bool noneallowed, bool optional)
-    : ConditionComponent(std::move(name)),
+    : ::INPUT::LineComponent(std::move(name)),
       fortranstyle_(fortranstyle),
       noneallowed_(noneallowed),
       optional_(optional)
@@ -259,9 +241,9 @@ Teuchos::Array<std::string> DRT::INPUT::IntConditionComponent::GetOptions()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::IntConditionComponent::Print(std::ostream& stream, const DRT::Condition* cond)
+void DRT::INPUT::IntConditionComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  int n = cond->GetInt(Name());
+  int n = cond.GetInt(Name());
   if (noneallowed_ and n == -1)
     stream << "none ";
   else
@@ -275,8 +257,8 @@ void DRT::INPUT::IntConditionComponent::Print(std::ostream& stream, const DRT::C
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
-    DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<DRT::Condition> condition)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& condition)
 {
   // read string from stream (need to handle ints and "none" arguments)
   std::string snumber;
@@ -298,14 +280,14 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
   else
   {
     nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
-        snumber, Name(), def->SectionName(), 1, optional_);
+        snumber, Name(), section_name, 1, optional_);
   }
   if (fortranstyle_)
   {
     if (not noneallowed_ or nnumber != -1) nnumber -= 1;
   }
 
-  condition->Add(Name(), nnumber);
+  condition.Add(Name(), nnumber);
   return condline;
 }
 
@@ -314,7 +296,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::IntVectorConditionComponent::IntVectorConditionComponent(
     std::string name, int length, bool fortranstyle, bool noneallowed, bool optional)
-    : ConditionComponent(std::move(name)),
+    : ::INPUT::LineComponent(std::move(name)),
       length_(length),
       fortranstyle_(fortranstyle),
       noneallowed_(noneallowed),
@@ -325,7 +307,7 @@ DRT::INPUT::IntVectorConditionComponent::IntVectorConditionComponent(
 
 DRT::INPUT::IntVectorConditionComponent::IntVectorConditionComponent(std::string name,
     LengthDefinition length_from_component, bool fortranstyle, bool noneallowed, bool optional)
-    : ConditionComponent(std::move(name)),
+    : ::INPUT::LineComponent(std::move(name)),
       length_(std::move(length_from_component)),
       fortranstyle_(fortranstyle),
       noneallowed_(noneallowed),
@@ -382,9 +364,9 @@ Teuchos::Array<std::string> DRT::INPUT::IntVectorConditionComponent::GetOptions(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::IntVectorConditionComponent::Print(
-    std::ostream& stream, const DRT::Condition* cond)
+    std::ostream& stream, const DRT::Container& cond)
 {
-  const auto* v = cond->Get<std::vector<int>>(Name());
+  const auto* v = cond.Get<std::vector<int>>(Name());
   for (int i : *v)
   {
     if (noneallowed_ and i == -1)
@@ -402,7 +384,7 @@ namespace
     int operator()(int length) { return length; }
     int operator()(const DRT::INPUT::LengthDefinition& length) { return length(condition); }
 
-    const DRT::Condition& condition;
+    const DRT::Container& condition;
   };
 }  // namespace
    //
@@ -410,12 +392,12 @@ namespace
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
-    DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<DRT::Condition> condition)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& condition)
 {
   // in order to initialize fortran style input correctly if optional_ is true
   const int initialize_value = fortranstyle_ ? -1 : 0;
-  const int dynamic_length = std::visit(LengthVisitor{*condition}, length_);
+  const int dynamic_length = std::visit(LengthVisitor{condition}, length_);
   std::vector<int> nnumbers(dynamic_length, initialize_value);
 
   for (auto& current_nnumber : nnumbers)
@@ -439,7 +421,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
     else
     {
       current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
-          snumber, Name(), def->SectionName(), dynamic_length, optional_);
+          snumber, Name(), section_name, dynamic_length, optional_);
     }
 
     if (fortranstyle_)
@@ -448,7 +430,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorConditionComponent::Read(
     }
   }
 
-  condition->Add(Name(), nnumbers);
+  condition.Add(Name(), nnumbers);
   return condline;
 }
 
@@ -460,7 +442,7 @@ void DRT::INPUT::IntVectorConditionComponent::SetLength(int length) { length_ = 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealConditionComponent::RealConditionComponent(std::string name)
-    : ConditionComponent(std::move(name))
+    : ::INPUT::LineComponent(std::move(name))
 {
 }
 
@@ -482,17 +464,17 @@ Teuchos::Array<std::string> DRT::INPUT::RealConditionComponent::GetOptions()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::RealConditionComponent::Print(std::ostream& stream, const DRT::Condition* cond)
+void DRT::INPUT::RealConditionComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
-  stream << cond->GetDouble(Name());
+  stream << cond.GetDouble(Name());
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(
-    DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<DRT::Condition> condition)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& condition)
 {
   // read string from stream
   std::string snumber;
@@ -510,10 +492,10 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(
   else
   {
     nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
-        snumber, Name(), def->SectionName(), 1, true);
+        snumber, Name(), section_name, 1, true);
   }
 
-  condition->Add(Name(), nnumber);
+  condition.Add(Name(), nnumber);
   return condline;
 }
 
@@ -522,7 +504,7 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealConditionComponent::Read(
  *----------------------------------------------------------------------*/
 DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(
     std::string name, int length, bool optional)
-    : ConditionComponent(std::move(name)), length_(length), optional_(optional)
+    : ::INPUT::LineComponent(std::move(name)), length_(length), optional_(optional)
 {
 }
 
@@ -530,7 +512,7 @@ DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(
 
 DRT::INPUT::RealVectorConditionComponent::RealVectorConditionComponent(
     std::string name, LengthDefinition length, bool optional)
-    : ConditionComponent(std::move(name)), length_(std::move(length)), optional_(optional)
+    : ::INPUT::LineComponent(std::move(name)), length_(std::move(length)), optional_(optional)
 {
 }
 
@@ -561,9 +543,9 @@ Teuchos::Array<std::string> DRT::INPUT::RealVectorConditionComponent::GetOptions
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::INPUT::RealVectorConditionComponent::Print(
-    std::ostream& stream, const DRT::Condition* cond)
+    std::ostream& stream, const DRT::Container& cond)
 {
-  const auto* v = cond->Get<std::vector<double>>(Name());
+  const auto* v = cond.Get<std::vector<double>>(Name());
   for (double i : *v) stream << i << " ";
 }
 
@@ -571,10 +553,10 @@ void DRT::INPUT::RealVectorConditionComponent::Print(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
-    DRT::INPUT::ConditionDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<DRT::Condition> condition)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& condition)
 {
-  const int dynamic_length = std::visit(LengthVisitor{*condition}, length_);
+  const int dynamic_length = std::visit(LengthVisitor{condition}, length_);
   std::vector<double> nnumbers(dynamic_length, 0.0);
 
   for (auto& current_nnumber : nnumbers)
@@ -594,11 +576,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorConditionComponent::Read(
     else
     {
       current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
-          snumber, Name(), def->SectionName(), dynamic_length, optional_);
+          snumber, Name(), section_name, dynamic_length, optional_);
     }
   }
 
-  condition->Add(Name(), nnumbers);
+  condition.Add(Name(), nnumbers);
   return condline;
 }
 
@@ -610,9 +592,11 @@ void DRT::INPUT::RealVectorConditionComponent::SetLength(int length) { length_ =
 
 DRT::INPUT::SwitchConditionComponent::SwitchConditionComponent(std::string name,
     const KeyType& default_key,
-    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+    std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
         choices)
-    : ConditionComponent(std::move(name)), default_key_(default_key), choices_(std::move(choices))
+    : ::INPUT::LineComponent(std::move(name)),
+      default_key_(default_key),
+      choices_(std::move(choices))
 {
   Teuchos::Array<int> keys;
   keys.reserve(choices_.size());
@@ -677,12 +661,12 @@ Teuchos::Array<std::string> DRT::INPUT::SwitchConditionComponent::GetOptions()
 
 
 
-void DRT::INPUT::SwitchConditionComponent::Print(std::ostream& stream, const DRT::Condition* cond)
+void DRT::INPUT::SwitchConditionComponent::Print(std::ostream& stream, const DRT::Container& cond)
 {
   component_for_key_->Print(stream, cond);
   stream << " ";
 
-  const KeyType selected_key = static_cast<KeyType>(cond->GetInt(component_for_key_->Name()));
+  const KeyType selected_key = static_cast<KeyType>(cond.GetInt(component_for_key_->Name()));
 
   dsassert(choices_.count(selected_key) == 1, "Internal error.");
   for (const auto& component : choices_[selected_key].second)
@@ -694,17 +678,18 @@ void DRT::INPUT::SwitchConditionComponent::Print(std::ostream& stream, const DRT
 
 
 
-Teuchos::RCP<std::stringstream> DRT::INPUT::SwitchConditionComponent::Read(ConditionDefinition* def,
-    Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition)
+Teuchos::RCP<std::stringstream> DRT::INPUT::SwitchConditionComponent::Read(
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& condition)
 {
-  component_for_key_->Read(def, condline, condition);
-  const KeyType key = static_cast<KeyType>(condition->GetInt(component_for_key_->Name()));
+  component_for_key_->Read(section_name, condline, condition);
+  const KeyType key = static_cast<KeyType>(condition.GetInt(component_for_key_->Name()));
 
   dsassert(choices_.count(key) == 1, "Internal error.");
 
   for (const auto& component : choices_[key].second)
   {
-    component->Read(def, condline, condition);
+    component->Read(section_name, condline, condition);
   }
 
   return condline;
@@ -731,7 +716,7 @@ DRT::INPUT::ConditionDefinition::ConditionDefinition(std::string sectionname,
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<ConditionComponent>& c)
+void DRT::INPUT::ConditionDefinition::AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c)
 {
   inputline_.push_back(c);
 }
@@ -823,14 +808,12 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem, DatFileReader
         dobjid -= 1;
       }
 
-      // cout << "condition " << dobjid << " of type " << condtype_ << " on " << gtype_ << "\n";
-
       Teuchos::RCP<DRT::Condition> condition =
           Teuchos::rcp(new DRT::Condition(dobjid, condtype_, buildgeometry_, gtype_));
 
       for (auto& j : inputline_)
       {
-        condline = j->Read(this, condline, condition);
+        condline = j->Read(SectionName(), condline, *condition);
       }
 
       //------------------------------- put condition in map of conditions
@@ -911,7 +894,7 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(
         stream << "E " << cond->Id() << " - ";
         for (auto& i : inputline_)
         {
-          i->Print(stream, cond);
+          i->Print(stream, *cond);
           stream << " ";
         }
         stream << "\n";

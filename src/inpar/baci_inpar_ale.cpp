@@ -82,7 +82,7 @@ void INPAR::ALE::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Ale update boundary condition
 
-  std::vector<Teuchos::RCP<ConditionComponent>> aleupdatecomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> aleupdatecomponents;
 
   aleupdatecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLING")));
   aleupdatecomponents.push_back(Teuchos::rcp(new StringConditionComponent("coupling", "lagrange",

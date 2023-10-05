@@ -158,7 +158,7 @@ void INPAR::POROMULTIPHASESCATRA::SetValidConditions(
         DRT::Condition::PoroMultiphaseScatraOxyPartPressCalcCond, true, DRT::Condition::Volume));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> oxypartpresscomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> oxypartpresscomponents;
 
     {
       oxypartpresscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("SCALARID")));
