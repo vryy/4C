@@ -629,9 +629,9 @@ void ADAPTER::CouplingEhlMortar::RecoverCoupled(
   }
 
   // store updated LM into nodes
-  for (int i = 0; i < interface_->SlaveColNodes()->NumMyElements(); ++i)
+  for (int i = 0; i < interface_->SlaveRowNodes()->NumMyElements(); ++i)
   {
-    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(interface_->Discret().lColNode(i));
+    CONTACT::CoNode* cnode = dynamic_cast<CONTACT::CoNode*>(interface_->Discret().lRowNode(i));
     for (int dof = 0; dof < interface_->Dim(); ++dof)
       cnode->MoData().lm()[dof] = z_->operator[](z_->Map().LID(cnode->Dofs()[dof]));
   }
