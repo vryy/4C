@@ -135,7 +135,7 @@ void PARTICLEALGORITHM::TimInt::InitDirichletBoundaryCondition()
       dirichletboundarycondition_->GetParticleTypesSubjectedToDirichletBCSet();
 
   // no particle types are subjected to dirichlet boundary conditions
-  if (typessubjectedtodirichletbc.empty()) dirichletboundarycondition_.release();
+  if (typessubjectedtodirichletbc.empty()) dirichletboundarycondition_.reset();
 }
 
 void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
@@ -153,7 +153,7 @@ void PARTICLEALGORITHM::TimInt::InitTemperatureBoundaryCondition()
       temperatureboundarycondition_->GetParticleTypesSubjectedToTemperatureBCSet();
 
   // no particle types are subjected to temperature boundary conditions
-  if (typessubjectedtotempbc.empty()) temperatureboundarycondition_.release();
+  if (typessubjectedtotempbc.empty()) temperatureboundarycondition_.reset();
 }
 
 void PARTICLEALGORITHM::TimInt::AddInitialRandomNoiseToPosition()
