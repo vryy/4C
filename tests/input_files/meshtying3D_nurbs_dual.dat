@@ -70,11 +70,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3e-1
 DSURF  2
 E 5 - 1 Slave Active
 E 12 - 1 Master Inactive
---------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                           16
-NDLINE                            24
-NDSURF                            12
-NDVOL                             2
 -------------------------------------------------------DNODE-NODE TOPOLOGY
 //
 // structure: patch 1, (0,0,0)

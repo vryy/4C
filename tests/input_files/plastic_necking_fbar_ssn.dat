@@ -69,11 +69,6 @@ MAT 2 ELAST_IsoNeoHooke MUE 80.19379845
 MAT 3 ELAST_VolOgden KAPPA 164.2063492 BETA -2.0
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  5
-NDSURF  4
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d7_xyz

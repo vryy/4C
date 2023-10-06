@@ -58,11 +58,6 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 2.0 NUE 0.0 DENS 1.0
 -------------------------------------------------------------CONTACT CONSTITUTIVE LAWS
 LAW 1 CoConstLaw_brokenrational A -0.02188 B 3.854 C -0.005677 Offset 0.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  6
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // bottomcorner

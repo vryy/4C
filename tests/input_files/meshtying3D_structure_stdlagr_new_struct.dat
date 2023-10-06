@@ -61,11 +61,6 @@ STRUCTURE DIS structure NODE 180 QUANTITY dispz VALUE 6.63600533116916913e-01 TO
 STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 8.97800845002964643e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE 7.78867675435034879e-01 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 200 QUANTITY dispz VALUE 4.94154829059914757e-01 TOLERANCE 1e-10
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          4
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

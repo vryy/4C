@@ -147,11 +147,6 @@ MAT 2 MAT_BeamReissnerElastHyper YOUNG 10 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME 1*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 101.0 VALUES 0.0 0.0 100.0
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 20
-NDLINE 10
-NDSURF 20
-NDVOL 0
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 10
 E 1 - NUMDOF 9 ONOFF 1 1 1 1 1 1 0 0 0 VAL 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0

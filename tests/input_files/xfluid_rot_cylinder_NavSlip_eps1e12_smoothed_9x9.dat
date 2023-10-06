@@ -170,11 +170,6 @@ XFLUID DIS fluid NODE 143 QUANTITY velx VALUE  8.72552528430981336e-04 TOLERANCE
 XFLUID DIS fluid NODE 143 QUANTITY vely VALUE  1.28795781526512775e-05 TOLERANCE 1e-13
 XFLUID DIS fluid NODE 143 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-13
 XFLUID DIS fluid NODE 143 QUANTITY pressure VALUE  3.69993439051444044e-03 TOLERANCE 1e-13
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          4
-NDSURF                          2
-NDVOL                           1
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            0
 //volume

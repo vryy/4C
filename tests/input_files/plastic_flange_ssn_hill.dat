@@ -80,11 +80,6 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 210.0 NUE 0.3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-x/sqrt(x*x+y*y))*t
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-y/sqrt(x*x+y*y))*t
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  5
-NDSURF  4
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // dyz_pull

@@ -101,11 +101,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -2*x*x*t*t+x*y+2*(4*x+4*y*t*t)
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*(2*x*t*t-2*y)
 ------------------------------------------------FUNCT10 // pressure
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2*x*x*t*t-x*y
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          3
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // volume force

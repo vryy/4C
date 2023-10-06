@@ -54,11 +54,6 @@ AZTOL                           1.0E-3
 AZITER                          200
 AZSUB                           100
 AZOUTPUT                        1
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // beltramiboundary

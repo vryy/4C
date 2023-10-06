@@ -100,11 +100,6 @@ STRUCTURE DIS structure NODE 93 QUANTITY dispy VALUE -2.17489731629851328e-03 TO
 STRUCTURE DIS structure NODE 94 QUANTITY dispy VALUE -1.99726364534059606e-03 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 94 QUANTITY vely VALUE -1.29242663503418509e-01 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 95 QUANTITY dispy VALUE -2.19005514845106069e-03 TOLERANCE 1e-7
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          7
-NDSURF                          3
-NDVOL                           0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              top

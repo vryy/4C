@@ -56,11 +56,6 @@ STRUCTURE DIS structure NODE 97 QUANTITY dispz VALUE -8.61786569378936718e-01 TO
 STRUCTURE DIS structure NODE 103 QUANTITY dispx VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 103 QUANTITY dispy VALUE 6.96187203580427072e-01 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 103 QUANTITY dispz VALUE -8.61786569378935163e-01 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          2
-NDSURF                          3
-NDVOL                           1
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 E 1 - solid NUMMODES 6 ONOFF 1 1 1 1 1 1 pointvalues

@@ -56,11 +56,6 @@ SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 2.0 TOLERANCE 1.e-20
 SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc0 VALUE 97.0 TOLERANCE 1.e-20   // number of degrees of freedom owned by zeroth processor at zeroth scatra-scatra coupling interface
 SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc1 VALUE 77.0 TOLERANCE 1.e-20   // number of degrees of freedom owned by first processor at zeroth scatra-scatra coupling interface
 SCATRA DIS scatra SPECIAL QUANTITY s2inumdof_int0_proc2 VALUE 82.0 TOLERANCE 1.e-20   // number of degrees of freedom owned by second processor at zeroth scatra-scatra coupling interface
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  4
-NDVOL   2
 -------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL   2
 E 1 - ScaTra 1

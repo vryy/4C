@@ -95,11 +95,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.2 10 VALUES 0 -
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1.2 10 VALUES 0 0 8
---------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                           16
-NDLINE                            24
-NDSURF                            12
-NDVOL                             2
 -------------------------------------------------------DNODE-NODE TOPOLOGY
 //
 // structure: patch 1, (0,0,0)

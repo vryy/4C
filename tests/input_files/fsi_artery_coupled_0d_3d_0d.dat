@@ -186,11 +186,6 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 100.0 DESCRIPTION  0.5*(1.0-cos(2.0*t*pi/2.0)) -1.0*cos(2.0*t*pi/2.0)
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  6
-NDSURF  9
-NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // fluid_inflow_ring_NoDBC_slave

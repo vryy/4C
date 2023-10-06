@@ -147,11 +147,6 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 100 QUANTITY velx VALUE 9.39896395590536948e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 450 QUANTITY velx VALUE 1.00248303187441135e+00 TOLERANCE 1e-9
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  7
-NDVOL   2
 -------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL   1
 // volume

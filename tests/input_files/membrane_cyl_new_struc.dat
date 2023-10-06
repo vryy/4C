@@ -35,11 +35,6 @@ SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 1000 VALUES 0 1 1
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 21 QUANTITY dispz VALUE 2.14876994921447562e+00 TOLERANCE 1e-8
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 3
-NDLINE  2
-NDSURF  1
-NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // surf

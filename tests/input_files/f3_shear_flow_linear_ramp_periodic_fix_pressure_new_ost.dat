@@ -121,11 +121,6 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 // pressure
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  0.1*0.5*t //0.1*0.5*(0.5*(1-sin((t+0.5)*3.141592653589793))) //mu=0.1
 -------------------------------------------------------------FUNCT3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  0.5*y //0.1*0.5*(0.5*(1-sin((t+0.5)*3.141592653589793))) //mu=0.1
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 8
-NDLINE  12
-NDSURF  6
-NDVOL   1
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 // slave span

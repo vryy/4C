@@ -109,11 +109,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 2.0 DESCRIPTION 1.0-cos((pi/2.0)*(t/1.0)) 1.0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -7.13575091010648599e+00 TOLERANCE 1e-6
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  1
-NDSURF  2
-NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 1.0 0.0 0.0 FUNCT 1 1 1 orthopressure Mid

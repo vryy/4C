@@ -104,11 +104,6 @@ STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -7.04602444423792357e-02 TOL
 STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -7.06839821013631048e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -1.46446609406726325e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE -1.06434677899982039e-01 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Point x+y+

@@ -37,11 +37,6 @@ STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE  8.72422822155921041e-02 TOL
 STRUCTURE DIS structure NODE 15 QUANTITY dispx VALUE  8.72422822155920069e-02 TOLERANCE 8.7e-10
 STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE  8.40337143920437540e-02 TOLERANCE 8.4e-10
 STRUCTURE DIS structure NODE 25 QUANTITY dispx VALUE  8.40337143920441704e-02 TOLERANCE 8.4e-10
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              side_x_clamped

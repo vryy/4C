@@ -77,10 +77,6 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          8
-NDSURF                          2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          0
 // E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

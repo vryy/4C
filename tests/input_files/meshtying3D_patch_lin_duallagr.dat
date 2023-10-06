@@ -61,11 +61,6 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.0
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 1
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         9
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          5
 //                              node_force_z_1

@@ -92,11 +92,6 @@ SCATRA DIS scatra NODE 261 QUANTITY phi VALUE 3.555333841e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 6 QUANTITY flux_boundary_1_x VALUE -5.78173229644617440e-03 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 6 QUANTITY flux_boundary_1_y VALUE 0.0 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 6 QUANTITY flux_boundary_1_z VALUE 0.0 TOLERANCE 1e-11
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 //                              inflow

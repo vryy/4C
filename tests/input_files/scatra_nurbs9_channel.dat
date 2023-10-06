@@ -83,9 +83,6 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4

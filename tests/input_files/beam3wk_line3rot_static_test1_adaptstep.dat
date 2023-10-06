@@ -52,11 +52,6 @@ LOADLIN                         Yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
--------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  0
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 1 - NUMDOF 7 ONOFF 1 1 1 1 1 1 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 0

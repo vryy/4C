@@ -131,11 +131,6 @@ ELEMENTS                        31
 NODES                           85
 DIM                             3
 MATERIALS                       9999
--------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          0
-NDSURF                          4
-NDVOL                           0
 ------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 13 DNODE 1
 NODE 14 DNODE 2

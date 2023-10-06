@@ -133,11 +133,6 @@ MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1000 C2 0.27       // C1 = Young, C2 = nu
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME ramp
 VARIABLE 0 NAME ramp TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 10.0 VALUES 0 -1.0 -1.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  4
-NDSURF  0
-NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // dbc_indentor

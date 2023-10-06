@@ -34,11 +34,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 1000 VALUES 0 1 1
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE 1.39666561801065847e-01 TOLERANCE 1e-8
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  2
-NDSURF  1
-NDVOL   0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // curvex+_dirich

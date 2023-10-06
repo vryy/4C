@@ -174,11 +174,6 @@ SCATRA DIS scatra NODE 28 QUANTITY phi4 VALUE -8.53901190537507317e-06 TOLERANCE
 SCATRA DIS scatra SPECIAL QUANTITY meanc VALUE 3.44418316464648266e-01 TOLERANCE 3.4e-09
 SCATRA DIS scatra SPECIAL QUANTITY meaneta VALUE 4.34875462913763416e-03 TOLERANCE 4.3e-11
 SCATRA DIS scatra SPECIAL QUANTITY meancur VALUE 0.00000000000000000e+00 TOLERANCE 1.0e-16
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              cathode

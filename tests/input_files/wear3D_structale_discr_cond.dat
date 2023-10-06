@@ -93,11 +93,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 5 VALUES 0 -1 -
 STRUCTURE DIS structure NODE 155 QUANTITY dispmx VALUE -1.15767613518544671e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 155 QUANTITY dispmy VALUE -1.15767613516345718e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 155 QUANTITY dispmz VALUE  2.29744124417663453e-01 TOLERANCE 1e-7
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          2
-NDSURF                          7
-NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              dirich_line_fix

@@ -93,11 +93,6 @@ ML_SMOTIMES                     1 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 1.9E0 POISSON 0.4 DENS 1E-9 YOUNGS_FAST 3.0E5 RELAX 16. THETA 0.5
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              force

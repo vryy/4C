@@ -170,11 +170,6 @@ VARFUNCTION pi*D*0.1*(p_art-p3)
 VARFUNCTION pi*D*0.8*(phi_art1-phi1)+pi*D*0.001*(p_art-p3)*(phi_art1-phi1)
 ----------------------------------------------------------------------FUNCT12
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.7e-4
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 16
-NDLINE  1
-NDSURF  0
-NDVOL   4
 ----------------------------------------------------------RESULT DESCRIPTION
 // Note: results for bloodvesselvolfrac are unrealistic due to unrealistic diameter in this example
 POROFLUIDMULTIPHASE DIS porofluid ELEMENT 70 QUANTITY bloodvesselvolfrac VALUE  5.52442562564547188e+02 TOLERANCE 1e-10

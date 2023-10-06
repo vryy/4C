@@ -58,11 +58,6 @@ Outer Iteration StatusTest      = No
 Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  2
-NDSURF  2
-NDVOL   0
 ----------------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT  2
 E 1 - NUMDOF 9 ONOFF 0 0 1 0 0 0 0 0 0 VAL -1.0 0.0 -1.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 0 1 0 0 0 0 0 0 TAG monitor_reaction

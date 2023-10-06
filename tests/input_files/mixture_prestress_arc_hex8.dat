@@ -90,11 +90,6 @@ ELEMENTS                        7
 NODES                           32
 DIM                             3
 MATERIALS                       9999
-------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 -----------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 29 DNODE 1
 NODE 32 DNODE 2

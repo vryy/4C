@@ -60,11 +60,6 @@ Test Details                        = Yes
 Debug                               = No
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  3
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 // out_top

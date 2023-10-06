@@ -251,11 +251,6 @@ ALE       DIS       ale NODE 14120 QUANTITY    dispz VALUE  9.99232111412994773e
 FSI                     NODE 14122 QUANTITY  lambdax VALUE -1.44497076128863561e-01 TOLERANCE 1e-08
 FSI                     NODE 14122 QUANTITY  lambday VALUE  1.36839436601922118e-07 TOLERANCE 1e-08
 FSI                     NODE 14122 QUANTITY  lambdaz VALUE  9.54771528813289430e-03 TOLERANCE 1e-08
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  2
-NDSURF  15
-NDVOL   1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // inflow_ring

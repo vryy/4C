@@ -64,11 +64,6 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         23
-NDLINE                          30
-NDSURF                          8
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          3
 E 2 - NUMDOF 2 ONOFF 1 1 VAL 0.0 0.0 FUNCT 0 0

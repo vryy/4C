@@ -98,11 +98,6 @@ VARFUNCTION (p_art-VFP1)*0.1
 ----------------------------------------------------------------------FUNCT7
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*0.1/(0.1+1.0)*(1-0.25*log(sqrt(x*x+y*y)/0.25))
 
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  1
-NDSURF  4
-NDVOL   1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // 1D_curve

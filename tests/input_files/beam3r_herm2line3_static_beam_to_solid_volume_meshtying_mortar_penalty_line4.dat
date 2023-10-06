@@ -81,11 +81,6 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 100 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.007853981633974483 SHEARCORR 1 MOMINPOL 9.817477042468105e-06 MOMIN2 4.9087385212340526e-06 MOMIN3 4.9087385212340526e-06
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE 1
-NDSURF 1
-NDVOL 1
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 1 - NUMDOF 9 ONOFF 0 0 0 0 0 1 0 0 0 VAL 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0

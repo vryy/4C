@@ -97,11 +97,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 ------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTION 5 0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         3
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 -----------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
 E 3 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 3 3 3 3 3 3 Live Mid

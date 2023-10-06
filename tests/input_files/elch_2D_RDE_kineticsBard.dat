@@ -95,11 +95,6 @@ SCATRA DIS scatra NODE 125 QUANTITY phi1 VALUE 2.56909342605680679e+00 TOLERANCE
 SCATRA DIS scatra NODE 125 QUANTITY phi5 VALUE -7.43085223701834066e-04 TOLERANCE 1e-13
 SCATRA DIS scatra NODE 200 QUANTITY phi1 VALUE 9.95e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 200 QUANTITY phi5 VALUE -8.66500656721840321e-05 TOLERANCE 1e-14
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          2
-NDSURF                          0
-NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 //                              right_electrode

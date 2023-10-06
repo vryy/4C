@@ -117,11 +117,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.1 100.0 VALUE
 ------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE  1.75809921430119115e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE  4.07275625127521065e-02 TOLERANCE 1e-6
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          8
-NDSURF                          2
-NDVOL                           0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // front upper left

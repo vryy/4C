@@ -182,11 +182,6 @@ VARFUNCTION pi*D*0.01*(p_art-VFP1)
 VARFUNCTION pi*D*0.8*(phi_art1-phi1)+pi*D*0.001*(p_art-VFP1)*(phi_art1-phi1)
 ----------------------------------------------------------------------FUNCT12
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.7e-4
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 16
-NDLINE  1
-NDSURF  0
-NDVOL   4
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS artery_scatra NODE 233 QUANTITY phi1 VALUE 2.63789033824660200e-04  TOLERANCE 1e-12
 SCATRA DIS artery_scatra NODE 235 QUANTITY phi1 VALUE 2.63749554782702713e-04  TOLERANCE 1e-12

@@ -170,11 +170,6 @@ VARIABLE 0 NAME v TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.1 0.11 1.0 VA
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME v
 VARIABLE 0 NAME v TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 0.1 0.11 1.0 VALUES 0.0 6.0 0.0 0.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           1

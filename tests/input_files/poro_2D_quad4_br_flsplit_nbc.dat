@@ -107,11 +107,6 @@ STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -3.63152329761652394e-07 TOL
 STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -4.82482697832391724e-07 TOLERANCE 1e-11
 STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE -3.16622891206056535e-05 TOLERANCE 1e-11
 STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         5
-NDLINE                          6
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE                           1
 // Surface x+

@@ -146,11 +146,6 @@ KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
 KIMMOIN-UP MAT 1 ISSTAT 1
 ----------------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0*(sqrt((x-0.5)*(x-0.5)+(y-0.5)*(y-0.5))-0.45)
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE 0
-NDSURF 0
-NDVOL 3
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 1
 // fluid_volume

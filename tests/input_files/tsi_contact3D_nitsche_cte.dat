@@ -151,11 +151,6 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.0
 ------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 0.5 10.0 VALUES 0.0 3.0 3.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  4
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // dxyz

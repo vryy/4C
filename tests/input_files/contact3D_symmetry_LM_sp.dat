@@ -73,11 +73,6 @@ MAT 1   MAT_ElastHyper   NUMMAT 1 MATIDS 2 DENS 0.1
 MAT 2   ELAST_CoupNeoHooke YOUNG 2250 NUE 0.3
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.5*t
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  4
-NDSURF  4
-NDVOL   2
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // dxz

@@ -73,11 +73,6 @@ COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME atan(x/y)
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME exp(-(t/(101*365.25)))-0.5*(1.0-exp(-(t/40.0)))*exp(-0.5*(100*(fabs(z)-0.09))^2)
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          1
-NDSURF                          7
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 3 - NUMDOF 3 ONOFF 1 0 0 VAL -13332.2668 0.0 0.0 FUNCT 0 0 0 orthopressure

@@ -234,11 +234,6 @@ VARFUNCTION 1.0*VFDENS1
 VARFUNCTION porosity*S2*DENS2*x
 ----------------------------------------------------------------------FUNCT29 // needed for calculation of y-coordinate center of mass of tumor
 VARFUNCTION porosity*S2*DENS2*y
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  12
-NDSURF  3
-NDVOL   0
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 28 QUANTITY dispx VALUE -5.71334195182968650e-03 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 310 QUANTITY dispx VALUE -3.08384131668321387e-03 TOLERANCE 1e-12

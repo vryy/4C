@@ -69,11 +69,6 @@ Debug                           = No
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  1
-NDSURF  0
-NDVOL   0
 --------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 1
 E 1 - ID 0 TYPE arbitrary

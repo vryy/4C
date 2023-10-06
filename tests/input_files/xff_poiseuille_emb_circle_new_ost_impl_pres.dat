@@ -102,11 +102,6 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME (x-3.0)*0.001*2.0*(1.0/0.4)*(1.0/0.4)
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1.0/0.4)*(1.0/0.4)*2.0*y
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  0
-NDSURF  2
-NDVOL   3
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // Outflow

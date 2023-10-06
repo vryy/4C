@@ -69,10 +69,6 @@ SOLVER                          Superlu
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          Superlu
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          16
-NDSURF                          2
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           3
 E 3 - NUMDOF 2 ONOFF 1 1 VAL 6.0 0.12 FUNCT 2 1

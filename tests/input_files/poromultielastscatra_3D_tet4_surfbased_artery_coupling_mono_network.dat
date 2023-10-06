@@ -156,11 +156,6 @@ VARFUNCTION 0.1*(p_art-VFP1)
 VARFUNCTION 100.0*(phi_art1-phi1)+10.0*(p_art-VFP1)*(phi_art1-phi1) // no scaling with diameter since this is done via 2D integration
 ----------------------------------------------------------------------FUNCT12
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.7e-4
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 16
-NDLINE  1
-NDSURF  0
-NDVOL   4
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS artery_scatra NODE 233 QUANTITY phi1 VALUE 5.25458687958948919e-05  TOLERANCE 1e-15
 SCATRA DIS artery_scatra NODE 235 QUANTITY phi1 VALUE 5.18126297984387673e-05  TOLERANCE 1e-15

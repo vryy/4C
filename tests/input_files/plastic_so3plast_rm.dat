@@ -64,11 +64,6 @@ TOLDELTALP                      1.e-8
 MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 0.45 ISOHARD 0.12924 SATHARDENING 0.715 HARDEXPO 16.93
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t/1000
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  5
-NDSURF  4
-NDVOL   1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d7_xyz

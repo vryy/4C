@@ -236,11 +236,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 6 TIMES 0 2 3 15 16 50 VALU
 ----------------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 9 TIMES 0 1 2 3 15 16 17 18 50 VALUES 293.15 40.0 40 950 950 40 40 293.15 293.15
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          7
-NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // structure Cu surface bottom

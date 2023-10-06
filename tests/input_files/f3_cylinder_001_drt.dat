@@ -126,11 +126,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 16*2.25*y*z*(0.41-y)*(0.41-z)/(0.41*0.41*0.41*0.41)*a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 10.0 500000.0 DESCRIPTION (sin(pi*(t/10-0.5))+1)/2 1
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         20
-NDLINE                          40
-NDSURF                          25
-NDVOL                           5
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 1988 DNODE 1
 NODE 524 DNODE 2

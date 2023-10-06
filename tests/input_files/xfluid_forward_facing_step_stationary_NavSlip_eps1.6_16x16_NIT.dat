@@ -147,14 +147,6 @@ XFLUID DIS fluid NODE 287 QUANTITY velx VALUE -6.94594329104159663e-03 TOLERANCE
 XFLUID DIS fluid NODE 287 QUANTITY vely VALUE 2.81297806516194685e-03 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 287 QUANTITY velz VALUE 0.0 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 287 QUANTITY pressure VALUE 1.41477286511170042e+00 TOLERANCE 1e-14
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          6
-NDVOL                           2
-// -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DVOL 1//2
-// E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 //                              bottom_south_west

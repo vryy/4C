@@ -55,11 +55,6 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1
 -------------------------------------------------------------CONTACT CONSTITUTIVE LAWS
 LAW 1 CoConstLaw_power A 1.017e-06 B 3.32 Offset 2.0
 LAW 2 CoConstLaw_cubic A 9.463e-06 B 9.463e-06 C 1e-09 D 0.0 Offset 0.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  6
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // pushing

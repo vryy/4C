@@ -45,8 +45,6 @@ NODES                           35
 DIM                             3
 MATERIALS                       1
 NUMDF                           6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                          2
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 15 DSURFACE 2
 NODE 11 DSURFACE 2

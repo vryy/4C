@@ -134,11 +134,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 2 500000.0 DESCRIPTIO
 SCATRA DIS scatra NODE 11 QUANTITY phi VALUE 5.10660091019520257e-01 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 16 QUANTITY phi VALUE 5.95117298270338546e-01 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 14 QUANTITY phi VALUE 1.16851006066816177e+00 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          5
-NDSURF                          1
-NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 //                              Line_x+

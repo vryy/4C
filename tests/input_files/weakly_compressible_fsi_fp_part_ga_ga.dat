@@ -94,11 +94,6 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.0 DENS 1.0
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME -v
 VARIABLE 0 NAME v TYPE multifunction NUMPOINTS 2 TIMES 0.0 1.5 DESCRIPTION 1.0/2.0*(-0.25/(2.0*pi)*cos(2.0*pi*t/0.25-pi/2.0)+t)
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT               3
-NDLINE                0
-NDSURF                5
-NDVOL                 3
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT  2
 // fsi_fluid_nodes

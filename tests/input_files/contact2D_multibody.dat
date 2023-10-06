@@ -94,11 +94,6 @@ STRUCTURE DIS structure NODE 670 QUANTITY dispy VALUE  1.57131496669307202e-01 T
 STRUCTURE SPECIAL QUANTITY num_iter_step_23 VALUE 6.0 TOLERANCE 1.0e-20
 STRUCTURE SPECIAL QUANTITY num_iter_step_24 VALUE 5.0 TOLERANCE 1.0e-20
 STRUCTURE SPECIAL QUANTITY num_iter_step_25 VALUE 5.0 TOLERANCE 1.0e-20
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          2
-NDSURF                          3
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
 //                              upper_ball

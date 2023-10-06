@@ -58,11 +58,6 @@ FLUID DIS fluid NODE 19 QUANTITY vely     VALUE -0.25 TOLERANCE 1e-12
 FLUID DIS fluid NODE 19 QUANTITY pressure VALUE  0.25 TOLERANCE 1e-12
 FLUID DIS fluid NODE 25 QUANTITY pressure VALUE  0.5 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1  QUANTITY pressure VALUE -0.5 TOLERANCE 1e-12
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 --------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
 DSURF                            1
 E 1 - fluid NUMMODES 3 ONOFF 0 0 1 integration

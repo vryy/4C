@@ -183,11 +183,6 @@ XFLUID DIS fluid NODE 2811 QUANTITY velx VALUE -3.11097981310962224e-01 TOLERANC
 XFLUID DIS fluid NODE 2811 QUANTITY vely VALUE 5.78792015924166788e-06 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 2811 QUANTITY velz VALUE 0.0 TOLERANCE 1e-14
 XFLUID DIS fluid NODE 2811 QUANTITY pressure VALUE -3.12500177817220644e-03 TOLERANCE 1e-13
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          8
-NDVOL                           2
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 1.0 0.0 0.0 0.0 0.0 FUNCT 3 3 0 0 0 0 Live Mid

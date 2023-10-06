@@ -35,8 +35,6 @@ SOLVER                          UMFPACK
 MAT 1 MAT_scatra DIFFUSIVITY 0.1 REACOEFF 0 SCNUM 0 DENSIFICATION 0
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
 ---------------DESIGN SCATRA MULTI-SCALE COUPLING POINT CONDITIONS
 DPOINT 1
 E 1 - KINETIC_MODEL ConstantPermeability NUMSCAL 1 PERMEABILITIES 0.1 IS_PSEUDO_CONTACT 0

@@ -68,11 +68,6 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 3.96377694465623043e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE 4.00891525330574691e-02 TOLERANCE 1e-6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          1
-NDSURF                          3
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          1

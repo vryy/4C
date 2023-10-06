@@ -180,11 +180,6 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 VARFUNCTION 0.0
 ----------------------------------------------------------------------FUNCT8
 SYMBOLIC_FUNCTION_OF_TIME t
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  2
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
 DLINE  1
 // top

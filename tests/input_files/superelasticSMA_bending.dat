@@ -54,11 +54,6 @@ MAT 1 MAT_Struct_SuperElastSMA YOUNG 60000 DENS 0.0001 NUE 0.3 EPSILON_L 0.005 T
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.005 0.01 VALUES 0 1 0
-------------------------------------------------DESIGN DESCRIPTION
-NDLINE  0
-NDSURF  2
-NDVOL   0
-
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // surface_z+

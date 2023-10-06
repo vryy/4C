@@ -369,16 +369,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   INPAR::PROBLEMTYPE::SetValidParameters(list);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& design =
-      list->sublist("DESIGN DESCRIPTION", false, "number of nodal clouds");
-
-  IntParameter("NDPOINT", 0, "number of points", &design);
-  IntParameter("NDLINE", 0, "number of line clouds", &design);
-  IntParameter("NDSURF", 0, "number of surface clouds", &design);
-  IntParameter("NDVOL", 0, "number of volume clouds", &design);
-
-
-  /*----------------------------------------------------------------------*/
   /* Finally call the problem-specific SetValidParameter functions        */
   /*----------------------------------------------------------------------*/
 

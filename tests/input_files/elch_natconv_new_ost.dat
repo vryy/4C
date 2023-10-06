@@ -250,11 +250,6 @@ FLUID DIS fluid NODE 704 QUANTITY pressure VALUE 1.10170255967118589e+01 TOLERAN
 FLUID DIS fluid NODE 732 QUANTITY velx VALUE 1.23185156024743465e-10 TOLERANCE 1e-16
 FLUID DIS fluid NODE 732 QUANTITY vely VALUE -3.81286689888170999e-05 TOLERANCE 1e-14
 FLUID DIS fluid NODE 732 QUANTITY pressure VALUE 1.10170255967151096e+01 TOLERANCE 1e-08
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              cell

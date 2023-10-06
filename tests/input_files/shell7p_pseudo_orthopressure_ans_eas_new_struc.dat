@@ -107,10 +107,6 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME 16132.0*t/1.6
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 33 QUANTITY dispx VALUE 1.70493269050379871e-04 TOLERANCE 1e-10
 STRUCTURE DIS structure NODE 109 QUANTITY dispz VALUE -3.00423509634948846e-04 TOLERANCE 1e-10
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          4
-NDSURF                          4
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           4
 E 1 - NUMDOF 6 ONOFF 0 0 1 0 0 0 VAL 0.0 0.0 1.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid

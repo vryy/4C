@@ -71,11 +71,6 @@ SCATRA DIS scatra NODE 1524 QUANTITY phi1 VALUE 5.31796052930115004e-01 TOLERANC
 SCATRA DIS scatra NODE 830 QUANTITY phi1 VALUE 1.00000000000000006e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 106 QUANTITY phi1 VALUE 4.68205143633693033e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1797 QUANTITY phi1 VALUE 5.31796052699190613e-01 TOLERANCE 1e-10
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          6
-NDSURF                          1
-NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 E 1 - NUMDOF 1 ONOFF 1 VAL 0.1 FUNCT 0

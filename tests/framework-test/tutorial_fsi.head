@@ -24,20 +24,6 @@ TOLRES                          1.0e-4
 //
 TOLDISP                         1.0e-4
 //
-----------------------------------------------------------DESIGN DESCRIPTION
-//
-// number of line clouds
-NDLINE                          0
-//
-// number of points
-NDPOINT                         0
-//
-// number of surface clouds
-NDSURF                          0
-//
-// number of volume clouds
-NDVOL                           0
-//
 --------------------------------------------------------------DISCRETISATION
 //
 // Number of meshes in reduced dimensional airways network field

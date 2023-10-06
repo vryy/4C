@@ -83,11 +83,6 @@ MAT 25 VISCO_Fract TAU 0.1 ALPHA 0.5 BETA 1
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 2 3 1000 VALUES 0 2e4 0 0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  2
-NDSURF  2
-NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // d4_px

@@ -114,11 +114,6 @@ FSI NODE 37 QUANTITY lambday VALUE -6.55432196907311266e-04 TOLERANCE 1e-13
 FSI SPECIAL QUANTITY dt VALUE 5.94260324754567956e-02 TOLERANCE 1.0e-12
 FSI SPECIAL QUANTITY time VALUE 4.43874215291889862e-01 TOLERANCE 1.0e-11
 FSI SPECIAL QUANTITY adasteps VALUE 2 TOLERANCE 1.0e-13
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         5
-NDLINE                          8
-NDSURF                          0
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 //                              structure_dry_vertices

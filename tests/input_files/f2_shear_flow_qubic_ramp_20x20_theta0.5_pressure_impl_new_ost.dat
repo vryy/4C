@@ -80,11 +80,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  0.5*y*1.0*(2.0*t)  //mu=0.1
 FLUID DIS fluid NODE 173 QUANTITY velx VALUE 0.25 TOLERANCE 1e-15
 FLUID DIS fluid NODE 173 QUANTITY vely VALUE 0.0 TOLERANCE 1e-16
 FLUID DIS fluid NODE 173 QUANTITY pressure VALUE 0.0 TOLERANCE 1e-14
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 //bottom_west

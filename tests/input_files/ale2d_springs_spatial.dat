@@ -39,11 +39,6 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 -------------------------------------------------RESULT DESCRIPTION
 ALE DIS ale NODE 3 QUANTITY dispx VALUE 3.69285169626667881e-02 TOLERANCE 1e-12
 ALE DIS ale NODE 3 QUANTITY dispy VALUE 2.14069215441727023e-01 TOLERANCE 1e-12
--------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  0
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // fixed

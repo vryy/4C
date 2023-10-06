@@ -73,11 +73,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 2 4 VALUES 0 0 1
 STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE 9.37612422664331341e-02 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -1.56690847065709993e-04 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 2 QUANTITY dispz VALUE -2.13302149788775801e-01 TOLERANCE 1e-7
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          4
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              dirichlet1

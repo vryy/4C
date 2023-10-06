@@ -66,11 +66,6 @@ SCATRA DIS scatra NODE 1301 QUANTITY phi1 VALUE 9.70021239702316462e-01 TOLERANC
 SCATRA DIS scatra NODE 695 QUANTITY phi3 VALUE 5.10493557960727262e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 121 QUANTITY phi3 VALUE 5.36563743878312627e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 1301 QUANTITY phi3 VALUE 4.81256110956554906e-01 TOLERANCE 1e-10
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          4
-NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 //                              inflow

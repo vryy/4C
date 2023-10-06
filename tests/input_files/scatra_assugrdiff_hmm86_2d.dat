@@ -48,11 +48,6 @@ NAME                            Sca_Tra_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_scatra DIFFUSIVITY 0.00000001
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          6
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME -0.866025403

@@ -62,11 +62,6 @@ XML File                            = locsys_beam_pointcoupling.xml
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 5e+08 NUE 0.0 DENS 0
 MAT 20 MAT_BeamReissnerElastHyper YOUNG 195000.0 POISSONRATIO 0.3 DENS 0.0 CROSSAREA 0.005026548245743669 SHEARCORR 1 MOMINPOL 4.021238596594935e-06 MOMIN2 2.0106192982974676e-06 MOMIN3 2.0106192982974676e-06
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 170
-NDLINE 0
-NDSURF 2
-NDVOL 0
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // vertical_artery

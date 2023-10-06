@@ -57,11 +57,6 @@ MAT 2 ELAST_CoupNeoHooke YOUNG 240.5653612 NUE 0.4999
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 50 QUANTITY dispy VALUE 6.294170734489203944e+00 TOLERANCE 1e-12
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DSURF                           2

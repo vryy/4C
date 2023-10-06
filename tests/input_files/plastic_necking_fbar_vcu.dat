@@ -54,11 +54,6 @@ COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*(z+13.3335)/(2.0*13.3335)
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  5
-NDSURF  4
-NDVOL   1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d7_xyz

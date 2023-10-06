@@ -120,11 +120,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.5 DENSITY 5.0 GAMMA 1.0
 KIMMOIN-RHS MAT 1 ISSTAT 1 ISSTOKES 0
 ----------------------------------FUNCT2 // exact velocity/pressure solution
 KIMMOIN-UP MAT 1 ISSTAT 1
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE 0
-NDSURF 2
-NDVOL 5
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 2
 // fluid_1_volume

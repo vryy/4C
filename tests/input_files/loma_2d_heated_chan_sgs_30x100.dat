@@ -196,11 +196,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0-y
 ----------------------------------------------------------------------FUNCT5
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 14.9 500000.0 DESCRIPTION ((1-0.666666666667)/15)*t+0.666666666667 1
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         6
-NDLINE                          6
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 FUNCT 0 0 0

@@ -80,11 +80,6 @@ MAT 11 ELAST_VolOgden KAPPA 40.0889e4 BETA -2.0
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 162 QUANTITY dispy VALUE 6.6185499759189623e+00 TOLERANCE 1e-6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          1
-NDSURF                          3
-NDVOL                           0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          1
 //                              tip

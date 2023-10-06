@@ -62,11 +62,6 @@ MAXITER                         50
 ----------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           2

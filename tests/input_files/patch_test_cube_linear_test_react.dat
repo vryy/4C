@@ -49,11 +49,6 @@ MAXITER                          20
 --------------------------------------------------------------------SOLVER 1
 NAME                             Structure_Solver
 SOLVER                           UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                          1
-NDLINE                           3
-NDSURF                           4
-NDVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0 TAG monitor_reaction

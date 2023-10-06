@@ -1126,7 +1126,6 @@ namespace DRT
       // the following section names are always regarded as valid
       knownsections_["--END"] = true;
       knownsections_["--TITLE"] = true;
-      knownsections_["--DESIGN DESCRIPTION"] = true;
       knownsections_["--FUNCT1"] = true;
       knownsections_["--FUNCT2"] = true;
       knownsections_["--FUNCT3"] = true;

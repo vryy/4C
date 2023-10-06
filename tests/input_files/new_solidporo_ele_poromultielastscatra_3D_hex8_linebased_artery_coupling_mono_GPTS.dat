@@ -183,11 +183,6 @@ VARFUNCTION pi*D*0.8*(phi_art1-phi1)+pi*D*0.001*(p_art-p3)*(phi_art1-phi1)
 VARFUNCTION pi*D*1.0*(p_art-p3)
 ----------------------------------------------------------------------FUNCT13
 VARFUNCTION pi*D*8.0*(phi_art1-phi1)+pi*D*0.01*(p_art-p3)*(phi_art1-phi1)
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  0
-NDSURF  3
-NDVOL   1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // leftsurf

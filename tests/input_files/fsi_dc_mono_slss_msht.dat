@@ -133,11 +133,6 @@ FSI NODE 37 QUANTITY lambday VALUE -2.98442116879459596e-02 TOLERANCE 1e-10
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*(1-cos(2*t*pi/5))
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-cos(2*t*pi/5))
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  10
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 4
 // structure_vertices

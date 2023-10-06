@@ -38,8 +38,6 @@ STRUCTURE DIS structure NODE  39 QUANTITY dispx VALUE  6.0e-1 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE  61 QUANTITY dispx VALUE  6.0e-1 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE  84 QUANTITY dispx VALUE  6.0e-1 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE -6.0e-1 TOLERANCE 1e-14
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF 30
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 6
 E  7 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL  3.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 1 1 1 1 1 Live Mid

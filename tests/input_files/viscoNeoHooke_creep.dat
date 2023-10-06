@@ -63,11 +63,6 @@ MAT 1 MAT_VISCONEOHOOKE YOUNGS_SLOW 100.0 POISSON 0.499 DENS 0.0000000001 YOUNGS
 STRUCTURE DIS structure NODE 122 QUANTITY dispx VALUE 6.32001365691344701e-04 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 122 QUANTITY dispy VALUE -3.158513628598202299e-04 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 122 QUANTITY dispz VALUE -3.158513628544139641e-04 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          3
-NDSURF                          4
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // neum surface x

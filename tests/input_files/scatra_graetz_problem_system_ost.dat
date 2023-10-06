@@ -179,11 +179,6 @@ FLUID DIS fluid NODE 695 QUANTITY velx VALUE 2.068977540e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 695 QUANTITY vely VALUE -2.220901083e-06 TOLERANCE 1e-9
 FLUID DIS fluid NODE 695 QUANTITY velz VALUE 0.000000000e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 695 QUANTITY pressure VALUE 3.830296821e-02 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          13
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           10
 //                              back

@@ -88,11 +88,6 @@ ML_SMOTIMES 1 1 1
 ML_DAMPFINE                     1.0
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration

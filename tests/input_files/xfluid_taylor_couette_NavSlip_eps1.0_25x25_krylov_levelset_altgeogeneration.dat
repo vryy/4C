@@ -219,11 +219,6 @@ XFLUID DIS fluid NODE 5953 QUANTITY pressure VALUE -1.27083385258218093e-02 TOLE
 XFLUID DIS fluid NODE 1263 QUANTITY velx VALUE 1.92696014398651243e-02 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 1263 QUANTITY vely VALUE 2.50031422390695535e-01 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 1263 QUANTITY pressure VALUE -2.69046535885577691e-02 TOLERANCE 1e-11
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          8
-NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 4
 // surface top

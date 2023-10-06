@@ -89,11 +89,6 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9
 -------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE 0
-NDSURF 6
-NDVOL 4
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // xFluid outflow

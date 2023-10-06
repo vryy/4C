@@ -121,11 +121,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x+10*x*y+y*y
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME x*y*z*z
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME y*y
---------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                           16
-NDLINE                            24
-NDSURF                            12
-NDVOL                             2
 -------------------------------------------------------DNODE-NODE TOPOLOGY
 //
 // structure: patch 1, (0,0,0)

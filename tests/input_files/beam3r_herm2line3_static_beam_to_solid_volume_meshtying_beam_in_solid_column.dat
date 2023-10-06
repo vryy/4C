@@ -86,11 +86,6 @@ STRUCTURE DIS structure NODE 51 QUANTITY dispz VALUE -3.31311049525177606e-02 TO
 STRUCTURE DIS structure NODE  9 QUANTITY dispx VALUE  0.0                     TOLERANCE 1e-8
 STRUCTURE DIS structure NODE  9 QUANTITY dispy VALUE  1.90237156236026134e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE  9 QUANTITY dispz VALUE -9.90436031610334583e-03 TOLERANCE 1e-8
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  1
-NDSURF  2
-NDVOL   1
 -------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                           1
 // support

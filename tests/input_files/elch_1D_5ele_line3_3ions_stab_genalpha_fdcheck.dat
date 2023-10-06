@@ -72,11 +72,6 @@ SCATRA DIS scatra NODE 8 QUANTITY phi4 VALUE 7.42779740312726089e-01 TOLERANCE 1
 SCATRA DIS scatra NODE 9 QUANTITY phi4 VALUE 8.64325144425127312e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 8 QUANTITY phi5 VALUE -5.21150522389382032e-04 TOLERANCE 1e-13
 SCATRA DIS scatra NODE 9 QUANTITY phi5 VALUE -4.41075801998320918e-04 TOLERANCE 1e-13
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          0
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              inflow

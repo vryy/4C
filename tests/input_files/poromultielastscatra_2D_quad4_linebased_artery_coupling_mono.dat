@@ -182,11 +182,6 @@ VARFUNCTION pi*D*1.0*(p_art-p3)
 VARFUNCTION pi*D*8.0*(phi_art1-phi1)+pi*D*0.01*(p_art-p3)*(phi_art1-phi1)
 ----------------------------------------------------------------------FUNCT14
 VARFUNCTION D0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  5
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF  1
 // top

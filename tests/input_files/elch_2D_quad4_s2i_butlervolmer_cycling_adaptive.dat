@@ -84,11 +84,6 @@ SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 2.80744526178453635e-01 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.55e+00 TOLERANCE 1.e-09                         // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                        // number of Newton-Raphson iterations during last time step
 SCATRA DIS scatra SPECIAL QUANTITY numstep VALUE 4.35600000000000000e+03 TOLERANCE 1.e-20              // total number of time steps
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  17
-NDSURF  8
-NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 E 1 - NUMDOF 2  ONOFF 0 1  VAL 0.0 0.0  FUNCT 0 0

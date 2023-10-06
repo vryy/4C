@@ -87,11 +87,6 @@ SOLVER                          UMFPACK
 Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  2
-NDSURF  0
-NDVOL   0
 --------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 2
 E 1 - ID 0 TYPE actin

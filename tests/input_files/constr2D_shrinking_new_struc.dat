@@ -76,11 +76,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 25 1000 VALUES 1 
 ----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
 DLINE                           1
 E 3 - 1 2 0.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          5
-NDSURF                          0
-NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DLINE                           2

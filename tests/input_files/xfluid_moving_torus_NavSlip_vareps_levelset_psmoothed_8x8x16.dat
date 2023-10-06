@@ -200,11 +200,6 @@ XFLUID DIS fluid NODE 4157 QUANTITY velx VALUE  9.28546990861238569e-02 TOLERANC
 XFLUID DIS fluid NODE 4157 QUANTITY vely VALUE  2.74196077545084101e-03 TOLERANCE 1e-9
 XFLUID DIS fluid NODE 4157 QUANTITY velz VALUE  5.50400261322268256e-02 TOLERANCE 1e-9
 XFLUID DIS fluid NODE 4157 QUANTITY pressure VALUE  7.80961987147566622e-02 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 5
 // surface top

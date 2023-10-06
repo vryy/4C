@@ -121,9 +121,6 @@ SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 6.45498693173858329e-01 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.80342082502127798e+00 TOLERANCE 1.e-09          // cell voltage
 STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 2.0 TOLERANCE 1.e-20                              // number of Newton-Raphson iterations during last time step
 STI SPECIAL QUANTITY numiterlastlinearsolve VALUE 3.0 TOLERANCE 1.e-20                                 // number of iterations performed by linear solver during last Newton-Raphson iteration
-------------------------------------------------DESIGN DESCRIPTION
-NDSURF  14
-NDVOL   8
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 E 2 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 FUNCT 0 5 Live Mid

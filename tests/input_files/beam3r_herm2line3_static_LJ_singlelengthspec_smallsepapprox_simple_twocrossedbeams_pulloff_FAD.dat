@@ -78,11 +78,6 @@ INTERVAL_STEPS                  1
 EVERY_ITERATION                 no
 FORCES                          yes
 MOMENTS                         yes
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  4
-NDSURF  0
-NDVOL   0
 --------------------------------DESIGN LINE BEAM POTENTIAL CHARGE CONDITIONS
 DLINE 4
 E 1 - POTLAW 1 VAL 1.0 FUNCT none

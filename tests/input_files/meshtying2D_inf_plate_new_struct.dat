@@ -57,11 +57,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.5*1.0/((x*x+y*y)*(x*x+y*y)*(x*x+y*
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME -1.0/2.0*1.0*2.0*2.0/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*(x*x+y*y))*(11.0*x*x*x*x*y*y+9.0*x*x*y*y*y*y-3.0*y*y*y*y*y*y-18.0*2.0*2.0*x*x*y*y+3.0*2.0*2.0*y*y*y*y-1.0*x*x*x*x*x*x+3.0*2.0*2.0*x*x*x*x)
 -----------------------------------------------------------FUNCT3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*x*2.0*2.0/((x*x+y*y)*(x*x+y*y)*(x*x+y*y)*sqrt(x*x+y*y))*(-5.0*x*x*x*x-2.0*x*x*y*y+3.0*y*y*y*y+6.0*2.0*2.0*x*x-6.0*2.0*2.0*y*y)*sqrt(y*y/(x*x+y*y))
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  6
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  2
 // neumann_x

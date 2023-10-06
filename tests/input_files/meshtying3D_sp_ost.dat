@@ -58,11 +58,6 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME x
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME x+z
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME y
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          4
-NDVOL                           1
 -----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
 DSURF                           2
 //                              top_contact

@@ -93,11 +93,6 @@ STRUCTURE DIS structure NODE 43 QUANTITY dispmx VALUE 1.87705831677834626e-04 TO
 STRUCTURE DIS structure NODE 43 QUANTITY dispmy VALUE 1.43004080195112352e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 31 QUANTITY dispmx VALUE 8.73654908164417116e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 31 QUANTITY dispmy VALUE 1.39192433611463207e-02 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          16
-NDSURF                          0
-NDVOL                           0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           5
 //                              obenoben

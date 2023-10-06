@@ -214,23 +214,6 @@ XFLUID DIS fluid NODE 4057 QUANTITY pressure VALUE  1.71260152021606715e-02 TOLE
 XFLUID DIS fluid NODE 3927 QUANTITY velx VALUE  6.28973268599328058e-07 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 3927 QUANTITY vely VALUE -2.50578816660222248e-01 TOLERANCE 1e-12
 XFLUID DIS fluid NODE 3927 QUANTITY pressure VALUE -2.60517186356557170e-02 TOLERANCE 1e-11
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         5
-NDLINE                          5
-NDSURF                          6
-NDVOL                           1
-//----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-//DPOINT                        1
-// inflow points
-//E 5 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-// outflow points
-//E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-//-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
-//DLINE                         2
-//west                          north
-//E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
-//west                          south
-//E 4 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 4
 // surface top

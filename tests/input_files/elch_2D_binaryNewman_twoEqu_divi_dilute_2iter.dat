@@ -81,11 +81,6 @@ SCATRA DIS scatra NODE 137 QUANTITY phi1 VALUE 8.01479363978594844e-02 TOLERANCE
 SCATRA DIS scatra NODE 137 QUANTITY phi2 VALUE -5.35806963881607159e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 193 QUANTITY phi1 VALUE 1.33382827225380529e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 193 QUANTITY phi2 VALUE -4.09976623887014294e-02 TOLERANCE 1e-11
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          5
-NDSURF                          0
-NDVOL                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode

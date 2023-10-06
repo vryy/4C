@@ -79,11 +79,6 @@ PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
 RELAX                           0.825
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         14
-NDLINE                          14
-NDSURF                          3
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 14
 // fluid

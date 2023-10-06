@@ -104,11 +104,6 @@ ELEMENTS                        1
 NODES                           8
 DIM                             3
 MATERIALS                       9999
-------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          2
-NDVOL                           0
 -----------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 5 DNODE 1
 NODE 6 DNODE 2

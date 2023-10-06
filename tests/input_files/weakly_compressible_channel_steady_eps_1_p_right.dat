@@ -52,11 +52,6 @@ MAT 2 MAT_Struct_StVenantKirchhoff  YOUNG 1.0 NUE 0.0 DENS 1.0
 CHANNELWEAKLYCOMPRESSIBLE
 ------------------------------------------------------------FUNCT2
 CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  4
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // line_top

@@ -95,11 +95,6 @@ ML_SMOTIMES                     3 3 1
 ML_DAMPFINE                     1.0
 ML_DAMPMED                      1.0
 ML_DAMPCOARSE                   1.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4

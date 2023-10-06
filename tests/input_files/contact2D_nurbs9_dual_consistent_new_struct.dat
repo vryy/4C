@@ -75,11 +75,6 @@ DLINE  2
 E 1 - 1 Slave Inactive
 // mrtr_2
 E 8 - 1 Master Inactive
---------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                           0
-NDLINE                            8
-NDSURF                            0
-NDVOL                             0
 -------------------------------------------------------DLINE-NODE TOPOLOGY
 //patch coupling BC 1 (begin)
 NODE       1 DLINE   1

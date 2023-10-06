@@ -96,11 +96,6 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 4
 NAME                            Projection_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         14
-NDLINE                          14
-NDSURF                          3
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 14
 // fluid

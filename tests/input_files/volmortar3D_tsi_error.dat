@@ -205,11 +205,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 //0 degrees celsius
 ----------------------------------------------------------RESULT DESCRIPTION
 THERMAL DIS thermo NODE 1611 QUANTITY temp VALUE 1.29069907586992461e+01 TOLERANCE 1.0e-8 NAME temp_out
 THERMAL DIS thermo NODE 1741 QUANTITY temp VALUE 8.39156169718515343e+00 TOLERANCE 1.0e-8 NAME temp_in
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  0
-NDSURF  1
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // dirich_T

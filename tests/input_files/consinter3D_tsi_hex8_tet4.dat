@@ -208,11 +208,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0 //0 degrees celsius
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 4 19999 DESCRIPTION 0.5*(sin((t*pi/4)-(pi/2)))+0.5 1
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  4
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // Temp1

@@ -226,11 +226,6 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (2.0)*(z-4)+4 // some linear function in z-direction
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  1
-NDSURF  4
-NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 // inner_volume_nodes

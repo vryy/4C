@@ -108,11 +108,6 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 11
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*(sin(x)*sin(y))
 COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.795774715459477*3*(cos(x+3*t)*sin(y+3*t)+sin(x+3*t)*cos(y+3*t))
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME (0.795774715459477*18)*(-sin(x+3*t)*sin(y+3*t)+cos(x+3*t)*cos(y+3*t))
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  4
-NDSURF  1
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // fix-xyz

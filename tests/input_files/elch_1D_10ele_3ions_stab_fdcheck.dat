@@ -69,11 +69,6 @@ SCATRA DIS scatra NODE 10 QUANTITY phi4 VALUE 1.01954353874395931e+00 TOLERANCE 
 SCATRA DIS scatra NODE 11 QUANTITY phi4 VALUE 1.0e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 10 QUANTITY phi5 VALUE -1.95193467972860184e-02 TOLERANCE 1e-11
 SCATRA DIS scatra NODE 11 QUANTITY phi5 VALUE -2.15585649068619628e-02 TOLERANCE 1e-11
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          0
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              inflow
