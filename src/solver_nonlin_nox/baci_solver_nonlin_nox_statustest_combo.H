@@ -47,7 +47,7 @@ namespace NOX
         /*!
           Calls isSafe() to determine if it is safe to add \c a to the combination.
         */
-        virtual Combo& addStatusTest(const Teuchos::RCP<NOX::StatusTest::Generic>& a);
+        Combo& addStatusTest(const Teuchos::RCP<NOX::StatusTest::Generic>& a) override;
 
         virtual Combo& addStatusTest(
             const Teuchos::RCP<NOX::StatusTest::Generic>& a, const bool& init);
@@ -55,7 +55,7 @@ namespace NOX
         virtual const std::vector<Teuchos::RCP<NOX::StatusTest::Generic>>& GetTestVector() const;
 
        protected:
-        //! derived
+        //! Check whether or not it is safe to add a to this list of tests.
         bool isSafe(Generic& a);
 
        protected:

@@ -75,11 +75,9 @@ namespace NOX
         // @name "Get" functions
         //@{
 
-        /// derived
         double GetModelValue(
             const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
 
-        /// derived
         double GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
             const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
             const enum NOX::NLN::MeritFunction::LinOrder linorder,

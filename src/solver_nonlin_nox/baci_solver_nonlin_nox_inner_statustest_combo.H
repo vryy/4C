@@ -63,7 +63,7 @@ namespace NOX
           const std::vector<Teuchos::RCP<Generic>>& GetTestVector() const;
 
          protected:
-          //! derived
+          //! Check whether or not it is safe to add a to this list of tests.
           bool isSafe(Generic& a);
 
           /// OR-combination

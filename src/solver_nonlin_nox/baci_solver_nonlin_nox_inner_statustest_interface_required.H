@@ -40,7 +40,7 @@ namespace NOX
             virtual ~Required(){};
 
             //! Get the number of inner-loop nonlinear iterations (e.g. line search iterations)
-            virtual const int& GetNumIterations() const = 0;
+            virtual int GetNumIterations() const = 0;
 
             //! Get the objective or meritfunction
             virtual const NOX::MeritFunction::Generic& GetMeritFunction() const = 0;

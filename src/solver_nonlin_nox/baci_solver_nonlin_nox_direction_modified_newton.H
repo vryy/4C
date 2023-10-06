@@ -52,9 +52,8 @@ namespace NOX
         ModifiedNewton(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& p);
 
         /// destructor
-        virtual ~ModifiedNewton(){};
+        ~ModifiedNewton() override = default;
 
-        // derived
         bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
             const NOX::Solver::Generic& solver) override;
 

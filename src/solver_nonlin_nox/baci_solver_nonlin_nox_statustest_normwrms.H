@@ -44,15 +44,13 @@ namespace NOX
         //! Destructor
         virtual ~NormWRMS(){};
 
-        //! derived
         NOX::StatusTest::StatusType checkStatus(
-            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType);
+            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 
         //! Check for the given quantity
         bool IsQuantity(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
-        //! derived
-        NOX::StatusTest::StatusType getStatus() const;
+        NOX::StatusTest::StatusType getStatus() const override;
 
         //! returns the absolute tolerance of the given quantity
         double GetAbsoluteTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
@@ -60,8 +58,7 @@ namespace NOX
         //! returns the relative tolerance of the given quantity
         double GetRelativeTolerance(const NOX::NLN::StatusTest::QuantityType& qType) const;
 
-        //! derived
-        std::ostream& print(std::ostream& stream, int indent) const;
+        std::ostream& print(std::ostream& stream, int indent) const override;
 
        private:
         //! calculated norm for the different quantities

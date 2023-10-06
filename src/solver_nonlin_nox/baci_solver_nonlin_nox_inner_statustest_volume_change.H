@@ -74,15 +74,12 @@ namespace NOX
               : params_(params), utils_(u){};
           ~VolumeChange() override{};
 
-          /// derived
           StatusType CheckStatus(const Interface::Required& interface,
               const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
               NOX::StatusTest::CheckType checkType) override;
 
-          /// derived
           StatusType GetStatus() const override;
 
-          /// derived
           std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          protected:

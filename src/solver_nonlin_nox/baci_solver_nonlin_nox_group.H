@@ -72,7 +72,6 @@ namespace NOX
       NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source) override;
       NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;
 
-      //! generate a clone of the given object concerning the given \c CopyType
       Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type = DeepCopy) const override;
 
       //! compute/update the current state variables
@@ -80,12 +79,10 @@ namespace NOX
       void computeX(
           const NOX::Abstract::Group& grp, const NOX::Abstract::Vector& d, double step) override;
 
-      //! derived
-      virtual NOX::Abstract::Group::ReturnType computeF();
+      NOX::Abstract::Group::ReturnType computeF() override;
 
-      //! derived
       NOX::Abstract::Group::ReturnType applyJacobianInverse(Teuchos::ParameterList& p,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
 
       /// apply one block of the jacobian to a vector
       NOX::Abstract::Group::ReturnType applyJacobianBlock(const NOX::Epetra::Vector& input,

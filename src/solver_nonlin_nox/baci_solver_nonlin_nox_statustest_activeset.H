@@ -39,16 +39,13 @@ namespace NOX
         //! destructor
         virtual ~ActiveSet(){};
 
-        //! derived
-        virtual NOX::StatusTest::StatusType checkStatus(
-            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType);
+        NOX::StatusTest::StatusType checkStatus(
+            const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 
-        //! derived
         //! NOTE: returns the global status of all normF tests
-        virtual NOX::StatusTest::StatusType getStatus() const;
+        NOX::StatusTest::StatusType getStatus() const override;
 
-        //! derived
-        virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
+        std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
        private:
         //! current quantity type

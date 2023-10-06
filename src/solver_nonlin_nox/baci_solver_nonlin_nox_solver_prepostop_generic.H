@@ -40,10 +40,8 @@ namespace NOX
           //! destructor
           virtual ~Generic(){};
 
-          //! derived
           void runPreIterate(const NOX::Solver::Generic& solver) override;
 
-          //! derived
           void runPreSolve(const NOX::Solver::Generic& nlnSolver) override;
         };
       }  // namespace PrePostOp
