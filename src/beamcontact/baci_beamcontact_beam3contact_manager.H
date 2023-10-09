@@ -13,11 +13,7 @@
 
 #include "baci_beamcontact_beam3contact.H"
 #include "baci_beamcontact_beam3contactnew.H"
-#include "baci_beamcontact_beam3tobeampotential.H"
 #include "baci_beamcontact_beam3tosolidcontact.H"
-#include "baci_beamcontact_beam3tosolidmeshtying.H"
-#include "baci_beamcontact_beam3tospherecontact.H"
-#include "baci_beamcontact_beam3tospherepotential.H"
 #include "baci_beaminteraction_beam3contact_defines.H"
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
@@ -114,10 +110,6 @@ namespace CONTACT
     inline const std::vector<Teuchos::RCP<Beam3contactinterface>>& Pairs() const
     {
       return oldpairs_;
-    }
-    inline const std::vector<Teuchos::RCP<Beam3tospherecontactinterface>>& BTSPHPairs() const
-    {
-      return btsphpairs_;
     }
 
     inline const Teuchos::RCP<Beam3ContactOctTree> OcTree() const { return tree_; }
@@ -217,13 +209,6 @@ namespace CONTACT
     void ConsoleOutput();
 
     /*!
-    \brief Write Bearing Reactions into a csv-file
-
-    */
-    void Reactions(
-        const Epetra_Vector& fint, const Epetra_Vector& dirichtoggle, const int& timestep);
-
-    /*!
     \brief Get total potential energy of penalty approach
     */
     double GetTotEnergy() { return totpenaltyenergy_; };
@@ -259,9 +244,6 @@ namespace CONTACT
 
     //! Flag from input file indicating if beam-to-solid contact is applied or not (default: false)
     bool btsol_;
-
-    //! Flag from input file indicating if beam-to-sphere contact is applied or not (default: false)
-    bool btsph_;
 
     //! Flag from input file indicating if beam-to-solid potential-based interaction is applied or
     //! not (default: false)
@@ -324,20 +306,10 @@ namespace CONTACT
     //! total vector of solid contact nodes
     std::vector<Teuchos::RCP<CONTACT::CoNode>> solcontactnodes_;
 
-    //! vector of close beam to solid meshtying groups (groups of elements, which might be in
-    //! meshtying)
-    std::vector<Teuchos::RCP<Beam3tosolidmeshtyinginterface>> btsolmtgroups_;
     //! total vector of solid meshtying elements
     std::vector<Teuchos::RCP<MORTAR::MortarElement>> solmeshtyingeles_;
     //! total vector of solid meyhtying nodes
     std::vector<Teuchos::RCP<MORTAR::MortarNode>> solmeshtyingnodes_;
-
-    //! vector of close beam to sphere contact pairs (pairs of elements, which might get in contact)
-    std::vector<Teuchos::RCP<Beam3tospherecontactinterface>> btsphpairs_;
-    //! vector of potential-based interaction (beam,beam) pairs
-    std::vector<Teuchos::RCP<Beam3tobeampotentialinterface>> btbpotpairs_;
-    //! vector of potential-based interaction (beam,sphere) pairs
-    std::vector<Teuchos::RCP<Beam3tospherepotentialinterface>> btsphpotpairs_;
 
     //! 2D-map with pointers on the contact pairs_. This map is necessary, to call a contact pair
     //! directly by the two element-iD's of the pair.
@@ -349,20 +321,11 @@ namespace CONTACT
     // beam-to-beam pair map of last time step
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3contactinterface>> oldcontactpairmap_;
 
-    // beam-to-sphere pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tospherecontactinterface>> btsphpairmap_;
-
     // beam-to-solid contact pair map
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3tosolidcontactinterface>> btsolpairmap_;
 
     // beam-to-solid pair map of last time step
     std::map<std::pair<int, int>, Teuchos::RCP<Beam3tosolidcontactinterface>> oldbtsolpairmap_;
-
-    // beam-to-beam pot pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tobeampotentialinterface>> btbpotpairmap_;
-
-    // beam-to-sphere pot pair map
-    std::map<std::pair<int, int>, Teuchos::RCP<Beam3tospherepotentialinterface>> btsphpotpairmap_;
 
     //! parameter list for beam contact options
     Teuchos::ParameterList sbeamcontact_;
@@ -416,14 +379,8 @@ namespace CONTACT
     //! current BTB penalty parameter (might be modified within augmented Lagrange strategy)
     double currentpp_;
 
-    //! BTSPH penalty parameter
-    double btsphpp_;
-
     //! beam-to-solid contact penalty parameter
     double btspp_;
-
-    //! beam-to-solid meshtying penalty parameter
-    double btsmtpp_;
 
     //! maximal converged absolute gap during the simulation
     double maxtotalsimgap_;
