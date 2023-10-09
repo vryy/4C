@@ -57,7 +57,7 @@ UTILS::MOR::MOR(Teuchos::RCP<DRT::Discretization> discr)
       Teuchos::rcp(new Epetra_Import(*(actdisc_->DofRowMap()), (tmpmat->Map())));
   projmatrix_ =
       Teuchos::rcp(new Epetra_MultiVector(*(actdisc_->DofRowMap()), tmpmat->NumVectors(), true));
-  int err = projmatrix_->Import(*tmpmat, *dofrowimporter, Insert, 0);
+  int err = projmatrix_->Import(*tmpmat, *dofrowimporter, Insert, nullptr);
   if (err != 0) dserror("POD projection matrix could not be mapped onto the dof map");
 
   // check row dimension
@@ -149,7 +149,7 @@ Teuchos::RCP<Epetra_Vector> UTILS::MOR::ReduceResidual(Teuchos::RCP<Epetra_Vecto
   if (err) dserror("Multiplication V^T * v failed.");
 
   Teuchos::RCP<Epetra_Vector> v_red = Teuchos::rcp(new Epetra_Vector(*structmapr_));
-  v_red->Import(*v_tmp, *structrimpo_, Insert, 0);
+  v_red->Import(*v_tmp, *structrimpo_, Insert, nullptr);
 
   return v_red;
 }
@@ -160,7 +160,7 @@ Teuchos::RCP<Epetra_Vector> UTILS::MOR::ReduceResidual(Teuchos::RCP<Epetra_Vecto
 Teuchos::RCP<Epetra_Vector> UTILS::MOR::ExtendSolution(Teuchos::RCP<Epetra_Vector> v_red)
 {
   Teuchos::RCP<Epetra_Vector> v_tmp = Teuchos::rcp(new Epetra_Vector(*redstructmapr_, true));
-  v_tmp->Import(*v_red, *structrinvimpo_, Insert, 0);
+  v_tmp->Import(*v_red, *structrinvimpo_, Insert, nullptr);
   Teuchos::RCP<Epetra_Vector> v = Teuchos::rcp(new Epetra_Vector(*actdisc_->DofRowMap()));
   int err = v->Multiply('N', 'N', 1.0, *projmatrix_, *v_tmp, 0.0);
   if (err) dserror("Multiplication V * v_red failed.");
@@ -186,7 +186,7 @@ void UTILS::MOR::MultiplyEpetraMultiVectors(Teuchos::RCP<Epetra_MultiVector> mul
   if (err) dserror("Multiplication failed.");
 
   // import the result to a Epetra_MultiVector whose elements/rows are distributed over all procs
-  result->Import(*multivect_temp, *impo, Insert, 0);
+  result->Import(*multivect_temp, *impo, Insert, nullptr);
 
   return;
 }

@@ -544,7 +544,7 @@ void CORE::GEO::CUT::TetMesh::CallQHull(
 #ifdef QHULL_EXTENDED_DEBUG_OUTPUT
   FILE* outfile = stdout;
 #else
-  FILE* outfile = 0;
+  FILE* outfile = nullptr;
 #endif
 
 #ifdef QHULL_DEBUG_OUTPUT

@@ -56,8 +56,8 @@ namespace CORE::LINALG
                 "A.");
 
           // extract views of both the row in A and in B
-          double *valuesA = 0, *valuesB = 0;
-          int *indicesA = 0, *indicesB = 0;
+          double *valuesA = nullptr, *valuesB = nullptr;
+          int *indicesA = nullptr, *indicesB = nullptr;
           int NumEntriesA = -1, NumEntriesB = -1;
           A.ExtractMyRowView(i, NumEntriesA, valuesA, indicesA);
           B.ExtractMyRowView(myRowB, NumEntriesB, valuesB, indicesB);

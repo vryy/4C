@@ -62,7 +62,7 @@ DRT::ParObject* MAT::Membrane_ActiveStrainType::Create(const std::vector<char>& 
  *----------------------------------------------------------------------*/
 MAT::Membrane_ActiveStrain::Membrane_ActiveStrain()
     : params_(nullptr),
-      matpassive_(0),
+      matpassive_(nullptr),
       voltage_(Teuchos::null),
       activation_(Teuchos::null),
       isinit_(false),
@@ -76,7 +76,7 @@ MAT::Membrane_ActiveStrain::Membrane_ActiveStrain()
  *----------------------------------------------------------------------*/
 MAT::Membrane_ActiveStrain::Membrane_ActiveStrain(MAT::PAR::Membrane_ActiveStrain* params)
     : params_(params),
-      matpassive_(0),
+      matpassive_(nullptr),
       voltage_(Teuchos::null),
       activation_(Teuchos::null),
       isinit_(false),

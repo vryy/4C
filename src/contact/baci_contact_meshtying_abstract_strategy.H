@@ -397,7 +397,7 @@ namespace CONTACT
 
     //! compute the preconditioner operator
     virtual bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
+        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
 
     //! @}
 

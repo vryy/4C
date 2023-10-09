@@ -123,7 +123,7 @@ namespace NOX
        */
       Teuchos::RCP<NOX::StatusTest::Generic> BuildOuterStatusTests(Teuchos::ParameterList& p,
           const NOX::Utils& utils,
-          std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic>>* tagged_tests = 0);
+          std::map<std::string, Teuchos::RCP<NOX::StatusTest::Generic>>* tagged_tests = nullptr);
 
     }  // namespace StatusTest
   }    // namespace NLN
