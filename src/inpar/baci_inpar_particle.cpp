@@ -513,7 +513,7 @@ void INPAR::PARTICLE::SetValidConditions(
   /*-------------------------------------------------------------------------*
    | particle wall condition                                                 |
    *-------------------------------------------------------------------------*/
-  std::vector<Teuchos::RCP<ConditionComponent>> particlewallcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> particlewallcomponents;
   particlewallcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("MAT")));
   particlewallcomponents.push_back(Teuchos::rcp(new IntConditionComponent("MAT")));
 

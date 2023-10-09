@@ -128,7 +128,7 @@ void INPAR::FPSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // FPSI
 
-  std::vector<Teuchos::RCP<ConditionComponent>> fpsicomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> fpsicomponents;
 
   fpsicomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 

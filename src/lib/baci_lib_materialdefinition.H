@@ -15,7 +15,9 @@
 /*----------------------------------------------------------------------*/
 /* headers */
 #include "baci_inpar_material.H"
+#include "baci_lib_container.H"
 #include "baci_lib_inputreader.H"
+#include "baci_lib_linecomponent.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 
@@ -31,73 +33,10 @@ namespace DRT
     // forward declaration
     class MaterialDefinition;
 
-    /// pure virtual base class for all material line parts
-    ///
-    ///
-    /// The aim of the machinery here is to describe how a valid DRT::Material
-    /// looks like and to be able to read and write them.
-    ///
-    /// In general it is assumed that one material definition in the dat file
-    /// consists of one line. This line might consist of various components, each
-    /// one corresponding to one variable that has to be defined in the
-    /// DRT::Material object. This class does represent one such component.
-    ///
-    /// There are different types of variables stored in a DRT::Material. And
-    /// accordingly there are different subclasses of MaterialComponent that
-    /// implement the reading and writing of these types.
-    ///
-    /// \see MaterialDefinition
-    ///
-    /// Also helpful, because this copies the ConditionDefinition system
-    /// \see ConditionDefinition
-    ///
-    /// \author bborn
-    /// \date 02/09
-    class MaterialComponent
-    {
-     public:
-      /// construct with the name of the corresponding variable in the material
-      explicit MaterialComponent(std::string name, bool optional = false);
-
-      /// virtual destructor is mandatory
-      virtual ~MaterialComponent() = default;
-
-      /// write my part of the default (comment) line of the material
-      virtual void DefaultLine(std::ostream& stream) = 0;
-
-      /// write my part of this actual material
-      virtual void Print(std::ostream& stream, const MAT::PAR::Material* cond) = 0;
-
-      /// describe my part of this actual material
-      ///
-      /// This action provides a descriptive comment about component
-      virtual void Describe(std::ostream& stream) = 0;
-
-      /// read my part of an input line and put it into the material
-      virtual Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<MAT::PAR::Material> material) = 0;
-
-      /// the name of my variable inside a material
-      std::string Name() const { return name_; }
-
-     protected:
-      /// push back token into stream so that it can be read again
-      Teuchos::RCP<std::stringstream> PushBack(
-          const std::string& token, const Teuchos::RCP<std::stringstream>& stream);
-
-      /// for optional components
-      bool optional_;
-
-     private:
-      /// my material variable name
-      std::string name_;
-    };
-
-
     /// material line part that is a string out of a list of valid strings
     ///
     ///  \see MaterialDefinition
-    class StringMaterialComponent : public MaterialComponent
+    class StringMaterialComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct material component that reads and writes a string variable
@@ -121,13 +60,12 @@ namespace DRT
 
       void DefaultLine(std::ostream& stream) override;
 
-      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& container) override;
 
       void Describe(std::ostream& stream) override;
 
-      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<MAT::PAR::Material> material) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
 
      private:
       /// default value
@@ -145,7 +83,7 @@ namespace DRT
     /// dat file to enhance human readability.
     ///
     /// \see MaterialDefinition
-    class SeparatorMaterialComponent : public MaterialComponent
+    class SeparatorMaterialComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a separator component that does read a string without setting a variable
@@ -154,15 +92,14 @@ namespace DRT
 
       void DefaultLine(std::ostream& stream) override;
 
-      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& container) override;
 
       void Describe(std::ostream& stream) override;
 
       std::vector<std::string> WriteReadTheDocs() const;
 
-      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<MAT::PAR::Material> material) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
 
      private:
       /// separator string, i.e. the NAME of variable in DAT input file
@@ -181,7 +118,7 @@ namespace DRT
     ///  string "none" is allowed for -1.
     ///
     ///  \see MaterialDefinition
-    class IntMaterialComponent : public MaterialComponent
+    class IntMaterialComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a material component that reads a int variable
@@ -193,13 +130,12 @@ namespace DRT
 
       void DefaultLine(std::ostream& stream) override;
 
-      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& container) override;
 
       void Describe(std::ostream& stream) override;
 
-      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<MAT::PAR::Material> material) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
 
      private:
       /// a default value
@@ -214,7 +150,7 @@ namespace DRT
     ///  string "none" is allowed for -1.
     ///
     ///  \see MaterialDefinition
-    class IntVectorMaterialComponent : public MaterialComponent
+    class IntVectorMaterialComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a material component that reads a vector of int variables
@@ -237,13 +173,12 @@ namespace DRT
 
       void DefaultLine(std::ostream& stream) override;
 
-      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& container) override;
 
       void Describe(std::ostream& stream) override;
 
-      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<MAT::PAR::Material> material) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
 
      private:
       /// length of vector of parameters
@@ -260,7 +195,7 @@ namespace DRT
     /// material line part that is a single real number
     ///
     ///  \see MaterialDefinition
-    class RealMaterialComponent : public MaterialComponent
+    class RealMaterialComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a material component that reads a double variable
@@ -273,13 +208,12 @@ namespace DRT
 
       void DefaultLine(std::ostream& stream) override;
 
-      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& container) override;
 
       void Describe(std::ostream& stream) override;
 
-      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<MAT::PAR::Material> material) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
 
      private:
       double defaultvalue_;
@@ -289,7 +223,7 @@ namespace DRT
     /// material line part that is a vector of real numbers
     ///
     ///  \see MaterialDefinition
-    class RealVectorMaterialComponent : public MaterialComponent
+    class RealVectorMaterialComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a material component that reads a vector of double variables
@@ -311,13 +245,12 @@ namespace DRT
 
       void DefaultLine(std::ostream& stream) override;
 
-      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& container) override;
 
       void Describe(std::ostream& stream) override;
 
-      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<MAT::PAR::Material> material) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
 
      private:
       /// length of vector of parameters
@@ -332,7 +265,7 @@ namespace DRT
 
 
     /// material line part that is a single Boolean
-    class BoolMaterialComponent : public MaterialComponent
+    class BoolMaterialComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a material component that reads an int variable
@@ -344,13 +277,12 @@ namespace DRT
 
       void DefaultLine(std::ostream& stream) override;
 
-      void Print(std::ostream& stream, const MAT::PAR::Material* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& container) override;
 
       void Describe(std::ostream& stream) override;
 
-      Teuchos::RCP<std::stringstream> Read(MaterialDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<MAT::PAR::Material> material) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
 
      private:
       /// transcribe Boolean to Yes/No
@@ -404,7 +336,7 @@ namespace DRT
       /// add a concrete component to the material line definition
       ///
       /// Add new components to the input line. One at a time.
-      void AddComponent(const Teuchos::RCP<MaterialComponent>& c);
+      void AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c);
 
       /// read all materials from my input file section
       void Read(const Problem& problem,  ///< global problem instance that manages the input
@@ -426,7 +358,7 @@ namespace DRT
       std::string Description() const { return description_; }
 
       /// my material inputline
-      std::vector<Teuchos::RCP<MaterialComponent>> Inputline() const { return inputline_; }
+      std::vector<Teuchos::RCP<::INPUT::LineComponent>> Inputline() const { return inputline_; }
 
      private:
       /// name of material
@@ -437,7 +369,7 @@ namespace DRT
       INPAR::MAT::MaterialType mattype_;
 
       /// the list of valid components
-      std::vector<Teuchos::RCP<MaterialComponent>> inputline_;
+      std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
     };
 
 

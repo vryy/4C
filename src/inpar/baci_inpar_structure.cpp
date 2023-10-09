@@ -366,7 +366,7 @@ namespace INPAR
           "DESIGN POINT ROBIN SPRING DASHPOT CONDITIONS", "RobinSpringDashpot",
           "Robin Spring Dashpot", DRT::Condition::RobinSpringDashpot, true, DRT::Condition::Point));
 
-      std::vector<Teuchos::RCP<ConditionComponent>> robinspringdashpotcomp;
+      std::vector<Teuchos::RCP<::INPUT::LineComponent>> robinspringdashpotcomp;
 
       robinspringdashpotcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
       robinspringdashpotcomp.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));

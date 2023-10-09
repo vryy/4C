@@ -189,7 +189,7 @@ void INPAR::ELCH::SetValidConditions(
             DRT::Condition::ElectrodeSOC, true, DRT::Condition::Volume));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> electrodesoccomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> electrodesoccomponents;
 
     {
       electrodesoccomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
@@ -234,7 +234,7 @@ void INPAR::ELCH::SetValidConditions(
         DRT::Condition::CellVoltage, true, DRT::Condition::Surface));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> cellvoltagecomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> cellvoltagecomponents;
 
     {
       cellvoltagecomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
@@ -258,11 +258,11 @@ void INPAR::ELCH::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // electrode kinetics as boundary condition on electrolyte
   {
-    std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+    std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
         reaction_model_choices;
 
     // Butler-Volmer
-    std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmer;
     butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
     butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
     butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
@@ -280,7 +280,7 @@ void INPAR::ELCH::SetValidConditions(
 
     // Butler-Volmer Yang
     // parameter are identical to Butler-Volmer
-    std::vector<Teuchos::RCP<ConditionComponent>> butlervolmeryang;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmeryang;
     butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_A")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha_a")));
     butlervolmeryang.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA_C")));
@@ -297,7 +297,7 @@ void INPAR::ELCH::SetValidConditions(
         std::make_pair("Butler-Volmer-Yang1997", butlervolmeryang));
 
     // Tafel kinetics
-    std::vector<Teuchos::RCP<ConditionComponent>> tafel;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> tafel;
     tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA")));
     tafel.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha")));
     tafel.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("I0")));
@@ -311,7 +311,7 @@ void INPAR::ELCH::SetValidConditions(
     reaction_model_choices.emplace(INPAR::ELCH::tafel, std::make_pair("Tafel", tafel));
 
     // linear kinetics
-    std::vector<Teuchos::RCP<ConditionComponent>> linear;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> linear;
     linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ALPHA")));
     linear.emplace_back(Teuchos::rcp(new RealConditionComponent("alpha")));
     linear.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("I0")));
@@ -326,7 +326,7 @@ void INPAR::ELCH::SetValidConditions(
 
     // Butler-Volmer-Newman: "Newman (book), 2004, p. 213, eq. 8.26"
     //                       "Wittmann (Bachelor thesis), 2011, p. 15, eq. 2.30"
-    std::vector<Teuchos::RCP<ConditionComponent>> bvnewman;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> bvnewman;
     bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_A")));
     bvnewman.emplace_back(Teuchos::rcp(new RealConditionComponent("k_a")));
     bvnewman.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K_C")));
@@ -340,7 +340,7 @@ void INPAR::ELCH::SetValidConditions(
 
     // Butler-Volmer-Newman: "Bard (book), 2001, p. 99, eq. 3.4.10"
     //                       "Wittmann (Bachelor thesis), 2011, p. 16, eq. 2.32"
-    std::vector<Teuchos::RCP<ConditionComponent>> bvbard;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> bvbard;
     bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E0")));
     bvbard.emplace_back(Teuchos::rcp(new RealConditionComponent("e0")));
     bvbard.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("K0")));
@@ -357,7 +357,7 @@ void INPAR::ELCH::SetValidConditions(
         INPAR::ELCH::butler_volmer_bard, std::make_pair("Butler-Volmer-Bard", bvbard));
 
     // Nernst equation:
-    std::vector<Teuchos::RCP<ConditionComponent>> nernst;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> nernst;
     nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("E0")));
     nernst.emplace_back(Teuchos::rcp(new RealConditionComponent("e0")));
     nernst.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("C0")));
@@ -366,7 +366,7 @@ void INPAR::ELCH::SetValidConditions(
     nernst.emplace_back(Teuchos::rcp(new RealConditionComponent("dl_spec_cap")));
     reaction_model_choices.emplace(INPAR::ELCH::nernst, std::make_pair("Nernst", nernst));
 
-    std::vector<Teuchos::RCP<ConditionComponent>> elechemcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> elechemcomponents;
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
     elechemcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
     elechemcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("POT")));
@@ -436,7 +436,7 @@ void INPAR::ELCH::SetValidConditions(
             DRT::Condition::ElchDomainKinetics, true, DRT::Condition::Volume));
 
     // equip condition definition with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> electrodedomainkineticscomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> electrodedomainkineticscomponents;
 
     {
       electrodedomainkineticscomponents.emplace_back(
@@ -472,7 +472,7 @@ void INPAR::ELCH::SetValidConditions(
 
       {
         // Butler-Volmer
-        std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
+        std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmer;
         butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent(
             "A_S")));  // ratio of electrode-electrolyte interface area to total two-phase volume
         butlervolmer.emplace_back(Teuchos::rcp(new RealConditionComponent("A_s")));
@@ -530,7 +530,7 @@ void INPAR::ELCH::SetValidConditions(
             DRT::Condition::CCCVCycling, true, DRT::Condition::Surface));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> cccvcyclingcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> cccvcyclingcomponents;
 
     {
       cccvcyclingcomponents.emplace_back(
@@ -600,7 +600,7 @@ void INPAR::ELCH::SetValidConditions(
             DRT::Condition::CCCVHalfCycle, true, DRT::Condition::Surface));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> cccvhalfcyclecomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> cccvhalfcyclecomponents;
 
     {
       cccvhalfcyclecomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
