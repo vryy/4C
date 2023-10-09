@@ -88,8 +88,9 @@ before_script:
 - *build-only
   # test
 - 'echo ctest selection: $CTEST_TEST_SELECTION'
-- time ctest -VV $CTEST_TEST_SELECTION -j $NUMBER_OF_TEST_THREADS | tee test.log |
-  grep -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
+- time ${CTEST_COMMAND} -VV $CTEST_TEST_SELECTION -j $NUMBER_OF_TEST_THREADS --output-junit
+  ${CI_PROJECT_DIR}/junit_test_summary.xml | tee test.log | grep -e "\*\*\*Failed"
+  -e "\.\.\.   Passed" -e " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
 .check-no-warnings: &check-no-warnings
@@ -135,7 +136,10 @@ before_script:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
     - '*.log'
-    when: on_failure
+    - junit_test_summary.xml
+    reports:
+      junit: junit_test_summary.xml
+    when: always
     expire_in: 1 day
 
 
@@ -451,6 +455,7 @@ imcs-buildtest_daily_ubuntu20:
     NUMBER_OF_BUILD_THREADS: '12'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
+    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
   tags:
   - imcs-nightly-full-ubuntu20
   needs: []
@@ -462,6 +467,7 @@ imcs-buildtest_daily_debug_ubuntu20:
     NUMBER_OF_BUILD_THREADS: '12'
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
+    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
   tags:
   - imcs-nightly-debug-ubuntu20
   needs: []
@@ -473,6 +479,7 @@ imcs-buildtest_release_trilinos_develop:
     NUMBER_OF_BUILD_THREADS: '12'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation_trilinos
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
+    CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
     TRILINOS_ROOT: $CI_PROJECT_DIR/../Trilinos-develop-build
     TRILINOS_DEVELOP_CONFIG: do-configure-trilinos-develop-imcs
   tags:
@@ -507,6 +514,7 @@ buildtest_coverage:
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
   tags:
   - coverage
   needs: []
@@ -620,6 +628,7 @@ buildtest_full_release:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
   tags:
   - buildtest
   needs:
@@ -640,6 +649,7 @@ buildtest_full_release_asan:
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
   after_script:
   - *post-process-log-files
   - ${CI_PROJECT_DIR}/utilities/grep_asan_failures.sh test.log > asan_summary.log
@@ -663,6 +673,7 @@ buildtest_full_debug:
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
   tags:
   - buildtest-debug
   needs:
