@@ -631,12 +631,12 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     DRT::Node* node = ProblemDiscret().lColNode(i);
     if (!node) dserror("Cannot find node with lid %", i);
     Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
-    if (BEAMINTERACTION::BeamNode(*newnode))
+    if (BEAMINTERACTION::UTILS::IsBeamNode(*newnode))
     {
       BTSolDiscret().AddNode(newnode);
       nodedofs[node->Id()] = ProblemDiscret().Dof(0, node);
     }
-    else if (BEAMINTERACTION::RigidsphereNode(*newnode))
+    else if (BEAMINTERACTION::UTILS::IsRigidSphereNode(*newnode))
     {
       BTSolDiscret().AddNode(newnode);
       nodedofs[node->Id()] = ProblemDiscret().Dof(0, node);
@@ -657,7 +657,8 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     DRT::Element* ele = ProblemDiscret().lColElement(i);
     if (!ele) dserror("Cannot find element with lid %", i);
     Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    if (BEAMINTERACTION::BeamElement(*newele) or BEAMINTERACTION::RigidsphereElement(*newele))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*newele) or
+        BEAMINTERACTION::UTILS::IsRigidSphereElement(*newele))
     {
       BTSolDiscret().AddElement(newele);
     }
@@ -966,7 +967,9 @@ void CONTACT::Beam3cmanager::SetCurrentPositions(
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
-    if (BEAMINTERACTION::BeamNode(*node) and !BEAMINTERACTION::BeamCenterlineNode(*node)) continue;
+    if (BEAMINTERACTION::UTILS::IsBeamNode(*node) and
+        !BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*node))
+      continue;
 
     // get GIDs of this node's degrees of freedom
     std::vector<int> dofnode = BTSolDiscret().Dof(node);
@@ -1005,11 +1008,13 @@ void CONTACT::Beam3cmanager::SetState(
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
-    if (BEAMINTERACTION::BeamNode(*node) and !BEAMINTERACTION::BeamCenterlineNode(*node)) continue;
+    if (BEAMINTERACTION::UTILS::IsBeamNode(*node) and
+        !BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*node))
+      continue;
 
 
     // get nodal tangents for Kirchhoff elements
-    if (numnodalvalues_ == 2 and BEAMINTERACTION::BeamNode(*node))
+    if (numnodalvalues_ == 2 and BEAMINTERACTION::UTILS::IsBeamNode(*node))
     {
       // get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = BTSolDiscret().Dof(node);
@@ -1279,12 +1284,12 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
   for (int i = 0; i < (int)elementpairs.size(); i++)
   {
     // if ele1 is a beam element we take the pair directly
-    if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[0]))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[0]))
     {
       formattedelementpairs.push_back(elementpairs[i]);
     }
     // if ele1 is no beam element, but ele2 is one, we have to change the order
-    else if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[1]))
+    else if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[1]))
     {
       std::vector<DRT::Element*> elementpairaux;
       elementpairaux.clear();
@@ -1316,7 +1321,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
       // ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the
       // first pair
       if (ele1_type != pair1_ele1_type or
-          (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]) and
+          (BEAMINTERACTION::UTILS::IsBeamElement(*(formattedelementpairs[k])[1]) and
               ele2_type != pair1_ele1_type))
       {
         dserror(
@@ -1341,7 +1346,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
     int currid2 = ele2->Id();
 
     // beam-to-beam pair
-    if (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*(formattedelementpairs[k])[1]))
     {
       bool foundlasttimestep = false;
       bool isalreadyinpairs = false;
@@ -1460,12 +1465,12 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
   for (int i = 0; i < (int)elementpairs.size(); i++)
   {
     // if ele1 is a beam element we take the pair directly
-    if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[0]))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[0]))
     {
       formattedelementpairs.push_back(elementpairs[i]);
     }
     // if ele1 is no beam element, but ele2 is one, we have to change the order
-    else if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[1]))
+    else if (BEAMINTERACTION::UTILS::IsBeamElement(*(elementpairs[i])[1]))
     {
       std::vector<DRT::Element*> elementpairaux;
       elementpairaux.clear();
@@ -1505,9 +1510,10 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
     nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
     // get correct condition for beam or rigid sphere element
-    if (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*(formattedelementpairs[k])[1]))
       nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
-    else if (BEAMINTERACTION::RigidsphereElement(*(formattedelementpairs[k])[1]) and potbtsph_)
+    else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*(formattedelementpairs[k])[1]) and
+             potbtsph_)
       nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
 
     // validinteraction == true includes: both eles "loaded" by a charge condition of same potential
@@ -1532,7 +1538,7 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
     if (validinteraction)
     {
       // beam-to-beam pair
-      if (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]))
+      if (BEAMINTERACTION::UTILS::IsBeamElement(*(formattedelementpairs[k])[1]))
       {
         // Add new potential pair object: The auxiliary_instance of the abstract class
         // Beam3tobeampotentialinterface is only needed here in order to call the function Impl()
@@ -1588,8 +1594,8 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
     if (currentpositions.find(firstgid) == currentpositions.end())
     {
-      if (BEAMINTERACTION::BeamNode(*firstnode) and
-          !BEAMINTERACTION::BeamCenterlineNode(*firstnode))
+      if (BEAMINTERACTION::UTILS::IsBeamNode(*firstnode) and
+          !BEAMINTERACTION::UTILS::IsBeamCenterlineNode(*firstnode))
       {
         continue;
       }
@@ -1877,7 +1883,8 @@ void CONTACT::Beam3cmanager::SetMinMaxEleRadius()
 
     double eleradius = 0.0;
 
-    if (BEAMINTERACTION::BeamElement(*thisele) or BEAMINTERACTION::RigidsphereElement(*thisele))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*thisele) or
+        BEAMINTERACTION::UTILS::IsRigidSphereElement(*thisele))
     {  // compute eleradius from moment of inertia
       // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
       eleradius = BEAMINTERACTION::CalcEleRadius(thisele);
@@ -1915,7 +1922,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
 
     double elelength = 0.0;
 
-    if (BEAMINTERACTION::BeamElement(*thisele))
+    if (BEAMINTERACTION::UTILS::IsBeamElement(*thisele))
     {
       // get global IDs of edge nodes and pointers
       int node0_gid = thisele->NodeIds()[0];
@@ -1938,7 +1945,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
       for (int j = 0; j < 3; ++j) dist[j] = x_n0[j] - x_n1[j];
       elelength = sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]);
     }
-    else if (BEAMINTERACTION::RigidsphereElement(*thisele))
+    else if (BEAMINTERACTION::UTILS::IsRigidSphereElement(*thisele))
       continue;  // elelength does not apply for rigid spheres, radius is already considered in
                  // MaxEleRadius(), so simply do nothing here
     else
@@ -2682,7 +2689,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
         // Get pointer onto current beam element
         DRT::Element* element = ProblemDiscret().lColElement(i);
 
-        if (!BEAMCONTACT::BeamElement(*element))
+        if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
         {
           GMSH_Solid(element, disrow, gmshfilecontent);
         }
@@ -2693,7 +2700,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
         // Get pointer onto current beam element
         DRT::Element* element = BTSolDiscret().lColElement(i);
 
-        if (!BEAMCONTACT::BeamElement(*element))
+        if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
         {
           GMSH_SolidSurfaceElementNumbers(element, disrow, gmshfilecontent);
         }
@@ -2721,7 +2728,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
       for (int i = 0; i < ColElements()->NumMyElements(); ++i)
       {
         DRT::Element* element = BTSolDiscret().lColElement(i);
-        if (BEAMCONTACT::BeamElement(*element))
+        if (BEAMCONTACT::UTILS::IsBeamElement(*element))
           numele1++;
         else
           numele2++;
@@ -2953,7 +2960,7 @@ void CONTACT::Beam3cmanager::GmshOutput(
     // Get pointer onto current beam element
     DRT::Element* element = ProblemDiscret().lColElement(i);
 
-    if (!BEAMCONTACT::BeamElement(*element))
+    if (!BEAMCONTACT::UTILS::IsBeamElement(*element))
     {
       GMSH_Solid(element, disrow, fc2filecontent);
     }
