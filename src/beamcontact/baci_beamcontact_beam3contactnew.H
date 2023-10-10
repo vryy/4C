@@ -12,9 +12,9 @@
 #define BACI_BEAMCONTACT_BEAM3CONTACTNEW_H
 
 #include "baci_beamcontact_beam3contactinterface.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_sparsematrix.H"
@@ -415,10 +415,10 @@ namespace CONTACT
     CORE::LINALG::Matrix<3, 1, TYPE> normal_old_;
 
     //! neighbor elements of element 1
-    Teuchos::RCP<B3CNeighbor> neighbors1_;
+    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    Teuchos::RCP<B3CNeighbor> neighbors2_;
+    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors2_;
 
     //! averaged nodal tangents, necessary for smoothed tangent fields of C^0 Reissner beams
     CORE::LINALG::Matrix<3 * numnodes, 1> nodaltangentssmooth1_;

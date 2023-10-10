@@ -11,7 +11,7 @@
 #include "baci_beaminteraction_submodel_evaluator_potential.H"
 
 #include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_crosslinker_handler.H"
 #include "baci_beaminteraction_potential_pair.H"
@@ -668,9 +668,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
       nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
       // get correct condition for beam or rigid sphere element
-      if (BEAMCONTACT::BeamElement(*currneighborele))
+      if (BEAMINTERACTION::BeamElement(*currneighborele))
         nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
-      else if (BEAMCONTACT::RigidsphereElement(*currneighborele))
+      else if (BEAMINTERACTION::RigidsphereElement(*currneighborele))
         nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
       else
         dserror(
@@ -804,9 +804,9 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamPotential::
   nodes1[0]->GetCondition("BeamPotentialLineCharge", conditions_element1);
 
   // get correct condition for beam or rigid sphere element
-  if (BEAMCONTACT::BeamElement(*ele2))
+  if (BEAMINTERACTION::BeamElement(*ele2))
     nodes2[0]->GetCondition("BeamPotentialLineCharge", conditions_element2);
-  else if (BEAMCONTACT::RigidsphereElement(*ele2))
+  else if (BEAMINTERACTION::RigidsphereElement(*ele2))
     nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conditions_element2);
   else
     dserror(

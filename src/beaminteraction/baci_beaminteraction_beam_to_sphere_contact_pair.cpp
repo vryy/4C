@@ -11,8 +11,8 @@
 #include "baci_beaminteraction_beam_to_sphere_contact_pair.H"
 
 #include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_beam_to_sphere_contact_params.H"
 #include "baci_beaminteraction_contact_params.H"
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
@@ -68,7 +68,7 @@ void BEAMINTERACTION::BeamToSphereContactPair<numnodes, numnodalvalues>::Setup()
         " must be a beam element!");
 
   // get radius and stress-free reference length of beam element
-  radius1_ = BEAMCONTACT::CalcEleRadius(beam_element_);
+  radius1_ = BEAMINTERACTION::CalcEleRadius(beam_element_);
   beamele_reflength_ = beam_element_->RefLength();
 
   // cast second element to RigidSphere

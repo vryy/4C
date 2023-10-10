@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 
 #include "baci_beam3_euler_bernoulli.H"
 #include "baci_beam3_kirchhoff.H"
@@ -20,7 +20,7 @@
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a beam element         meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::BeamNode(const DRT::Node& node)
+bool BEAMINTERACTION::BeamNode(const DRT::Node& node)
 {
   bool beameles = false;
   bool othereles = false;
@@ -46,7 +46,7 @@ bool BEAMCONTACT::BeamNode(const DRT::Node& node)
  | Check, if current node is used for centerline                        |
  | interpolation of a beam element                           grill 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::BeamCenterlineNode(const DRT::Node& node)
+bool BEAMINTERACTION::BeamCenterlineNode(const DRT::Node& node)
 {
   bool beamclnode = false;
 
@@ -66,7 +66,7 @@ bool BEAMCONTACT::BeamCenterlineNode(const DRT::Node& node)
 /*----------------------------------------------------------------------*
  |  Check, if current node belongs to a rigid sphere element   grill 09/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::RigidsphereNode(const DRT::Node& node)
+bool BEAMINTERACTION::RigidsphereNode(const DRT::Node& node)
 {
   bool sphereeles = false;
   bool othereles = false;
@@ -91,7 +91,7 @@ bool BEAMCONTACT::RigidsphereNode(const DRT::Node& node)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a beam element         meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::BeamElement(const DRT::Element& element)
+bool BEAMINTERACTION::BeamElement(const DRT::Element& element)
 {
   const DRT::ELEMENTS::Beam3Base* beamele = dynamic_cast<const DRT::ELEMENTS::Beam3Base*>(&element);
 
@@ -104,7 +104,7 @@ bool BEAMCONTACT::BeamElement(const DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a rigid sphere element       grill 09/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::RigidsphereElement(const DRT::Element& element)
+bool BEAMINTERACTION::RigidsphereElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
@@ -117,7 +117,7 @@ bool BEAMCONTACT::RigidsphereElement(const DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid contact element      popp 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::SolidContactElement(const DRT::Element& element)
+bool BEAMINTERACTION::SolidContactElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
@@ -130,7 +130,7 @@ bool BEAMCONTACT::SolidContactElement(const DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if current element is a solid meshtying element    popp 05/16|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::SolidMeshtyingElement(const DRT::Element& element)
+bool BEAMINTERACTION::SolidMeshtyingElement(const DRT::Element& element)
 {
   const DRT::ElementType& ele_type = element.ElementType();
 
@@ -143,7 +143,7 @@ bool BEAMCONTACT::SolidMeshtyingElement(const DRT::Element& element)
 /*----------------------------------------------------------------------*
  |  Check, if two elements share a node -> neighbor elements meier 05/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::ElementsShareNode(const DRT::Element& element1, const DRT::Element& element2)
+bool BEAMINTERACTION::ElementsShareNode(const DRT::Element& element1, const DRT::Element& element2)
 {
   bool sharenode = false;
 
@@ -163,7 +163,7 @@ bool BEAMCONTACT::ElementsShareNode(const DRT::Element& element1, const DRT::Ele
 /*----------------------------------------------------------------------*
  |  Calculate beam radius                                    meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
+double BEAMINTERACTION::CalcEleRadius(const DRT::Element* ele)
 {
   double eleradius = 0.0;
 
@@ -185,7 +185,7 @@ double BEAMCONTACT::CalcEleRadius(const DRT::Element* ele)
 /*----------------------------------------------------------------------*
  |  Test intersection of two parallel cylinders              meier 10/14|
  *----------------------------------------------------------------------*/
-bool BEAMCONTACT::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
+bool BEAMINTERACTION::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
     CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
     CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit)
 {
@@ -218,7 +218,7 @@ bool BEAMCONTACT::IntersectParallelCylinders(CORE::LINALG::Matrix<3, 1, double>&
 /*-----------------------------------------------------------------------------------*
  |  Test intersection of two non-parallel, arbitrary oriented cylinders   meier 10/14|
  *-----------------------------------------------------------------------------------*/
-bool BEAMCONTACT::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
+bool BEAMINTERACTION::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>& r1_a,
     CORE::LINALG::Matrix<3, 1, double>& r1_b, CORE::LINALG::Matrix<3, 1, double>& r2_a,
     CORE::LINALG::Matrix<3, 1, double>& r2_b, double& distancelimit,
     std::pair<double, double>& closestpoints, bool etaset)
@@ -291,7 +291,7 @@ bool BEAMCONTACT::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>
     {
       etaset = false;
 
-      closestnodaldist = BEAMCONTACT::GetClosestEndpointDist(r1_a, r1_b, r2_a, r2_b);
+      closestnodaldist = BEAMINTERACTION::GetClosestEndpointDist(r1_a, r1_b, r2_a, r2_b);
       if (fabs(closestnodaldist) < distancelimit)
       {
         return true;
@@ -328,8 +328,9 @@ bool BEAMCONTACT::IntersectArbitraryCylinders(CORE::LINALG::Matrix<3, 1, double>
 /*----------------------------------------------------------------------*
  |  Calculate closest distance of a point and a line         meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMCONTACT::CalcPointLineDist(CORE::LINALG::Matrix<3, 1, double>& rline_a,  // at eta=-1.0
-    CORE::LINALG::Matrix<3, 1, double>& rline_b,                                    // at eta=1.0
+double BEAMINTERACTION::CalcPointLineDist(
+    CORE::LINALG::Matrix<3, 1, double>& rline_a,  // at eta=-1.0
+    CORE::LINALG::Matrix<3, 1, double>& rline_b,  // at eta=1.0
     CORE::LINALG::Matrix<3, 1, double>& rp, double& eta)
 {
   double closestpointlinedist = 0.0;
@@ -355,7 +356,7 @@ double BEAMCONTACT::CalcPointLineDist(CORE::LINALG::Matrix<3, 1, double>& rline_
 /*----------------------------------------------------------------------*
  |  Calculate angle enclosed by two vectors a and b          meier 10/14|
  *----------------------------------------------------------------------*/
-double BEAMCONTACT::CalcAngle(
+double BEAMINTERACTION::CalcAngle(
     CORE::LINALG::Matrix<3, 1, double> a, CORE::LINALG::Matrix<3, 1, double> b)
 {
   if (CORE::FADUTILS::VectorNorm<3>(a) < 1.0e-12 or CORE::FADUTILS::VectorNorm<3>(b) < 1.0e-12)
@@ -384,7 +385,7 @@ double BEAMCONTACT::CalcAngle(
  |  Get closest distance between the endpoints of two lines   meier 10/14|
  *----------------------------------------------------------------------*/
 template <typename type>
-type BEAMCONTACT::GetClosestEndpointDist(CORE::LINALG::Matrix<3, 1, type> r1_a,
+type BEAMINTERACTION::GetClosestEndpointDist(CORE::LINALG::Matrix<3, 1, type> r1_a,
     CORE::LINALG::Matrix<3, 1, type> r1_b, CORE::LINALG::Matrix<3, 1, type> r2_a,
     CORE::LINALG::Matrix<3, 1, type> r2_b)
 {
@@ -408,7 +409,7 @@ type BEAMCONTACT::GetClosestEndpointDist(CORE::LINALG::Matrix<3, 1, type> r1_a,
 /*----------------------------------------------------------------------------------------*
  |  Determine inpute parameter representing the additive searchbox increment   meier 10/14|
  *----------------------------------------------------------------------------------------*/
-double BEAMCONTACT::DetermineSearchboxInc(Teuchos::ParameterList& beamcontactparams)
+double BEAMINTERACTION::DetermineSearchboxInc(Teuchos::ParameterList& beamcontactparams)
 {
   double searchboxinc = 0.0;
 

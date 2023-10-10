@@ -12,9 +12,9 @@
 #define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_PAIR_H
 
 #include "baci_beam3_base.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_tangentsmoothing.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_tangentsmoothing.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_inpar_beamcontact.H"
@@ -154,10 +154,10 @@ namespace BEAMINTERACTION
     CORE::LINALG::Matrix<3 * numnodes * numnodalvalues, 1, TYPE> ele2pos_;
 
     //! neighbor elements of element 1
-    Teuchos::RCP<CONTACT::B3CNeighbor> neighbors1_;
+    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors1_;
 
     //! neighbor elements of element 2
-    Teuchos::RCP<CONTACT::B3CNeighbor> neighbors2_;
+    Teuchos::RCP<BEAMINTERACTION::B3CNeighbor> neighbors2_;
 
     //! cross section radius of first beam
     double R1_;
