@@ -7,10 +7,10 @@
 
 */
 /*----------------------------------------------------------------------------*/
-#ifndef BACI_BEAMINTERACTION_BEAM3CONTACT_UTILS_H
-#define BACI_BEAMINTERACTION_BEAM3CONTACT_UTILS_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_H
+#define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_UTILS_H
 
-#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_discretization_fem_general_largerotations.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_fixedsizematrix.H"
@@ -23,8 +23,7 @@
 
 typedef Sacado::Fad::DFad<double> FAD;
 
-// Todo change to BEAMINTERACTION namespace
-namespace BEAMCONTACT
+namespace BEAMINTERACTION
 {
   /*!
   \brief Calculate angle encompassed by two lines: returns an angle \in [0;pi/2]
@@ -275,6 +274,6 @@ namespace BEAMCONTACT
     return segment_id;
   }
 
-}  // namespace BEAMCONTACT
+}  // namespace BEAMINTERACTION
 
 #endif

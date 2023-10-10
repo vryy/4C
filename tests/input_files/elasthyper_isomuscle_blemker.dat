@@ -1,11 +1,12 @@
 -----------------------------------------------------------------------TITLE
 Testcase for testing ELAST_IsoMuscle_Blemker material
+Activation prescribed through active stress approach
 
 Geometry and Elements:
 - The setup of the test-case is one cube of size 1x1x1 discretized by 2 linear HEX elements in each direction. Hence the cube consists of 8 HEX8 elements.
 
 Fibers:
-- Element fiber notation (FIBER1 FIBER 2): FIBER 1 in z-direction
+- Element fiber notation (FIBER1 FIBER2): FIBER 1 in z-direction
 
 Material:
 - Blemker muscle material, activation start after one timestep at t=0.0001
@@ -146,12 +147,12 @@ NODE 25 COORD 0.0 1.0 1.0
 NODE 26 COORD 0.5 1.0 1.0
 NODE 27 COORD 1.0 1.0 1.0
 ------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 2 5 3 4 6 8 7 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-2 SOLIDH8 HEX8 2 9 10 5 6 11 12 8 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-3 SOLIDH8 HEX8 5 10 21 14 8 12 22 16 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-4 SOLIDH8 HEX8 3 5 14 13 7 8 16 15 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-5 SOLIDH8 HEX8 4 6 8 7 17 18 20 19 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-6 SOLIDH8 HEX8 6 11 12 8 18 23 24 20 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-7 SOLIDH8 HEX8 8 12 22 16 20 24 27 26 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-8 SOLIDH8 HEX8 7 8 16 15 19 20 26 25 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
+1 SOLID HEX8 1 2 5 3 4 6 8 7 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+2 SOLID HEX8 2 9 10 5 6 11 12 8 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+3 SOLID HEX8 5 10 21 14 8 12 22 16 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+4 SOLID HEX8 3 5 14 13 7 8 16 15 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+5 SOLID HEX8 4 6 8 7 17 18 20 19 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+6 SOLID HEX8 6 11 12 8 18 23 24 20 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+7 SOLID HEX8 8 12 22 16 20 24 27 26 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+8 SOLID HEX8 7 8 16 15 19 20 26 25 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
 ---------------------------------------------------------------END

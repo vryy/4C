@@ -114,7 +114,7 @@ void INPAR::S2I::SetValidConditions(
             DRT::Condition::Surface));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> s2imeshtyingcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> s2imeshtyingcomponents;
     s2imeshtyingcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
     s2imeshtyingcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
         "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
@@ -159,7 +159,7 @@ void INPAR::S2I::SetValidConditions(
         DRT::Condition::S2INoEvaluation, true, DRT::Condition::Surface));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> s2inoevaluationcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> s2inoevaluationcomponents;
     s2inoevaluationcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
     s2inoevaluationcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent(
         "interface side", "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
@@ -209,32 +209,32 @@ void INPAR::S2I::SetValidConditions(
             DRT::Condition::ScatraMultiScaleCoupling, false, DRT::Condition::Point));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> s2icomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> s2icomponents;
     {
       // interface ID
       s2icomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
       // interface sides for scatra-scatra interface kinetics
-      std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+      std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
           interface_choices;
       {
         {
           // undefined side
-          std::vector<Teuchos::RCP<ConditionComponent>> undefined_side;
+          std::vector<Teuchos::RCP<::INPUT::LineComponent>> undefined_side;
           interface_choices.emplace(side_undefined, std::make_pair("Undefined", undefined_side));
         }
 
         {
           // slave side
-          std::vector<Teuchos::RCP<ConditionComponent>> slaveside;
+          std::vector<Teuchos::RCP<::INPUT::LineComponent>> slaveside;
 
           // Collect the diffent model selection choices in a map.
-          std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+          std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
               kinetic_model_choices;
           {
             {
               // constant permeability
-              std::vector<Teuchos::RCP<ConditionComponent>> constperm;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> constperm;
 
               constperm.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               constperm.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
@@ -253,7 +253,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // Butler-Volmer
-              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmer;
               // total number of existing scalars
               butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
@@ -287,7 +287,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // Butler-Volmer-Peltier
-              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerpeltier;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmerpeltier;
 
               butlervolmerpeltier.emplace_back(
                   Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
@@ -321,7 +321,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // Butler-Volmer-reduced with interface capacitance
-              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreducedcapacitance;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmerreducedcapacitance;
               // total number of existing scalars
               butlervolmerreducedcapacitance.emplace_back(
                   Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
@@ -364,7 +364,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // Butler-Volmer-Resistance
-              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerresistance;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmerresistance;
 
               butlervolmerresistance.emplace_back(
                   Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
@@ -412,7 +412,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // Butler-Volmer-Reduced with resistance
-              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreducedwithresistance;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmerreducedwithresistance;
 
               butlervolmerreducedwithresistance.emplace_back(
                   Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
@@ -463,7 +463,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // Butler-Volmer-reduced-thermoresistance
-              std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreducedthermo;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmerreducedthermo;
               butlervolmerreducedthermo.emplace_back(
                   Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
               butlervolmerreducedthermo.emplace_back(
@@ -508,7 +508,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // constant interface resistance
-              std::vector<Teuchos::RCP<ConditionComponent>> constantinterfaceresistance;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> constantinterfaceresistance;
 
               constantinterfaceresistance.emplace_back(
                   Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
@@ -532,7 +532,7 @@ void INPAR::S2I::SetValidConditions(
 
             {
               // no interface flux
-              std::vector<Teuchos::RCP<ConditionComponent>> nointerfaceflux;
+              std::vector<Teuchos::RCP<::INPUT::LineComponent>> nointerfaceflux;
               kinetic_model_choices.emplace(
                   kinetics_nointerfaceflux, std::make_pair("NoInterfaceFlux", nointerfaceflux));
             }
@@ -552,7 +552,7 @@ void INPAR::S2I::SetValidConditions(
 
         {
           // master side
-          std::vector<Teuchos::RCP<ConditionComponent>> master_side;
+          std::vector<Teuchos::RCP<::INPUT::LineComponent>> master_side;
           interface_choices.emplace(side_master, std::make_pair("Master", master_side));
         }
       }  // interface sides for scatra-scatra interface mesh tying
@@ -597,13 +597,13 @@ void INPAR::S2I::SetValidConditions(
             DRT::Condition::S2ICouplingGrowth, true, DRT::Condition::Surface));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> s2igrowthcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> s2igrowthcomponents;
     {
       // interface ID
       s2igrowthcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
       // Butler-Volmer
-      std::vector<Teuchos::RCP<ConditionComponent>> butlervolmer;
+      std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmer;
       butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
       butlervolmer.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
       butlervolmer.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STOICHIOMETRIES")));

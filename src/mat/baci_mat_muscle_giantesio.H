@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Definition of the Giantesio active skeletal muscle material
+\brief Definition of the Giantesio active skeletal muscle material (active strain approach)
 
 \level 3
 */
@@ -67,7 +67,7 @@ namespace MAT
       //! @}
 
       //! @name velocity dependent activation contribution: slight modification of original function
-      //! given by Weickenmeier et. al.
+      //! given by Weickenmeier et al.
       //! @{
       const double dotLambdaMMin_;  ///< minimal stretch rate
       const double ke_;  ///< dimensionless constant controlling the curvature of the velocity
@@ -112,7 +112,8 @@ namespace MAT
   /*!
    * @brief Giantesio muscle material
    *
-   * This material represents the active strain Giantesio muscle material.
+   * This constituent represents an active hyperelastic muscle material using the active strain
+   * approach as described by Giantesio et al.
    *
    * Reference for the material model: G. Giantesio, A. Musesti, 'Strain-dependent internal
    * parameters in hyperelastic biological materials', International Journal of Non-Linear

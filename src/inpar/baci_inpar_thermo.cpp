@@ -153,7 +153,7 @@ void INPAR::THR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Convective heat transfer (Newton's law of heat transfer)
 
-  std::vector<Teuchos::RCP<ConditionComponent>> thermoconvectcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> thermoconvectcomponents;
 
   // decide here if approximation is sufficient
   // --> Tempn (old temperature T_n)
@@ -202,7 +202,7 @@ void INPAR::THR::SetValidConditions(
       "DESIGN THERMO ROBIN SURF CONDITIONS", "ThermoRobin", "Thermo Robin boundary condition",
       DRT::Condition::ThermoRobin, true, DRT::Condition::Surface));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> thermorobincomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> thermorobincomponents;
 
   thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
   thermorobincomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));

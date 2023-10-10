@@ -16,6 +16,7 @@
 #include "baci_inpar_cut.H"
 #include "baci_inpar_validparameters.H"
 #include "baci_lib_conditiondefinition.H"
+#include "baci_lib_linecomponent.H"
 
 
 
@@ -380,13 +381,13 @@ void INPAR::XFEM::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> list)
 
 
 void INPAR::XFEM::SetValidConditions(
-    const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent>>& dirichletbundcomponents,
-    const std::vector<Teuchos::RCP<DRT::INPUT::ConditionComponent>>& neumanncomponents,
+    const std::vector<Teuchos::RCP<::INPUT::LineComponent>>& dirichletbundcomponents,
+    const std::vector<Teuchos::RCP<::INPUT::LineComponent>>& neumanncomponents,
     std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition>>& condlist)
 {
   using namespace DRT::INPUT;
 
-  std::vector<Teuchos::RCP<ConditionComponent>> xfemcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> xfemcomponents;
 
   xfemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
 
@@ -443,7 +444,7 @@ void INPAR::XFEM::SetValidConditions(
   //*----------------*/
   // Levelset field condition components
 
-  std::vector<Teuchos::RCP<ConditionComponent>> levelsetfield_components;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> levelsetfield_components;
 
   levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
   levelsetfield_components.push_back(
@@ -675,7 +676,7 @@ void INPAR::XFEM::SetValidConditions(
   // Surface Fluid-Fluid coupling conditions
 
 
-  std::vector<Teuchos::RCP<ConditionComponent>> xfluidfluidsurfcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> xfluidfluidsurfcomponents;
 
   xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
   xfluidfluidsurfcomponents.push_back(

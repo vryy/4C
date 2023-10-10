@@ -116,7 +116,7 @@ void INPAR::ELEMAG::SetValidConditions(
 {
   using namespace DRT::INPUT;
 
-  std::vector<Teuchos::RCP<ConditionComponent>> abcbundcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> abcbundcomponents;
 
   abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
   abcbundcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));

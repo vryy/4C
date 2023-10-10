@@ -15,7 +15,7 @@
 #endif
 
 #include "baci_beamcontact_beam3contact_manager.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_cardiovascular0d_manager.H"
 #include "baci_constraint_manager.H"
 #include "baci_constraint_solver.H"

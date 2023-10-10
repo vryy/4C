@@ -15,8 +15,8 @@
 #include "baci_beam3_kirchhoff.H"
 #include "baci_beam3_reissner.H"
 #include "baci_beamcontact_beam3contact_octtree.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
-#include "baci_beaminteraction_beam3contact_utils.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_utils.H"
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
 #include "baci_inpar_beamcontact.H"
@@ -123,7 +123,7 @@ CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alpha
   SetMinMaxEleRadius();
 
   // Get search box increment from input file
-  searchboxinc_ = BEAMCONTACT::DetermineSearchboxInc(sbeamcontact_);
+  searchboxinc_ = BEAMINTERACTION::DetermineSearchboxInc(sbeamcontact_);
 
   if (searchboxinc_ < 0.0)
     dserror("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
@@ -629,12 +629,12 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     DRT::Node* node = ProblemDiscret().lColNode(i);
     if (!node) dserror("Cannot find node with lid %", i);
     Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
-    if (BEAMCONTACT::BeamNode(*newnode))
+    if (BEAMINTERACTION::BeamNode(*newnode))
     {
       BTSolDiscret().AddNode(newnode);
       nodedofs[node->Id()] = ProblemDiscret().Dof(0, node);
     }
-    else if (BEAMCONTACT::RigidsphereNode(*newnode))
+    else if (BEAMINTERACTION::RigidsphereNode(*newnode))
     {
       BTSolDiscret().AddNode(newnode);
       nodedofs[node->Id()] = ProblemDiscret().Dof(0, node);
@@ -655,7 +655,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
     DRT::Element* ele = ProblemDiscret().lColElement(i);
     if (!ele) dserror("Cannot find element with lid %", i);
     Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    if (BEAMCONTACT::BeamElement(*newele) or BEAMCONTACT::RigidsphereElement(*newele))
+    if (BEAMINTERACTION::BeamElement(*newele) or BEAMINTERACTION::RigidsphereElement(*newele))
     {
       BTSolDiscret().AddElement(newele);
     }
@@ -964,7 +964,7 @@ void CONTACT::Beam3cmanager::SetCurrentPositions(
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
-    if (BEAMCONTACT::BeamNode(*node) and !BEAMCONTACT::BeamCenterlineNode(*node)) continue;
+    if (BEAMINTERACTION::BeamNode(*node) and !BEAMINTERACTION::BeamCenterlineNode(*node)) continue;
 
     // get GIDs of this node's degrees of freedom
     std::vector<int> dofnode = BTSolDiscret().Dof(node);
@@ -1003,11 +1003,11 @@ void CONTACT::Beam3cmanager::SetState(
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
-    if (BEAMCONTACT::BeamNode(*node) and !BEAMCONTACT::BeamCenterlineNode(*node)) continue;
+    if (BEAMINTERACTION::BeamNode(*node) and !BEAMINTERACTION::BeamCenterlineNode(*node)) continue;
 
 
     // get nodal tangents for Kirchhoff elements
-    if (numnodalvalues_ == 2 and BEAMCONTACT::BeamNode(*node))
+    if (numnodalvalues_ == 2 and BEAMINTERACTION::BeamNode(*node))
     {
       // get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = BTSolDiscret().Dof(node);
@@ -1277,12 +1277,12 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
   for (int i = 0; i < (int)elementpairs.size(); i++)
   {
     // if ele1 is a beam element we take the pair directly
-    if (BEAMCONTACT::BeamElement(*(elementpairs[i])[0]))
+    if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[0]))
     {
       formattedelementpairs.push_back(elementpairs[i]);
     }
     // if ele1 is no beam element, but ele2 is one, we have to change the order
-    else if (BEAMCONTACT::BeamElement(*(elementpairs[i])[1]))
+    else if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[1]))
     {
       std::vector<DRT::Element*> elementpairaux;
       elementpairaux.clear();
@@ -1314,7 +1314,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
       // ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the
       // first pair
       if (ele1_type != pair1_ele1_type or
-          (BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]) and
+          (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]) and
               ele2_type != pair1_ele1_type))
       {
         dserror(
@@ -1339,7 +1339,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
     int currid2 = ele2->Id();
 
     // beam-to-beam pair
-    if (BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]))
+    if (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]))
     {
       bool foundlasttimestep = false;
       bool isalreadyinpairs = false;
@@ -1375,7 +1375,7 @@ void CONTACT::Beam3cmanager::FillContactPairsVectors(
       }
     }
     // beam-to-solid contact pair
-    else if (BEAMCONTACT::SolidContactElement(*(formattedelementpairs[k])[1]))
+    else if (BEAMINTERACTION::SolidContactElement(*(formattedelementpairs[k])[1]))
     {
       bool foundlasttimestep = false;
       bool isalreadyinpairs = false;
@@ -1458,12 +1458,12 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
   for (int i = 0; i < (int)elementpairs.size(); i++)
   {
     // if ele1 is a beam element we take the pair directly
-    if (BEAMCONTACT::BeamElement(*(elementpairs[i])[0]))
+    if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[0]))
     {
       formattedelementpairs.push_back(elementpairs[i]);
     }
     // if ele1 is no beam element, but ele2 is one, we have to change the order
-    else if (BEAMCONTACT::BeamElement(*(elementpairs[i])[1]))
+    else if (BEAMINTERACTION::BeamElement(*(elementpairs[i])[1]))
     {
       std::vector<DRT::Element*> elementpairaux;
       elementpairaux.clear();
@@ -1503,9 +1503,9 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
     nodes1[0]->GetCondition("BeamPotentialLineCharge", conds1);
 
     // get correct condition for beam or rigid sphere element
-    if (BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]))
+    if (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]))
       nodes2[0]->GetCondition("BeamPotentialLineCharge", conds2);
-    else if (BEAMCONTACT::RigidsphereElement(*(formattedelementpairs[k])[1]) and potbtsph_)
+    else if (BEAMINTERACTION::RigidsphereElement(*(formattedelementpairs[k])[1]) and potbtsph_)
       nodes2[0]->GetCondition("RigidspherePotentialPointCharge", conds2);
 
     // validinteraction == true includes: both eles "loaded" by a charge condition of same potential
@@ -1530,7 +1530,7 @@ void CONTACT::Beam3cmanager::FillPotentialPairsVectors(
     if (validinteraction)
     {
       // beam-to-beam pair
-      if (BEAMCONTACT::BeamElement(*(formattedelementpairs[k])[1]))
+      if (BEAMINTERACTION::BeamElement(*(formattedelementpairs[k])[1]))
       {
         // Add new potential pair object: The auxiliary_instance of the abstract class
         // Beam3tobeampotentialinterface is only needed here in order to call the function Impl()
@@ -1586,7 +1586,8 @@ std::vector<std::vector<DRT::Element*>> CONTACT::Beam3cmanager::BruteForceSearch
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
     if (currentpositions.find(firstgid) == currentpositions.end())
     {
-      if (BEAMCONTACT::BeamNode(*firstnode) and !BEAMCONTACT::BeamCenterlineNode(*firstnode))
+      if (BEAMINTERACTION::BeamNode(*firstnode) and
+          !BEAMINTERACTION::BeamCenterlineNode(*firstnode))
       {
         continue;
       }
@@ -1874,10 +1875,10 @@ void CONTACT::Beam3cmanager::SetMinMaxEleRadius()
 
     double eleradius = 0.0;
 
-    if (BEAMCONTACT::BeamElement(*thisele) or BEAMCONTACT::RigidsphereElement(*thisele))
+    if (BEAMINTERACTION::BeamElement(*thisele) or BEAMINTERACTION::RigidsphereElement(*thisele))
     {  // compute eleradius from moment of inertia
       // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
-      eleradius = BEAMCONTACT::CalcEleRadius(thisele);
+      eleradius = BEAMINTERACTION::CalcEleRadius(thisele);
 
       // if current radius is larger than maximum radius -> update
       if (eleradius > maxeleradius_) maxeleradius_ = eleradius;
@@ -1912,7 +1913,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
 
     double elelength = 0.0;
 
-    if (BEAMCONTACT::BeamElement(*thisele))
+    if (BEAMINTERACTION::BeamElement(*thisele))
     {
       // get global IDs of edge nodes and pointers
       int node0_gid = thisele->NodeIds()[0];
@@ -1935,7 +1936,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
       for (int j = 0; j < 3; ++j) dist[j] = x_n0[j] - x_n1[j];
       elelength = sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]);
     }
-    else if (BEAMCONTACT::RigidsphereElement(*thisele))
+    else if (BEAMINTERACTION::RigidsphereElement(*thisele))
       continue;  // elelength does not apply for rigid spheres, radius is already considered in
                  // MaxEleRadius(), so simply do nothing here
     else
@@ -3137,8 +3138,8 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm()
 
       // get smaller radius of the two elements:
       double smallerradius = 0.0;
-      double radius1 = BEAMCONTACT::CalcEleRadius(pairs_[i]->Element1());
-      double radius2 = BEAMCONTACT::CalcEleRadius(pairs_[i]->Element2());
+      double radius1 = BEAMINTERACTION::CalcEleRadius(pairs_[i]->Element1());
+      double radius2 = BEAMINTERACTION::CalcEleRadius(pairs_[i]->Element2());
       if (radius1 < radius2)
         smallerradius = radius1;
       else
@@ -3613,7 +3614,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   CORE::LINALG::SerialDenseVector theta(3);
   CORE::LINALG::SerialDenseMatrix R(3, 3);
 
-  double eleradius = BEAMCONTACT::CalcEleRadius(thisele);
+  double eleradius = BEAMINTERACTION::CalcEleRadius(thisele);
 
   // declaring variable for color of elements
   double color = 1.0;
@@ -3784,7 +3785,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
   CORE::LINALG::SerialDenseMatrix R(3, 3);
   CORE::LINALG::SerialDenseMatrix coord(3, 2);
 
-  double eleradius = BEAMCONTACT::CalcEleRadius(thisele);
+  double eleradius = BEAMINTERACTION::CalcEleRadius(thisele);
 
   // declaring variable for color of elements
   double color = 1.0;

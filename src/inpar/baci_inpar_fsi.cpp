@@ -463,7 +463,7 @@ void INPAR::FSI::SetValidConditions(
 {
   using namespace DRT::INPUT;
 
-  std::vector<Teuchos::RCP<ConditionComponent>> fsicomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> fsicomponents;
 
   fsicomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
@@ -514,7 +514,7 @@ void INPAR::FSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and ale fields (for lung fsi)
 
-  std::vector<Teuchos::RCP<ConditionComponent>> saccomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> saccomponents;
 
   saccomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
   saccomponents.push_back(Teuchos::rcp(new StringConditionComponent("field", "structure",
@@ -532,7 +532,7 @@ void INPAR::FSI::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Additional coupling of structure and fluid volumes (for lung fsi)
 
-  std::vector<Teuchos::RCP<ConditionComponent>> sfvcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> sfvcomponents;
 
   sfvcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
   sfvcomponents.push_back(Teuchos::rcp(new StringConditionComponent("field", "structure",

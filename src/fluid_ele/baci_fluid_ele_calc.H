@@ -499,36 +499,43 @@ namespace DRT
       /*!
         \brief calculate element matrix and rhs
 
-        \param ebofoaf          (i) body force at n+alpha_F/n+1
-        \param eprescpgaf       (i) prescribed pressure gradient at n+alpha_F/n+1 (required for
-        turbulent channel flow) \param ebofon           (i) body force at n \param eprescpgaf (i)
-        prescribed pressure gradient at n (required for turbulent channel flow) \param evelaf (i)
-        nodal velocities at n+alpha_F/n+1 \param evelam           (i) nodal velocities at
-        n+alpha_M/n \param eveln            (i) nodal velocities at n \param evelnp           (i)
-        nodal velocities at n+1 (np_genalpha) \param fsevelaf         (i) fine-scale nodal
-        velocities at n+alpha_F/n+1 \param fsescaaf         (i) fine-scale nodal scalar at
-        n+alpha_F/n+1 \param epreaf           (i) nodal pressure at n+alpha_F/n+1 \param epream (i)
-        nodal pressure at n+alpha_M/n \param eprenp           (i) nodal pressure at n+1 \param
-        eaccam           (i) nodal accelerations at n+alpha_M \param escaaf           (i) nodal
-        scalar at n+alpha_F/n+1 \param escaam           (i) nodal scalar at n+alpha_M/n \param
-        escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1 \param eveldtam         (i)
-        nodal velocity derivatives at n+alpha_M/n+1 \param epredtam         (i) nodal pressure
-        derivatives at n+alpha_M/n+1 \param emhist           (i) time rhs for momentum equation
-        \param edispnp          (i) nodal displacements (on moving mesh)
-        \param egridv           (i) grid velocity (on moving mesh)
-        \param estif            (o) element matrix to calculate
-        \param emesh            (o) linearization wrt mesh motion
-        \param eforce           (o) element rhs to calculate
-        \param egradphi         (i) gradient of nodal scalar at nodes
-        \param ecurvature       (i) curvature of scalar at nodes
-        \param thermpressaf     (i) thermodynamic pressure at n+alpha_F/n+1
-        \param thermpressam     (i) thermodynamic pressure at n+alpha_M/n
-        \param thermpressdtaf   (i) thermodynamic pressure derivative at n+alpha_F/n+1
-        \param thermpressdtam   (i) thermodynamic pressure derivative at n+alpha_M/n+1
-        \param material         (i) fluid material
-        \param Cs_delta_sq      (i) parameter for dynamic Smagorinsky model (Cs*h*h)
-        \param isale            (i) ALE flag
-        \param intpoints        (i) Gaussian integration points
+        @param ebofoaf           (i) body force at n+alpha_F/n+1
+        @param eprescpgaf        (i) prescribed pressure gradient at n+alpha_F/n+1 (required for
+        turbulent channel flow)
+        @param ebofon            (i) body force at n
+        @param eprescpgaf        (i) prescribed pressure gradient at n (required for turbulent
+        channel flow)
+        @param evelaf            (i) nodal velocities at n+alpha_F/n+1
+        @param evelam           (i) nodal velocities at n+alpha_M/n
+        @param eveln            (i) nodal velocities at n
+        @param evelnp           (i) nodal velocities at n+1 (np_genalpha)
+        @param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
+        @param fsescaaf         (i) fine-scale nodal scalar at n+alpha_F/n+1
+        @param epreaf           (i) nodal pressure at n+alpha_F/n+1
+        @param epream           (i) nodal pressure at n+alpha_M/n
+        @param eprenp           (i) nodal pressure at n+1
+        @param eaccam           (i) nodal accelerations at n+alpha_M
+        @param escaaf           (i) nodal scalar at n+alpha_F/n+1
+        @param escaam           (i) nodal scalar at n+alpha_M/n
+        @param escadtam         (i) nodal scalar derivatives at n+alpha_M/n+1
+        @param eveldtam         (i) nodal velocity derivatives at n+alpha_M/n+1
+        @param epredtam         (i) nodal pressure derivatives at n+alpha_M/n+1
+        @param emhist           (i) time rhs for momentum equation
+        @param edispnp          (i) nodal displacements (on moving mesh)
+        @param egridv           (i) grid velocity (on moving mesh)
+        @param estif            (o) element matrix to calculate
+        @param emesh            (o) linearization wrt mesh motion
+        @param eforce           (o) element rhs to calculate
+        @param egradphi         (i) gradient of nodal scalar at nodes
+        @param ecurvature       (i) curvature of scalar at nodes
+        @param thermpressaf     (i) thermodynamic pressure at n+alpha_F/n+1
+        @param thermpressam     (i) thermodynamic pressure at n+alpha_M/n
+        @param thermpressdtaf   (i) thermodynamic pressure derivative at n+alpha_F/n+1
+        @param thermpressdtam   (i) thermodynamic pressure derivative at n+alpha_M/n+1
+        @param material         (i) fluid material
+        @param Cs_delta_sq      (i) parameter for dynamic Smagorinsky model (Cs*h*h)
+        @param isale            (i) ALE flag
+        @param intpoints        (i) Gaussian integration points
 
         */
       virtual void Sysmat(const CORE::LINALG::Matrix<nsd_, nen_>& ebofoaf,
@@ -873,6 +880,7 @@ namespace DRT
           const int iquad        ///< index of current integration point
       );
 
+     protected:
       //! Compute element matrix entries: SUPG
       void SUPG(CORE::LINALG::Matrix<nen_ * nsd_, nen_ * nsd_>&
                     estif_u,                                   ///< block (weighting function v x u)
@@ -1137,9 +1145,10 @@ namespace DRT
       /*!
         \brief calculate rate of strain of (fine-scale) velocity
 
-        \param evel       (i) nodal velocity values
-        \param derxy      (i) shape function derivatives
-        \param velderxy   (o) velocity derivatives
+      @param evel       (i) nodal velocity values
+      @param derxy      (i) shape function derivatives
+      @param velderxy   (o) velocity derivatives
+
 
         \return computed rate of strain
       */

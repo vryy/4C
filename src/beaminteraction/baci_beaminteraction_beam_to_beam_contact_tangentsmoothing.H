@@ -8,17 +8,17 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#ifndef BACI_BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H
-#define BACI_BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H
+#ifndef BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_TANGENTSMOOTHING_H
+#define BACI_BEAMINTERACTION_BEAM_TO_BEAM_CONTACT_TANGENTSMOOTHING_H
 
-#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_discretization_fem_general_utils_local_connectivity_matrices.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_linalg_serialdensematrix.H"
 
 #include <Teuchos_RCP.hpp>
 
-namespace CONTACT
+namespace BEAMINTERACTION
 {
   //! \brief Small class that stores neighbor element information necessary for nodal tangent
   //! smoothing
@@ -191,6 +191,6 @@ namespace CONTACT
     }
 
   }  // namespace B3TANGENTSMOOTHING
-}  // namespace CONTACT
+}  // namespace BEAMINTERACTION
 
 #endif  // BEAMINTERACTION_BEAM3CONTACT_TANGENTSMOOTHING_H

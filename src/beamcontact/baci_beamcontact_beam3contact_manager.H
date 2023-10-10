@@ -14,7 +14,7 @@
 #include "baci_beamcontact_beam3contact.H"
 #include "baci_beamcontact_beam3contactnew.H"
 #include "baci_beamcontact_beam3tosolidcontact.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_contact_element.H"
 #include "baci_contact_node.H"
 #include "baci_io.H"

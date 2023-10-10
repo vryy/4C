@@ -40,6 +40,9 @@ namespace DRT
       //! biot stabilization
       bool StabBiot() const { return stab_biot_; };
 
+      //! add convective term
+      bool ConvectiveTerm() const { return poro_convective_term_; };
+
       //! scaling factor for biot stabilization
       double StabBiotScaling() const { return stab_biot_scaling_; };
 
@@ -70,6 +73,9 @@ namespace DRT
 
       //! scaling factor for biot stabilization
       double stab_biot_scaling_;
+
+      //! additional convective term
+      bool poro_convective_term_;
 
       //! type of handling transient terms
       INPAR::POROELAST::TransientEquationsOfPoroFluid transient_terms_;

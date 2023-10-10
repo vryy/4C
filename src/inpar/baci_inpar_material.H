@@ -150,8 +150,9 @@ namespace INPAR
       m_multiplicative_split_defgrad_elasthyper,  ///< deformation gradient is split
                                                   ///< multiplicatively in elastic and inelastic
                                                   ///< parts
-      m_muscle_giantesio,                         ///< Giantesio active strain muscle material
-      m_muscle_weickenmeier,                      ///< Weickenmeier muscle material
+      m_muscle_combo,           ///< Combo generalized active strain muscle material
+      m_muscle_giantesio,       ///< Giantesio active strain muscle material
+      m_muscle_weickenmeier,    ///< Weickenmeier generalized active strain muscle material
       m_myocard,                ///< anisotropic electrophysical model of heart tissue
       m_newman,                 ///< properties of an ion species in an electrolyte solution
       m_newman_multiscale,      ///< properties of an ion species in an electrolyte solution for
@@ -255,7 +256,7 @@ namespace INPAR
       mes_isoanisoexpo,  ///< isochoric anisotropic single fiber material
       mes_isoexpopow,    ///< isochoric exponential hyperelastic potential summand
       mes_isomooneyrivlin,   ///< isochoric Mooney-Rivlin hyperelastic potential summand
-      mes_isomuscleblemker,  ///< isochoric Blemker muscle material
+      mes_isomuscleblemker,  ///< isochoric Blemker active stress muscle material
       mes_isoneohooke,       ///< isochoric Neo-Hooke hyperelastic potential summand
       mes_isoogden,          ///< isochoric one-term Ogden hyperelastic potential summand
       mes_isoratedep,        ///< isotropic isochoric frequency dependent viscous potential summand

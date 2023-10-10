@@ -1348,7 +1348,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // transfer boundary condition for turbulent inflow
 
-  std::vector<Teuchos::RCP<ConditionComponent>> tbc_turb_inflow_components;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> tbc_turb_inflow_components;
 
   tbc_turb_inflow_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
   tbc_turb_inflow_components.push_back(Teuchos::rcp(new IntConditionComponent("id", true)));
@@ -1389,7 +1389,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow-dependent pressure conditions
 
-  std::vector<Teuchos::RCP<ConditionComponent>> flowdeppressurecomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flowdeppressurecomponents;
 
   // flow-dependent pressure conditions can be imposed either based on
   // (out)flow rate or (out)flow volume (e.g., for air-cushion condition)
@@ -1443,7 +1443,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Slip Supplemental Curved Boundary conditions
 
-  std::vector<Teuchos::RCP<ConditionComponent>> slipsuppcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> slipsuppcomponents;
 
   slipsuppcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("USEUPDATEDNODEPOS")));
   slipsuppcomponents.push_back(
@@ -1469,7 +1469,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Navier-slip boundary conditions
 
-  std::vector<Teuchos::RCP<ConditionComponent>> navierslipcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> navierslipcomponents;
 
   navierslipcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT")));
   navierslipcomponents.push_back(Teuchos::rcp(new RealConditionComponent("slipcoefficient")));
@@ -1517,7 +1517,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mixed/hybrid Dirichlet conditions
 
-  std::vector<Teuchos::RCP<ConditionComponent>> mixhybDirichletcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> mixhybDirichletcomponents;
 
   // we provide a vector of 3 values for velocities
   mixhybDirichletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 3)));
@@ -1581,7 +1581,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // FREESURF
 
-  std::vector<Teuchos::RCP<ConditionComponent>> freesurfcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> freesurfcomponents;
 
   freesurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELD")));
   freesurfcomponents.push_back(Teuchos::rcp(new StringConditionComponent("field", "fluid",
@@ -1620,7 +1620,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // fluid stress
 
-  std::vector<Teuchos::RCP<ConditionComponent>> fluidstresscomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> fluidstresscomponents;
 
   Teuchos::RCP<ConditionDefinition> linefluidstress =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUID STRESS CALC LINE CONDITIONS",
@@ -1643,7 +1643,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // lift & drag
 
-  std::vector<Teuchos::RCP<ConditionComponent>> liftdragcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> liftdragcomponents;
 
   liftdragcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
   liftdragcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("CENTER")));
@@ -1672,7 +1672,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow rate through line
 
-  std::vector<Teuchos::RCP<ConditionComponent>> lineflowratecomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> lineflowratecomponents;
   lineflowratecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
   Teuchos::RCP<ConditionDefinition> lineflowrate =
@@ -1688,7 +1688,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // flow rate through surface
 
-  std::vector<Teuchos::RCP<ConditionComponent>> flowratecomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flowratecomponents;
   flowratecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
   Teuchos::RCP<ConditionDefinition> surfflowrate = Teuchos::rcp(new ConditionDefinition(
@@ -1704,7 +1704,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // impuls rate through surface
 
-  std::vector<Teuchos::RCP<ConditionComponent>> impulsratecomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> impulsratecomponents;
   impulsratecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
 
   Teuchos::RCP<ConditionDefinition> surfimpulsrate = Teuchos::rcp(new ConditionDefinition(
@@ -1725,7 +1725,7 @@ void INPAR::FLUID::SetValidConditions(
           "VolumetricSurfaceFlowCond", "volumetric surface flow condition",
           DRT::Condition::VolumetricSurfaceFlowCond, true, DRT::Condition::Surface));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> inflownormalcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> inflownormalcomponents;
 
   volumetric_surface_flow_cond->AddComponent(
       Teuchos::rcp(new IntConditionComponent("ConditionID")));
@@ -1937,7 +1937,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a surface
 
-  std::vector<Teuchos::RCP<ConditionComponent>> flucthydrostatsurfcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flucthydrostatsurfcomponents;
   flucthydrostatsurfcomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   flucthydrostatsurfcomponents.push_back(
       Teuchos::rcp(new StringConditionComponent("evaluation type", "nodalbased",
@@ -1958,7 +1958,7 @@ void INPAR::FLUID::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Fluctuating Hydrodynamics Statistics on a line
 
-  std::vector<Teuchos::RCP<ConditionComponent>> flucthydrostatlinecomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> flucthydrostatlinecomponents;
   flucthydrostatlinecomponents.push_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   flucthydrostatlinecomponents.push_back(
       Teuchos::rcp(new StringConditionComponent("evaluation type", "nodalbased",

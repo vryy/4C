@@ -237,7 +237,7 @@ void INPAR::SSI::SetValidConditions(
       "SSICoupling", "SSI Coupling", DRT::Condition::SSICoupling, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<ConditionComponent>> ssicoupcomponentsplain;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> ssicoupcomponentsplain;
   ssicoupcomponentsplain.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
   // insert input file line components into condition definitions
@@ -268,7 +268,7 @@ void INPAR::SSI::SetValidConditions(
           DRT::Condition::SSICouplingSolidToScatra, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<ConditionComponent>> ssicoupcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> ssicoupcomponents;
   ssicoupcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
   // insert input file line components into condition definitions
@@ -299,7 +299,7 @@ void INPAR::SSI::SetValidConditions(
           DRT::Condition::SSICouplingScatraToSolid, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<ConditionComponent>> ssicoupcomponents2;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> ssicoupcomponents2;
   ssicoupcomponents2.emplace_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
   // insert input file line components into condition definitions
@@ -336,7 +336,7 @@ void INPAR::SSI::SetValidConditions(
   // be used which could/should be the long-term goal. However, to date, a simple structural
   // meshtying version for matching node is implemented within the SSI framework and therefore no
   // reference is necessary.
-  std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacemeshtying;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> ssiinterfacemeshtying;
   ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   ssiinterfacemeshtying.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
       "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
@@ -406,11 +406,11 @@ void INPAR::SSI::SetValidConditions(
     surfmanifoldkinetics->AddComponent(
         Teuchos::rcp(new IntConditionComponent("ManifoldConditionID")));
 
-    std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+    std::map<int, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
         kinetic_model_choices;
     {
       {
-        std::vector<Teuchos::RCP<ConditionComponent>> constantinterfaceresistance;
+        std::vector<Teuchos::RCP<::INPUT::LineComponent>> constantinterfaceresistance;
         constantinterfaceresistance.emplace_back(
             Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
         constantinterfaceresistance.emplace_back(
@@ -429,7 +429,7 @@ void INPAR::SSI::SetValidConditions(
 
       {
         // Butler-Volmer-reduced
-        std::vector<Teuchos::RCP<ConditionComponent>> butlervolmerreduced;
+        std::vector<Teuchos::RCP<::INPUT::LineComponent>> butlervolmerreduced;
         // total number of existing scalars
         butlervolmerreduced.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
         butlervolmerreduced.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
@@ -452,7 +452,7 @@ void INPAR::SSI::SetValidConditions(
       }
 
       {
-        std::vector<Teuchos::RCP<ConditionComponent>> noflux;
+        std::vector<Teuchos::RCP<::INPUT::LineComponent>> noflux;
 
         kinetic_model_choices.emplace(
             INPAR::S2I::kinetics_nointerfaceflux, std::make_pair("NoInterfaceFlux", noflux));
@@ -518,7 +518,7 @@ void INPAR::SSI::SetValidConditions(
       "SSI Interface Contact", DRT::Condition::SSIInterfaceContact, true, DRT::Condition::Surface));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<ConditionComponent>> ssiinterfacecontact;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> ssiinterfacecontact;
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new IntConditionComponent("ConditionID")));
   ssiinterfacecontact.emplace_back(Teuchos::rcp(new StringConditionComponent("interface side",
       "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),

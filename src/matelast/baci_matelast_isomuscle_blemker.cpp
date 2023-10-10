@@ -1,6 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*! \file
-\brief Implementation of the isochoric part of the Blemker active skeletal muscle material
+\brief Implementation of the isochoric part of the Blemker active skeletal muscle material (active
+stress approach)
 
 \level 3
 */

@@ -472,7 +472,7 @@ void INPAR::SCATRA::SetValidConditions(
           DRT::Condition::TotalAndMeanScalar, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<ConditionComponent>> totalandmeanscalarcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> totalandmeanscalarcomponents;
 
   {
     totalandmeanscalarcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
@@ -509,7 +509,7 @@ void INPAR::SCATRA::SetValidConditions(
           DRT::Condition::ScatraRelError, true, DRT::Condition::Volume));
 
   // equip condition definitions with input file line components
-  std::vector<Teuchos::RCP<ConditionComponent>> relerrorcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> relerrorcomponents;
 
   {
     relerrorcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
@@ -534,7 +534,7 @@ void INPAR::SCATRA::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Coupling of different scalar transport fields
 
-  std::vector<Teuchos::RCP<ConditionComponent>> scatracoupcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> scatracoupcomponents;
 
   scatracoupcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
   scatracoupcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
@@ -582,7 +582,7 @@ void INPAR::SCATRA::SetValidConditions(
           "TransportRobin", "Scalar Transport Robin Boundary Condition",
           DRT::Condition::TransportRobin, true, DRT::Condition::Surface));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> scatrarobincomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> scatrarobincomponents;
 
 
   scatrarobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
@@ -623,7 +623,7 @@ void INPAR::SCATRA::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Scatra convective heat transfer (Newton's law of heat transfer)
 
-  std::vector<Teuchos::RCP<ConditionComponent>> transportthermoconvectcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> transportthermoconvectcomponents;
 
   // decide here if approximation is sufficient
   // --> Tempn (old temperature T_n)

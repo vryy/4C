@@ -19,6 +19,8 @@
 #include "baci_contact_constitutivelaw_contactconstitutivelaw_parameter.H"
 #include "baci_lib_inputreader.H"
 
+#include <utility>
+
 /*======================================================================*/
 /*======================================================================*/
 CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
@@ -29,8 +31,7 @@ CONTACT::CONSTITUTIVELAW::LawDefinition::LawDefinition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent> c)
+void CONTACT::CONSTITUTIVELAW::LawDefinition::AddComponent(Teuchos::RCP<::INPUT::LineComponent> c)
 {
   inputline_.push_back(c);
 }
@@ -89,7 +90,7 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const DRT::Problem& problem,
         // fill the latter
 
         for (unsigned j = 0; j < inputline_.size(); ++j)
-          condline = inputline_[j]->Read(this, condline, container);
+          condline = inputline_[j]->Read(Name(), condline, *container);
 
         // current material input line contains bad elements
         if (condline->str().find_first_not_of(' ') != std::string::npos)
@@ -106,20 +107,14 @@ void CONTACT::CONSTITUTIVELAW::LawDefinition::Read(const DRT::Problem& problem,
 
   return;
 }
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-CONTACT::CONSTITUTIVELAW::ContactConstitutiveLawComponent::ContactConstitutiveLawComponent(
-    std::string name, bool optional)
-    : optional_(optional), name_(name)
-{
-}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::
     SeparatorContactConstitutiveLawComponent(
         std::string separator, std::string description, bool optional)
-    : ContactConstitutiveLawComponent("*SEPARATOR*", optional),
+    : ::INPUT::LineComponent("*SEPARATOR*", optional),
       separator_(separator),
       description_(description)
 {
@@ -136,7 +131,7 @@ void CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Default
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Print(
-    std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond)
+    std::ostream& stream, const DRT::Container& cond)
 {
   stream << separator_;
 }
@@ -153,8 +148,8 @@ void CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Describ
 /*-----------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream>
 CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Read(
-    CONTACT::CONSTITUTIVELAW::LawDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& container)
 {
   // try to find parameter label "separator_" (with leading and trailing white spaces for
   // uniqueness) in stringstream "condline"
@@ -170,7 +165,7 @@ CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::Read(
       // return error in case a required parameter is not specified
       dserror(
           "Required parameter '%s' for contact constitutive law '%s' not specified in input file!",
-          separator_.c_str(), def->Name().c_str());
+          separator_.c_str(), section_name.c_str());
   }
   // case: found material parameter label "separator_"
   else
@@ -207,7 +202,7 @@ CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent::WriteReadThe
  *----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::RealContactConstitutiveLawComponent(
     std::string name, const double defaultvalue, bool optional)
-    : ContactConstitutiveLawComponent(name, optional), defaultvalue_(defaultvalue)
+    : ::INPUT::LineComponent(name, optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -224,9 +219,9 @@ void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::DefaultLine(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Print(
-    std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond)
+    std::ostream& stream, const DRT::Container& cond)
 {
-  stream << cond->GetDouble(Name());
+  stream << cond.GetDouble(Name());
 }
 
 
@@ -241,8 +236,8 @@ void CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Describe(std
  | Read double parameter value from material line of input file   fang 08/14 |
  *---------------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealContactConstitutiveLawComponent::Read(
-    CONTACT::CONSTITUTIVELAW::LawDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& container)
 {
   // initialize double parameter value to be read
   double number = defaultvalue_;
@@ -267,7 +262,7 @@ Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealContactConstitutiv
       dserror(
           "Value of parameter '%s' for contact constitutive law '%s' not properly specified in "
           "input file!",
-          Name().c_str(), def->Name().c_str());
+          Name().c_str(), section_name.c_str());
 
     // remove double parameter value from stringstream "condline"
     condline->str(
@@ -278,7 +273,7 @@ Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealContactConstitutiv
   }
 
   // add double parameter value to contact constitutive law parameter list
-  container->Add(Name(), number);
+  container.Add(Name(), number);
 
   return condline;
 }
@@ -286,7 +281,7 @@ Teuchos::RCP<std::stringstream> CONTACT::CONSTITUTIVELAW::RealContactConstitutiv
  *----------------------------------------------------------------------*/
 CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::
     StringContactConstitutiveLawComponent(std::string name, std::string defaultvalue, bool optional)
-    : ContactConstitutiveLawComponent(name, optional), defaultvalue_(defaultvalue)
+    : ::INPUT::LineComponent(name, optional), defaultvalue_(defaultvalue)
 {
 }
 
@@ -301,9 +296,9 @@ void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::DefaultLin
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Print(
-    std::ostream& stream, const CONTACT::CONSTITUTIVELAW::Container* cond)
+    std::ostream& stream, const DRT::Container& cond)
 {
-  stream << *cond->Get<std::string>(Name());
+  stream << *cond.Get<std::string>(Name());
 }
 
 /*----------------------------------------------------------------------*
@@ -318,8 +313,8 @@ void CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Describe(s
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::stringstream>
 CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Read(
-    CONTACT::CONSTITUTIVELAW::LawDefinition* def, Teuchos::RCP<std::stringstream> condline,
-    Teuchos::RCP<CONTACT::CONSTITUTIVELAW::Container> container)
+    const std::string& section_name, Teuchos::RCP<std::stringstream> condline,
+    DRT::Container& container)
 {
   std::string stringcomponent = defaultvalue_;
   // get current position in stringstream "condline"
@@ -340,7 +335,7 @@ CONTACT::CONSTITUTIVELAW::StringContactConstitutiveLawComponent::Read(
   }
 
   // add double parameter value to contact constitutive law parameter list
-  container->Add(Name(), stringcomponent);
+  container.Add(Name(), stringcomponent);
 
   return condline;
 }

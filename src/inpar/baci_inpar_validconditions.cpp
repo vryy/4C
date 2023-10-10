@@ -104,7 +104,7 @@ DRT::INPUT::ValidConditions()
 
   /*--------------------------------------------------------------------*/
   // Neumann
-  std::vector<Teuchos::RCP<ConditionComponent>> neumanncomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> neumanncomponents;
 
   neumanncomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
   neumanncomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
@@ -239,7 +239,7 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Dirichlet
 
-  std::vector<Teuchos::RCP<ConditionComponent>> dirichletbundcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> dirichletbundcomponents;
 
   dirichletbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
   dirichletbundcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
@@ -407,7 +407,7 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // Point coupling (e.g. joints - couple X out of Y nodal DoFs)
 
-  std::vector<Teuchos::RCP<ConditionComponent>> couplingcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> couplingcomponents;
 
   couplingcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
   couplingcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
@@ -436,7 +436,7 @@ DRT::INPUT::ValidConditions()
   // Initial fields
 
   // define initial fields that can be set
-  std::vector<Teuchos::RCP<ConditionComponent>> initial_field_components;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> initial_field_components;
   initial_field_components.emplace_back(
       Teuchos::rcp(new StringConditionComponent("Field", "Undefined",
           Teuchos::tuple<std::string>("Undefined", "Velocity", "Pressure", "Temperature", "ScaTra",
@@ -478,7 +478,7 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // define initial field that can be set on thermo simulations that use the ScaTra
   // discretization e.g. STI, SSTI
-  std::vector<Teuchos::RCP<ConditionComponent>> initial_field_components_thermo_on_scatra_dis;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> initial_field_components_thermo_on_scatra_dis;
   initial_field_components_thermo_on_scatra_dis.emplace_back(
       Teuchos::rcp(new StringConditionComponent("Field", "Undefined",
           Teuchos::tuple<std::string>("Undefined", "ScaTra"),
@@ -539,7 +539,7 @@ DRT::INPUT::ValidConditions()
             DRT::Condition::DomainIntegral, true, DRT::Condition::Volume));
 
     // equip condition definitions with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> domainintegralcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> domainintegralcomponents;
 
     {
       domainintegralcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
@@ -567,7 +567,7 @@ DRT::INPUT::ValidConditions()
             DRT::Condition::BoundaryIntegral, true, DRT::Condition::Surface));
 
     // equip condition definition with input file line components
-    std::vector<Teuchos::RCP<ConditionComponent>> boundaryintegralcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> boundaryintegralcomponents;
 
     {
       boundaryintegralcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ID")));
@@ -598,7 +598,7 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // local coordinate systems
 
-  std::vector<Teuchos::RCP<ConditionComponent>> locsyscomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> locsyscomponents;
 
   locsyscomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ROTANGLE")));
   locsyscomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("rotangle", 3)));
@@ -677,7 +677,7 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // periodic boundary
 
-  std::vector<Teuchos::RCP<ConditionComponent>> pbccomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> pbccomponents;
 
   pbccomponents.push_back(
       Teuchos::rcp(new IntConditionComponent("Id of periodic boundary condition", true)));
@@ -721,7 +721,7 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // weak Dirichlet conditions
 
-  std::vector<Teuchos::RCP<ConditionComponent>> weakDirichletcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> weakDirichletcomponents;
 
   // weak DBCs can be imposed adjoint consistent or adjoint inconsistent
   weakDirichletcomponents.push_back(
@@ -787,7 +787,7 @@ DRT::INPUT::ValidConditions()
   /*--------------------------------------------------------------------*/
   // boundary for superconvergent patch recovery (SPR)
 
-  std::vector<Teuchos::RCP<ConditionComponent>> sprcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> sprcomponents;
 
   Teuchos::RCP<ConditionDefinition> linespr = Teuchos::rcp(
       new ConditionDefinition("DESIGN PATCH RECOVERY BOUNDARY LINE CONDITIONS", "SPRboundary",
@@ -1019,7 +1019,7 @@ DRT::INPUT::ValidConditions()
     // translational followed by the rotational modes, each in/around x to z
 
 
-    std::vector<Teuchos::RCP<ConditionComponent>> rigidbodymodecomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> rigidbodymodecomponents;
 
     rigidbodymodecomponents.emplace_back(Teuchos::rcp(new StringConditionComponent("discretization",
         "fluid", Teuchos::tuple<std::string>("fluid", "scatra", "solid"),

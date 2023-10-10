@@ -122,7 +122,7 @@ void INPAR::ARTNET::SetValidConditions(
       Teuchos::tuple<std::string>("forced", "absorbing"),
       Teuchos::tuple<std::string>("forced", "absorbing"), true)));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> artinletcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> artinletcomponents;
   artinletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 2)));
   artinletcomponents.push_back(
       Teuchos::rcp(new IntVectorConditionComponent("curve", 2, true, true)));
@@ -137,7 +137,7 @@ void INPAR::ARTNET::SetValidConditions(
       new ConditionDefinition("DESIGN NODE 1D ARTERY REFLECTIVE CONDITIONS", "ArtRfCond",
           "Artery reflection condition", DRT::Condition::ArtRfCond, true, DRT::Condition::Point));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> artrfcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> artrfcomponents;
   artrfcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
   artrfcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
   for (unsigned i = 0; i < artrfcomponents.size(); ++i) art_rf_bc->AddComponent(artrfcomponents[i]);
@@ -150,7 +150,7 @@ void INPAR::ARTNET::SetValidConditions(
       new ConditionDefinition("DESIGN NODE 1D ARTERY WINDKESSEL CONDITIONS", "ArtWkCond",
           "Artery windkessel condition", DRT::Condition::ArtWkCond, true, DRT::Condition::Point));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> artwkcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> artwkcomponents;
 
   art_wk_bc->AddComponent(Teuchos::rcp(new StringConditionComponent("intigrationType",
       "ExplicitWindkessel", Teuchos::tuple<std::string>("ExplicitWindkessel", "ImpedaceWindkessel"),
@@ -186,7 +186,7 @@ void INPAR::ARTNET::SetValidConditions(
           "ArtPrescribedScatraCond", "Artery prescribed scatra boundary condition",
           DRT::Condition::ArtPrescribedScatraCond, true, DRT::Condition::Point));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> artscatracomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> artscatracomponents;
   artscatracomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
   artscatracomponents.push_back(
       Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
@@ -197,7 +197,7 @@ void INPAR::ARTNET::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // 1D artery-to-porofluid coupling BC
-  std::vector<Teuchos::RCP<ConditionComponent>> artcoupcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> artcoupcomponents;
 
   Teuchos::RCP<ConditionDefinition> artcoup =
       Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY TO POROFLUID COUPLING CONDITIONS",
@@ -215,7 +215,7 @@ void INPAR::ARTNET::SetValidConditions(
 
   /*--------------------------------------------------------------------*/
   // 1D artery-to-scatra coupling BC
-  std::vector<Teuchos::RCP<ConditionComponent>> artscatracoupcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> artscatracoupcomponents;
 
   Teuchos::RCP<ConditionDefinition> artscatracoup =
       Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY TO SCATRA COUPLING CONDITIONS",
@@ -304,7 +304,7 @@ void INPAR::BIOFILM::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Additional coupling for biofilm growth
 
-  std::vector<Teuchos::RCP<ConditionComponent>> biogrcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> biogrcomponents;
 
   biogrcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
@@ -421,7 +421,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Coupling of 3D tissue models and reduced-D airway tree
 
-  std::vector<Teuchos::RCP<ConditionComponent>> redairtiscomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> redairtiscomponents;
 
   redairtiscomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
@@ -441,7 +441,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // Prescribed BC for reduced dimensional airways
 
-  std::vector<Teuchos::RCP<ConditionComponent>> noderedairtiscomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> noderedairtiscomponents;
 
   noderedairtiscomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
 
@@ -475,7 +475,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
           "flow", "pressure", "switchFlowPressure", "VolumeDependentPleuralPressure"),
       true)));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> redairwayinletcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> redairwayinletcomponents;
   redairwayinletcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
   redairwayinletcomponents.push_back(
       Teuchos::rcp(new IntVectorConditionComponent("curve", 2, true, true)));
@@ -514,7 +514,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
       "ExternalPressure", Teuchos::tuple<std::string>("ExternalPressure"),
       Teuchos::tuple<std::string>("ExternalPressure"), true)));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> redairwaypextcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> redairwaypextcomponents;
   redairwaypextcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
   redairwaypextcomponents.push_back(
       Teuchos::rcp(new IntVectorConditionComponent("curve", 2, true, true)));
@@ -534,7 +534,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
           "RedAirwayPrescribedScatraCond", "Reduced d airway prescribed scatra boundary condition",
           DRT::Condition::RedAirwayPrescribedScatraCond, true, DRT::Condition::Point));
 
-  std::vector<Teuchos::RCP<ConditionComponent>> redairwayinletscatracomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> redairwayinletscatracomponents;
   redairwayinletscatracomponents.push_back(
       Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
   redairwayinletscatracomponents.push_back(
@@ -628,7 +628,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   AddNamedReal(raw_vent_bc, "smoothness_period1");
   AddNamedReal(raw_vent_bc, "smoothness_period2");
 
-  std::vector<Teuchos::RCP<ConditionComponent>> redairwayventcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> redairwayventcomponents;
   redairwayventcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 2)));
   redairwayventcomponents.push_back(
       Teuchos::rcp(new IntVectorConditionComponent("curve", 2, true, true)));
@@ -665,7 +665,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   AddNamedReal(raw_volPpl_bc, "TAU");
 
 
-  std::vector<Teuchos::RCP<ConditionComponent>> raw_volPpl_bc_components;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> raw_volPpl_bc_components;
   raw_volPpl_bc_components.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
   raw_volPpl_bc_components.push_back(
       Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));

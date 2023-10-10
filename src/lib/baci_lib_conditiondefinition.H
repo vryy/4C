@@ -13,7 +13,9 @@
 #define BACI_LIB_CONDITIONDEFINITION_H
 
 #include "baci_lib_condition.H"
+#include "baci_lib_container.H"
 #include "baci_lib_inputreader.H"
+#include "baci_lib_linecomponent.H"
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
@@ -34,76 +36,6 @@ namespace DRT
   {
     class ConditionDefinition;
 
-    /// pure virtual base class for all condition line parts
-    /*!
-
-      The aim of the machinery here is to describe how a valid DRT::Condition
-      looks like and to be able to read and write them.
-
-      In general it is assumed that one condition definition in the dat file
-      consists of one line. This line might consist of various components, each
-      one corresponding to one variable that has to be defined in the
-      DRT::Condition object. This class does represent one such component.
-
-      There are different types of variables stored in a DRT::Condition. And
-      accordingly there are different subclasses of ConditionComponent that
-      implement the reading and writing of these types.
-
-      \see ConditionDefinition
-
-      \author u.kue
-      \date 01/08
-     */
-    class ConditionComponent
-    {
-     public:
-      /* construct with the name of the corresponding variable in the condition
-       */
-      explicit ConditionComponent(std::string name);
-
-      /// virtual destructor is mandatory
-      virtual ~ConditionComponent() = default;
-
-      /// write my part of the default (comment) line of the condition
-      virtual void DefaultLine(std::ostream& stream) = 0;
-
-      /* write my part of a default line of the condition
-       * as restructuredText for ReadTheDocs
-       * For some components it returns the same output as Default line (but as a string).
-       * However, for many components the output in ReadTheDocs is more illustrative.
-       */
-      virtual std::string WriteReadTheDocs() = 0;
-
-      /// write my part of this actual condition
-      virtual void Print(std::ostream& stream, const DRT::Condition* cond) = 0;
-
-      /// read my part of an input line and put it into the condition
-      virtual Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline, Teuchos::RCP<DRT::Condition> condition) = 0;
-
-      /*!
-       * This routine is only used for DRT::INPUT::StringConditionComponent
-       *
-       * @return list of options as a a Teuchos array of strings
-       *
-       * \see DRT::INPUT::StringConditionComponent
-       */
-      //
-      virtual Teuchos::Array<std::string> GetOptions() = 0;
-
-      /// the name of my variable inside a condition
-      std::string Name() const { return name_; }
-
-     private:
-      /// my condition variable name
-      std::string name_;
-
-     protected:
-      /// push back token into stream so that it can be read again
-      Teuchos::RCP<std::stringstream> PushBack(
-          const std::string& token, const Teuchos::RCP<std::stringstream>& stream);
-    };
-
 
     /// condition line part that is a string out of a list of valid strings
     /*!
@@ -112,7 +44,7 @@ namespace DRT
       \author u.kue
       \date 01/08
      */
-    class StringConditionComponent : public ConditionComponent
+    class StringConditionComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct condition component that reads and writes a string variable
@@ -147,13 +79,12 @@ namespace DRT
 
       std::string WriteReadTheDocs() override;
 
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& cond) override;
 
       Teuchos::Array<std::string> GetOptions() override;
 
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
 
      private:
       std::string defaultvalue_;
@@ -179,7 +110,7 @@ namespace DRT
       \author u.kue
       \date 01/08
      */
-    class SeparatorConditionComponent : public ConditionComponent
+    class SeparatorConditionComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a separator component that does read a string without setting a variable
@@ -191,10 +122,9 @@ namespace DRT
 
       Teuchos::Array<std::string> GetOptions() override;
 
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
+      void Print(std::ostream& stream, const DRT::Container& cond) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
 
      private:
       std::string separator_;
@@ -214,7 +144,7 @@ namespace DRT
       \author u.kue
       \date 01/08
      */
-    class IntConditionComponent : public ConditionComponent
+    class IntConditionComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a condition component that reads a int variable
@@ -235,10 +165,9 @@ namespace DRT
 
       Teuchos::Array<std::string> GetOptions() override;
 
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
+      void Print(std::ostream& stream, const DRT::Container& cond) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
 
      private:
       bool fortranstyle_;
@@ -251,7 +180,7 @@ namespace DRT
      * A function type used to determine the length of other components from the
      * @p already_parsed_condition.
      */
-    using LengthDefinition = std::function<int(const Condition& already_parsed_condition)>;
+    using LengthDefinition = std::function<int(const DRT::Container& already_parsed_condition)>;
 
     struct LengthFromInt
     {
@@ -260,7 +189,10 @@ namespace DRT
        * given @p name.
        */
       LengthFromInt(std::string name) : name_(std::move(name)) {}
-      int operator()(const Condition& already_read_line) { return already_read_line.GetInt(name_); }
+      int operator()(const DRT::Container& already_read_line)
+      {
+        return already_read_line.GetInt(name_);
+      }
 
      private:
       std::string name_;
@@ -279,7 +211,7 @@ namespace DRT
       \author u.kue
       \date 01/08
      */
-    class IntVectorConditionComponent : public ConditionComponent
+    class IntVectorConditionComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a condition component that reads a vector of int variables
@@ -309,10 +241,9 @@ namespace DRT
 
       Teuchos::Array<std::string> GetOptions() override;
 
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
+      void Print(std::ostream& stream, const DRT::Container& cond) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
       virtual void SetLength(int newlength);
 
      private:
@@ -330,7 +261,7 @@ namespace DRT
       \author u.kue
       \date 01/08
      */
-    class RealConditionComponent : public ConditionComponent
+    class RealConditionComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a condition component that reads a double variable
@@ -347,10 +278,9 @@ namespace DRT
 
       Teuchos::Array<std::string> GetOptions() override;
 
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
+      void Print(std::ostream& stream, const DRT::Container& cond) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
     };
 
 
@@ -361,7 +291,7 @@ namespace DRT
       \author u.kue
       \date 01/08
      */
-    class RealVectorConditionComponent : public ConditionComponent
+    class RealVectorConditionComponent : public ::INPUT::LineComponent
     {
      public:
       /// construct a condition component that reads a vector of double variables
@@ -387,11 +317,10 @@ namespace DRT
 
       Teuchos::Array<std::string> GetOptions() override;
 
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& cond) override;
 
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
       virtual void SetLength(int newlength);
 
      private:
@@ -402,7 +331,7 @@ namespace DRT
     /**
      * This component contains a series of ConditionComponents that are selected by a key parameter.
      */
-    class SwitchConditionComponent : public ConditionComponent
+    class SwitchConditionComponent : public ::INPUT::LineComponent
     {
       //! This component only supports integers for keys. Unscoped enums convert automatically to
       //! int and can be used to increase readability.
@@ -416,7 +345,8 @@ namespace DRT
        * continues with these components. By default, the selection is made based on @p default_key.
        */
       SwitchConditionComponent(std::string name, const KeyType& default_key,
-          std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+          std::map<KeyType,
+              std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
               choices);
 
       void DefaultLine(std::ostream& stream) override;
@@ -427,15 +357,14 @@ namespace DRT
 
       Teuchos::Array<std::string> GetOptions() override;
 
-      void Print(std::ostream& stream, const DRT::Condition* cond) override;
+      void Print(std::ostream& stream, const DRT::Container& cond) override;
 
-      Teuchos::RCP<std::stringstream> Read(ConditionDefinition* def,
-          Teuchos::RCP<std::stringstream> condline,
-          Teuchos::RCP<DRT::Condition> condition) override;
+      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
+          Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
 
      private:
       KeyType default_key_;
-      std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<ConditionComponent>>>>
+      std::map<KeyType, std::pair<std::string, std::vector<Teuchos::RCP<::INPUT::LineComponent>>>>
           choices_;
 
       //! Helper component to read the selected key from input.
@@ -487,7 +416,7 @@ namespace DRT
         right. The order is important! On reading we try and read component
         after component.
        */
-      void AddComponent(const Teuchos::RCP<ConditionComponent>& c);
+      void AddComponent(const Teuchos::RCP<::INPUT::LineComponent>& c);
 
       /// read all conditions from my input file section
       /*!
@@ -511,7 +440,7 @@ namespace DRT
       std::string Description() const { return description_; }
 
       /// my condition inputline
-      std::vector<Teuchos::RCP<ConditionComponent>> Inputline() const { return inputline_; }
+      std::vector<Teuchos::RCP<::INPUT::LineComponent>> Inputline() const { return inputline_; }
 
       /// my GeometryType
       Condition::GeometryType GeometryType() const { return gtype_; }
@@ -525,7 +454,7 @@ namespace DRT
       Condition::GeometryType gtype_;
 
       ///
-      std::vector<Teuchos::RCP<ConditionComponent>> inputline_;
+      std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
     };
 
 

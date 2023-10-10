@@ -12,7 +12,7 @@
 
 #include "baci_beamcontact_beam3contact.H"
 #include "baci_beamcontact_beam3contactnew.H"
-#include "baci_beaminteraction_beam3contact_defines.H"
+#include "baci_beaminteraction_beam_to_beam_contact_defines.H"
 #include "baci_inpar_beamcontact.H"
 
 Teuchos::RCP<CONTACT::Beam3contactinterface> CONTACT::Beam3contactinterface::Impl(

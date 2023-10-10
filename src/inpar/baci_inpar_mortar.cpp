@@ -162,7 +162,7 @@ void INPAR::MORTAR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mortar contact
 
-  std::vector<Teuchos::RCP<ConditionComponent>> contactcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> contactcomponents;
 
   contactcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
   contactcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Side", "Master",
@@ -226,7 +226,7 @@ void INPAR::MORTAR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mortar coupling (for ALL kinds of interface problems except contact)
 
-  std::vector<Teuchos::RCP<ConditionComponent>> mortarcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> mortarcomponents;
 
   mortarcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
   mortarcomponents.push_back(Teuchos::rcp(
@@ -255,7 +255,7 @@ void INPAR::MORTAR::SetValidConditions(
   /*--------------------------------------------------------------------*/
   // mortar coupling symmetry condition
 
-  std::vector<Teuchos::RCP<ConditionComponent>> mrtrsymcomponents;
+  std::vector<Teuchos::RCP<::INPUT::LineComponent>> mrtrsymcomponents;
   mrtrsymcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
   mrtrsymcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 3)));
 
@@ -297,7 +297,7 @@ void INPAR::MORTAR::SetValidConditions(
   {
     /*--------------------------------------------------------------------*/
     // mortar coupling (for ALL kinds of interface problems except contact)
-    std::vector<Teuchos::RCP<ConditionComponent>> mortarcomponents;
+    std::vector<Teuchos::RCP<::INPUT::LineComponent>> mortarcomponents;
 
     mortarcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
     mortarcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Side", "Master",
