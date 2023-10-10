@@ -99,11 +99,7 @@ MAT 1 MAT_Muscle_Giantesio ALPHA 15.0 BETA 1.0 GAMMA 5.0 KAPPA 100.0 OMEGA0 0.8 
 
 // active unmixed material used for cube 2
 MAT 2 MAT_Muscle_Giantesio ALPHA 19.69 BETA 1.19 GAMMA 0.1599 KAPPA 100.0 OMEGA0 0.7388 ACTMUNUM 0.0052070 MUTYPESNUM 3 INTERSTIM 0.004 0.004 0.004 FRACACTMU 0.05 0.29 0.66 FTWITCH 25.0 44.0 768.0 TTWITCH 0.02 0.011 0.011 LAMBDAMIN 0.682 LAMBDAOPT 1.192 DOTLAMBDAMIN -17 KE 5 KC 5 DE 0.0 DC 0.0 ACTTIMESNUM 2 ACTTIMES 0.0 1.0 ACTINTERVALSNUM 1 ACTVALUES 1.0 DENS 1.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 16
-NDLINE  0
-NDSURF  0
-NDVOL   0
+
 ----------------------------------------------------------------------FUNCT1
 // function for application of Dirichlet conditions on top surface of cube 1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
@@ -164,6 +160,6 @@ NODE 14 COORD  3.0 0.0 0.0
 NODE 15 COORD  3.0 1.0 0.0
 NODE 16 COORD  3.0 1.0 1.0
 ------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
-2 SOLIDH8 HEX8 9 10 11 12 13 14 15 16 MAT 2 KINEM nonlinear EAS none FIBER1 0.0 0.0 1.0
+1 SOLID HEX8 1 2 3 4 5 6 7 8 MAT 1 KINEM nonlinear FIBER1 0.0 0.0 1.0
+2 SOLID HEX8 9 10 11 12 13 14 15 16 MAT 2 KINEM nonlinear FIBER1 0.0 0.0 1.0
 ---------------------------------------------------------------END
