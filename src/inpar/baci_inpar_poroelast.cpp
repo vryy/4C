@@ -121,6 +121,8 @@ void INPAR::POROELAST::SetValidParameters(Teuchos::RCP<Teuchos::ParameterList> l
 
   BoolParameter("MATCHINGGRID", "Yes", "is matching grid", &poroelastdyn);
 
+  BoolParameter("CONVECTIVE_TERM", "No", "convective term ", &poroelastdyn);
+
   // number of linear solver used for poroelasticity
   IntParameter("LINEAR_SOLVER", -1, "number of linear solver used for poroelasticity problems",
       &poroelastdyn);

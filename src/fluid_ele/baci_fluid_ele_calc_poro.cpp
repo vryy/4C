@@ -1274,7 +1274,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
            |                  |
             \                /
     */
-    /* convection, convective ALE part  */
+    /* convection, convective ALE part, (optional) convective Fluid term  */
     /*
               /                             \
              |  /        n+1       \          |
@@ -1501,7 +1501,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
     // 5) standard Galerkin bodyforce term on right-hand side
     Base::BodyForceRhsTerm(velforce, rhsfac);
 
-    if (Base::fldpara_->PSPG() or Base::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none)
+    if (Base::fldpara_->PSPG() or Base::fldpara_->RStab() != INPAR::FLUID::reactive_stab_none or
+        Base::fldpara_->SUPG())
       ComputeLinResMDuStabilization(timefacfac, lin_resM_Du);
 
     // 6) PSPG term
@@ -1594,6 +1595,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GaussPointLoop(Teuchos::Parameter
           velforce(idim, vi) += conti_stab_and_vol_visc_rhs * Base::derxy_(idim, vi);
         }
       }
+    }
+    // 10) SUPG stabilization
+    if (Base::fldpara_->SUPG())
+    {
+      Base::SUPG(estif_u, estif_p_v, velforce, preforce, lin_resM_Du, 0, timefacfac, timefacfacpre,
+          rhsfac);
+      Base::ReynoldsStressStab(estif_u, estif_p_v, lin_resM_Du, timefacfac, timefacfacpre, 0);
     }
   }
 }
@@ -2468,9 +2476,16 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin3DMeshMotionOD(
   const double timefacfac_det = timefacfac / Base::det_;
 
   {
-    const double convvelint_0 = Base::convvelint_(0);
-    const double convvelint_1 = Base::convvelint_(1);
-    const double convvelint_2 = Base::convvelint_(2);
+    // in case of convective part, v^f should to be added here
+    const double convvelint_0 = (porofldpara_->ConvectiveTerm())
+                                    ? Base::convvelint_(0) - Base::velint_(0)
+                                    : Base::convvelint_(0);
+    const double convvelint_1 = (porofldpara_->ConvectiveTerm())
+                                    ? Base::convvelint_(1) - Base::velint_(1)
+                                    : Base::convvelint_(1);
+    const double convvelint_2 = (porofldpara_->ConvectiveTerm())
+                                    ? Base::convvelint_(2) - Base::velint_(2)
+                                    : Base::convvelint_(2);
 
     for (int ui = 0; ui < nen_; ++ui)
     {
@@ -3874,8 +3889,14 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Lin2DMeshMotionOD(
   const double vderiv_1_1 = Base::vderiv_(1, 1);
   //---------------convective term
   {
-    const double convvelint_0 = Base::convvelint_(0);
-    const double convvelint_1 = Base::convvelint_(1);
+    // in case of convective part, v^f should to be added here
+    const double convvelint_0 = (porofldpara_->ConvectiveTerm())
+                                    ? Base::convvelint_(0) - Base::velint_(0)
+                                    : Base::convvelint_(0);
+    const double convvelint_1 = (porofldpara_->ConvectiveTerm())
+                                    ? Base::convvelint_(1) - Base::velint_(1)
+                                    : Base::convvelint_(1);
+
     for (int vi = 0; vi < nen_; ++vi)
     {
       const int tvi = 2 * vi;
@@ -5362,7 +5383,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
                 INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
             Base::fldpara_->WhichTau() ==
                 INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt or
-            Base::fldpara_->WhichTau() == INPAR::FLUID::tau_not_defined))
+            Base::fldpara_->WhichTau() == INPAR::FLUID::tau_not_defined or
+            Base::fldpara_->WhichTau() == INPAR::FLUID::tau_taylor_hughes_zarins))
       dserror("incorrect definition of stabilization parameter for porous flow");
 
     if (porosity_ < 1e-15) dserror("zero porosity!");
@@ -5410,14 +5432,30 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeStabilizationParameters(co
     const double c_u = 4.0;
     const double c_p = 4.0;
 
-    // tau_Mu not required for porous flow
-    Base::tau_(0) = 0.0;
-    Base::tau_(1) = ((h_p) * (h_p)) / (c_u * ((h_p) * (h_p)) * Base::densaf_ * sigma_tot * xi11 +
-                                          (2.0 * Base::visceff_ / mk));
-    Base::tau_(2) = c_p * ((h_p) * (h_p)) * Base::reacoeff_ / porosity_;
+    if (Base::fldpara_->SUPG())
+    {
+      // in case of SUPG stabilization calculate scaled version
+      Base::CalcStabParameter(vol);
+      auto tau_1 =
+          h_p * h_p /
+          (c_u * h_p * h_p * Base::densaf_ * sigma_tot * xi11 + (2.0 * Base::visceff_ / mk));
+      auto tau_2 = c_p * h_p * h_p * Base::reacoeff_ / porosity_;
+
+      Base::tau_(1) = std::min(tau_1, Base::tau_(1));
+      Base::tau_(2) = std::min(tau_2, Base::tau_(2));
+    }
+    else
+    {
+      // tau_Mu not required for porous flow
+      Base::tau_(0) = 0.0;
+      Base::tau_(1) =
+          h_p * h_p /
+          (c_u * h_p * h_p * Base::densaf_ * sigma_tot * xi11 + (2.0 * Base::visceff_ / mk));
+      Base::tau_(2) = c_p * h_p * h_p * Base::reacoeff_ / porosity_;
+    }
 
     dtau_dphi_(0) = 0.0;
-    if (xi11 == 1.0)
+    if (xi11 == 1.0 and not Base::fldpara_->SUPG())
     {
       dtau_dphi_(1) =
           -1.0 * Base::tau_(1) * Base::tau_(1) * c_u * Base::densaf_ * Base::reacoeff_ / porosity_;
@@ -5554,6 +5592,26 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeLinResMDu(const double& ti
     for (int idim = 0; idim < nsd_; ++idim)
     {
       lin_resM_Du(idim_nsd_p_idim[idim], ui) += v;
+    }
+  }
+
+  // ( \rho*Du \cdot \nabla)^ {n+1}_i u
+  // linearization of convective part
+  if (porofldpara_->ConvectiveTerm())
+  {
+    for (int ui = 0; ui < Base::nen_; ++ui)
+    {
+      const double temp = timefacfac_densaf * Base::funct_(ui);
+
+      for (int idim = 0; idim < Base::nsd_; ++idim)
+      {
+        const int idim_nsd = idim * Base::nsd_;
+
+        for (int jdim = 0; jdim < Base::nsd_; ++jdim)
+        {
+          lin_resM_Du(idim_nsd + jdim, ui) += temp * Base::vderxy_(idim, jdim);
+        }
+      }
     }
   }
 }
@@ -5874,9 +5932,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPoint(
   // using routine for evaluation of momentum rhs/residual as given)
   // conv_old_.Clear();
 
-  // set old convective term to ALE-Term only
-  Base::conv_old_.Multiply(Base::vderxy_, Base::convvelint_);
-  Base::conv_c_.MultiplyTN(Base::derxy_, Base::convvelint_);
+  // Add convective part:
+  if (porofldpara_->ConvectiveTerm())
+  {
+    Base::conv_old_.Multiply(Base::vderxy_, convvel_);
+    Base::conv_c_.MultiplyTN(Base::derxy_, convvel_);
+  }
+  else
+  {
+    // set old convective term to ALE-Term only
+    Base::conv_old_.Multiply(Base::vderxy_, Base::convvelint_);
+    Base::conv_c_.MultiplyTN(Base::derxy_, Base::convvelint_);
+  }
+
 
   // compute divergence of velocity from previous iteration
   Base::vdiv_ = 0.0;
@@ -6014,9 +6082,18 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateVariablesAtGaussPointOD(
   // using routine for evaluation of momentum rhs/residual as given)
   //  conv_old_.Clear();
 
-  // set old convective term to ALE-Term only
-  Base::conv_old_.Multiply(Base::vderxy_, Base::convvelint_);
-  Base::conv_c_.MultiplyTN(Base::derxy_, Base::convvelint_);
+  // Add convective part:
+  if (porofldpara_->ConvectiveTerm())
+  {
+    Base::conv_old_.Multiply(Base::vderxy_, convvel_);
+    Base::conv_c_.MultiplyTN(Base::derxy_, convvel_);
+  }
+  else
+  {
+    // set old convective term to ALE-Term only
+    Base::conv_old_.Multiply(Base::vderxy_, Base::convvelint_);
+    Base::conv_c_.MultiplyTN(Base::derxy_, Base::convvelint_);
+  }
 
   // compute divergence of velocity from previous iteration
   Base::vdiv_ = 0.0;
