@@ -1,7 +1,9 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Definition of the Weickenmeier active skeletal muscle material
+\brief Definition of the Weickenmeier active skeletal muscle material (generalized active strain
+approach)
+
 
 \level 3
 */
@@ -65,7 +67,7 @@ namespace MAT
       //! @}
 
       //! @name velocity dependent activation contribution: slight modification of original function
-      //! given by Weickenmeier et. al.
+      //! given by Weickenmeier et al..
       //! @{
       const double dotLambdaMMin_;  ///< minimal stretch rate
       const double ke_;  ///< dimensionless constant controlling the curvature of the velocity
@@ -112,7 +114,8 @@ namespace MAT
   /*!
    * \brief Weickenmeier muscle material
    *
-   * This constituent represents the Weickenmeier muscle material.
+   * This constituent represents an active hyperelastic muscle material using the generalized active
+   * strain approach as described by Weickenmeier et al.
    *
    * Reference for the material model: J. Weickenmeier, M. Itskov, E Mazza and M. Jabareen, 'A
    * physically motivated constitutive model for 3D numerical simulation of skeletal muscles',
@@ -122,11 +125,11 @@ namespace MAT
    * Amongst others, the Weickenmeier material accounts for the velocity dependence of the active
    * force production. However, the given function produces unsuitable values - in the sense that it
    * fails to reproduce experimetally observerd force-velocity curves. Thus, a slight modification
-   * of the velocity dependence in the style of Boel et. al. is introduced here. Boel et. al. scale
+   * of the velocity dependence in the style of Boel et al.. is introduced here. Boel et al.. scale
    * and shift the eccentric branch of the velocity dependency using the parameter d. To be able to
    * turn the velocity dependency on and off, this concept is adopted for the concentric branch as
    * well. Choosing de=dc=0 leads to a neglection of the velocity dependence. Choosing dc=1 and
-   * de=d-1 reproduces the function presented by Boel et. al.
+   * de=d-1 reproduces the function presented by Boel et al..
    *
    * Reference: M. Boel and S. Reese, 'Micromechanical modelling of skeletal muscles based on the
    * finite element method', Computer Methods in Biomechanics and Biomedical Engineering, vol. 11,
