@@ -537,6 +537,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("shape derivatives", false);
     fluidtimeparams->set<bool>(
         "conti partial integration", DRT::INPUT::IntegralValue<int>(porodyn, "CONTIPARTINT"));
+    fluidtimeparams->set<bool>(
+        "convective term", DRT::INPUT::IntegralValue<bool>(porodyn, "CONVECTIVE_TERM"));
   }
   else if ((probtype == ProblemType::fpsi and disname == "fluid") or
            (probtype == ProblemType::fps3i and disname == "fluid"))
