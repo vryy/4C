@@ -42,13 +42,6 @@ variables:
   # - "debug"
   CTEST_BUILD_TYPE_GITLAB: release
 
-  # Number of threads to be used during build
-  NUMBER_OF_BUILD_THREADS: '3'
-
-  # Number of threads to be used during testing
-  NUMBER_OF_TEST_THREADS: '1'
-
-
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
@@ -94,16 +87,15 @@ before_script:
   ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=${PRESET} -DCMAKE_C_COMPILER_LAUNCHER="" -DCMAKE_CXX_COMPILER_LAUNCHER=""
 - echo Building the following targets ${BUILD_TARGETS}
   # build
-- time ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j ${NUMBER_OF_BUILD_THREADS}
-  2>&1 | tee build.log
+- time ${CMAKE_COMMAND} --build . --target ${BUILD_TARGETS} -- -j `nproc` 2>&1 | tee
+  build.log
 
 .build-and-test: &build-and-test
 - *build-only
   # test
 - 'echo ctest selection: $CTEST_TEST_SELECTION'
-- time ${CTEST_COMMAND} -VV $CTEST_TEST_SELECTION -j $NUMBER_OF_TEST_THREADS --output-junit
-  ${CI_PROJECT_DIR}/junit_test_summary.xml | tee test.log | grep -e "\*\*\*Failed"
-  -e "\.\.\.   Passed" -e " tests passed\,"
+- time ${CTEST_COMMAND} -VV $CTEST_TEST_SELECTION -j `nproc` --output-junit ${CI_PROJECT_DIR}/junit_test_summary.xml
+  | tee test.log | grep -e "\*\*\*Failed" -e "\.\.\.   Passed" -e " tests passed\,"
 - cd ${CI_PROJECT_DIR}
 
 .check-no-warnings: &check-no-warnings
@@ -248,7 +240,7 @@ before_script:
   - cd $CI_PROJECT_DIR/../Trilinos-develop-build
     # Configure Trilinos and build it
   - source $CI_PROJECT_DIR/trilinos/$TRILINOS_DEVELOP_CONFIG |& tee ../buildtest_release_trilinos_develop.log
-  - make -j${NUMBER_OF_BUILD_THREADS} install |& tee -a ../buildtest_release_trilinos_develop.log
+  - make -j`nproc` install |& tee -a ../buildtest_release_trilinos_develop.log
 
   - *clean-build-folder
   - *build-and-test
@@ -464,8 +456,6 @@ danger-review:
 imcs-buildtest_daily_ubuntu20:
   extends: .buildtest_daily
   variables:
-    NUMBER_OF_TEST_THREADS: '12'
-    NUMBER_OF_BUILD_THREADS: '12'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
     CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
@@ -476,8 +466,6 @@ imcs-buildtest_daily_ubuntu20:
 imcs-buildtest_daily_debug_ubuntu20:
   extends: .buildtest_daily_debug
   variables:
-    NUMBER_OF_TEST_THREADS: '12'
-    NUMBER_OF_BUILD_THREADS: '12'
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: imcs_workstation_optimized_debug
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
     CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
@@ -488,8 +476,6 @@ imcs-buildtest_daily_debug_ubuntu20:
 imcs-buildtest_release_trilinos_develop:
   extends: .buildtest_release_trilinos_develop
   variables:
-    NUMBER_OF_TEST_THREADS: '12'
-    NUMBER_OF_BUILD_THREADS: '12'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: imcs_workstation_trilinos
     CMAKE_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/cmake
     CTEST_COMMAND: /imcs/public/compsim/opt/cmake-3.25.2/bin/ctest
@@ -523,8 +509,6 @@ buildtest_coverage:
     # increase the unit test timeout
     UNITTEST_TIMEOUT: '50'
     # enable coverage option of ctest
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
     CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
@@ -636,8 +620,6 @@ buildtest_full_release:
   extends: .buildtest_full
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
@@ -658,8 +640,6 @@ buildtest_full_release_asan:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     GLOBAL_TEST_TIMEOUT_SCALE: '10'
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
     CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
@@ -682,8 +662,6 @@ buildtest_full_debug:
   extends: .buildtest_daily_debug
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
-    NUMBER_OF_TEST_THREADS: '10'
-    NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
     CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
@@ -719,7 +697,7 @@ build-verify-headers:
     ${CMAKE_COMMAND} ${CI_PROJECT_DIR} --preset=docker -DCMAKE_VERIFY_INTERFACE_HEADER_SETS="ON"
     # verify headers
   - time ${CMAKE_COMMAND} --build . --target all_verify_interface_header_sets -- -j
-    ${NUMBER_OF_BUILD_THREADS} 2>&1 | tee verify_headers.log
+    `nproc` 2>&1 | tee verify_headers.log
   artifacts:
     name: $CI_JOB_NAME-$CI_JOB_ID
     paths:
