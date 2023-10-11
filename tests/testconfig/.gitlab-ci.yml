@@ -52,10 +52,23 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies:latest
+  BACI_DOCKER_DEPENDENCIES_HASH: defb9e27
+  BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
+  BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
+
+.compute-dependencies-hash: &compute-dependencies-hash
+# compute short hash from contents of folder dependencies and docker
+- COMPUTED_DOCKER_DEPENDENCIES_HASH=`find dependencies docker -type f -exec sha1sum
+  {} \; | sort | sha1sum | cut -c -8`
 
 before_script:
 - git config --global --add safe.directory ${CI_PROJECT_DIR}
+- *compute-dependencies-hash
+- if [ "${COMPUTED_DOCKER_DEPENDENCIES_HASH}" != "$BACI_DOCKER_DEPENDENCIES_HASH"
+  ]; then echo "Docker image version hash does not match the hash of the dependencies.
+  You likely need to change the hash to ${COMPUTED_DOCKER_DEPENDENCIES_HASH} and rebuild
+  the dependencies." && exit 1; else echo "Running on the correct docker image version
+  with hash $BACI_DOCKER_DEPENDENCIES_HASH."; fi
 
 #-------------------------------------------------------------------------------
 # Define the base jobs for testing
@@ -256,7 +269,7 @@ before_script:
 # codeclimate job
 .codeclimate:
   stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - *clean-build-folder
   - mkdir ../baci-build/ && cd ../baci-build/
@@ -375,7 +388,7 @@ stages:
 
 checkcode:
   stage: checkcode
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   script:
   - echo code check
   - ./create-baci-python-venv
@@ -503,7 +516,7 @@ codeclimate-mr:
 
 buildtest_coverage:
   extends: .buildtest_coverage
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     # increase the global test timeout
     GLOBAL_TEST_TIMEOUT_SCALE: '50'
@@ -574,7 +587,7 @@ pages: # job name needs to be pages
 
 doxygen:
   extends: .doxygen
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
@@ -605,14 +618,14 @@ build-base-dependencies:
   image: docker:20.10.16
   services:
   - docker:20.10.16-dind
-  variables:
-    FULL_IMAGE_PATH: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
   before_script:
   - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    # pull the latest available image to make use of caching
+  - *compute-dependencies-hash
   - echo $CI_REGISTRY_IMAGE
   - echo $CI_REGISTRY
+  - echo "Generating BACI dependencies docker image with version-hash $COMPUTED_DOCKER_DEPENDENCIES_HASH"
+  - FULL_IMAGE_PATH="$CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE:$COMPUTED_DOCKER_DEPENDENCIES_HASH"
   - docker build --no-cache --tag $FULL_IMAGE_PATH --file docker/Dockerfile .
   - docker push $FULL_IMAGE_PATH
   rules:
@@ -621,7 +634,7 @@ build-base-dependencies:
 
 buildtest_full_release:
   extends: .buildtest_full
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
@@ -642,7 +655,7 @@ buildtest_full_release:
 
 buildtest_full_release_asan:
   extends: .buildtest_full
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     GLOBAL_TEST_TIMEOUT_SCALE: '10'
     NUMBER_OF_TEST_THREADS: '10'
@@ -667,7 +680,7 @@ buildtest_full_release_asan:
 
 buildtest_full_debug:
   extends: .buildtest_daily_debug
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
@@ -685,7 +698,7 @@ buildtest_full_debug:
   interruptible: true
 
 build-verify-headers:
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_BUILD_THREADS: '10'
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
@@ -719,7 +732,7 @@ build-verify-headers:
 
 readthedocs:
   extends: .readthedocs
-  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE
+  image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
