@@ -1435,7 +1435,7 @@ POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::LungOxygenExchangeLaw(
   }
 
   // save funct_params in class variable
-  this->myfunct_params_.resize(11);
+  this->myfunct_params_.resize(9);
   this->myfunct_params_[0] = funct_params[0].second;
   this->myfunct_params_[1] = funct_params[1].second;
   this->myfunct_params_[2] = funct_params[2].second;
@@ -1546,6 +1546,8 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
 #ifdef DEBUG
   CheckOrder(variables, constants);
 #endif
+  // Check order of variables and constants vector only once (since it does not change)
+  if (not this->order_checked_) CheckOrder(variables, constants);
 
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
@@ -1579,7 +1581,7 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
   {
     // read variables and constants (order is crucial)
     oxy_mass_frac_air = constants[0].second;
-    oxy_mass_frac_bl = constants[1].second;
+    oxy_mass_frac_bl.val() = constants[1].second;
     P_air = variables[0].second;
   }
   else

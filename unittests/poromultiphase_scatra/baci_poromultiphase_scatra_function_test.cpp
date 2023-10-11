@@ -28,8 +28,8 @@ namespace
           {"n", 3}, {"P_oB50", 3.6}, {"NC_Hb", 0.25}, {"P_atmospheric", 101.3}};
 
       // construct LungOxygenExchangeLaw
-      LungOxygenExchangeLaw_ = std::unique_ptr<POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>>(
-          new POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>(func_params));
+      LungOxygenExchangeLaw_ =
+          std::make_unique<POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>>(func_params);
     }
 
     std::unique_ptr<POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>> LungOxygenExchangeLaw_;

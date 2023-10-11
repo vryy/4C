@@ -109,7 +109,9 @@ namespace POROMULTIPHASESCATRA
         Pb = Pb - f / dfdPb;
       }
       if (!converged)
+      {
         dserror("local Newton for computation of oxygen partial pressure unconverged");
+      }
     }
 
   }  // namespace UTILS
