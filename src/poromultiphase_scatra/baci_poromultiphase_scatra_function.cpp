@@ -48,6 +48,10 @@ namespace
     {
       return Teuchos::rcp(new POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>(params));
     }
+    else if (type == "LUNG_CARBONDIOXIDE_EXCHANGE_LAW")
+    {
+      return Teuchos::rcp(new POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>(params));
+    }
     else
     {
       dserror("Wrong type of POROMULTIPHASESCATRA_FUNCTION");
@@ -1606,6 +1610,330 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
   return deriv;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::LungCarbonDioxideExchangeLaw(
+    const std::vector<std::pair<std::string, double>>& funct_params)
+{
+  // Check size
+  if (funct_params.size() != 14)
+  {
+    dserror(
+        "Wrong size of funct_params for LUNG_CARBONDIOXIDE_EXCHANGE_LAW, it should have "
+        "exactly\n"
+        "14 funct_params (in this order) rho_CO2, DiffAdVTLC, pH, rho_air, rho_bl, rho_oxy "
+        "n, P_oB50, C_Hb, NC_Hb, alpha_oxy, P_atmospheric, ScalingFormmHg, volfrac_blood_ref ");
+  }
+
+  // Check correct naming and order of funct_params
+  if (funct_params[0].first != "rho_CO2")
+    dserror("First parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be rho_CO2");
+
+  if (funct_params[1].first != "DiffsolAdVTLC")
+    dserror("Second parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be DiffsolAdVTLC");
+
+  if (funct_params[2].first != "pH")
+    dserror("Third parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be pH");
+
+  if (funct_params[3].first != "rho_air")
+    dserror("Fourth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be rho_air");
+
+  if (funct_params[4].first != "rho_bl")
+    dserror("Fifth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be rho_bl");
+
+  if (funct_params[5].first != "rho_oxy")
+    dserror("Sixth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_oxy");
+
+  if (funct_params[6].first != "n")
+    dserror("Seventh parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be n");
+
+  if (funct_params[7].first != "P_oB50")
+    dserror("Eighth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be P_oB50");
+
+  if (funct_params[8].first != "C_Hb")
+    dserror("Ninth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be C_Hb");
+
+  if (funct_params[9].first != "NC_Hb")
+    dserror("Tenth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be NC_Hb");
+
+  if (funct_params[10].first != "alpha_oxy")
+    dserror("Eleventh parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be alpha_oxy");
+
+  if (funct_params[11].first != "P_atmospheric")
+  {
+    dserror(
+        "Twelfth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be P_atmospheric, which "
+        "should be "
+        "1.013 bar");
+  }
+  if (funct_params[12].first != "ScalingFormmHg")
+    dserror(
+        "Thirteenth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be ScalingFormmHg. It is "
+        "the scaling value necessary to get from mmHg to the used pressure unit in the input "
+        "file!");
+
+  if (funct_params[13].first != "volfrac_blood_ref")
+    dserror("fourteenth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be volfrac_blood_ref");
+
+  // save funct_params in class variable
+  this->myfunct_params_.resize(14);
+  this->myfunct_params_[0] = funct_params[0].second;
+  this->myfunct_params_[1] = funct_params[1].second;
+  this->myfunct_params_[2] = funct_params[2].second;
+  this->myfunct_params_[3] = funct_params[3].second;
+  this->myfunct_params_[4] = funct_params[4].second;
+  this->myfunct_params_[5] = funct_params[5].second;
+  this->myfunct_params_[6] = funct_params[6].second;
+  this->myfunct_params_[7] = funct_params[7].second;
+  this->myfunct_params_[8] = funct_params[8].second;
+  this->myfunct_params_[9] = funct_params[9].second;
+  this->myfunct_params_[10] = funct_params[10].second;
+  this->myfunct_params_[11] = funct_params[11].second;
+  this->myfunct_params_[12] = funct_params[12].second;
+  this->myfunct_params_[13] = funct_params[13].second;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+void POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::CheckOrder(
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants) const
+{
+  // safety check for correct ordering of variables and constants
+  if (variables[0].first == "phi1")
+  {
+    if (constants[0].first != "p1")
+      dserror("wrong order in constants vector, P1 (Pressure of air) not at position 0");
+    if (constants[1].first != "S1")
+      dserror("wrong order in constants vector, S1 (Saturation of air) not at position 1");
+    if (constants[3].first != "VF1")
+      dserror("wrong order in constants vector, VF1 (volfrac 1) not at position 2");
+    if (variables[1].first != "phi2")
+      dserror(
+          "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
+  }
+  else if (variables[0].first == "p1")
+  {
+    if (constants[0].first != "phi1")
+      dserror(
+          "wrong order in variable vector, phi1 (oxygen mass fraction in air) not at position 1");
+    if (constants[1].first != "phi2")
+      dserror(
+          "wrong order in variable vector, phi2 (oxygen mass fraction in blood) not at position 2");
+    if (constants[2].first != "phi3")
+      dserror(
+          "wrong order in variable vector, phi3 (oxygen mass fraction in blood) not at position 3");
+    if (constants[3].first != "phi4")
+      dserror(
+          "wrong order in variable vector, phi4 (oxygen mass fraction in blood) not at position 4");
+  }
+  else
+  {
+    dserror("Variable <%s> not supported on position 0. Wrong order in variable vector! ",
+        variables[0].first.c_str());
+  }
+
+  // order is correct
+  this->order_checked_ = true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+double POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Evaluate(
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
+{
+  // Check order of variables and constants vector only once (since it does not change)
+  if (not this->order_checked_) CheckOrder(variables, constants);
+
+    // In debug mode, check order of variables and constants vector on every call
+#ifdef DEBUG
+  CheckOrder(variables, constants);
+#endif
+
+  // read function params
+  const double rho_CO2 = this->myfunct_params_[0];
+  const double DiffsolAdVTLC = this->myfunct_params_[1];
+  const double pH = this->myfunct_params_[2];
+  const double rho_air = this->myfunct_params_[3];
+  const double rho_bl = this->myfunct_params_[4];
+  const double rho_oxy = this->myfunct_params_[5];
+  const double n = this->myfunct_params_[6];
+  const double P_oB50 = this->myfunct_params_[7];
+  const double C_Hb = this->myfunct_params_[8];
+  const double NC_Hb = this->myfunct_params_[9];
+  const double alpha_oxy = this->myfunct_params_[10];
+  const double P_atmospheric = this->myfunct_params_[11];
+  const double ScalingFormmHg = this->myfunct_params_[12];
+  const double volfrac_blood_ref = this->myfunct_params_[13];
+
+  // read variables (order is crucial)
+  const double O2_mass_frac_bl = variables[1].second;
+  const double CO2_mass_frac_air = variables[2].second;
+  const double CO2_mass_frac_bl = variables[3].second;
+
+  // read constants (order is crucial)
+  const double P_air = constants[0].second;
+  const double volfrac_blood = constants[3].second;
+
+  // partial pressure of carbon dioxide in air
+  const double P_CO2A = CO2_mass_frac_air * (P_air + P_atmospheric) * rho_air / rho_CO2;
+
+  // CoB_total is total concentration of oxygen in blood (physically dissolved and bound to
+  // hemoglobin)
+  const double CoB_total = O2_mass_frac_bl * rho_bl / rho_oxy;
+
+  // partial pressure of oxygen in blood
+  double P_O2B = 0.0;
+
+  // Calculate partial pressure of oxygen in blood
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
+      P_O2B, CoB_total, NC_Hb, P_oB50, n, alpha_oxy);
+
+  // saturation of hemoglobin with oxygen from hill equation
+  const double SO2 = pow(P_O2B, n) / (pow(P_O2B, n) + pow(P_oB50, n));
+
+  // temporary help variable for calculating partial pressure of carbon dioxide in blood
+  const double temp = (1.0 - (0.02924 * C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - pH))) * 0.0301 *
+                      2.226 * (1 + pow(10, pH - 6.1));
+
+  // partial pressure of carbon dioxide in blood
+  double P_CO2B = (CO2_mass_frac_bl * rho_bl) / (rho_CO2 * temp);
+
+  // scaling of P_CO2B to get from mmHg to the used pressure unit in the input file
+  P_CO2B *= ScalingFormmHg;
+
+  // evaluate function
+  const double functval =
+      rho_CO2 * DiffsolAdVTLC * (volfrac_blood / volfrac_blood_ref) * (P_CO2B - P_CO2A);
+
+  return functval;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template <int dim>
+std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::EvaluateDerivative(
+    const std::vector<std::pair<std::string, double>>& variables,
+    const std::vector<std::pair<std::string, double>>& constants, const size_t component) const
+{
+// In debug mode, check order of variables and constants vector on every call
+#ifdef DEBUG
+  CheckOrder(variables, constants);
+#endif
+
+  // Check order of variables and constants vector only once (since it does not change)
+  if (not this->order_checked_) CheckOrder(variables, constants);
+
+  // create derivative vector (should have size of variables)
+  std::vector<double> deriv(variables.size(), 0.0);
+
+  // read function params
+  const double rho_CO2 = this->myfunct_params_[0];
+  const double DiffsolAdVTLC = this->myfunct_params_[1];
+  const double pH = this->myfunct_params_[2];
+  const double rho_air = this->myfunct_params_[3];
+  const double rho_bl = this->myfunct_params_[4];
+  const double rho_oxy = this->myfunct_params_[5];
+  const double n = this->myfunct_params_[6];
+  const double P_oB50 = this->myfunct_params_[7];
+  const double C_Hb = this->myfunct_params_[8];
+  const double NC_Hb = this->myfunct_params_[9];
+  const double alpha_oxy = this->myfunct_params_[10];
+  const double P_atmospheric = this->myfunct_params_[11];
+  const double ScalingFormmHg = this->myfunct_params_[12];
+  const double volfrac_blood_ref = this->myfunct_params_[13];
+
+  // define Fad object for evaluation
+  using FAD = Sacado::Fad::DFad<double>;
+  FAD O2_mass_frac_bl = 0.0;
+  O2_mass_frac_bl.diff(0, 1);
+
+  double CO2_mass_frac_air = 0.0, P_air = 0.0, CO2_mass_frac_bl = 0.0, volfrac_blood = 0.0;
+
+  if (variables[0].first == "phi1")  // maindiag-derivative
+  {
+    // read variables and constants (order is crucial)
+    O2_mass_frac_bl.val() = variables[1].second;
+    CO2_mass_frac_air = variables[2].second;
+    CO2_mass_frac_bl = variables[3].second;
+    P_air = constants[0].second;
+    volfrac_blood = constants[3].second;
+  }
+  else if (variables[0].first == "p1")  // OD-derivative
+  {
+    // read variables and constants (order is crucial)
+    O2_mass_frac_bl.val() = constants[1].second;
+    CO2_mass_frac_air = constants[2].second;
+    CO2_mass_frac_bl = constants[3].second;
+    P_air = variables[0].second;
+    volfrac_blood = variables[3].second;
+  }
+  else
+    dserror("Derivative w.r.t. <%s> not supported in LUNG_CARBONDIOXIDE_EXCHANGE_LAW.",
+        variables[0].first.c_str());
+
+  // volfrac relation
+  const double volfrac_relation = (volfrac_blood / volfrac_blood_ref);
+
+  FAD P_O2B = 0.0;
+  FAD C_oB_total = O2_mass_frac_bl * rho_bl / rho_oxy;
+
+  POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
+      P_O2B, C_oB_total, NC_Hb, P_oB50, n, alpha_oxy);
+
+  // saturation of hemoglobin with oxygen from hill equation
+  const double SO2 = pow(P_O2B.val(), n) / (pow(P_O2B.val(), n) + pow(P_oB50, n));
+
+  // temporary help variable for calculating partial pressure of carbon dioxide in blood
+  const double temp = (1.0 - (0.02924 * C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - pH))) * 0.0301 *
+                      2.226 * (1.0 + pow(10.0, pH - 6.1));
+
+
+  if (variables[0].first == "phi1")  // maindiag-derivative
+  {
+    // linearization w.r.t. phi2 (oxygen in blood) = dMassexchangeCO2/dwO2B = dMassexchangeCO2/dPCO2
+    // * dPCO2/dSO2 * dSO2/dPO2B * dPO2B/dwO2B
+    double dMassexchangeCO2dPCO2 = rho_CO2 * DiffsolAdVTLC * volfrac_relation * ScalingFormmHg;
+    double dPCO2dSO2 = CO2_mass_frac_bl * (rho_bl / rho_CO2) * pow(temp, -2.0) * 0.0301 *
+                       (1.0 + pow(10.0, pH - 6.10)) * 2.226 * (0.02924 * C_Hb) / ((8.740 - pH)) *
+                       pow(2.244 - 0.422 * SO2, -2.0) * 0.422;
+    double dSO2dPO2B =
+        n * pow(P_O2B.val(), n - 1.0) * pow(pow(P_O2B.val(), n) + pow(P_oB50, n), -1.0) -
+        pow(pow(P_O2B.val(), n) + pow(P_oB50, n), -2.0) * pow(P_O2B.val(), n) * n *
+            pow(P_O2B.val(), n - 1.0);
+    double dPO2BdwO2B = P_O2B.fastAccessDx(0);
+    deriv[1] = dMassexchangeCO2dPCO2 * dPCO2dSO2 * dSO2dPO2B * dPO2BdwO2B;
+
+    deriv[2] = (-1.0) * rho_CO2 * DiffsolAdVTLC * volfrac_relation *
+               ((P_air + P_atmospheric) * rho_air / rho_CO2);
+
+    deriv[3] =
+        rho_CO2 * DiffsolAdVTLC * volfrac_relation * ScalingFormmHg * rho_bl / (rho_CO2 * temp);
+  }
+  else if (variables[0].first == "p1")  // OD-derivative
+  {
+    // derivative w.r.t. P_air (dFunc/dP_CO2A * dP_CO2A/P_air)
+    deriv[0] = (-1.0) * (rho_CO2 * DiffsolAdVTLC * volfrac_relation) *
+               ((CO2_mass_frac_air * rho_air) / rho_CO2);
+
+    // partial pressure of carbon dioxide in air
+    const double P_CO2A = CO2_mass_frac_air * (P_air + P_atmospheric) * rho_air / rho_CO2;
+    // partial pressure of carbon dioxide in blood
+    double P_CO2B = ((CO2_mass_frac_bl * rho_bl / rho_CO2) / temp) * ScalingFormmHg;
+    deriv[3] = rho_CO2 * DiffsolAdVTLC * (1 / volfrac_blood_ref) * (P_CO2B - P_CO2A);
+  }
+  else
+    dserror("Derivative w.r.t. <%s> not supported in LUNG_CARBONDIOXIDE_EXCHANGE_LAW.",
+        variables[0].first.c_str());
+
+  return deriv;
+}
+
 // explicit instantiations
 
 template class POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<1>;
@@ -1639,3 +1967,7 @@ template class POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<3>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<1>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<2>;
 template class POROMULTIPHASESCATRA::LungOxygenExchangeLaw<3>;
+
+template class POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<1>;
+template class POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<2>;
+template class POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<3>;
