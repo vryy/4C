@@ -52,7 +52,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: defb9e27
+  BACI_DOCKER_DEPENDENCIES_HASH: cc046b56
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 
@@ -290,7 +290,7 @@ before_script:
   - cd ${CI_PROJECT_DIR}
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
   artifacts:
     paths: [codeclimate.json]
     reports:
@@ -333,7 +333,7 @@ before_script:
   - mv ../doxygen.log doxygen.log
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
 
 # ReadTheDocs job
 .readthedocs:
@@ -364,7 +364,7 @@ before_script:
   - mv ../readthedocs.log readthedocs.log
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
 
 #-------------------------------------------------------------------------------
 # Stages during testing.
@@ -526,8 +526,8 @@ buildtest_coverage:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_coverage
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   tags:
   - coverage
   needs: []
@@ -590,7 +590,7 @@ doxygen:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
   tags:
   - doxygen
   artifacts:
@@ -640,8 +640,8 @@ buildtest_full_release:
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   tags:
   - buildtest
   needs:
@@ -661,8 +661,8 @@ buildtest_full_release_asan:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker_asan
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   after_script:
   - *post-process-log-files
   - ${CI_PROJECT_DIR}/utilities/grep_asan_failures.sh test.log > asan_summary.log
@@ -685,8 +685,8 @@ buildtest_full_debug:
     NUMBER_OF_TEST_THREADS: '10'
     NUMBER_OF_BUILD_THREADS: '10'
     CTEST_BUILD_PRESETS_DEBUG_GITLAB: docker_debug
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
-    CTEST_COMMAND: /opt/baci-dependencies/bin/ctest
+    CMAKE_COMMAND: cmake
+    CTEST_COMMAND: ctest
   tags:
   - buildtest-debug
   needs:
@@ -701,7 +701,7 @@ build-verify-headers:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     NUMBER_OF_BUILD_THREADS: '10'
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
   tags:
   - verify-headers
   needs:
@@ -735,7 +735,7 @@ readthedocs:
   image: $CI_REGISTRY_IMAGE/$BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker
-    CMAKE_COMMAND: /opt/baci-dependencies/bin/cmake
+    CMAKE_COMMAND: cmake
   tags:
   - readthedocs
   artifacts:
