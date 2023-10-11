@@ -69,7 +69,7 @@ Teuchos::RCP<Epetra_Map> CORE::LINALG::CreateMap(
   if ((int)gids.size() > 0)
     map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), gids.data(), 0, comm));
   else
-    map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), 0, 0, comm));
+    map = Teuchos::rcp(new Epetra_Map(-1, gids.size(), nullptr, 0, comm));
 
   return map;
 }

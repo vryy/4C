@@ -147,7 +147,7 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
       if (myrank == 0 && i % every == 0)
       {
         printf(".");
-        fflush(0);
+        fflush(nullptr);
       }
 
       DRT::Element* actele = nurbsdis->lColElement(i);

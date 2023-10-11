@@ -332,7 +332,7 @@ namespace FSI
 
     /// preconditioner
     bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
+        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
 
     /// request NOX convergence from outside (needed for coupled problems)
     NOX::StatusTest::StatusType NoxStatus() const { return noxstatus_; };
@@ -997,7 +997,7 @@ namespace FSI
 
     /// preconditioner
     bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
+        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
 
     //@}
 

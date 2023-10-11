@@ -494,19 +494,19 @@ NOX::FSI::LinearSystemGCR::OperatorType NOX::FSI::LinearSystemGCR::getOperatorTy
   //*** NOTE: The order in which the following tests occur is important!
   //***************
 
-  const Epetra_Operator* testOperator = 0;
+  const Epetra_Operator* testOperator = nullptr;
 
   // Is it an Epetra_CrsMatrix ?
   testOperator = dynamic_cast<const Epetra_CrsMatrix*>(&Op);
-  if (testOperator != 0) return EpetraCrsMatrix;
+  if (testOperator != nullptr) return EpetraCrsMatrix;
 
   // Is it an Epetra_VbrMatrix ?
   testOperator = dynamic_cast<const Epetra_VbrMatrix*>(&Op);
-  if (testOperator != 0) return EpetraVbrMatrix;
+  if (testOperator != nullptr) return EpetraVbrMatrix;
 
   // Is it an Epetra_RowMatrix ?
   testOperator = dynamic_cast<const Epetra_RowMatrix*>(&Op);
-  if (testOperator != 0) return EpetraRowMatrix;
+  if (testOperator != nullptr) return EpetraRowMatrix;
 
   // Otherwise it must be an Epetra_Operator!
   return EpetraOperator;

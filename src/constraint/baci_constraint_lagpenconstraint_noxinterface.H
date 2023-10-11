@@ -121,7 +121,7 @@ namespace LAGPENCONSTRAINT
     virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const;
 
     virtual bool computePreconditioner(
-        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = 0);
+        const Epetra_Vector& x, Epetra_Operator& M, Teuchos::ParameterList* precParams = nullptr);
     /// @}
 
    protected:

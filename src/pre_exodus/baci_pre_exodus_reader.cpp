@@ -103,7 +103,7 @@ EXODUS::Mesh::Mesh(const std::string exofilename)
 
       // get element connectivity
       std::vector<int> allconn(num_nod_per_elem * num_el_in_blk);
-      error = ex_get_conn(exoid_, EX_ELEM_BLOCK, ebids[i], allconn.data(), 0, 0);
+      error = ex_get_conn(exoid_, EX_ELEM_BLOCK, ebids[i], allconn.data(), nullptr, nullptr);
       if (error != 0) dserror("exo error returned");
       Teuchos::RCP<std::map<int, std::vector<int>>> eleconn =
           Teuchos::rcp(new std::map<int, std::vector<int>>);
@@ -1076,7 +1076,7 @@ void EXODUS::Mesh::WriteMesh(const std::string newexofilename) const
     // Write Element Connectivity
     std::vector<int> conn(num_nod_per_elem * numele);
     eb.FillEconnArray(conn.data());
-    error = ex_put_conn(exoid, EX_ELEM_BLOCK, blockID, conn.data(), 0, 0);
+    error = ex_put_conn(exoid, EX_ELEM_BLOCK, blockID, conn.data(), nullptr, nullptr);
     if (error != 0) dserror("error writing element block conns");
     // write block name
     const std::string bname = eb.GetName();

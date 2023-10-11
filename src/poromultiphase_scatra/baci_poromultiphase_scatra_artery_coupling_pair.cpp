@@ -483,7 +483,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // initialize the functions
   for (int i = 0; i < 2; i++)
     for (unsigned int idof = 0; idof < funct_vec_[i].size(); idof++)
-      if (funct_vec_[i][idof] != 0) InitializeFunction(*funct_vec_[i][idof]);
+      if (funct_vec_[i][idof] != nullptr) InitializeFunction(*funct_vec_[i][idof]);
   if (diam_funct_active_) InitializeFunction(*artdiam_funct_);
 
   // set time fac for right hand side evaluation of coupling
@@ -1901,7 +1901,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // artery functions
   for (int i_art = 0; i_art < numdof_art_; i_art++)
   {
-    if (funct_vec_[0][i_art] != 0)
+    if (funct_vec_[0][i_art] != nullptr)
     {
       // resize
       std::vector<double> artderivs(numdof_art_, 0.0);
@@ -1917,7 +1917,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // continuous discretization functions
   for (int i_cont = 0; i_cont < numdof_cont_; i_cont++)
   {
-    if (funct_vec_[1][i_cont] != 0)
+    if (funct_vec_[1][i_cont] != nullptr)
     {
       // resize
       std::vector<double> artderivs(numdof_art_, 0.0);
@@ -3628,7 +3628,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       funct_coupl_active_ = true;
     }
     else
-      my_funct_vec.at(i) = 0;
+      my_funct_vec.at(i) = nullptr;
   }
 }
 

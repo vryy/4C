@@ -86,7 +86,7 @@ namespace STR
       /*! compute preconditioner
        *  (derived from NOX::Epetra::Interface::Preconditioner) */
       bool computePreconditioner(const Epetra_Vector& x, Epetra_Operator& M,
-          Teuchos::ParameterList* precParams = 0) override;
+          Teuchos::ParameterList* precParams = nullptr) override;
 
       /*! Get the norm of right hand side rows/entries related to
        *  primary DoFs (derived from NOX::NLN::Interface::Required) */

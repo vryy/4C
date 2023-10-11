@@ -65,9 +65,9 @@ int DRT::DiscretizationHDG::FillComplete(
 
     // refresh node pointers if they have been set up
     DRT::Node** oldnodes = f->second->Nodes();
-    if (oldnodes != 0)
+    if (oldnodes != nullptr)
     {
-      std::vector<DRT::Node*> nodes(ids.size(), 0);
+      std::vector<DRT::Node*> nodes(ids.size(), nullptr);
 
       for (unsigned int i = 0; i < ids.size(); ++i)
       {

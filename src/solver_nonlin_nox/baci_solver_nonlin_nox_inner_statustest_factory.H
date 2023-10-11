@@ -84,7 +84,7 @@ namespace NOX
         */
         Teuchos::RCP<Generic> BuildInnerStatusTests(Teuchos::ParameterList& p,
             const NOX::Utils& utils,
-            std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests = 0);
+            std::map<std::string, Teuchos::RCP<Generic>>* tagged_tests = nullptr);
       }  // namespace StatusTest
     }    // namespace INNER
   }      // namespace NLN

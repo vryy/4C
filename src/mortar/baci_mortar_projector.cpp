@@ -708,9 +708,9 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4A
   double length_n = 0.0;
   double a1 = 0.0;
   bool all_negative = true;
-  MortarNode* mycnode_0 = 0;
-  MortarNode* mycnode_1 = 0;
-  MortarNode* mycnode_2 = 0;
+  MortarNode* mycnode_0 = nullptr;
+  MortarNode* mycnode_1 = nullptr;
+  MortarNode* mycnode_2 = nullptr;
 
   // project gp onto auxn
   for (int i = 0; i < nnode; ++i)  // loop over edges

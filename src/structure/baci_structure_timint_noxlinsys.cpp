@@ -73,23 +73,23 @@ NOX::STR::LinearSystem::OperatorType NOX::STR::LinearSystem::getOperatorType(
 {
   // check per dynamik cast, which type of Jacobian was broadcast
 
-  const Epetra_Operator* testOperator = 0;
+  const Epetra_Operator* testOperator = nullptr;
 
   testOperator = dynamic_cast<
       const CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(&Op);
-  if (testOperator != 0) return BlockSparseMatrix;
+  if (testOperator != nullptr) return BlockSparseMatrix;
 
   testOperator = dynamic_cast<const CORE::LINALG::SparseMatrix*>(&Op);
-  if (testOperator != 0) return SparseMatrix;
+  if (testOperator != nullptr) return SparseMatrix;
 
   testOperator = dynamic_cast<const Epetra_CrsMatrix*>(&Op);
-  if (testOperator != 0) return EpetraCrsMatrix;
+  if (testOperator != nullptr) return EpetraCrsMatrix;
 
   testOperator = dynamic_cast<const Epetra_VbrMatrix*>(&Op);
-  if (testOperator != 0) return EpetraVbrMatrix;
+  if (testOperator != nullptr) return EpetraVbrMatrix;
 
   testOperator = dynamic_cast<const Epetra_RowMatrix*>(&Op);
-  if (testOperator != 0) return EpetraRowMatrix;
+  if (testOperator != nullptr) return EpetraRowMatrix;
 
   return EpetraOperator;
 }

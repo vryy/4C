@@ -405,7 +405,7 @@ void CORE::LINALG::InsertGlobalValues(
   if (NumEntries > 0)
     err = mat->InsertGlobalValues(GlobalRow, NumEntries, Values, Indices);
   else
-    err = mat->InsertGlobalValues(GlobalRow, NumEntries, Values, 0);
+    err = mat->InsertGlobalValues(GlobalRow, NumEntries, Values, nullptr);
 
   if (err) dserror("InsertGlobalValues err=%d", err);
 

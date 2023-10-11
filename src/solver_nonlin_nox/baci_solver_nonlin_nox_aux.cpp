@@ -63,20 +63,20 @@ void NOX::NLN::AUX::SetPrintingParameters(Teuchos::ParameterList& p_nox, const E
 NOX::NLN::LinSystem::OperatorType NOX::NLN::AUX::GetOperatorType(
     const CORE::LINALG::SparseOperator& op)
 {
-  const Epetra_Operator* testOperator = 0;
+  const Epetra_Operator* testOperator = nullptr;
 
   // Is it a LINALG_BlockSparseMatrix
   testOperator = dynamic_cast<
       const CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>*>(&op);
-  if (testOperator != 0) return NOX::NLN::LinSystem::LinalgBlockSparseMatrix;
+  if (testOperator != nullptr) return NOX::NLN::LinSystem::LinalgBlockSparseMatrix;
 
   // Is it a LINALG_SparseMatrix?
   testOperator = dynamic_cast<const CORE::LINALG::SparseMatrix*>(&op);
-  if (testOperator != 0) return NOX::NLN::LinSystem::LinalgSparseMatrix;
+  if (testOperator != nullptr) return NOX::NLN::LinSystem::LinalgSparseMatrix;
 
   // Is it a LINALG_SparseMatrixBase?
   testOperator = dynamic_cast<const CORE::LINALG::SparseMatrixBase*>(&op);
-  if (testOperator != 0) return NOX::NLN::LinSystem::LinalgSparseMatrixBase;
+  if (testOperator != nullptr) return NOX::NLN::LinSystem::LinalgSparseMatrixBase;
 
   // Otherwise it must be a LINALG_SparseOperator
   return NOX::NLN::LinSystem::LinalgSparseOperator;
@@ -222,13 +222,13 @@ double NOX::NLN::AUX::GetNormWRMSClassVariable(const NOX::StatusTest::Generic& t
       dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
-  if (comboTest == 0)
+  if (comboTest == nullptr)
   {
     const NOX::NLN::StatusTest::NormWRMS* normWRMSTest =
         dynamic_cast<const NOX::NLN::StatusTest::NormWRMS*>(&test);
 
     // no normF StatusTest...
-    if (normWRMSTest == 0) return -1.0;
+    if (normWRMSTest == nullptr) return -1.0;
     // yeah we found one...
     else
     {
@@ -266,13 +266,13 @@ double NOX::NLN::AUX::GetNormFClassVariable(const NOX::StatusTest::Generic& test
       dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
-  if (comboTest == 0)
+  if (comboTest == nullptr)
   {
     const NOX::NLN::StatusTest::NormF* normFTest =
         dynamic_cast<const NOX::NLN::StatusTest::NormF*>(&test);
 
     // no normF StatusTest...
-    if (normFTest == 0) return -1.0;
+    if (normFTest == nullptr) return -1.0;
     // yeah we found one...
     else
     {
@@ -315,12 +315,12 @@ bool NOX::NLN::AUX::IsQuantity(
       dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
-  if (comboTest == 0)
+  if (comboTest == nullptr)
   {
     const T* desiredTest = dynamic_cast<const T*>(&test);
 
     // not the desired status test...
-    if (desiredTest == 0) return false;
+    if (desiredTest == nullptr) return false;
     // yeah we found one...
     else
     {
@@ -355,12 +355,12 @@ int NOX::NLN::AUX::GetNormType(
       dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
-  if (comboTest == 0)
+  if (comboTest == nullptr)
   {
     const T* desiredTest = dynamic_cast<const T*>(&test);
 
     // not the desired status test...
-    if (desiredTest == 0) return -100;
+    if (desiredTest == nullptr) return -100;
     // yeah we found one...
     else
     {
@@ -394,12 +394,12 @@ NOX::StatusTest::Generic* NOX::NLN::AUX::GetOuterStatusTestWithQuantity(
   NOX::NLN::StatusTest::Combo* comboTest = dynamic_cast<NOX::NLN::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
-  if (comboTest == 0)
+  if (comboTest == nullptr)
   {
     T* desiredTest = dynamic_cast<T*>(&test);
 
     // not the desired status test...
-    if (desiredTest == 0) return nullptr;
+    if (desiredTest == nullptr) return nullptr;
     // yeah we found one...
     else
     {
@@ -483,12 +483,12 @@ int NOX::NLN::AUX::GetOuterStatus(const NOX::StatusTest::Generic& test)
       dynamic_cast<const NOX::NLN::StatusTest::Combo*>(&test);
 
   // if it is no combo test, we just have to check for the desired type
-  if (comboTest == 0)
+  if (comboTest == nullptr)
   {
     const T* desiredTest = dynamic_cast<const T*>(&test);
 
     // not the desired status test...
-    if (desiredTest == 0) return -100;
+    if (desiredTest == nullptr) return -100;
     // yeah we found one...
     else
     {

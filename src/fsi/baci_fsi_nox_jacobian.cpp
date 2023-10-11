@@ -39,9 +39,9 @@ NOX::FSI::FSIMatrixFree::FSIMatrixFree(Teuchos::ParameterList& printParams,
   // Epetra_Operators require Epetra_Maps, so anyone using block maps
   // (Epetra_BlockMap) won't be able to directly use the AztecOO solver.
   // We get around this by creating an Epetra_Map from the Epetra_BlockMap.
-  const Epetra_Map* testMap = 0;
+  const Epetra_Map* testMap = nullptr;
   testMap = dynamic_cast<const Epetra_Map*>(&currentX.getEpetraVector().Map());
-  if (testMap != 0)
+  if (testMap != nullptr)
   {
     epetraMap = Teuchos::rcp(new Epetra_Map(*testMap));
   }
