@@ -491,8 +491,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     ::INPUT::AddNamedReal(m, "LAMBDAMIN", "minimal active fiber stretch");
     ::INPUT::AddNamedReal(
         m, "LAMBDAOPT", "optimal active fiber stretch related to active nominal stress maximum");
-    ::INPUT::AddNamedReal(m, "C", "constant scaling tanh-type activation function");
-    ::INPUT::AddNamedReal(m, "ACTSTARTTIME", "starting time of muscle activation");
+    ::INPUT::AddNamedInt(
+        m, "ACTFUNCT", "function id for time- and space-dependency of muscle activation");
     ::INPUT::AddNamedReal(m, "DENS", "density");
 
     AppendMaterialDefinition(matlist, m);

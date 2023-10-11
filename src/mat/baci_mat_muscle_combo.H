@@ -2,7 +2,7 @@
 /*! \file
 
 \brief Definition of the Combo active skeletal muscle material (modified and corrected generalized
-active strain approach)
+active strain approach) with variable time-dependent activation
 
 \level 3
 */
@@ -11,6 +11,7 @@ active strain approach)
 #ifndef BACI_MAT_MUSCLE_COMBO_H
 #define BACI_MAT_MUSCLE_COMBO_H
 
+#include "baci_lib_function.H"
 #include "baci_lib_parobjectfactory.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_mat_anisotropy_extension_default.H"
@@ -56,11 +57,8 @@ namespace MAT
           lambdaOpt_;  ///< optimal active fiber stretch related active nominal stress maximimum
       //! @}
 
-      //! @name prescribed time-dependent activation
-      //! @{
-      const double c_;            ///< constant scaling tanh-type activation function, >=0
-      const double t_act_start_;  ///< time start of activation
-      //! @}
+      //! @name function-id in input file for user-prescribed time-dependent activation
+      const int actFunctId_;
 
       const double density_;  ///< density
       //@}
@@ -95,8 +93,8 @@ namespace MAT
    * 1. The derivative of omegaa w.r.t. C is included as described for the active stress
    * approach in Giantesio et al. [2]. This leads to an additional term in the stress and material
    * tangent computation and an updated equation for the activation level omegaa.
-   * 2. The twitch superposition is neglected and the time depenent optimal nominal stress is
-   * computed through a tanh-function.
+   * 2. The twitch superposition is neglected and the time and space depenent optimal nominal stress
+   * is computed through a user-prescribed function.
    * 3. A velocity dependence is not considered.
    *
    * References:
@@ -190,6 +188,9 @@ namespace MAT
 
     /// Anisotropy extension holder
     MAT::DefaultAnisotropyExtension<1> anisotropyExtension_;
+
+    /// Activation function
+    const DRT::UTILS::FunctionOfSpaceTime* activationFunction_;
   };  // end class Muscle_Combo
 
 }  // end namespace MAT
