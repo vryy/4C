@@ -244,8 +244,11 @@ void INPAR::ARTNET::SetValidConditions(
   artcoup_ntp->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("coupling_type", "ARTERY",
       Teuchos::tuple<std::string>("ARTERY", "AIRWAY"),
       Teuchos::tuple<std::string>("ARTERY", "AIRWAY"), true)));
-  ::INPUT::AddNamedInt(artcoup_ntp, "COUPLEDDOF_REDUCED");
-  ::INPUT::AddNamedInt(artcoup_ntp, "COUPLEDDOF_PORO");
+  ::INPUT::AddNamedInt(artcoup_ntp, "NUMDOF");
+  ::INPUT::AddNamedIntVector(
+      artcoup_ntp, "COUPLEDDOF_REDUCED", "coupling dofs of reduced airways or arteries", "NUMDOF");
+  ::INPUT::AddNamedIntVector(
+      artcoup_ntp, "COUPLEDDOF_PORO", "coupling dofs in porous domain", "NUMDOF");
   ::INPUT::AddNamedReal(artcoup_ntp, "PENALTY");
 
   condlist.push_back(artcoup_ntp);
@@ -260,8 +263,11 @@ void INPAR::ARTNET::SetValidConditions(
   artscatracoup_ntp->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("coupling_type",
       "ARTERY", Teuchos::tuple<std::string>("ARTERY", "AIRWAY"),
       Teuchos::tuple<std::string>("ARTERY", "AIRWAY"), true)));
-  ::INPUT::AddNamedInt(artscatracoup_ntp, "COUPLEDDOF_REDUCED");
-  ::INPUT::AddNamedInt(artscatracoup_ntp, "COUPLEDDOF_PORO");
+  ::INPUT::AddNamedInt(artscatracoup_ntp, "NUMDOF");
+  ::INPUT::AddNamedIntVector(artscatracoup_ntp, "COUPLEDDOF_REDUCED",
+      "coupling dofs of reduced airways or arteries", "NUMDOF");
+  ::INPUT::AddNamedIntVector(
+      artscatracoup_ntp, "COUPLEDDOF_PORO", "coupling dofs in porous domain", "NUMDOF");
   ::INPUT::AddNamedReal(artscatracoup_ntp, "PENALTY");
 
   condlist.push_back(artscatracoup_ntp);

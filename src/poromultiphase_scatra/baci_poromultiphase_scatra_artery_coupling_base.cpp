@@ -82,8 +82,13 @@ POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::PoroMultiPhaseScaTraArtC
 void POROMULTIPHASESCATRA::PoroMultiPhaseScaTraArtCouplBase::RecomputeCoupledDOFsForNTP(
     std::vector<DRT::Condition*> coupcond, unsigned int couplingnode)
 {
-  coupleddofs_art_ = {coupcond[couplingnode]->GetInt("COUPLEDDOF_REDUCED") - 1};
-  coupleddofs_cont_ = {coupcond[couplingnode]->GetInt("COUPLEDDOF_PORO") - 1};
+  coupleddofs_art_ = (*coupcond[couplingnode]->Get<std::vector<int>>("COUPLEDDOF_REDUCED"));
+  coupleddofs_cont_ = (*coupcond[couplingnode]->Get<std::vector<int>>("COUPLEDDOF_PORO"));
+
+  // decrease the value of all elements by 1, because we start counting from 0 here and in the input
+  // file we start from 1
+  std::for_each(coupleddofs_art_.begin(), coupleddofs_art_.end(), [](int& value) { value--; });
+  std::for_each(coupleddofs_cont_.begin(), coupleddofs_cont_.end(), [](int& value) { value--; });
 }
 
 /*----------------------------------------------------------------------*
