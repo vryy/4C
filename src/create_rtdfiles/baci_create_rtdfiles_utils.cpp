@@ -258,7 +258,7 @@ namespace DRT
       {
         if (auto *separator = dynamic_cast<::INPUT::SeparatorComponent *>(parameterterm.get()))
         {
-          parametertable.AddRow(separator->WriteReadTheDocs());
+          parametertable.AddRow(separator->WriteReadTheDocsTableRow());
 
           if (parameter.length() > 60)
           {
@@ -593,7 +593,7 @@ namespace DRT
       {
         if (auto *separator = dynamic_cast<::INPUT::SeparatorComponent *>(parameterterm.get()))
         {
-          parametertable.AddRow(separator->WriteReadTheDocs());
+          parametertable.AddRow(separator->WriteReadTheDocsTableRow());
 
           if (parameter.length() > 60)
           {
