@@ -288,7 +288,6 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 
     std::vector<int> lm;
     std::vector<int> lmowner;
-    std::vector<int> lmstride;
 
     std::vector<int> lm_full;
     std::vector<int> lmowner_full;
@@ -341,7 +340,6 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
       // drichlet condition map
       lm.clear();
       lmowner.clear();
-      lmstride.clear();
       for (unsigned j = 0; j < lm_full.size(); ++j)
       {
         int gid = lm_full[j];
@@ -349,7 +347,6 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
         {
           lm.push_back(gid);
           lmowner.push_back(lmowner_full[j]);
-          lmstride.push_back(lmstride_full[j]);
         }
       }
 
