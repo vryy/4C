@@ -4200,7 +4200,7 @@ void WEAR::WearLagrangeStrategy::OutputWear()
         const int lNumActiveDOFs = wear2_vectori->MyLength();
 
         // extract diagonal of d2ii
-        Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*gactivedofs_));
+        Teuchos::RCP<Epetra_Vector> diagD = Teuchos::rcp(new Epetra_Vector(*wear2_vectori));
         d2ii->EpetraMatrix()->ExtractDiagonalCopy(*diagD);
 
         // solve by dividing through diagonal elements of daa. Do not divide by 0.
