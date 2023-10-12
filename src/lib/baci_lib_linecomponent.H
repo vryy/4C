@@ -115,7 +115,9 @@ namespace INPUT
 
     void Describe(std::ostream& stream) override;
 
-    std::vector<std::string> WriteReadTheDocs() const;
+    std::vector<std::string> WriteReadTheDocsTableRow() const;
+
+    std::string WriteReadTheDocs() override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
         Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;

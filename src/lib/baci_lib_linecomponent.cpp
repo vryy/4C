@@ -70,7 +70,11 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  std::vector<std::string> SeparatorComponent::WriteReadTheDocs() const
+  std::string SeparatorComponent::WriteReadTheDocs() { return separator_; }
+
+  /*----------------------------------------------------------------------*
+   *----------------------------------------------------------------------*/
+  std::vector<std::string> SeparatorComponent::WriteReadTheDocsTableRow() const
   {
     std::vector<std::string> tablerow;
 
