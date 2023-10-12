@@ -519,12 +519,12 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
   AddNamedReal(cardiovascular0darterialproxdistcond, "y_arp_0");
   AddNamedReal(cardiovascular0darterialproxdistcond, "p_ard_0");
   cardiovascular0darterialproxdistcond->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("P_AT")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("P_AT")));
   AddNamedReal(cardiovascular0darterialproxdistcond, "fac");
   cardiovascular0darterialproxdistcond->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("crv")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("crv")));
   cardiovascular0darterialproxdistcond->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("curve", 1, true, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("curve", 1, {0, true, true})));
 
   condlist.push_back(cardiovascular0darterialproxdistcond);
 
@@ -541,9 +541,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
 
   AddNamedInt(cardiovascular0dsyspulcirculationcond, "id");
   cardiovascular0dsyspulcirculationcond->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("TYPE")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("TYPE")));
   cardiovascular0dsyspulcirculationcond->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("type", "ventricle_left",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("type", "ventricle_left",
           Teuchos::tuple<std::string>(
               "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
           Teuchos::tuple<std::string>(
@@ -566,9 +566,9 @@ void INPAR::CARDIOVASCULAR0D::SetValidConditions(
 
   AddNamedInt(cardiovascularrespiratory0dsyspulperiphcirculationcond, "id");
   cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("TYPE")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("TYPE")));
   cardiovascularrespiratory0dsyspulperiphcirculationcond->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("type", "ventricle_left",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("type", "ventricle_left",
           Teuchos::tuple<std::string>(
               "ventricle_left", "ventricle_right", "atrium_left", "atrium_right", "dummy"),
           Teuchos::tuple<std::string>(

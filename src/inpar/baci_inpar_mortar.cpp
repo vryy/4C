@@ -164,48 +164,51 @@ void INPAR::MORTAR::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> contactcomponents;
 
-  contactcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
-  contactcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Side", "Master",
+  contactcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("Interface ID")));
+  contactcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Side", "Master",
       Teuchos::tuple<std::string>("Master", "Slave", "Selfcontact"),
       Teuchos::tuple<std::string>("Master", "Slave", "Selfcontact"))));
-  contactcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Initialization",
+  contactcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Initialization",
       "Inactive", Teuchos::tuple<std::string>("Inactive", "Active"),
       Teuchos::tuple<std::string>("Inactive", "Active"), true)));
 
   contactcomponents.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("FrCoeffOrBound", true)));
-  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("FrCoeffOrBound")));
-
-  contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("AdhesionBound", true)));
-  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("AdhesionBound")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("FrCoeffOrBound", "", true)));
+  contactcomponents.push_back(
+      Teuchos::rcp(new ::INPUT::RealComponent("FrCoeffOrBound", {0., true})));
 
   contactcomponents.push_back(
-      Teuchos::rcp(new StringConditionComponent("Application", "Solidcontact",
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("AdhesionBound", "", true)));
+  contactcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("AdhesionBound")));
+
+  contactcomponents.push_back(
+      Teuchos::rcp(new ::INPUT::SelectionComponent("Application", "Solidcontact",
           Teuchos::tuple<std::string>("Solidcontact", "Beamtosolidcontact", "Beamtosolidmeshtying"),
           Teuchos::tuple<std::string>("Solidcontact", "Beamtosolidcontact", "Beamtosolidmeshtying"),
           true)));
 
   // optional DBC handling
-  contactcomponents.push_back(Teuchos::rcp(new StringConditionComponent("dbc_handling", "DoNothing",
-      Teuchos::tuple<std::string>("DoNothing", "RemoveDBCSlaveNodes"),
+  contactcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("dbc_handling",
+      "DoNothing", Teuchos::tuple<std::string>("DoNothing", "RemoveDBCSlaveNodes"),
       Teuchos::tuple<int>(static_cast<int>(DBCHandling::do_nothing),
           static_cast<int>(DBCHandling::remove_dbc_nodes_from_slave_side)),
       true)));
 
   // optional two half pass approach
-  contactcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("TwoHalfPass", true)));
-  contactcomponents.push_back(Teuchos::rcp(new RealConditionComponent("TwoHalfPass")));
+  contactcomponents.push_back(
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("TwoHalfPass", "", true)));
+  contactcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("TwoHalfPass")));
 
   // optional reference configuration check for non-smooth self contact surfaces
   contactcomponents.push_back(Teuchos::rcp(
-      new SeparatorConditionComponent("RefConfCheckNonSmoothSelfContactSurface", true)));
+      new ::INPUT::SeparatorComponent("RefConfCheckNonSmoothSelfContactSurface", "", true)));
   contactcomponents.push_back(
-      Teuchos::rcp(new RealConditionComponent("RefConfCheckNonSmoothSelfContactSurface")));
+      Teuchos::rcp(new ::INPUT::RealComponent("RefConfCheckNonSmoothSelfContactSurface")));
 
   contactcomponents.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("ConstitutiveLawID", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ConstitutiveLawID", "", true)));
   contactcomponents.push_back(
-      Teuchos::rcp(new IntConditionComponent("ConstitutiveLawID", false, true, true)));
+      Teuchos::rcp(new ::INPUT::IntComponent("ConstitutiveLawID", {0, false, true, true})));
 
   Teuchos::RCP<ConditionDefinition> linecontact =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR CONTACT CONDITIONS 2D", "Contact",
@@ -228,12 +231,12 @@ void INPAR::MORTAR::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> mortarcomponents;
 
-  mortarcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
-  mortarcomponents.push_back(Teuchos::rcp(
-      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
-          Teuchos::tuple<std::string>("Master", "Slave"))));
-  mortarcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Initialization", "Inactive",
-      Teuchos::tuple<std::string>("Inactive", "Active"),
+  mortarcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("Interface ID")));
+  mortarcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Side", "Master",
+      Teuchos::tuple<std::string>("Master", "Slave"),
+      Teuchos::tuple<std::string>("Master", "Slave"))));
+  mortarcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Initialization",
+      "Inactive", Teuchos::tuple<std::string>("Inactive", "Active"),
       Teuchos::tuple<std::string>("Inactive", "Active"), true)));
 
   Teuchos::RCP<ConditionDefinition> linemortar =
@@ -256,8 +259,8 @@ void INPAR::MORTAR::SetValidConditions(
   // mortar coupling symmetry condition
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> mrtrsymcomponents;
-  mrtrsymcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
-  mrtrsymcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("onoff", 3)));
+  mrtrsymcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
+  mrtrsymcomponents.push_back(Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", 3)));
 
   Teuchos::RCP<ConditionDefinition> linemrtrsym =
       Teuchos::rcp(new ConditionDefinition("DESIGN LINE MORTAR SYMMETRY CONDITIONS 3D", "mrtrsym",
@@ -299,11 +302,11 @@ void INPAR::MORTAR::SetValidConditions(
     // mortar coupling (for ALL kinds of interface problems except contact)
     std::vector<Teuchos::RCP<::INPUT::LineComponent>> mortarcomponents;
 
-    mortarcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
-    mortarcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Side", "Master",
+    mortarcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("Interface ID")));
+    mortarcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Side", "Master",
         Teuchos::tuple<std::string>("Master", "Slave"),
         Teuchos::tuple<std::string>("Master", "Slave"))));
-    mortarcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Initialization",
+    mortarcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Initialization",
         "Inactive", Teuchos::tuple<std::string>("Inactive", "Active"),
         Teuchos::tuple<std::string>("Inactive", "Active"), true)));
 

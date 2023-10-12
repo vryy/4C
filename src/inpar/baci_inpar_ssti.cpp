@@ -152,15 +152,15 @@ void INPAR::SSTI::SetValidConditions(
   // equip condition definitions with input file line components
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> sstiinterfacemeshtyingcomponents;
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new IntConditionComponent("ConditionID")));
-  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(new StringConditionComponent(
+      Teuchos::rcp(new ::INPUT::IntComponent("ConditionID")));
+  sstiinterfacemeshtyingcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SelectionComponent(
       "interface side", "Undefined", Teuchos::tuple<std::string>("Undefined", "Slave", "Master"),
       Teuchos::tuple<int>(
           INPAR::S2I::side_undefined, INPAR::S2I::side_slave, INPAR::S2I::side_master))));
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new SeparatorConditionComponent("S2I_KINETICS_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("S2I_KINETICS_ID")));
   sstiinterfacemeshtyingcomponents.emplace_back(
-      Teuchos::rcp(new IntConditionComponent("S2IKineticsID")));
+      Teuchos::rcp(new ::INPUT::IntComponent("S2IKineticsID")));
 
   // insert input file line components into condition definitions
   for (const auto& sstiinterfacemeshtyingcomponent : sstiinterfacemeshtyingcomponents)

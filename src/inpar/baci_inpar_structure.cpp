@@ -368,56 +368,56 @@ namespace INPAR
 
       std::vector<Teuchos::RCP<::INPUT::LineComponent>> robinspringdashpotcomp;
 
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NUMDOF")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("numdof")));
 
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new IntVectorConditionComponent("onoff", 3)));
+          Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", 3)));
 
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("STIFF")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("STIFF")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new RealVectorConditionComponent("stiff", 3)));
-
-      robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("TIMEFUNCTSTIFF")));
-      robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new IntVectorConditionComponent("funct_stiff", 3)));
-
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("VISCO")));
-      robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new RealVectorConditionComponent("visco", 3)));
+          Teuchos::rcp(new ::INPUT::RealVectorComponent("stiff", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("TIMEFUNCTVISCO")));
+          Teuchos::rcp(new ::INPUT::SeparatorComponent("TIMEFUNCTSTIFF")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new IntVectorConditionComponent("funct_visco", 3)));
+          Teuchos::rcp(new ::INPUT::IntVectorComponent("funct_stiff", 3)));
+
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("VISCO")));
+      robinspringdashpotcomp.emplace_back(
+          Teuchos::rcp(new ::INPUT::RealVectorComponent("visco", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("DISPLOFFSET")));
+          Teuchos::rcp(new ::INPUT::SeparatorComponent("TIMEFUNCTVISCO")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new RealVectorConditionComponent("disploffset", 3)));
+          Teuchos::rcp(new ::INPUT::IntVectorComponent("funct_visco", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("TIMEFUNCTDISPLOFFSET")));
+          Teuchos::rcp(new ::INPUT::SeparatorComponent("DISPLOFFSET")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new IntVectorConditionComponent("funct_disploffset", 3)));
+          Teuchos::rcp(new ::INPUT::RealVectorComponent("disploffset", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("FUNCTNONLINSTIFF")));
+          Teuchos::rcp(new ::INPUT::SeparatorComponent("TIMEFUNCTDISPLOFFSET")));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new IntVectorConditionComponent("funct_nonlinstiff", 3)));
+          Teuchos::rcp(new ::INPUT::IntVectorComponent("funct_disploffset", 3)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("DIRECTION")));
-      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new StringConditionComponent("direction",
+          Teuchos::rcp(new ::INPUT::SeparatorComponent("FUNCTNONLINSTIFF")));
+      robinspringdashpotcomp.emplace_back(
+          Teuchos::rcp(new ::INPUT::IntVectorComponent("funct_nonlinstiff", 3)));
+
+      robinspringdashpotcomp.emplace_back(
+          Teuchos::rcp(new ::INPUT::SeparatorComponent("DIRECTION")));
+      robinspringdashpotcomp.emplace_back(Teuchos::rcp(new ::INPUT::SelectionComponent("direction",
           "xyz", Teuchos::tuple<std::string>("xyz", "refsurfnormal", "cursurfnormal"),
           Teuchos::tuple<std::string>("xyz", "refsurfnormal", "cursurfnormal"), false)));
 
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new SeparatorConditionComponent("COUPLING", true)));
+          Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLING", "", true)));
       robinspringdashpotcomp.emplace_back(
-          Teuchos::rcp(new IntVectorConditionComponent("coupling id", 1, true, true)));
+          Teuchos::rcp(new ::INPUT::IntVectorComponent("coupling id", 1, {0, true, true})));
 
       for (const auto& comp : robinspringdashpotcomp)
       {
@@ -437,7 +437,7 @@ namespace INPAR
               "RobinSpringDashpotCoupling", "RobinSpring Dashpot Coupling",
               DRT::Condition::RobinSpringDashpotCoupling, true, DRT::Condition::Surface));
 
-      springdashpotcoupcond->AddComponent(Teuchos::rcp(new IntConditionComponent("coupling id")));
+      springdashpotcoupcond->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
 
       condlist.push_back(springdashpotcoupcond);
 
@@ -449,7 +449,7 @@ namespace INPAR
           "SURFACTANT CONDITIONS", "SurfaceStress", "Surface Stress (surfactant)",
           DRT::Condition::Surfactant, true, DRT::Condition::Surface));
 
-      surfactant->AddComponent(Teuchos::rcp(new IntConditionComponent("funct", true, true)));
+      surfactant->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("funct", {0, true, true})));
       AddNamedReal(surfactant, "k1xCbulk");
       AddNamedReal(surfactant, "k2");
       AddNamedReal(surfactant, "m1");
