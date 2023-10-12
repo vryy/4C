@@ -116,70 +116,6 @@ namespace CONTACT
 
 
     /**
-     * \brief This is a seperator component within a contact constitutive law definition
-     *
-     */
-    class SeparatorContactConstitutiveLawComponent : public ::INPUT::LineComponent
-    {
-     public:
-      /**
-       * \brief default constructor
-       *
-       * \param[in] name name of contact constitutive law
-       * \param[in] description of contact constitutive law type
-       * \param[in] type of contact constitutive law to be built
-       */
-      SeparatorContactConstitutiveLawComponent(
-          std::string separator, std::string description, bool optional = false);
-
-      /**
-       * \brief write my part of the default line of the contact constitutive law
-       * definition
-       */
-      void DefaultLine(std::ostream& stream) override;
-
-      /**
-       * \brief write my part of the actual line of the contact constitutive law
-       * definition
-       */
-      void Print(std::ostream& stream, const DRT::Container& cond) override;
-
-      /**
-       * \brief describe my part of the default (comment) line of the contact constitutive law
-       * definition
-       */
-      void Describe(std::ostream& stream) override;
-
-      /**
-       * \brief read my part of the the contact constitutive law
-       * definition
-       *
-       *\param[in] def Contact Constitutive Law definition
-       *\param[in] condline read input line
-       *\params[inout] container container to add the read parameter to
-       */
-      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-          Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
-
-      /**
-       * \brief read my part of the the contact constitutive law
-       * definition
-       *
-       *\param[in] def Contact Constitutive Law definition
-       *\param[in] condline read input line
-       *\params[inout] container container to add the read parameter to
-       */
-      std::vector<std::string> WriteReadTheDocs() const;
-
-     private:
-      /// separator string, i.e. the NAME of variable in DAT input file
-      std::string separator_;
-
-      /// description attached to the field separator
-      std::string description_;
-    };
-
-    /**
      * \brief This is a floating point number component within a contact constitutive law definition
      *
      */
@@ -231,40 +167,6 @@ namespace CONTACT
       double defaultvalue_;
     };
 
-    /// condition line part that is a string out of a list of valid strings
-    /*!
-      \see ConditionDefinition
-     */
-    class StringContactConstitutiveLawComponent : public ::INPUT::LineComponent
-    {
-     public:
-      /// construct condition component that reads and writes a string variable
-      /*!
-        \param name Name of the corresponding variable in the DRT::Condition
-        \param defaultvalue Default value of this variable
-        \param datfilevalues Possible values in the dat file
-        \param condvalues Corresponding values stored in the DRT::Condition (std::string or enum
-        =^int)
-        \param optional Whether this string is optional in the dat file
-      */
-
-      StringContactConstitutiveLawComponent(
-          std::string name,  ///< Name of the corresponding variable in the MAT::PAR::Material
-          std::string defaultvalue,  ///< Default value of this variable
-          bool optional = false      ///< Whether this string is optional in the dat file
-      );
-
-      void DefaultLine(std::ostream& stream) override;
-      void Print(std::ostream& stream, const DRT::Container& cond) override;
-      void Describe(std::ostream& stream) override;
-      Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-          Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
-
-     private:
-      std::string defaultvalue_;
-      std::string name_;
-      bool optional_;
-    };
 
 
     /** Add a separator followed by a single real value
@@ -282,8 +184,7 @@ namespace CONTACT
     inline void AddNamedReal(Teuchos::RCP<LawDefinition> def, const std::string name,
         const std::string description, const double defaultvalue = 0.0, const bool optional = false)
     {
-      def->AddComponent(
-          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
+      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
       def->AddComponent(
           Teuchos::rcp(new RealContactConstitutiveLawComponent(name, defaultvalue, optional)));
     }
@@ -302,8 +203,7 @@ namespace CONTACT
     inline void AddNamedSeparator(Teuchos::RCP<LawDefinition> def, const std::string name,
         const std::string description, const bool optional = false)
     {
-      def->AddComponent(
-          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
+      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
     }
 
     inline void AddNamedString(
@@ -314,10 +214,8 @@ namespace CONTACT
         const bool optional = false             ///< optional parameter if true
     )
     {
-      def->AddComponent(
-          Teuchos::rcp(new SeparatorContactConstitutiveLawComponent(name, description, optional)));
-      def->AddComponent(
-          Teuchos::rcp(new StringContactConstitutiveLawComponent(name, defaultvalue, optional)));
+      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
+      def->AddComponent(Teuchos::rcp(new ::INPUT::StringComponent(name, defaultvalue, optional)));
     }
 
     /** Add contact constitutive law definition to list of defined definitions

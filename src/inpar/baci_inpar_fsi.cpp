@@ -465,7 +465,7 @@ void INPAR::FSI::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> fsicomponents;
 
-  fsicomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  fsicomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
 
   Teuchos::RCP<ConditionDefinition> linefsi =
       Teuchos::rcp(new ConditionDefinition("DESIGN FSI COUPLING LINE CONDITIONS", "FSICoupling",
@@ -516,8 +516,8 @@ void INPAR::FSI::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> saccomponents;
 
-  saccomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-  saccomponents.push_back(Teuchos::rcp(new StringConditionComponent("field", "structure",
+  saccomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
+  saccomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("field", "structure",
       Teuchos::tuple<std::string>("structure", "fluid"),
       Teuchos::tuple<std::string>("structure", "fluid"))));
 
@@ -534,8 +534,8 @@ void INPAR::FSI::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> sfvcomponents;
 
-  sfvcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-  sfvcomponents.push_back(Teuchos::rcp(new StringConditionComponent("field", "structure",
+  sfvcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
+  sfvcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("field", "structure",
       Teuchos::tuple<std::string>("structure", "fluid"),
       Teuchos::tuple<std::string>("structure", "fluid"))));
 

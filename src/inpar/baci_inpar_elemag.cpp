@@ -118,17 +118,17 @@ void INPAR::ELEMAG::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> abcbundcomponents;
 
-  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMDOF")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numdof")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NUMDOF")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("numdof")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
   abcbundcomponents.emplace_back(
-      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numdof"))));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("FUNCT")));
-  abcbundcomponents.emplace_back(Teuchos::rcp(
-      new IntVectorConditionComponent("funct", LengthFromInt("numdof"), false, true, false)));
-  abcbundcomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", INPUT::LengthFromInt("numdof"))));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("FUNCT")));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntVectorComponent(
+      "funct", INPUT::LengthFromInt("numdof"), {0, false, true, false})));
+  abcbundcomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("VAL")));
   abcbundcomponents.emplace_back(
-      Teuchos::rcp(new RealVectorConditionComponent("val", LengthFromInt("numdof"))));
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("val", INPUT::LengthFromInt("numdof"))));
 
   //*--------------------------------------------------------------------* /
   // absorbing boundary condition for electromagnetic problems

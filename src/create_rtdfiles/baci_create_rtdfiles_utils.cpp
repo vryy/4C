@@ -256,8 +256,7 @@ namespace DRT
 
       for (auto &parameterterm : material->Inputline())
       {
-        if (auto *separator =
-                dynamic_cast<DRT::INPUT::SeparatorMaterialComponent *>(parameterterm.get()))
+        if (auto *separator = dynamic_cast<::INPUT::SeparatorComponent *>(parameterterm.get()))
         {
           parametertable.AddRow(separator->WriteReadTheDocs());
 
@@ -472,14 +471,14 @@ namespace DRT
         conditioncodeline += " " + condparameter->WriteReadTheDocs();
         isNewlinePossible = (conditioncodeline.length() > 60);
         if (auto *previousparameter =
-                dynamic_cast<DRT::INPUT::SeparatorConditionComponent *>(condparameter.get()))
+                dynamic_cast<::INPUT::SeparatorComponent *>(condparameter.get()))
         {
           previousparameter->GetOptions();  // just needed to prevent an unusedVariable warning
           isNewlinePossible = false;
         }
         // If the component is a string component, store the admissible parameters in the table:
         if (auto *stringComponent =
-                dynamic_cast<DRT::INPUT::StringConditionComponent *>(condparameter.get()))
+                dynamic_cast<::INPUT::SelectionComponent *>(condparameter.get()))
         {
           tablerow[0] = stringComponent->Name();
           std::ostringstream parametercell;
@@ -491,7 +490,7 @@ namespace DRT
         }
         // if the component is a bundleselector (bundle of variables following a string keyword):
         if (auto *compBundleSelector =
-                dynamic_cast<DRT::INPUT::SwitchConditionComponent *>(condparameter.get()))
+                dynamic_cast<::INPUT::SwitchComponent *>(condparameter.get()))
         {
           condCompName = compBundleSelector->Name();
           std::vector<std::string> bundle = compBundleSelector->WriteReadTheDocsLines();
@@ -592,9 +591,7 @@ namespace DRT
 
       for (auto &parameterterm : contactlaw->Inputline())
       {
-        if (auto *separator =
-                dynamic_cast<CONTACT::CONSTITUTIVELAW::SeparatorContactConstitutiveLawComponent *>(
-                    parameterterm.get()))
+        if (auto *separator = dynamic_cast<::INPUT::SeparatorComponent *>(parameterterm.get()))
         {
           parametertable.AddRow(separator->WriteReadTheDocs());
 

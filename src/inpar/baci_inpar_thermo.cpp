@@ -159,22 +159,23 @@ void INPAR::THR::SetValidConditions(
   // --> Tempn (old temperature T_n)
   // or if the exact solution is needed
   // --> Tempnp (current temperature solution T_n+1) with linearisation
-  thermoconvectcomponents.push_back(Teuchos::rcp(new StringConditionComponent("temperature state",
-      "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
+  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent(
+      "temperature state", "Tempnp", Teuchos::tuple<std::string>("Tempnp", "Tempn"),
       Teuchos::tuple<std::string>("Tempnp", "Tempn"))));
   // heat transfer coefficient h
-  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("coeff")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("coeff")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("coeff")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("coeff")));
   // surrounding (fluid) temperature T_oo
-  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtemp")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new RealConditionComponent("surtemp")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("surtemp")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("surtemp")));
   // time curve to increase the surrounding (fluid) temperature T_oo in time
-  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("surtempfunct")));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("surtempfunct")));
   thermoconvectcomponents.push_back(
-      Teuchos::rcp(new IntConditionComponent("surtempfunct", true, true)));
+      Teuchos::rcp(new ::INPUT::IntComponent("surtempfunct", {0, true, true})));
   // time curve to increase the complete boundary condition, i.e., the heat flux
-  thermoconvectcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("funct")));
-  thermoconvectcomponents.push_back(Teuchos::rcp(new IntConditionComponent("funct", true, true)));
+  thermoconvectcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("funct")));
+  thermoconvectcomponents.push_back(
+      Teuchos::rcp(new ::INPUT::IntComponent("funct", {0, true, true})));
 
   Teuchos::RCP<ConditionDefinition> linethermoconvect = Teuchos::rcp(new ConditionDefinition(
       "DESIGN THERMO CONVECTION LINE CONDITIONS", "ThermoConvections", "Line Thermo Convections",
@@ -204,16 +205,16 @@ void INPAR::THR::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> thermorobincomponents;
 
-  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("NUMSCAL")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new IntConditionComponent("numscal")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NUMSCAL")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::IntComponent("numscal")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("ONOFF")));
   thermorobincomponents.emplace_back(
-      Teuchos::rcp(new IntVectorConditionComponent("onoff", LengthFromInt("numscal"))));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("onoff", ::INPUT::LengthFromInt("numscal"))));
 
-  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("PREFACTOR")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("prefactor")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new SeparatorConditionComponent("REFVALUE")));
-  thermorobincomponents.emplace_back(Teuchos::rcp(new RealConditionComponent("refvalue")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("PREFACTOR")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::RealComponent("prefactor")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("REFVALUE")));
+  thermorobincomponents.emplace_back(Teuchos::rcp(new ::INPUT::RealComponent("refvalue")));
 
   for (const auto& thermorobincomponent : thermorobincomponents)
   {

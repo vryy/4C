@@ -389,7 +389,7 @@ void INPAR::XFEM::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> xfemcomponents;
 
-  xfemcomponents.push_back(Teuchos::rcp(new IntConditionComponent("label")));
+  xfemcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("label")));
 
   Teuchos::RCP<ConditionDefinition> movingfluid =
       Teuchos::rcp(new ConditionDefinition("DESIGN FLUID MESH VOL CONDITIONS", "FluidMesh",
@@ -423,11 +423,10 @@ void INPAR::XFEM::SetValidConditions(
       "DESIGN XFEM DISPLACEMENT SURF CONDITIONS", "XFEMSurfDisplacement", "XFEM Surf Displacement",
       DRT::Condition::XFEM_Surf_Displacement, true, DRT::Condition::Surface));
 
-  xfem_surf_displacement->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_displacement->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
-  xfem_surf_displacement->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("EVALTYPE")));
-  xfem_surf_displacement->AddComponent(Teuchos::rcp(new StringConditionComponent("evaltype",
+  xfem_surf_displacement->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfem_surf_displacement->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
+  xfem_surf_displacement->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("EVALTYPE")));
+  xfem_surf_displacement->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("evaltype",
       "funct", Teuchos::tuple<std::string>("zero", "funct", "implementation"),
       Teuchos::tuple<std::string>("zero", "funct", "implementation"), true)));
 
@@ -446,28 +445,27 @@ void INPAR::XFEM::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> levelsetfield_components;
 
-  levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  levelsetfield_components.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+  levelsetfield_components.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  levelsetfield_components.push_back(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
   levelsetfield_components.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("LEVELSETFIELDNO")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("LEVELSETFIELDNO")));
   levelsetfield_components.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("levelsetfieldno", 1, false, false, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("levelsetfieldno", 1)));
 
   // define which boolean operator is used for combining this level-set field with the previous one
   // with smaller coupling id
-  levelsetfield_components.push_back(Teuchos::rcp(new SeparatorConditionComponent("BOOLEANTYPE")));
-  levelsetfield_components.push_back(Teuchos::rcp(new StringConditionComponent("booleantype",
+  levelsetfield_components.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("BOOLEANTYPE")));
+  levelsetfield_components.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("booleantype",
       "none", Teuchos::tuple<std::string>("none", "cut", "union", "difference", "sym_difference"),
       Teuchos::tuple<std::string>("none", "cut", "union", "difference", "sym_difference"), false)));
 
   // define which complementary operator is applied after combining the level-set field with a
   // boolean operator with the previous one
   levelsetfield_components.push_back(
-      Teuchos::rcp(new SeparatorConditionComponent("COMPLEMENTARY")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("COMPLEMENTARY")));
   levelsetfield_components.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("complementary", 1, false, false, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("complementary", 1)));
 
 
   //*----------------*/
@@ -490,9 +488,9 @@ void INPAR::XFEM::SetValidConditions(
 
   // optional: allow for random noise, set percentage used in uniform random distribution
   xfem_levelset_wdbc->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("RANDNOISE", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("RANDNOISE", "", true)));
   xfem_levelset_wdbc->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("randnoise", 1, true)));
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("randnoise", 1, {0., true})));
 
   condlist.push_back(xfem_levelset_wdbc);
 
@@ -515,9 +513,9 @@ void INPAR::XFEM::SetValidConditions(
 
   // define if we use inflow stabilization on the xfem neumann surf condition
   xfem_levelset_neumann->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("INFLOW_STAB", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("INFLOW_STAB", "", true)));
   xfem_levelset_neumann->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("InflowStab", 1, true, true, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("InflowStab", 1, {0, true, true, true})));
 
   condlist.push_back(xfem_levelset_neumann);
 
@@ -535,9 +533,9 @@ void INPAR::XFEM::SetValidConditions(
   }
 
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SURFACE_PROJECTION")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SURFACE_PROJECTION")));
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("SURFACE_PROJECTION", "proj_normal",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("SURFACE_PROJECTION", "proj_normal",
           Teuchos::tuple<std::string>(
               "proj_normal", "proj_smoothed", "proj_normal_smoothed_comb", "proj_normal_phi"),
           Teuchos::tuple<int>(INPAR::XFEM::Proj_normal, INPAR::XFEM::Proj_smoothed,
@@ -545,33 +543,33 @@ void INPAR::XFEM::SetValidConditions(
           true)));
 
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("L2_PROJECTION_SOLVER")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("L2_PROJECTION_SOLVER")));
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("l2projsolv", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("l2projsolv", 1, {0, true, true, false})));
 
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_DIRICHLET_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_DIRICHLET_ID")));
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id_dirch", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id_dirch", 1, {0, true, true, false})));
 
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_NEUMANN_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_NEUMANN_ID")));
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id_neumann", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id_neumann", 1, {0, true, true, false})));
 
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT")));
-  xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new RealConditionComponent("slipcoeff")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIPCOEFFICIENT")));
+  xfem_levelset_navier_slip->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("slipcoeff")));
 
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIP_FUNCT", "", true)));
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 1, {0, false, false, true})));
 
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("FORCE_ONLY_TANG_VEL", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("FORCE_ONLY_TANG_VEL", "", true)));
   xfem_levelset_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("force_tang_vel", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("force_tang_vel", 1, {0, false, false, true})));
 
   condlist.push_back(xfem_levelset_navier_slip);
 
@@ -583,9 +581,9 @@ void INPAR::XFEM::SetValidConditions(
           DRT::Condition::XFEM_Robin_Dirichlet_Volume, true, DRT::Condition::Volume));
 
   xfem_navier_slip_robin_dirch->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_DIRICHLET_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_DIRICHLET_ID")));
   xfem_navier_slip_robin_dirch->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id", 1, {0, true, true, false})));
 
   for (unsigned i = 0; i < dirichletbundcomponents.size(); ++i)
   {
@@ -600,9 +598,9 @@ void INPAR::XFEM::SetValidConditions(
           DRT::Condition::XFEM_Robin_Neumann_Volume, true, DRT::Condition::Volume));
 
   xfem_navier_slip_robin_neumann->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_NEUMANN_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_NEUMANN_ID")));
   xfem_navier_slip_robin_neumann->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id", 1, {0, true, true, false})));
 
   for (unsigned i = 0; i < neumanncomponents.size(); ++i)
   {
@@ -642,32 +640,32 @@ void INPAR::XFEM::SetValidConditions(
 
   // "The laminar flamespeed incorporates all chemical kinetics into the problem for now"
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("LAMINAR_FLAMESPEED", false)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("LAMINAR_FLAMESPEED", "", false)));
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("laminar_flamespeed", 1, false)));
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("laminar_flamespeed", 1)));
 
   // "Molecular diffusivity"
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("MOL_DIFFUSIVITY", false)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("MOL_DIFFUSIVITY", "", false)));
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("mol_diffusivity", 1, false)));
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("mol_diffusivity", 1)));
 
   // "The Markstein length takes flame curvature into account"
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("MARKSTEIN_LENGTH", false)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("MARKSTEIN_LENGTH", "", false)));
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("markstein_length", 1, false)));
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("markstein_length", 1)));
 
   // interface transport in all directions or just in normal direction?
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("TRANSPORT_DIRECTIONS")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("TRANSPORT_DIRECTIONS")));
 
 
   // define if the curvature shall be accounted for in computing the transport velocity
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("TRANSPORT_CURVATURE")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("TRANSPORT_CURVATURE")));
   xfem_levelset_combustion->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("transport_curvature", 1, false, false, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("transport_curvature", 1)));
 
 
   condlist.push_back(xfem_levelset_combustion);
@@ -678,11 +676,10 @@ void INPAR::XFEM::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> xfluidfluidsurfcomponents;
 
-  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfluidfluidsurfcomponents.push_back(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
-  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new StringConditionComponent("COUPSTRATEGY",
+  xfluidfluidsurfcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("COUPSTRATEGY",
       "xfluid", Teuchos::tuple<std::string>("xfluid", "embedded", "mean"),
       Teuchos::tuple<int>(
           INPAR::XFEM::Xfluid_Sided, INPAR::XFEM::Embedded_Sided, INPAR::XFEM::Mean))));
@@ -704,28 +701,28 @@ void INPAR::XFEM::SetValidConditions(
       new ConditionDefinition("DESIGN XFEM FSI PARTITIONED SURF CONDITIONS", "XFEMSurfFSIPart",
           "XFEM Surf FSI Part", DRT::Condition::XFEM_Surf_FSIPart, true, DRT::Condition::Surface));
 
-  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_fsi_part->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
   // COUPSTRATEGY IS FLUID SIDED
 
-  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("INTLAW", true)));
-  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new StringConditionComponent("INTLAW", "noslip",
+  xfem_surf_fsi_part->AddComponent(
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("INTLAW", "", true)));
+  xfem_surf_fsi_part->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("INTLAW", "noslip",
       Teuchos::tuple<std::string>("noslip", "noslip_splitpen", "slip", "navslip"),
       Teuchos::tuple<int>(INPAR::XFEM::noslip, INPAR::XFEM::noslip_splitpen, INPAR::XFEM::slip,
           INPAR::XFEM::navierslip),
       true)));
 
   xfem_surf_fsi_part->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIPCOEFFICIENT", "", true)));
   xfem_surf_fsi_part->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("slipcoeff", 1, true)));
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("slipcoeff", 1, {0., true})));
 
   xfem_surf_fsi_part->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIP_FUNCT", "", true)));
   xfem_surf_fsi_part->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 1, {0, false, false, true})));
 
   condlist.push_back(xfem_surf_fsi_part);
 
@@ -736,20 +733,20 @@ void INPAR::XFEM::SetValidConditions(
       new ConditionDefinition("DESIGN XFEM FSI MONOLITHIC SURF CONDITIONS", "XFEMSurfFSIMono",
           "XFEM Surf FSI Mono", DRT::Condition::XFEM_Surf_FSIMono, true, DRT::Condition::Surface));
 
-  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_fsi_mono->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
   xfem_surf_fsi_mono->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("COUPSTRATEGY", true)));
-  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("COUPSTRATEGY",
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPSTRATEGY", "", true)));
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("COUPSTRATEGY",
       "xfluid", Teuchos::tuple<std::string>("xfluid", "solid", "mean", "harmonic"),
       Teuchos::tuple<int>(INPAR::XFEM::Xfluid_Sided, INPAR::XFEM::Embedded_Sided, INPAR::XFEM::Mean,
           INPAR::XFEM::Harmonic),
       true)));
 
-  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("INTLAW", true)));
-  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("INTLAW", "noslip",
+  xfem_surf_fsi_mono->AddComponent(
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("INTLAW", "", true)));
+  xfem_surf_fsi_mono->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("INTLAW", "noslip",
       Teuchos::tuple<std::string>(
           "noslip", "noslip_splitpen", "slip", "navslip", "navslip_contact"),
       Teuchos::tuple<int>(INPAR::XFEM::noslip, INPAR::XFEM::noslip_splitpen, INPAR::XFEM::slip,
@@ -757,14 +754,14 @@ void INPAR::XFEM::SetValidConditions(
       true)));
 
   xfem_surf_fsi_mono->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIPCOEFFICIENT", "", true)));
   xfem_surf_fsi_mono->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("slipcoeff", 1, true)));
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("slipcoeff", 1, {0., true})));
 
   xfem_surf_fsi_mono->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIP_FUNCT", "", true)));
   xfem_surf_fsi_mono->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 1, {0, false, false, true})));
 
   condlist.push_back(xfem_surf_fsi_mono);
 
@@ -775,21 +772,21 @@ void INPAR::XFEM::SetValidConditions(
       new ConditionDefinition("DESIGN XFEM FPI MONOLITHIC SURF CONDITIONS", "XFEMSurfFPIMono",
           "XFEM Surf FPI Mono", DRT::Condition::XFEM_Surf_FPIMono, true, DRT::Condition::Surface));
 
-  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_fpi_mono->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
-  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("BJ_COEFF", true)));
   xfem_surf_fpi_mono->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("bj_coeff", 1, true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("BJ_COEFF", "", true)));
+  xfem_surf_fpi_mono->AddComponent(
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("bj_coeff", 1, {0., true})));
 
-  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("Variant", "BJ",
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("Variant", "BJ",
       Teuchos::tuple<std::string>("BJ", "BJS"), Teuchos::tuple<std::string>("BJ", "BJS"), true)));
 
-  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("Method", "NIT",
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("Method", "NIT",
       Teuchos::tuple<std::string>("NIT", "SUB"), Teuchos::tuple<std::string>("NIT", "SUB"), true)));
 
-  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new StringConditionComponent("Contact",
+  xfem_surf_fpi_mono->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("Contact",
       "contact_no", Teuchos::tuple<std::string>("contact_no", "contact_yes"),
       Teuchos::tuple<std::string>("contact_no", "contact_yes"), true)));
 
@@ -804,12 +801,11 @@ void INPAR::XFEM::SetValidConditions(
           "XFEMSurfWeakDirichlet", "XFEM Surf Weak Dirichlet",
           DRT::Condition::XFEM_Surf_Weak_Dirichlet, true, DRT::Condition::Surface));
 
-  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
+  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("EVALTYPE")));
   xfem_surf_wdbc->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
-  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("EVALTYPE")));
-  xfem_surf_wdbc->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("evaltype", "funct_interpolated",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("evaltype", "funct_interpolated",
           Teuchos::tuple<std::string>("zero", "funct_interpolated", "funct_gausspoint",
               "displacement_1storder_wo_initfunct", "displacement_2ndorder_wo_initfunct",
               "displacement_1storder_with_initfunct", "displacement_2ndorder_with_initfunct"),
@@ -824,9 +820,10 @@ void INPAR::XFEM::SetValidConditions(
   }
 
   // optional: allow for random noise, set percentage used in uniform random distribution
-  xfem_surf_wdbc->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("RANDNOISE", true)));
   xfem_surf_wdbc->AddComponent(
-      Teuchos::rcp(new RealVectorConditionComponent("randnoise", 1, true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("RANDNOISE", "", true)));
+  xfem_surf_wdbc->AddComponent(
+      Teuchos::rcp(new ::INPUT::RealVectorComponent("randnoise", 1, {0., true})));
 
   condlist.push_back(xfem_surf_wdbc);
 
@@ -838,9 +835,8 @@ void INPAR::XFEM::SetValidConditions(
       Teuchos::rcp(new ConditionDefinition("DESIGN XFEM NEUMANN SURF CONDITIONS", "XFEMSurfNeumann",
           "XFEM Surf Neumann", DRT::Condition::XFEM_Surf_Neumann, true, DRT::Condition::Surface));
 
-  xfem_surf_neumann->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_neumann->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+  xfem_surf_neumann->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfem_surf_neumann->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
   for (unsigned i = 0; i < neumanncomponents.size(); ++i)
   {
@@ -849,9 +845,9 @@ void INPAR::XFEM::SetValidConditions(
 
   // define if we use inflow stabilization on the xfem neumann surf condition
   xfem_surf_neumann->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("INFLOW_STAB", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("INFLOW_STAB", "", true)));
   xfem_surf_neumann->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("InflowStab", 1, true, true, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("InflowStab", 1, {0, true, true, true})));
 
   condlist.push_back(xfem_surf_neumann);
 
@@ -862,13 +858,12 @@ void INPAR::XFEM::SetValidConditions(
       "DESIGN XFEM NAVIER SLIP SURF CONDITIONS", "XFEMSurfNavierSlip", "XFEM Surf Navier Slip",
       DRT::Condition::XFEM_Surf_Navier_Slip, true, DRT::Condition::Surface));
 
-  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
-  xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
+  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
-  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("EVALTYPE")));
+  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("EVALTYPE")));
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("evaltype", "funct_interpolated",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("evaltype", "funct_interpolated",
           Teuchos::tuple<std::string>("zero", "funct_interpolated", "funct_gausspoint",
               "displacement_1storder_wo_initfunct", "displacement_2ndorder_wo_initfunct",
               "displacement_1storder_with_initfunct", "displacement_2ndorder_with_initfunct"),
@@ -879,28 +874,28 @@ void INPAR::XFEM::SetValidConditions(
 
 
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_DIRICHLET_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_DIRICHLET_ID")));
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id_dirch", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id_dirch", 1, {0, true, true, false})));
 
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_NEUMANN_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_NEUMANN_ID")));
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id_neumann", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id_neumann", 1, {0, true, true, false})));
 
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT")));
-  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new RealConditionComponent("slipcoeff")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIPCOEFFICIENT")));
+  xfem_surf_navier_slip->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("slipcoeff")));
 
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIP_FUNCT", "", true)));
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 1, {0, false, false, true})));
 
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("FORCE_ONLY_TANG_VEL", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("FORCE_ONLY_TANG_VEL", "", true)));
   xfem_surf_navier_slip->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("force_tang_vel", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("force_tang_vel", 1, {0, false, false, true})));
 
   condlist.push_back(xfem_surf_navier_slip);
 
@@ -913,14 +908,14 @@ void INPAR::XFEM::SetValidConditions(
           DRT::Condition::XFEM_Surf_Navier_Slip_Twophase, true, DRT::Condition::Surface));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("EVALTYPE")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("EVALTYPE")));
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("evaltype", "funct_interpolated",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("evaltype", "funct_interpolated",
           Teuchos::tuple<std::string>("zero", "funct_interpolated", "funct_gausspoint",
               "displacement_1storder_wo_initfunct", "displacement_2ndorder_wo_initfunct",
               "displacement_1storder_with_initfunct", "displacement_2ndorder_with_initfunct"),
@@ -930,37 +925,37 @@ void INPAR::XFEM::SetValidConditions(
           true)));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_DIRICHLET_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_DIRICHLET_ID")));
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id_dirch", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id_dirch", 1, {0, true, true, false})));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_NEUMANN_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_NEUMANN_ID")));
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id_neumann", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id_neumann", 1, {0, true, true, false})));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIP_SMEAR", true)));
-  xfem_surf_navier_slip_tpf->AddComponent(Teuchos::rcp(new RealConditionComponent("slipsmear")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIP_SMEAR", "", true)));
+  xfem_surf_navier_slip_tpf->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("slipsmear")));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("NORMAL_PENALTY_SCALING", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("NORMAL_PENALTY_SCALING", "", true)));
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new RealConditionComponent("normalpen_scaling")));
+      Teuchos::rcp(new ::INPUT::RealComponent("normalpen_scaling")));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIPCOEFFICIENT")));
-  xfem_surf_navier_slip_tpf->AddComponent(Teuchos::rcp(new RealConditionComponent("slipcoeff")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIPCOEFFICIENT")));
+  xfem_surf_navier_slip_tpf->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent("slipcoeff")));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("SLIP_FUNCT", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("SLIP_FUNCT", "", true)));
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("funct", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("funct", 1, {0, false, false, true})));
 
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("FORCE_ONLY_TANG_VEL", true)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("FORCE_ONLY_TANG_VEL", "", true)));
   xfem_surf_navier_slip_tpf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("force_tang_vel", 1, false, false, true)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("force_tang_vel", 1, {0, false, false, true})));
 
   condlist.push_back(xfem_surf_navier_slip_tpf);
 
@@ -972,20 +967,20 @@ void INPAR::XFEM::SetValidConditions(
   // this implementation should be reviewed at some point as it requires these conditions
   //  to have a couplingID. In theory this should not be necessary.
   xfem_navier_slip_robin_dirch_surf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
   xfem_navier_slip_robin_dirch_surf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
   xfem_navier_slip_robin_dirch_surf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_DIRICHLET_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_DIRICHLET_ID")));
   xfem_navier_slip_robin_dirch_surf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id", 1, {0, true, true, false})));
 
   // Likely, not necessary. But needed for the current structure.
   xfem_navier_slip_robin_dirch_surf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("EVALTYPE")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("EVALTYPE")));
   xfem_navier_slip_robin_dirch_surf->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("evaltype", "funct_interpolated",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("evaltype", "funct_interpolated",
           Teuchos::tuple<std::string>("zero", "funct_interpolated", "funct_gausspoint",
               "displacement_1storder_wo_initfunct", "displacement_2ndorder_wo_initfunct",
               "displacement_1storder_with_initfunct", "displacement_2ndorder_with_initfunct"),
@@ -1009,14 +1004,14 @@ void INPAR::XFEM::SetValidConditions(
   // this implementation should be reviewed at some point as it requires these conditions
   //  to have a couplingID. In theory this should not be necessary.
   xfem_navier_slip_robin_neumann_surf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("COUPLINGID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLINGID")));
   xfem_navier_slip_robin_neumann_surf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("label", 1, false, false, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("label", 1)));
 
   xfem_navier_slip_robin_neumann_surf->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("ROBIN_NEUMANN_ID")));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("ROBIN_NEUMANN_ID")));
   xfem_navier_slip_robin_neumann_surf->AddComponent(
-      Teuchos::rcp(new IntVectorConditionComponent("robin_id", 1, true, true, false)));
+      Teuchos::rcp(new ::INPUT::IntVectorComponent("robin_id", 1, {0, true, true, false})));
 
   for (unsigned i = 0; i < neumanncomponents.size(); ++i)
   {

@@ -84,19 +84,19 @@ void INPAR::ALE::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> aleupdatecomponents;
 
-  aleupdatecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPLING")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new StringConditionComponent("coupling", "lagrange",
+  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("COUPLING")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("coupling", "lagrange",
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       Teuchos::tuple<std::string>("lagrange", "heightfunction", "sphereHeightFunction",
           "meantangentialvelocity", "meantangentialvelocityscaled"),
       true)));
 
-  aleupdatecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("VAL")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val", 1)));
+  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("VAL")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::RealVectorComponent("val", 1)));
 
-  aleupdatecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NODENORMALFUNCT")));
-  aleupdatecomponents.push_back(Teuchos::rcp(new IntConditionComponent("nodenormalfunct")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::SeparatorComponent("NODENORMALFUNCT")));
+  aleupdatecomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("nodenormalfunct")));
 
   Teuchos::RCP<ConditionDefinition> linealeupdate =
       Teuchos::rcp(new ConditionDefinition("DESIGN ALE UPDATE LINE CONDITIONS", "ALEUPDATECoupling",

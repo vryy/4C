@@ -147,16 +147,17 @@ void INPAR::EHL::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> ehlcomponents;
 
-  ehlcomponents.push_back(Teuchos::rcp(new IntConditionComponent("Interface ID")));
-  ehlcomponents.push_back(Teuchos::rcp(
-      new StringConditionComponent("Side", "Master", Teuchos::tuple<std::string>("Master", "Slave"),
-          Teuchos::tuple<std::string>("Master", "Slave"))));
-  ehlcomponents.push_back(Teuchos::rcp(new StringConditionComponent("Initialization", "Active",
+  ehlcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("Interface ID")));
+  ehlcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Side", "Master",
+      Teuchos::tuple<std::string>("Master", "Slave"),
+      Teuchos::tuple<std::string>("Master", "Slave"))));
+  ehlcomponents.push_back(Teuchos::rcp(new ::INPUT::SelectionComponent("Initialization", "Active",
       Teuchos::tuple<std::string>("Inactive", "Active"),
       Teuchos::tuple<std::string>("Inactive", "Active"), true)));
 
-  ehlcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("FrCoeffOrBound", true)));
-  ehlcomponents.push_back(Teuchos::rcp(new RealConditionComponent("FrCoeffOrBound")));
+  ehlcomponents.push_back(
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("FrCoeffOrBound", "", true)));
+  ehlcomponents.push_back(Teuchos::rcp(new ::INPUT::RealComponent("FrCoeffOrBound")));
 
   Teuchos::RCP<ConditionDefinition> lineehl = Teuchos::rcp(
       new ConditionDefinition("DESIGN LINE EHL MORTAR COUPLING CONDITIONS 2D", "EHLCoupling",

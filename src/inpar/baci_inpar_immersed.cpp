@@ -121,7 +121,7 @@ void INPAR::IMMERSED::SetValidConditions(
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> immersedcomponents;
 
-  immersedcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  immersedcomponents.push_back(Teuchos::rcp(new ::INPUT::IntComponent("coupling id")));
 
   Teuchos::RCP<ConditionDefinition> lineimmersed = Teuchos::rcp(
       new ConditionDefinition("DESIGN IMMERSED COUPLING LINE CONDITIONS", "IMMERSEDCoupling",

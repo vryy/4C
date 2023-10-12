@@ -180,13 +180,12 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
           "BeamLineFilamentCondition", "Beam_Line_Filament_Condition",
           DRT::Condition::FilamentBeamLineCondition, false, DRT::Condition::Line));
 
-  beam_filament_condition->AddComponent(Teuchos::rcp(new SeparatorConditionComponent("ID")));
+  beam_filament_condition->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent("ID")));
+  beam_filament_condition->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("FilamentId")));
   beam_filament_condition->AddComponent(
-      Teuchos::rcp(new IntConditionComponent("FilamentId", false, false)));
+      Teuchos::rcp(new ::INPUT::SeparatorComponent("TYPE", "", true)));
   beam_filament_condition->AddComponent(
-      Teuchos::rcp(new SeparatorConditionComponent("TYPE", true)));
-  beam_filament_condition->AddComponent(
-      Teuchos::rcp(new StringConditionComponent("Type", "Arbitrary",
+      Teuchos::rcp(new ::INPUT::SelectionComponent("Type", "Arbitrary",
           Teuchos::tuple<std::string>(
               "Arbitrary", "arbitrary", "Actin", "actin", "Collagen", "collagen"),
           Teuchos::tuple<std::string>(
