@@ -40,11 +40,6 @@ EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 -------------------------------DESIGN LINE MIXED/HYBRID DIRICHLET CONDITIONS
 DLINE                           3
 E 4 - 1.0 0.0 0.0 1 0 0

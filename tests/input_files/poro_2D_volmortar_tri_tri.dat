@@ -126,11 +126,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.02*0.16*pi
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS porofluid NODE 400 QUANTITY velx VALUE 1.62194513642199212e+00 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 500 QUANTITY pressure VALUE -1.55677849836899761e-02 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          4
-NDSURF                          5
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surf_fluid

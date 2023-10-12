@@ -93,11 +93,6 @@ VARFUNCTION 1-p3/4
 SYMBOLIC_FUNCTION_OF_SPACE_TIME (-400*(y-0.05)*(y+0.05)+1)*t/0.2
 ----------------------------------------------------------------------FUNCT4
 VARFUNCTION 0.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  0
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // top

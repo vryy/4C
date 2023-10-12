@@ -235,11 +235,6 @@ FLUID DIS fluid NODE 333 QUANTITY velx VALUE 8.40565306115837602e-02 TOLERANCE 1
 FLUID DIS fluid NODE 333 QUANTITY vely VALUE -6.87441322656308118e-05 TOLERANCE 1e-14
 FLUID DIS fluid NODE 333 QUANTITY velz VALUE 0.00000000000000000e+00 TOLERANCE 1e-16
 FLUID DIS fluid NODE 333 QUANTITY pressure VALUE 8.55011594656380880e-01 TOLERANCE 1e-10
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          13
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           10
 //                              back

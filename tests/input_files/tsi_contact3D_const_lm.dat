@@ -122,11 +122,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0 0.5 0.99 2 DESCRIPTION 
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME b
 VARIABLE 0 NAME b TYPE multifunction NUMPOINTS 4 TIMES 0 0.5 0.99 2 DESCRIPTION 4/3*t*t 4/3*(-0.25+t) 1.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          2
-NDSURF                          8
-NDVOL                           1
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           1
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0 1 0 FUNCT 0 1 0

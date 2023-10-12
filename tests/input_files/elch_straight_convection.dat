@@ -95,11 +95,6 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          14
-NDSURF                          7
-NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 2.5 0.0 FUNCT 0 0 0 0

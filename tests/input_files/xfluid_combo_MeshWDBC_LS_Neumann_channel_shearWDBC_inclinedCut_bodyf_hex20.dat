@@ -111,11 +111,6 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3.0 // pressure
                          COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 8.0+10.0*x  // pressure
 ----------------------------------------------------------------------FUNCT3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*(x+0.44)
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE 12
-NDSURF 12
-NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 0
 // surface outflow

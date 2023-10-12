@@ -186,11 +186,6 @@ SCATRA DIS scatra NODE 4 QUANTITY phi4 VALUE 4.15482581159264353e+00 TOLERANCE 1
 SCATRA DIS scatra NODE 4 QUANTITY phi5 VALUE 1.03870645221786861e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 4 QUANTITY phi6 VALUE 2.07741290579632398e+00 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 4 QUANTITY phi7 VALUE 1.03870645221787061e+00 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         12
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 7 ONOFF 1 1 1 1 1 1 1 VAL 5.0 15.0 15.0 20.0 5.0 10.0 5.0 FUNCT 0 0 0 0 0 0 0

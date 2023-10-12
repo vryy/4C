@@ -102,11 +102,6 @@ FLUID DIS fluid NODE 396 QUANTITY pressure VALUE 1.00045149986403530e+02 TOLERAN
 FLUID DIS fluid NODE 396 QUANTITY velx VALUE 6.67556708683035072e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 396 QUANTITY vely VALUE 5.17097288197739702e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 396 QUANTITY velz VALUE -3.36073626765410438e+02 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          1
-NDSURF                          3
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0

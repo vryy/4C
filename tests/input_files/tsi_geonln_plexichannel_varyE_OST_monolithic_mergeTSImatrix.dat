@@ -156,11 +156,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 50.0
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 500 500000.0 DESCRIPTION (1-cos(t*pi/500.0)) (1-cos(500*pi/500.0))
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          1
-NDSURF                          5
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              surface_pseudo_orthopressure

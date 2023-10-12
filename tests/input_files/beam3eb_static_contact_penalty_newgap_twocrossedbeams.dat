@@ -62,11 +62,6 @@ BEAMS_BASICSTIFFGAP             0.01
 BEAMS_OCTREE                    octree_axisaligned
 BEAMS_ADDITEXT                  Yes
 BEAMS_EXTVAL                    2.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          2
-NDSURF                          0
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                         3
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 1 1 VAL 0.0 0.0 0.0 0.0 0.0 0.0   FUNCT 0 0 0 0 0 0

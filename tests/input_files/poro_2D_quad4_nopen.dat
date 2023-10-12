@@ -124,11 +124,6 @@ STRUCTURE DIS structure NODE 27 QUANTITY dispx VALUE 5.87382784019048815e-06 TOL
 STRUCTURE DIS structure NODE 27 QUANTITY dispy VALUE 7.71575474389851449e-06 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 7 QUANTITY dispx VALUE 5.09382915758792476e-06 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 7 QUANTITY dispy VALUE 1.24034175141121890e-05 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          13
-NDSURF                          1
-NDVOL                           0
 -----------------------------------------DESIGN LINE PORO NEUMANN CONDITIONS
 DLINE                           1
 //                              line_radial_top

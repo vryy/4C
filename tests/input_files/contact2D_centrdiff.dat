@@ -61,11 +61,6 @@ SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME                            Contact_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         42
-NDLINE                          36
-NDSURF                          16
-NDVOL                           0
 ----------------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 // initial velocity for upper ring
 DSURF                           8

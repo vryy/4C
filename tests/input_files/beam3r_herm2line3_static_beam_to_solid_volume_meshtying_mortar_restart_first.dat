@@ -84,11 +84,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0.5 1.0 11.0 VALUES
 --------------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME 1*a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0.0 0.5 VALUES 0.0 1.0
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE 0
-NDSURF 3
-NDVOL 0
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 E 1 - NUMDOF 9 ONOFF 1 1 1 1 1 1 0 0 0 VAL 0 -2.0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0

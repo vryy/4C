@@ -139,11 +139,6 @@ ELEMENTS                        12
 NODES                           96
 DIM                             3
 MATERIALS                       9999
--------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          24
-NDSURF                          24
-NDVOL                           0
 ------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 2 DLINE 1
 NODE 3 DLINE 1

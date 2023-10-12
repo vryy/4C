@@ -58,11 +58,6 @@ SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 20 DENS 0.0
 MAT 20 ELAST_CoupSVK YOUNG 40000 NUE 0.3
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  6
-NDVOL   1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // top_dirichlet

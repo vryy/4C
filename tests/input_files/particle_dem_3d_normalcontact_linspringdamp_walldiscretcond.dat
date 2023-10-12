@@ -87,8 +87,6 @@ TYPE phase1 POS -0.035 -0.02 0.0
 TYPE phase2 POS 0.045 0.045 -0.02
 TYPE phase2 POS 0.015 0.045 -0.02
 TYPE phase2 POS -0.04 0.02 0.0
-------------------------------------------------DESIGN DESCRIPTION
-NDSURF     1
 --------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF  1
 E 1 - MAT 2

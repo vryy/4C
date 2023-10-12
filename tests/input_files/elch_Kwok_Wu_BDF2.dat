@@ -159,11 +159,6 @@ SCATRA DIS scatra NODE 131 QUANTITY phi2 VALUE 8.87741663652766744e-01 TOLERANCE
 SCATRA DIS scatra NODE 307 QUANTITY phi2 VALUE 1.44903346825699098e+00 TOLERANCE 1e-09
 SCATRA DIS scatra NODE 131 QUANTITY phi3 VALUE 8.32267835008624474e-02 TOLERANCE 8e-11
 SCATRA DIS scatra NODE 307 QUANTITY phi3 VALUE 0.00000000000000000e+00 TOLERANCE 4e-10
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          4
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              origin

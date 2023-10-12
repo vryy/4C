@@ -102,11 +102,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.2 1 VALUES 0 10
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 4 VALUES 0 0 10
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  3
-NDSURF  1
-NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // grav

@@ -189,11 +189,6 @@ STRUCTURE DIS structure NODE 212 QUANTITY dispy VALUE  1.29723918173195603e-03 T
 STRUCTURE DIS structure NODE 212 QUANTITY dispz VALUE -5.09559633713216496e-05 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 212 QUANTITY phi VALUE  5.44967379058160506e-02 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 212 QUANTITY phi2 VALUE  2.88670176270418299e-03 TOLERANCE 1e-7
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          9
-NDSURF                          2
-NDVOL                           1
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DSURF                           0
 // // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid

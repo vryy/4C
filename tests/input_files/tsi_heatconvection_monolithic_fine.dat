@@ -221,11 +221,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 //0 degrees celsius
 ------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000.0 DESCRIPTION 0.5*(sin((t*pi/4)-(pi/2)))+0.5 0.5*(sin((4*pi/4)-(pi/2)))+0.5
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          9
-NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // STR left T_xx=0

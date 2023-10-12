@@ -146,11 +146,6 @@ SYMBOLIC_FUNCTION_OF_TIME t/1.5
 // --> L_p = 0.125989717 = 1.0/pi/D
 ----------------------------------------------------------------------FUNCT6
 VARFUNCTION (p_art-p3)*0.001
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  0
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // all 2d nodes

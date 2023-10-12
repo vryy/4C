@@ -114,11 +114,6 @@ FLUID DIS fluid NODE 453 QUANTITY velx VALUE -1.76041173380499272e+00 TOLERANCE 
 FLUID DIS fluid NODE 453 QUANTITY vely VALUE -1.20565788183300082e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 453 QUANTITY velz VALUE -1.32077845921344861e+00 TOLERANCE 1e-9
 FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -3.15500256993404893e+00 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          8
-NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top

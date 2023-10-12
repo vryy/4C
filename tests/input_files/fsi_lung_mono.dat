@@ -286,11 +286,6 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 6
 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1.0-sqrt(x*x+y*y)/4.0)*(1-cos(pi*t/500))
 ------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1-cos(pi*t/500)
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  3
-NDSURF  17
-NDVOL   2
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  2
 // fluid inflow lines

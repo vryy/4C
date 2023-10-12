@@ -64,11 +64,6 @@ E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 ------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 E 2 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10 0.01 0.01 0 0 0 FUNCT 1 2 2 0 0 0 Live Mid
-------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           0
 -----------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 20 DSURFACE 1
 NODE 12 DSURFACE 1

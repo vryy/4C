@@ -189,11 +189,6 @@ POROMULTIPHASESCATRA_FUNCTION OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC NUMPARAMS 1
 VARFUNCTION porosity*S1*10e-10*sin(0.5*pi*phi1/4.2e-6)
 ----------------------------------------------------------------------FUNCT14 // diameter
 VARFUNCTION D0*1.0/(1.0+exp(-2.0*100.0*(-(S2-0.4))))+Dprev*0.5*1.0/(1.0+exp(-2.0*100.0*(S2-0.4))) //regularized version of: D0*heaviside(-(S2-0.4))+Dprev*(0.5)*heaviside(S2-0.4)
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  3
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // all_nodes

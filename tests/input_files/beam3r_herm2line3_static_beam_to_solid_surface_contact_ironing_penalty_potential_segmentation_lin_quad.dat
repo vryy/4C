@@ -104,11 +104,6 @@ VARIABLE 0 NAME var TYPE linearinterpolation NUMPOINTS 4 TIMES 0.0 1.0 3.0 1000.
 --------------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME var
 VARIABLE 0 NAME var TYPE linearinterpolation NUMPOINTS 3 TIMES 0.0 1.0 1000.0 VALUES 0.0 -0.5 -0.5
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE 1
-NDSURF 2
-NDVOL 0
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 1 - NUMDOF 9 ONOFF 1 1 1 1 1 1 0 0 0 VAL 1.0 1.0 0 0 0 0 0 0 0 FUNCT 1 2 0 0 0 0 0 0 0

@@ -94,9 +94,6 @@ SCATRA DIS scatra SPECIAL QUANTITY meanphi1 VALUE 5.50740227580694430e+00 TOLERA
 SCATRA DIS scatra SPECIAL QUANTITY meanphi1_0 VALUE 1.00660588033157623e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over anode domain
 SCATRA DIS scatra SPECIAL QUANTITY meanphi1_1 VALUE 1.20000000000347429e+00 TOLERANCE 1e-09           // mean lithium concentration averaged over electrolyte domain
 SCATRA DIS scatra SPECIAL QUANTITY meanphi1_2 VALUE 1.18248050000142975e+01 TOLERANCE 1e-08           // mean lithium concentration averaged over cathode domain
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                          14
-NDVOL                           5
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 6.544713556e-4 FUNCT 0 0 Live Mid

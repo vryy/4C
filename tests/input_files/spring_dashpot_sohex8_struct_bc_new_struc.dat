@@ -32,8 +32,6 @@ MAT 6 MAT_Struct_StVenantKirchhoff YOUNG 1.0e06 NUE 0.0 DENS 1.0e-16
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 3*t
 ----------------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 120 QUANTITY dispx VALUE -6.0e-1 TOLERANCE 1e-14
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF 30
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 E 12 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 Live Mid

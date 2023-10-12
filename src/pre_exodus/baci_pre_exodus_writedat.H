@@ -31,9 +31,6 @@ namespace EXODUS
   //! remove a specific input file section
   void RemoveDatSection(const std::string& secname, std::string& headstring);
 
-  //! design description
-  void WriteDatDesign(const std::vector<EXODUS::cond_def>& condefs, std::ostream& dat);
-
   //! conditions
   void WriteDatConditions(
       const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);

@@ -175,11 +175,6 @@ FLUID DIS fluid NODE 478 QUANTITY pressure VALUE 1.03231726859803784e+04 TOLERAN
 STRUCTURE DIS structure NODE 1325 QUANTITY dispx VALUE -1.42709609116804933e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1325 QUANTITY dispy VALUE -8.14217844055244513e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1325 QUANTITY dispz VALUE -2.20574796267256171e-04 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          18
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              fluid_inflow

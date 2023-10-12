@@ -229,11 +229,6 @@ MAT 30 MAT_lubrication_law_constant VISCOSITY 4.0E-8
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME  0.6*t
 ------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.6*t
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  1
-NDSURF  3
-NDVOL   2
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  1
 E 1 - NUMDOF 1 ONOFF 1 VAL 0 FUNCT 0

@@ -74,9 +74,6 @@ SCATRA DIS scatra NODE 86 QUANTITY flux_boundary_1_y VALUE 0.0e+00 TOLERANCE 1e-
 SCATRA DIS scatra NODE 546 QUANTITY flux_boundary_1_y VALUE 0.0e+00 TOLERANCE 1e-09   // needs to be zero due to impermeability
 SCATRA DIS scatra NODE 338 QUANTITY flux_boundary_1_z VALUE 0.0e+00 TOLERANCE 1e-09   // needs to be zero due to impermeability
 SCATRA DIS scatra NODE 798 QUANTITY flux_boundary_1_z VALUE 0.0e+00 TOLERANCE 1e-09   // needs to be zero due to impermeability
-------------------------------------------------DESIGN DESCRIPTION
-NDLINE  8
-NDSURF  2
 ------------------------------DESIGN SURF INITIAL FIELD CONDITIONS
 DSURF  2
 E 1 - ScaTra 1

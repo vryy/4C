@@ -58,8 +58,6 @@ PARTICLE ID 1 QUANTITY angvely VALUE 1.21591785334287036e-01 TOLERANCE 1.0e-10
 -------------------------------------------------------------------PARTICLES
 TYPE phase1 POS -0.03 0.0 0.015
 TYPE phase1 POS -0.015 0.0 0.03
-------------------------------------------------DESIGN DESCRIPTION
-NDSURF     1
 --------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF  1
 E 1 - MAT 2

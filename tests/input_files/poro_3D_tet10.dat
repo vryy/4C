@@ -112,11 +112,6 @@ FLUID DIS porofluid NODE 124 QUANTITY pressure VALUE  2.19328383899029111e+00 TO
 STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE -2.49994697190145038e-05 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -1.09423610585884868e-05 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE -7.45050738583900908e-06 TOLERANCE 1e-6
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         9
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0

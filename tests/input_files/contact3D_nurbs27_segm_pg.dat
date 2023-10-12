@@ -79,11 +79,6 @@ E 6  - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 -1.0 FUNCT 1  1 2
 DSURF  2
 E 5 - 1 Slave Inactive
 E 12 - 1 Master Inactive
---------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                           16
-NDLINE                            24
-NDSURF                            12
-NDVOL                             2
 -------------------------------------------------------DNODE-NODE TOPOLOGY
 //
 // structure: patch 1, (0,0,0)

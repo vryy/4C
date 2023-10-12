@@ -85,11 +85,6 @@ STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-2
 STRUCTURE DIS structure NODE 117 QUANTITY dispx VALUE 0.0 TOLERANCE 1e-2
 STRUCTURE DIS structure NODE 117 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-2
 STRUCTURE DIS structure NODE 208 QUANTITY dispy VALUE 0.0 TOLERANCE 1.2e-2
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          4
-NDSURF                          5
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 //                              innerwall

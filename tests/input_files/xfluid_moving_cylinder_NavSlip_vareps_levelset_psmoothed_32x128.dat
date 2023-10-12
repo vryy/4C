@@ -150,15 +150,6 @@ XFLUID DIS fluid NODE 6773 QUANTITY pressure VALUE -4.29336932290678241e+00 TOLE
 XFLUID DIS fluid NODE 3203 QUANTITY velx VALUE 1.99598157524803494e-03 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 3203 QUANTITY vely VALUE  1.19365112996058630e-02 TOLERANCE 1e-8
 XFLUID DIS fluid NODE 3203 QUANTITY pressure VALUE  1.37187819162760571e-01 TOLERANCE 1e-6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
-// -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
-// DVOL 1
-// // volume
-// E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 -10.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // left point

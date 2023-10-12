@@ -194,11 +194,6 @@ COMPONENT 0  SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.0
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t*1000/5
 -------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t*1e8/5
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  5
-NDSURF  6
-NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // right_surf

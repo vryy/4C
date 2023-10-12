@@ -115,11 +115,6 @@ STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE -2.90757556858569754e-03 TO
 STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE  0.00000000000000000e+00 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -1.23013718425897403e-03 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 124 QUANTITY dispx VALUE -8.20253521747382015e-04 TOLERANCE 1e-4
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         9
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 //                              x+y+z+

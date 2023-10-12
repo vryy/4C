@@ -62,11 +62,6 @@ COMPONENT 1 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5.0
 COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 COMPONENT 4 SYMBOLIC_FUNCTION_OF_SPACE_TIME 5.0*x
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          0
-NDVOL                           0
 -------------------------------------------------------NODE COORDS
 NODE         1 COORD  0.0e-01  0.0e-01  0.0e-01
 NODE         2 COORD  0.0e-01  0.0e-01  1.0e-01

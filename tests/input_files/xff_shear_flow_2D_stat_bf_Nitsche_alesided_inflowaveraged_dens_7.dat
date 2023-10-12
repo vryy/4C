@@ -123,11 +123,6 @@ COMPONENT 2 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0
 COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y // shear flow; top 5.0, bottom 4.0 //(y*U_xmax)/h
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE 0
-NDSURF 5
-NDVOL 3
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 2
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 10.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 0 0 Live Mid

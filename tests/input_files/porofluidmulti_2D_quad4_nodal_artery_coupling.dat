@@ -137,11 +137,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000 DESCRIPTION 1000.0*0.5*(1-cos(t*pi/1.0)) 1000
 ----------------------------------------------------------------------FUNCT5
 SYMBOLIC_FUNCTION_OF_TIME t/1.5
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 10
-NDLINE  3
-NDSURF  1
-NDVOL   0
 ------------------------------------DESIGN NODE 1D ARTERY TO POROFLUID COUPLING CONDITIONS
 DPOINT                          6
 E 3 - COUPID  1

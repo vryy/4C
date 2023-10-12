@@ -40,11 +40,6 @@ CHARELELENGTH_PC                root_of_volume
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 ---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
 DLINE                           3
 E 4 - adjoint-consistent all_directions constant 1.0 lin_all 1.0 0.0 0.0 1 0 0

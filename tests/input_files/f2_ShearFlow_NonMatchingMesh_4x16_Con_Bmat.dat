@@ -139,11 +139,6 @@ FLUID DIS fluid NODE 58 QUANTITY pressure VALUE 1.00000005986753471e+00 TOLERANC
 FLUID DIS fluid NODE 90 QUANTITY velx VALUE 4.16666646254439221e-01 TOLERANCE 1e-09
 FLUID DIS fluid NODE 90 QUANTITY vely VALUE -1.47822364883305574e-11 TOLERANCE 1e-13
 FLUID DIS fluid NODE 90 QUANTITY pressure VALUE 9.99999989569712922e-01 TOLERANCE 1e-09
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          6
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 1.0 FUNCT 0 0 0

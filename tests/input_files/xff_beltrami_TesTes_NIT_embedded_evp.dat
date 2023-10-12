@@ -104,11 +104,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 BELTRAMI c1 1.0
 ------------------------------------------------------------FUNCT2
 BELTRAMI c1 2.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE 0
-NDSURF 2
-NDVOL 1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 1
 // Cube surface

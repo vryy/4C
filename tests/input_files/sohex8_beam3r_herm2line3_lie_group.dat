@@ -76,11 +76,6 @@ MAT 2 MAT_BeamReissnerElastHyper YOUNG 100 POISSONRATIO 0.0 DENS 10.0 CROSSAREA 
 SYMBOLIC_FUNCTION_OF_SPACE_TIME heaviside(t-0.01)
 --------------------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_TIME heaviside(t-0.01)
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE 0
-NDSURF 2
-NDVOL 0
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 E 1 - NUMDOF 9 ONOFF 1 1 1 1 1 1 0 0 0 VAL 0 0 0 0 0 0 0 0 0 FUNCT 0 0 0 0 0 0 0 0 0

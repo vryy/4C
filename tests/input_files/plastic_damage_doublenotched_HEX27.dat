@@ -121,11 +121,6 @@ MAT 1   MAT_Struct_Damage   YOUNG 206.9 NUE 0.29 DENS 0 SAMPLENUM 2 SIGMA_Y 0.45
 ------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 21 TIMES 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 VALUES 0 0.005 0.01 0.015 0.02 0.03 0.04 0.045 0.05 0.055 0.06 0.065 0.07 0.08 0.1 0.12 0.13 0.15 0.155 0.16 0.17
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  3
-NDSURF  3
-NDVOL   1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // support_vertex_bottom_fix

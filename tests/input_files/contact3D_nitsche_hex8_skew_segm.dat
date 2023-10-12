@@ -74,11 +74,6 @@ COMPONENT 2  SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.0
 VARIABLE 0 NAME a TYPE  multifunction NUMPOINTS 3 TIMES 0.0 0.5 10 DESCRIPTION 0 1
 -------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t*2/0.5
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  4
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // dxyz

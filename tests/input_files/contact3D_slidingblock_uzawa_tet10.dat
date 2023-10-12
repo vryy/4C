@@ -85,11 +85,6 @@ STRUCTURE DIS structure NODE 1473 QUANTITY dispz VALUE -5.88421929991418418e-06 
 STRUCTURE DIS structure NODE 1473 QUANTITY velx VALUE 5.00538691048412129e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1473 QUANTITY vely VALUE 5.88452914636366246e-08 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1473 QUANTITY velz VALUE 1.73766285530575308e-05 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          7
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           2
 //                              x-direction

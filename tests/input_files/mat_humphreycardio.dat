@@ -48,11 +48,6 @@ STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 8.420912416e-03 TOLERANCE 1
 STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE 4.313806907e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 63 QUANTITY dispz VALUE 1.365287075e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 482 QUANTITY dispz VALUE 1.227285112e-01 TOLERANCE 1e-6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          8
-NDSURF                          3
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // surface inner

@@ -2909,11 +2909,6 @@ NODE 1656 COORD 6.669822e+00 8.233846e+00 5.100000e-01
 1208 SOLIDH8 HEX8 1365 1366 1378 1377 1641 1642 1654 1653 MAT 1 KINEM nonlinear EAS none
 1209 SOLIDH8 HEX8 1366 1367 1379 1378 1642 1643 1655 1654 MAT 1 KINEM nonlinear EAS none
 1210 SOLIDH8 HEX8 1367 1368 1380 1379 1643 1644 1656 1655 MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------------DESIGN DESCRIPTION
-NDLINE                          0
-NDPOINT                         0
-NDSURF                          2
-NDVOL                           0
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 1 DSURFACE 1
 NODE 13 DSURFACE 1

@@ -93,11 +93,6 @@ Outer Iteration StatusTest      = No
 Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         5
-NDLINE                          1
-NDSURF                          0
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          5
 E 1 - NUMDOF 9 ONOFF 1 1 1 1 1 1 1 1 1 VAL  0.5707 0.0 0.0  0.0 -1.5707963267948966 0.0  -1.0  0.0  1.0 FUNCT 0 0 0 0 0 0 0 0 0

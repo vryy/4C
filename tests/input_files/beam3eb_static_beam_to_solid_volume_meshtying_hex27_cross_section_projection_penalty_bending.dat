@@ -85,11 +85,6 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1 DENS 0.0 CROSSAREA 0.031415926535897934 MOMIN 7.853981633974484e-05
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE 1
-NDSURF 1
-NDVOL 1
 ---------------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 1
 // fix

@@ -28,11 +28,6 @@ TOLERANCE                       1E-10
 --------------------------------------------------------------------SOLVER 1
 NAME                            Reduced_dimensional_Airways_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         6
-NDLINE                          0
-NDSURF                          0
-NDVOL                           0
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.00001523 DENSITY 0.000001176 GAMMA 1.0
 MAT 2 MAT_0D_MAXWELL_ACINUS_DOUBLEEXPONENTIAL Stiffness1 14647.50 Stiffness2 5352.59 Viscosity1 3285.38 Viscosity2 188.023

@@ -90,11 +90,6 @@ ELEMENTS                        196
 NODES                           405
 DIM                             3
 MATERIALS                       9999
--------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 ------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 325 DNODE 1
 NODE 371 DNODE 2

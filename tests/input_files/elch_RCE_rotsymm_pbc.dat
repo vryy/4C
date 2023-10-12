@@ -148,11 +148,6 @@ SCATRA DIS scatra NODE 179 QUANTITY phi3 VALUE 2.013916120e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 179 QUANTITY phi4 VALUE -1.96592668089315306e-04 TOLERANCE 1e-13
 SCATRA DIS scatra NODE 119 QUANTITY phi1 VALUE 2.19670614939083703e-03 TOLERANCE 1e-12
 SCATRA DIS scatra NODE 119 QUANTITY phi4 VALUE -1.34434813442248924e-04 TOLERANCE 1e-13
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          1
-NDSURF                          9
-NDVOL                           1
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          2
 //                              innermasterpoints

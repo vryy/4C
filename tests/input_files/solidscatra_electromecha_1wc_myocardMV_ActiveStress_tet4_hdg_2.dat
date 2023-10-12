@@ -95,11 +95,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0
 -------------------------------------------------------------FUNCT3
 SYMBOLIC_FUNCTION_OF_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 2 500000.0 DESCRIPTION (0.15*t) (-0.15*(t-1.0)+0.15) 0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 -----------------------------------DESIGN POINT TRANSPORT NEUMANN CONDITIONS
 DPOINT 1
 // Apex

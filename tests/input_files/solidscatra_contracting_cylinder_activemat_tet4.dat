@@ -46,11 +46,6 @@ MAT 20 ELAST_AnisoActiveStress_Evolution SIGMA 2.0E5 TAUC0 0.0 MAX_ACTIVATION 20
 MAT 100 ELAST_StructuralTensor STRATEGY Standard
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 100*t
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 //DSURF                         2
 //                              up

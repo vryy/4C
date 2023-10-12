@@ -90,11 +90,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 4 500000.0 DESCRIPTIO
 FLUID DIS porofluid NODE 183 QUANTITY velx VALUE -4.48853254162757606e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 183 QUANTITY velx VALUE -4.48853210931225710e-03 TOLERANCE 1e-8
 FLUID DIS porofluid NODE 74 QUANTITY vely VALUE -7.91773573547032566e-03 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         12
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // Surface x+

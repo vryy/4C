@@ -308,11 +308,6 @@ MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1e+06 DENS 1e-01 CROSSAREA 0.
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.1*a
 VARIABLE 0 NAME a TYPE expression DESCRIPTION heaviside(0.005-t)*0.5*(1-cos(pi*t*0.2e+03))+heaviside(t-0.005)
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE 2
-NDSURF 3
-NDVOL 0
 --------------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 E 3 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 FUNCT 0 0 0 0 Live Mid

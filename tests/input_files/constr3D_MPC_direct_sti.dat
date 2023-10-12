@@ -63,11 +63,6 @@ SYMBOLIC_FUNCTION_OF_TIME sin(2*(t)*pi/10)
 ---------------------------------------DESIGN SURFACE MULTIPNT CONSTRAINT 3D
 DSURF                           1
 E 1 - 1 0.01 3 0.0 2 3 4 abs
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          0
-NDSURF                          2
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL
 DPOINT                          3

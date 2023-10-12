@@ -73,11 +73,6 @@ MAT 101 MAT_myocard DIFF1 0.03410 DIFF2 0.00314 DIFF3 0.0 PERTUBATION_DERIV 1e-6
 -------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 4 TIMES 0.0 1 2 500000.0 DESCRIPTION (0.3*t) (-0.3*(t-1.0)+0.3) 0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          0
-NDSURF                          3
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // Apex

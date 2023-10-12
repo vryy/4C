@@ -85,11 +85,6 @@ SCATRA DIS scatra NODE 500 QUANTITY phi3 VALUE -7.21810876498563993e-03 TOLERANC
 SCATRA DIS scatra SPECIAL QUANTITY meanc2 VALUE 8.56014329661634182e-02 TOLERANCE 1e-11
 SCATRA DIS scatra SPECIAL QUANTITY meaneta2 VALUE -9.54953082756591909e-03 TOLERANCE 1e-12
 SCATRA DIS scatra SPECIAL QUANTITY meancur2 VALUE -1.60000719054635156e-03 TOLERANCE 1e-12
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          4
-NDSURF                          0
-NDVOL                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode

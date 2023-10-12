@@ -66,11 +66,6 @@ GHOSTING_STRATEGY               round_robin
 --------------------------------------------------------------------SOLVER 1
 NAME                            Direct_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         16
-NDLINE                          24
-NDSURF                          12
-NDVOL                           2
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           4
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

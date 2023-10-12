@@ -245,11 +245,6 @@ SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3 TOLERANCE 1.0e-12
 // SCATRA DIS scatra NODE 1 QUANTITY phi7 VALUE 9.150150489e-01 TOLERANCE 1e-9 //=(c_0-5/2)*exp(2*(T_end-ln(5/3))) + 5/2
 // SCATRA DIS scatra NODE 1 QUANTITY phi8 VALUE 1.353352832e+00 TOLERANCE 1e-9 //=c_0*exp(-2*T_end)
 // SCATRA DIS scatra NODE 1 QUANTITY phi9 VALUE 2.694040794e+00 TOLERANCE 1e-9 //=-3/2-3/2*ln(10/3)+5+c_0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  0
-NDVOL   1
 ------------------------------------------------DVOL-NODE TOPOLOGY
 NODE    1 DVOL 1
 NODE    2 DVOL 1

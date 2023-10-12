@@ -131,11 +131,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0 1 1000 DESCRIPTION 1000
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 2.0*t
 ----------------------------------------------------------------------FUNCT6
 VARFUNCTION 0.05*(p_art-p1)
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  4
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF  1
 // all 2d nodes

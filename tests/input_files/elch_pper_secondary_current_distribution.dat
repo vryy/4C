@@ -122,11 +122,6 @@ SCATRA DIS scatra NODE 451 QUANTITY flux_boundary_1_z VALUE 0.0e+00 TOLERANCE 1e
 SCATRA DIS scatra NODE 265 QUANTITY flux_boundary_1_x VALUE 0.0e+00 TOLERANCE 1e-16
 SCATRA DIS scatra NODE 265 QUANTITY flux_boundary_1_y VALUE -1.02010396016265700e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 265 QUANTITY flux_boundary_1_z VALUE 0.0e+00 TOLERANCE 1e-09
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           1
 ---------------------------------ELECTRODE BOUNDARY KINETICS SURF CONDITIONS
 DSURF                           2
 //                              anode

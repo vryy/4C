@@ -110,11 +110,6 @@ STRUCTURE SPECIAL QUANTITY num_iter_step_10 VALUE 3 TOLERANCE 1e-8
 STRUCTURE SPECIAL QUANTITY lin_iter_step_10 VALUE 1 TOLERANCE 1e-8
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
---------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE 1
-NDSURF 2
-NDVOL 1
 --------------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // fix_xyz

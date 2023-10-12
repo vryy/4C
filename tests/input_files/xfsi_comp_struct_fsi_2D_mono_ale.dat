@@ -214,11 +214,6 @@ VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 5000.0 DESCRIPTIO
 ----------------------------------------------------------------------FUNCT4
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 5000.0 DESCRIPTION 0.02*(sin(t*8*pi)) 0.02*(sin(1*8*pi))
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE 0
-NDSURF 6
-NDVOL 2
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 2
 // Fluid_left

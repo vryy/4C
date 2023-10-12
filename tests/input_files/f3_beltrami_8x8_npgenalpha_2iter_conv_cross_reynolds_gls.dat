@@ -114,11 +114,6 @@ FLUID DIS fluid NODE 637 QUANTITY velx VALUE 1.40747211784707005e-01 TOLERANCE 1
 FLUID DIS fluid NODE 637 QUANTITY vely VALUE -8.90417025460552236e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 637 QUANTITY velz VALUE -5.66848692029834011e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -5.86013387015271947e-01 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          0
-NDSURF                          8
-NDVOL                           1
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           6
 // surface top

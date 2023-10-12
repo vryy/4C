@@ -158,21 +158,6 @@ PREFIX_GROUP_ID                 No
 // Only the specified procs will write output
 LIMIT_OUTP_TO_PROC              -1
 //
-// number of nodal clouds
--------------------------------------------------DESIGN DESCRIPTION
-//
-// number of points
-NDPOINT                         0
-//
-// number of line clouds
-NDLINE                          0
-//
-// number of surface clouds
-NDSURF                          0
-//
-// number of volume clouds
-NDVOL                           0
-//
 -------------------------------------------------STRUCTURAL DYNAMIC
 //
 INT_STRATEGY                   Standard

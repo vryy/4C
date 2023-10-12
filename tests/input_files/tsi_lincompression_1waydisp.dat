@@ -115,11 +115,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 293.0
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 4 TIMES 0 0.1 1 3 VALUES 0 0 -4e7 -4e7
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          5
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // right surface NEUMANN in x(x=4)

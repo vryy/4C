@@ -58,11 +58,6 @@ DIVERCONT                       repeat_simulation
 --------------------------------------------------------------------SOLVER 1
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         12
-NDLINE                          20
-NDSURF                          11
-NDVOL                           2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          5
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

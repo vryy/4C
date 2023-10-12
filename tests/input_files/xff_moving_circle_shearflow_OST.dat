@@ -82,11 +82,6 @@ COMPONENT 3 SYMBOLIC_FUNCTION_OF_SPACE_TIME 9.0
 -------------------------------------------------------------FUNCT3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 0.5 500000.0 DESCRIPTION 0 t
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE 0
-NDSURF 6
-NDVOL 4
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF 1
 // xFluid outflow

@@ -508,11 +508,6 @@ SYMBOLIC_FUNCTION_OF_SPACE_TIME 1000
 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1508*(x-0.5)^2+473
 
 
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 6
-NDLINE  15
-NDSURF  21
-NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  1
 // ConvectionSurface

@@ -102,11 +102,6 @@ FLUID DIS porofluid NODE 4 QUANTITY velx VALUE  4.45757823861585911e-01 TOLERANC
 FLUID DIS porofluid NODE 8 QUANTITY pressure VALUE  1.26516173922667940e+00 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -1.46446609406726325e-01 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE -7.31862850935549869e-02 TOLERANCE 1e-7
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          7
-NDSURF                          2
-NDVOL                           0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          4
 // Point x+y+

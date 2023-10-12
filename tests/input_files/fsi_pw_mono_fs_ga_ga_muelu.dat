@@ -83,11 +83,6 @@ AZPREC                          MueLu_fsi
 MUELU_XML_FILE                  fsi_monolithic_muelu.xml
 AZOUTPUT                        5
 AZTOL                           1.0e-6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         12
-NDLINE                          22
-NDSURF                          14
-NDVOL                           3
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           4
 E 9 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

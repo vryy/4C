@@ -95,11 +95,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 1.0*exp(-1.0*((atan2(y,x)/0.1)^2+((a
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 2670 QUANTITY phi VALUE 6.09201450706091108e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 2660 QUANTITY phi VALUE 3.54560370925940602e-02 TOLERANCE 1e-7
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  1
-NDSURF  0
-NDVOL   0
 ------------------------------DESIGN LINE INITIAL FIELD CONDITIONS
 DLINE  1
 // curve

@@ -82,9 +82,6 @@ SCATRA DIS scatra SPECIAL QUANTITY soc1 VALUE 9.44444412017854340e-01 TOLERANCE 
 SCATRA DIS scatra SPECIAL QUANTITY soc2 VALUE 9.58384657865654632e-01 TOLERANCE 1.e-10          // cathode state of charge
 SCATRA DIS scatra SPECIAL QUANTITY cellvoltage VALUE 3.76629433516309708e+00 TOLERANCE 1.e-09   // cell voltage
 SCATRA DIS scatra SPECIAL QUANTITY numiterlastnewton VALUE 3.0 TOLERANCE 1.e-20                 // number of Newton-Raphson iterations during last time step
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                          14
-NDVOL                           5
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 E 6 - NUMDOF 2 ONOFF 0 1 VAL 0.0 -5.297831088e-4 FUNCT 0 0 Live Mid

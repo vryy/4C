@@ -99,11 +99,6 @@ FLUID DIS fluid NODE 377 QUANTITY pressure VALUE -3.36214600996289895e-08  TOLER
 FLUID DIS fluid NODE 669 QUANTITY velx     VALUE  2.28933009598151073e-17  TOLERANCE 1e-14
 FLUID DIS fluid NODE 669 QUANTITY vely     VALUE  9.79963255467464989e-01  TOLERANCE 1e-14
 FLUID DIS fluid NODE 669 QUANTITY pressure VALUE  1.54312392369901027e-03  TOLERANCE 1e-14
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  4
-NDSURF  1
-NDVOL   0
 --------------------------------DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION
 DSURF                          1
 E 1 - fluid NUMMODES 3 ONOFF 0 0 1 integration // ensure that integral of pressure remains 0.0

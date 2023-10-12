@@ -107,11 +107,6 @@ SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 25+z*5
 ------------------------------------------------------------FUNCT2
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t/100
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  6
-NDVOL   1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 // top_dirichlet

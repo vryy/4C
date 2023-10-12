@@ -50,8 +50,6 @@ PARTICLE ID 0 QUANTITY velx VALUE 2.00000000000000420e-02 TOLERANCE 1.0e-10
 PARTICLE ID 0 QUANTITY velz VALUE -4.25135369909376676e-13 TOLERANCE 1.0e-10
 -------------------------------------------------------------------PARTICLES
 TYPE phase1 POS -0.09 0.0 0.0
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                          1
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           1
 E 1 - MAT 2

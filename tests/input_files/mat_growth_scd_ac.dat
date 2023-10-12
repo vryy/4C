@@ -125,11 +125,6 @@ SCATRA DIS scatra NODE 100 QUANTITY phi VALUE  7.21178235211803687e-01 TOLERANCE
 SCATRA DIS scatra NODE 200 QUANTITY phi VALUE  7.21178556311383612e-01 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 100 QUANTITY phi2 VALUE  9.53521844994392465e-02 TOLERANCE 1e-7
 SCATRA DIS scatra NODE 200 QUANTITY phi2 VALUE  9.53522297278196207e-02 TOLERANCE 1e-7
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          9
-NDSURF                          2
-NDVOL                           1
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DSURF                           0
 // // left surface curve  x y z 0 0 0 Val1 Val2 Val3 0 0 0 Live Mid/orthopreassure Mid

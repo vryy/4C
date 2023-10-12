@@ -95,11 +95,6 @@ ELEMENTS                        12
 NODES                           14
 DIM                             3
 MATERIALS                       9999
-------------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           0
 -----------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 9 DSURFACE 1
 NODE 5 DSURFACE 1

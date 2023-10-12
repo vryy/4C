@@ -85,11 +85,6 @@ STRUCTURE DIS structure NODE 247 QUANTITY dispz VALUE -2.0008113562774120e-04 TO
 STRUCTURE DIS structure NODE 247 QUANTITY velx VALUE 2.0628328273689676e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 247 QUANTITY vely VALUE -6.8949933395845333e-14 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 247 QUANTITY velz VALUE -1.1158578347298667e-04 TOLERANCE 1e-6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          6
-NDVOL                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           3
 //                              x-direction

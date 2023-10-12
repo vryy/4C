@@ -61,11 +61,6 @@ SOLVER                          UMFPACK
 MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0 YIELD 0.45e1 ISOHARD 0.12924 SATHARDENING 0.715e1 HARDEXPO 16.93 VISC 1.0 RATE_DEPENDENCY 0.1
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  5
-NDSURF  4
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 2
 // d7_xyz

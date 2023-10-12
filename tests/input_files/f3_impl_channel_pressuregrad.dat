@@ -105,11 +105,6 @@ FLUID DIS fluid NODE 231 QUANTITY pressure VALUE 0.00000000000000000 TOLERANCE 1
 //FLUID DIS fluid NODE 8438 QUANTITY vely VALUE 3.21982625803195338e-02 TOLERANCE 1e-8
 //FLUID DIS fluid NODE 8438 QUANTITY velz VALUE -2.72393906505382678e-03 TOLERANCE 1e-8
 //FLUID DIS fluid NODE 8438 QUANTITY pressure VALUE 4.08574943101380761e-02 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         8
-NDLINE                          12
-NDSURF                          6
-NDVOL                           1
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL                            1
 //                              volume

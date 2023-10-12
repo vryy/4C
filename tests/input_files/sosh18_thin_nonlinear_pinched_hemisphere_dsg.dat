@@ -59,11 +59,6 @@ MAT 3 ELAST_CoupNeoHooke YOUNG 6.825e7 NUE 0.3
 MAT 10 MAT_Struct_StVenantKirchhoff YOUNG 6.825e7 NUE 0.3 DENS 0.001
 -------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_TIME t*2.5
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         3
-NDLINE                          0
-NDSURF                          2
-NDVOL                           0
 ---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
 DPOINT                          2
 E 2 - NUMDOF 3 ONOFF 1 0 0 VAL 0.5 0.0 0.0 FUNCT 1 0 0 Live Mid

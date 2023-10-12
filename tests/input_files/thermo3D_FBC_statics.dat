@@ -59,11 +59,6 @@ SOLVER                          UMFPACK
 MAT 1 THERM_FourierIso CAPA 420 CONDUCT 52
 ----------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME t
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           1
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF                           1
 // right surface: heatflux

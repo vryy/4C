@@ -150,11 +150,6 @@ MAT 5010 MAT_Struct_ThrPlasticHyperElast YOUNG 3100 NUE 0.29 DENS 0.1 YIELD 10 I
 MAT 5020 MAT_Struct_PlasticLinElast YOUNG 3100 NUE 0.3 DENS 0.1 YIELD 10 ISOHARD 1e4 KINHARD 1e4 TOL 1.0e-06
 MAT 5030 MAT_Struct_Damage YOUNG 3100 NUE 0.29 DENS 0.1 SAMPLENUM 2 SIGMA_Y 10 10e1 EPSBAR_P 0.0 0.001 DAMDEN 0.0035 DAMEXP 1.0 DAMTHRESHOLD 1e10 KINHARD 0.0 KINHARD_REC 0 SATHARDENING 10 HARDEXPO 0 TOL 1.0e-06
 MAT 6000 ELAST_StructuralTensor STRATEGY Standard
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         2
-NDLINE                          2
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 //                              point_dirich

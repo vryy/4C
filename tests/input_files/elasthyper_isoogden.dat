@@ -82,11 +82,6 @@ STRUCTURE DIS structure NODE 62 QUANTITY stress_xy VALUE 2.97071395261028215e-15
 MAT 1 MAT_ElastHyper  NUMMAT 2 MATIDS 2 3 DENS 1.0 POLYCONVEX 0
 MAT 2 ELAST_IsoOgden MUE 0.8 ALPHA -25
 MAT 3 ELAST_VolOgden KAPPA 1e6 BETA 0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  6
-NDVOL   0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 2 TIMES 0 0.5 VALUES 0 -0.2 //compression

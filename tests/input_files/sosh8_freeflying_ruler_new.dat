@@ -68,11 +68,6 @@ STRUCTURE DIS structure NODE 96 QUANTITY dispz VALUE 1.755277759260675348e-03 TO
 STRUCTURE DIS structure NODE 96 QUANTITY velx VALUE 5.63497286339281825e-02 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 96 QUANTITY vely VALUE -4.88754840048237660e-01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 96 QUANTITY velz VALUE 9.31703902148420582e+00 TOLERANCE 1e-6
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          6
-NDSURF                          0
-NDVOL                           0
 ----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL TYPE NSURF
 DLINE                           6

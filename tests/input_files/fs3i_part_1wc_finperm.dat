@@ -379,11 +379,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 0.9-0.01*z
 ------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 500 10000000 DESCRIPTION 0.5*(1+sin(pi*(t-250)/500)) 1
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         1
-NDLINE                          3
-NDSURF                          19
-NDVOL                           1
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // slave side fsi nodes

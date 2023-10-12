@@ -51,11 +51,6 @@ MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 0.005
 MAT 21 ELAST_CoupNeoHooke YOUNG 1000 NUE 0.43
 MAT 22 ELAST_Coup1Pow C 2000. D 2
 MAT 3 MAT_ElastHyper NUMMAT 2 MATIDS 21 22 DENS 0.005
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 6
-NDLINE  0
-NDSURF  6
-NDVOL   0
 ------------------------------------DESIGN SURF NEUMANN CONDITIONS
 DSURF  3
 E 4 - NUMDOF 3 ONOFF 1 0 0 VAL 100.0 0.0 0.0 FUNCT 0 0 0 pseudo_orthopressure Mid

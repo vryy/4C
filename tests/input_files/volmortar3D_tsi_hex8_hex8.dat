@@ -206,11 +206,6 @@ MAT 2 THERM_FourierIso CAPA 0.0 CONDUCT 1030.0
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 273.15 //0 degrees celsius
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  3
-NDVOL   1
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  3
 // dirich_fix

@@ -95,9 +95,6 @@ SCATRA DIS scatra NODE 2666 QUANTITY phi2 VALUE 3.80361811582780218e+00 TOLERANC
 SCATRA DIS thermo NODE 2666 QUANTITY phi VALUE 3.00193534224453401e+02 TOLERANCE 1.e-07    // local temperature at cathode-electrolyte interface (cathode side)
 SCATRA DIS thermo SPECIAL QUANTITY omega1 VALUE 1.05000000000000004e+00 TOLERANCE 1.e-09
 STI SPECIAL QUANTITY numiterlastnonlinearsolve VALUE 5.0 TOLERANCE 1.e-20                  // number of Newton-Raphson iterations during last time step
-------------------------------------------------DESIGN DESCRIPTION
-NDLINE  9
-NDSURF  3
 ------------------------------------DESIGN LINE NEUMANN CONDITIONS
 DLINE  1
 E 3 - NUMDOF 2  ONOFF 0 1 VAL 0.0 -0.000103642 FUNCT 0 5 Live Mid

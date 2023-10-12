@@ -55,11 +55,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME cos(pi*x)*cos(pi*y)*cos(pi*z)*exp(-0
 ----------------------------------------------------------RESULT DESCRIPTION
 SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_phi VALUE 6.66234107686109953e-03 TOLERANCE 1E-6
 SCATRA DIS scatra NODE 1 QUANTITY abs_L2error_gradPhi VALUE 4.08994871602817098e-02 TOLERANCE 1E-6
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  1
-NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  1
 // surface

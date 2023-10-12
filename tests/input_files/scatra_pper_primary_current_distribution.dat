@@ -85,11 +85,6 @@ SCATRA DIS scatra NODE 451 QUANTITY flux_domain_1_z VALUE 0.000000000e+00 TOLERA
 SCATRA DIS scatra NODE 265 QUANTITY flux_domain_1_x VALUE 1.398904914e-01 TOLERANCE 1e-9
 SCATRA DIS scatra NODE 265 QUANTITY flux_domain_1_y VALUE -4.556919866e+00 TOLERANCE 1e-8
 SCATRA DIS scatra NODE 265 QUANTITY flux_domain_1_z VALUE 0.000000000e+00 TOLERANCE 1e-9
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 //                              anode

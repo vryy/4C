@@ -89,11 +89,6 @@ SOLVER                          UMFPACK
 Outer Iteration                 = Yes
 Inner Iteration                 = No
 Outer Iteration StatusTest      = No
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 2
-NDLINE  2
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 E 1 - NUMDOF 9 ONOFF 0 1 0 0 0 0 0 0 0 VAL 0.0 2.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 FUNCT 0 1 0 0 0 0 0 0 0 TAG monitor_reaction

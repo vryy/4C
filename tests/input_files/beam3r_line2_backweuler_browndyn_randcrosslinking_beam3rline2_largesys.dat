@@ -70,10 +70,6 @@ Outer Iteration StatusTest      = No
 Linear Solver Details           = No
 Test Details                    = No
 Debug                           = No
----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  104
-NDSURF  0
 ---------------------------------------------------------DESIGN LINE BEAM FILAMENT CONDITIONS
 DLINE 104
 E 1 - ID 0 TYPE arbitrary

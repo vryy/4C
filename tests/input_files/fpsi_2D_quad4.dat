@@ -157,11 +157,6 @@ COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME 20*(y-1)
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME a
 VARIABLE 0 NAME a TYPE multifunction NUMPOINTS 3 TIMES 0.0 1.0 500000.0 DESCRIPTION 20.0*0.5*(1-cos(t*pi/1.0)) 20
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  11
-NDSURF  3
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // bottom_corner_fluid

@@ -20,8 +20,6 @@ NEGLECTINERTIA                   yes
 --------------------------------------------------------------------SOLVER 1
 NAME                             Structure_Solver
 SOLVER                           UMFPACK
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                           4
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF 4
 E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0

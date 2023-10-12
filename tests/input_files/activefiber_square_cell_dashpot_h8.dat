@@ -56,11 +56,6 @@ SOLVER                          UMFPACK
 MAT 1 MAT_ACTIVEFIBER DENS 1.0 DECAY 720.0 IDMATPASSIVE 2 KFOR 10.0 KBACK 1.0 KVAR 10.0 SIGMAX 3.9E+03 EPSNULL 2.8E-04
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 1.0
 MAT 3 ELAST_CoupNeoHooke YOUNG 77.0 NUE 0.3
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 4
-NDLINE  4
-NDSURF  9
-NDVOL   1
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  0
 // left_upper_corner

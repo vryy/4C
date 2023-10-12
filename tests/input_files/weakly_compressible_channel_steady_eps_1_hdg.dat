@@ -49,11 +49,6 @@ MAT 1 MAT_fluid_murnaghantait DYNVISCOSITY 1 REFDENSITY 1 REFPRESSURE 0 REFBULKM
 CHANNELWEAKLYCOMPRESSIBLE
 ------------------------------------------------------------FUNCT2
 CORRECTIONTERMCHANNELWEAKLYCOMPRESSIBLE
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 1
-NDLINE  4
-NDSURF  0
-NDVOL   0
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 1
 // corner

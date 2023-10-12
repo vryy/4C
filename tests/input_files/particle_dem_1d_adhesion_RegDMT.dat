@@ -67,8 +67,6 @@ PARTICLE ID 2 QUANTITY velz VALUE -5.49147768373585768e-03 TOLERANCE 1.0e-10
 TYPE phase1 POS 0.0 0.0 -0.08
 TYPE phase1 POS 0.0 0.0 -0.03
 TYPE phase2 POS 0.0 0.0 -0.05
-----------------------------------------------------------DESIGN DESCRIPTION
-NDSURF                          2
 ------------------------------------------------DESIGN SURFACE PARTICLE WALL
 DSURF                           2
 E 1 - MAT 2

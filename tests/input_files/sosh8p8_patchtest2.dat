@@ -58,11 +58,6 @@ MAT 2 ELAST_CoupLogNeoHooke MODE YN C1 1.0 C2 0.499999
 STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 4.426368815e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE -2.044945320e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -2.044945320e-01 TOLERANCE 1e-8
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         16
-NDLINE                          32
-NDSURF                          24
-NDVOL                           7
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          1

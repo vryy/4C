@@ -75,11 +75,6 @@ SCATRA DIS scatra NODE 1634 QUANTITY phi1 VALUE 9.99800672063840068e+01 TOLERANC
 SCATRA DIS scatra NODE 1634 QUANTITY phi3 VALUE 1.31024047130424606e+01 TOLERANCE 1e-08
 SCATRA DIS scatra NODE 830 QUANTITY phi1 VALUE 6.82010351903902574e+01 TOLERANCE 1e-08
 SCATRA DIS scatra NODE 830 QUANTITY phi3 VALUE 1.20709518801040403e+01 TOLERANCE 1e-08
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          6
-NDSURF                          1
-NDVOL                           0
 ---------------------------------ELECTRODE BOUNDARY KINETICS LINE CONDITIONS
 DLINE                           2
 //                              cathode

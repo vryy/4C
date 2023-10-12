@@ -212,11 +212,6 @@ SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME y/1.10000002*(1-cos(2*t*pi/5))
 ----------------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME (1-cos(2*t*pi/5))
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         16
-NDLINE                          34
-NDSURF                          19
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT 8
 // Node set E1 and E2 are located on the "slave side" (partitioned scheme)

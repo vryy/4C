@@ -54,11 +54,6 @@ NAME                            Sca_Tra_Solver
 SOLVER                          Belos
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_myocard DIFF1 0.0001171 DIFF2 0.0001171 DIFF3 0.0001171 PERTUBATION_DERIV 1e-6 MODEL TNNP TISSUE M TIME_SCALE 1.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  0
-NDVOL   1
 -----------------------------------DESIGN VOL NEUMANN CONDITIONS
 DVOL 1
 // left end

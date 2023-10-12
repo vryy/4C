@@ -123,11 +123,6 @@ SCATRA DIS scatra NODE 222 QUANTITY phi2 VALUE 5.01792045504047546e-01 TOLERANCE
 SCATRA DIS scatra NODE 230 QUANTITY phi2 VALUE 5.02530963043273271e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 246 QUANTITY phi2 VALUE 5.03223244803431613e-01 TOLERANCE 1e-10
 SCATRA DIS scatra NODE 261 QUANTITY phi2 VALUE 5.03774290883966636e-01 TOLERANCE 1e-10
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
-NDLINE                          0
-NDSURF                          2
-NDVOL                           1
 ------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
 DSURF                           2
 //                              inflow

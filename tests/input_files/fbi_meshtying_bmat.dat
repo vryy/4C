@@ -190,11 +190,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 1.0
 MAT 2 MAT_BeamKirchhoffTorsionFreeElastHyper YOUNG 1e+06 DENS 1e+03 CROSSAREA 0.1 MOMIN 8.33333333333333333335e-06
 --------------------------------------------------------------------------FUNCT1
 SYMBOLIC_FUNCTION_OF_SPACE_TIME heaviside(0.05-t)*0.5*(1-cos(pi*t*0.2e+2))+heaviside(t-0.05)
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  3
-NDSURF  7
-NDVOL   0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  3
 // fluid_inflow_coupling_ring

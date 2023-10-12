@@ -148,11 +148,6 @@ VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 51 VALUES 0 0 1
 -------------------------------------------------------------FUNCT2
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME b
 VARIABLE 0 NAME b TYPE linearinterpolation NUMPOINTS 3 TIMES 0 1 51 VALUES 0 0.3 0.3
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 0
-NDLINE  0
-NDSURF  4
-NDVOL   4
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF  2
 E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0 0 0 FUNCT 0 0 0

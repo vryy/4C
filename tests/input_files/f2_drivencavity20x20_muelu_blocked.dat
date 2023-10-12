@@ -57,11 +57,6 @@ AZCONV                          AZ_r0
 AZTOL                           1e-10
 AZPREC                          MueLu_fluid
 MUELU_XML_FILE                  f2_monolithic_muelu.xml
-----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         4
-NDLINE                          4
-NDSURF                          1
-NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          4
