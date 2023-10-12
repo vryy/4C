@@ -45,9 +45,11 @@ void FBI::UTILS::GetFBIElementCenterlineDOFIndices(DRT::Discretization const& di
     int j = 0;
     for (unsigned int i = 0; i < num_dof; ++i)
     {
-      if (!((i + 1) % 4)) ++i;
-      ele_centerline_dof_indices[j] = i;
-      j++;
+      if ((i + 1) % 4 != 0)
+      {
+        ele_centerline_dof_indices[j] = i;
+        j++;
+      }
     }
   }
 }
