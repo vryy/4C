@@ -778,19 +778,19 @@ void CORE::ADAPTER::CouplingMortar::MeshRelocation(Teuchos::RCP<::DRT::Discretiz
       if (comm.MyPID() == mtnode->Owner())
       {
         // get corresponding entries from Xslavemod
-        int numdof = mtnode->NumDof();
+        int numdim = mtnode->Dim();
 
         // find DOFs of current node in Xslavemod and extract this node's position
-        std::vector<int> locindex(numdof);
+        std::vector<int> locindex(numdim);
 
-        for (int dof = 0; dof < numdof; ++dof)
+        for (int k = 0; k < numdim; ++k)
         {
-          locindex[dof] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[dof]);
-          if (locindex[dof] < 0) dserror("Did not find dof in map");
-          Xnew[dof] = Xslavemodcol[locindex[dof]];
-          Xold[dof] = mtnode->X()[dof];
+          locindex[k] = (Xslavemodcol.Map()).LID(mtnode->Dofs()[k]);
+          if (locindex[k] < 0) dserror("Did not find dof in map");
+          Xnew[k] = Xslavemodcol[locindex[k]];
+          Xold[k] = mtnode->X()[k];
           if (idisp != Teuchos::null)
-            Xold[dof] += (*idisp)[(idisp->Map()).LID(interface_->Discret().Dof(node)[dof])];
+            Xold[k] += (*idisp)[(idisp->Map()).LID(interface_->Discret().Dof(node)[k])];
         }
 
         // check is mesh distortion is still OK
