@@ -332,11 +332,15 @@ void MIXTURE::MixtureConstituent_RemodelFiberImpl::UpdateHomeostaticValues(
 {
   // Update deposition stretch / prestretch of fiber depending on time function
   const double time = std::invoke(
-      [&params]()
+      [&]()
       {
-        double time = params.get<double>("total time");
-        if (time < 0) return 0.0;  // Time has not been set by the time integrator during setup
-        return time;
+        constexpr auto total_time_key = "total time";
+        if (!params.isParameter(total_time_key)) return 0.0;
+
+        const double total_time = params.get<double>(total_time_key);
+        if (total_time < 0.0) return 0.0;
+
+        return total_time;
       });
 
   const double new_lambda_pre = EvaluateDepositionStretch(time);
