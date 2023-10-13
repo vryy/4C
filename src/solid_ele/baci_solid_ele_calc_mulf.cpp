@@ -167,6 +167,9 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::EvaluateNonlinearForceStiffnessMa
         CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
 
+        EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+            nodal_coordinates, shape_functions, params);
+
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());
 
@@ -358,6 +361,9 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::CalculateStress(const DRT::Elemen
 
         const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
+
+        EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());

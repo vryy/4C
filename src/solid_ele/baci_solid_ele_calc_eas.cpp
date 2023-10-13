@@ -684,6 +684,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
 
+        EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+            nodal_coordinates, shape_functions, params);
+
         const Stress<distype> stress = EvaluateMaterialStress<distype>(
             solid_material, consistent_defgrd, enhanced_gl_strain, params, gp, ele.Id());
 
@@ -846,6 +849,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
             consistent_defgrd = EvaluateConsistentDefgrd(
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
+
+        EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(
             solid_material, consistent_defgrd, enhanced_gl_strain, params, gp, ele.Id());

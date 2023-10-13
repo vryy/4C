@@ -223,6 +223,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
         CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain_bar =
             EvaluateGreenLagrangeStrain(cauchygreen_bar);
 
+        EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+            nodal_coordinates, shape_functions, params);
+
         // stress stress_bar evaluated using strains_bar
         const Stress<distype> stress_bar = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping_bar.deformation_gradient_, gl_strain_bar, params, gp,
@@ -304,6 +307,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
 
+        EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+            nodal_coordinates, shape_functions, params);
+
         solid_material.Update(
             spatial_material_mapping_bar.deformation_gradient_, gp, params, ele.Id());
       });
@@ -347,6 +353,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
 
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
+
+        EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress_bar = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping_bar.deformation_gradient_, gl_strains_bar, params, gp,
