@@ -629,7 +629,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::SphereBeamLinking::WriteOutputRuntimeVt
   std::vector<double> currlength(num_row_points, 0.0);
   std::vector<double> orientation(num_row_points * num_spatial_dimensions, 0.0);
   std::vector<double> force(num_row_points * num_spatial_dimensions, 0.0);
-  CORE::LINALG::SerialDenseVector bspotforce(true);
+  CORE::LINALG::SerialDenseVector bspotforce(num_spatial_dimensions);
 
   // set position of spherebeamlinks
   unsigned int bond_i = 0;
