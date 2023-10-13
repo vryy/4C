@@ -1,6 +1,6 @@
 import argparse
 import os
-import common_utils as utils
+from baci_utils import common_utils as utils
 
 
 def check_header_guards(look_cmd, allerrors):

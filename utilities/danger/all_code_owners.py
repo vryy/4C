@@ -1,4 +1,4 @@
-from codeowners import CodeOwners
+from baci_utils import baci_code_owners
 import argparse
 import sys
 
@@ -10,7 +10,7 @@ files. All code owners are concatenated into a space-separated string.
 
 def all_code_owners(codeowner_file, file_list):
     with open(codeowner_file, "r") as cf:
-        owners = CodeOwners(cf.read())
+        owners = baci_code_owners.baci_code_owners(cf.read())
 
     all_owners = set()
 

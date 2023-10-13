@@ -8,7 +8,7 @@ numpy
 vtk
 xmlformatter==0.2.4
 yamlfmt
-codeowners==0.6.0
+./utilities/baci_utils
 # for readthedocs:
 sphinx-multibuild
 sphinx-rtd-theme

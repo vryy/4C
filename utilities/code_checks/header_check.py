@@ -1,10 +1,8 @@
 " Baci header check"
 
-import os
 import argparse
 import baciheader as bh
-import subprocess
-import common_utils as utils
+from baci_utils import common_utils as utils
 
 
 # CHECK FOR TABS
