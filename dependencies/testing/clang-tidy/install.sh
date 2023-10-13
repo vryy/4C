@@ -10,8 +10,8 @@ set -e
 INSTALL_DIR="$1"
 # Number of procs for building (default 4)
 NPROCS=${NPROCS=4}
-VERSION="11.1.0"
-CHECKSUM="53a0719f3f4b0388013cfffd7b10c7d5682eece1929a9553c722348d1f866e79"
+VERSION="17.0.2"
+CHECKSUM="dcba3eb486973dce45b6edfe618f3f29b703ae7e6ef9df65182fb50fb6fe4235"
 
 wget --no-verbose https://github.com/llvm/llvm-project/archive/refs/tags/llvmorg-${VERSION}.tar.gz
 # Verify checksum

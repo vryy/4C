@@ -17,7 +17,6 @@ ENV LC_ALL en_US.UTF-8
 RUN apt-get update && apt-get install -y \
       build-essential \
       ccache \
-      cmake \
       ffmpeg \
       git \
       libglu1-mesa \ 
@@ -56,7 +55,7 @@ RUN mkdir -p ${INSTALL_DIR}
 
 COPY dependencies /dependencies
 # Install cmake
-RUN /dependencies/cmake/install.sh ${INSTALL_DIR}
+RUN /dependencies/cmake/install.sh /usr/local
 
 # Install SuiteSparse 5.4.0
 RUN /dependencies/suitesparse/install.sh ${INSTALL_DIR}

@@ -15,7 +15,7 @@ NPROCS=${NPROCS=4}
 
 # Location of script to apply patches later
 SCRIPT_DIR="`dirname "$0"`"
-CMAKE_COMMAND=${INSTALL_DIR}/bin/cmake
+CMAKE_COMMAND=cmake
 
 git clone https://github.com/trilinos/Trilinos.git
 cd Trilinos
