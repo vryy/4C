@@ -1,34 +1,15 @@
 "BACI CODEOWNERS check"
 
 import argparse
-import re
-import common_utils as utils
-from codeowners import CodeOwners
-
-
-def fix_codeowner_pattern(content):
-    owner = CodeOwners(content)
-
-    for i, (pattern, path, owners, line_number, section_name) in enumerate(owner.paths):
-        if pattern.pattern.startswith(r"\A"):
-            if path.startswith("/"):
-                # path with anchor is given in codeowners file -> only match files at exact location
-                new_pattern = re.compile(pattern.pattern.replace(r"\A", r"(?:\A|\A/)"))
-            else:
-                # path without anchor is given in codeowners file -> also match files in subfolder
-                new_pattern = re.compile(pattern.pattern.replace(r"\A", r"(?:\A|/)"))
-
-            new_entry = (new_pattern, path, owners, line_number, section_name)
-            owner.paths[i] = new_entry  # replace old entry with fixed version
-
-    return owner
+from baci_utils import common_utils as utils
+from baci_utils import baci_code_owners
 
 
 def check_codeowners_rules_are_used(look_cmd, allerrors):
     codeowners_file = ".gitlab/CODEOWNERS"
     with open(codeowners_file, "r") as file:
         codeowners_content = file.read()
-    owner = fix_codeowner_pattern(codeowners_content)
+    owner = baci_code_owners.baci_code_owners(codeowners_content)
     pathlist = list()
     for i in owner.paths:
         pathlist.append(i[1])
@@ -53,7 +34,7 @@ def check_files_are_owned(look_cmd, allerrors):
     codeowners_file = ".gitlab/CODEOWNERS"
     with open(codeowners_file, "r") as file:
         codeowners_content = file.read()
-    owner = fix_codeowner_pattern(codeowners_content)
+    owner = baci_code_owners.baci_code_owners(codeowners_content)
     files_not_in_CO = [
         ff
         for ff in utils.files_changed(look_cmd)

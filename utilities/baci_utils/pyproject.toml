@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "baci_utils"
+version = "0.0.1"
+description = "Common utilities to work on the BACI code base"
+requires-python = ">=3.7"
+dependencies = ["codeowners==0.6.0"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]

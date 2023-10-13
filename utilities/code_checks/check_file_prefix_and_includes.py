@@ -1,7 +1,7 @@
 "Check that files are prefixed with module names and includes use correct style"
 
 import argparse
-import common_utils as utils
+from baci_utils import common_utils as utils
 import os
 import re
 
