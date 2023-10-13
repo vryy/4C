@@ -2817,16 +2817,8 @@ void CONTACT::Beam3contactnew<numnodes, numnodalvalues>::AssembleShapefunctions(
 {
   // assembly_N is just an array to help assemble the matrices of the shape functions
   // it determines, which shape function is used in which column of N
-  int assembly_N[3][3 * numnodes * numnodalvalues];
 
-  // Initialize to zero
-  for (int i = 0; i < 3 * numnodes * numnodalvalues; i++)
-  {
-    for (int j = 0; j < 3; j++)
-    {
-      assembly_N[j][i] = 0.0;
-    }
-  }
+  std::array<std::array<unsigned int, 3 * numnodes * numnodalvalues>, 3> assembly_N{};
 
   /*
   Set number of shape functions for each 3*3 block:
