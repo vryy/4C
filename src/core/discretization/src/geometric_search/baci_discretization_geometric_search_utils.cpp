@@ -10,7 +10,11 @@
 
 #include "baci_discretization_geometric_search_utils.H"
 
+#include "baci_discretization_geometric_search_bounding_volume.H"
 #include "baci_io_pstream.H"
+#include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_utils_densematrix_inverse.H"
+#include "baci_utils_fad.H"
 
 namespace CORE::GEOMETRICSEARCH
 {
@@ -48,5 +52,498 @@ namespace CORE::GEOMETRICSEARCH
       }
       IO::cout(IO::verbose) << IO::endl;
     }
+  }
+
+  std::pair<std::vector<CORE::LINALG::Matrix<3, 1>>, std::vector<std::vector<int>>>
+  GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume)
+  {
+#ifndef BACI_WITH_ARBORX
+    dserror(
+        "CORE::GEOMETRICSEARCH::GetKDopPolyhedronRepresentation can only be used with ArborX."
+        "To use it, enable ArborX during the configure process.");
+#else
+    // This value is used for comparison of point coordinates. ArborX only uses float, so this value
+    // has to be rather high. TODO: check if we want to use a combination of absolute/relative
+    // tolerance here
+    const double eps = 1e-5;
+
+    // The k-dop visualizaion is based on polygons defined which are defined by intersections of the
+    // k-dop planes. This pre-computed array (see the Mathematica scrip in the scrips/
+    // sub-directory) contains data that describes all possible intersection points between all
+    // k-dop planes.
+    //
+    // The first array index is the k-dop direction
+    // The second array index specifies if the min (0) or max (1) value along a direction is to be
+    // considered. The element addressed by these two indices is a vector of tuples. Each element of
+    // the vector is a possible intersection plane to the described by the first two indices. This
+    // is stored in a tuple where the first index is the direction id and the second index is the
+    // min/max flag.
+    std::array<std::array<std::vector<std::pair<int, bool>>, 2>, kdop_directions>
+        possible_intersection_partners;
+
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[0][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[0][1].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[1][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[1][1].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[2][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[2][1].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[3][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[3][1].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[4][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[4][1].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[5][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[5][1].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[6][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[6][1].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[7][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[7][1].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(10, true));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[8][0].emplace_back(std::make_pair(11, false));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(12, false));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(9, true));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(11, true));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(12, true));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(9, false));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[8][1].emplace_back(std::make_pair(10, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[9][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[9][1].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[10][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[10][1].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[11][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(5, false));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[11][1].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(7, false));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(2, true));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(5, true));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(1, true));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(6, false));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[12][0].emplace_back(std::make_pair(0, false));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(4, false));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(2, false));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(8, true));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(7, true));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(3, true));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(0, true));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(4, true));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(6, true));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(8, false));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(1, false));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(3, false));
+    possible_intersection_partners[12][1].emplace_back(std::make_pair(5, false));
+
+    // The actual ArborX k-dop
+    const auto& kdop = boundingVolume.bounding_volume_;
+
+    // Vector with all intersection points
+    std::vector<LINALG::Matrix<3, 1>> all_points;
+
+    // Vector with all polygones connecting the intersection points
+    std::vector<std::vector<int>> polygon_ids;
+
+    for (unsigned int i_direction = 0; i_direction < kdop_directions; i_direction++)
+    {
+      for (unsigned int i_min_max = 0; i_min_max < 2; i_min_max++)
+      {
+        const auto& my_possible_partners = possible_intersection_partners[i_direction][i_min_max];
+
+        // Return a value along a k-dop direction depending on the min max flag
+        const auto get_kdop_value = [&kdop](const unsigned int index, const bool min_max)
+        {
+          if (min_max)
+            return kdop._max_values[index];
+          else
+            return kdop._min_values[index];
+        };
+
+        // Utility function to get indices including offsets that "exceed" the vector dimension
+        const auto get_partner_index = [&](const unsigned int index, const unsigned int offset)
+        { return (index + offset) % my_possible_partners.size(); };
+
+        // Get the intersection point between this plane and two other planes. A pair is returned
+        // where the first entry is a flag specifying if the point is inside or outside the k-Dop,
+        // the second entry is the intersection point.
+        const auto get_intersection_point =
+            [&](const unsigned int local_index_1, const unsigned int local_index_2)
+        {
+          const auto index_1 = my_possible_partners[local_index_1].first;
+          const auto min_max_1 = my_possible_partners[local_index_1].second;
+          const auto index_2 = my_possible_partners[local_index_2].first;
+          const auto min_max_2 = my_possible_partners[local_index_2].second;
+
+          LINALG::Matrix<3, 3> coefficient_matrix;
+          for (unsigned int i_dir = 0; i_dir < 3; i_dir++)
+          {
+            coefficient_matrix(0, i_dir) =
+                ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[i_direction]
+                    ._data[i_dir];
+            coefficient_matrix(1, i_dir) =
+                ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[index_1]
+                    ._data[i_dir];
+            coefficient_matrix(2, i_dir) =
+                ArborX::Details::GetKDOPDirections<kdop_directions>::directions()[index_2]
+                    ._data[i_dir];
+          }
+          LINALG::Matrix<3, 1> right_hand_side;
+          right_hand_side(0) = get_kdop_value(i_direction, i_min_max);
+          right_hand_side(1) = get_kdop_value(index_1, min_max_1);
+          right_hand_side(2) = get_kdop_value(index_2, min_max_2);
+
+          // Check if there is a solution
+          LINALG::Matrix<3, 1> intersection_point;
+          const auto found_solution =
+              LINALG::SolveLinearSystemDoNotThrowErrorOnZeroDeterminantScaled(
+                  coefficient_matrix, right_hand_side, intersection_point, 1e-12);
+          if (!found_solution)
+            return std::make_pair(false, intersection_point);
+          else
+          {
+            // The offset here is needed, since arborx only works with float and we work with
+            // double, which can cause issues
+            const auto inside_kdop =
+                kdop.intersects(ArborX::Box{{static_cast<float>(intersection_point(0) - eps),
+                                                static_cast<float>(intersection_point(1) - eps),
+                                                static_cast<float>(intersection_point(2) - eps)},
+                    {static_cast<float>(intersection_point(0) + eps),
+                        static_cast<float>(intersection_point(1) + eps),
+                        static_cast<float>(intersection_point(2) + eps)}});
+            return std::make_pair(inside_kdop, intersection_point);
+          }
+        };
+
+        // Loop over cutting directions until we get valid point
+        bool found_starting_point = false;
+        unsigned int i_start = 0;
+        for (unsigned int i_possible_partner = 0; i_possible_partner < my_possible_partners.size();
+             i_possible_partner++)
+        {
+          for (unsigned int offset = 1; offset < my_possible_partners.size(); offset++)
+          {
+            const auto intersection_result = get_intersection_point(
+                i_possible_partner, get_partner_index(i_possible_partner, offset));
+            if (intersection_result.first)
+            {
+              i_start = i_possible_partner;
+              found_starting_point = true;
+              break;
+            }
+          }
+          if (found_starting_point) break;
+        }
+        if (!found_starting_point) dserror("A starting point for the polygon coupld not be found");
+
+        // Starting from the found point loop over the edges of the polygon
+        unsigned int offset = 0;
+        std::vector<LINALG::Matrix<3, 1>> polygon_points;
+        while (offset < my_possible_partners.size())
+        {
+          const auto i_partner = get_partner_index(i_start, offset);
+          for (unsigned int inner_offset = 1; inner_offset < my_possible_partners.size();
+               inner_offset++)
+          {
+            const auto intersection_result =
+                get_intersection_point(i_partner, get_partner_index(i_partner, inner_offset));
+            if (intersection_result.first)
+            {
+              if (polygon_points.size() != 0)
+              {
+                // Check if the new found point is the same as the last found point
+                auto diff = polygon_points.back();
+                diff -= intersection_result.second;
+                if (FADUTILS::VectorNorm(diff) > eps)
+                  polygon_points.push_back(intersection_result.second);
+              }
+              else
+              {
+                polygon_points.push_back(intersection_result.second);
+              }
+              offset = offset + inner_offset;
+              break;
+            }
+          }
+        }
+
+        if (polygon_points.size() == 0) dserror("No polygon points where found");
+
+        // Check if the start and end point are the same, if so remove the double point
+        auto diff = polygon_points.back();
+        diff -= polygon_points[0];
+        if (FADUTILS::VectorNorm(diff) < eps)
+        {
+          polygon_points.pop_back();
+        }
+
+        // For more than 2 found points we have an actual polygon. Add the points to the final point
+        // vector and get the indices for the polygon connectivity
+        if (polygon_points.size() > 2)
+        {
+          std::vector<int> my_point_ids;
+          for (const auto& point : polygon_points)
+          {
+            bool found = false;
+            for (unsigned int i_all_points = 0; i_all_points < all_points.size(); i_all_points++)
+            {
+              auto diff = all_points[i_all_points];
+              diff -= point;
+              if (FADUTILS::VectorNorm(diff) < eps)
+              {
+                my_point_ids.push_back(i_all_points);
+                found = true;
+                break;
+              }
+            }
+            if (!found)
+            {
+              my_point_ids.push_back(all_points.size());
+              all_points.push_back(point);
+            }
+          }
+
+          polygon_ids.push_back(my_point_ids);
+        }
+      }
+    }
+
+    std::vector<int> tmp;
+    return {all_points, polygon_ids};
+#endif
   }
 }  // namespace CORE::GEOMETRICSEARCH

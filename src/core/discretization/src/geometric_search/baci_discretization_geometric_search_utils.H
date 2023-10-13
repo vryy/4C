@@ -11,6 +11,8 @@
 #ifndef BACI_DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
 #define BACI_DISCRETIZATION_GEOMETRIC_SEARCH_UTILS_H
 
+#include "baci_discretization_geometric_search_bounding_volume.H"
+
 #include <Epetra_Comm.h>
 
 namespace CORE::GEOMETRICSEARCH
@@ -47,6 +49,14 @@ namespace CORE::GEOMETRICSEARCH
 
     return pairs;
   }
+
+  /*! \brief Get the polyhedron representation of a k-DOP
+   *
+   * @param boundingVolume Bounding volume enclosing the respective element (as k-DOP)
+   * @return Points of the polyhedron and connecting polygons
+   */
+  std::pair<std::vector<LINALG::Matrix<3, 1>>, std::vector<std::vector<int>>>
+  GetKDopPolyhedronRepresentation(const BoundingVolume boundingVolume);
 
 }  // namespace CORE::GEOMETRICSEARCH
 
