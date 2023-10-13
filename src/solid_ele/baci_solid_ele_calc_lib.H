@@ -325,10 +325,9 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluates the parameter coordinate of at the element centroid
+   * @brief Evaluates the parameter coordinate of the element centroid for Hexes
    *
-   * Currently this returns a zero-filled matrix, i.e. xi_i = 0. It is valid for HEXes but not
-   * necessarily for other element types.
+   * Returns xi = [0 0 0].
    *
    * @tparam distype : Discretization type
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
@@ -344,12 +343,60 @@ namespace DRT::ELEMENTS
     return xi;
   }
 
+  /*!
+   * @brief Evaluates the parameter coordinate of the element centroid for Tets
+   *
+   * Returns xi = [0.25 0.25 0.25].
+   *
+   * @tparam distype : Discretization type
+   * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
+   * parameter space
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::is_tet_v<distype>, int> = 0>
+  CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
+  {
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi;
+    for (int d = 0; d < DETAIL::num_dim<distype>; ++d) xi(d) = 0.25;
+
+    return xi;
+  }
+
+  /*!
+   * @brief Evaluates the parameter coordinate of the element centroid for Pyramids
+   *
+   * Returns xi = [0 0 0.25].
+   *
+   * @tparam distype : Discretization type
+   * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
+   * parameter space
+   */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DRT::is_pyramid_v<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
     xi(2) = 0.25;
+
+    return xi;
+  }
+
+  /*!
+   * @brief Evaluates the parameter coordinate of the element centroid for Wedges
+   *
+   * Returns xi = [1/3 1/3 0].
+   *
+   * @tparam distype : Discretization type
+   * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
+   * parameter space
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::is_wedge_v<distype>, int> = 0>
+  CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
+  {
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
+    xi(0) = 1.0 / 3.0;
+    xi(1) = 1.0 / 3.0;
 
     return xi;
   }
