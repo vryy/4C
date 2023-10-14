@@ -2332,12 +2332,7 @@ void CONTACT::Beam3tosolidcontact<numnodessol, numnodes,
 {
   // assembly_N is just an array to help assemble the matrices of the shape functions
   // it determines, which shape function is used in which column of N
-  int assembly_N[3][3 * numnodessol];
-
-  // Initialize to zero
-  for (int i = 0; i < 3 * numnodessol; i++)
-    for (int j = 0; j < 3; j++) assembly_N[j][i] = 0.0;
-
+  std::array<std::array<int, 3 * numnodessol>, 3> assembly_N{};
 
   // Set number of shape functions for each 3x3 block:
   // e.g. quad4 surface element (numnodesol = 4)
