@@ -450,12 +450,12 @@ namespace INPAR
           DRT::Condition::Surfactant, true, DRT::Condition::Surface));
 
       surfactant->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("funct", {0, true, true})));
-      AddNamedReal(surfactant, "k1xCbulk");
-      AddNamedReal(surfactant, "k2");
-      AddNamedReal(surfactant, "m1");
-      AddNamedReal(surfactant, "m2");
-      AddNamedReal(surfactant, "gamma_0");
-      AddNamedReal(surfactant, "gamma_min");
+      ::INPUT::AddNamedReal(surfactant, "k1xCbulk");
+      ::INPUT::AddNamedReal(surfactant, "k2");
+      ::INPUT::AddNamedReal(surfactant, "m1");
+      ::INPUT::AddNamedReal(surfactant, "m2");
+      ::INPUT::AddNamedReal(surfactant, "gamma_0");
+      ::INPUT::AddNamedReal(surfactant, "gamma_min");
 
       condlist.push_back(surfactant);
     }

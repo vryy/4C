@@ -244,9 +244,9 @@ void INPAR::ARTNET::SetValidConditions(
   artcoup_ntp->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("coupling_type", "ARTERY",
       Teuchos::tuple<std::string>("ARTERY", "AIRWAY"),
       Teuchos::tuple<std::string>("ARTERY", "AIRWAY"), true)));
-  AddNamedInt(artcoup_ntp, "COUPLEDDOF_REDUCED");
-  AddNamedInt(artcoup_ntp, "COUPLEDDOF_PORO");
-  AddNamedReal(artcoup_ntp, "PENALTY");
+  ::INPUT::AddNamedInt(artcoup_ntp, "COUPLEDDOF_REDUCED");
+  ::INPUT::AddNamedInt(artcoup_ntp, "COUPLEDDOF_PORO");
+  ::INPUT::AddNamedReal(artcoup_ntp, "PENALTY");
 
   condlist.push_back(artcoup_ntp);
 
@@ -260,9 +260,9 @@ void INPAR::ARTNET::SetValidConditions(
   artscatracoup_ntp->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("coupling_type",
       "ARTERY", Teuchos::tuple<std::string>("ARTERY", "AIRWAY"),
       Teuchos::tuple<std::string>("ARTERY", "AIRWAY"), true)));
-  AddNamedInt(artscatracoup_ntp, "COUPLEDDOF_REDUCED");
-  AddNamedInt(artscatracoup_ntp, "COUPLEDDOF_PORO");
-  AddNamedReal(artscatracoup_ntp, "PENALTY");
+  ::INPUT::AddNamedInt(artscatracoup_ntp, "COUPLEDDOF_REDUCED");
+  ::INPUT::AddNamedInt(artscatracoup_ntp, "COUPLEDDOF_PORO");
+  ::INPUT::AddNamedReal(artscatracoup_ntp, "PENALTY");
 
   condlist.push_back(artscatracoup_ntp);
 }
@@ -398,8 +398,8 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   art_red_to_3d_bc->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("ReturnedVariable",
       "pressure", Teuchos::tuple<std::string>("pressure", "flow"),
       Teuchos::tuple<std::string>("pressure", "flow"), true)));
-  AddNamedReal(art_red_to_3d_bc, "Tolerance");
-  AddNamedInt(art_red_to_3d_bc, "MaximumIterations");
+  ::INPUT::AddNamedReal(art_red_to_3d_bc, "Tolerance");
+  ::INPUT::AddNamedInt(art_red_to_3d_bc, "MaximumIterations");
 
   condlist.push_back(art_red_to_3d_bc);
 
@@ -415,8 +415,8 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   art_3d_to_red_bc->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("ReturnedVariable",
       "flow", Teuchos::tuple<std::string>("pressure", "flow"),
       Teuchos::tuple<std::string>("pressure", "flow"), true)));
-  AddNamedReal(art_3d_to_red_bc, "Tolerance");
-  AddNamedInt(art_3d_to_red_bc, "MaximumIterations");
+  ::INPUT::AddNamedReal(art_3d_to_red_bc, "Tolerance");
+  ::INPUT::AddNamedInt(art_3d_to_red_bc, "MaximumIterations");
 
   condlist.push_back(art_3d_to_red_bc);
 
@@ -497,9 +497,9 @@ void INPAR::REDAIRWAYS::SetValidConditions(
       "RedAirwaySwitchFlowPressureCond", "Reduced d airway switch flow pressure boundary condition",
       DRT::Condition::RedAirwayPrescribedSwitchCond, true, DRT::Condition::Point));
 
-  AddNamedInt(raw_in_switch_bc, "FUNCT_ID_FLOW");
-  AddNamedInt(raw_in_switch_bc, "FUNCT_ID_PRESSURE");
-  AddNamedInt(raw_in_switch_bc, "FUNCT_ID_PRESSURE_ACTIVE");
+  ::INPUT::AddNamedInt(raw_in_switch_bc, "FUNCT_ID_FLOW");
+  ::INPUT::AddNamedInt(raw_in_switch_bc, "FUNCT_ID_PRESSURE");
+  ::INPUT::AddNamedInt(raw_in_switch_bc, "FUNCT_ID_PRESSURE_ACTIVE");
 
   condlist.push_back(raw_in_switch_bc);
 
@@ -559,7 +559,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   raw_int_scatra_bc->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("scalar", "O2",
       Teuchos::tuple<std::string>("O2", "CO2"), Teuchos::tuple<std::string>("O2", "CO2"), true)));
 
-  AddNamedReal(raw_int_scatra_bc, "CONCENTRATION");
+  ::INPUT::AddNamedReal(raw_int_scatra_bc, "CONCENTRATION");
   condlist.push_back(raw_int_scatra_bc);
 
   /*--------------------------------------------------------------------*/
@@ -580,7 +580,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
           "RedAirwayScatraHemoglobinCond", "scatra hemoglobin condition",
           DRT::Condition::RedAirwayScatraHemoglobinCond, false, DRT::Condition::Line));
 
-  AddNamedReal(scatra_hemoglobin_cond, "INITIAL_CONCENTRATION");
+  ::INPUT::AddNamedReal(scatra_hemoglobin_cond, "INITIAL_CONCENTRATION");
   condlist.push_back(scatra_hemoglobin_cond);
 
   /*--------------------------------------------------------------------*/
@@ -589,7 +589,7 @@ void INPAR::REDAIRWAYS::SetValidConditions(
       "DESIGN LINE Reduced D AIRWAYS AIR CONDITIONS", "RedAirwayScatraAirCond",
       "scatra air condition", DRT::Condition::RedAirwayScatraAirCond, false, DRT::Condition::Line));
 
-  AddNamedReal(scatra_air_cond, "INITIAL_CONCENTRATION");
+  ::INPUT::AddNamedReal(scatra_air_cond, "INITIAL_CONCENTRATION");
   condlist.push_back(scatra_air_cond);
 
   /*--------------------------------------------------------------------*/
@@ -625,10 +625,10 @@ void INPAR::REDAIRWAYS::SetValidConditions(
       "smooth", Teuchos::tuple<std::string>("smooth", "discontinous"),
       Teuchos::tuple<std::string>("smooth", "discontinous"), true)));
 
-  AddNamedReal(raw_vent_bc, "period");
-  AddNamedReal(raw_vent_bc, "phase1_period");
-  AddNamedReal(raw_vent_bc, "smoothness_period1");
-  AddNamedReal(raw_vent_bc, "smoothness_period2");
+  ::INPUT::AddNamedReal(raw_vent_bc, "period");
+  ::INPUT::AddNamedReal(raw_vent_bc, "phase1_period");
+  ::INPUT::AddNamedReal(raw_vent_bc, "smoothness_period1");
+  ::INPUT::AddNamedReal(raw_vent_bc, "smoothness_period2");
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> redairwayventcomponents;
   redairwayventcomponents.push_back(Teuchos::rcp(new ::INPUT::RealVectorComponent("val", 2)));
@@ -658,13 +658,13 @@ void INPAR::REDAIRWAYS::SetValidConditions(
               "Nonlinear_Polynomial", "Nonlinear_Exponential", "Nonlinear_Ogden"),
           true)));
 
-  AddNamedReal(raw_volPpl_bc, "TLC");
-  AddNamedReal(raw_volPpl_bc, "RV");
+  ::INPUT::AddNamedReal(raw_volPpl_bc, "TLC");
+  ::INPUT::AddNamedReal(raw_volPpl_bc, "RV");
 
-  AddNamedReal(raw_volPpl_bc, "P_PLEURAL_0");
-  AddNamedReal(raw_volPpl_bc, "P_PLEURAL_LIN");
-  AddNamedReal(raw_volPpl_bc, "P_PLEURAL_NONLIN");
-  AddNamedReal(raw_volPpl_bc, "TAU");
+  ::INPUT::AddNamedReal(raw_volPpl_bc, "P_PLEURAL_0");
+  ::INPUT::AddNamedReal(raw_volPpl_bc, "P_PLEURAL_LIN");
+  ::INPUT::AddNamedReal(raw_volPpl_bc, "P_PLEURAL_NONLIN");
+  ::INPUT::AddNamedReal(raw_volPpl_bc, "TAU");
 
 
   std::vector<Teuchos::RCP<::INPUT::LineComponent>> raw_volPpl_bc_components;
@@ -700,11 +700,11 @@ void INPAR::REDAIRWAYS::SetValidConditions(
   impedancebc->AddComponent(Teuchos::rcp(new ::INPUT::SelectionComponent("TYPE", "windkessel",
       Teuchos::tuple<std::string>("windkessel", "resistive", "pressure_by_funct"),
       Teuchos::tuple<std::string>("windkessel", "resistive", "pressure_by_funct"), true)));
-  AddNamedReal(impedancebc, "R1");
-  AddNamedReal(impedancebc, "R2");
-  AddNamedReal(impedancebc, "C");
-  AddNamedReal(impedancebc, "TIMEPERIOD");
-  AddNamedInt(impedancebc, "FUNCT");
+  ::INPUT::AddNamedReal(impedancebc, "R1");
+  ::INPUT::AddNamedReal(impedancebc, "R2");
+  ::INPUT::AddNamedReal(impedancebc, "C");
+  ::INPUT::AddNamedReal(impedancebc, "TIMEPERIOD");
+  ::INPUT::AddNamedInt(impedancebc, "FUNCT");
 
   condlist.push_back(impedancebc);
 }

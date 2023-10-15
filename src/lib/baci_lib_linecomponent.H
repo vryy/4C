@@ -404,7 +404,7 @@ namespace INPUT
   /// the parsed container.
   template <typename DefinitionType>
   inline void AddNamedInt(const Teuchos::RCP<DefinitionType>& definition, const std::string& name,
-      const std::string& description, const int defaultvalue = 0, const bool optional = false)
+      const std::string& description = {}, const int defaultvalue = 0, const bool optional = false)
   {
     definition->AddComponent(
         Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
@@ -454,7 +454,8 @@ namespace INPUT
   /// The name on the input line becomes the name used to put the value into the parsed Container
   template <typename DefinitionType>
   inline void AddNamedReal(const Teuchos::RCP<DefinitionType>& definition, const std::string& name,
-      const std::string& description, const double defaultvalue = 0.0, const bool optional = false)
+      const std::string& description = {}, const double defaultvalue = 0.0,
+      const bool optional = false)
   {
     definition->AddComponent(
         Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));

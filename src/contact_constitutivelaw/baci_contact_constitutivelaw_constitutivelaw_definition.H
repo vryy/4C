@@ -167,57 +167,6 @@ namespace CONTACT
       double defaultvalue_;
     };
 
-
-
-    /** Add a separator followed by a single real value
-     *
-     * The name on the input line becomes the name used to put the value into the contact
-     * constitutive law container container
-     *
-     * \params[inout] def contact constitutive law definition to which the double should be added
-     * \param[in] name name of the double parameter
-     * \param[in] description of the parameter
-     * \param[in] defaultvalue default value to be used when parameter is optional and not given
-     * \param[in] optional true if parameter is optional
-     *
-     */
-    inline void AddNamedReal(Teuchos::RCP<LawDefinition> def, const std::string name,
-        const std::string description, const double defaultvalue = 0.0, const bool optional = false)
-    {
-      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
-      def->AddComponent(
-          Teuchos::rcp(new RealContactConstitutiveLawComponent(name, defaultvalue, optional)));
-    }
-
-    /** Add a separator
-     *
-     * The name on the input line becomes the name used to put the value into the contact
-     * constitutive law container container
-     *
-     * \params[inout] def contact constitutive law definition to which the double should be added
-     * \param[in] name name of the double parameter
-     * \param[in] description of the parameter
-     * \param[in] optional true if parameter is optional
-     *
-     */
-    inline void AddNamedSeparator(Teuchos::RCP<LawDefinition> def, const std::string name,
-        const std::string description, const bool optional = false)
-    {
-      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
-    }
-
-    inline void AddNamedString(
-        const Teuchos::RCP<LawDefinition> def,  ///< a condition definition to which named string is
-        const std::string& name,                ///< name of string to add
-        const std::string& description,         ///< description about value
-        const std::string& defaultvalue,        ///< default string
-        const bool optional = false             ///< optional parameter if true
-    )
-    {
-      def->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name, description, optional)));
-      def->AddComponent(Teuchos::rcp(new ::INPUT::StringComponent(name, defaultvalue, optional)));
-    }
-
     /** Add contact constitutive law definition to list of defined definitions
      *
      * \params[inout] list list of defined contact constitutive law definitions
