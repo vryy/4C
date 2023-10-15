@@ -60,10 +60,6 @@ namespace INPUT
     [[nodiscard]] std::string Name() const { return name_; }
 
    protected:
-    /// push back token into stream so that it can be read again
-    Teuchos::RCP<std::stringstream> PushBack(
-        const std::string& token, const Teuchos::RCP<std::stringstream>& stream);
-
     /// for optional components
     bool optional_;
 
