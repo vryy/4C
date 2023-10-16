@@ -44,7 +44,10 @@
       "description": "Build release version of BACI on a Docker image",
       "inherits": [
         ".docker_base"
-      ]
+      ],
+      "cacheVariables": {
+        "BACI_WITH_ARBORX": "ON"
+      }
     },
     {
       "name": "docker_debug",
@@ -54,6 +57,7 @@
         ".docker_base"
       ],
       "cacheVariables": {
+        "BACI_WITH_ARBORX": "ON",
         "CMAKE_BUILD_TYPE": "DEBUG"
       }
     },
