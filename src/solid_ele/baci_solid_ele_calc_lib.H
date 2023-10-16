@@ -1135,7 +1135,7 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluates the Gauss point and element centroid coordinates in reference configuration
+   * @brief Evaluates the Gauss point coordinates in reference configuration
    * and adds those to the paramater list
    *
    * @tparam distype : Discretization type
@@ -1144,7 +1144,7 @@ namespace DRT::ELEMENTS
    * @param params (in/out) : ParameterList the quantities are added to
    */
   template <DRT::Element::DiscretizationType distype>
-  void EvaluateGPAndCentroidCoordinatesAndAddToParameterList(
+  void EvaluateGPCoordinatesAndAddToParameterList(
       const NodalCoordinates<distype>& nodal_coordinates,
       const ShapeFunctionsAndDerivatives<distype>& shape_functions_gp,
       Teuchos::ParameterList& params)
@@ -1152,7 +1152,20 @@ namespace DRT::ELEMENTS
     auto gp_ref_coord = EvaluateReferenceCoordinate<distype>(
         nodal_coordinates.reference_, shape_functions_gp.shapefunctions_);
     params.set("gprefecoord", gp_ref_coord);
+  }
 
+  /*!
+   * @brief Evaluates the element centroid coordinates in reference configuration
+   * and adds those to the paramater list
+   *
+   * @tparam distype : Discretization type
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @param params (in/out) : ParameterList the quantities are added to
+   */
+  template <DRT::Element::DiscretizationType distype>
+  void EvaluateCentroidCoordinatesAndAddToParameterList(
+      const NodalCoordinates<distype>& nodal_coordinates, Teuchos::ParameterList& params)
+  {
     auto element_center =
         EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates.reference_);
     params.set("elecenter", element_center);
