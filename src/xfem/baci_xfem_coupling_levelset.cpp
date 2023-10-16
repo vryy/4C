@@ -482,30 +482,25 @@ bool XFEM::LevelSetCoupling::SetLevelSetField(const double time)
       Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(cutter_dis_)
           ->SetInitialState(0, "pres", modphinp);
 
-      //      Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode=
-      //      DRT::UTILS::ComputeNodalL2Projection(cutter_dis_,modphinp,"pres",3,eleparams,l2_proj_num);
       // Lives on NodeRow-map!!!
       Teuchos::RCP<Epetra_MultiVector> gradphinp_smoothed_rownode =
           DRT::UTILS::ComputeNodalL2Projection(cutter_dis_, "pres", 3, eleparams, l2_proj_num);
       if (gradphinp_smoothed_rownode == Teuchos::null)
         dserror("A smoothed grad phi is required, but an empty one is provided!");
 
-      // gradphinp_smoothed_node_ = Teuchos::rcp(new
-      // Epetra_MultiVector(*cutter_dis_->NodeColMap(),3));
-      // CORE::LINALG::Export(*gradphinp_smoothed_rownode,*gradphinp_smoothed_node_);
-
+      // The following bugfix needs to be check carefully
       {
-        // As the object is a MultiVector, this has to be done to keep the structure from before...
-        //  not the nicest way but better than nothing.
-        gradphinp_smoothed_rownode->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-        Teuchos::rcp((*gradphinp_smoothed_rownode)(0), false)
-            ->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-        Teuchos::rcp((*gradphinp_smoothed_rownode)(1), false)
-            ->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-        Teuchos::rcp((*gradphinp_smoothed_rownode)(2), false)
-            ->ReplaceMap(*(cutter_dis_->DofRowMap(cutter_nds_phi_)));
-
-        CORE::LINALG::Export(*gradphinp_smoothed_rownode, *gradphinp_smoothed_node_);
+        // Convert NodeRowMap from ComputeNodalL2Projection to DofRowMap while assuming identical
+        // ordering
+        for (int ivec = 0; ivec < gradphinp_smoothed_rownode->NumVectors(); ivec++)
+        {
+          Epetra_Vector* itemp = (*gradphinp_smoothed_rownode)(ivec);
+          for (int jlength = 0; jlength < itemp->MyLength(); jlength++)
+          {
+            gradphinp_smoothed_node_->ReplaceMyValue(jlength, ivec, itemp->operator[](jlength));
+          }
+        }
+        // Bring DofRowMap to DofColMap layout (Attention: name is node but lives on dof)
         CORE::LINALG::Export(*gradphinp_smoothed_node_, *gradphinp_smoothed_node_col_);
       }
 
