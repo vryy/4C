@@ -191,6 +191,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
   const SpatialMaterialMapping<distype> spatial_material_mapping_centroid =
       EvaluateSpatialMaterialMapping(jacobian_mapping_centroid, nodal_coordinates);
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -222,6 +224,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
 
         CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain_bar =
             EvaluateGreenLagrangeStrain(cauchygreen_bar);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         // stress stress_bar evaluated using strains_bar
         const Stress<distype> stress_bar = EvaluateMaterialStress<distype>(solid_material,
@@ -289,6 +294,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
   // deformation gradient and strains at centroid of element
   auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   // Loop over all Gauss points
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
@@ -303,6 +310,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
 
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         solid_material.Update(
             spatial_material_mapping_bar.deformation_gradient_, gp, params, ele.Id());
@@ -330,6 +340,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
   // deformation gradient and strains at centroid of element
   auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   // Loop over all Gauss points
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
@@ -347,6 +359,9 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
 
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress_bar = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping_bar.deformation_gradient_, gl_strains_bar, params, gp,

@@ -660,6 +660,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
   eas_iteration_data_.Kda_.Clear();
   eas_iteration_data_.s_.Clear();
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -683,6 +685,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
             consistent_defgrd = EvaluateConsistentDefgrd(
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(
             solid_material, consistent_defgrd, enhanced_gl_strain, params, gp, ele.Id());
@@ -776,6 +781,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
   // time step and output. Hence, there are no more Newton iterations that would require an update
   // of alpha
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -784,7 +791,6 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
         const CORE::LINALG::Matrix<num_str_, STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>
             Mtilde = EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
-
 
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
@@ -797,6 +803,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
             consistent_defgrd = EvaluateConsistentDefgrd(
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         solid_material.Update(consistent_defgrd, gp, params, ele.Id());
       });
@@ -825,6 +834,8 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
 
   EvaluateAlpha<distype, eastype>(eas_iteration_data_, discretization, lm);
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -846,6 +857,9 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
             consistent_defgrd = EvaluateConsistentDefgrd(
                 displacement_based_spatial_material_mapping.deformation_gradient_,
                 enhanced_gl_strain);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(
             solid_material, consistent_defgrd, enhanced_gl_strain, params, gp, ele.Id());

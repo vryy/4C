@@ -325,10 +325,9 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Evaluates the parameter coordinate of at the element centroid
+   * @brief Evaluates the parameter coordinate of the element centroid for Hexes
    *
-   * Currently this returns a zero-filled matrix, i.e. xi_i = 0. It is valid for HEXes but not
-   * necessarily for other element types.
+   * Returns xi = [0 0 0].
    *
    * @tparam distype : Discretization type
    * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
@@ -344,12 +343,60 @@ namespace DRT::ELEMENTS
     return xi;
   }
 
+  /*!
+   * @brief Evaluates the parameter coordinate of the element centroid for Tets
+   *
+   * Returns xi = [0.25 0.25 0.25].
+   *
+   * @tparam distype : Discretization type
+   * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
+   * parameter space
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::is_tet_v<distype>, int> = 0>
+  CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
+  {
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi;
+    for (int d = 0; d < DETAIL::num_dim<distype>; ++d) xi(d) = 0.25;
+
+    return xi;
+  }
+
+  /*!
+   * @brief Evaluates the parameter coordinate of the element centroid for Pyramids
+   *
+   * Returns xi = [0 0 0.25].
+   *
+   * @tparam distype : Discretization type
+   * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
+   * parameter space
+   */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DRT::is_pyramid_v<distype>, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
   {
     CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
     xi(2) = 0.25;
+
+    return xi;
+  }
+
+  /*!
+   * @brief Evaluates the parameter coordinate of the element centroid for Wedges
+   *
+   * Returns xi = [1/3 1/3 0].
+   *
+   * @tparam distype : Discretization type
+   * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> : Coordinates of the centroid in the
+   * parameter space
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DRT::is_wedge_v<distype>, int> = 0>
+  CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> EvaluateParameterCoordinateCentroid()
+  {
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi(true);
+    xi(0) = 1.0 / 3.0;
+    xi(1) = 1.0 / 3.0;
 
     return xi;
   }
@@ -474,6 +521,51 @@ namespace DRT::ELEMENTS
         EvaluateJacobianMapping(shape_functions_centroid, nodal_coordinates);
 
     return jacobian_mapping_centroid;
+  }
+
+  /*!
+   * @brief Evaluates a point's coordinates in reference configuration
+   *
+   * @tparam distype : Discretization type
+   * @param nodal_coordinates_reference (in) : Reference coordinates of the nodes of the element
+   * @param shape_functions_point (in) : Shape functions evaluated at the specific point
+   * @return CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> : point's reference coordinates
+   */
+  template <DRT::Element::DiscretizationType distype>
+  CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> EvaluateReferenceCoordinate(
+      const CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>>&
+          nodal_coordinates_reference,
+      const CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, 1>& shape_functions_point)
+  {
+    CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> coordinates_reference(true);
+    coordinates_reference.MultiplyTN(shape_functions_point, nodal_coordinates_reference);
+
+    return coordinates_reference;
+  }
+
+  /*!
+   * @brief Evaluates the element centroid's coordinates in reference configuration
+   *
+   * @tparam distype : Discretization type
+   * @param nodal_coordinates (in) : Reference coordinates of the nodes of the element
+   * @return CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> : Element centroid's coordinates in
+   * reference configuration
+   */
+  template <DRT::Element::DiscretizationType distype>
+  CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> EvaluateReferenceCoordinateCentroid(
+      const CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, DETAIL::num_dim<distype>>&
+          nodal_coordinates_reference)
+  {
+    const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1> xi_centroid =
+        EvaluateParameterCoordinateCentroid<distype>();
+
+    CORE::LINALG::Matrix<DETAIL::num_nodes<distype>, 1> shape_functions_centroid(true);
+    CORE::DRT::UTILS::shape_function<distype>(xi_centroid, shape_functions_centroid);
+
+    const CORE::LINALG::Matrix<1, DETAIL::num_dim<distype>> centroid_coordinates_reference =
+        EvaluateReferenceCoordinate<distype>(nodal_coordinates_reference, shape_functions_centroid);
+
+    return centroid_coordinates_reference;
   }
 
   template <DRT::Element::DiscretizationType distype>
@@ -1043,8 +1135,45 @@ namespace DRT::ELEMENTS
   }
 
   /*!
-   * @brief Asks the material for the Gauss Point output quantities and adds the information to the
-   * Gauss point output data manager
+   * @brief Evaluates the Gauss point coordinates in reference configuration
+   * and adds those to the paramater list
+   *
+   * @tparam distype : Discretization type
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @param shape_functions_gp (in) : Shape functions evaluated at the Gauss point
+   * @param params (in/out) : ParameterList the quantities are added to
+   */
+  template <DRT::Element::DiscretizationType distype>
+  void EvaluateGPCoordinatesAndAddToParameterList(
+      const NodalCoordinates<distype>& nodal_coordinates,
+      const ShapeFunctionsAndDerivatives<distype>& shape_functions_gp,
+      Teuchos::ParameterList& params)
+  {
+    auto gp_ref_coord = EvaluateReferenceCoordinate<distype>(
+        nodal_coordinates.reference_, shape_functions_gp.shapefunctions_);
+    params.set("gprefecoord", gp_ref_coord);
+  }
+
+  /*!
+   * @brief Evaluates the element centroid coordinates in reference configuration
+   * and adds those to the paramater list
+   *
+   * @tparam distype : Discretization type
+   * @param nodal_coordinates (in) : Reference and current coordinates of the nodes of the element
+   * @param params (in/out) : ParameterList the quantities are added to
+   */
+  template <DRT::Element::DiscretizationType distype>
+  void EvaluateCentroidCoordinatesAndAddToParameterList(
+      const NodalCoordinates<distype>& nodal_coordinates, Teuchos::ParameterList& params)
+  {
+    auto element_center =
+        EvaluateReferenceCoordinateCentroid<distype>(nodal_coordinates.reference_);
+    params.set("elecenter", element_center);
+  }
+
+  /*!
+   * @brief Asks the material for the Gauss Point output quantities and adds the information to
+   * the Gauss point output data manager
    *
    * @param num_gp (in) : Number of Gauss Points of the element
    * @param solid_material (in) : Solid material of the element

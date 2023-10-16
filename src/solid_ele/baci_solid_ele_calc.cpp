@@ -47,6 +47,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
   double mean_density = 0.0;
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -62,6 +64,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMass(
 
         CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());
@@ -129,6 +134,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
 
   double mean_density = 0.0;
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -165,6 +172,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::EvaluateNonlinearForceStiffnessMassGE
         CORE::LINALG::Matrix<num_str_, 1> gl_strains_m(true);
         gl_strains_m.Update(
             1.0 - gemmalphaf + gemmxi, gl_strain, gemmalphaf - gemmxi, gl_strain_old);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress = EvaluateMaterialStressGEMM(solid_material, gl_strain,
             gl_strain_old, gl_strains_m, cauchy_green, cauchy_green_old, params, gp, ele.Id());
@@ -220,6 +230,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -227,6 +239,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::Update(const DRT::Element& ele,
       {
         const SpatialMaterialMapping<distype> spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         solid_material.Update(spatial_material_mapping.deformation_gradient_, gp, params, ele.Id());
       });
@@ -281,6 +296,8 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
   const NodalCoordinates<distype> nodal_coordinates =
       EvaluateNodalCoordinates<distype>(ele, discretization, lm);
 
+  EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
+
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
       [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
@@ -293,6 +310,9 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::CalculateStress(const DRT::Element& e
 
         const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain =
             EvaluateGreenLagrangeStrain(cauchygreen);
+
+        EvaluateGPCoordinatesAndAddToParameterList<distype>(
+            nodal_coordinates, shape_functions, params);
 
         const Stress<distype> stress = EvaluateMaterialStress<distype>(solid_material,
             spatial_material_mapping.deformation_gradient_, gl_strain, params, gp, ele.Id());
