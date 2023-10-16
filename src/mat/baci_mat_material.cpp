@@ -7,7 +7,6 @@
 */
 /*----------------------------------------------------------------------*/
 
-
 #include "baci_mat_material.H"
 
 #include "baci_lib_globalproblem.H"
@@ -86,6 +85,7 @@
 #include "baci_mat_particle_wall_dem.H"
 #include "baci_mat_permeablefluid.H"
 #include "baci_mat_plastic_VarConstUpdate.H"
+#include "baci_mat_plasticdruckerprager.H"
 #include "baci_mat_plasticelasthyper.H"
 #include "baci_mat_plasticlinelast.H"
 #include "baci_mat_plasticnlnlogneohooke.H"
@@ -187,6 +187,13 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
       if (curmat->Parameter() == nullptr)
         curmat->SetParameter(new MAT::PAR::ThermoPlasticLinElast(curmat));
       auto* params = static_cast<MAT::PAR::ThermoPlasticLinElast*>(curmat->Parameter());
+      return params->CreateMaterial();
+    }
+    case INPAR::MAT::m_pldruckprag:
+    {
+      if (curmat->Parameter() == nullptr)
+        curmat->SetParameter(new MAT::PAR::PlasticDruckerPrager(curmat));
+      auto* params = static_cast<MAT::PAR::PlasticDruckerPrager*>(curmat->Parameter());
       return params->CreateMaterial();
     }
     case INPAR::MAT::m_thermoplhyperelast:

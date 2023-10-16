@@ -1055,6 +1055,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
 
     AppendMaterialDefinition(matlist, m);
   }
+  /*----------------------------------------------------------------------*/
+  // Plastic linear elastic St.Venant Kirchhoff / Drucker Prager plasticity
+  {
+    auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_DruckerPrager",
+        "elastic St.Venant Kirchhoff / plastic drucker prager", INPAR::MAT::m_pldruckprag));
+
+    AddNamedReal(m, "YOUNG", "Young's modulus");
+    AddNamedReal(m, "NUE", "Poisson's ratio");
+    AddNamedReal(m, "DENS", "Density");
+    AddNamedReal(m, "ISOHARD", "linear isotropic hardening");
+    AddNamedReal(m, "TOL", "Local Newton iteration tolerance");
+    AddNamedReal(m, "C", "cohesion");
+    AddNamedReal(m, "ETA", "Drucker Prager Constant Eta");
+    AddNamedReal(m, "XI", "Drucker Prager Constant Xi");
+    AddNamedReal(m, "ETABAR", "Drucker Prager Constant Etabar");
+    AddNamedInt(m, "MAXITER", "Maximum Neuton Raphson Iterations", 50, true);
+
+    AppendMaterialDefinition(matlist, m);
+  }
 
   /*----------------------------------------------------------------------*/
   // Linear thermo-elastic St.Venant Kirchhoff / plastic von Mises
