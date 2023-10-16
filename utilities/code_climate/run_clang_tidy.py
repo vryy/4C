@@ -123,8 +123,17 @@ def run_tidy(args, tmpdir, build_path, queue, lock, failed_files):
         with lock:
             if process.returncode != 0:
                 failed_files.append(name)
-                sys.stdout.buffer.write(stdout)
+
+                # only print error messages of clang-tidy output
+                error_regex = re.compile(
+                    r"^.*\serror:.*(?:\n\s*\d*\s*\|.*)*", re.MULTILINE
+                )
+                for error_message in error_regex.findall(stdout.decode()):
+                    print(error_message)
+
+                # also forward stderr
                 sys.stderr.buffer.write(stderr)
+
         queue.task_done()
 
 

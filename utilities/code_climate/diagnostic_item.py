@@ -11,6 +11,7 @@ class DiagnosticItem:
         self.file = None
         self.offset = None
         self.srcdir = src
+        self.level = None
 
         self.line_number = None
         self.previous_line = None
@@ -51,7 +52,7 @@ class DiagnosticItem:
         item = {
             "description": "{0} ({1})".format(self.message, self.name),
             "fingerprint": self.global_hash(hash_set),
-            "severity": self.getSeverity(self.name),
+            "severity": self.get_severity(self.name, self.level),
             "location": {
                 "path": self.get_relative_path(),
                 "lines": {"begin": self.line_number},
@@ -67,10 +68,14 @@ class DiagnosticItem:
 
         diagnosticItem.file = object["DiagnosticMessage"]["FilePath"]
         diagnosticItem.offset = object["DiagnosticMessage"]["FileOffset"]
+        diagnosticItem.level = object["Level"]
 
         return diagnosticItem
 
     @staticmethod
-    def getSeverity(name):
+    def get_severity(name, level):
+        if level == "Error":
+            return "blocker"
+
         # clang-tidy hints are just an info
         return "info"
