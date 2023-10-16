@@ -20,9 +20,9 @@ CONTACT::CoNodeType CONTACT::CoNodeType::instance_;
 
 DRT::ParObject* CONTACT::CoNodeType::Create(const std::vector<char>& data)
 {
-  double x[3];
+  std::vector<double> x(3, 0.0);
   std::vector<int> dofs(0);
-  CONTACT::CoNode* node = new CONTACT::CoNode(0, x, 0, 0, dofs, false, false);
+  auto* node = new CONTACT::CoNode(0, x, 0, dofs, false, false);
   node->Unpack(data);
   return node;
 }
@@ -369,9 +369,9 @@ void CONTACT::CoNodeTSIDataContainer::Clear()
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-CONTACT::CoNode::CoNode(int id, const double* coords, const int owner, const int numdof,
+CONTACT::CoNode::CoNode(int id, const std::vector<double>& coords, const int owner,
     const std::vector<int>& dofs, const bool isslave, const bool initactive)
-    : MORTAR::MortarNode(id, coords, owner, numdof, dofs, isslave),
+    : MORTAR::MortarNode(id, coords, owner, dofs, isslave),
       active_(false),
       initactive_(initactive),
       involvedm_(false),
@@ -381,7 +381,6 @@ CONTACT::CoNode::CoNode(int id, const double* coords, const int owner, const int
       coporodata_(Teuchos::null),
       cTSIdata_(Teuchos::null)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*

@@ -726,7 +726,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       const DRT::Node* const* nodes = parentele->Nodes();
       for (int i = 0; i < nenparent; ++i)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(0, i) = x[0];
         xrefe(1, i) = x[1];
 

@@ -1451,7 +1451,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
             // in some fancy turbulance stuff.
             functionfac = DRT::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[jnode])->X(), time, isd);
+                              .Evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
           }
           else
             functionfac = 1.0;
@@ -1479,7 +1479,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::BodyForce(DRT::ELEMENTS::Flu
             // in some fancy turbulance stuff.
             functionfac = DRT::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[jnode])->X(), time, isd);
+                              .Evaluate((ele->Nodes()[jnode])->X().data(), time, isd);
           }
           else
             functionfac = 1.0;
@@ -1564,7 +1564,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectionTerm(
   {
     ecorrectionterm(i) = DRT::Problem::Instance()
                              ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                             .Evaluate((ele->Nodes()[i])->X(), 0.0, 0);
+                             .Evaluate((ele->Nodes()[i])->X().data(), 0.0, 0);
   }
 }
 
@@ -1820,7 +1820,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::SetAdvectiveVelOseen(DRT::EL
     const double time = fldparatimint_->Time();
     for (int jnode = 0; jnode < nen_; ++jnode)
     {
-      const double* jx = ele->Nodes()[jnode]->X();
+      const double* jx = ele->Nodes()[jnode]->X().data();
       for (int idim = 0; idim < nsd_; ++idim)
         eadvvel_(idim, jnode) = DRT::Problem::Instance()
                                     ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funcnum - 1)

@@ -428,7 +428,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(RedAcinus* ele,
           {
             functionfac = DRT::Problem::Instance()
                               ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                              .Evaluate((ele->Nodes()[i])->X(), time, 0);
+                              .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
           }
 
           // Get factor of second CURVE
@@ -1157,7 +1157,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::SolveScatra(RedAcinus* ele, Teuchos::Pa
       {
         functionfac = DRT::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate((ele->Nodes()[i])->X(), time, 0);
+                          .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
       }
       scnp += functionfac;
 

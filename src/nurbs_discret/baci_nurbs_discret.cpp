@@ -525,7 +525,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletBoundary(Teuchos::RCP<D
 
   for (int inode = 0; inode < nen; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     for (int idim = 0; idim < dim + 1; ++idim)
     {
       xyze(idim, inode) = x[idim];
@@ -665,7 +665,7 @@ void DRT::UTILS::DbcNurbs::FillMatrixAndRHSForLSDirichletDomain(Teuchos::RCP<DRT
 
   for (int inode = 0; inode < nen; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     for (int idim = 0; idim < dim; ++idim)
     {
       xyze(idim, inode) = x[idim];

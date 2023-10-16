@@ -404,7 +404,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::NonlinearStiffnessPoroelast(std::vect
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -712,7 +712,7 @@ void DRT::ELEMENTS::Wall1_PoroP1<distype>::CouplingPoroelast(
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -894,7 +894,7 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];

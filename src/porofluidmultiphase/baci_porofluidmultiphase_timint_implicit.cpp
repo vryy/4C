@@ -905,7 +905,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::ApplyStartingDBC()
               const double dbc_value = DRT::Problem::Instance()
                                            ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(
                                                starting_dbc_funct_[dof_idx] - 1)
-                                           .Evaluate(current_node->X(), time_, 0);
+                                           .Evaluate(current_node->X().data(), time_, 0);
               phinp_->ReplaceGlobalValue(gid, 0, dbc_value);
             }
           }
@@ -1919,7 +1919,7 @@ void POROFLUIDMULTIPHASE::TimIntImpl::SetInitialField(
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), time_, k);
+                                  .Evaluate(lnode->X().data(), time_, k);
           int err = phin_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }

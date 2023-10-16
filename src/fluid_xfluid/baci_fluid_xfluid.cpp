@@ -4458,7 +4458,7 @@ void FLD::XFluid::SetInitialFlowField(
 
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), time_, dof % 4);
+                                  .Evaluate(lnode->X().data(), time_, dof % 4);
           state_->velnp_->ReplaceGlobalValues(1, &initialval, &gid);
         }
       }

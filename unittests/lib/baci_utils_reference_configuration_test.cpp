@@ -31,16 +31,17 @@ namespace
           Teuchos::rcp(new DRT::Discretization("dummy", Teuchos::rcp(new Epetra_SerialComm)));
 
       // create hex8 element and store it in the test discretization
-      const int nodeidshex8[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-      const double coordshex8[24] = {-0.10, -0.20, -0.50, 1.25, 0.23, 0.66, 1.20, 0.99, 0.50, -0.11,
-          1.20, 0.66, -0.10, -0.20, 1.90, 1.00, 0.00, 1.90, 1.20, 0.99, 1.50, -0.11, -0.20, 1.66};
+      const std::array<int, 8> nodeidshex8 = {0, 1, 2, 3, 4, 5, 6, 7};
+      const std::vector<std::vector<double>> coordshex8 = {{-0.10, -0.20, -0.50},
+          {1.25, 0.23, 0.66}, {1.20, 0.99, 0.50}, {-0.11, 1.20, 0.66}, {-0.10, -0.20, 1.90},
+          {1.00, 0.00, 1.90}, {1.20, 0.99, 1.50}, {-0.11, -0.20, 1.66}};
       for (int i = 0; i < 8; ++i)
       {
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidshex8[i], &coordshex8[3 * i], 0)));
+        testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidshex8[i], coordshex8[i], 0)));
       }
       Teuchos::RCP<DRT::ELEMENTS::So_hex8> testhex8ele =
           Teuchos::rcp(new DRT::ELEMENTS::So_hex8(0, 0));
-      testhex8ele->SetNodeIds(8, nodeidshex8);
+      testhex8ele->SetNodeIds(8, nodeidshex8.data());
       testdis_->AddElement(testhex8ele);
 
       // create corresponding quad4 surface contact element and store it
@@ -50,16 +51,16 @@ namespace
       testdis_->AddElement(testcontactquad4ele);
 
       // create tet4 element and store it in the test discretization
-      const int nodeidstet4[4] = {8, 9, 10, 11};
-      const double coordstet4[12] = {
-          2.5, -0.5, 0.0, 1.0, -1.1, 0.1, 1.1, 0.11, 0.15, 1.5, -0.5, 2.0};
+      const std::array<int, 4> nodeidstet4 = {8, 9, 10, 11};
+      const std::vector<std::vector<double>> coordstet4 = {
+          {2.5, -0.5, 0.0}, {1.0, -1.1, 0.1}, {1.1, 0.11, 0.15}, {1.5, -0.5, 2.0}};
       for (int j = 0; j < 4; ++j)
       {
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidstet4[j], &coordstet4[3 * j], 0)));
+        testdis_->AddNode(Teuchos::rcp(new DRT::Node(nodeidstet4[j], coordstet4[j], 0)));
       }
       Teuchos::RCP<DRT::ELEMENTS::So_tet4> testtet4ele =
           Teuchos::rcp(new DRT::ELEMENTS::So_tet4(2, 0));
-      testtet4ele->SetNodeIds(4, nodeidstet4);
+      testtet4ele->SetNodeIds(4, nodeidstet4.data());
       testdis_->AddElement(testtet4ele);
 
       // create corresponding tri3 surface contact element and store it

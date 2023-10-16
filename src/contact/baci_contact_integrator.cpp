@@ -12937,7 +12937,7 @@ double CONTACT::CoIntegrator::TDetDeformationGradient(
     {
       for (unsigned int idof = 0; idof < dim; ++idof)
       {
-        const double* x = nodes[inode]->X();
+        const auto& x = nodes[inode]->X();
         xrefe(idof, inode) = x[idof];
         xcurr(idof, inode) = xrefe(idof, inode) + sele.MoData().ParentDisp()[inode * dim + idof];
         //          std::cout<< sele.MoData().ParentDisp()[inode*dim+idof] <<",

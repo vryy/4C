@@ -2974,7 +2974,7 @@ void SCATRA::ScaTraTimIntElch::ApplyNeumannBC(const Teuchos::RCP<Epetra_Vector>&
               constexpr double four_pi = 4.0 * M_PI;
               const double fac =
                   DRT::INPUT::IntegralValue<bool>(*ScatraParameterList(), "SPHERICALCOORDS")
-                      ? *node->X() * *node->X() * four_pi
+                      ? *node->X().data() * *node->X().data() * four_pi
                       : 1.0;
 
               neumann_loads->SumIntoMyValue(dof_lid, 0, neumann_value * fac);

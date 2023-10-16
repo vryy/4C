@@ -201,7 +201,7 @@ void CORE::GEO::MESHFREE::BoundingBox::SetupBoundingBoxDiscretization()
     }
 
     // create nodes
-    double cornerpos[3];
+    std::vector<double> cornerpos(3, 0.0);
     int node_ids[8];
     for (int corner_i = 0; corner_i < 8; ++corner_i)
     {
@@ -673,7 +673,8 @@ CORE::LINALG::Matrix<3, 1> CORE::GEO::MESHFREE::BoundingBox::CurrentPositionOfCo
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
-void CORE::GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(int i, double* x) const
+void CORE::GEO::MESHFREE::BoundingBox::UndeformedBoxCornerPointPosition(
+    int i, std::vector<double>& x) const
 {
   // to get numbering according to baci convention of hex eles
   if (i == 2 or i == 6)

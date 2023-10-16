@@ -1215,7 +1215,7 @@ void DRT::ELEMENTS::Membrane<distype>::mem_configuration(const std::vector<doubl
 
   for (int i = 0; i < numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     xrefe(i, 0) = x[0];
     xrefe(i, 1) = x[1];
     xrefe(i, 2) = x[2];

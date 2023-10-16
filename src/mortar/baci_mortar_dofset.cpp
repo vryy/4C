@@ -53,7 +53,7 @@ int MORTAR::MortarDofSet::AssignDegreesOfFreedom(
         dynamic_cast<MORTAR::MortarNode*>(node);
     if (!mrtrnode) dserror("dynamic_cast DRT::Node -> MORTAR::MortarNode failed");
 #endif
-    const int* newdofs = mrtrnode->Dofs();
+    const auto& newdofs = mrtrnode->Dofs();
     for (std::size_t j = 0; j < numDofsOfNode; ++j)
     {
       // build dof column map

@@ -50,7 +50,7 @@ namespace
     CORE::LINALG::Matrix<3, numnode> xyze;
     for (int inode = 0; inode < numnode; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
@@ -120,7 +120,7 @@ namespace
         {
           functionfac = DRT::Problem::Instance()
                             ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                            .Evaluate(node->X(), time, 0);
+                            .Evaluate(node->X().data(), time, 0);
         }
         // get curve2
         int curve2num = -1;
@@ -1109,7 +1109,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(RedAirway* ele,
                     if ((functnum = (*functions)[0]) > 0)
                       return DRT::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate((ele->Nodes()[i])->X(), time, 0);
+                          .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
                     else
                       return 0.0;
                   else
@@ -1866,7 +1866,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
       {
         functionfac = DRT::Problem::Instance()
                           ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(functnum - 1)
-                          .Evaluate((ele->Nodes()[i])->X(), time, 0);
+                          .Evaluate((ele->Nodes()[i])->X().data(), time, 0);
       }
       scnp += functionfac;
 

@@ -979,14 +979,13 @@ namespace CONTACT
      \param id     (in): A globally unique node id
      \param coords (in): vector of nodal coordinates, length 3
      \param owner  (in): Owner of this node.
-     \param numdof (in): Number of degrees of freedom to this node
      \param dofs   (in): list of global degrees of freedom
      \param isslave(in): flag indicating whether node is slave or master
      \param initactive (in): flag indicating whether initially set to active
 
      */
-    CoNode(int id, const double* coords, const int owner, const int numdof,
-        const std::vector<int>& dofs, const bool isslave, const bool initactive);
+    CoNode(int id, const std::vector<double>& coords, const int owner, const std::vector<int>& dofs,
+        const bool isslave, const bool initactive);
 
     /*!
      \brief Copy Constructor
@@ -1330,4 +1329,4 @@ namespace CONTACT
 // << operator
 std::ostream& operator<<(std::ostream& os, const CONTACT::CoNode& cnode);
 
-#endif  // CONTACT_NODE_H
+#endif  // BACI_CONTACT_NODE_H

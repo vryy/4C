@@ -61,7 +61,7 @@ void DRT::ELEMENTS::Wall1_Scatra::PreEvaluate(Teuchos::ParameterList& params,
   DRT::Node** nodes = Nodes();
   for (int i = 0; i < numnode; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     (*xrefe)[0] += x[0] / numnode;
     (*xrefe)[1] += x[1] / numnode;
   }

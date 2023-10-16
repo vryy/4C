@@ -1456,7 +1456,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(DRT::Element*& fittingele,  /// poi
   // if it is not, deltaT estimates the time x needs to move to node)
   if (data->type_ == TimeIntData::predictor_)
   {
-    CORE::LINALG::Matrix<nsd, 1> diff(data->node_.X());
+    CORE::LINALG::Matrix<nsd, 1> diff(data->node_.X().data());
     for (int i = 0; i < nsd; ++i) diff(i) += data->dispnp_(i);
     diff -= lagrangeanOrigin;  // diff = x_Node - x_Appr
 
@@ -1703,7 +1703,7 @@ void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
     bool indomain = false;  // dummy variable
 
     // xyz coordinates of the node
-    CORE::LINALG::Matrix<nsd, 1> x_node(node->X());
+    CORE::LINALG::Matrix<nsd, 1> x_node(node->X().data());
 
     // get the local coordinates of the node w.r.t current element
     // Comment to the configuration:
@@ -1858,8 +1858,8 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
     // unpack received data
     while (posinData < dataRecv.size())
     {
-      std::array<double, nsd> coords = {0.0};
-      DRT::Node node(0, coords.data(), 0);
+      std::vector<double> coords(nsd, 0.0);
+      DRT::Node node(0, coords, 0);
       int nds_np;
       CORE::LINALG::Matrix<nsd, 1> vel;
       std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;
@@ -2006,8 +2006,8 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(bool& procDone)
     // unpack received data
     while (posinData < dataRecv.size())
     {
-      std::array<double, nsd> coords = {0.0};
-      DRT::Node node(0, coords.data(), 0);
+      std::vector<double> coords(nsd, 0.0);
+      DRT::Node node(0, coords, 0);
       int nds_np;
       CORE::LINALG::Matrix<nsd, 1> vel;
       std::vector<CORE::LINALG::Matrix<nsd, nsd>> velDeriv;

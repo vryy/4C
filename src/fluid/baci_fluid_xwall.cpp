@@ -1536,7 +1536,7 @@ Teuchos::RCP<Epetra_Vector> FLD::XWall::FixDirichletInflow(Teuchos::RCP<Epetra_V
 
                     if (not isuglydirnode)
                     {
-                      const double* x = test[l]->X();
+                      const auto& x = test[l]->X();
                       double dist = abs(x[0] - xwallnode->X()[0]) + abs(x[1] - xwallnode->X()[1]) +
                                     abs(x[2] - xwallnode->X()[2]);
                       if (founddist > dist)

@@ -75,7 +75,7 @@ namespace DRT
       \param angles (in): map of angles
       \param owner  (in): Owner of this node.
       */
-      FiberNode(int id, std::array<double, 3> coords,
+      FiberNode(int id, const std::vector<double>& coords,
           std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>>
               coordinateSystemDirections,
           std::vector<std::array<double, 3>> fibers, std::map<FIBER::AngleType, double> angles,

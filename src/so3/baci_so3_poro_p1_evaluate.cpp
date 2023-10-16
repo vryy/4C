@@ -408,7 +408,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::NonlinearStiffnessPoroelast(s
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];
@@ -735,7 +735,7 @@ void DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::CouplingPoroelast(std::vector
   DRT::Node** nodes = Base::Nodes();
   for (int i = 0; i < Base::numnod_; ++i)
   {
-    const double* x = nodes[i]->X();
+    const auto& x = nodes[i]->X();
     for (int j = 0; j < Base::numdim_; j++)
     {
       xrefe(j, i) = x[j];

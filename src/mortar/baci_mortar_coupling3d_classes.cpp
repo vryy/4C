@@ -44,8 +44,7 @@ MORTAR::IntElement::IntElement(int lid, int id, int owner, MORTAR::MortarElement
   std::vector<int> empty_dofs(3, -2);
 
   for (int i = 0; i < numnode; ++i)
-    nodes_.push_back(
-        MortarNode(nodeids[i], nodes[i]->X(), nodes[i]->Owner(), 3, empty_dofs, isslave));
+    nodes_.push_back(MortarNode(nodeids[i], nodes[i]->X(), nodes[i]->Owner(), empty_dofs, isslave));
   for (int i = 0; i < numnode; ++i) nodes_ptr_.push_back(&(nodes_[i]));
 
   if (numnode > 0) BuildNodalPointers(nodes.data());

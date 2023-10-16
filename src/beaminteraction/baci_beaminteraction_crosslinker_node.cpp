@@ -25,9 +25,8 @@ CROSSLINKING::CrosslinkerNodeType CROSSLINKING::CrosslinkerNodeType::instance_;
  *----------------------------------------------------------------------------*/
 DRT::ParObject* CROSSLINKING::CrosslinkerNodeType::Create(const std::vector<char>& data)
 {
-  double dummycoord[3] = {999., 999., 999.};
-  CROSSLINKING::CrosslinkerNode* crosslinker =
-      new CROSSLINKING::CrosslinkerNode(-1, dummycoord, -1);
+  std::vector<double> dummycoord(3, 999.0);
+  auto* crosslinker = new CROSSLINKING::CrosslinkerNode(-1, dummycoord, -1);
   crosslinker->Unpack(data);
   return crosslinker;
 }
@@ -79,7 +78,8 @@ void CROSSLINKING::CrosslinkerNodeDataContainer::Unpack(
 /*----------------------------------------------------------------------------*
  *  ctor (public)                                              eichinger 10/16|
  *----------------------------------------------------------------------------*/
-CROSSLINKING::CrosslinkerNode::CrosslinkerNode(int id, const double* coords, const int owner)
+CROSSLINKING::CrosslinkerNode::CrosslinkerNode(
+    int id, const std::vector<double>& coords, const int owner)
     : DRT::Node(id, coords, owner), mat_(Teuchos::null)
 {
   return;

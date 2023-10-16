@@ -672,7 +672,7 @@ void PARTICLEWALL::WallHandlerBoundingBox::InitWallDiscretization()
     for (auto& nodepos : nodepositions)
     {
       // add corner node to wall discretization
-      walldiscretization_->AddNode(Teuchos::rcp(new DRT::Node(nodeid, nodepos.data(), myrank_)));
+      walldiscretization_->AddNode(Teuchos::rcp(new DRT::Node(nodeid, nodepos, myrank_)));
 
       // add node id
       nodeids.push_back(nodeid++);

@@ -159,7 +159,7 @@ void ALE::Ale::SetInitialDisplacement(const INPAR::ALE::InitialDisp init, const 
           // evaluate component d of function
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), 0, d);
+                                  .Evaluate(lnode->X().data(), 0, d);
 
           int err = dispn_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");

@@ -24,7 +24,7 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const ::DRT::Ele
   }
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const double* x = nodes[inode]->X().data();
     std::copy(x, x + 3, &xyze(0, inode));
   }
   return xyze;
@@ -43,7 +43,7 @@ void CORE::GEO::InitialPositionArray(
   }
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const double* x = nodes[inode]->X().data();
     std::copy(x, x + 3, &xyze(0, inode));
   }
 }

@@ -1895,8 +1895,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
   {
     DRT::Node& node = *nodes[i];
 
-    CORE::LINALG::Matrix<3, 1> x_old(node.X());
-    CORE::LINALG::Matrix<3, 1> x_new(node.X());
+    CORE::LINALG::Matrix<3, 1> x_old(node.X().data());
+    CORE::LINALG::Matrix<3, 1> x_new(node.X().data());
 
     std::vector<int> lm;
     std::vector<double> mydisp_old;
@@ -2266,7 +2266,7 @@ void XFEM::XFluidTimeInt::Output()
     for (int i = 0; i < dis_->NumMyRowNodes(); ++i)
     {
       const DRT::Node* actnode = dis_->lRowNode(i);
-      const CORE::LINALG::Matrix<3, 1> pos(actnode->X());
+      const CORE::LINALG::Matrix<3, 1> pos(actnode->X().data());
 
       std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt>>::const_iterator it =
           node_to_reconstr_method_.find(actnode->Id());

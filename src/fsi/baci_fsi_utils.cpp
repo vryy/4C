@@ -593,7 +593,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection(
 
       // current coord of ale node.
       // Initialize as coordinates of current node, which is extremely important for 2D!
-      CORE::LINALG::Matrix<3, 1> alenodecurr(node->X());
+      CORE::LINALG::Matrix<3, 1> alenodecurr(node->X().data());
 
       // compute ALE position to project from
       if (aletype_ == INPAR::FSI::ALEprojection_curr)

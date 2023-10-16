@@ -85,7 +85,7 @@ void DRT::INPUT::NodeReader::Read(
 
         if (tmp == "NODE")
         {
-          std::array<double, 6> coords;
+          std::vector<double> coords(3, 0.0);
           int nodeid;
           // read in the node coordinates
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
@@ -103,20 +103,19 @@ void DRT::INPUT::NodeReader::Read(
             for (unsigned i = 0; i < dis.size(); ++i)
             {
               // create node and add to discretization
-              Teuchos::RCP<DRT::Node> node =
-                  Teuchos::rcp(new DRT::Node(nodeid, coords.data(), myrank));
+              Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid, coords, myrank));
               dis[i]->AddNode(node);
             }
           }
           else  // Cosserat Nodes with 6 DoFs
           {
-            // read in the node ritations in case of cosserat nodes
+            coords.resize(6);
+            // read in the node rotations in case of cosserat nodes
             file >> coords[3] >> coords[4] >> coords[5];
             for (unsigned i = 0; i < dis.size(); ++i)
             {
               // create node and add to discretization
-              Teuchos::RCP<DRT::Node> node =
-                  Teuchos::rcp(new DRT::Node(nodeid, coords.data(), myrank, true));
+              Teuchos::RCP<DRT::Node> node = Teuchos::rcp(new DRT::Node(nodeid, coords, myrank));
               dis[i]->AddNode(node);
             }
           }
@@ -131,7 +130,7 @@ void DRT::INPUT::NodeReader::Read(
         // this is a specialized node for immersed problems
         else if (tmp == "INODE")
         {
-          std::array<double, 6> coords;
+          std::vector<double> coords(3, 0.0);
           int nodeid;
           // read in the node coordinates
           file >> nodeid >> tmp >> coords[0] >> coords[1] >> coords[2];
@@ -152,7 +151,7 @@ void DRT::INPUT::NodeReader::Read(
             {
               // create node and add to discretization
               Teuchos::RCP<DRT::Node> node =
-                  Teuchos::rcp(new DRT::ImmersedNode(nodeid, coords.data(), myrank));
+                  Teuchos::rcp(new DRT::ImmersedNode(nodeid, coords, myrank));
               diss[i]->AddNode(node);
             }
           }
@@ -172,7 +171,7 @@ void DRT::INPUT::NodeReader::Read(
         else if (tmp == "CP")
         {
           // read control points for isogeometric analysis (Nurbs)
-          std::array<double, 3> coords;
+          std::vector<double> coords(3, 0.0);
           double weight;
 
           int cpid;
@@ -188,7 +187,7 @@ void DRT::INPUT::NodeReader::Read(
             Teuchos::RCP<DRT::Discretization> dis = diss[i];
             // create node/control point and add to discretization
             Teuchos::RCP<DRT::NURBS::ControlPoint> node =
-                Teuchos::rcp(new DRT::NURBS::ControlPoint(cpid, coords.data(), weight, myrank));
+                Teuchos::rcp(new DRT::NURBS::ControlPoint(cpid, coords, weight, myrank));
             dis->AddNode(node);
           }
           ++block_counter;
@@ -211,7 +210,7 @@ void DRT::INPUT::NodeReader::Read(
           };
 
           // read fiber node
-          std::array<double, 3> coords = {0.0, 0.0, 0.0};
+          std::vector<double> coords(3, 0.0);
           std::map<FIBER::CoordinateSystemDirection, std::array<double, 3>> cosyDirections;
           std::vector<std::array<double, 3>> fibers;
           std::map<FIBER::AngleType, double> angles;

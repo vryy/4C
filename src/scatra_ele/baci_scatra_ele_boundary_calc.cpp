@@ -572,7 +572,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalcNormalVectors(
 
     for (int i_node = 0; i_node < 3; ++i_node)
     {
-      const auto* coords = p_ele->Nodes()[i_node]->X();
+      const auto& coords = p_ele->Nodes()[i_node]->X();
       for (int dim = 0; dim < nsd_; ++dim) xyz_parent_ele(dim, i_node) = coords[dim];
     }
 
@@ -1346,7 +1346,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
 
   for (auto i = 0; i < parent_ele_num_nodes; ++i)
   {
-    const double* x = faceele->ParentElement()->Nodes()[i]->X();
+    const auto& x = faceele->ParentElement()->Nodes()[i]->X();
     for (auto dim = 0; dim < probdim; ++dim)
     {
       xdisp(i, dim) = eparentdispnp_.at(i * probdim + dim);

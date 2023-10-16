@@ -704,10 +704,10 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
 
       if (!node) dserror("Cannot find node with gid %", gid);
 
-      Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(new CONTACT::CoNode(node->Id(), node->X(),
-          node->Owner(), ProblemDiscret().NumDof(0, node), ProblemDiscret().Dof(0, node),
-          false,    // all solid elements are master elements
-          false));  // no "initially active" decision necessary for beam to solid contact
+      Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
+          new CONTACT::CoNode(node->Id(), node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
+              false,    // all solid elements are master elements
+              false));  // no "initially active" decision necessary for beam to solid contact
 
       // note that we do not have to worry about double entries
       // as the AddNode function can deal with this case!
@@ -783,7 +783,7 @@ void CONTACT::Beam3cmanager::InitBeamContactDiscret()
       if (!node) dserror("Cannot find node with gid %", gid);
 
       Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(node->Id(),
-          node->X(), node->Owner(), ProblemDiscret().NumDof(0, node), ProblemDiscret().Dof(0, node),
+          node->X(), node->Owner(), ProblemDiscret().Dof(0, node),
           false));  // all solid elements are master elements
 
       // note that we do not have to worry about double entries

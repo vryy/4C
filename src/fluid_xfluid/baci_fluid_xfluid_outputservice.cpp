@@ -722,7 +722,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputElement(
       if (acc_output) acc_f << ",";
     }
     int j = 4 * i;
-    const double* x = actele->Nodes()[i]->X();
+    const auto& x = actele->Nodes()[i]->X();
     vel_f << x[0] + m_disp[j + 0] << "," << x[1] + m_disp[j + 1] << "," << x[2] + m_disp[j + 2];
     press_f << x[0] + m_disp[j + 0] << "," << x[1] + m_disp[j + 1] << "," << x[2] + m_disp[j + 2];
     if (acc_output)
@@ -1193,7 +1193,7 @@ void FLD::XFluidOutputServiceGmsh::GmshOutputBoundaryCell(
     CORE::LINALG::SerialDenseMatrix side_xyze(3, numnodes);
     for (int i = 0; i < numnodes; ++i)
     {
-      const double* x = nodes[i]->X();
+      const double* x = nodes[i]->X().data();
       std::copy(x, x + 3, &side_xyze(0, i));
     }
 

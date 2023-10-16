@@ -2312,7 +2312,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               std::array<double, 2> coordinates_master;
               double dummy(0.);
               MORTAR::MortarProjector::Impl(*master_mortar_ele)
-                  ->ProjectGaussPointAuxn3D(slavenode->X(), slavenode->MoData().n(),
+                  ->ProjectGaussPointAuxn3D(slavenode->X().data(), slavenode->MoData().n(),
                       *master_mortar_ele, coordinates_master.data(), dummy);
 
               // check whether projected node lies inside master-side element
@@ -4343,8 +4343,8 @@ void SCATRA::MortarCellCalc<distypeS, distypeM>::EvalShapeFuncAtSlaveNode(
   std::array<double, 2> coordinates_master;
   double dummy(0.);
   MORTAR::MortarProjector::Impl(masterelement)
-      ->ProjectGaussPointAuxn3D(
-          slavenode.X(), slavenode.MoData().n(), masterelement, coordinates_master.data(), dummy);
+      ->ProjectGaussPointAuxn3D(slavenode.X().data(), slavenode.MoData().n(), masterelement,
+          coordinates_master.data(), dummy);
 
   // evaluate master-side shape functions at projected node on master-side element
   CORE::VOLMORTAR::UTILS::shape_function<distypeM>(funct_master_, coordinates_master.data());

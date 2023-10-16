@@ -239,34 +239,35 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
       int gid = Discret().NodeColMap()->GID(i);
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
-      CoNode* mrtrnode = dynamic_cast<CoNode*>(node);
-      bool isslave = mrtrnode->IsSlave();
+      auto* mrtrnode = dynamic_cast<CoNode*>(node);
+      const bool isslave = mrtrnode->IsSlave();
+      const int numdof = mrtrnode->NumDof();
 
       if (isslave)
       {
         // vertex
         if (mrtrnode->IsOnCorner())
         {
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sVc.push_back(mrtrnode->Dofs()[j]);
+          for (int j = 0; j < numdof; ++j) sVc.push_back(mrtrnode->Dofs()[j]);
 
           if (Discret().NodeRowMap()->MyGID(gid))
-            for (int j = 0; j < mrtrnode->NumDof(); ++j) sVr.push_back(mrtrnode->Dofs()[j]);
+            for (int j = 0; j < numdof; ++j) sVr.push_back(mrtrnode->Dofs()[j]);
         }
         // edge
         else if (mrtrnode->IsOnEdge())
         {
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sEc.push_back(mrtrnode->Dofs()[j]);
+          for (int j = 0; j < numdof; ++j) sEc.push_back(mrtrnode->Dofs()[j]);
 
           if (Discret().NodeRowMap()->MyGID(gid))
-            for (int j = 0; j < mrtrnode->NumDof(); ++j) sEr.push_back(mrtrnode->Dofs()[j]);
+            for (int j = 0; j < numdof; ++j) sEr.push_back(mrtrnode->Dofs()[j]);
         }
         // surface
         else if (!mrtrnode->IsOnCornerEdge())
         {
-          for (int j = 0; j < mrtrnode->NumDof(); ++j) sSc.push_back(mrtrnode->Dofs()[j]);
+          for (int j = 0; j < numdof; ++j) sSc.push_back(mrtrnode->Dofs()[j]);
 
           if (Discret().NodeRowMap()->MyGID(gid))
-            for (int j = 0; j < mrtrnode->NumDof(); ++j) sSr.push_back(mrtrnode->Dofs()[j]);
+            for (int j = 0; j < numdof; ++j) sSr.push_back(mrtrnode->Dofs()[j]);
         }
         else
         {
@@ -282,8 +283,6 @@ void CONTACT::CoInterface::UpdateMasterSlaveSets()
     sdofSurfRowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSr.size(), sSr.data(), 0, Comm()));
     sdofSurfColmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sSc.size(), sSc.data(), 0, Comm()));
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -8027,7 +8026,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     // get some informatiom form the node
     double gap = cnode->CoData().Getg();
 
-    int dim = cnode->NumDof();
+    const int dim = cnode->NumDof();
 
     // compute normal part of Lagrange multiplier
     double nz = 0.0;
@@ -8625,7 +8624,7 @@ void CONTACT::CoInterface::EvaluateTangentNorm(double& cnormtan)
 
     // get some information from node
     double* n = cnode->MoData().n();
-    int dim = cnode->NumDof();
+    const int dim = cnode->NumDof();
 
     // tangential plane
     CORE::LINALG::SerialDenseMatrix tanplane(dim, dim);

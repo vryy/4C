@@ -526,7 +526,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
     for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
     {
       const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
-      const int* sdof = snode.Dofs();
+      const int* sdof = snode.Dofs().data();
 
       // variation of the slave position multiplied with the linearized
       // smooth normal
@@ -636,7 +636,7 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype, mastertype>::Debug
         for (unsigned k = 0; k < my::SLAVENUMNODE; ++k)
         {
           const CoNode& snode = static_cast<const CoNode&>(*snodes[k]);
-          const int* sdof = snode.Dofs();
+          const int* sdof = snode.Dofs().data();
 
           CORE::GEN::increaseCapacity(dd_debug_var);
           dd_debug_var[sdof[j]] += sval(k, 0) * d_sun_j_var.second * tmp;

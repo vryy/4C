@@ -1605,18 +1605,19 @@ void MORTAR::MortarInterface::UpdateMasterSlaveDofMaps()
     if (!node) dserror("Cannot find node with gid %", gid);
     auto* mrtrnode = dynamic_cast<MortarNode*>(node);
     bool isslave = mrtrnode->IsSlave();
+    const int numdof = mrtrnode->NumDof();
 
     if (isslave)
-      for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
+      for (int j = 0; j < numdof; ++j) sc.push_back(mrtrnode->Dofs()[j]);
     else
-      for (int j = 0; j < mrtrnode->NumDof(); ++j) mc.push_back(mrtrnode->Dofs()[j]);
+      for (int j = 0; j < numdof; ++j) mc.push_back(mrtrnode->Dofs()[j]);
 
     if (Discret().NodeRowMap()->MyGID(gid))
     {
       if (isslave)
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) sr.push_back(mrtrnode->Dofs()[j]);
       else
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) mr.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) mr.push_back(mrtrnode->Dofs()[j]);
     }
   }
 
@@ -1791,13 +1792,14 @@ void MORTAR::MortarInterface::RestrictSlaveSets()
       DRT::Node* node = Discret().gNode(gid);
       if (!node) dserror("Cannot find node with gid %", gid);
       auto* mrtrnode = dynamic_cast<MortarNode*>(node);
-      int istied = (int)mrtrnode->IsTiedSlave();
+      const bool istied = mrtrnode->IsTiedSlave();
+      const int numdof = mrtrnode->NumDof();
 
       if (istied && snodecolmap_->MyGID(gid))
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sc.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) sc.push_back(mrtrnode->Dofs()[j]);
 
       if (istied && snoderowmap_->MyGID(gid))
-        for (int j = 0; j < mrtrnode->NumDof(); ++j) sr.push_back(mrtrnode->Dofs()[j]);
+        for (int j = 0; j < numdof; ++j) sr.push_back(mrtrnode->Dofs()[j]);
     }
 
     sdofrowmap_ = Teuchos::rcp(new Epetra_Map(-1, (int)sr.size(), sr.data(), 0, Comm()));
@@ -3503,7 +3505,7 @@ void MORTAR::MortarInterface::AssembleM(CORE::LINALG::SparseMatrix& mglobal)
     {
       std::map<int, double>& mmap = mrtrnode->MoData().GetMmod();
       int rowsize = mrtrnode->NumDof();
-      int colsize = (int)mmap.size() * rowsize;
+      int colsize = static_cast<int>(mmap.size()) * rowsize;
 
       CORE::LINALG::SerialDenseMatrix Mnode(rowsize, colsize);
       std::vector<int> lmrow(rowsize);

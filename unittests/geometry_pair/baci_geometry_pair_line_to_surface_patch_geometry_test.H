@@ -92,7 +92,7 @@ namespace
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           coordinates[i_dim] = points[i_node + n_nodes_problem * i_dim];
 
-        new_node = Teuchos::rcp(new DRT::Node(i_node, coordinates.data(), 0));
+        new_node = Teuchos::rcp(new DRT::Node(i_node, coordinates, 0));
         discret->AddNode(new_node);
       }
     }

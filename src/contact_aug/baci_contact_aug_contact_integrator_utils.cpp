@@ -809,9 +809,9 @@ void CONTACT::INTEGRATOR::GetElementNodalDofs(
 
   for (unsigned i = 0; i < numnode; ++i)
   {
-    const MORTAR::MortarNode& mynode = dynamic_cast<const MORTAR::MortarNode&>(*mynodes[i]);
+    const auto& mynode = dynamic_cast<const MORTAR::MortarNode&>(*mynodes[i]);
 
-    std::copy(mynode.Dofs(), mynode.Dofs() + probdim, &nodal_dofs(0, i));
+    std::copy(mynode.Dofs().data(), mynode.Dofs().data() + probdim, &nodal_dofs(0, i));
   }
 }
 

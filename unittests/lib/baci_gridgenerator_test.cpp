@@ -70,7 +70,7 @@ namespace
     testdis_->FillComplete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const double* nodePosition = lastNode->X();
+    const auto nodePosition = lastNode->X();
 
     EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
     EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -92,7 +92,7 @@ namespace
     testdis_->FillComplete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const double* nodePosition = lastNode->X();
+    const auto nodePosition = lastNode->X();
 
     EXPECT_NEAR(nodePosition[0], 2.6565639116964181, 1e-14);
     EXPECT_NEAR(nodePosition[1], 4.8044393443812901, 1e-14);
@@ -113,7 +113,7 @@ namespace
     testdis_->FillComplete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const double* nodePosition = lastNode->X();
+    const auto nodePosition = lastNode->X();
 
     EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
     EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);
@@ -135,7 +135,7 @@ namespace
     testdis_->FillComplete(false, false, false);
 
     DRT::Node* lastNode = testdis_->lRowNode(testdis_->NumMyRowNodes() - 1);
-    const double* nodePosition = lastNode->X();
+    const auto nodePosition = lastNode->X();
 
     EXPECT_NEAR(nodePosition[0], 2.5, 1e-14);
     EXPECT_NEAR(nodePosition[1], 3.5, 1e-14);

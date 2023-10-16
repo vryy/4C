@@ -646,7 +646,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::SetupMyInitialDoubleBonde
     for (unsigned int dim = 0; dim < 3; ++dim) X[dim] = newlinker[i]->GetPosition()(dim);
 
     Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
-        Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid, X.data(), GState().GetMyRank()));
+        Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid, X, GState().GetMyRank()));
     newcrosslinker->SetMaterial(Teuchos::rcp_dynamic_cast<MAT::CrosslinkerMat>(
         MAT::Material::Factory(newlinkermatid[i])));  // HACK HACK HACK
     BinDiscretPtr()->AddNode(newcrosslinker);
@@ -724,7 +724,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::AddCrosslinkerToBinDiscre
 
         // construct node, init data container, set material and add to bin discret
         Teuchos::RCP<CROSSLINKING::CrosslinkerNode> newcrosslinker =
-            Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid++, X.data(), GState().GetMyRank()));
+            Teuchos::rcp(new CROSSLINKING::CrosslinkerNode(gid++, X, GState().GetMyRank()));
         newcrosslinker->SetMaterial(matcrosslinkerpertype[cltype_i]);
         BinDiscretPtr()->AddNode(newcrosslinker);
       }

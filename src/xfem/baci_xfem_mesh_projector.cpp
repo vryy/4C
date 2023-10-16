@@ -616,7 +616,7 @@ void XFEM::MeshProjector::GmshOutput(int step, Teuchos::RCP<const Epetra_Vector>
     for (int i = 0; i < targetdis_->NumMyColNodes(); ++i)
     {
       const DRT::Node* actnode = targetdis_->lColNode(i);
-      CORE::LINALG::Matrix<3, 1> pos(actnode->X(), false);
+      CORE::LINALG::Matrix<3, 1> pos(actnode->X().data(), false);
       if (targetdisp != Teuchos::null)
       {
         // get the current displacement

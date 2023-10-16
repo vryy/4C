@@ -38,12 +38,11 @@ namespace CORE::GEO
 
     for (int inode = 0; inode < numnode; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
     }
-    return;
   }
 
 
@@ -69,12 +68,11 @@ namespace CORE::GEO
 
     for (int inode = 0; inode < numnode; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const auto& x = nodes[inode]->X();
       xyze(0, inode) = x[0];
       xyze(1, inode) = x[1];
       xyze(2, inode) = x[2];
     }
-    return;
   }
 
 
@@ -103,14 +101,13 @@ namespace CORE::GEO
 
     for (int inode = 0; inode < numnode; inode++)
     {
-      const double* x = nodes[inode]->X();
+      const double* x = nodes[inode]->X().data();
       // copy the values in the current column
       std::copy(x, x + dim, &xyze(0, inode));
       // fill the remaining entries of the column with zeros, if the given matrix has
       // the wrong row dimension (this is primarily for safety reasons)
       std::fill(&xyze(0, inode) + dim, &xyze(0, inode) + xyze.numRows(), 0.0);
     }
-    return;
   }
 
 

@@ -601,7 +601,7 @@ namespace
     for (unsigned int i_node = 0; i_node < 27; i_node++)
     {
       nodes[i_node] = (int)i_node;
-      double dummycoord[6] = {0., 0., 0., 0., 0., 0.};
+      std::vector<double> dummycoord = {0., 0., 0., 0., 0., 0.};
       Teuchos::RCP<DRT::Node> new_node =
           Teuchos::rcp(new DRT::NURBS::ControlPoint(i_node, dummycoord, weights[i_node], 0));
       structdis->AddNode(new_node);

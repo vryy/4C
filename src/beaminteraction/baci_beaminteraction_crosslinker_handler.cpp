@@ -50,7 +50,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::DistributeLinkerToBins(
   for (int lid = 0; lid < linkerrowmap->NumMyElements(); ++lid)
   {
     DRT::Node* node = binstrategy_->BinDiscret()->gNode(linkerrowmap->GID(lid));
-    const double* currpos = node->X();
+    const double* currpos = node->X().data();
     PlaceNodeCorrectly(Teuchos::rcp(node, false), currpos, homelesslinker);
   }
 
@@ -143,7 +143,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRoundRobin(
         if (node == Teuchos::null) dserror("Received object is not a node");
 
         // process received linker
-        const double* currpos = node->X();
+        const double* currpos = node->X().data();
         PlaceNodeCorrectly(node, currpos, homelesslinker);
       }
     }
@@ -185,7 +185,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsRemoteIdList(
   std::list<Teuchos::RCP<DRT::Node>>::const_iterator hlp;
   for (hlp = homelesslinker.begin(); hlp != homelesslinker.end(); ++hlp)
   {
-    const int binId = binstrategy_->ConvertPosToGid((*hlp)->X());
+    const int binId = binstrategy_->ConvertPosToGid((*hlp)->X().data());
     targetbinIdlist.push_back(binId);
   }
 
@@ -296,7 +296,7 @@ BEAMINTERACTION::BeamCrosslinkerHandler::FillLinkerIntoBinsUsingGhosting(
   int binId, binowner;
   for (hlp = homelesslinker.begin(); hlp != homelesslinker.end(); ++hlp)
   {
-    binId = binstrategy_->ConvertPosToGid((*hlp)->X());
+    binId = binstrategy_->ConvertPosToGid((*hlp)->X().data());
     if (binId == -1)
     {
       binowner = -1;
@@ -420,7 +420,7 @@ void BEAMINTERACTION::BeamCrosslinkerHandler::ReceiveLinkerAndFillThemInBins(
         if (node == Teuchos::null) dserror("Received object is not a node");
 
         // process received linker
-        const double* currpos = node->X();
+        const double* currpos = node->X().data();
         PlaceNodeCorrectly(node, currpos, homelesslinker);
         if (homelesslinker.size())
           dserror(

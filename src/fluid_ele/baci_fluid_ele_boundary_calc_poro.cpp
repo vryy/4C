@@ -445,7 +445,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::FPSICoupling(
     {
       for (int idof = 0; idof < nsd_; ++idof)
       {
-        const double* x = nodes[inode]->X();
+        const auto& x = nodes[inode]->X();
         xrefe(idof, inode) = x[idof];
         xcurr(idof, inode) =
             xrefe(idof, inode) + my_parentdisp_np[inode * Base::numdofpernode_ + idof];
@@ -1849,7 +1849,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::ComputeFlowRate(
     DRT::Node** nodes = pele->Nodes();
     for (int i = 0; i < nenparent; ++i)
     {
-      const double* x = nodes[i]->X();
+      const auto& x = nodes[i]->X();
       for (int j = 0; j < nsd_; ++j)
       {
         xrefe(j, i) = x[j];
@@ -2556,7 +2556,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::PoroBoundary(
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -3278,7 +3278,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatAndRHS(
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -3672,7 +3672,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatOD(
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -4262,7 +4262,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroPre
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }
@@ -4624,7 +4624,7 @@ void DRT::ELEMENTS::FluidEleBoundaryCalcPoro<distype>::NoPenetrationMatODPoroDis
     {
       for (int j = 0; j < nsd_; ++j)
       {
-        const double* x = nodes[i]->X();
+        const auto& x = nodes[i]->X();
         xrefe(j, i) = x[j];
         xcurr(j, i) = xrefe(j, i) + parentdispnp[i * Base::numdofpernode_ + j];
       }

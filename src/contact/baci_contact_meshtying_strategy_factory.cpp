@@ -469,9 +469,8 @@ void MORTAR::STRATEGY::FactoryMT::BuildInterfaces(const Teuchos::ParameterList& 
         if (!node) dserror("Cannot find node with gid %", gid);
 
         // create MortarNode object
-        Teuchos::RCP<MORTAR::MortarNode> mtnode =
-            Teuchos::rcp(new MORTAR::MortarNode(node->Id(), node->X(), node->Owner(),
-                Discret().NumDof(0, node), Discret().Dof(0, node), isslave[j]));
+        Teuchos::RCP<MORTAR::MortarNode> mtnode = Teuchos::rcp(new MORTAR::MortarNode(
+            node->Id(), node->X(), node->Owner(), Discret().Dof(0, node), isslave[j]));
         //-------------------
         // get nurbs weight!
         if (nurbs)

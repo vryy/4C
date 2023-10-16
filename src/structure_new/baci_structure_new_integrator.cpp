@@ -132,7 +132,7 @@ void STR::Integrator::SetInitialDisplacement(
           const double initialval =
               DRT::Problem::Instance()
                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                  .Evaluate(lnode->X(), GlobalState().GetTimeN(), d);
+                  .Evaluate(lnode->X().data(), GlobalState().GetTimeN(), d);
 
           const int err = GlobalState().GetDisN()->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
@@ -146,7 +146,6 @@ void STR::Integrator::SetInitialDisplacement(
     }
     default:
       dserror("Unknown option for initial displacement: %d", init);
-      break;
   }
 }
 

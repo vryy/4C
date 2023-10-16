@@ -298,14 +298,13 @@ namespace MORTAR
      \brief Standard Constructor
 
      \param id     (in): A globally unique node id
-     \param coords (in): vector of nodal coordinates, length 3
+     \param coords (in): vector of nodal coordinates
      \param owner  (in): Owner of this node.
-     \param numdof (in): Number of degrees of freedom to this node
      \param dofs   (in): list of global degrees of freedom
      \param isslave(in): flag indicating whether node is slave or master
 
      */
-    MortarNode(int id, const double* coords, const int owner, const int numdof,
+    MortarNode(int id, const std::vector<double>& coords, const int owner,
         const std::vector<int>& dofs, const bool isslave);
 
     /*!
@@ -475,12 +474,12 @@ namespace MORTAR
     /*!
      \brief Get number of degrees of freedom
      */
-    int NumDof() const { return numdof_; }
+    [[nodiscard]] int NumDof() const { return static_cast<int>(dofs_.size()); }
 
     /*!
      \brief Get predefined degrees of freedom
      */
-    const int* Dofs() const { return dofs_.data(); }
+    [[nodiscard]] const std::vector<int>& Dofs() const { return dofs_; };
 
     /*!
      \brief Return current configuration (length 3)
@@ -670,9 +669,6 @@ namespace MORTAR
     //! true at each node that has a Dirichlet boundary condition applied at i-th dof
     bool dbcdofs_[3];
 
-    //! number of degrees of freedom (length of dofs_)
-    int numdof_;
-
     //! degrees of freedom of this node
     std::vector<int> dofs_;
 
@@ -713,4 +709,4 @@ namespace MORTAR
 std::ostream& operator<<(std::ostream& os, const MORTAR::MortarNode& mrtrnode);
 
 
-#endif  // MORTAR_NODE_H
+#endif  // BACI_MORTAR_NODE_H

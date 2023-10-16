@@ -346,8 +346,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         // and found for the second, third, ... time!
         if (frictionType != INPAR::CONTACT::friction_none)
         {
-          Teuchos::RCP<CONTACT::FriNode> cnode = Teuchos::rcp(
-              new CONTACT::FriNode(node->Id(), node->X(), node->Owner(), Discret().NumDof(0, node),
+          Teuchos::RCP<CONTACT::FriNode> cnode =
+              Teuchos::rcp(new CONTACT::FriNode(node->Id(), node->X(), node->Owner(),
                   Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive, friplus));
           //-------------------
           // get nurbs weight!
@@ -401,8 +401,8 @@ CONTACT::CoManager::CoManager(DRT::Discretization& discret, double alphaf)
         }
         else
         {
-          Teuchos::RCP<CONTACT::CoNode> cnode = Teuchos::rcp(
-              new CONTACT::CoNode(node->Id(), node->X(), node->Owner(), Discret().NumDof(0, node),
+          Teuchos::RCP<CONTACT::CoNode> cnode =
+              Teuchos::rcp(new CONTACT::CoNode(node->Id(), node->X(), node->Owner(),
                   Discret().Dof(0, node), isslave[j], isactive[j] + foundinitialactive));
           //-------------------
           // get nurbs weight!

@@ -1374,7 +1374,8 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
       /******************************************************************/
 
       // loop over the dimension
-      for (int dim = 0; dim < cnode->NumDof(); ++dim)
+      const int numdof = cnode->NumDof();
+      for (int dim = 0; dim < numdof; ++dim)
       {
         double valtxi = 0.0;
         double valteta = 0.0;
@@ -1435,7 +1436,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         std::vector<std::map<int, double>> derivjump = cnode->FriData().GetDerivJump();
 
         // loop over dimensions
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // linearization of normal direction *****************************************
           // loop over all entries of the current derivative map
@@ -1464,7 +1465,7 @@ void WEAR::WearInterface::AssembleLinStick(CORE::LINALG::SparseMatrix& linstickL
         std::vector<std::map<int, double>> derivjump = cnode->FriData().GetDerivJump();
 
         // loop over dimensions
-        for (int dim = 0; dim < cnode->NumDof(); ++dim)
+        for (int dim = 0; dim < numdof; ++dim)
         {
           // loop over all entries of the current derivative map (jump)
           for (colcurr = derivjump[dim].begin(); colcurr != derivjump[dim].end(); ++colcurr)
@@ -1948,8 +1949,6 @@ void WEAR::WearInterface::AssembleLinSlip_W(CORE::LINALG::SparseMatrix& linslipW
   }        // Coulomb friction
   else
     dserror("linslip wear only for coulomb friction!");
-
-  return;
 }
 
 /*----------------------------------------------------------------------*

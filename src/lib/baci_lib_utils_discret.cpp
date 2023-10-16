@@ -108,7 +108,7 @@ void DRT::UTILS::DoInitialField(const DRT::Discretization& discret, DRT::Conditi
           const double functfac =
               funct_num > 0 ? DRT::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(funct_num - 1)
-                                  .Evaluate(node->X(), time, localdof)
+                                  .Evaluate(node->X().data(), time, localdof)
                             : 0.0;
 
           // assign value

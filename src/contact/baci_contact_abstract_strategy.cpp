@@ -1819,7 +1819,7 @@ void CONTACT::CoAbstractStrategy::ComputeContactStresses()
 
       // be aware of problem dimension
       int dim = Dim();
-      int numdof = cnode->NumDof();
+      const int numdof = cnode->NumDof();
       if (dim != numdof) dserror("Inconsisteny Dim <-> NumDof");
 
       double nn[3];

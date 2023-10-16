@@ -409,7 +409,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::Sysmat(Artery* ele,
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -868,7 +868,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::ScatraSysmat(Artery* ele,
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -1009,7 +1009,7 @@ bool DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveRiemann(Artery* ele,
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -1798,7 +1798,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::EvaluateWfAndWb(Artery* ele,
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < my::iel_; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];
@@ -1896,7 +1896,7 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery
   CORE::LINALG::Matrix<3, my::iel_> xyze;
   for (int inode = 0; inode < numnode; inode++)
   {
-    const double* x = nodes[inode]->X();
+    const auto& x = nodes[inode]->X();
     xyze(0, inode) = x[0];
     xyze(1, inode) = x[1];
     xyze(2, inode) = x[2];

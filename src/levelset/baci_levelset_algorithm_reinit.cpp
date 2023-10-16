@@ -634,7 +634,7 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
         const int lid = discret_->NodeRowMap()->LID(gid);
         if (lid < 0) continue;
         const DRT::Node* lnode = discret_->lRowNode(lid);
-        const double* coord = lnode->X();
+        const auto& coord = lnode->X();
         if (coord[planenormal.back()] < min) min = coord[planenormal.back()];
         if (coord[planenormal.back()] > max) max = coord[planenormal.back()];
       }

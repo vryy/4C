@@ -326,7 +326,7 @@ namespace
 Teuchos::SerialDenseMatrix<int, double> STR::UTILS::SHELL::ComputeShellNullSpace(
     DRT::Node& node, const double* x0, const CORE::LINALG::Matrix<3, 1>& dir)
 {
-  const double* x = node.X();
+  const auto& x = node.X();
 
   Teuchos::SerialDenseMatrix<int, double> nullspace(6, 6);
   // x-modes

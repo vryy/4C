@@ -436,7 +436,7 @@ void SCATRA::ScaTraTimIntElchSCL::WriteCouplingToCSV(
 
         if (DRT::UTILS::IsNodeGIDOnThisProc(*discret_, macro_node_gid))
         {
-          const auto* const macro_coords = discret_->gNode(macro_node_gid)->X();
+          const auto& macro_coords = discret_->gNode(macro_node_gid)->X();
 
           file.open(file_name_coords, std::fstream::app);
           file << std::setprecision(16) << std::scientific;
@@ -448,7 +448,7 @@ void SCATRA::ScaTraTimIntElchSCL::WriteCouplingToCSV(
 
         if (DRT::UTILS::IsNodeGIDOnThisProc(*MicroScaTraField()->Discretization(), mirco_node_gid))
         {
-          const auto* const micro_coords =
+          const auto& micro_coords =
               MicroScaTraField()->Discretization()->gNode(mirco_node_gid)->X();
 
           file.open(file_name_coords, std::fstream::app);

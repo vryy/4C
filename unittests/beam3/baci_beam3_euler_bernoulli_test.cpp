@@ -30,10 +30,11 @@ namespace
       testdis_ =
           Teuchos::rcp(new DRT::Discretization("Beam3eb", Teuchos::rcp(new Epetra_SerialComm)));
 
-      std::vector<double> xrefe{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
+      std::vector<std::vector<double>> xrefe{{-0.05, 0.05, 0.3}, {0.45, -0.05, 0.1}};
+      std::vector<double> xrefe_full{-0.05, 0.05, 0.3, 0.45, -0.05, 0.1};
 
       for (int lid = 0; lid < 2; ++lid)
-        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, &xrefe[3 * lid], 0)));
+        testdis_->AddNode(Teuchos::rcp(new DRT::Node(lid, xrefe[lid], 0)));
 
       testele_ = Teuchos::rcp(new DRT::ELEMENTS::Beam3eb(0, 0));
       std::array<int, 2> node_ids{0, 1};
@@ -43,7 +44,7 @@ namespace
       testdis_->AddElement(testele_);
       testdis_->FillComplete(false, false, false);
 
-      testele_->SetUpReferenceGeometry(xrefe);
+      testele_->SetUpReferenceGeometry(xrefe_full);
     }
 
    protected:

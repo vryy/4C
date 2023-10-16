@@ -677,7 +677,7 @@ void ART::ArtNetImplStationary::SetInitialField(
           // evaluate component k of spatial function
           double initialval = DRT::Problem::Instance()
                                   ->FunctionById<CORE::UTILS::FunctionOfSpaceTime>(startfuncno - 1)
-                                  .Evaluate(lnode->X(), time_, k);
+                                  .Evaluate(lnode->X().data(), time_, k);
           int err = pressurenp_->ReplaceMyValues(1, &initialval, &doflid);
           if (err != 0) dserror("dof not on proc");
         }
@@ -700,5 +700,4 @@ void ART::ArtNetImplStationary::SetInitialField(
       break;
   }  // switch(init)
 
-  return;
 }  // ArtNetImplStationary::SetInitialField

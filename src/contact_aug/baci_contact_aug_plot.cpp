@@ -774,7 +774,7 @@ void CONTACT::AUG::Plot::ComputeDistancePosition()
 
     if (not node) dserror("Couldn't find the node with GID %d!", gid);
 
-    CORE::LINALG::Matrix<3, 1> distance(node->X(), false);
+    CORE::LINALG::Matrix<3, 1> distance(node->X().data(), false);
     distance.Update(-1.0, ref_pos, 1.0);
 
     const double d_nrm2 = distance.Norm2();
@@ -800,7 +800,7 @@ void CONTACT::AUG::Plot::ComputeAnglePosition()
 
     if (not node) dserror("Couldn't find the node with GID %d!", gid);
 
-    const CORE::LINALG::Matrix<3, 1> ref3(node->X(), true);
+    const CORE::LINALG::Matrix<3, 1> ref3(node->X().data(), true);
     CORE::LINALG::Matrix<3, 1> ref13(ref_points_[0], false);
     ref13.Update(1.0, ref3, -1.0);
 

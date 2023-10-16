@@ -20,7 +20,7 @@ DRT::NURBS::ControlPointType DRT::NURBS::ControlPointType::instance_;
 
 DRT::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<char>& data)
 {
-  double dummycoord[3] = {999., 999., 999.};
+  std::vector<double> dummycoord(3, 999.0);
   double dummyweight = 999.;
   DRT::NURBS::ControlPoint* object = new DRT::NURBS::ControlPoint(-1, dummycoord, dummyweight, -1);
   object->Unpack(data);
@@ -31,7 +31,7 @@ DRT::ParObject* DRT::NURBS::ControlPointType::Create(const std::vector<char>& da
   Standard ctor
  */
 DRT::NURBS::ControlPoint::ControlPoint(
-    int id, const double* coords, const double weight, const int owner)
+    int id, const std::vector<double>& coords, const double weight, const int owner)
     : DRT::Node(id, coords, owner), w_(weight)
 {
   return;
