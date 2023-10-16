@@ -5,15 +5,11 @@
 
 \level 3
 
- */
-
+*----------------------------------------------------------------------*/
 
 #include "baci_discretization_geometry_searchtree_nearestobject.H"
 
 
-/*----------------------------------------------------------------------*
- |  ctor (public)                                            u.may 08/08|
- *----------------------------------------------------------------------*/
 CORE::GEO::NearestObject::NearestObject()
     : objectType_(NOTYPE_OBJECT), nodeId_(-1), lineId_(-1), surfId_(-1), label_(-1)
 {
@@ -22,9 +18,6 @@ CORE::GEO::NearestObject::NearestObject()
 }
 
 
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       u.may 08/08|
- *----------------------------------------------------------------------*/
 CORE::GEO::NearestObject::NearestObject(const CORE::GEO::NearestObject& old)
     : objectType_(old.objectType_),
       nodeId_(old.nodeId_),
@@ -37,10 +30,6 @@ CORE::GEO::NearestObject::NearestObject(const CORE::GEO::NearestObject& old)
 }
 
 
-
-/*----------------------------------------------------------------------*
- * assignment operator                                       u.may 08/08|
- *----------------------------------------------------------------------*/
 CORE::GEO::NearestObject& CORE::GEO::NearestObject::operator=(const CORE::GEO::NearestObject& old)
 {
   objectType_ = old.objectType_;
@@ -53,9 +42,6 @@ CORE::GEO::NearestObject& CORE::GEO::NearestObject::operator=(const CORE::GEO::N
 }
 
 
-/*----------------------------------------------------------------------*
- * clear nearest object                                      u.may 05/09|
- *----------------------------------------------------------------------*/
 void CORE::GEO::NearestObject::clear()
 {
   objectType_ = NOTYPE_OBJECT;
@@ -68,9 +54,6 @@ void CORE::GEO::NearestObject::clear()
 }
 
 
-/*----------------------------------------------------------------------*
- |  set node object type                                     u.may 08/08|
- *----------------------------------------------------------------------*/
 void CORE::GEO::NearestObject::setNodeObjectType(
     const int nodeId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
 {
@@ -85,9 +68,6 @@ void CORE::GEO::NearestObject::setNodeObjectType(
 }
 
 
-/*----------------------------------------------------------------------*
- |  set line object type                                     u.may 08/08|
- *----------------------------------------------------------------------*/
 void CORE::GEO::NearestObject::setLineObjectType(const int lineId, const int surfId,
     const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
 {
@@ -102,9 +82,6 @@ void CORE::GEO::NearestObject::setLineObjectType(const int lineId, const int sur
 }
 
 
-/*----------------------------------------------------------------------*
- |  set surface object type                                  u.may 08/08|
- *----------------------------------------------------------------------*/
 void CORE::GEO::NearestObject::setSurfaceObjectType(
     const int surfId, const int label, const CORE::LINALG::Matrix<3, 1>& physcoord)
 {

@@ -149,8 +149,7 @@ namespace CORE::GEO
    *  \params distype (in) : discretization type of the given element
    *  \params xyze    (in) : spatial coordinates of the elememnt nodes
    *                         (row = dim, col = number of nodes)
-   *
-   *  \author hiermeier \date 11/16 */
+   */
   template <class matrixtype>
   double ElementLength(const ::DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
   {
@@ -168,8 +167,7 @@ namespace CORE::GEO
 
 
   /** \brief calculates the area of a surface element in given configuration
-   *
-   *  \author hiermeier \date 11/16 */
+   */
   template <class matrixtype>
   double ElementArea(const ::DRT::Element::DiscretizationType distype, const matrixtype& xyze)
   {

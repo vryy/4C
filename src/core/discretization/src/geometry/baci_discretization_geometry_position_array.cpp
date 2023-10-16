@@ -11,9 +11,8 @@
 
 #include "baci_discretization_geometry_position_array.H"
 
-/*!
- * \brief create an often used array with 3D nodal positions
- */
+
+
 CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const ::DRT::Element* const ele)
 {
   const int numnode = ele->NumNode();
@@ -32,9 +31,6 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::InitialPositionArray(const ::DRT::Ele
 }
 
 
-/*!
- * \brief create an often used array with 3D nodal positions
- */
 void CORE::GEO::InitialPositionArray(
     CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele)
 {
@@ -53,12 +49,6 @@ void CORE::GEO::InitialPositionArray(
 }
 
 
-
-/*!
-\brief  fill array with current nodal positions
-
-\return array with element nodal positions (3,numnode)
- */
 CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
     const ::DRT::Element* const ele,  ///< element with nodal pointers
     const std::map<int, CORE::LINALG::Matrix<3, 1>>&
@@ -79,12 +69,6 @@ CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
 }
 
 
-
-/*!
-\brief  fill array with current nodal positions
-
-\return array with element nodal positions (3,numnode)
- */
 CORE::LINALG::SerialDenseMatrix CORE::GEO::getCurrentNodalPositions(
     const Teuchos::RCP<const ::DRT::Element> ele,  ///< pointer on element
     const std::map<int, CORE::LINALG::Matrix<3, 1>>&

@@ -53,41 +53,6 @@ namespace CORE::GEO
   const double LARGENUMBER = 1e30;
 
 
-
-  inline double XSIGN(const double a, const double b) { return (b >= 0.0 ? fabs(a) : -fabs(a)); }
-
-
-
-  /*!
-  \brief calculate a*a
-  \param a
-  \return a^2
-   */
-  template <typename T>
-  inline T sqr(const T a)
-  {
-    return a * a;
-  }
-
-
-
-  /*!
-  \brief  computes the Theorem of Pythagoras
-          (a^2 + b^2)^(1/2)
-          (modified from NUMERICAL RECIPES)
-
-  \param a    (in)        : a
-  \param b    (in)        : b
-  \return result of the Theorem of Pythagoras
-  */
-  inline double pythagoras(const double a, const double b)
-  {
-    // note: sqrt(0.0) is properly defined and returns 0.0 as expected
-    //      no check for zero needed
-    return sqrt(sqr(a) + sqr(b));
-  }
-
-
   /*!
   \brief sum up the absolute value of all entries of a vector
   \param v (in) : CORE::LINALG::Matrix<3,1>
@@ -99,16 +64,23 @@ namespace CORE::GEO
   }
 
 
-
   /*!
   \brief computes the cross product of two CORE::LINALG::Matrix<3,1> a x b
   \param a (in) : arbitrary vector
   \param b (in) : arbitrary vector
   \return cross product of two CORE::LINALG::Matrix<3,1> a x b
   */
-  CORE::LINALG::Matrix<3, 1> computeCrossProduct(
-      const CORE::LINALG::Matrix<3, 1>& a, const CORE::LINALG::Matrix<3, 1>& b);
+  inline CORE::LINALG::Matrix<3, 1> computeCrossProduct(
+      const CORE::LINALG::Matrix<3, 1>& a, const CORE::LINALG::Matrix<3, 1>& b)
+  {
+    CORE::LINALG::Matrix<3, 1> c;
 
+    c(0) = a(1) * b(2) - a(2) * b(1);
+    c(1) = a(2) * b(0) - a(0) * b(2);
+    c(2) = a(0) * b(1) - a(1) * b(0);
+
+    return c;
+  }
 
   /*!
   \brief computes the cross product of two CORE::LINALG::Matrix<3,1,T> a x b
@@ -128,45 +100,6 @@ namespace CORE::GEO
 
     return c;
   }
-
-
-
-  /*-------------------------------------------------------------------*
-  |  VON MIR GESCHRIEBEN                                               |
-  *--------------------------------------------------------------------*/
-
-  /*!
-      \brief  Given a matrix A[1..m][1..n], this method computes its
-              singular value decomposition, A = U W V T .
-              The matrix U replaces a on output. The diagonal matrix of
-              singular values W is output as a vector W[1..n].
-              The matrix V (not the transpose V T ) is output as V[1..n][1..n].
-              (modified from NUMERICAL RECIPES)
-
-      \param A    (in/out)        : system matrix / matrix U
-      \param W    (out)           : diagonal matrix stored in a vector
-      \param V    (out)           : V matrix (not its transpose)
-      */
-
-  // Selbe Funktion wie svdcmp nur SerialDenseMatrizen als Eingabeparameter
-
-  void svdcmpSerialDense(CORE::LINALG::SerialDenseMatrix& A, CORE::LINALG::SerialDenseMatrix& W,
-      CORE::LINALG::SerialDenseMatrix& V);
-
-
-  /*!
-  \brief  Tests the singular value decomposition
-
-  \param A    (in)        : system matrix
-  \param U    (in)        : decomposed matrix U
-  \param W    (in)        : diagonal matrix W stored in  vector
-  \param V    (in)        : decomposed matrix V
-  \param dim  (in)        : dimension
-  */
-  void test_svdcmp(CORE::LINALG::Matrix<3, 3>& A, CORE::LINALG::Matrix<3, 3>& U,
-      CORE::LINALG::Matrix<3, 1>& W, CORE::LINALG::Matrix<3, 3>& V, int dim);
-
-
 }  // namespace CORE::GEO
 
 

@@ -48,12 +48,10 @@ namespace CORE::GEO
     */
     CORE::GEO::NearestObject& operator=(const CORE::GEO::NearestObject& old);
 
-
     /*!
     \brief clear nearest object
     */
     void clear();
-
 
     /*!
     \brief Set node object type
@@ -89,37 +87,6 @@ namespace CORE::GEO
     inline ObjectType getObjectType() const { return objectType_; }
 
     /*!
-    \brief Return node Id of object
-     */
-    inline int getNodeId() const
-    {
-      if (objectType_ != NODE_OBJECT || nodeId_ == -1)
-        dserror("objecttype is not correct (nodeId) or nodeId not set");
-      return nodeId_;
-    }
-
-    /*!
-    \brief Return line Id of object
-     */
-    inline int getLineId() const
-    {
-      if (objectType_ != LINE_OBJECT || lineId_ == -1)
-        dserror("objecttype is not correct (lineId) or line id not set");
-      return lineId_;
-    }
-
-    /*!
-    \brief Return surface Id of object
-     */
-    inline int getSurfaceId() const
-    {
-      if ((objectType_ != LINE_OBJECT && objectType_ != SURFACE_OBJECT) ||
-          (lineId_ == -1 && surfId_ == -1))
-        dserror("objecttype is not correct (surfId) or ids are not set");
-      return surfId_;
-    }
-
-    /*!
     \brief Return label
      */
     inline int getLabel() const { return label_; }
@@ -132,7 +99,6 @@ namespace CORE::GEO
       if (objectType_ == NOTYPE_OBJECT) dserror("no object type and physical coordinates are set");
       return physcoord_;
     }
-
 
 
    private:

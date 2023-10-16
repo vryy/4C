@@ -26,9 +26,6 @@ namespace CORE::GEO
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
-   *
-   * \author a.ger
-   * \date 02/08
    */
   template <class M>
   void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
@@ -59,9 +56,6 @@ namespace CORE::GEO
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
-   *
-   * \author a.ger
-   * \date 02/08
    */
   template <::DRT::Element::DiscretizationType distype, class M>
   void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
@@ -94,9 +88,6 @@ namespace CORE::GEO
    *
    * \return Array with 1, 2 or 3 dimensional position of all element nodes in the coordinate system
    * of the nodes
-   *
-   * \author gjb
-   * \date 12/08
    */
   template <::DRT::Element::DiscretizationType distype, int dim, class M>
   void fillInitialPositionArray(const ::DRT::Element* const ele, M& xyze)
@@ -122,18 +113,6 @@ namespace CORE::GEO
     return;
   }
 
-  /*!
-   * a common task is to get an array of the positions of all nodes of this element
-   *
-   * \note array is defined as (3,numnode)
-   *
-   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
-   * nodes
-   *
-   * \author schott
-   * \date 01/15
-   */
-  void InitialPositionArray(CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele);
 
   /*!
    * a common task is to get an array of the positions of all nodes of this element
@@ -142,9 +121,17 @@ namespace CORE::GEO
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
+   */
+  void InitialPositionArray(CORE::LINALG::SerialDenseMatrix& xyze, const ::DRT::Element* const ele);
+
+
+  /*!
+   * a common task is to get an array of the positions of all nodes of this element
    *
-   * \author a.ger
-   * \date 02/08
+   * \note array is defined as (3,numnode)
+   *
+   * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
+   * nodes
    */
   CORE::LINALG::SerialDenseMatrix InitialPositionArray(const ::DRT::Element* const
           ele  ///< pointer to element, whose nodes we evaluate for their position
@@ -152,15 +139,12 @@ namespace CORE::GEO
 
 
   /*!
-   * fill array with current nodal positions
+   * get current nodal positions
    *
    * \note array is defined as (3,numnode)
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
-   *
-   * \author a.ger
-   * \date 02/08
    */
   CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
       const ::DRT::Element* const ele,  ///< element with nodal pointers
@@ -170,48 +154,18 @@ namespace CORE::GEO
 
 
   /*!
-   * fill array with current nodal positions
+   * get current nodal positions
    *
    * \note array is defined as (3,numnode)
    *
    * \return Array with 3 dimensional position of all element nodes in the coordinate system of the
    * nodes
-   *
-   * \author u.may
-   * \date 09/09
    */
   CORE::LINALG::SerialDenseMatrix getCurrentNodalPositions(
       const Teuchos::RCP<const ::DRT::Element> ele,  ///< pointer on element
       const std::map<int, CORE::LINALG::Matrix<3, 1>>&
           currentpositions  ///< current positions of all cutter nodes
   );
-
-
-  /*!
-   * fill array with current nodal positions
-   *
-   * \note array is defined as (3,numnode)
-   *
-   * \author a.ger
-   * \date 11/08
-   */
-  template <class M>
-  void fillCurrentNodalPositions(const ::DRT::Element* const ele,  ///< element with nodal pointers
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>&
-          currentpositions,  ///< current positions of all cutter nodes
-      M& xyze                ///< position array (3,numnode) to be filled
-  )
-  {
-    const int numnode = ele->NumNode();
-    const int* nodeids = ele->NodeIds();
-    for (int inode = 0; inode < numnode; ++inode)
-    {
-      const CORE::LINALG::Matrix<3, 1>& x = currentpositions.find(nodeids[inode])->second;
-      xyze(0, inode) = x(0);
-      xyze(1, inode) = x(1);
-      xyze(2, inode) = x(2);
-    }
-  }
 
 }  // namespace CORE::GEO
 

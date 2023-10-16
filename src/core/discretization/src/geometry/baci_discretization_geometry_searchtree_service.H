@@ -53,37 +53,12 @@ namespace CORE::GEO
   CORE::LINALG::Matrix<3, 2> getXAABBofDis(const ::DRT::Discretization& dis);
 
   /*!
-   \brief Returns the eXtendedAxisAlignedBoundingBox of the nodes in a
-   discretization, in reference configuration
-   \param dis                  discretization
-   \return  XAxisAlignedBoundingBox
-   */
-  CORE::LINALG::Matrix<3, 2> getXAABBofNodes(const ::DRT::Discretization& dis);
-
-  /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of coords
    \param currentpositions     current nodal positions
    \return  XAxisAlignedBoundingBox
    */
   CORE::LINALG::Matrix<3, 2> getXAABBofPositions(
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
-
-  /*!
-   \brief Returns the eXtendedAxisAlignedBoundingBox of a discretization,
-   in reference configuration
-   \param dis                  discretization
-   \return  XAxisAlignedBoundingBox
-   */
-  CORE::LINALG::Matrix<3, 2> getXAABBofDisPar(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions, double cutoff);
-
-  /*!
-   \brief Returns the eXtendedAxisAlignedBoundingBox of a discretization,
-   in reference configuration
-   \param dis                  discretization
-   \return  XAxisAlignedBoundingBox
-   */
-  CORE::LINALG::Matrix<3, 2> getXAABBofDisPar(const ::DRT::Discretization& dis, double cutoff);
 
   /*!
    \brief Returns the eXtendedAxisAlignedBoundingBox of given elements
@@ -105,59 +80,6 @@ namespace CORE::GEO
       const ::DRT::Discretization& dis,
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, std::set<int>>& elementList);
-
-  /*!
-   \brief Returns the label for a point and a given map of elements
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param querypoint           point to be examined
-   \param elementList          map of elements label gid
-   \return                     label
-   */
-  int getXFEMLabel(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const CORE::LINALG::Matrix<3, 1>& querypoint,
-      const std::map<int, std::set<int>>& elementList);
-
-  /*!
-   \brief Returns the label for a point and a given map of elements
-   \param triangleList         list of triangles
-   \param interfacePointList   list of interface points
-   \param currentpositions     current nodal positions in discretization
-   \param querypoint           point to be examined
-   \return                     label
-   */
-  void moveNodeOutOfStructure(const std::vector<std::vector<int>>& triangleList,
-      std::vector<CORE::GEO::InterfacePoint>& pointList, const int querypointId,
-      const CORE::GEO::NearestObject& nearestObject, CORE::LINALG::Matrix<3, 1>& minDistanceVec);
-
-  /*!
-   \brief Returns the label and the nearest object for a point and a given map of elements
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param querypoint           point to be examined
-   \param elementList          map of elements label gid
-   \param nearestObject        nearestObject
-   \return                     label
-   */
-  int getXFEMLabelAndNearestObject(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const CORE::LINALG::Matrix<3, 1>& querypoint, const std::map<int, std::set<int>>& elementList,
-      CORE::GEO::NearestObject& nearestObject);
-
-  void getPotentialObjects(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const std::map<int, std::set<int>>& elementList,
-      const std::vector<CORE::LINALG::Matrix<3, 1>>& gaussPoints,
-      std::map<int, std::map<int, CORE::GEO::NearestObject>>& potObjects,
-      const double cutoff_radius, const int label, const int projectiontype);
-
-  void fillPotObjectsInNode(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const std::map<int, std::set<int>>& elementList,
-      const std::vector<CORE::LINALG::Matrix<3, 1>>& gaussPoints,
-      std::map<int, std::map<int, CORE::GEO::NearestObject>>& potObjects,
-      const double cutoff_radius, const int label, const int projectiontype);
 
   /*!
    \brief Returns a map of element ids lying in a circle of a given querypoint and a radius
@@ -189,20 +111,6 @@ namespace CORE::GEO
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       const std::map<int, CORE::LINALG::Matrix<3, 2>>& elemXAABBList,
       CORE::LINALG::Matrix<3, 2> elemXAABB, const int label,
-      std::map<int, std::set<int>>& elementList);
-
-  /*!
-   \brief returns vector with GIDs of nodes within given radius around querypoint
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param querypoint           point to be examined
-   \param radius               radius
-   \param elementList          map of elements label gid
-   \return                     label
-   */
-  std::vector<int> getPointsInRadius(
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const CORE::LINALG::Matrix<3, 1>& querypoint, const double radius,
       std::map<int, std::set<int>>& elementList);
 
   /*!
@@ -396,31 +304,6 @@ namespace CORE::GEO
       const CORE::LINALG::Matrix<3, 1>& point, double& distance);
 
   /*!
-   \brief  Returns the normal to a surface element or a an average normal
-   of all surface elements adjacent to a line or node
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param nearestObject        info about nearest object
-   \return normal vector in physical coordinates
-   */
-  CORE::LINALG::Matrix<3, 1> getNormalAtSurfacePoint(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      CORE::GEO::NearestObject& nearestObject);
-
-  /*!
-   \brief  Returns the normal to a surface element or a an average normal
-   of all surface elements adjacent to a line or node
-   \param triangleList         triangleList
-   \param currentpositions     current nodal positions in discretization
-   \param nearestObject        info about nearest object
-   \return normal vector in physical coordinates
-   */
-  CORE::LINALG::Matrix<3, 1> getNormalAtSurfacePoint(
-      const std::vector<std::vector<int>>& triangleList,
-      const std::vector<CORE::GEO::InterfacePoint>& pointList,
-      const CORE::GEO::NearestObject& nearestObject);
-
-  /*!
    \brief  Finds all elements adjacent to a line described by two end points
    \param node1         node 1
    \param node2         node 2
@@ -429,23 +312,7 @@ namespace CORE::GEO
   std::vector<int> getAdjacentSurfaceElementsToLine(
       const ::DRT::Node* node1, const ::DRT::Node* node2);
 
-  /*!
-   \brief  Finds all elements adjacent to a line described by two end points
-   \param node1         node 1
-   \param node2         node 2
-   \return list of common elements
-   */
-  std::vector<int> getAdjacentTriElementsToLine(const std::vector<std::vector<int>>& triangleList,
-      const int triangleId, const int node1, const int node2);
 
-  /*!
-   \brief  Finds all elements adjacent to a node
-   \param triangleList       list of trianglea
-   \param node               node id
-   \return list of common elements
-   */
-  std::vector<int> getAdjacentTriElementsToNode(
-      const std::vector<std::vector<int>>& triangleList, const int node);
 
   /*!
    \brief  Checks if a point lies with in a node box
@@ -457,17 +324,6 @@ namespace CORE::GEO
       const CORE::LINALG::Matrix<3, 1>& point, const CORE::LINALG::Matrix<3, 2>& nodeBox);
 
   /*!
-   \brief  Checks if a point , which classifies a nearest object, lies within a circle (radius is
-   equal minimum distance between the querypoint and a node box wall) \param nearestpoint
-   nearestpoint \param querypoint           query point \param nodeBox              nodeBox \param
-   rootNode             rootNode \return true if nearest point lies within a circle around the query
-   point to a wall of the tree node box with minimum distance
-   */
-  bool pointInMinCircleInTreeNode(const CORE::LINALG::Matrix<3, 1>& nearestpoint,
-      const CORE::LINALG::Matrix<3, 1>& querypoint, const CORE::LINALG::Matrix<3, 2>& nodeBox,
-      const bool rootNode);
-
-  /*!
    \brief Merges two axis-aligned bounding boxes
    \param AABB1          axis - aligned bounding box 1
    \param AABB2          axis - aligned bounding box 2
@@ -475,16 +331,6 @@ namespace CORE::GEO
    */
   CORE::LINALG::Matrix<3, 2> mergeAABB(
       const CORE::LINALG::Matrix<3, 2>& AABB1, const CORE::LINALG::Matrix<3, 2>& AABB2);
-
-  /*!
-   \brief Tests if  AABB_old AND AABB_new are completely contained in node box
-   \param AABB_old             AABB_old
-   \param AABB_new             AABB_new
-   \param nodeBox              AABB (e.g. node box)
-   \return true if both AABB's are in node box
-   */
-  bool inSameNodeBox(const CORE::LINALG::Matrix<3, 2>& AABB_old,
-      const CORE::LINALG::Matrix<3, 2>& AABB_new, const CORE::LINALG::Matrix<3, 2>& nodeBox);
 
   /*!
    \brief Check the type of geometry of an element,
@@ -505,30 +351,6 @@ namespace CORE::GEO
    */
   void checkRoughGeoType(Teuchos::RCP<::DRT::Element> element,
       CORE::LINALG::SerialDenseMatrix xyze_element, CORE::GEO::EleGeoType& eleGeoType);
-
-  /*!
-   \brief Returns a vector of intersection candidate ids
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param xfemElement          element to be examined
-   \param elementList          map of elements label gid
-   \return
-   */
-  void getIntersectionCandidates(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
-      const CORE::LINALG::Matrix<3, 2>& xfemXAABB, const std::map<int, std::set<int>>& elementList,
-      std::set<int>& intersectionCandidateIds);
-
-  /*!
-   \brief Returns a vector of intersection candidate ids
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param xfemElement          element to be examined
-   \param elementList          map of elements label gid
-   \return
-   */
-  void getPotentialElements(const std::map<int, CORE::LINALG::Matrix<3, 2>>& currentXAABBs,
-      const CORE::LINALG::Matrix<3, 2>& xfemXAABB, const std::map<int, std::set<int>>& elementList,
-      std::map<int, std::set<int>>& intersectionCandidateIds, const int label);
 
 }  // namespace CORE::GEO
 
