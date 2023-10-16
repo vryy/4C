@@ -45,7 +45,7 @@ variables:
   # Variables for docker
   # Whether to build the docker images and push them to the CI registry
   BACI_DOCKER_BUILD_IMAGES: 'False'
-  BACI_DOCKER_DEPENDENCIES_HASH: 77da33bb
+  BACI_DOCKER_DEPENDENCIES_HASH: 818f3816
   BACI_DOCKER_DEPENDENCIES_IMAGE: baci-dependencies
   BACI_DOCKER_DEPENDENCIES_IMAGE_WITH_HASH: $BACI_DOCKER_DEPENDENCIES_IMAGE:$BACI_DOCKER_DEPENDENCIES_HASH
 
@@ -272,13 +272,19 @@ before_script:
   - . venv/bin/activate
   - pip install wheel
   - pip install -r ${CI_PROJECT_DIR}/utilities/code_climate/requirements.txt
+    # create temporary directory for the yaml files from clang-tidy
+  - mkdir clang-tidy-issues
   # get extra arguments for mpi
   - get_mpi_extra_args() { OUT="`OMPI_CXX=clang++ mpic++ --showme:compile`"; for i
-    in $OUT; do echo -n "-extra-arg=\"$i\" "; done; echo;}
+    in $OUT; do echo -n "-extra-arg=$i "; done; echo;}
     # run clang tidy and export report
-  - python ${CI_PROJECT_DIR}/utilities/code_climate/run_clang_tidy.py -j `nproc` -p
-    . `get_mpi_extra_args` -src ${CI_PROJECT_DIR} -export ${CI_PROJECT_DIR}/codeclimate.json
-    -header-filter ".*\/baci\/src\/.*" ".*\/baci\/src\/.*"
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/run-clang-tidy.py -j `nproc` -p
+    . `get_mpi_extra_args` -export-fixes ./clang-tidy-issues/ -header-filter ".*\/baci\/src\/.*"
+    ".*\/baci\/src\/.*" | python ${CI_PROJECT_DIR}/utilities/code_climate/filter_clang_tidy_output.py
+    # export clang tidy issues
+  - python ${CI_PROJECT_DIR}/utilities/code_climate/export_clang_tidy_issues.py -j
+    `nproc` --code-climate-file ${CI_PROJECT_DIR}/codeclimate.json --source-folder
+    ${CI_PROJECT_DIR} ./clang-tidy-issues/*.yaml
   - cd ${CI_PROJECT_DIR}
   variables:
     CTEST_BUILD_PRESETS_RELEASE_GITLAB: docker

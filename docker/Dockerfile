@@ -45,7 +45,8 @@ RUN apt-get update && apt-get install -y \
       libopenmpi-dev \
       libparmetis-dev \
       metis \
-      ninja-build
+      ninja-build \
+      libyaml-dev
 
 # Create directory for dependencies
 ARG NPROCS=12
