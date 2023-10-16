@@ -7,6 +7,7 @@ points and or cells.
 # Import python modules.
 import numpy as np
 from vtk.util import numpy_support as VN
+import vtk
 
 
 def compare_arrays(
@@ -225,6 +226,45 @@ def compare_vtk_data(vtk_1, vtk_2, **kwargs):
 
         if not connectivity_1 == connectivity_2:
             raise ValueError("Wrong connectivity!")
+
+        if cell_1.GetCellType() == 42:
+            # In the case of polyhedrons we have to check that the face connectivity is correct.
+
+            def get_polyhedron_id_list_sorted(
+                vtk_object, cell_id, uid_ordering_point_reverse
+            ):
+                """Return the face connectivity list of the polyhedron with the point ids sorted"""
+
+                id_vtk_list = vtk.vtkIdList()
+                vtk_object.GetFaceStream(cell_id, id_vtk_list)
+                id_list = [
+                    id_vtk_list.GetId(i) for i in range(id_vtk_list.GetNumberOfIds())
+                ]
+
+                index = 1
+                id_list_ordered = [id_list[0]]
+                n_faces = id_list[0]
+                for i_face in range(n_faces):
+                    n_points = id_list[index]
+                    id_list_ordered.append(n_points)
+                    index += 1
+                    for i_point in range(n_points):
+                        point_id = id_list[index]
+                        if uid_ordering_point_reverse is not None:
+                            id_list_ordered.append(uid_ordering_point_reverse[point_id])
+                        else:
+                            id_list_ordered.append(point_id)
+                        index += 1
+                return id_list_ordered
+
+            face_id_list_1 = get_polyhedron_id_list_sorted(
+                vtk_1, cell_1_id, uid_ordering_point_1_reverse
+            )
+            face_id_list_2 = get_polyhedron_id_list_sorted(
+                vtk_2, cell_2_id, uid_ordering_point_2_reverse
+            )
+            if not face_id_list_1 == face_id_list_2:
+                raise ValueError("Wrong face connectivity!")
 
     num_errors = 0
     if n_cells > 0:
