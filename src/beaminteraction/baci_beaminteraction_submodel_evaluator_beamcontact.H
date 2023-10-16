@@ -17,6 +17,7 @@
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
 #include "baci_discretization_geometric_search_params.H"
+#include "baci_discretization_geometric_search_visualization.H"
 #include "baci_io_visualization_manager.H"
 
 // forward declaration ...
@@ -283,6 +284,10 @@ namespace BEAMINTERACTION
       //! This object handles all beam to solid surface related visualization output.
       Teuchos::RCP<BEAMINTERACTION::BeamToSolidSurfaceVtkOutputWriter>
           beam_to_solid_surface_vtk_writer_ptr_;
+
+      //! This object handles all geometric search related visualization output.
+      Teuchos::RCP<CORE::GEOMETRICSEARCH::GeometricSearchVisualization>
+          geometric_search_visualization_ptr_;
     };
 
   }  // namespace SUBMODELEVALUATOR
