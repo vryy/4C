@@ -1105,16 +1105,16 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition>>> DRT::INP
     auto m = Teuchos::rcp(new MaterialDefinition("MAT_Struct_DruckerPrager",
         "elastic St.Venant Kirchhoff / plastic drucker prager", INPAR::MAT::m_pldruckprag));
 
-    AddNamedReal(m, "YOUNG", "Young's modulus");
-    AddNamedReal(m, "NUE", "Poisson's ratio");
-    AddNamedReal(m, "DENS", "Density");
-    AddNamedReal(m, "ISOHARD", "linear isotropic hardening");
-    AddNamedReal(m, "TOL", "Local Newton iteration tolerance");
-    AddNamedReal(m, "C", "cohesion");
-    AddNamedReal(m, "ETA", "Drucker Prager Constant Eta");
-    AddNamedReal(m, "XI", "Drucker Prager Constant Xi");
-    AddNamedReal(m, "ETABAR", "Drucker Prager Constant Etabar");
-    AddNamedInt(m, "MAXITER", "Maximum Neuton Raphson Iterations", 50, true);
+    ::INPUT::AddNamedReal(m, "YOUNG", "Young's modulus");
+    ::INPUT::AddNamedReal(m, "NUE", "Poisson's ratio");
+    ::INPUT::AddNamedReal(m, "DENS", "Density");
+    ::INPUT::AddNamedReal(m, "ISOHARD", "linear isotropic hardening");
+    ::INPUT::AddNamedReal(m, "TOL", "Local Newton iteration tolerance");
+    ::INPUT::AddNamedReal(m, "C", "cohesion");
+    ::INPUT::AddNamedReal(m, "ETA", "Drucker Prager Constant Eta");
+    ::INPUT::AddNamedReal(m, "XI", "Drucker Prager Constant Xi");
+    ::INPUT::AddNamedReal(m, "ETABAR", "Drucker Prager Constant Etabar");
+    ::INPUT::AddNamedInt(m, "MAXITER", "Maximum Neuton Raphson Iterations", 50, true);
 
     AppendMaterialDefinition(matlist, m);
   }
