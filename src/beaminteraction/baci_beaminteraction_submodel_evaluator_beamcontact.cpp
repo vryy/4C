@@ -92,7 +92,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
         Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchVisualization(
             IO::VisualizationParametersFactory(
                 DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
-            DiscretPtr()->Comm(), "beam_interaction_geometric_search"));
+            DiscretPtr()->Comm(), "beam-interaction-geometric-search"));
   }
 
   // build a new data container to manage beam contact parameters

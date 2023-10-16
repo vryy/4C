@@ -76,6 +76,8 @@ MORTAR_SHAPE_FUNCTION                 line2
 GAUSS_POINTS                          6
 GEOMETRY_PAIR_STRATEGY                segmentation
 GEOMETRY_PAIR_SEARCH_POINTS           2
+---------------------------------------------------------BOUNDINGVOLUME STRATEGY
+WRITE_GEOMETRIC_SEARCH_VISUALIZATION yes
 -----------------------------------------------------------IO/RUNTIME VTK OUTPUT
 OUTPUT_DATA_FORMAT                    binary
 INTERVAL_STEPS                        1
