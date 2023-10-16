@@ -1254,7 +1254,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FillStateDataVectorsForOu
   CheckInitSetup();
   DRT::Discretization const& bindis = BinDiscret();
 
-  CORE::LINALG::SerialDenseVector bspotforce(true);
+  const unsigned int num_spatial_dim = 3;
+  CORE::LINALG::SerialDenseVector bspotforce(num_spatial_dim);
 
   // todo: this is of course not nice, this needs to be done somewhere else
   for (int i = 0; i < bindis.NumMyRowNodes(); ++i)
@@ -1273,7 +1274,7 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::Crosslinking::FillStateDataVectorsForOu
     }
 
     // loop over all dofs
-    for (unsigned int dim = 0; dim < 3; ++dim)
+    for (unsigned int dim = 0; dim < num_spatial_dim; ++dim)
     {
       int doflid = displacement->Map().LID(dofnode[dim]);
       (*displacement)[doflid] = crosslinker_i->X()[dim];

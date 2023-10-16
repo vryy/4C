@@ -892,8 +892,8 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::SelectElesToBeConsideredFo
     // 3) ensure that two elements sharing the same node do not get into contact
     else
     {
-      for (int i = 0; i < 2; ++i)
-        for (int j = 0; j < 2; ++j)
+      for (int i = 0; i < (*eiter)->NumNode(); ++i)
+        for (int j = 0; j < currele->NumNode(); ++j)
           if ((*eiter)->NodeIds()[i] == currele->NodeIds()[j]) toerase = true;
     }
 
