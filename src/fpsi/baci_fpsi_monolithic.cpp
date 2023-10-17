@@ -686,7 +686,7 @@ void FPSI::Monolithic::CreateLinearSolver()
   // fixing length of Inverse1 nullspace (solver/preconditioner ML)
   {
     std::string inv = "Inverse1";
-    const Epetra_Map& oldmap = *(PoroField()->StructureField()->DofRowMap());
+    const Epetra_Map& oldmap = *(DRT::Problem::Instance()->GetDis("structure")->DofRowMap());
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(structure_block_, structure_block_).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace(
