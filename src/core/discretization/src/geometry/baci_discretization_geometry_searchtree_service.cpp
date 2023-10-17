@@ -235,55 +235,6 @@ std::map<int, std::set<int>> CORE::GEO::getElementsInRadius(const ::DRT::Discret
 }
 
 /*----------------------------------------------------------------------*
- | a set of nodes in a given radius from a element.          u.may 07/08|
- | The radius is approximated by a box with edge                        |
- | length 2xRadius + box width                                          |
- *----------------------------------------------------------------------*/
-std::map<int, std::set<int>> CORE::GEO::getElementsInRadius(
-    const ::DRT::Discretization& dis,  // von potential::discretRCP_
-    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-    const std::map<int, CORE::LINALG::Matrix<3, 2>>& elemXAABBList,
-    CORE::LINALG::Matrix<3, 2> elemXAABB, const int label,
-    std::map<int, std::set<int>>& elementList)
-{
-  std::map<int, std::set<int>> nodeList;
-  std::map<int, std::set<int>> elementMap;
-
-  // collect all nodes with different label
-  for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
-  {
-    if (label != labelIter->first)  // don't collect nodes which belong to the same label
-    {
-      for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-           eleIter != (labelIter->second).end(); eleIter++)
-      {
-        ::DRT::Element* element = dis.gElement(*eleIter);
-        for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
-          nodeList[labelIter->first].insert(element->NodeIds()[i]);
-      }
-    }
-  }
-
-  for (std::map<int, std::set<int>>::const_iterator labelIter = nodeList.begin();
-       labelIter != nodeList.end(); labelIter++)
-    for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
-         nodeIter != (labelIter->second).end(); nodeIter++)
-    {
-      const ::DRT::Node* node = dis.gNode(*nodeIter);
-      const CORE::LINALG::Matrix<3, 1> x_node = currentpositions.find(node->Id())->second;
-
-      if (CORE::GEO::pointInTreeNode(x_node, elemXAABB))
-      {
-        for (int i = 0; i < dis.gNode(*nodeIter)->NumElement(); i++)
-          elementMap[labelIter->first].insert(dis.gNode(*nodeIter)->Elements()[i]->Id());
-      }
-    }
-
-  return elementMap;
-}
-
-/*----------------------------------------------------------------------*
  | a vector of intersection elements                         u.may 02/09|
  | for a given query element (CONTACT)                                  | |
  *----------------------------------------------------------------------*/
@@ -555,48 +506,6 @@ CORE::GEO::ObjectType CORE::GEO::nearest3DObjectOnElement(::DRT::Element* surfac
 }
 
 /*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-double CORE::GEO::nearestNodeInNode(const Teuchos::RCP<::DRT::Discretization> dis,
-    std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
-    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-    const CORE::LINALG::Matrix<3, 1>& point, ::DRT::Node& nearnode)
-{
-  double min_distance = CORE::GEO::LARGENUMBER;
-  double distance = CORE::GEO::LARGENUMBER;
-  std::set<int> nodeList;
-
-  // run over all surface elements to collect nodes
-  std::map<int, Teuchos::RCP<::DRT::Element>>::const_iterator eleIter;
-  for (eleIter = elements.begin(); eleIter != elements.end(); eleIter++)
-  {
-    // not const because otherwise no lines can be obtained
-    ::DRT::Element* element = (eleIter->second).get();
-
-    // collect nodes
-    for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
-      nodeList.insert(element->NodeIds()[i]);
-  }
-
-  // run over all nodes collected above
-  for (std::set<int>::const_iterator nodeIter = nodeList.begin(); nodeIter != nodeList.end();
-       nodeIter++)
-  {
-    ::DRT::Node* node = dis->gNode(*nodeIter);
-    CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
-    if (distance < min_distance)
-    {
-      min_distance = distance;
-      nearnode = *node;
-    }
-  }
-
-  // in case no node element was given return -1.0 as distance
-  if (min_distance > 1.0e12) min_distance = -1.0;
-
-  return min_distance;
-}
-
-/*----------------------------------------------------------------------*
  |  computes the normal distance from a point to a           u.may 07/08|
  |  surface element, if it exits                                        |
  *----------------------------------------------------------------------*/
@@ -748,34 +657,6 @@ void CORE::GEO::getDistanceToPoint(const ::DRT::Node* node,
 
   // absolute distance between point and node
   distance = distance_vector.Norm2();
-}
-
-/*----------------------------------------------------------------------*
- |  find adjacent elements                                   peder 07/08|
- |  for a line given by two end nodes                                   |
- *----------------------------------------------------------------------*/
-std::vector<int> CORE::GEO::getAdjacentSurfaceElementsToLine(
-    const ::DRT::Node* node1, const ::DRT::Node* node2)
-{
-  std::vector<int> adjacentElements;
-  const ::DRT::Element* const* eleSet_node1 = node1->Elements();
-  const ::DRT::Element* const* eleSet_node2 = node2->Elements();
-
-  for (int i = 0; i < node1->NumElement(); i++)
-    for (int j = 0; j < node2->NumElement(); j++)
-    {
-      if (eleSet_node1[i]->Id() == eleSet_node2[j]->Id())
-        adjacentElements.push_back(eleSet_node1[i]->Id());
-    }
-
-  if (adjacentElements.size() > 2)
-    dserror(
-        "more than two surfaces adjacent to a line - xfem coupling conditions might be not "
-        "correct");
-
-  if (adjacentElements.size() == 0) dserror("no adjacent surface elements found");
-
-  return adjacentElements;
 }
 
 /*----------------------------------------------------------------------*

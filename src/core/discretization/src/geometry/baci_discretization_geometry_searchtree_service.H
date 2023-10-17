@@ -96,23 +96,6 @@ namespace CORE::GEO
       std::map<int, std::set<int>>& elementList);
 
   /*!
-   FELIX MEIER
-   \brief Returns a map of element ids lying in a circle of a given querypoint and a radius
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param elemXAABB             elementbox to be examined
-   \param radius               radius
-   \param label                label
-   \param elementList          map of elements label gid
-   \return                     label
-   */
-  std::map<int, std::set<int>> getElementsInRadius(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const std::map<int, CORE::LINALG::Matrix<3, 2>>& elemXAABBList,
-      CORE::LINALG::Matrix<3, 2> elemXAABB, const int label,
-      std::map<int, std::set<int>>& elementList);
-
-  /*!
    \brief Returns a set of element gids. The bounding volumes (XAABB) of this elements is
    overlapping with the bounding volume (XAABB) of the query element. \param currentBVs bounding
    volumes (XAABB) of the considered elements \param queryBV            bounding volume (XAABB) of
@@ -161,25 +144,6 @@ namespace CORE::GEO
       const std::map<int, std::set<int>>& elementList, const CORE::LINALG::Matrix<3, 1>& point,
       CORE::LINALG::Matrix<3, 1>& minDistCoords);
 
-  /// returns the nearest node to the querypoint
-  double nearestNodeInNode(const Teuchos::RCP<::DRT::Discretization> dis,
-      std::map<int, Teuchos::RCP<::DRT::Element>>& elements,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const CORE::LINALG::Matrix<3, 1>& point, ::DRT::Node& minNode);
-
-  /*!
-   \brief Searches for the nearest point to the query point in elementList
-   \param masternodes          list of all nodes (are looked through in brute force)
-   \param masterelements       list of all elements
-   \param currentpositions     current nodal positions in discretization
-   \param closeeles            element list of close elements, is looped
-   \param querypoint           point to be examined
-   \param minDistCoords        Coords of the nearest point
-   */
-  double nearestNodeInNode(std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const CORE::LINALG::Matrix<3, 1>& querypoint, ::DRT::Node& nearnode);
-
   /*!
    \brief Searches for the nearest surface element to a given point
    \param surfaceElement       surface element
@@ -218,17 +182,6 @@ namespace CORE::GEO
   void getDistanceToPoint(const ::DRT::Node* node,
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       const CORE::LINALG::Matrix<3, 1>& point, double& distance);
-
-  /*!
-   \brief  Finds all elements adjacent to a line described by two end points
-   \param node1         node 1
-   \param node2         node 2
-   \return list of common elements
-   */
-  std::vector<int> getAdjacentSurfaceElementsToLine(
-      const ::DRT::Node* node1, const ::DRT::Node* node2);
-
-
 
   /*!
    \brief  Checks if a point lies with in a node box
