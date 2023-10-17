@@ -29,7 +29,6 @@ Kloeppel
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                               tk 11/07|
  *----------------------------------------------------------------------*/
 UTILS::ConstrManager::ConstrManager()
     : offsetID_(-1),
@@ -46,16 +45,13 @@ UTILS::ConstrManager::ConstrManager()
       isinit_(false)
 
 {
-  // Keep constructor empty !
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  initialize this class                                   rauch 09/16 |
  *----------------------------------------------------------------------*/
 void UTILS::ConstrManager::Init(
-    Teuchos::RCP<DRT::Discretization> discr, Teuchos::ParameterList params)
+    Teuchos::RCP<DRT::Discretization> discr, const Teuchos::ParameterList& params)
 {
   SetIsSetup(false);
 
@@ -101,12 +97,10 @@ void UTILS::ConstrManager::Init(
 
 
   SetIsInit(true);
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
- |  setup this class                                        rauch 09/16 |
  *----------------------------------------------------------------------*/
 void UTILS::ConstrManager::Setup(
     Teuchos::RCP<const Epetra_Vector> disp, Teuchos::ParameterList params)
@@ -214,15 +208,11 @@ void UTILS::ConstrManager::Setup(
   }
 
   SetIsSetup(true);
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
-|(public)                                                       tk 11/07|
-|Compute difference between current and prescribed values.              |
-|Change Stiffnessmatrix and internal force vector                       |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::EvaluateForceStiff(const double time,
     Teuchos::RCP<const Epetra_Vector> displast, Teuchos::RCP<const Epetra_Vector> disp,
     Teuchos::RCP<Epetra_Vector> fint, Teuchos::RCP<CORE::LINALG::SparseOperator> stiff,
@@ -299,14 +289,10 @@ void UTILS::ConstrManager::EvaluateForceStiff(const double time,
     constrMatrix_->Complete();
   else
     constrMatrix_->Complete(*constrmap_, *dofrowmap);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
-|(public)                                                       tk 01/08|
-|Compute difference between current and prescribed values.              |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector> disp)
 {
   CheckIsInit();
@@ -344,13 +330,10 @@ void UTILS::ConstrManager::ComputeError(double time, Teuchos::RCP<Epetra_Vector>
   actvalues_->Export(*actredundant, *conimpo_, Add);
 
   constrainterr_->Update(1.0, *referencevalues_, -1.0, *actvalues_, 0.0);
-  return;
 }
 
 
 /*----------------------------------------------------------------------*
-|(public)                                                      mhv 03/15|
-|Read restart information                                               |
  *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader, const double& time)
 {
@@ -362,14 +345,10 @@ void UTILS::ConstrManager::ReadRestart(IO::DiscretizationReader& reader, const d
   SetLagrMultVector(tempvec);
   reader.ReadVector(tempvec, "refconval");
   SetRefBaseValues(tempvec, time);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
-|(public)                                                       tk 08/08|
-|Reset reference base values for restart                                |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::SetRefBaseValues(
     Teuchos::RCP<Epetra_Vector> newrefval, const double& time)
 {
@@ -381,13 +360,10 @@ void UTILS::ConstrManager::SetRefBaseValues(
   mpconline2d_->Initialize(time);
 
   refbasevalues_->Update(1.0, *newrefval, 0.0);
-  return;
 }
 
 /*----------------------------------------------------------------------*
-|(public)                                                       tk 01/08|
-|Add scaled error of constraint to Lagrange multiplier.                 |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::UpdateLagrMult(double factor)
 {
   lagrMultVec_->Update(factor, *constrainterr_, 1.0);
@@ -399,36 +375,28 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
       if (constrmap_->LID(int(i - offsetID_)) != -1)
       {
         std::cout << "Multiplier for Volume Constraint: " << volconID.at(i) << ":  "
-                  << (*lagrMultVec_)[constrmap_->LID(int(i - offsetID_))] << std::endl;
+                  << (*lagrMultVec_)[constrmap_->LID(int(i - offsetID_))] << '\n';
       }
     }
   }
-
-  return;
 }
 
 void UTILS::ConstrManager::Update() { lagrMultVecOld_->Update(1.0, *lagrMultVec_, 0.0); }
 
 /*----------------------------------------------------------------------*
-|(public)                                                       tk 01/08|
-|Add Lagrange increment to Lagrange multiplier.                         |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::UpdateLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0, *vect, 1.0);
-  return;
 }
 
 void UTILS::ConstrManager::UpdateTotLagrMult(Teuchos::RCP<Epetra_Vector> vect)
 {
   lagrMultVec_->Update(1.0, *vect, 1.0, *lagrMultVecOld_, 0.0);
-  return;
 }
 
 /*-----------------------------------------------------------------------*
-|(public)                                                        tk 01/08|
-|Compute values defined to keep track of.                                |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp)
 {
   std::vector<DRT::Condition*> monitcond(0);
@@ -445,14 +413,10 @@ void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<Epetra_Vector> disp
 
   Epetra_Import monimpo(*monitormap_, *redmonmap_);
   monitorvalues_->Export(*actmonredundant, *monimpo_, Add);
-
-  return;
 }
 
 /*-----------------------------------------------------------------------*
-|(public)                                                        tk 01/08|
-|Compute values defined to keep track of.                                |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector> disp)
 {
   std::vector<DRT::Condition*> monitcond(0);
@@ -480,14 +444,10 @@ void UTILS::ConstrManager::ComputeMonitorValues(Teuchos::RCP<const Epetra_Vector
 
   Epetra_Import monimpo(*monitormap_, *redmonmap_);
   monitorvalues_->Export(*actmonredundant, *monimpo_, Add);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
-|(public)                                                       tk 01/08|
-|Print monitored values                                                 |
-*-----------------------------------------------------------------------*/
+ *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::PrintMonitorValues() const
 {
   if (numMonitorID_ == 1)
@@ -498,17 +458,16 @@ void UTILS::ConstrManager::PrintMonitorValues() const
   for (int i = 0; i < numMonitorID_; ++i)
   {
     if ((*monitortypes_)[i] == 1.0)
+    {
       printf("%2d (volume): %10.5e (%5.2f%% of initial value)\n", i + minMonitorID_,
           abs((*monitorvalues_)[i]), ((*monitorvalues_)[i]) * 100 / ((*initialmonvalues_)[i]));
+    }
     else if ((*monitortypes_)[i] == 2.0)
+    {
       printf("%2d   (area): %10.5e (%5.2f%% of initial value)\n", i + minMonitorID_,
           abs((*monitorvalues_)[i]), ((*monitorvalues_)[i]) * 100 / ((*initialmonvalues_)[i]));
-    else if ((*monitortypes_)[i] == 2.0)
-      printf("%2d   (area): %10.5e (%5.2f%% of initial value)\n", i + minMonitorID_,
-          abs((*monitorvalues_)[i]), ((*monitorvalues_)[i]) * 100 / ((*initialmonvalues_)[i]));
+    }
   }
-
-  return;
 }
 
 void UTILS::ConstrManager::BuildMoniType()
@@ -555,8 +514,6 @@ void UTILS::ConstrManager::BuildMoniType()
   {
     if ((*dummymonredundant)[i] != 0.0) (*monitortypes_)[i] = 3.0;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -569,6 +526,4 @@ void UTILS::ConstrManager::UseBlockMatrix(
   constrMatrix_ =
       Teuchos::rcp(new CORE::LINALG::BlockSparseMatrix<CORE::LINALG::DefaultBlockMatrixStrategy>(
           *domainmaps, *rangemaps, 81, false, true));
-
-  return;
 }
