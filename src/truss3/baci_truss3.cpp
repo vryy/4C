@@ -126,17 +126,6 @@ DRT::Element* DRT::ELEMENTS::Truss3::Clone() const
   return newelement;
 }
 
-
-/*----------------------------------------------------------------------*
- |  print this element (public)                              cyron 08/08|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3::Print(std::ostream& os) const
-{
-  os << "Truss3 ";
-  Element::Print(os);
-  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
-}
-
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 08/08|
  *----------------------------------------------------------------------*/

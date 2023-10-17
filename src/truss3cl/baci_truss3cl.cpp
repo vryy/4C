@@ -134,18 +134,6 @@ DRT::ELEMENTS::Truss3CL::~Truss3CL() { return; }
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                          mukherjee 01/14|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss3CL::Print(std::ostream& os) const
-{
-  os << "Truss3CL ";
-  Element::Print(os);
-  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |(public)                                               mukherjee 01/14|
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Truss3CL::Shape() const { return line2; }

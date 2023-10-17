@@ -214,9 +214,6 @@ namespace DRT
       ///      element dofs that are condensed internally should NOT be considered.
       virtual int NumDofPerElement() const { return 0; }
 
-      /// Print this element
-      void Print(std::ostream& os) const;
-
       virtual DRT::ElementType& ElementType() const { return Wall1Type::Instance(); }
 
       //@}

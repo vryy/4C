@@ -301,18 +301,6 @@ DRT::ELEMENTS::Wall1::~Wall1() { return; }
 
 
 /*----------------------------------------------------------------------*
- |  print this element (public)                              mgit 03/07|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1::Print(std::ostream& os) const
-{
-  os << "Wall1 ";
-  Element::Print(os);
-  os << " gaussrule_: " << CORE::DRT::UTILS::GaussRuleToString(gaussrule_) << " ";
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Wall1::Lines()

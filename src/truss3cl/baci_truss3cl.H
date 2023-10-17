@@ -194,11 +194,6 @@ namespace DRT
       */
       int HowManyRandomNumbersINeed();
 
-      /*!
-      \brief Print this element
-      */
-      virtual void Print(std::ostream& os) const;
-
       //! \brief return reference Coordinates of interpolated nodes
       const std::vector<double>& XRef() const { return xrefe_; }
 
