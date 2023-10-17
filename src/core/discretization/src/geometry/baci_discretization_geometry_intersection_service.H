@@ -18,8 +18,6 @@
 
 namespace CORE::GEO
 {
-  class InterfacePoint;
-
   const std::map<int, CORE::LINALG::Matrix<3, 2>> getCurrentXAABBs(const ::DRT::Discretization& dis,
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions);
 

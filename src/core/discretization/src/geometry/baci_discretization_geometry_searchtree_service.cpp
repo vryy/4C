@@ -10,7 +10,6 @@
 #include "baci_discretization_geometry_searchtree_service.H"
 
 #include "baci_discretization_geometry_element_coordtrafo.H"
-#include "baci_discretization_geometry_intersection_interfacepoint.H"
 #include "baci_discretization_geometry_intersection_service.H"
 #include "baci_discretization_geometry_intersection_service_templates.H"
 #include "baci_discretization_geometry_position_array.H"
@@ -340,81 +339,6 @@ void CORE::GEO::searchCollisions(const std::map<int, CORE::LINALG::Matrix<9, 2>>
   return;
 }
 
-/*----------------------------------------------------------------------*
- | searches a nearest object in tree node                    u.may 07/08|
- | object is either a node, line or surface element                     |
- *----------------------------------------------------------------------*/
-int CORE::GEO::nearestObjectInNode(const ::DRT::Discretization& dis,
-    const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-    const std::map<int, std::set<int>>& elementList, const CORE::LINALG::Matrix<3, 1>& point,
-    CORE::LINALG::Matrix<3, 1>& minDistanceVec, CORE::GEO::NearestObject& nearestObject)
-{
-  bool pointFound = false;
-  double min_distance = CORE::GEO::LARGENUMBER;
-  double distance = CORE::GEO::LARGENUMBER;
-  CORE::LINALG::Matrix<3, 1> normal(true);
-  CORE::LINALG::Matrix<3, 1> x_surface(true);
-  std::map<int, std::set<int>> nodeList;
-
-  // run over all surface elements
-  for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
-    for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-         eleIter != (labelIter->second).end(); eleIter++)
-    {
-      // not const because otherwise no lines can be obtained
-      ::DRT::Element* element = dis.gElement(*eleIter);
-      pointFound =
-          CORE::GEO::getDistanceToSurface(element, currentpositions, point, x_surface, distance);
-      if (pointFound && distance < min_distance)
-      {
-        pointFound = false;
-        min_distance = distance;
-        nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
-      }
-
-      // run over all line elements
-      const std::vector<Teuchos::RCP<::DRT::Element>> eleLines = element->Lines();
-      for (int i = 0; i < element->NumLine(); i++)
-      {
-        pointFound = CORE::GEO::getDistanceToLine(
-            eleLines[i].get(), currentpositions, point, x_surface, distance);
-        if (pointFound && distance < min_distance)
-        {
-          pointFound = false;
-          min_distance = distance;
-          nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
-        }
-      }
-      // collect nodes
-      for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(element->Shape()); i++)
-        nodeList[labelIter->first].insert(element->NodeIds()[i]);
-    }
-
-  // run over all nodes
-  for (std::map<int, std::set<int>>::const_iterator labelIter = nodeList.begin();
-       labelIter != nodeList.end(); labelIter++)
-    for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
-         nodeIter != (labelIter->second).end(); nodeIter++)
-    {
-      const ::DRT::Node* node = dis.gNode(*nodeIter);
-      CORE::GEO::getDistanceToPoint(node, currentpositions, point, distance);
-      if (distance < min_distance)
-      {
-        min_distance = distance;
-        nearestObject.setNodeObjectType(
-            *nodeIter, labelIter->first, currentpositions.find(node->Id())->second);
-      }
-    }
-
-  if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
-    dserror("no nearest object obtained");
-
-  // compute distance vector pointing away from the surface element
-  minDistanceVec.Update(1.0, point, -1.0, nearestObject.getPhysCoord());
-
-  return nearestObject.getLabel();
-}
 
 /*----------------------------------------------------------------------*
  | gives the coords of the nearest point on or in an object in  tk 01/10|
@@ -673,113 +597,6 @@ double CORE::GEO::nearestNodeInNode(const Teuchos::RCP<::DRT::Discretization> di
 }
 
 /*----------------------------------------------------------------------*
- | searches a nearest object in tree node                    u.may 02/09|
- | object is either a node, line or tri     element                     |
- *----------------------------------------------------------------------*/
-int CORE::GEO::nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
-    const std::vector<CORE::GEO::InterfacePoint>& pointList,
-    const std::map<int, std::set<int>>& elementList, const CORE::LINALG::Matrix<3, 1>& point,
-    const int pointLabel, CORE::LINALG::Matrix<3, 1>& minDistanceVec,
-    CORE::GEO::NearestObject& nearestObject)
-{
-  bool pointFound = false;
-  double min_distance = CORE::GEO::LARGENUMBER;
-  double distance = CORE::GEO::LARGENUMBER;
-  CORE::LINALG::Matrix<3, 1> normal(true);
-  CORE::LINALG::Matrix<3, 1> x_surface(true);
-  std::map<int, std::set<int>> nodeList;
-
-  if (elementList.empty() || (elementList.size() == 1 && elementList.begin()->first == pointLabel))
-    dserror("elelist empty");
-
-  // clear nearest object
-  nearestObject.clear();
-  minDistanceVec.Clear();
-
-  // run over all surface elements
-  for (std::map<int, std::set<int>>::const_iterator labelIter = elementList.begin();
-       labelIter != elementList.end(); labelIter++)
-  {
-    if (labelIter->first != pointLabel)
-    {
-      for (std::set<int>::const_iterator eleIter = (labelIter->second).begin();
-           eleIter != (labelIter->second).end(); eleIter++)
-      {
-        // not const because otherwise no lines can be obtained
-        pointFound = CORE::GEO::getDistanceToSurface(
-            triangleList[*eleIter], pointList, point, x_surface, distance);
-        if (pointFound && distance < min_distance)
-        {
-          pointFound = false;
-          min_distance = distance;
-          nearestObject.setSurfaceObjectType(*eleIter, labelIter->first, x_surface);
-        }
-
-        // run over all line elements
-        for (int i = 0; i < 3; i++)
-        {
-          std::vector<int> linePoints(2, 0);
-          if (i < 2)
-          {
-            linePoints[0] = triangleList[*eleIter][i];
-            linePoints[1] = triangleList[*eleIter][i + 1];
-          }
-          else
-          {
-            linePoints[0] = triangleList[*eleIter][i];
-            linePoints[1] = triangleList[*eleIter][0];
-          }
-          pointFound =
-              CORE::GEO::getDistanceToLine(linePoints, pointList, point, x_surface, distance);
-          if (pointFound && distance < min_distance)
-          {
-            pointFound = false;
-            min_distance = distance;
-            nearestObject.setLineObjectType(i, *eleIter, labelIter->first, x_surface);
-          }
-        }
-        // collect nodes
-        for (int i = 0; i < CORE::DRT::UTILS::getNumberOfElementCornerNodes(::DRT::Element::tri3);
-             i++)
-          nodeList[labelIter->first].insert(triangleList[*eleIter][i]);
-      }  // if(labelIter->first!=pointLabel)
-    }    // for element iter
-  }      // for label iter
-  // run over all nodes
-
-  for (std::map<int, std::set<int>>::const_iterator labelIter = nodeList.begin();
-       labelIter != nodeList.end(); labelIter++)
-  {
-    if (labelIter->first != pointLabel)
-    {
-      for (std::set<int>::const_iterator nodeIter = (labelIter->second).begin();
-           nodeIter != (labelIter->second).end(); nodeIter++)
-      {
-        CORE::GEO::getDistanceToPoint(*nodeIter, pointList, point, distance);
-        if (distance < min_distance)
-        {
-          min_distance = distance;
-          nearestObject.setNodeObjectType(
-              *nodeIter, labelIter->first, pointList[*nodeIter].getCoord());
-        }
-      }  // if(labelIter->first!=pointLabel)
-    }
-  }
-
-  if (nearestObject.getObjectType() == CORE::GEO::NOTYPE_OBJECT)
-    dserror("no nearest object obtained");
-
-  std::cout << "point = " << point << std::endl;
-  std::cout << "nearestObject.getPhysCoord() = " << nearestObject.getPhysCoord() << std::endl;
-
-  // compute distance vector pointing away from the surface element
-  minDistanceVec.Update(1.0, point, -1.0, nearestObject.getPhysCoord());
-  std::cout << "minDistanceVec = " << minDistanceVec << std::endl;
-
-  return nearestObject.getLabel();
-}
-
-/*----------------------------------------------------------------------*
  |  computes the normal distance from a point to a           u.may 07/08|
  |  surface element, if it exits                                        |
  *----------------------------------------------------------------------*/
@@ -843,41 +660,6 @@ bool CORE::GEO::getDistanceToSurface(const ::DRT::Element* surfaceElement,
       }
     }
   }
-  return pointFound;
-}
-
-/*----------------------------------------------------------------------*
- |  computes the normal distance from a point to a           u.may 02/09|
- |  linear triangular element, if it exits                              |
- *----------------------------------------------------------------------*/
-bool CORE::GEO::getDistanceToSurface(const std::vector<int>& triElement,
-    const std::vector<CORE::GEO::InterfacePoint>& pointList,
-    const CORE::LINALG::Matrix<3, 1>& point, CORE::LINALG::Matrix<3, 1>& x_surface_phys,
-    double& distance)
-{
-  bool pointFound = false;
-  CORE::LINALG::Matrix<3, 1> distance_vector(true);
-  CORE::LINALG::Matrix<2, 1> elecoord(true);  // starting value at element center
-
-  CORE::LINALG::SerialDenseMatrix xyze_triElement(3, 3);
-  for (int i = 0; i < 3; i++)
-  {
-    CORE::LINALG::Matrix<3, 1> node = pointList[triElement[i]].getCoord();
-    for (int j = 0; j < 3; j++) xyze_triElement(i, j) = node(j);
-  }
-  CORE::GEO::CurrentToSurfaceElementCoordinates(
-      ::DRT::Element::tri3, xyze_triElement, point, elecoord);
-
-  if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, ::DRT::Element::tri3))
-  {
-    CORE::GEO::elementToCurrentCoordinates(
-        ::DRT::Element::tri3, xyze_triElement, elecoord, x_surface_phys);
-    // normal pointing away from the surface towards point
-    distance_vector.Update(1.0, point, -1.0, x_surface_phys);
-    distance = distance_vector.Norm2();
-    pointFound = true;
-  }
-
   return pointFound;
 }
 
@@ -948,59 +730,6 @@ bool CORE::GEO::getDistanceToLine(const ::DRT::Element* lineElement,
   return pointFound;
 }
 
-/*----------------------------------------------------------------------*
- |  computes the normal distance from a point to a           u.may 07/08|
- |  line element, if it exits                                           |
- *----------------------------------------------------------------------*/
-bool CORE::GEO::getDistanceToLine(const std::vector<int>& lineElement,
-    const std::vector<CORE::GEO::InterfacePoint>& pointList,
-    const CORE::LINALG::Matrix<3, 1>& point, CORE::LINALG::Matrix<3, 1>& x_line_phys,
-    double& distance)
-{
-  bool pointFound = false;
-  CORE::LINALG::Matrix<3, 1> distance_vector(true);
-  CORE::LINALG::Matrix<1, 1> elecoord(true);  // starting value at element center
-
-  CORE::LINALG::SerialDenseMatrix xyze_lineElement(2, 3);
-  for (int i = 0; i < 2; i++)
-  {
-    CORE::LINALG::Matrix<3, 1> node = pointList[lineElement[i]].getCoord();
-    for (int j = 0; j < 3; j++) xyze_lineElement(i, j) = node(j);
-  }
-  CORE::GEO::CurrentToLineElementCoordinates(
-      ::DRT::Element::line2, xyze_lineElement, point, elecoord);
-
-  if (CORE::GEO::checkPositionWithinElementParameterSpace(elecoord, ::DRT::Element::line2))
-  {
-    CORE::GEO::elementToCurrentCoordinates(
-        ::DRT::Element::line2, xyze_lineElement, elecoord, x_line_phys);
-    // normal pointing away from the line towards point
-    distance_vector.Update(1.0, point, -1.0, x_line_phys);
-    distance = distance_vector.Norm2();
-    pointFound = true;
-  }
-
-  return pointFound;
-}
-
-/*----------------------------------------------------------------------*
- |  computes the distance from a point to a node             u.may 07/08|
- |  of an element                                                       |
- *----------------------------------------------------------------------*/
-void CORE::GEO::getDistanceToPoint(const int nodeId,
-    const std::vector<CORE::GEO::InterfacePoint>& pointList,
-    const CORE::LINALG::Matrix<3, 1>& point, double& distance)
-{
-  // node position in physical coordinates
-  const CORE::LINALG::Matrix<3, 1> x_node = pointList[nodeId].getCoord();
-
-  CORE::LINALG::Matrix<3, 1> distance_vector;
-  // vector pointing away from the node towards physCoord
-  distance_vector.Update(1.0, point, -1.0, x_node);
-
-  // absolute distance between point and node
-  distance = distance_vector.Norm2();
-}
 
 /*----------------------------------------------------------------------*
  |  computes the distance from a point to a node             u.may 07/08|

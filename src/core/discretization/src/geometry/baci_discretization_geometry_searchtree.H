@@ -31,8 +31,6 @@ namespace CORE::LINALG
 
 namespace CORE::GEO
 {
-  class InterfacePoint;
-
   //! identifies tree type
   enum TreeType
   {

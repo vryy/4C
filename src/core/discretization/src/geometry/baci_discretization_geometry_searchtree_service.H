@@ -31,7 +31,6 @@ namespace CORE::LINALG
 
 namespace CORE::GEO
 {
-  class InterfacePoint;
   class NearestObject;
 
   /*!
@@ -136,37 +135,6 @@ namespace CORE::GEO
       const std::map<int, std::set<int>>& elementList, std::set<int>& collisions);
 
   /*!
-   \brief Returns the nearest object to a point
-   \param dis                  discretization
-   \param currentpositions     current nodal positions in discretization
-   \param elementList          element list
-   \param point                point to be examined
-   \param x_surface_phys       basis point in current coordinates
-   \param nearestObject        info about nearest object
-   \return label of nearest object
-   */
-  int nearestObjectInNode(const ::DRT::Discretization& dis,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const std::map<int, std::set<int>>& elementList, const CORE::LINALG::Matrix<3, 1>& point,
-      CORE::LINALG::Matrix<3, 1>& minDistanceVec, CORE::GEO::NearestObject& nearestObject);
-
-  /*!
-   \brief Returns the nearest object to a point
-   \param triangleList         list of linear triangular elements
-   \param currentpositions     current nodal positions in discretization
-   \param elementList          element list
-   \param point                point to be examined
-   \param x_surface_phys       basis point in current coordinates
-   \param nearestObject        info about nearest object
-   \return label of nearest object
-   */
-  int nearestObjectInNode(const std::vector<std::vector<int>>& triangleList,
-      const std::vector<CORE::GEO::InterfacePoint>& pointList,
-      const std::map<int, std::set<int>>& elementList, const CORE::LINALG::Matrix<3, 1>& point,
-      const int pointLabel, CORE::LINALG::Matrix<3, 1>& minDistanceVec,
-      CORE::GEO::NearestObject& nearestObject);
-
-  /*!
    \brief Searches for the nearest point to the query point in elementList
    \param dis                  discretization
    \param elements            list of all elements
@@ -208,20 +176,6 @@ namespace CORE::GEO
    \param querypoint           point to be examined
    \param minDistCoords        Coords of the nearest point
    */
-  void nearestObjectInNode(std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,
-      const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
-      const std::map<int, std::set<int>>& closeeles, const CORE::LINALG::Matrix<3, 1>& querypoint,
-      CORE::LINALG::Matrix<3, 1>& minDistCoords);
-
-  /*!
-   \brief Searches for the nearest point to the query point in elementList
-   \param masternodes          list of all nodes (are looked through in brute force)
-   \param masterelements       list of all elements
-   \param currentpositions     current nodal positions in discretization
-   \param closeeles            element list of close elements, is looped
-   \param querypoint           point to be examined
-   \param minDistCoords        Coords of the nearest point
-   */
   double nearestNodeInNode(std::map<int, Teuchos::RCP<::DRT::Element>>& masterelements,
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       const CORE::LINALG::Matrix<3, 1>& querypoint, ::DRT::Node& nearnode);
@@ -241,20 +195,6 @@ namespace CORE::GEO
       double& distance);
 
   /*!
-   \brief Searches for the nearest linear triangular element to a given point
-   \param triElement           triangular element
-   \param currentpositions     current nodal positions in discretization
-   \param point                point to be examined
-   \param x_surface_phys       physical coordinates
-   \param distance             distance to nearest element
-   \return true if nearest surface element found
-   */
-  bool getDistanceToSurface(const std::vector<int>& triElement,
-      const std::vector<CORE::GEO::InterfacePoint>& pointList,
-      const CORE::LINALG::Matrix<3, 1>& point, CORE::LINALG::Matrix<3, 1>& x_surface_phys,
-      double& distance);
-
-  /*!
    \brief Searches for the nearest line element to a given point
    \param lineElement          lineElement
    \param currentpositions     current nodal positions in discretization
@@ -267,30 +207,6 @@ namespace CORE::GEO
       const std::map<int, CORE::LINALG::Matrix<3, 1>>& currentpositions,
       const CORE::LINALG::Matrix<3, 1>& point, CORE::LINALG::Matrix<3, 1>& x_line_phys,
       double& distance);
-
-  /*!
-   \brief Searches for the nearest line element to a given point
-   \param lineElement          lineElement
-   \param currentpositions     current nodal positions in discretization
-   \param point                point to be examined
-   \param x_line_phys          physical coordinates
-   \param distance             distance to nearest point
-   \return true if nearest line element found
-   */
-  bool getDistanceToLine(const std::vector<int>& lineElement,
-      const std::vector<CORE::GEO::InterfacePoint>& pointList,
-      const CORE::LINALG::Matrix<3, 1>& point, CORE::LINALG::Matrix<3, 1>& x_line_phys,
-      double& distance);
-
-  /*!
-   \brief Searches for the nearest node to a given point
-   \param nodeId               nodeId
-   \param currentpositions     current nodal positions in discretization
-   \param point                point to be examined
-   \param distance             distance to nearest point
-   */
-  void getDistanceToPoint(const int nodeId, const std::vector<CORE::GEO::InterfacePoint>& pointList,
-      const CORE::LINALG::Matrix<3, 1>& point, double& distance);
 
   /*!
    \brief Searches for the nearest node to a given point
