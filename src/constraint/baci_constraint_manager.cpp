@@ -238,8 +238,8 @@ void UTILS::ConstrManager::EvaluateForceStiff(const double time,
   Teuchos::ParameterList p;
   std::vector<DRT::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
-  constrMatrix_->Zero();  //=Teuchos::rcp(new
-                          // CORE::LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
+  constrMatrix_->Reset();  //=Teuchos::rcp(new
+                           // CORE::LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
 
   // other parameters that might be needed by the elements
   p.set("total time", time);
