@@ -895,17 +895,9 @@ void STR::TimIntImpl::ApplyForceStiffInternal(const double time, const double dt
   discret_->Evaluate(params, stiff, damp, fint, Teuchos::null, fintn_str_);
   discret_->ClearState();
 
-  if (HaveFaceDiscret())
-  {
-    AssembleEdgeBasedMatandRHS(params, fint, dis, vel);
-  }
-
   // *********** time measurement ***********
   dtele_ = timer_->wallTime() - dtcpu;
   // *********** time measurement ***********
-
-  // that's it
-  return;
 }
 
 /*----------------------------------------------------------------------*/

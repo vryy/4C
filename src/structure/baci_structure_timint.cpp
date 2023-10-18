@@ -171,7 +171,6 @@ STR::TimInt::TimInt(const Teuchos::ParameterList& timeparams,
         "Output step offset (\"OUTPUT_STEP_OFFSET\" != 0) is not supported in the old structural "
         "time integration");
   }
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -218,7 +217,6 @@ void STR::TimInt::Init(const Teuchos::ParameterList& timeparams,
 
   // we have successfully initialized this class
   SetIsInit(true);
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -335,7 +333,6 @@ void STR::TimInt::Setup()
 
   // we have successfully set up this class
   SetIsSetup(true);
-  return;
 }
 
 /*----------------------------------------------------------------------------------------------*
@@ -429,8 +426,6 @@ void STR::TimInt::SetInitialFields()
   std::vector<int> porositylocaldofs;
   porositylocaldofs.push_back(DRT::Problem::Instance()->NDim());
   discret_->EvaluateInitialField(porosityfield, (*dis_)(0), porositylocaldofs);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -465,8 +460,6 @@ void STR::TimInt::PrepareBeamContact(const Teuchos::ParameterList& sdynparams)
     beamcman_->GmshOutput(*disn_, 0, 0, true);
 #endif
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -911,8 +904,6 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
         dserror("Invalid system type for contact/meshtying");
     }
   }
-
-  return;
 }
 
 
@@ -969,80 +960,7 @@ void STR::TimInt::ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xsla
 
   // re-initialize finite elements
   DRT::ParObjectFactory::Instance().InitializeElements(*discret_);
-
-  return;
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::TimInt::AssembleEdgeBasedMatandRHS(Teuchos::ParameterList& params,
-    Teuchos::RCP<Epetra_Vector>& fint, const Teuchos::RCP<Epetra_Vector>& disp,
-    const Teuchos::RCP<Epetra_Vector>& vel)
-{
-  // add edged-based stabilization, if selected
-  //  if(params_->sublist("RESIDUAL-BASED
-  //  STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
-  {
-    discret_->SetState("displacement", disp);
-    discret_->SetState("velocity", vel);
-    // Sparse Operator
-    STR::TimInt::EvaluateEdgeBased(stiff_, fint);
-    discret_->ClearState();
-  }
-
-  return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void STR::TimInt::EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-    Teuchos::RCP<Epetra_Vector> systemvector1)
-{
-  TEUCHOS_FUNC_TIME_MONITOR("STR::TimInt::EvaluateEdgeBased");
-
-
-  Teuchos::RCP<Epetra_Vector> residual_col =
-      CORE::LINALG::CreateVector(*(facediscret_->DofColMap()), true);
-
-  const Epetra_Map* rmap = nullptr;
-
-  Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
-  if (systemmatrix1 != Teuchos::null)
-  {
-    rmap = &(systemmatrix1->OperatorRangeMap());
-    //    dmap = rmap;
-    sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy, *rmap, 256, false));
-  }
-  else
-    dserror("sysmat is nullptr!");
-
-  Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(
-      new CORE::LINALG::SparseMatrix(Teuchos::rcp_static_cast<Epetra_CrsMatrix>(sysmat_FE),
-          CORE::LINALG::View, true, false, CORE::LINALG::SparseMatrix::FE_MATRIX));
-
-  const int numrowintfaces = facediscret_->NumMyRowFaces();
-
-  for (int i = 0; i < numrowintfaces; ++i)
-  {
-    DRT::Element* actface = facediscret_->lRowFace(i);
-  }
-
-  sysmat_linalg->Complete();
-
-  (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
-
-  //------------------------------------------------------------
-  // need to export residual_col to systemvector1 (residual_)
-  Epetra_Vector res_tmp(systemvector1->Map(), false);
-  Epetra_Export exporter(residual_col->Map(), res_tmp.Map());
-  int err2 = res_tmp.Export(*residual_col, exporter, Add);
-  if (err2) dserror("Export using exporter returned err=%d", err2);
-  systemvector1->Update(1.0, res_tmp, 1.0);
-
-  return;
-}
-
 
 /*----------------------------------------------------------------------*/
 /* Prepare contact for new time step */
@@ -1057,8 +975,6 @@ void STR::TimInt::PrepareStepContact()
       cmtbridge_->GetStrategy().RedistributeContact((*dis_)(0), (*vel_)(0));
     }
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1070,8 +986,6 @@ void STR::TimInt::PostTimeLoop()
     // stop supporting processors in multi scale simulations
     STRUMULTI::stop_np_multiscale();
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1151,13 +1065,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
 
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, fintn_str_);
     discret_->ClearState();
-
-    // If have edge based integration
-    // Loop over Edge elements
-    if (HaveFaceDiscret())
-    {
-      AssembleEdgeBasedMatandRHS(p, fint, (*dis_)(0), (*vel_)(0));
-    }
   }
 
   // finish mass matrix
@@ -1258,9 +1165,6 @@ void STR::TimInt::DetermineMassDampConsistAccel()
   // is not finished yet in case of constraints and possibly other side
   // effects (basically managers).
   stiff_->Reset();
-
-  // leave this hell
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1271,7 +1175,6 @@ void STR::TimInt::DetermineMass()
       "(Re-)Evaluation of only the mass matrix and intertial forces is "
       "not implemented in the base class.\n Set 'MASSLIN' to 'No' in "
       "--STRUCTURAL DYNAMIC if you want to use the chosen timint scheme.");
-  return;
 }
 
 /*---------------------------------------------------------------*/
@@ -1315,8 +1218,6 @@ void STR::TimInt::ApplyDirichletBC(const double time, Teuchos::RCP<Epetra_Vector
     if (vel != Teuchos::null) locsysman_->RotateLocalToGlobal(vel);
     if (acc != Teuchos::null) locsysman_->RotateLocalToGlobal(acc);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1329,8 +1230,6 @@ void STR::TimInt::UpdateStepTime()
   //
   timen_ += (*dt_)[0];
   stepn_ += 1;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1345,9 +1244,6 @@ void STR::TimInt::UpdateStepContactMeshtying()
     if (gmsh) cmtbridge_->VisualizeGmsh(stepn_);
 #endif  // #ifdef MORTARGMSH1
   }
-
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1355,8 +1251,6 @@ void STR::TimInt::UpdateStepContactMeshtying()
 void STR::TimInt::UpdateStepBeamContact()
 {
   if (HaveBeamContact()) beamcman_->Update(*disn_, stepn_, 99);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1771,9 +1665,6 @@ void STR::TimInt::UpdateStepContactVUM()
       veln_->Update(1.0, *VU, 1.0);
     }
   }
-
-  // Believe in the energy!
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1800,9 +1691,6 @@ void STR::TimInt::ResetStep()
   // reset 0D cardiovascular model if we have monolithic 0D cardiovascular-structure coupling (mhv
   // 02/2015)
   if (cardvasc0dman_->HaveCardiovascular0D()) cardvasc0dman_->ResetStep();
-
-  // I am gone
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1865,10 +1753,6 @@ void STR::TimInt::SetRestart(int step, double time, Teuchos::RCP<Epetra_Vector> 
 
   // biofilm growth
   if (HaveBiofilmGrowth()) dserror("Set restart not implemented for biofilm growth");
-
-  // ---------------------------------------------------------------------------
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1891,8 +1775,6 @@ void STR::TimInt::ReadRestartState()
   reader.ReadVector(accn_, "acceleration");
   acc_->UpdateSteps(*accn_);
   reader.ReadHistoryData(step_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1917,7 +1799,6 @@ void STR::TimInt::SetRestartState(Teuchos::RCP<Epetra_Vector> disn,
   discret_->UnPackMyNodes(nodedata);
   discret_->UnPackMyElements(elementdata);
   discret_->Redistribute(*noderowmap, *nodecolmap);
-  return;
 }
 /*----------------------------------------------------------------------*/
 /* Read and set restart values for constraints */
@@ -2073,8 +1954,6 @@ void STR::TimInt::OutputEveryIter(bool nw, bool ls)
 
   //  output_->OverwriteResultFile();
   OutputState(datawritten);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2223,8 +2102,6 @@ void STR::TimInt::GetRestartData(Teuchos::RCP<int> step, Teuchos::RCP<double> ti
 
   // biofilm growth
   if (HaveBiofilmGrowth()) dserror("Get restart data not implemented for biofilm growth");
-
-  return;
 }
 /*----------------------------------------------------------------------*/
 /* write restart
@@ -2315,9 +2192,6 @@ void STR::TimInt::OutputRestart(bool& datawritten)
     fprintf(errfile_, "====== Restart for field 'structure' written in step %d\n", step_);
     fflush(errfile_);
   }
-
-  // we will say what we did
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2387,9 +2261,6 @@ void STR::TimInt::OutputState(bool& datawritten)
 
   // springdashpot output
   if (springman_->HaveSpringDashpot()) springman_->Output(output_, discret_, disn_);
-
-  // leave for good
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2451,9 +2322,6 @@ void STR::TimInt::AddRestartToOutputState()
     fprintf(errfile_, "====== Restart for field 'Structure' written in step %d\n", step_);
     fflush(errfile_);
   }
-
-  // we will say what we did
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2697,9 +2565,6 @@ void STR::TimInt::OutputStressStrain(bool& datawritten)
 
   // write structural rotation tensor
   if (writerotation_) output_->WriteVector("rotation", *rotdata_, *(discret_->ElementRowMap()));
-
-  // leave me alone
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2716,9 +2581,6 @@ void STR::TimInt::OutputEnergy()
                    << " " << (*time_)[0] << " " << totergy << " " << kinergy_ << " " << intergy_
                    << " " << extergy_ << std::endl;
   }
-
-  // in God we trust
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2745,8 +2607,6 @@ void STR::TimInt::OutputOptQuantity(bool& datawritten)
     // we don't need this anymore
     optquantitydata_ = Teuchos::null;
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2921,8 +2781,6 @@ void STR::TimInt::OutputContact()
     //-------------------------- Compute and output interface forces
     cmtbridge_->GetStrategy().InterfaceForces(true);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -2987,8 +2845,6 @@ void STR::TimInt::OutputErrorNorms()
   output_->WriteVector("L2_norm", L2_norm);
   output_->WriteVector("H1_norm", H1_norm);
   output_->WriteVector("Energy_norm", Energy_norm);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3031,8 +2887,6 @@ void STR::TimInt::OutputVolumeMass()
     printf("\n**********************************\n\n");
     fflush(stdout);
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3137,8 +2991,6 @@ void STR::TimInt::OutputNodalPositions()
   }
 
 #endif  // PRINTSTRUCTDEFORMEDNODECOORDS
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3159,8 +3011,6 @@ void STR::TimInt::ApplyForceExternal(const double time, const Teuchos::RCP<Epetr
   if (damping_ == INPAR::STR::damp_material) discret_->SetState(0, "velocity", vel);
 
   discret_->EvaluateNeumann(p, *fext);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3228,8 +3078,6 @@ void STR::TimInt::NonlinearMassSanityCheck(Teuchos::RCP<const Epetra_Vector> fex
           "Nonlinear inertia forces for rotational DoFs only implemented "
           "for GenAlpha time integration so far!");
   }
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3259,9 +3107,6 @@ void STR::TimInt::ApplyForceInternal(const double time, const double dt,
   discret_->Evaluate(p, Teuchos::null, Teuchos::null, fint, Teuchos::null, Teuchos::null);
 
   discret_->ClearState();
-
-  // where the fun starts
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3496,8 +3341,6 @@ void STR::TimInt::ApplyDisMat(Teuchos::RCP<Epetra_Vector> dismat)
   // The values in dismatn_ are replaced, because the new absolute material
   // displacement is provided in the argument (not an increment)
   CORE::LINALG::Export(*dismat, *dismatn_);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3511,7 +3354,6 @@ void STR::TimInt::AttachEnergyFile()
     (*energyfile_) << "# timestep time total_energy"
                    << " kinetic_energy internal_energy external_energy" << std::endl;
   }
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3601,8 +3443,6 @@ void STR::TimInt::Reset()
 
   // set initial fields
   SetInitialFields();
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3610,8 +3450,6 @@ void STR::TimInt::Reset()
 void STR::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
 {
   strgrdisp_ = struct_growth_disp;
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3631,8 +3469,6 @@ void STR::TimInt::ResizeMStepTimAda()
   dis_->Resize(-1, 0, DofRowMapView(), true);
   vel_->Resize(-1, 0, DofRowMapView(), true);
   acc_->Resize(-1, 0, DofRowMapView(), true);
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3644,7 +3480,6 @@ void STR::TimInt::AddDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoadd)
   condmaps.push_back(GetDBCMapExtractor()->CondMap());
   Teuchos::RCP<Epetra_Map> condmerged = CORE::LINALG::MultiMapExtractor::MergeMaps(condmaps);
   *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -3656,5 +3491,4 @@ void STR::TimInt::RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptorem
   othermaps.push_back(GetDBCMapExtractor()->OtherMap());
   Teuchos::RCP<Epetra_Map> othermerged = CORE::LINALG::MultiMapExtractor::MergeMaps(othermaps);
   *dbcmaps_ = CORE::LINALG::MapExtractor(*(discret_->DofRowMap()), othermerged, false);
-  return;
 }
