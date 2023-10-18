@@ -655,7 +655,6 @@ buildtest_full_release_asan:
   rules:
   - if: $GITLAB_SCHEDULER_TYPE == "1"
   interruptible: true
-  allow_failure: true
 
 
 buildtest_full_debug:
