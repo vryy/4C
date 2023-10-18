@@ -104,12 +104,12 @@ namespace GEOMETRYPAIR
    */
   template <typename other, typename scalar_type, typename... optional_type>
   void PrintNodalNormals(std::ostream& out,
-      const CORE::LINALG::Matrix<3 * other::n_nodes_, 1, scalar_type>* nodal_normals = nullptr,
+      const CORE::LINALG::Matrix<3 * other::n_nodes_, 1, scalar_type>* nodal_normals,
       optional_type... optional_args)
   {
     if (nodal_normals == nullptr)
     {
-      out << "No nodal normal are given\n";
+      out << "No nodal normals are given\n";
     }
     else
     {
@@ -126,8 +126,8 @@ namespace GEOMETRYPAIR
    * "typename... optional_type" template arguments, this function will print nothing if the other
    * element type does not provide nodal normals.
    */
-  template <typename other>
-  void PrintNodalNormals(std::ostream& out)
+  template <typename other, typename... optional_type>
+  void PrintNodalNormals(std::ostream& out, optional_type... optional_args)
   {
   }
 
