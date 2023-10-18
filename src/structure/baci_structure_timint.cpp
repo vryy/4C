@@ -18,7 +18,6 @@
 #include "baci_constraint_solver.H"
 #include "baci_constraint_springdashpot_manager.H"
 #include "baci_contact_meshtying_contact_bridge.H"
-#include "baci_discsh3.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_mortar.H"
@@ -1027,42 +1026,6 @@ void STR::TimInt::EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> s
   for (int i = 0; i < numrowintfaces; ++i)
   {
     DRT::Element* actface = facediscret_->lRowFace(i);
-
-    if (actface->ElementType() ==
-        DRT::ELEMENTS::DiscSh3LineType::Instance())  // Discrete Structural Shell
-    {
-      DRT::ELEMENTS::DiscSh3Line* ele = dynamic_cast<DRT::ELEMENTS::DiscSh3Line*>(actface);
-      if (ele == nullptr) dserror("expect DiscSh3Line element");
-
-
-      // get the parent Shell elements
-      DRT::Element* p_master = ele->ParentMasterElement();
-      DRT::Element* p_slave = ele->ParentSlaveElement();
-
-      size_t p_master_numnode = p_master->NumNode();
-      size_t p_slave_numnode = p_slave->NumNode();
-
-      std::vector<int> nds_master;
-      nds_master.reserve(p_master_numnode);
-
-      std::vector<int> nds_slave;
-      nds_slave.reserve(p_slave_numnode);
-
-      for (size_t i = 0; i < p_master_numnode; i++) nds_master.push_back(0);
-
-      for (size_t i = 0; i < p_slave_numnode; i++) nds_slave.push_back(0);
-
-
-      // Set master ele to the Material for evaluation.
-      Teuchos::RCP<MAT::Material> material = p_master->Material();
-
-      // input parameters for structural dynamics
-      const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
-
-      // call the egde-based assemble and evaluate routine
-      ele->AssembleInternalFacesUsingNeighborData(
-          params, ele, material, nds_master, nds_slave, *facediscret_, sysmat_linalg, residual_col);
-    }
   }
 
   sysmat_linalg->Complete();

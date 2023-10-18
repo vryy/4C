@@ -112,25 +112,6 @@ BELE2
 - :ref:`LINE2 <line2>` (2 nodes)
 - :ref:`LINE3 <line3>` (3 nodes)
 
-.. _structurediscsh3:
-
-DISCSH3
-^^^^^^^
-
-*Shapes:*
-
-- :ref:`TRI3 <tri3>` (3 nodes)
-
-**Parameters**
-
-+--------------+-------------+
-| Parameter    | Values      |
-+==============+=============+
-| MAT          |  1 x number |
-+--------------+-------------+
-| THICK        |  1 x number |
-+--------------+-------------+
-
 .. _structurerigidsphere:
 
 RIGIDSPHERE

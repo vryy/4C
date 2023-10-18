@@ -26,7 +26,6 @@
 #include "baci_contact_meshtying_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "baci_contact_meshtying_contact_bridge.H"
 #include "baci_contact_meshtying_manager.H"
-#include "baci_discsh3.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_contact.H"
 #include "baci_inpar_wear.H"
@@ -324,17 +323,6 @@ void STR::TimIntImpl::Output(const bool forced_writerestart)
 
   // write Gmsh output
   WriteGmshStrucOutputStep();
-}
-
-/*----------------------------------------------------------------------------*
- | Create Edges of for discrete shell elements       mukherjee (public)  04/15|
- *-----------------------------------------------------------------------------*/
-void STR::TimIntImpl::InitializeEdgeElements()
-{
-  facediscret_ = Teuchos::rcp_dynamic_cast<DRT::DiscretizationFaces>(discret_, true);
-  facediscret_->CreateInternalFacesExtension(true);
-  facediscret_->FillCompleteFaces();
-  return;
 }
 
 /*----------------------------------------------------------------------*/

@@ -118,8 +118,6 @@ create_rtdfiles/           @baci/team_infrastructure
 
 cut/                       @baci/team_fluid
 
-discsh3/                   @baci/team_structure
-
 ehl/                       @baci/team_scatra
 
 elch/                      @baci/team_scatra
