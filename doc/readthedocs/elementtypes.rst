@@ -102,16 +102,6 @@ BEAM3K
 | FAD (opt.)   | None        |
 +--------------+-------------+
 
-.. _structurebele2:
-
-BELE2
-^^^^^
-
-*Shapes:*
-
-- :ref:`LINE2 <line2>` (2 nodes)
-- :ref:`LINE3 <line3>` (3 nodes)
-
 .. _structurerigidsphere:
 
 RIGIDSPHERE
