@@ -20,94 +20,6 @@
 
 namespace CORE::GEO
 {
-  /*----------------------------------------------------------------------*
-   | GM:      transforms a node in element coordinates         u.may 07/07|
-   |          into current coordinates                                    |
-   *----------------------------------------------------------------------*/
-  template <::DRT::Element::DiscretizationType DISTYPE, class M>
-  static inline void elementToCurrentCoordinatesInPlaceT(
-      const M& xyze, CORE::LINALG::Matrix<3, 1>& eleCoord)
-  {
-    const int numNodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
-    static CORE::LINALG::Matrix<numNodes, 1> funct;
-
-    CORE::DRT::UTILS::shape_function<DISTYPE>(eleCoord, funct);
-
-    eleCoord.Clear();
-    for (int i = 0; i < numNodes; i++)
-      for (int j = 0; j < 3; j++) eleCoord(j) += xyze(j, i) * funct(i);
-
-    return;
-  }
-
-
-
-  /*----------------------------------------------------------------------*
-   | GM:      transforms a node in element coordinates       u.may 07/07|
-   |          into current coordinates                                    |
-   *----------------------------------------------------------------------*/
-  template <class M>
-  static inline void elementToCurrentCoordinatesInPlace(
-      const ::DRT::Element::DiscretizationType distype, const M& xyze,
-      CORE::LINALG::Matrix<3, 1>& eleCoord)
-  {
-    switch (distype)
-    {
-      case ::DRT::Element::line2:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::line2>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::line3:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::line3>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::tri3:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::tri3>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::tri6:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::tri6>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::quad4:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::quad4>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::quad8:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::quad8>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::quad9:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::quad9>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::hex8:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::hex8>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::hex20:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::hex20>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::hex27:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::hex27>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::tet4:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::tet4>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::tet10:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::tet10>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::wedge6:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::wedge6>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::wedge15:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::wedge15>(xyze, eleCoord);
-        break;
-      case ::DRT::Element::pyramid5:
-        elementToCurrentCoordinatesInPlaceT<::DRT::Element::pyramid5>(xyze, eleCoord);
-        break;
-      default:
-        std::cout << DistypeToString(distype) << std::endl;
-        dserror("add your 3D distype to this switch!");
-        break;
-    }
-    return;
-  }
-
-
-
   /*!
   \brief transforms a point in element coordinates to a point
          in current coordinates with respect to a given element
@@ -132,8 +44,6 @@ namespace CORE::GEO
 
     return;
   }
-
-
 
   /*!
   \brief transforms a point in element coordinates to a point
@@ -202,8 +112,6 @@ namespace CORE::GEO
     return;
   }
 
-
-
   /*!
   \brief computes starting value for current to volume element computation
   \param xsi                 (in)   starting vector
@@ -260,7 +168,6 @@ namespace CORE::GEO
     }
     return;
   }
-
 
   /*!
   \brief computes starting value for current to volume element computation with a fast guess
@@ -663,8 +570,6 @@ namespace CORE::GEO
     return true;
   }
 
-
-
   /*!
   \brief updates the system matrix at the corresponding element coordinates for the
          computation if a node in current coordinates lies within an element
@@ -688,8 +593,6 @@ namespace CORE::GEO
         for (int inode = 0; inode < numNodes; ++inode)
           A(isd, jsd) += xyze(isd, inode) * deriv1(jsd, inode);
   }
-
-
 
   /*!
   \brief updates the rhs at the corresponding element coordinates for the
@@ -715,7 +618,6 @@ namespace CORE::GEO
       for (int inode = 0; inode < numNodes; ++inode) b(isd) -= xyze(isd, inode) * funct(inode);
     }
   }
-
 
   /*!
   \brief transforms a point in current coordinates to a point
@@ -904,88 +806,6 @@ namespace CORE::GEO
     return nodeWithinElement;
   }
 
-
-
-  /*----------------------------------------------------------------------*
-   | GM:  transforms a node in current coordinates            u.may 12/07 |
-   |      into element coordinates                                        |
-   *----------------------------------------------------------------------*/
-  template <class M1, class V3>
-  CORE::LINALG::Matrix<3, 1> currentToVolumeElementCoordinatesExact(
-      const ::DRT::Element::DiscretizationType distype, const M1& xyze, const V3& x,
-      const double tol)
-  {
-    CORE::LINALG::Matrix<3, 1> xsi;
-    currentToVolumeElementCoordinates(distype, xyze, x, xsi);
-
-    switch (distype)
-    {
-      case ::DRT::Element::hex8:
-      case ::DRT::Element::hex20:
-      case ::DRT::Element::hex27:
-      {
-        // rounding 1 and -1 to be exact for the CDT
-        for (int j = 0; j < 3; j++)
-        {
-          if (fabs((fabs(xsi(j)) - 1.0)) < tol && xsi(j) < 0) xsi(j) = -1.0;
-          if (fabs((fabs(xsi(j)) - 1.0)) < tol && xsi(j) > 0) xsi(j) = 1.0;
-        }
-        break;
-      }
-      case ::DRT::Element::tet4:
-      case ::DRT::Element::tet10:
-      {
-        // round r on 0 or 1
-        // round s on 0 or 1
-        // round t on 0 or 1-r-s
-        if (fabs(xsi(0)) < tol) xsi(0) = 0.0;
-        if (fabs(xsi(0) - 1.0) < tol) xsi(0) = 1.0;
-
-        if (fabs(xsi(1)) < tol) xsi(1) = 0.0;
-        if (fabs(xsi(1) - 1.0) < tol) xsi(1) = 1.0;
-
-        if (fabs(xsi(2) - (1.0 - xsi(0) - xsi(1))) < 3 * tol) xsi(2) = 1.0 - xsi(0) - xsi(1);
-        if (fabs(xsi(2)) < 2 * tol) xsi(2) = 0.0;
-
-        break;
-      }
-      case ::DRT::Element::wedge6:
-      case ::DRT::Element::wedge15:
-      {
-        if (fabs(xsi(0)) < tol) xsi(0) = 0.0;
-        if (fabs(xsi(0) - 1.0) < tol) xsi(0) = 1.0;
-
-        if (fabs(xsi(1)) < tol) xsi(1) = 0.0;
-        if (fabs(xsi(1) - 1.0) < tol) xsi(1) = 1.0;
-
-        if (fabs((fabs(xsi(2)) - 1.0)) < tol && xsi(2) < 0) xsi(2) = -1.0;
-        if (fabs((fabs(xsi(2)) - 1.0)) < tol && xsi(2) > 0) xsi(2) = 1.0;
-
-        break;
-      }
-      case ::DRT::Element::pyramid5:
-      {
-        if (fabs(xsi(2)) < tol) xsi(2) = 0.0;
-        if (fabs(xsi(2) - 1.0) < tol) xsi(2) = 1.0;
-
-        if (fabs(xsi(0)) < -1.0 + xsi(2) - tol) xsi(0) = -1.0 + xsi(2);
-        if (fabs(xsi(0)) > 1.0 - xsi(2) + tol) xsi(0) = 1.0 - xsi(2);
-
-        if (fabs(xsi(1)) < -1.0 + xsi(2) - tol) xsi(1) = -1.0 + xsi(2);
-        if (fabs(xsi(1)) > 1.0 - xsi(2) + tol) xsi(1) = 1.0 - xsi(2);
-
-        break;
-      }
-      default:
-        dserror("element type not implemented");
-        break;
-    };
-
-    return xsi;
-  }
-
-
-
   /*!
   \brief  updates the 3x2 Jacobian matrix for the computation of the
           surface element coordinates for a point in physical coordinates
@@ -1010,8 +830,6 @@ namespace CORE::GEO
 
     return;
   }
-
-
 
   /*!
   \brief  updates the nonlinear equations for the computation of the
@@ -1038,8 +856,6 @@ namespace CORE::GEO
     F -= x;
     return;
   }
-
-
 
   /*!
   \brief  updates the nonlinear equations for the computation of the
@@ -1076,8 +892,6 @@ namespace CORE::GEO
         for (int k = 0; k < 3; ++k)
           A(i, j) += Jacobi(k, i) * Jacobi(k, j) + F(k) * tensor3order(k, j * 2 + i);
   }
-
-
 
   /*!
   \brief compute element coordinates from a given point
@@ -1135,14 +949,8 @@ namespace CORE::GEO
       eleCoord += dx;
     }
 
-    //  std::cout << "nodeWithinElement: " << nodeWithinElement << std::endl;
-    //  printf("iter = %d\n", iter);
-    //  printf("xsi0 = %20.16f\t, xsi1 = %20.16f\t, res = %20.16f\t, tol = %20.16f\n",
-    //  eleCoord(0),eleCoord(1), residual, CORE::GEO::TOL14); exit(1);
     return;
   }
-
-
 
   /*----------------------------------------------------------------------*
    |  RQI:    compute element coordinates from a given point              |
@@ -1181,8 +989,6 @@ namespace CORE::GEO
     }
   }
 
-
-
   /*!
   \brief compute element coordinates from a given point
          in the 3-dim physical space lies on a given line element
@@ -1190,8 +996,6 @@ namespace CORE::GEO
   \param xyze_lineElement         (in) :  element nodal coordinates
   \param physCoord                (in) :  physical coordinates (x,y,z)
   \param eleCoord                 (in) :  element coordinates (r)
-
-   RQI
    */
   template <::DRT::Element::DiscretizationType DISTYPE, class M>
   static void currentToLineElementCoordinatesT(const M& xyze_lineElement,
@@ -1241,10 +1045,6 @@ namespace CORE::GEO
 
       F -= physCoord;
 
-      // std::cout << "F " << F << std::endl;
-      // std::cout << "F_deriv1 " << F_deriv1 << std::endl;
-      // std::cout << "F_deriv2 " << F_deriv2 << std::endl;
-
       // determine system matrix A and rhs b
       double A = 0.0;
       double b = 0.0;
@@ -1263,17 +1063,11 @@ namespace CORE::GEO
       // solve scalar linear equation  Delta_x = -b/A
       eleCoord(0) += (-1) * b / A;
 
-      // std::cout << " A = " << A << std::endl;
-      // std::cout << " b = " << b << std::endl;
-      // std::cout << " x = " << eleCoord(0) << std::endl;
-
       if (iter >= maxiter || fabs(eleCoord(0)) > CORE::GEO::TOLPLUS8) break;
 
       residual = fabs(b);
     }
   }
-
-
 
   /*----------------------------------------------------------------------*
    |  RQI:    compute element coordinates from a given point              |
@@ -1299,8 +1093,6 @@ namespace CORE::GEO
         break;
     }
   }
-
-
 
   /*----------------------------------------------------------------------*
    | GM:      transforms a point in global coordinates        schott 07/12|
