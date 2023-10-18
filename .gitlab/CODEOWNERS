@@ -308,8 +308,6 @@ torsion3/                  @baci/team_structure
 
 truss3/                    @baci/team_structure
 
-truss3cl/                  @baci/team_structure
-
 tsi/                       @baci/team_thermo
 
 tutorial/                  @baci/team_infrastructure
