@@ -481,16 +481,6 @@ namespace CORE::DRT::UTILS
       const ::DRT::Element::DiscretizationType& distype);
 
   /*!
-\brief  Returns the number of corner nodes
-        for each surface element of a given volume discretization type
-
-\return   number of corner nodes for each surface element of a given volume
-           of the discretization type
- */
-  std::vector<int> getNumberOfSurfaceElementCornerNodes(
-      const ::DRT::Element::DiscretizationType& distype);
-
-  /*!
  \brief Returns the number of lines
         for each discretization type
    */
@@ -572,49 +562,12 @@ namespace CORE::DRT::UTILS
       const ::DRT::Element::DiscretizationType distype);
 
   /*!
-  \brief Fills a vector< std::vector<int> > with all surfaces for every node
-         for each discretization type
-
-  \return map with all surfaces adjacent to each node
-  */
-  std::vector<std::vector<int>> getEleNodeNumbering_nodes_surfaces(
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
   \brief Fills a CORE::LINALG::SerialDenseMatrix with parameter space coordinates for each node
          for each discretization type
 
   \return map of parameter space coordinates for all nodes
   */
   CORE::LINALG::SerialDenseMatrix getEleNodeNumbering_nodes_paramspace(
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
-  \brief Returns a vector with the surface ID s a point in 3d reference coordinates
-  \      is lying on for each discretization type
-  */
-  std::vector<int> getSurfaces(
-      const CORE::LINALG::Matrix<3, 1>& rst,            ///< point in reference coordinates
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-
-  /*!
-   \brief Returns a vector with the line ID s a point in 3d reference coordinates
-   \      is lying on for each discretization type
-   */
-  std::vector<int> getLines(
-      const CORE::LINALG::Matrix<3, 1>& rst,            ///< point in reference coordinates
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
-
-  /*!
-  \brief Returns the node ID s a point in 3d reference coordinates
-  \      is lying on for each discretization type
-  */
-  int getNode(const CORE::LINALG::Matrix<3, 1>& rst,    ///< point in reference coordinates
       const ::DRT::Element::DiscretizationType distype  ///< discretization type
   );
 
@@ -629,26 +582,6 @@ namespace CORE::DRT::UTILS
   template <int probdim = 3>
   CORE::LINALG::Matrix<probdim, 1> GetNodeCoordinates(
       const int nodeId, const ::DRT::Element::DiscretizationType distype);
-
-  /*!
-  \brief Returns a with coordinates in reference system of the cutter element
-  \      according to the line Id for each discretization type
-  */
-  CORE::LINALG::Matrix<3, 1> getLineCoordinates(const int lineId,  ///< line ID
-      const double lineCoord,                                      ///< line coordinate
-      const ::DRT::Element::DiscretizationType distype             ///< discretization type
-  );
-
-  /*!
-  \brief    Returns the index of a  higher order node lying
-            between two given corner nodes of an edge of an higher order element
-            for each discretization type
-
-  */
-  int getHigherOrderIndex(const int index1,             ///< index of corner node
-      const int index2,                                 ///< index of corner node
-      const ::DRT::Element::DiscretizationType distype  ///< discretization type
-  );
 
   /*!
   \brief    Returns the indices of the element corner nodes lying
@@ -669,77 +602,6 @@ namespace CORE::DRT::UTILS
   int getDimension(
       const ::DRT::Element::DiscretizationType distype  ///< element-discretization type
   );
-
-  //  /*!
-  //  \brief    Returns the Shards::Key based on its discretization-type
-  //            Template version
-  //  */
-  //  template<::DRT::Element::DiscretizationType DISTYPE>
-  //  struct DisTypeToShardsKey {};
-  //  template<> struct DisTypeToShardsKey<::DRT::Element::point1>   { static const unsigned
-  //  shardsKey = shards::Particle::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::line2>    { static const unsigned shardsKey =
-  //  shards::Line<2>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::line3>    {
-  //  static const unsigned shardsKey = shards::Line<3>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::quad4>    { static const unsigned shardsKey =
-  //  shards::Quadrilateral<4>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::quad8>
-  //  { static const unsigned shardsKey = shards::Quadrilateral<8>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::quad9>    { static const unsigned shardsKey =
-  //  shards::Quadrilateral<9>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::tri3>
-  //  { static const unsigned shardsKey = shards::Triangle<3>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::tri6>     { static const unsigned shardsKey =
-  //  shards::Triangle<6>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::hex8>     {
-  //  static const unsigned shardsKey = shards::Hexahedron<8>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::hex20>    { static const unsigned shardsKey =
-  //  shards::Hexahedron<20>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::hex27> {
-  //  static const unsigned shardsKey = shards::Hexahedron<27>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::tet4>     { static const unsigned shardsKey =
-  //  shards::Tetrahedron<4>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::tet10> {
-  //  static const unsigned shardsKey = shards::Tetrahedron<10>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::wedge6>   { static const unsigned shardsKey =
-  //  shards::Wedge<6>::key; }; template<> struct DisTypeToShardsKey<::DRT::Element::wedge15>  {
-  //  static const unsigned shardsKey = shards::Wedge<15>::key; }; template<> struct
-  //  DisTypeToShardsKey<::DRT::Element::pyramid5> { static const unsigned shardsKey =
-  //  shards::Pyramid<5>::key; };
-  //
-  //  /*!
-  //  \brief    Returns the discretization-type based on its Shards::Key
-  //            Template version
-  //  */
-  //  template<unsigned SHARDSKEY>
-  //  struct ShardsKeyToDisType {};
-  //  template<> struct ShardsKeyToDisType<shards::Particle::key>         { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::point1; }; template<> struct
-  //  ShardsKeyToDisType<shards::Line<2>::key>          { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::line2; }; template<> struct
-  //  ShardsKeyToDisType<shards::Line<3>::key>          { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::line3; }; template<> struct
-  //  ShardsKeyToDisType<shards::Quadrilateral<4>::key> { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::quad4; }; template<> struct
-  //  ShardsKeyToDisType<shards::Quadrilateral<8>::key> { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::quad8; }; template<> struct
-  //  ShardsKeyToDisType<shards::Quadrilateral<9>::key> { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::quad9; }; template<> struct
-  //  ShardsKeyToDisType<shards::Triangle<3>::key>      { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tri3; }; template<> struct
-  //  ShardsKeyToDisType<shards::Triangle<6>::key>      { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tri6; }; template<> struct
-  //  ShardsKeyToDisType<shards::Hexahedron<8>::key>    { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::hex8; }; template<> struct
-  //  ShardsKeyToDisType<shards::Hexahedron<20>::key>   { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::hex20; }; template<> struct
-  //  ShardsKeyToDisType<shards::Hexahedron<27>::key>   { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::hex27; }; template<> struct
-  //  ShardsKeyToDisType<shards::Tetrahedron<4>::key>   { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tet4; }; template<> struct
-  //  ShardsKeyToDisType<shards::Tetrahedron<10>::key>  { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::tet10; }; template<> struct
-  //  ShardsKeyToDisType<shards::Wedge<6>::key>         { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::wedge6; }; template<> struct
-  //  ShardsKeyToDisType<shards::Wedge<15>::key>        { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::wedge15; }; template<> struct
-  //  ShardsKeyToDisType<shards::Pyramid<5>::key>       { static const
-  //  ::DRT::Element::DiscretizationType disType = ::DRT::Element::pyramid5; };
 
   /*!
   \brief    Returns the dimension of an element based on its discretization-type
@@ -1635,11 +1497,6 @@ namespace CORE::DRT::UTILS
     getLocalCenterPosition(distype, pos);
     return pos;
   }
-
-  /*!
-   *  returns the element size in local coordinates
-   */
-  double getSizeInLocalCoordinates(const ::DRT::Element::DiscretizationType distype);
 
   /*!
    *  returns the shape of a given boundary element (is used in various element classes
