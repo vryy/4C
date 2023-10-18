@@ -1575,7 +1575,7 @@ void INPAR::FLUID::SetValidConditions(
       DRT::Condition::SurfaceTension, true, DRT::Condition::Surface));
 
   surftension->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent("curve", {0, true, true})));
-  AddNamedReal(surftension, "gamma");
+  ::INPUT::AddNamedReal(surftension, "gamma");
 
   condlist.push_back(surftension);
 
@@ -1750,11 +1750,11 @@ void INPAR::FLUID::SetValidConditions(
       Teuchos::rcp(new ::INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  AddNamedReal(volumetric_surface_flow_cond, "Period");
-  AddNamedInt(volumetric_surface_flow_cond, "Order");
-  AddNamedInt(volumetric_surface_flow_cond, "Harmonics");
-  AddNamedReal(volumetric_surface_flow_cond, "Val");
-  AddNamedInt(volumetric_surface_flow_cond, "Funct");
+  ::INPUT::AddNamedReal(volumetric_surface_flow_cond, "Period");
+  ::INPUT::AddNamedInt(volumetric_surface_flow_cond, "Order");
+  ::INPUT::AddNamedInt(volumetric_surface_flow_cond, "Harmonics");
+  ::INPUT::AddNamedReal(volumetric_surface_flow_cond, "Val");
+  ::INPUT::AddNamedInt(volumetric_surface_flow_cond, "Funct");
 
   volumetric_surface_flow_cond->AddComponent(
       Teuchos::rcp(new ::INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",
@@ -1822,11 +1822,11 @@ void INPAR::FLUID::SetValidConditions(
       Teuchos::rcp(new ::INPUT::SelectionComponent("CorrectionFlag", "WithOutCorrection",
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"),
           Teuchos::tuple<std::string>("WithOutCorrection", "WithCorrection"), true)));
-  AddNamedReal(total_traction_correction_cond, "Period");
-  AddNamedInt(total_traction_correction_cond, "Order");
-  AddNamedInt(total_traction_correction_cond, "Harmonics");
-  AddNamedReal(total_traction_correction_cond, "Val");
-  AddNamedInt(total_traction_correction_cond, "Funct");
+  ::INPUT::AddNamedReal(total_traction_correction_cond, "Period");
+  ::INPUT::AddNamedInt(total_traction_correction_cond, "Order");
+  ::INPUT::AddNamedInt(total_traction_correction_cond, "Harmonics");
+  ::INPUT::AddNamedReal(total_traction_correction_cond, "Val");
+  ::INPUT::AddNamedInt(total_traction_correction_cond, "Funct");
 
   total_traction_correction_cond->AddComponent(
       Teuchos::rcp(new ::INPUT::SelectionComponent("NORMAL", "SelfEvaluateNormal",

@@ -200,8 +200,8 @@ void INPAR::BEAMINTERACTION::SetValidConditions(
           "PenaltyPointCouplingCondition", "Couples beam nodes that lie on the same position",
           DRT::Condition::PenaltyPointCouplingCondition, false, DRT::Condition::Point));
 
-  AddNamedReal(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
-  AddNamedReal(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");
+  ::INPUT::AddNamedReal(penalty_coupling_condition, "POSITIONAL_PENALTY_PARAMETER");
+  ::INPUT::AddNamedReal(penalty_coupling_condition, "ROTATIONAL_PENALTY_PARAMETER");
 
   condlist.push_back(penalty_coupling_condition);
 

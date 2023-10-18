@@ -124,39 +124,6 @@ namespace DRT
       std::vector<Teuchos::RCP<::INPUT::LineComponent>> inputline_;
     };
 
-
-    /// add a separator followed by a single integer value
-    /*!
-      The name on the input line becomes the name used to put the int value into DRT::Condition.
-     */
-    inline void AddNamedInt(
-        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name)
-    {
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name)));
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::IntComponent(name)));
-    }
-
-    /// add a separator followed by a single real value
-    /*!
-      The name on the input line becomes the name used to put the value into DRT::Condition.
-     */
-    inline void AddNamedReal(
-        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name)
-    {
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name)));
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::RealComponent(name)));
-    }
-
-    /// add a separator followed by a single real value
-    /*!
-      The name on the input line becomes the name used to put the value into DRT::Condition.
-     */
-    inline void AddNamedVector(
-        const Teuchos::RCP<ConditionDefinition>& conddef, const std::string& name, const int size)
-    {
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::SeparatorComponent(name)));
-      conddef->AddComponent(Teuchos::rcp(new ::INPUT::RealVectorComponent(name, size)));
-    }
   }  // namespace INPUT
 }  // namespace DRT
 

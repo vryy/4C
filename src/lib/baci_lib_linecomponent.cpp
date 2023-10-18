@@ -26,19 +26,6 @@ namespace INPUT
 
   /*----------------------------------------------------------------------*
    *----------------------------------------------------------------------*/
-  Teuchos::RCP<std::stringstream> LineComponent::PushBack(
-      const std::string& token, const Teuchos::RCP<std::stringstream>& stream)
-  {
-    Teuchos::RCP<std::stringstream> out = Teuchos::rcp(new std::stringstream());
-    (*out) << token << " ";
-    std::copy(std::istream_iterator<std::string>(*stream), std::istream_iterator<std::string>(),
-        std::ostream_iterator<std::string>(*out, " "));
-    return out;
-  }
-
-
-  /*----------------------------------------------------------------------*
-   *----------------------------------------------------------------------*/
   SeparatorComponent::SeparatorComponent(
       std::string separator, std::string description, bool optional)
       : ::INPUT::LineComponent("*SEPARATOR*", optional),
@@ -364,22 +351,19 @@ namespace INPUT
       // extract integer vector component as string
       std::string snumber;
       *condline >> snumber;
-
-      // in case 'none' is allowed as an input value
-      if ((data_.none_allowed and snumber == "none"))
+      if (!optional_ or !snumber.empty())
       {
-        nnumber = -1;
-      }
-      // in case the parameter is optional and no value is given
-      else if (optional_ and snumber.empty())
-      {
-        condline = PushBack("", condline);
-      }
-      // all other cases
-      else
-      {
-        nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
-            snumber, Name(), section_name, 1, optional_);
+        // in case 'none' is allowed as an input value
+        if ((data_.none_allowed and snumber == "none"))
+        {
+          nnumber = -1;
+        }
+        // all other cases
+        else
+        {
+          nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+              snumber, Name(), section_name, 1, optional_);
+        }
       }
       if (data_.fortran_style)
       {
@@ -516,7 +500,6 @@ namespace INPUT
         // in case the parameter is optional and no value is given
         else if (optional_ and snumber.empty())
         {
-          condline = PushBack("", condline);
           break;
         }
         // all other cases
