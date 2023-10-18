@@ -61,7 +61,7 @@ namespace UTILS
     ~ConstrManager() { return; };
 
     //! initialize this class
-    void Init(Teuchos::RCP<DRT::Discretization> discr, Teuchos::ParameterList params);
+    void Init(Teuchos::RCP<DRT::Discretization> discr, const Teuchos::ParameterList& params);
 
     /*! \brief Setup all class internal objects and members
 
