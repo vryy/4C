@@ -1,7 +1,8 @@
 /*----------------------------------------------------------------------*/
 /*! \file
 
-\brief Implementation of the Combo active skeletal muscle material
+\brief Implementation of the Combo active skeletal muscle material with variable time-dependent
+activations
 
 \level 3
 
@@ -29,8 +30,7 @@ MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
       Popt_(matdata->GetDouble("POPT")),
       lambdaMin_(matdata->GetDouble("LAMBDAMIN")),
       lambdaOpt_(matdata->GetDouble("LAMBDAOPT")),
-      c_(matdata->GetDouble("C")),
-      t_act_start_(matdata->GetDouble("ACTSTARTTIME")),
+      actFunctId_(matdata->GetInt("ACTFUNCT")),
       density_(matdata->GetDouble("DENS"))
 {
   // error handling for parameter ranges
@@ -50,11 +50,9 @@ MAT::PAR::Muscle_Combo::Muscle_Combo(Teuchos::RCP<MAT::PAR::Material> matdata)
   if (lambdaMin_ <= 0.0) dserror("Material parameter LAMBDAMIN must be postive");
   if (lambdaOpt_ <= 0.0) dserror("Material parameter LAMBDAOPT must be postive");
 
-  // prescribed activation in time intervals
-  if (beta_ < 0.0) dserror("Material parameter C must be positive or zero");
-  if (t_act_start_ < 0.0)
-    dserror("Time of start of activation ACTSTARTTIME must be positive or zero");
-
+  // id of the function prescribing the time-/space-dependent activation
+  if (actFunctId_ <= 0) dserror("Function id must be positive");
+  // function manager checks whether function with given id is available
 
   // density
   if (density_ < 0.0) dserror("DENS should be positive");
@@ -80,7 +78,8 @@ MAT::Muscle_Combo::Muscle_Combo()
       anisotropyExtension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
-          {0})
+          {0}),
+      activationFunction_(nullptr)
 {
 }
 
@@ -90,7 +89,8 @@ MAT::Muscle_Combo::Muscle_Combo(MAT::PAR::Muscle_Combo* params)
       anisotropyExtension_(true, 0.0, 0,
           Teuchos::rcp<MAT::ELASTIC::StructuralTensorStrategyBase>(
               new MAT::ELASTIC::StructuralTensorStrategyStandard(nullptr)),
-          {0})
+          {0}),
+      activationFunction_(nullptr)
 {
   // register anisotropy extension to global anisotropy
   anisotropy_.RegisterAnisotropyExtension(anisotropyExtension_);
@@ -100,6 +100,8 @@ MAT::Muscle_Combo::Muscle_Combo(MAT::PAR::Muscle_Combo* params)
       MAT::FiberAnisotropyExtension<1>::FIBER_VECTORS |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR |
       MAT::FiberAnisotropyExtension<1>::STRUCTURAL_TENSOR_STRESS);
+
+  // cannot set activation_function here, because function manager did not yet read functions
 }
 
 void MAT::Muscle_Combo::Pack(DRT::PackBuffer& data) const
@@ -131,7 +133,6 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
         "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
         type, UniqueParObjectId());
 
-
   // make sure we have a pristine material
   params_ = nullptr;
 
@@ -156,6 +157,9 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
 
+  activationFunction_ = &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+      params_->actFunctId_ - 1);
+
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
 
@@ -164,6 +168,9 @@ void MAT::Muscle_Combo::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   // Read anisotropy
   anisotropy_.SetNumberOfGaussPoints(numgp);
   anisotropy_.ReadAnisotropyFromElement(linedef);
+
+  activationFunction_ = &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+      params_->actFunctId_ - 1);
 }
 
 void MAT::Muscle_Combo::Update(CORE::LINALG::Matrix<3, 3> const& defgrd, int const gp,
@@ -333,17 +340,19 @@ void MAT::Muscle_Combo::EvaluateActiveNominalStress(Teuchos::ParameterList& para
   double timestep = params.get<double>("delta time", -1);
   if (abs(timestep + 1.0) < 1e-14) dserror("No time step size given for muscle Combo material!");
 
-  // get active microstructural parameters from params_
+  // get active parameters from params_
   const double lambdaMin = params_->lambdaMin_;
   const double lambdaOpt = params_->lambdaOpt_;
 
   const double Popt = params_->Popt_;
-  const double c = params_->c_;
-  const double t_start = params_->t_act_start_;
 
-  // compute force-time/stimulation frequency dependency Poptft
-  double Poptft =
-      MAT::UTILS::MUSCLE::EvaluateTimeDependentActiveStressTanh(Popt, 1.0, c, t_start, t_tot);
+  // get element center coordinates in reference configuration
+  const CORE::LINALG::Matrix<1, 3> eleCenterCoords =
+      params.get<CORE::LINALG::Matrix<1, 3>>("elecenter");
+
+  // compute force-time-space dependency Poptft
+  double Poptft = MAT::UTILS::MUSCLE::EvaluateTimeSpaceDependentActiveStressByFunct(
+      Popt, activationFunction_, t_tot, eleCenterCoords);
 
   // compute the force-stretch dependency fxi, its integral in the boundaries lambdaMin to lambdaM,
   // and its derivative w.r.t. lambdaM
