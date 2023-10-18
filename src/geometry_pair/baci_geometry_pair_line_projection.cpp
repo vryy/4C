@@ -18,6 +18,7 @@
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "baci_geometry_pair_line_to_volume_segmentation.H"
 #include "baci_geometry_pair_scalar_types.H"
+#include "baci_geometry_pair_utility_functions.H"
 
 
 /**
@@ -124,10 +125,14 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
 
   // Check if all points could be projected.
   if (n_valid_projections != (unsigned int)gauss_points.nquad)
-    dserror(
-        "All Gauss points need to have a valid projection. The number of Gauss points is %d, but "
-        "the number of valid projections is %d!",
+  {
+    std::stringstream error_message;
+    PrintPairInformation(error_message, pair, q_line, q_other, optional_args...);
+    dserror(error_message.str() +
+                "\nAll Gauss points need to have a valid projection. The number of Gauss points "
+                "is %d, but the number of valid projections is %d!",
         gauss_points.nquad, n_valid_projections);
+  }
 }
 
 
