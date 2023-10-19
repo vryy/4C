@@ -10,7 +10,6 @@ set(_dependencies
     binstrategy
     constraint
     contact
-    discsh3
     elemag
     fluid_ele
     immersed_problem

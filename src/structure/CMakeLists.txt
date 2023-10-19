@@ -9,7 +9,6 @@ set(_structure_dependencies
     comm
     constraint
     contact
-    discsh3
     inpar
     io
     lib

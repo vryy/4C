@@ -937,9 +937,6 @@ namespace STR
       exit(EXIT_FAILURE);
     }
 
-    //! return bool indicating if edge based integration is defined
-    bool HaveFaceDiscret() { return (facediscret_ != Teuchos::null); }
-
     /*!
     \brief Prepare time integration for contact/meshtying
 
@@ -961,11 +958,6 @@ namespace STR
     @param[in] Xslavemod Vector with modified nodal positions
     */
     void ApplyMeshInitialization(Teuchos::RCP<const Epetra_Vector> Xslavemod);
-
-
-    void AssembleEdgeBasedMatandRHS(Teuchos::ParameterList& params,
-        Teuchos::RCP<Epetra_Vector>& fint, const Teuchos::RCP<Epetra_Vector>& disp,
-        const Teuchos::RCP<Epetra_Vector>& vel);
 
     //! Prepare contact at the beginning of each new time step
     //! (call dynamic redistribution of contact interface(s) AND
@@ -1045,10 +1037,6 @@ namespace STR
 
     /// Contract the dbc map by dofs provided in Epetra_Map maptoremove
     virtual void RemoveDirichDofs(const Teuchos::RCP<const Epetra_Map> maptoremove);
-
-    /// prepares and evalutes egde-based internal face integrals
-    void EvaluateEdgeBased(Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
-        Teuchos::RCP<Epetra_Vector> systemvector1);
 
     //! @name General purpose algorithm members
     //@{
