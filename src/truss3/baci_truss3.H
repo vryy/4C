@@ -175,8 +175,6 @@ namespace DRT
 
       Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
 
-      void Print(std::ostream& os) const override;
-
       bool ReadElement(const std::string& eletype, const std::string& distype,
           DRT::INPUT::LineDefinition* linedef) override;
 

@@ -328,19 +328,6 @@ namespace DRT
       }
 
       /*!
-      \brief compute and get current tangent at specified node i.e. Tcurrnode_
-      Attention: strictly speaking, this returns the first vector of the nodal triad which is NOT
-      identical to the tangent of the centerline see also corresponding notes in implementation
-      */
-      CORE::LINALG::Matrix<3, 1> Tcurr(const int NodeID);
-
-      /*!
-      \brief get tangent of centerline at first node in reference configuration (constant over
-      element length for linear Lagrange interpolation)
-      */
-      CORE::LINALG::Matrix<3, 1> Treffirst() const;
-
-      /*!
       \brief get tangent of centerline at all nodes in reference configuration
       */
       std::vector<CORE::LINALG::Matrix<3, 1>> Tref() const { return Tref_; }
