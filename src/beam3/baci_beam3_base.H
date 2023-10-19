@@ -84,7 +84,7 @@ namespace DRT
       Beam3Base(const Beam3Base& old);
 
       //! Destructor
-      virtual ~Beam3Base(){};
+      ~Beam3Base() override{};
 
       /*!
       \brief Pack this class so it can be communicated
@@ -92,7 +92,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -100,7 +100,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /** \brief set the parameter interface ptr for the solid elements
        *
@@ -108,7 +108,7 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual void SetParamsInterfacePtr(const Teuchos::ParameterList& p);
+      void SetParamsInterfacePtr(const Teuchos::ParameterList& p) override;
 
       virtual void SetBrownianDynParamsInterfacePtr();
 
@@ -116,13 +116,13 @@ namespace DRT
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual inline bool IsParamsInterface() const { return (not interface_ptr_.is_null()); }
+      inline bool IsParamsInterface() const override { return (not interface_ptr_.is_null()); }
 
       /** \brief get access to the parameter interface pointer
        *
        *  \author hiermeier
        *  \date 04/16 */
-      virtual Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr();
+      Teuchos::RCP<DRT::ELEMENTS::ParamsInterface> ParamsInterfacePtr() override;
       virtual Teuchos::RCP<BROWNIANDYN::ParamsInterface> BrownianDynParamsInterfacePtr() const;
 
       //! computes the number of different random numbers required in each time step for generation
@@ -289,7 +289,7 @@ namespace DRT
        *
        *  \author eichinger
        *  \date 08/16 */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         dserror("not implemented");
         return -1;

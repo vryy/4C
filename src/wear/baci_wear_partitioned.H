@@ -64,20 +64,20 @@ namespace WEAR
     explicit Partitioned(const Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Partitioned();
+    ~Partitioned() override;
 
     // write output for ale and structure
-    void Output();
+    void Output() override;
 
     /// read restart data
-    virtual void ReadRestart(int step  ///< step number where the calculation is continued
-    );
+    void ReadRestart(int step  ///< step number where the calculation is continued
+        ) override;
 
     /// general time loop
-    virtual void TimeLoop();
+    void TimeLoop() override;
 
     // update ale and structure
-    void Update();
+    void Update() override;
 
    protected:
     // nothing
@@ -130,7 +130,7 @@ namespace WEAR
     virtual Teuchos::ParameterList& ParamsAle() { return alepara_; };
 
     // prepare time step for ale and structure
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     // redistribute material interfaces according to current interfaces
     void RedistributeMatInterfaces();

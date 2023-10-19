@@ -51,10 +51,10 @@ namespace NOX
       );
 
       //! Compute and store \f$F(x)\f$
-      virtual NOX::Abstract::Group::ReturnType computeF();
+      NOX::Abstract::Group::ReturnType computeF() override;
 
       //! Compute and store Jacobian \f$\frac{\partial F(x)}{\partial x}\f$
-      virtual NOX::Abstract::Group::ReturnType computeJacobian();
+      NOX::Abstract::Group::ReturnType computeJacobian() override;
 
      private:
       //! structural time integrator

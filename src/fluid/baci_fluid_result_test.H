@@ -48,7 +48,7 @@ namespace FLD
     "tractionx", "tractiony", "tractionz", "errvel", "errpre" and "divu".
     With the obvious meaning.
     */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// pointer to fluid discretization

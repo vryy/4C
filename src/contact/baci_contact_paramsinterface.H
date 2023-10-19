@@ -48,7 +48,7 @@ namespace CONTACT
   {
    public:
     //! destructor
-    virtual ~ParamsInterface(){};
+    ~ParamsInterface() override{};
 
     //! get the predictor status
     virtual bool IsPredictor() const = 0;

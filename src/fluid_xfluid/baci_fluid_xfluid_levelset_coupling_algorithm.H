@@ -40,7 +40,7 @@ namespace XFLUIDLEVELSET
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    ~Algorithm() override;
 
     /*! \brief Initialize this object
 
@@ -63,13 +63,13 @@ namespace XFLUIDLEVELSET
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+    void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
         const Teuchos::ParameterList&
             scatradyn,  ///< parameter list for scalar transport subproblem
         const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
         const std::string& disname = "scatra",       ///< name of scalar transport discretization
         const bool isale = false                     ///< ALE flag
-    );
+        ) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -89,10 +89,10 @@ namespace XFLUIDLEVELSET
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
     /// Two phase flow time loop
-    void TimeLoop();
+    void TimeLoop() override;
 
     /// Two phase flow stationary problem
     void SolveStationaryProblem();
@@ -104,7 +104,7 @@ namespace XFLUIDLEVELSET
     void Restart(int restart);
 
    protected:
-    virtual void DoAlgorithmSpecificInit();
+    void DoAlgorithmSpecificInit() override;
 
     /// convergence Check for present iteration step
     bool ConvergenceCheck(int itnum);
@@ -148,7 +148,7 @@ namespace XFLUIDLEVELSET
     /// update time
     void TimeUpdate();
     /// prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
     /// prepare outer iteration
     void PrepareOuterIteration();
 
@@ -156,7 +156,7 @@ namespace XFLUIDLEVELSET
     void SynchronicityTimeCheck();
 
     /// write output
-    void Output();
+    void Output() override;
     /// write output of initial field
     void OutputInitialField();
 

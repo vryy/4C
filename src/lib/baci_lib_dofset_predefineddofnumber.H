@@ -86,16 +86,16 @@ namespace DRT
     }
 
     /// Destructor
-    virtual ~DofSetPredefinedDoFNumber(){};
+    ~DofSetPredefinedDoFNumber() override{};
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone()
+    Teuchos::RCP<DofSet> Clone() override
     {
       return Teuchos::rcp(new DofSetPredefinedDoFNumber(*this));
     }
 
     /// Add Dof Set to list #static_dofsets_
-    virtual void AddDofSettoList()
+    void AddDofSettoList() override
     {
       if (uniqueGIDs_)
         // add to static list -> the auxiliary dofs will get unique gids
@@ -106,7 +106,8 @@ namespace DRT
     }
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    int AssignDegreesOfFreedom(const Discretization& dis, const unsigned dspos, const int start)
+    int AssignDegreesOfFreedom(
+        const Discretization& dis, const unsigned dspos, const int start) override
     {
       // redistribute internal vectors if necessary
       if (numdofpernodenodewise_ != Teuchos::null and
@@ -133,7 +134,7 @@ namespace DRT
 
    protected:
     /// get number of nodal dofs
-    virtual int NumDofPerNode(const Node& node) const
+    int NumDofPerNode(const Node& node) const override
     {
       if (numdofpernodenodewise_ == Teuchos::null)
         return numdofpernode_;
@@ -142,7 +143,7 @@ namespace DRT
     }
 
     /// get number of element dofs for this element
-    virtual int NumDofPerElement(const Element& element) const
+    int NumDofPerElement(const Element& element) const override
     {
       if (numdofperelementelewise_ == Teuchos::null)
         return numdofperelement_;
@@ -151,7 +152,7 @@ namespace DRT
     }
 
     /// get number of element dofs for this element
-    virtual int NumDofPerFace(const Element& element, int face) const
+    int NumDofPerFace(const Element& element, int face) const override
     {
       if (numdofperfacefacewise_ == Teuchos::null)
         return numdofperface_;

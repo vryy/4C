@@ -93,11 +93,11 @@ struct WriteNodalHeatfluxStep : SpecialFieldInterface
     return numdf;
   }
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, Numdf()); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, Numdf()); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
     dsassert(name.size() == 1, "Unexpected number of names");
 
@@ -211,11 +211,11 @@ struct WriteElementCenterHeatfluxStep : SpecialFieldInterface
     return numdf;
   }
 
-  virtual std::vector<int> NumDfMap() { return std::vector<int>(1, Numdf()); }
+  std::vector<int> NumDfMap() override { return std::vector<int>(1, Numdf()); }
 
-  virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
+  void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::vector<std::string>& name)
+      const std::string& groupname, const std::vector<std::string>& name) override
   {
     dsassert(name.size() == 1, "Unexpected number of names");
 

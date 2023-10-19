@@ -61,7 +61,7 @@ namespace CORE::GEO
        *
        *  \author winter
        *  \date 08/14  */
-      void Cut_Mesh(bool screenoutput = false);
+      void Cut_Mesh(bool screenoutput = false) override;
 
       /*! \brief Performs all the level set cut operations including find positions
        *  and triangulation. (Used for the test cases)

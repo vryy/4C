@@ -156,18 +156,18 @@ namespace FLD
       {
       }
 
-      void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params)
+      void Integrate(bool flag, Teuchos::RCP<Teuchos::ParameterList>& params) override
       {
         reduced_D_time_integ_->Integrate(true, params);
       }
 
-      void SaveState() { reduced_D_time_integ_->SaveState(); }
+      void SaveState() override { reduced_D_time_integ_->SaveState(); }
 
-      void LoadState() { reduced_D_time_integ_->LoadState(); }
+      void LoadState() override { reduced_D_time_integ_->LoadState(); }
 
-      void TimeUpdate() { reduced_D_time_integ_->TimeUpdate(); }
+      void TimeUpdate() override { reduced_D_time_integ_->TimeUpdate(); }
 
-      ~Fluid_couplingWrapper(){};
+      ~Fluid_couplingWrapper() override{};
 
      private:
       //! Reduced-D artery network time integration

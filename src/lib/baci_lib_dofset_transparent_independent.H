@@ -50,17 +50,17 @@ namespace DRT
     /*!
     \brief Destructor
     */
-    virtual ~TransparentIndependentDofSet() { return; }
+    ~TransparentIndependentDofSet() override { return; }
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new IndependentDofSet(*this)); }
+    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new IndependentDofSet(*this)); }
 
     /// Assign dof numbers to all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
    protected:
-    virtual int NumDofPerNode(const DRT::Node& node) const;
+    int NumDofPerNode(const DRT::Node& node) const override;
 
 
   };  // class TransparentDofSet

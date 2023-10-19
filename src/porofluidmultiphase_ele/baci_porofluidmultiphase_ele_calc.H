@@ -57,7 +57,7 @@ namespace DRT
 
      public:
       /// virtual destructor
-      virtual ~PoroFluidMultiPhaseEleCalc(){};
+      ~PoroFluidMultiPhaseEleCalc() override{};
 
       //! Singleton access method
       static PoroFluidMultiPhaseEleCalc<distype>* Instance(
@@ -86,10 +86,10 @@ namespace DRT
       /*!
         Generic virtual interface function. Called via base pointer.
        */
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec) override;
 
      protected:
       /*========================================================================*/

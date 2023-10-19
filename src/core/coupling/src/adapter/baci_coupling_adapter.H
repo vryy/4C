@@ -286,7 +286,7 @@ namespace CORE::ADAPTER
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
         Teuchos::RCP<Epetra_Vector> mv  ///< master vector (to be transferred)
-    ) const
+    ) const override
     {
       return MasterToSlave(mv.getConst());
     }
@@ -294,7 +294,7 @@ namespace CORE::ADAPTER
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<Epetra_Vector> sv  ///< slave vector (to be transferred)
-    ) const
+    ) const override
     {
       return SlaveToMaster(sv.getConst());
     }
@@ -318,7 +318,7 @@ namespace CORE::ADAPTER
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<Epetra_MultiVector> mv  ///< master vector (to be transferred)
-    ) const
+    ) const override
     {
       return MasterToSlave(mv.getConst());
     }
@@ -326,7 +326,7 @@ namespace CORE::ADAPTER
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
         Teuchos::RCP<Epetra_MultiVector> sv  ///< slave vector (to be transferred)
-    ) const
+    ) const override
     {
       return SlaveToMaster(sv.getConst());
     }
@@ -334,12 +334,12 @@ namespace CORE::ADAPTER
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
         Teuchos::RCP<const Epetra_Vector> mv  ///< master vector (to be transferred)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<const Epetra_Vector> sv  ///< slave vector (to be transferred)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_FEVector> MasterToSlave(
@@ -354,24 +354,24 @@ namespace CORE::ADAPTER
     /// transfer a dof vector from master to slave
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<const Epetra_MultiVector> mv  ///< master vector (to be transferred)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from slave to master
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
         Teuchos::RCP<const Epetra_MultiVector> sv  ///< slave vector (to be transferred)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from master to slave
     void MasterToSlave(
         Teuchos::RCP<const Epetra_MultiVector> mv,  ///< master vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> sv         ///< slave vector (containing result)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from slave to master
     void SlaveToMaster(
         Teuchos::RCP<const Epetra_MultiVector> sv,  ///< slave vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> mv         ///< master vector (containing result)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from master to slave
     void MasterToSlave(const Epetra_IntVector& mv,  ///< master vector (to be transferred)
@@ -389,10 +389,10 @@ namespace CORE::ADAPTER
     //@{
 
     /// the interface dof map of the master side
-    Teuchos::RCP<const Epetra_Map> MasterDofMap() const { return masterdofmap_; }
+    Teuchos::RCP<const Epetra_Map> MasterDofMap() const override { return masterdofmap_; }
 
     /// the interface dof map of the slave side
-    Teuchos::RCP<const Epetra_Map> SlaveDofMap() const { return slavedofmap_; }
+    Teuchos::RCP<const Epetra_Map> SlaveDofMap() const override { return slavedofmap_; }
 
     /// the permuted interface dof map of the master side
     Teuchos::RCP<const Epetra_Map> PermMasterDofMap() const { return permmasterdofmap_; }

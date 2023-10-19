@@ -43,27 +43,27 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// virtual destructor
-    virtual ~LevelSetAlgorithm();
+    ~LevelSetAlgorithm() override;
 
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
 
     /// initialize level-set algorithm
-    virtual void Init();
+    void Init() override;
 
     /// setup level-set algorithm
-    virtual void Setup();
+    void Setup() override;
 
     /// time loop
-    void TimeLoop();
+    void TimeLoop() override;
 
     /// output solution and restart data to file
-    void Output(const int num = 0);
+    void Output(const int num = 0) override;
 
     /// read restart data
-    virtual void ReadRestart(
-        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) = 0;
+    void ReadRestart(
+        const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override = 0;
 
     //! set the velocity field (zero or field by function) (pure level-set problems)
     void SetVelocityField(bool init = false);
@@ -88,20 +88,20 @@ namespace SCATRA
     void TestResults() override;
 
     /// set time and step value
-    void SetTimeStep(const double time, const int step);
+    void SetTimeStep(const double time, const int step) override;
 
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
 
     /// setup the variables to do a new time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// solve level-set equation
-    void Solve();
+    void Solve() override;
 
     /// calculate error compared to analytical solution
-    void EvaluateErrorComparedToAnalyticalSol();
+    void EvaluateErrorComparedToAnalyticalSol() override;
 
    protected:
     virtual void GetInitialVolumeOfMinusDomain(const Teuchos::RCP<const Epetra_Vector>& phinp,
@@ -187,7 +187,7 @@ namespace SCATRA
 
    private:
     /// add parameters depending of the problem, i.e., loma, level-set, ...
-    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params);
+    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params) override;
 
     /// manipulate velocity field away from the interface
     void ManipulateFluidFieldForGfunc();

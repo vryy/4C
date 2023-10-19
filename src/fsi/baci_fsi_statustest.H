@@ -72,14 +72,14 @@ namespace NOX
           ScaleType stype = Scaled);
 
       /// do the check
-      virtual NOX::StatusTest::StatusType checkStatus(
-          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType);
+      NOX::StatusTest::StatusType checkStatus(
+          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 
       /// get the result
-      virtual NOX::StatusTest::StatusType getStatus() const;
+      NOX::StatusTest::StatusType getStatus() const override;
 
       /// output
-      virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
+      std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
       /* @name Accessor Functions
          Used to query current values of variables in the status test.
@@ -184,7 +184,7 @@ namespace NOX
           ScaleType stype = Scaled);
 
      protected:
-      double computeNorm(const NOX::Abstract::Group& grp);
+      double computeNorm(const NOX::Abstract::Group& grp) override;
 
      private:
       const CORE::LINALG::MultiMapExtractor extractor_;
@@ -202,7 +202,7 @@ namespace NOX
           ScaleType stype = Scaled);
 
      protected:
-      double computeNorm(const NOX::Abstract::Group& grp);
+      double computeNorm(const NOX::Abstract::Group& grp) override;
 
      private:
       const CORE::LINALG::MapExtractor extractor1_;
@@ -242,14 +242,14 @@ namespace NOX
       GenericNormUpdate(std::string name, double tol, ScaleType stype = Scaled);
 
       //! Destructor.
-      virtual ~GenericNormUpdate();
+      ~GenericNormUpdate() override;
 
-      virtual NOX::StatusTest::StatusType checkStatus(
-          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType);
+      NOX::StatusTest::StatusType checkStatus(
+          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 
-      virtual NOX::StatusTest::StatusType getStatus() const;
+      NOX::StatusTest::StatusType getStatus() const override;
 
-      virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
+      std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
       /* @name Access Functions
          Used to query current values of variables in the status test.
@@ -310,7 +310,7 @@ namespace NOX
 
      protected:
       /// compute the norm of a given vector
-      virtual double computeNorm(const Epetra_Vector& v);
+      double computeNorm(const Epetra_Vector& v) override;
 
      private:
       const CORE::LINALG::MultiMapExtractor extractor_;
@@ -331,14 +331,14 @@ namespace NOX
       MinIters(int minIterations, const NOX::Utils* u = nullptr);
 
       //! Destructor.
-      virtual ~MinIters();
+      ~MinIters() override;
 
-      virtual NOX::StatusTest::StatusType checkStatus(
-          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType);
+      NOX::StatusTest::StatusType checkStatus(
+          const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 
-      virtual NOX::StatusTest::StatusType getStatus() const;
+      NOX::StatusTest::StatusType getStatus() const override;
 
-      virtual std::ostream& print(std::ostream& stream, int indent = 0) const;
+      std::ostream& print(std::ostream& stream, int indent = 0) const override;
 
       //! Returns the Minimum number of iterations set in the constructor.
       virtual int getMinIters() const;

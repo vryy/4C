@@ -494,7 +494,7 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling3dQuad() {}
+    ~Coupling3dQuad() override {}
 
     //! @name Access methods
 
@@ -502,13 +502,13 @@ namespace MORTAR
      \brief Get coupling slave integration element
 
      */
-    MORTAR::IntElement& SlaveIntElement() const { return sintele_; }
+    MORTAR::IntElement& SlaveIntElement() const override { return sintele_; }
 
     /*!
      \brief Get coupling master integration element
 
      */
-    MORTAR::IntElement& MasterIntElement() const { return mintele_; }
+    MORTAR::IntElement& MasterIntElement() const override { return mintele_; }
 
    protected:
     // don't want = operator and cctor
@@ -668,9 +668,9 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling3dQuadManager() {}
+    ~Coupling3dQuadManager() override {}
 
-    INPAR::MORTAR::LagMultQuad LagMultQuad()
+    INPAR::MORTAR::LagMultQuad LagMultQuad() override
     {
       return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -679,31 +679,31 @@ namespace MORTAR
      \brief Get coupling slave element
 
      */
-    virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
+    MORTAR::MortarElement& SlaveElement() const override { return *sele_; }
 
     /*!
      \brief Get one specific coupling master element
 
      */
-    virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
+    MORTAR::MortarElement& MasterElement(int k) const override { return *(mele_[k]); }
 
     /*!
      \brief Get all coupling master elements
 
      */
-    virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+    std::vector<MORTAR::MortarElement*> MasterElements() const override { return mele_; }
 
     /*!
      \brief Get integration type
 
      */
-    INPAR::MORTAR::IntType IntType() { return integrationtype_; }
+    INPAR::MORTAR::IntType IntType() override { return integrationtype_; }
 
     /*!
      \brief Get coupling type
 
      */
-    virtual const bool& Quad() { return quad_; }
+    const bool& Quad() override { return quad_; }
 
     // @
 
@@ -712,7 +712,7 @@ namespace MORTAR
      \brief Evaluate mortar-coupling pairs
 
      */
-    virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
      \brief Split MortarElements into IntElements for 3D quadratic coupling

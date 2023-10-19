@@ -40,7 +40,7 @@ namespace NOX
         Required(){};
 
         //! Destructor
-        virtual ~Required(){};
+        ~Required() override{};
 
         //! returns the right-hand-side norms of the primary DoF fields
         virtual double GetPrimaryRHSNorms(const Epetra_Vector& F,

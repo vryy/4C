@@ -66,166 +66,166 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TimInt();
+    ~TimInt() override;
 
-    virtual void Init() = 0;
+    void Init() override = 0;
 
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() = 0;
-    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual()
+    Teuchos::RCP<const Epetra_Vector> RHS() override = 0;
+    Teuchos::RCP<const Epetra_Vector> TrueResidual() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp()
+    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() = 0;
-    virtual Teuchos::RCP<const Epetra_Vector> Velaf()
+    Teuchos::RCP<const Epetra_Vector> Velnp() override = 0;
+    Teuchos::RCP<const Epetra_Vector> Velaf() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() = 0;
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm()
+    Teuchos::RCP<const Epetra_Vector> Veln() override = 0;
+    Teuchos::RCP<const Epetra_Vector> Velnm() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Accnp()
+    Teuchos::RCP<const Epetra_Vector> Accnp() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Accn()
+    Teuchos::RCP<const Epetra_Vector> Accn() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Accnm()
+    Teuchos::RCP<const Epetra_Vector> Accnm() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Accam()
+    Teuchos::RCP<const Epetra_Vector> Accam() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Scaaf()
+    Teuchos::RCP<const Epetra_Vector> Scaaf() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Scaam()
+    Teuchos::RCP<const Epetra_Vector> Scaam() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Hist()
+    Teuchos::RCP<const Epetra_Vector> Hist() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> GridVel()
+    Teuchos::RCP<const Epetra_Vector> GridVel() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> GridVeln()
+    Teuchos::RCP<const Epetra_Vector> GridVeln() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp()
+    Teuchos::RCP<const Epetra_Vector> Dispnp() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn()
+    Teuchos::RCP<const Epetra_Vector> Dispn() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel()
+    Teuchos::RCP<const Epetra_Vector> ConvectiveVel() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> FsVel()
+    Teuchos::RCP<const Epetra_Vector> FsVel() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> StdVeln()
+    Teuchos::RCP<Epetra_Vector> StdVeln() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> StdVelnp()
+    Teuchos::RCP<Epetra_Vector> StdVelnp() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> StdVelaf()
+    Teuchos::RCP<Epetra_Vector> StdVelaf() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { return DofRowMap(0); }
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds);
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override { return DofRowMap(0); }
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override;
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual const Teuchos::RCP<DRT::Discretization>& Discretization() { return discret_; }
-    virtual Teuchos::RCP<const DRT::DofSet> DofSet()
+    const Teuchos::RCP<DRT::Discretization>& Discretization() override { return discret_; }
+    Teuchos::RCP<const DRT::DofSet> DofSet() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> Stepinc()
+    Teuchos::RCP<const Epetra_Vector> Stepinc() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual void Integrate() = 0;
-    virtual void PrepareTimeStep()
+    void Integrate() override = 0;
+    void PrepareTimeStep() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
-    virtual void PrepareSolve()
+    void PrepareSolve() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
@@ -234,51 +234,51 @@ namespace FLD
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return false;
     }
-    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment)
+    void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
-    virtual void Update() = 0;
-    virtual void StatisticsAndOutput()
+    void Update() override = 0;
+    void StatisticsAndOutput() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
-    virtual void Output()
+    void Output() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
-    virtual void StatisticsOutput()
+    void StatisticsOutput() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
-    virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
-    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter()
+    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override { return output_; }
+    const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
 
 
-    virtual void Solve() = 0;
+    void Solve() override = 0;
 
-    virtual void CalcIntermediateSolution() { dserror("Not implemented in the base class"); }
+    void CalcIntermediateSolution() override { dserror("Not implemented in the base class"); }
     /// get the linear solver object used for this field
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver()
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap()
+    Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }  // only used for FSI
-    virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap()
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<const Epetra_Map> PressureRowMap()
+    Teuchos::RCP<const Epetra_Map> PressureRowMap() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -300,26 +300,26 @@ namespace FLD
 
 
     /// the mesh map contains all velocity dofs that are covered by an ALE node
-    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0)
+    void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// scaling factor needed to convert the residual to real forces
-    virtual double ResidualScaling() const = 0;
+    double ResidualScaling() const override = 0;
 
-    virtual double TimeScaling() const
+    double TimeScaling() const override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return 1337.0;
     }
 
     /// return time integration factor
-    virtual double TimIntParam() const = 0;
+    double TimIntParam() const override = 0;
 
     /// communication object at the interface (neglecting pressure dofs)
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
     {
       dserror("Implemented in the fluid wrapper and derived classes");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
@@ -327,34 +327,34 @@ namespace FLD
     }
 
     /// communication object at the interface needed for fpsi problems (including pressure dofs)
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const override
     {
       dserror("Implemented in the fluid wrapper and derived classes");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
       return ret;
     }
 
-    virtual void ReadRestart(int step)
+    void ReadRestart(int step) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    virtual void SetRestart(const int step, const double time,
-        Teuchos::RCP<const Epetra_Vector> readvelnp, Teuchos::RCP<const Epetra_Vector> readveln,
-        Teuchos::RCP<const Epetra_Vector> readvelnm, Teuchos::RCP<const Epetra_Vector> readaccnp,
-        Teuchos::RCP<const Epetra_Vector> readaccn)
+    void SetRestart(const int step, const double time, Teuchos::RCP<const Epetra_Vector> readvelnp,
+        Teuchos::RCP<const Epetra_Vector> readveln, Teuchos::RCP<const Epetra_Vector> readvelnm,
+        Teuchos::RCP<const Epetra_Vector> readaccnp,
+        Teuchos::RCP<const Epetra_Vector> readaccn) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    virtual double Time() const { return time_; }
-    virtual int Step() const { return step_; }
-    virtual double Dt() const { return dta_; }
+    double Time() const override { return time_; }
+    int Step() const override { return step_; }
+    double Dt() const override { return dta_; }
 
     //! increment time and step value
-    virtual void IncrementTimeAndStep();
+    void IncrementTimeAndStep() override;
 
     //! @name Time step size adaptivity in monolithic FSI
     //@{
@@ -367,7 +367,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void TimeStepAuxiliar()
+    void TimeStepAuxiliar() override
     {
       dserror("We do this in the Adapter until time adaptivity is available in the fluid field.");
     }
@@ -376,7 +376,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void IndicateErrorNorms(
+    void IndicateErrorNorms(
         double& err,       ///< L2-norm of temporal discretization error based on all DOFs
         double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
         double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
@@ -384,7 +384,7 @@ namespace FLD
         double&
             errinfcond,  ///< L-inf-norm of temporal discretization error based on interface DOFs
         double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
-    )
+        ) override
     {
       dserror("We do this in the Adapter until time adaptivity is available in the fluid field.");
     }
@@ -392,16 +392,16 @@ namespace FLD
     //@}
 
     //! set time step size
-    virtual void SetDt(const double dtnew)
+    void SetDt(const double dtnew) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     //! set time and step
-    virtual void SetTimeStep(const double time,  ///< time to set
-        const int step                           ///< time step number to set
-    )
+    void SetTimeStep(const double time,  ///< time to set
+        const int step                   ///< time step number to set
+        ) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -417,7 +417,7 @@ namespace FLD
     \author mayr.mt
     \date 08/2013
     */
-    virtual void ResetStep()
+    void ResetStep() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -435,25 +435,25 @@ namespace FLD
     \author mayr.mt
     \date 08/2013
      */
-    virtual void ResetTime(const double dtold)
+    void ResetTime(const double dtold) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     virtual void LiftDrag() const = 0;
-    virtual double EvalTime() const
+    double EvalTime() const override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return 0.0;
     }
-    virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
@@ -463,22 +463,22 @@ namespace FLD
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()
+    Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+    void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -490,51 +490,51 @@ namespace FLD
       return;
     }
     /// Apply initial mesh displacement
-    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp)
+    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc)
+    void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
-    {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
-      return;
-    }
-
-    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
-    {
-      dserror("Not implemented in the base class, may be overridden by a subclass.");
-      return;
-    }
-    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+    void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+    void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
-    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+    void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    int Itemax() const { return itemax_; }
-    virtual void SetItemax(int itemax)
+    void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override
+    {
+      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      return;
+    }
+    void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) override
+    {
+      dserror("Not implemented in the base class, may be overridden by a subclass.");
+      return;
+    }
+
+    int Itemax() const override { return itemax_; }
+    void SetItemax(int itemax) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -544,15 +544,15 @@ namespace FLD
     \brief return type of time integration scheme
 
     */
-    INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const { return timealgo_; }
+    INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const override { return timealgo_; }
 
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape()
+    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
 
-    virtual void UseBlockMatrix(bool splitmatrix)
+    void UseBlockMatrix(bool splitmatrix) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
@@ -565,148 +565,148 @@ namespace FLD
 
       \note Can only be called after a valid fluid solve.
     */
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
 
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
 
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
-        Teuchos::RCP<const Epetra_Vector> velpres)
+    Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
+        Teuchos::RCP<const Epetra_Vector> velpres) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
 
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
-        Teuchos::RCP<const Epetra_Vector> velpres)
+    Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
+        Teuchos::RCP<const Epetra_Vector> velpres) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
 
     /// set initial flow field
-    virtual void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno)
+    void SetInitialFlowField(
+        const INPAR::FLUID::InitialField initfield, const int startfuncno) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
     /// set initial porosity field
-    virtual void SetInitialPorosityField(
-        const INPAR::POROELAST::InitialField initfield, const int startfuncno)
+    void SetInitialPorosityField(
+        const INPAR::POROELAST::InitialField initfield, const int startfuncno) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// apply external forces to the fluid
-    virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext)
+    void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// apply external forces to the fluid
-    virtual void AddContributionToExternalLoads(
-        const Teuchos::RCP<const Epetra_Vector> contributing_vector)
+    void AddContributionToExternalLoads(
+        const Teuchos::RCP<const Epetra_Vector> contributing_vector) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// expand dirichlet set
-    virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     };
 
     /// contract dirichlet set
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     ///  set scalar fields within outer iteration loop
-    virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<DRT::Discretization> scatradis, int dofset)
+        Teuchos::RCP<DRT::Discretization> scatradis, int dofset) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
 
-    virtual void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<DRT::Discretization> scatradis)
+        Teuchos::RCP<DRT::Discretization> scatradis) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// set scalar fields
-    virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
-        const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1)
+    void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
+        Teuchos::RCP<const Epetra_Vector> scatraresidual,
+        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// set velocity field (separate computation)
-    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp)
+    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// provide access to the turbulence statistic manager
-    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
+    Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     };
     /// provide access to the box filter for dynamic Smagorinsky model
-    virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter()
+    Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     };
-    virtual Teuchos::RCP<FLD::Vreman> Vreman() { return Teuchos::null; };
+    Teuchos::RCP<FLD::Vreman> Vreman() override { return Teuchos::null; };
 
     /// update velocity increment after Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
+    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
     /// reset data for restart of simulation at beginning
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1)
+    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
     {
       dserror("reset function not implemented for this fluid adapter");
     };
 
     // set fluid displacement vector due to biofilm growth
-    virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
+    void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    virtual void CalculateError()
+    void CalculateError() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return;
     }
 
-    INPAR::FLUID::PhysicalType PhysicalType() const { return physicaltype_; }
+    INPAR::FLUID::PhysicalType PhysicalType() const override { return physicaltype_; }
 
    protected:
     //! fluid discretization

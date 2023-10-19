@@ -57,26 +57,26 @@ namespace ART
     \brief Destructor
 
     */
-    virtual ~ArtNetExplicitTimeInt();
+    ~ArtNetExplicitTimeInt() override;
 
     /*!
     \brief Initialization
 
     */
     void Init(const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname);
+        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     // create field test
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
 
     /*!
     \brief solve linearised artery and bifurcation
 
     */
-    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
+    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override;
 
-    void SolveScatra();
+    void SolveScatra() override;
 
     /*!
       \brief build linear system matrix and rhs
@@ -91,34 +91,34 @@ namespace ART
            iteration. Current solution becomes old solution of next
            timestep.
     */
-    void TimeUpdate();
+    void TimeUpdate() override;
 
     /*!
     \brief Initialize the saving state vectors
     */
-    void InitSaveState();
+    void InitSaveState() override;
 
     /*!
     \brief Save the current vectors into the saving state vectors
     */
-    void SaveState();
+    void SaveState() override;
 
     /*!
     \brief Load the currently saved state vectors into the currently used vectors
     */
-    void LoadState();
+    void LoadState() override;
 
     /*!
     \brief update configuration and output to file/screen
 
     */
-    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     /*!
     \brief Test results
 
     */
-    void TestResults();
+    void TestResults() override;
 
     /*!
     \brief calculate values that could be used for postprocessing
@@ -134,7 +134,7 @@ namespace ART
     \brief read restart data
 
     */
-    void ReadRestart(int step, bool CoupledTo3D = false);
+    void ReadRestart(int step, bool CoupledTo3D = false) override;
 
     //! @name access methods for composite algorithms
 

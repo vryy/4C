@@ -41,9 +41,8 @@ namespace DRT
       static const unsigned int nfaces_ = CORE::DRT::UTILS::DisTypeToNumFaces<distype>::numFaces;
 
       /// Integrate shape functions (not implemented)
-      virtual int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele,
-          DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1)
+      int IntegrateShapeFunction(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
+          const std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1) override
       {
         dserror("Not implemented");
         return 1;
@@ -62,13 +61,13 @@ namespace DRT
 
       /// Evaluate the element.
       /// Generic virtual interface function.Called via base pointer.
-      virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra, bool offdiag = false) override;
 
       /// Evaluate the element at specified gauss points.
       virtual int Evaluate(DRT::ELEMENTS::Elemag* ele, DRT::Discretization& discretization,
@@ -81,7 +80,7 @@ namespace DRT
           const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
       /// Deconstructor
-      virtual ~ElemagDiffEleCalc() {}
+      ~ElemagDiffEleCalc() override {}
 
       /// Singleton access method.
       static ElemagDiffEleCalc<distype>* Instance(

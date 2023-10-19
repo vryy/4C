@@ -155,17 +155,17 @@ namespace CORE::GEO
       ConcreteBoundingBox() : BoundingBox(){};
 
       /// destructor
-      virtual ~ConcreteBoundingBox(){};
+      ~ConcreteBoundingBox() override{};
 
       /** add a new point under consideration of the problem dimension. If a
        *  2-dimensional problem is observed, we ignore the z-coordinate and keep
        *  a value of zero. */
-      virtual void AddPoint(const double* x);
+      void AddPoint(const double* x) override;
 
       /** \brief [derived]
        *
        *  special treatment of the 2-D case if necessary. */
-      virtual bool Within(double norm, const double* x) const;
+      bool Within(double norm, const double* x) const override;
     };  // class ConcreteBoundingBox
 
   }  // namespace CUT

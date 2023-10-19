@@ -57,10 +57,10 @@ namespace MAT
       ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~ViscoElastHyper() { ; }
+      ~ViscoElastHyper() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //@}
 
@@ -71,11 +71,11 @@ namespace MAT
   class ViscoElastHyperType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ViscoElastHyperType"; }
+    std::string Name() const override { return "ViscoElastHyperType"; }
 
     static ViscoElastHyperType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ViscoElastHyperType instance_;
@@ -127,7 +127,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ViscoElastHyperType::Instance().UniqueParObjectId();
     }
@@ -140,7 +140,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -152,22 +152,22 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_viscoelasthyper; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_viscoelasthyper; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ViscoElastHyper(*this));
     }
@@ -181,19 +181,19 @@ namespace MAT
     }
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
         CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
         CORE::LINALG::Matrix<6, 6>* cmat,
-        int gp,             ///< Gauss point
-        const int eleGID);  ///< Constitutive matrix
+        int gp,                      ///< Gauss point
+        const int eleGID) override;  ///< Constitutive matrix
 
     /// setup material description
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /// update history variables
-    virtual void Update();
+    void Update() override;
 
    protected:
     /// calculates the kinematic quantities and tensors used afterwards for viscous part

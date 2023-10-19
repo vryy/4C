@@ -20,11 +20,11 @@ namespace MAT
   class ConstraintMixtureHistoryType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ConstraintMixtureHistoryType"; }
+    std::string Name() const override { return "ConstraintMixtureHistoryType"; }
 
     static ConstraintMixtureHistoryType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ConstraintMixtureHistoryType instance_;
@@ -40,15 +40,15 @@ namespace MAT
     /// construct empty history object
     ConstraintMixtureHistory() { ; }
     /// destruct history object
-    virtual ~ConstraintMixtureHistory() { ; }
+    ~ConstraintMixtureHistory() override { ; }
 
     //! @name Packing and Unpacking
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ConstraintMixtureHistoryType::Instance().UniqueParObjectId();
     }
-    virtual void Pack(DRT::PackBuffer& data) const;
-    virtual void Unpack(const std::vector<char>& data);
+    void Pack(DRT::PackBuffer& data) const override;
+    void Unpack(const std::vector<char>& data) override;
     //@}
 
     /// Setup

@@ -41,7 +41,7 @@ namespace DRT
       std::vector<double> gp_mat_alpha_;
 
      public:
-      virtual ~ScaTraEleCalcHDGCardiacMonodomain() {}
+      ~ScaTraEleCalcHDGCardiacMonodomain() override {}
 
 
       /// Singleton access method
@@ -66,10 +66,10 @@ namespace DRT
       /*========================================================================*/
 
       //! evaluate material
-      virtual void PrepareMaterials(DRT::Element* ele,       //!< the element we are dealing with
+      void PrepareMaterials(DRT::Element* ele,               //!< the element we are dealing with
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
-          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor);
+          Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor) override;
 
       //! evaluate material
       virtual void PrepareMaterialsAll(DRT::Element* ele,    //!< the element we are dealing with
@@ -85,11 +85,12 @@ namespace DRT
 
 
       //! evaluate material
-      virtual void Materials(
+      void Materials(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           CORE::LINALG::SerialDenseMatrix& difftensor, CORE::LINALG::SerialDenseVector& ivecn,
-          CORE::LINALG::SerialDenseVector& ivecnp, CORE::LINALG::SerialDenseMatrix& ivecnpderiv);
+          CORE::LINALG::SerialDenseVector& ivecnp,
+          CORE::LINALG::SerialDenseMatrix& ivecnpderiv) override;
 
       //! material ScaTra
       void MatMyocard(
@@ -100,18 +101,18 @@ namespace DRT
 
       //! update time dependent material
       void TimeUpdateMaterial(const DRT::Element* ele  //!< the element we are dealing with
-      );
+          ) override;
 
       //! get material internal state for output
       void GetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization);
+          DRT::Discretization& discretization) override;
 
       //! set material internal state after restart
       void SetMaterialInternalState(const DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization);
+          DRT::Discretization& discretization) override;
 
       //! project material field
-      int ProjectMaterialField(const DRT::Element* ele);
+      int ProjectMaterialField(const DRT::Element* ele) override;
 
       //! project material field
       int ProjectMaterialFieldAll(const DRT::Element* ele);

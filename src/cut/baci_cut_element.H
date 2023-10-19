@@ -651,21 +651,21 @@ namespace CORE::GEO
       }
 
       //! destructor
-      virtual ~ConcreteElement(){};
+      ~ConcreteElement() override{};
 
       //! return element shape
-      virtual ::DRT::Element::DiscretizationType Shape() const { return elementtype; }
+      ::DRT::Element::DiscretizationType Shape() const override { return elementtype; }
 
       //! get problem dimension
-      virtual unsigned ProbDim() const { return probdim; }
+      unsigned ProbDim() const override { return probdim; }
 
       //! get element dimension
-      virtual unsigned Dim() const { return dim; }
+      unsigned Dim() const override { return dim; }
 
       //! get the number of nodes
-      virtual unsigned NumNodes() const { return numNodesElement; }
+      unsigned NumNodes() const override { return numNodesElement; }
 
-      bool PointInside(Point* p);
+      bool PointInside(Point* p) override;
 
       void Coordinates(CORE::LINALG::Matrix<probdim, numNodesElement>& xyze) const
       {
@@ -673,7 +673,7 @@ namespace CORE::GEO
       }
 
       /*! \brief Get the coordinates of all the nodes of this linear shadow element */
-      virtual void Coordinates(double* xyze) const
+      void Coordinates(double* xyze) const override
       {
         double* x = xyze;
         for (std::vector<Node*>::const_iterator i = Nodes().begin(); i != Nodes().end(); ++i)
@@ -685,7 +685,7 @@ namespace CORE::GEO
       }
 
       /*! \brief Get the coordinates of all node of parent Quad element */
-      virtual void CoordinatesQuad(double* xyze)
+      void CoordinatesQuad(double* xyze) override
       {
         double* x = xyze;
         for (std::vector<Node*>::const_iterator i = QuadCorners().begin(); i != QuadCorners().end();
@@ -918,7 +918,7 @@ namespace CORE::GEO
 
      protected:
       //! derived
-      virtual bool LocalCoordinates(const double* xyz, double* rst)
+      bool LocalCoordinates(const double* xyz, double* rst) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);            // create view
@@ -926,7 +926,7 @@ namespace CORE::GEO
       }
 
       //! derived
-      virtual void GlobalCoordinates(const double* rst, double* xyz)
+      void GlobalCoordinates(const double* rst, double* xyz) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);    // create view
@@ -934,55 +934,55 @@ namespace CORE::GEO
       }
 
       //! derived
-      virtual void ElementCenter(double* midpoint)
+      void ElementCenter(double* midpoint) override
       {
         CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
         ElementCenter(midpoint_mat);
       }
 
       //! derived
-      virtual double Scalar(const std::vector<double>& ns, const double* rst)
+      double Scalar(const std::vector<double>& ns, const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return Scalar(ns, rst_mat);
       }
 
       //! derived
-      virtual double GetLevelSetValue(const double* xyz)
+      double GetLevelSetValue(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetValue(xyz_mat);
       }
 
-      virtual double GetLevelSetValueAtLocalCoords(const double* rst)
+      double GetLevelSetValueAtLocalCoords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetValueAtLocalCoords(rst_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradient(const double* xyz)
+      std::vector<double> GetLevelSetGradient(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetGradient(xyz_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradientAtLocalCoords(const double* rst)
+      std::vector<double> GetLevelSetGradientAtLocalCoords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetGradientAtLocalCoords(rst_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradientInLocalCoords(const double* xyz)
+      std::vector<double> GetLevelSetGradientInLocalCoords(const double* xyz) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         return GetLevelSetGradientInLocalCoords(xyz_mat);
       }
 
       //! derived
-      virtual std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const double* rst)
+      std::vector<double> GetLevelSetGradientAtLocalCoordsInLocalCoords(const double* rst) override
       {
         const CORE::LINALG::Matrix<dim, 1> rst_mat(rst, true);  // create view
         return GetLevelSetGradientAtLocalCoordsInLocalCoords(rst_mat);

@@ -38,7 +38,7 @@ namespace ADAPTER
     explicit FBIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     /// Destructor
-    virtual ~FBIStructureWrapper() { ; }
+    ~FBIStructureWrapper() override { ; }
 
     /// extracts interface velocities at \f$t_{n}\f$
     virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();

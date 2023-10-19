@@ -90,12 +90,12 @@ namespace CORE::LINALG
     \brief Destructor
 
     */
-    ~LinalgProjectedOperator();
+    ~LinalgProjectedOperator() override;
 
 
     //! @name Atribute set methods required to support the Epetra_Operator interface
 
-    virtual int SetUseTranspose(bool UseTranspose) { return (A_->SetUseTranspose(UseTranspose)); }
+    int SetUseTranspose(bool UseTranspose) override { return (A_->SetUseTranspose(UseTranspose)); }
     //! @}
 
     //! @name Mathematical functions required to support the Epetra_Operator interface (modified)
@@ -135,25 +135,25 @@ namespace CORE::LINALG
 
     */
     //! @}
-    virtual int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const;
+    int Apply(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override;
 
-    virtual double NormInf() const { return (A_->NormInf()); }
+    double NormInf() const override { return (A_->NormInf()); }
     //! @}
 
     //! @name Atribute access functions required to support the Epetra_Operator interface
-    virtual const char *Label() const { return (A_->Label()); }
+    const char *Label() const override { return (A_->Label()); }
 
-    virtual bool UseTranspose() const { return (A_->UseTranspose()); }
+    bool UseTranspose() const override { return (A_->UseTranspose()); }
 
-    virtual bool HasNormInf() const { return (A_->HasNormInf()); }
+    bool HasNormInf() const override { return (A_->HasNormInf()); }
 
-    virtual const Epetra_Comm &Comm() const { return (A_->Comm()); }
+    const Epetra_Comm &Comm() const override { return (A_->Comm()); }
 
-    virtual const Epetra_Map &OperatorDomainMap() const { return (A_->OperatorDomainMap()); }
+    const Epetra_Map &OperatorDomainMap() const override { return (A_->OperatorDomainMap()); }
 
-    virtual const Epetra_Map &OperatorRangeMap() const { return (A_->OperatorRangeMap()); }
+    const Epetra_Map &OperatorRangeMap() const override { return (A_->OperatorRangeMap()); }
 
-    virtual int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const
+    int ApplyInverse(const Epetra_MultiVector &X, Epetra_MultiVector &Y) const override
     {
       return (A_->ApplyInverse(X, Y));
     }

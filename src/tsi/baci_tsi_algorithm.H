@@ -81,7 +81,7 @@ namespace TSI
     explicit Algorithm(const Epetra_Comm& comm);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    ~Algorithm() override;
 
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
@@ -93,8 +93,8 @@ namespace TSI
     virtual void Solve() = 0;
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-        ) = 0;
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override = 0;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
@@ -106,13 +106,13 @@ namespace TSI
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep() = 0;
+    void PrepareTimeStep() override = 0;
 
     //! calculate stresses, strains, energies
     virtual void PrepareOutput() = 0;
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! write output
     virtual void Output(bool forced_writerestart = false);

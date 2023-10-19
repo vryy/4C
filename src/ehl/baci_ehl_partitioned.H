@@ -25,17 +25,17 @@ namespace EHL
         const std::string lubrication_disname);  // Problem builder
 
     /// virtual destructor
-    virtual ~Partitioned(){};
+    ~Partitioned() override{};
 
     /// setup of single fields (if needed)
-    void SetupSystem(){};
+    void SetupSystem() override{};
 
     /// time loop of coupled problem
-    virtual void Timeloop();
+    void Timeloop() override;
 
    protected:
     /// prepare time step of single fields
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! perform iteration loop between fields
     void OuterLoop();

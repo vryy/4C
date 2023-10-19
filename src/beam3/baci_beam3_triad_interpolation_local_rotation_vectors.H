@@ -43,7 +43,7 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual ~TriadInterpolationLocalRotationVectors(){};
+    ~TriadInterpolationLocalRotationVectors() override{};
     //@}
 
     //! @name Accessors
@@ -69,27 +69,27 @@ namespace LARGEROTATIONS
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions);
+    void Reset(std::vector<CORE::LINALG::Matrix<4, 1, T>> const& nodal_quaternions) override;
 
     /** \brief reset interpolation scheme with nodal triads
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void Reset(std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads);
+    void Reset(std::vector<CORE::LINALG::Matrix<3, 3, T>> const& nodal_triads) override;
 
     /** \brief compute the interpolated triad at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void GetInterpolatedTriadAtXi(
-        CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const;
+    void GetInterpolatedTriadAtXi(
+        CORE::LINALG::Matrix<3, 3, T>& triad, const double xi) const override;
 
     /** \brief compute the interpolated quaternion at any point \xi \in [-1,1] in parameter space
      *
      *  \author grill
      *  \date 01/17 */
-    virtual void GetInterpolatedQuaternionAtXi(
-        CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const;
+    void GetInterpolatedQuaternionAtXi(
+        CORE::LINALG::Matrix<4, 1, T>& quaternion, const double xi) const override;
 
     //@}
 

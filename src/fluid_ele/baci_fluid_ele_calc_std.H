@@ -25,7 +25,7 @@ namespace DRT
       typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
 
      public:
-      virtual ~FluidEleCalcStd() {}
+      ~FluidEleCalcStd() override {}
 
       /// Singleton access method
       static FluidEleCalcStd<distype>* Instance(

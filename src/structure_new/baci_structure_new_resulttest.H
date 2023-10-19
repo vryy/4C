@@ -61,7 +61,7 @@ namespace STR
     ResultTest();
 
     //! destructor
-    virtual ~ResultTest(){};
+    ~ResultTest() override{};
 
     //! initialization of class variables
     virtual void Init(

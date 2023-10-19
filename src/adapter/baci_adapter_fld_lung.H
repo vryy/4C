@@ -45,7 +45,7 @@ namespace ADAPTER
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
-    virtual void Init();
+    void Init() override;
 
     /// List of fluid-structure volume constraints
     void ListLungVolCons(std::set<int>& LungVolConIDs, int& MinLungVolConID);

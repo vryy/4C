@@ -48,10 +48,10 @@ namespace XFEM
     /*!
       \brief Destructor
      */
-    virtual ~XFEMTransparentIndependentDofSet() { return; }
+    ~XFEMTransparentIndependentDofSet() override { return; }
 
    protected:
-    virtual int NumDofPerNode(const DRT::Node& node) const;
+    int NumDofPerNode(const DRT::Node& node) const override;
 
 
    private:

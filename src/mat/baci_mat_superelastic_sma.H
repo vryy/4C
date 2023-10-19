@@ -55,7 +55,7 @@ namespace MAT
       SuperElasticSMA(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~SuperElasticSMA() { ; }
+      ~SuperElasticSMA() override { ; }
 
       //! @name material parameters
       //@{
@@ -107,7 +107,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
 
     };  // class SuperElasticSMA
@@ -118,11 +118,11 @@ namespace MAT
   class SuperElasticSMAType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "SuperElasticSMAType"; }
+    std::string Name() const override { return "SuperElasticSMAType"; }
 
     static SuperElasticSMAType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static SuperElasticSMAType instance_;
@@ -148,7 +148,7 @@ namespace MAT
     every class implementing ParObject needs a unique id defined at the
     top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return SuperElasticSMAType::Instance().UniqueParObjectId();
     }
@@ -163,7 +163,7 @@ namespace MAT
 
     \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -177,64 +177,65 @@ namespace MAT
     \param data (in) : vector storing all data to be unpacked into this
     instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     //! @name Access methods
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_superelast; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_superelast; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new SuperElasticSMA(*this));
     }
 
     //! density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     //! return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! check if history variables are already initialized
     bool Initialized() const { return (isinit_ and (xi_s_curr_ != Teuchos::null)); }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     /// Return whether the material requires the deformation gradient for its evaluation
-    virtual bool NeedsDefgrd() { return true; };
+    bool NeedsDefgrd() override { return true; };
 
     //@}
 
     //! @name Evaluation methods
 
     //! initialise internal stress variables
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    virtual void Update();
+    void Update() override;
 
     //! evaluate material law
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp, int eleGID);
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(
-        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID);
+    void StrainEnergy(
+        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID) override;
 
 
     //@}

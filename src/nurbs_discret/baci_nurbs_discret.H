@@ -53,7 +53,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~NurbsDiscretization() = default;
+      ~NurbsDiscretization() override = default;
 
       /*!
       \brief Set a knot vector
@@ -174,7 +174,7 @@ namespace DRT
       DbcNurbs() = default;
 
       /// destructor
-      virtual ~DbcNurbs() = default;
+      ~DbcNurbs() override = default;
 
      protected:
       /** \brief Evaluate the NURBS DBCs

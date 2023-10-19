@@ -72,22 +72,22 @@ namespace UTILS
         \brief Destructor
 
      */
-    virtual ~Cardiovascular0DArterialProxDist() { return; };
+    ~Cardiovascular0DArterialProxDist() override { return; };
 
     /// initialization routine called by the manager ctor to get correct reference base values and
     /// activating the right conditions at the beginning
-    virtual void Initialize(
+    void Initialize(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vector that may be filled by assembly
                                               ///< of element contributions
         Teuchos::RCP<Epetra_Vector>
             sysvec2  ///< distributed vector that may be filled by assembly of element contributions
-    );
+        ) override;
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #EvaluateCardiovascular0D routine is called
-    virtual void Evaluate(
+    void Evaluate(
         Teuchos::ParameterList&
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<CORE::LINALG::SparseMatrix> sysmat1,  ///< Cardiovascular0D stiffness matrix
@@ -98,7 +98,7 @@ namespace UTILS
         Teuchos::RCP<Epetra_Vector> sysvec1,  ///< distributed vectors that may be filled by
                                               ///< assembly of element contributions
         Teuchos::RCP<Epetra_Vector> sysvec2, Teuchos::RCP<Epetra_Vector> sysvec3,
-        const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5);
+        const Teuchos::RCP<Epetra_Vector> sysvec4, Teuchos::RCP<Epetra_Vector> sysvec5) override;
 
    private:
     // don't want = operator, cctor and destructor

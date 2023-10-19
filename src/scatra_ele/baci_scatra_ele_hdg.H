@@ -34,24 +34,25 @@ namespace DRT
     class ScaTraHDGType : public TransportType
     {
      public:
-      std::string Name() const { return "ScaTraHDGType"; }
+      std::string Name() const override { return "ScaTraHDGType"; }
 
       static ScaTraHDGType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static ScaTraHDGType instance_;
@@ -83,13 +84,13 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~ScaTraHDG();
+      ~ScaTraHDG() override;
 
       /*!
       \brief Return unique ParObject id
@@ -97,7 +98,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ScaTraHDGType::Instance().UniqueParObjectId();
       }
@@ -108,14 +109,14 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Pack Material
@@ -134,13 +135,13 @@ namespace DRT
       virtual void UnpackMaterial(const std::vector<char>& data) const;
 
       //! initialize the element
-      int Initialize();
+      int Initialize() override;
 
       /*!
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -150,13 +151,13 @@ namespace DRT
 
       HDG element: No dofs are associated with nodes
       */
-      virtual int NumDofPerNode(const DRT::Node&) const { return 0; }
+      int NumDofPerNode(const DRT::Node&) const override { return 0; }
 
       //! Get number of degrees of freedom per face
-      virtual int NumDofPerFace(const unsigned face) const { return NumDofPerComponent(face); }
+      int NumDofPerFace(const unsigned face) const override { return NumDofPerComponent(face); }
 
       //! Get number of dofs per component per face
-      virtual int NumDofPerComponent(const unsigned face) const
+      int NumDofPerComponent(const unsigned face) const override
       {
         return CORE::DRT::UTILS::getBasisSize(CORE::DRT::UTILS::getEleFaceShapeType(this->distype_),
             (this->Faces()[face])->Degree(), completepol_);
@@ -164,10 +165,10 @@ namespace DRT
 
       //! Get number of degrees of freedom per element, zero for the primary dof set
       //! and equal to the given number for the secondary dof set
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       //! Returns the degree of the element
-      int Degree() const { return degree_; }
+      int Degree() const override { return degree_; }
 
       //! Returns the degree of the element
       int DegreeOld() const { return degree_old_; }
@@ -224,17 +225,17 @@ namespace DRT
       }
 
       //! Get vector of Teuchos::RCPs to the lines of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       //! Get vector of Teuchos::RCPs to the surfaces of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       //! Get vector of Teuchos::RCPs to the volume of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //! Get Teuchos::RCP to the internal face adjacent to this element as master element and the
       //! parent_slave element
-      virtual Teuchos::RCP<DRT::Element> CreateFaceElement(
+      Teuchos::RCP<DRT::Element> CreateFaceElement(
           DRT::Element* parent_slave,  //!< parent slave fluid3 element
           int nnode,                   //!< number of surface nodes
           const int* nodeids,          //!< node ids of surface element
@@ -242,7 +243,7 @@ namespace DRT
           const int lsurface_master,   //!< local surface number w.r.t master parent element
           const int lsurface_slave,    //!< local surface number w.r.t slave parent element
           const std::vector<int>& localtrafomap  //! local trafo map
-      );
+          ) override;
       //@}
 
       //! @name Evaluation
@@ -287,9 +288,9 @@ namespace DRT
       }
 
       //! Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return ScaTraHDGType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ScaTraHDGType::Instance(); }
 
       // element matrices are stored to save calculation time, since they stay the same in the pure
       // diffusion reaction problem If necessary or worthwhile this can be changed and thus the
@@ -374,18 +375,18 @@ namespace DRT
     class ScaTraHDGBoundaryType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "ScaTraHDGBoundaryType"; }
+      std::string Name() const override { return "ScaTraHDGBoundaryType"; }
 
       static ScaTraHDGBoundaryType& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
@@ -433,22 +434,22 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const
+      int NumSurface() const override
       {
         return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
       }
@@ -456,12 +457,12 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -469,7 +470,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ScaTraHDGBoundaryType::Instance().UniqueParObjectId();
       }
@@ -480,19 +481,19 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Destructor
       */
-      virtual ~ScaTraHDGBoundary();
+      ~ScaTraHDGBoundary() override;
 
       //@}
 
@@ -508,19 +509,19 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         return ParentElement()->NumDofPerNode(node);
       }
 
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return ScaTraHDGBoundaryType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ScaTraHDGBoundaryType::Instance(); }
 
       //@}
 
@@ -651,18 +652,18 @@ namespace DRT
     class ScaTraHDGIntFaceType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "ScaTraHDGIntFaceType"; }
+      std::string Name() const override { return "ScaTraHDGIntFaceType"; }
 
       static ScaTraHDGIntFaceType& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
@@ -717,22 +718,22 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
       /*!
       \brief Return number of lines of this element
       */
-      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
+      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(Shape()); }
 
       /*!
       \brief Return number of surfaces of this element
       */
-      virtual int NumSurface() const
+      int NumSurface() const override
       {
         return CORE::DRT::UTILS::getNumberOfElementSurfaces(Shape());
       }
@@ -740,7 +741,7 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Return unique ParObject id
@@ -748,7 +749,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Return unique ParObject id
@@ -756,7 +757,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ScaTraHDGIntFaceType::Instance().UniqueParObjectId();
       }
@@ -766,19 +767,19 @@ namespace DRT
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Destructor
       */
-      virtual ~ScaTraHDGIntFace();
+      ~ScaTraHDGIntFace() override;
 
       //@}
 
@@ -793,7 +794,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         return std::max(
             ParentMasterElement()->NumDofPerNode(node), ParentSlaveElement()->NumDofPerNode(node));
@@ -810,12 +811,12 @@ namespace DRT
             at the level of the total system of equations. Purely internal
             element dofs that are condensed internally should NOT be considered.
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
        \brief Returns the degree of the element
        */
-      virtual int Degree() const { return degree_; }
+      int Degree() const override { return degree_; }
 
       /*!
        \brief Returns the old degree of the element
@@ -854,9 +855,9 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return ScaTraHDGIntFaceType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ScaTraHDGIntFaceType::Instance(); }
 
       //@}
 

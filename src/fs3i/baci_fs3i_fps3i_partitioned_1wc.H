@@ -28,16 +28,16 @@ namespace FS3I
     PartFPS3I_1WC(const Epetra_Comm& comm);
 
     //! Destructor of one-way coupled FPS3I
-    virtual ~PartFPS3I_1WC(){};
+    ~PartFPS3I_1WC() override{};
 
     //! initialize this class
-    virtual void Init();
+    void Init() override;
 
     //! setup this class
-    virtual void Setup();
+    void Setup() override;
 
     /// timeloop of coupled problem
-    virtual void Timeloop();
+    void Timeloop() override;
 
     /// FPSI step
     void DoFPSIStep();

@@ -48,13 +48,13 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~MonoCoupledLagrangeStrategy(){};
+    ~MonoCoupledLagrangeStrategy() override{};
 
     // Overload CONTACT::CoAbstractStrategy::ApplyForceStiffCmt as this is called in the structure
     // --> to early for monolithically coupled algorithms!
-    virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
+    void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis,
         Teuchos::RCP<CORE::LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f,
-        const int step, const int iter, bool predictor)
+        const int step, const int iter, bool predictor) override
     {
       if (has_to_evaluate_ && 0)
         dserror(
@@ -120,7 +120,7 @@ namespace CONTACT
 
     void SaveCouplingMatrices(Teuchos::RCP<CORE::LINALG::SparseMatrix> dhat,
         Teuchos::RCP<CORE::LINALG::SparseMatrix> mhataam,
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> invda);
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> invda) override;
 
     std::map<int, Teuchos::RCP<CORE::LINALG::SparseOperator>>
         csx_s_;  // offdiagonal coupling stiffness blocks on slave side!

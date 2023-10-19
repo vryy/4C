@@ -56,30 +56,29 @@ namespace DRT
         Teuchos::RCP<DRT::DofSetInterface> sourcedofset);
 
     //! Destructor
-    virtual ~DofSetGIDBasedWrapper();
+    ~DofSetGIDBasedWrapper() override;
 
     //! original DofSet has new dofs
-    virtual int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const Discretization& dis, const unsigned dspos, const int start) override;
 
     //! original DofSet has been reset
-    virtual void Reset();
+    void Reset() override;
 
     /// Notify original dofset of new proxies
-    virtual void NotifyAssigned();
+    void NotifyAssigned() override;
 
     /// our original DofSet dies
-    virtual void Disconnect(DofSetInterface* dofset);
+    void Disconnect(DofSetInterface* dofset) override;
 
     /// Returns true if filled
-    virtual bool Filled() const { return sourcedofset_->Filled(); };
+    bool Filled() const override { return sourcedofset_->Filled(); };
 
     //! @name Access methods
 
     /// get number of nodal dofs
-    virtual int NumDofPerNode(
-        const Node& node  ///< node, for which you want to know the number of dofs
-    ) const
+    int NumDofPerNode(const Node& node  ///< node, for which you want to know the number of dofs
+    ) const override
     {
       if (not sourcedis_->HaveGlobalNode(node.Id())) return 0;
       DRT::Node* sourcenode = sourcedis_->gNode(node.Id());
@@ -88,7 +87,7 @@ namespace DRT
     };
 
     /// Get number of dofs for given node
-    virtual int NumDof(const Node* node) const
+    int NumDof(const Node* node) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return 0;
@@ -97,7 +96,7 @@ namespace DRT
     }
 
     /// Get number of dofs for given element
-    virtual int NumDof(const Element* element) const
+    int NumDof(const Element* element) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->NumDof(element);
@@ -107,7 +106,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given node
-    virtual int Dof(const Node* node, int dof) const
+    int Dof(const Node* node, int dof) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return -1;
@@ -116,7 +115,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual std::vector<int> Dof(const Node* node) const
+    std::vector<int> Dof(const Node* node) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return std::vector<int>();
@@ -125,10 +124,10 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const Node* node,                    ///< the node
+    void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
+        const Node* node,            ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-    ) const
+    ) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
@@ -137,7 +136,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    virtual std::vector<int> Dof(const Element* element) const
+    std::vector<int> Dof(const Element* element) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element);
@@ -147,7 +146,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Node* node, std::vector<int>& lm) const
+    void Dof(const Node* node, std::vector<int>& lm) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
@@ -156,10 +155,10 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
-        const unsigned startindex,      ///< first index of vector at which will be written to end
-        std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-    ) const
+    void Dof(const Node* node,      ///< node, for which you want the dof positions
+        const unsigned startindex,  ///< first index of vector at which will be written to end
+        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
+    ) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
@@ -168,11 +167,11 @@ namespace DRT
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    virtual void Dof(
+    void Dof(
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-    ) const
+    ) const override
     {
       CheckIsAssigned();
       if (not sourcedis_->HaveGlobalNode(node->Id())) return;
@@ -182,7 +181,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given element
-    virtual int Dof(const Element* element, int dof) const
+    int Dof(const Element* element, int dof) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, dof);
@@ -193,7 +192,7 @@ namespace DRT
 
 
     /// Get the gid of all dofs of a element
-    virtual void Dof(const Element* element, std::vector<int>& lm) const
+    void Dof(const Element* element, std::vector<int>& lm) const override
     {
       CheckIsAssigned();
       if (element->IsFaceElement()) return sourcedofset_->Dof(element, lm);
@@ -203,44 +202,44 @@ namespace DRT
     }
 
     /// Print this class
-    virtual void Print(std::ostream& os) const { sourcedofset_->Print(os); };
+    void Print(std::ostream& os) const override { sourcedofset_->Print(os); };
 
     /// Print the dofsets in the static_dofsets_ list
-    virtual void PrintAllDofsets(const Epetra_Comm& comm) const
+    void PrintAllDofsets(const Epetra_Comm& comm) const override
     {
       sourcedofset_->PrintAllDofsets(comm);
     };
 
     /// Get Number of Global Elements of degree of freedom row map
-    virtual int NumGlobalElements() const
+    int NumGlobalElements() const override
     {
       CheckIsAssigned();
       return sourcedofset_->NumGlobalElements();
     };
 
     /// Get degree of freedom row map
-    virtual const Epetra_Map* DofRowMap() const
+    const Epetra_Map* DofRowMap() const override
     {
       CheckIsAssigned();
       return sourcedofset_->DofRowMap();
     };
 
     /// Get degree of freedom column map
-    virtual const Epetra_Map* DofColMap() const
+    const Epetra_Map* DofColMap() const override
     {
       CheckIsAssigned();
       return sourcedofset_->DofColMap();
     };
 
     /// Get maximum GID of degree of freedom row map
-    virtual int MaxAllGID() const
+    int MaxAllGID() const override
     {
       CheckIsAssigned();
       return sourcedofset_->MaxAllGID();
     };
 
     /// Get minimum GID of degree of freedom row map
-    virtual int MinAllGID() const
+    int MinAllGID() const override
     {
       CheckIsAssigned();
       return sourcedofset_->MinAllGID();
@@ -248,14 +247,14 @@ namespace DRT
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    virtual int MaxGIDinList(const Epetra_Comm& comm) const
+    int MaxGIDinList(const Epetra_Comm& comm) const override
     {
       CheckIsAssigned();
       return sourcedofset_->MaxGIDinList(comm);
     };
 
     /// are the dof maps already initialized?
-    virtual bool Initialized() const
+    bool Initialized() const override
     {
       CheckIsAssigned();
       return sourcedofset_->Initialized();

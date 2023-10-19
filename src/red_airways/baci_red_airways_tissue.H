@@ -44,9 +44,9 @@ namespace AIRWAY
     RedAirwayTissue(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// Destructor
-    virtual ~RedAirwayTissue() { return; };
+    ~RedAirwayTissue() override { return; };
 
-    virtual void ReadRestart(const int step);
+    void ReadRestart(const int step) override;
 
     void SetupRedAirways();
 

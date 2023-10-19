@@ -28,7 +28,7 @@ namespace MAT
       HerschelBulkley(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~HerschelBulkley() { ; }
+      ~HerschelBulkley() override { ; }
 
       /// @name material parameters
       //@{
@@ -44,7 +44,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class HerschelBulkley
 
@@ -53,11 +53,11 @@ namespace MAT
   class HerschelBulkleyType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "HerschelBulkleyType"; }
+    std::string Name() const override { return "HerschelBulkleyType"; }
 
     static HerschelBulkleyType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static HerschelBulkleyType instance_;
@@ -82,7 +82,7 @@ namespace MAT
       top of parobject.H (this file) and should return it in this method.
     */
 
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return HerschelBulkleyType::Instance().UniqueParObjectId();
     }
@@ -97,7 +97,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -111,15 +111,15 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_herschelbulkley; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_herschelbulkley; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new HerschelBulkley(*this));
     }
@@ -140,12 +140,12 @@ namespace MAT
     /// upper limit of shear rate
     double UpLimShearRate() const { return params_->uplimshearrate_; }
     /// density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     //@}
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

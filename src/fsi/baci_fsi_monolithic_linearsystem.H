@@ -45,11 +45,11 @@ namespace FSI
         const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~MonolithicLinearSystem();
+    ~MonolithicLinearSystem() override;
 
     /// overload the solve to incorporate our own convergence test
-    virtual bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
-        const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result);
+    bool applyJacobianInverse(Teuchos::ParameterList& linearSolverParams,
+        const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) override;
 
    protected:
     void softreset(Teuchos::ParameterList& linearSolverParams);

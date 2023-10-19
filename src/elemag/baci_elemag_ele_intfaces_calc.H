@@ -120,7 +120,7 @@ namespace DRT
 
 
       //! Assemble internal faces integrals using data from both parent elements
-      virtual void AssembleInternalFacesUsingNeighborData(
+      void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element
           std::vector<int>& nds_master,              ///< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,               ///< nodal dofset w.r.t. slave element
@@ -128,24 +128,23 @@ namespace DRT
           DRT::DiscretizationFaces& discretization,  ///< faces discretization
           Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  ///< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                ///< systemvector
-      );
+          ) override;
 
       //! Evaluate internal faces
-      virtual int EvaluateInternalFaces(
-          DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
-          Teuchos::ParameterList& params,         ///< parameter list
-          DRT::Discretization& discretization,    ///< discretization
-          std::vector<int>& patchlm,              ///< patch local map
-          std::vector<int>& lm_masterToPatch,     ///< local map between master dofs and patchlm
-          std::vector<int>& lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-          std::vector<int>& lm_faceToPatch,       ///< local map between face dofs and patchlm
+      int EvaluateInternalFaces(DRT::ELEMENTS::ElemagIntFace* intface,  ///< internal face element
+          Teuchos::ParameterList& params,                               ///< parameter list
+          DRT::Discretization& discretization,                          ///< discretization
+          std::vector<int>& patchlm,                                    ///< patch local map
+          std::vector<int>& lm_masterToPatch,  ///< local map between master dofs and patchlm
+          std::vector<int>& lm_slaveToPatch,   ///< local map between slave dofs and patchlm
+          std::vector<int>& lm_faceToPatch,    ///< local map between face dofs and patchlm
           std::vector<int>&
               lm_masterNodeToPatch,  ///< local map between master nodes and nodes in patch
           std::vector<int>&
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
           std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
           std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
-      );
+          ) override;
 
       //! decide which terms have to be assembled and decide the assembly pattern, return if no
       //! assembly required

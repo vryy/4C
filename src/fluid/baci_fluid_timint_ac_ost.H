@@ -29,10 +29,10 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntACOst();
+    ~TimIntACOst() override;
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
    private:

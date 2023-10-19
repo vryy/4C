@@ -112,7 +112,7 @@ namespace DRT
       }
 
      public:
-      virtual ~FluidEleCalcXFEM() {}
+      ~FluidEleCalcXFEM() override {}
 
       /// Singleton access method
       static FluidEleCalcXFEM<distype>* Instance(

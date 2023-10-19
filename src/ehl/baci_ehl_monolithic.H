@@ -94,7 +94,7 @@ namespace EHL
         const std::string struct_disname, const std::string lubrication_disname);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~Monolithic();
+    ~Monolithic() override;
 
 
     /*! do the setup for the monolithic system
@@ -111,13 +111,13 @@ namespace EHL
     ReadMesh is called), the dofmaps for the blocks might get invalid.
     */
     //! Setup the monolithic EHL system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// non-linear solve, i.e. (multiple) corrector
     virtual void Solve();
 
     //! outer level EHL time loop
-    virtual void Timeloop();
+    void Timeloop() override;
 
     //! @name Apply current field state to system
 
@@ -212,7 +212,7 @@ namespace EHL
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);

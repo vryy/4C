@@ -175,7 +175,7 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
         Teuchos::RCP<Epetra_Vector> mv  ///< [in] master vector (to be transferred)
-    ) const;
+    ) const override;
 
     /*! \brief Transfer a dof vector from master to slave
      *
@@ -183,7 +183,7 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
-    ) const;
+    ) const override;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
      *
@@ -191,7 +191,7 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_Vector> MasterToSlave(
         Teuchos::RCP<const Epetra_Vector> mv  ///< [in] master vector (to be transferred)
-    ) const;
+    ) const override;
 
     /*! \brief Transfer a dof vector from master to slave (const version)
      *
@@ -199,7 +199,7 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_MultiVector> MasterToSlave(
         Teuchos::RCP<const Epetra_MultiVector> mv  ///< [in] master vector (to be transferred)
-    ) const;
+    ) const override;
 
     /*! \brief Transfer a dof vector from slave to master
      *
@@ -207,7 +207,7 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
-    ) const;
+    ) const override;
 
     /*! \brief Transfer a dof vector from slave to master
      *
@@ -215,7 +215,7 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
         Teuchos::RCP<Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
-    ) const;
+    ) const override;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
      *
@@ -223,7 +223,7 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_Vector> SlaveToMaster(
         Teuchos::RCP<const Epetra_Vector> sv  ///< [in] slave vector (to be transferred)
-    ) const;
+    ) const override;
 
     /*! \brief Transfer a dof vector from slave to master (const version)
      *
@@ -231,19 +231,19 @@ feel free to write your own tailored Setup() method.
      */
     Teuchos::RCP<Epetra_MultiVector> SlaveToMaster(
         Teuchos::RCP<const Epetra_MultiVector> sv  ///< [in] slave vector (to be transferred)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from master to slave
     void MasterToSlave(
         Teuchos::RCP<const Epetra_MultiVector> mv,  ///< [in] master vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> sv         ///< [out] slave vector (containing result)
-    ) const;
+    ) const override;
 
     /// transfer a dof vector from slave to master
     void SlaveToMaster(
         Teuchos::RCP<const Epetra_MultiVector> sv,  ///< [in] slave vector (to be transferred)
         Teuchos::RCP<Epetra_MultiVector> mv         ///< [out] master vector (containing result)
-    ) const;
+    ) const override;
 
     //@}
 
@@ -251,10 +251,10 @@ feel free to write your own tailored Setup() method.
     //@{
 
     /// Get the interface dof row map of the master side
-    Teuchos::RCP<const Epetra_Map> MasterDofMap() const { return pmasterdofrowmap_; }
+    Teuchos::RCP<const Epetra_Map> MasterDofMap() const override { return pmasterdofrowmap_; }
 
     /// Get the interface dof row map of the slave side
-    Teuchos::RCP<const Epetra_Map> SlaveDofMap() const { return pslavedofrowmap_; }
+    Teuchos::RCP<const Epetra_Map> SlaveDofMap() const override { return pslavedofrowmap_; }
 
     //@}
 

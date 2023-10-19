@@ -82,7 +82,7 @@ namespace NOX
             const double& beta, const NOX::Utils* u = nullptr);
 
         //! Destructor.
-        virtual ~NormUpdate(){};
+        ~NormUpdate() override{};
 
         NOX::StatusTest::StatusType checkStatus(
             const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
@@ -206,11 +206,11 @@ namespace NOX
         };
 
         //! Destructor.
-        virtual ~NormUpdateSkipFirstIter() { return; };
+        ~NormUpdateSkipFirstIter() override { return; };
 
        private:
         //! check status in first nonlinear iteration step
-        virtual NOX::StatusTest::StatusType checkStatusFirstIter();
+        NOX::StatusTest::StatusType checkStatusFirstIter() override;
       };  // class NormUpdateSkipFirstIter
     }     // namespace StatusTest
   }       // namespace NLN

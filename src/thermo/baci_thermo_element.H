@@ -39,24 +39,25 @@ namespace DRT
     class ThermoType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "ThermoType"; }
+      std::string Name() const override { return "ThermoType"; }
 
       static ThermoType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static ThermoType instance_;
@@ -89,10 +90,10 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       //! \brief Get shape type of element
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
       //! \brief set discretization type of element
       virtual void SetDisType(DRT::Element::DiscretizationType shape)
@@ -102,10 +103,10 @@ namespace DRT
       };
 
       //! \brief Return number of lines of this element
-      virtual int NumLine() const { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
+      int NumLine() const override { return CORE::DRT::UTILS::getNumberOfElementLines(distype_); }
 
       //! \brief Return number of surfaces of this element
-      virtual int NumSurface() const
+      int NumSurface() const override
       {
         switch (distype_)
         {
@@ -145,7 +146,7 @@ namespace DRT
       }
 
       //! \brief Return number of volumes of this element
-      virtual int NumVolume() const
+      int NumVolume() const override
       {
         switch (distype_)
         {
@@ -178,31 +179,31 @@ namespace DRT
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       //! \brief Get vector of Teuchos::RCPs to the volume of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //! \brief Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the
       //! top of this file.
-      virtual int UniqueParObjectId() const { return ThermoType::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return ThermoType::Instance().UniqueParObjectId(); }
 
       //! \brief Pack this class so it can be communicated
       //! \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       //! \brief Unpack data from a char vector into this class
       //!
       //! \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! \brief Destructor
-      virtual ~Thermo();
+      ~Thermo() override;
 
       //@}
 
@@ -215,7 +216,7 @@ namespace DRT
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      virtual int NumDofPerNode(const DRT::Node& node) const { return numdofpernode_; }
+      int NumDofPerNode(const DRT::Node& node) const override { return numdofpernode_; }
 
       //!
       //! \brief Get number of degrees of freedom per element
@@ -227,12 +228,12 @@ namespace DRT
       //! \note Element degrees of freedom mentioned here are dofs that are visible
       //!       at the level of the total system of equations. Purely internal
       //!       element dofs that are condensed internally should NOT be considered.
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       //! \brief Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return ThermoType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ThermoType::Instance(); }
 
       //! \brief Query names of element data to be visualized using BINIO
       //!
@@ -253,7 +254,7 @@ namespace DRT
       //! \param names (out): On return, the derived class has filled names with
       //!                     key names of data it wants to visualize and with int
       //!                     dimensions of that data.
-      virtual void VisNames(std::map<std::string, int>& names);
+      void VisNames(std::map<std::string, int>& names) override;
 
       //! \brief Query data to be visualized using BINIO of a given name
       //!
@@ -267,7 +268,7 @@ namespace DRT
       //!
       //! \param name (in):   Name of data that is currently processed for visualization
       //! \param data (out):  data to be filled by element if element recognizes the name
-      virtual bool VisData(const std::string& name, std::vector<double>& data);
+      bool VisData(const std::string& name, std::vector<double>& data) override;
 
       //! \brief Add values to the data_ container
       virtual void AddToData(const std::string& name, std::vector<double> data)
@@ -281,7 +282,7 @@ namespace DRT
 
       //! \brief Read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -319,7 +320,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! \brief Evaluate a Neumann boundary condition
       //!
@@ -333,9 +335,9 @@ namespace DRT
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
       //@}
 
@@ -372,18 +374,18 @@ namespace DRT
     class ThermoBoundaryType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "ThermoBoundaryType"; }
+      std::string Name() const override { return "ThermoBoundaryType"; }
 
       static ThermoBoundaryType& Instance();
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented");
@@ -425,13 +427,13 @@ namespace DRT
       //!
       //! The Clone() method is used from the virtual base class Element in cases
       //! where the type of the derived class is unknown and a copy-constructor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       //! \brief Get shape type of element
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
       //! \brief Return number of lines of boundary element
-      virtual int NumLine() const
+      int NumLine() const override
       {
         // get spatial dimension of boundary
         const int nsd = CORE::DRT::UTILS::getDimension(ParentElement()->Shape()) - 1;
@@ -454,7 +456,7 @@ namespace DRT
       }
 
       //! \brief Return number of surfaces of boundary element
-      virtual int NumSurface() const
+      int NumSurface() const override
       {
         // get spatial dimension of parent element
         const int nsd = CORE::DRT::UTILS::getDimension(ParentElement()->Shape());
@@ -466,16 +468,16 @@ namespace DRT
       }
 
       //! \brief Get vector of Teuchos::RCPs to the lines of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       //! \brief Get vector of Teuchos::RCPs to the surfaces of this element
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       //! \brief Return unique ParObject id
       //!
       //! every class implementing ParObject needs a unique id defined at the
       //! top of the parobject.H file.
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ThermoBoundaryType::Instance().UniqueParObjectId();
       }
@@ -488,10 +490,10 @@ namespace DRT
       //! \brief Unpack data from a char vector into this class
       //!
       //! \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! brief Destructor
-      virtual ~ThermoBoundary();
+      ~ThermoBoundary() override;
 
       //@}
 
@@ -504,7 +506,7 @@ namespace DRT
       //! As this may vary along a simulation, the element can redecide the
       //! number of degrees of freedom per node along the way for each of it's nodes
       //! separately.
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         return ParentElement()->NumDofPerNode(node);
       }
@@ -526,12 +528,12 @@ namespace DRT
       //! \note Element degrees of freedom mentioned here are dofs that are visible
       //!      at the level of the total system of equations. Purely internal
       //!      element dofs that are condensed internally should NOT be considered.
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       //! \brief Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return ThermoBoundaryType::Instance(); }
+      DRT::ElementType& ElementType() const override { return ThermoBoundaryType::Instance(); }
 
       //@}
 
@@ -565,7 +567,8 @@ namespace DRT
       int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //@}
 
@@ -583,9 +586,9 @@ namespace DRT
       //! \param elevec1 (out)      : vector to be filled by element. If nullptr on input,
       //!
       //! \return 0 if successful, negative otherwise
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
       //@}
 

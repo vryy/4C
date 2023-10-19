@@ -108,14 +108,14 @@ namespace NOX
       SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
       //! Destructor
-      ~SDRelaxation();
+      ~SDRelaxation() override;
 
       // derived
       bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
       // derived
       bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
-          const NOX::Solver::Generic& s);
+          const NOX::Solver::Generic& s) override;
 
      private:
       //! Method for computing directional derivatives numerically
@@ -135,7 +135,7 @@ namespace NOX
     {
      public:
       Teuchos::RCP<NOX::LineSearch::Generic> buildLineSearch(
-          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
         return Teuchos::rcp(new SDRelaxation(gd->getUtils(), params));
       }

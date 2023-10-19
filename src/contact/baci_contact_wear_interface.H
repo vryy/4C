@@ -99,7 +99,7 @@ namespace WEAR
     nodal normals and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleS(CORE::LINALG::SparseMatrix& sglobal);
+    void AssembleS(CORE::LINALG::SparseMatrix& sglobal) override;
 
     /*!
     \brief Assemble matrix S containing linearizations w
@@ -116,8 +116,8 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
-        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal);
+    void AssembleLinStick(CORE::LINALG::SparseMatrix& linstickLMglobal,
+        CORE::LINALG::SparseMatrix& linstickDISglobal, Epetra_Vector& linstickRHSglobal) override;
     /*!
     \brief Assemble matrix LinSlip containing linearizations
 
@@ -127,8 +127,8 @@ namespace WEAR
     nodal tangents and of the Mortar matrices D  and M.
 
     */
-    virtual void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
-        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal);
+    void AssembleLinSlip(CORE::LINALG::SparseMatrix& linslipLMglobal,
+        CORE::LINALG::SparseMatrix& linslipDISglobal, Epetra_Vector& linslipRHSglobal) override;
 
     /*!
     \brief Assemble matrix LinSlip containing w linearizations
@@ -162,7 +162,7 @@ namespace WEAR
     according to the contact initialization defined in the input file.
 
     */
-    virtual bool BuildActiveSet(bool init = false);
+    bool BuildActiveSet(bool init = false) override;
 
     /*!
     \brief Build corresponding active set for master side

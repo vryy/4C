@@ -24,7 +24,7 @@ namespace DRT
     class FluidEleParameterXFEM : public FluidEleParameterStd
     {
      public:
-      virtual ~FluidEleParameterXFEM() {}
+      ~FluidEleParameterXFEM() override {}
 
       /// Singleton access method
       static FluidEleParameterXFEM* Instance(

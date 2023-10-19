@@ -45,7 +45,7 @@ namespace DRT
 
      public:
       /// virtual destructor
-      virtual ~ArteryEleCalcPresBased(){};
+      ~ArteryEleCalcPresBased() override{};
 
       //! Singleton access method
       static ArteryEleCalcPresBased<distype>* Instance(

@@ -140,7 +140,7 @@ namespace CONTACT
             const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
         /// destructor
-        virtual ~Strategy(){};
+        ~Strategy() override{};
 
         /// derived
         INPAR::CONTACT::SolvingStrategy Type() const override

@@ -157,7 +157,7 @@ namespace POROMULTIPHASESCATRA
     PoroMultiPhaseScatraArteryCouplingPair();
 
     //! destructor
-    virtual ~PoroMultiPhaseScatraArteryCouplingPair(){};
+    ~PoroMultiPhaseScatraArteryCouplingPair() override{};
 
     //! Init
     void Init(std::vector<DRT::Element const*> elements,

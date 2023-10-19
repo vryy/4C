@@ -43,7 +43,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~LineToSurfaceEvaluationData() {}
+    ~LineToSurfaceEvaluationData() override {}
 
     /**
      * \brief Reset the evaluation data (derived).

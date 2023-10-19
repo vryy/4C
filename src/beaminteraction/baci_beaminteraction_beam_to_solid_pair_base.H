@@ -37,7 +37,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidPairBase(){};
+    ~BeamToSolidPairBase() override{};
 
     /**
      * \brief Setup the contact pair (derived).
@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
      * @param centerline_restart_vec_ (in) Vector with the centerline displacements at the restart
      * step, for all contained elements (Vector of vector).
      */
-    virtual void SetRestartDisplacement(
+    void SetRestartDisplacement(
         const std::vector<std::vector<double>>& centerline_restart_vec_) override;
 
     /**

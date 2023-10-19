@@ -45,16 +45,16 @@ namespace SCATRA
     virtual ~MeshtyingStrategyFluid() { return; };
 
     //! return global map of degrees of freedom
-    const Epetra_Map& DofRowMap() const;
+    const Epetra_Map& DofRowMap() const override;
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying();
+    void EvaluateMeshtying() override;
 
     //! include Dirichlet conditions into condensation
-    void IncludeDirichletInCondensation() const;
+    void IncludeDirichletInCondensation() const override;
 
     //! initialize meshtying objects
-    virtual void InitMeshtying();
+    void InitMeshtying() override;
 
     bool SystemMatrixInitializationNeeded() const override { return true; }
 
@@ -77,14 +77,14 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
         const int& iteration,                      //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
-    ) const;
+    ) const override;
 
     //! return linear solver for global system of linear equations
-    const CORE::LINALG::Solver& Solver() const;
+    const CORE::LINALG::Solver& Solver() const override;
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check
-    virtual void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
 
     //! fluid-fluid meshtying algorithm for internal interface
     Teuchos::RCP<FLD::Meshtying> meshtying_;

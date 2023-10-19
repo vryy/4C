@@ -73,11 +73,11 @@ namespace MAT
       ///@name Packing and Unpacking (dummy routines)
       //@{
 
-      virtual int UniqueParObjectId() const;
+      int UniqueParObjectId() const override;
 
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       virtual void PackSummand(DRT::PackBuffer& data) const { return; };
 

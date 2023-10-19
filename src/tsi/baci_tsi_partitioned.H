@@ -51,16 +51,16 @@ namespace TSI
     explicit Partitioned(const Epetra_Comm& comm);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~Partitioned();
+    ~Partitioned() override;
 
     //! outer level time loop (to be implemented by deriving classes)
-    virtual void TimeLoop();
+    void TimeLoop() override;
 
     //! non-linear solve, i.e. (multiple) corrector
-    virtual void Solve();
+    void Solve() override;
 
     //! initialise internal variables needed as guess for the partitioned TSI algorithm
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! time loop for TSI algorithm with one-way coupling
     void TimeLoopSequStagg();
@@ -72,15 +72,15 @@ namespace TSI
     void TimeLoopFull();
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-    );
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override;
 
 
    protected:
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! calculate stresses, strains, energies
     void PrepareOutput() override;

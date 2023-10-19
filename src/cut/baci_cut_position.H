@@ -276,18 +276,18 @@ namespace CORE::GEO
       }
 
       /// destructor
-      virtual ~PositionGeneric(){};
+      ~PositionGeneric() override{};
 
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
       /// return the element dimension
-      virtual unsigned Dim() const { return dim; }
+      unsigned Dim() const override { return dim; }
 
       /// return the problem dimension
-      virtual unsigned ProbDim() const { return probdim; }
+      unsigned ProbDim() const override { return probdim; }
 
-      virtual enum Status Status() const { return pos_status_; }
+      enum Status Status() const override { return pos_status_; }
 
       /*! \brief Return the local coordinates of the given point \c px_
        *
@@ -300,7 +300,7 @@ namespace CORE::GEO
        *  \param rst: local coordinates.
        *
        *  \author hiermeier */
-      virtual void LocalCoordinates(double* rst)
+      void LocalCoordinates(double* rst) override
       {
         if (pos_status_ != position_valid)
         {
@@ -314,13 +314,13 @@ namespace CORE::GEO
         std::copy(xsi_.A(), xsi_.A() + xsi_.M(), rst);
       }
 
-      virtual void Distance(double* distance) const = 0;
+      void Distance(double* distance) const override = 0;
 
-      virtual bool Compute(const double& tol) = 0;
+      bool Compute(const double& tol) override = 0;
 
-      virtual bool IsGivenPointWithinElement() = 0;
+      bool IsGivenPointWithinElement() override = 0;
 
-      const double& NewtonTolerance() const
+      const double& NewtonTolerance() const override
       {
         if (compute_tolerance_ < 0.0) dserror("Call the Compute() routine first!");
         if (compute_tolerance_ > 1.0)
@@ -339,7 +339,7 @@ namespace CORE::GEO
        *  are converted into the corresponding range of the natural coordinate
        *  system of the element. This leads to a  proper initial choice for
        *  the Newton scheme to find the local coordinate system. */
-      virtual void ScaleAndShift()
+      void ScaleAndShift() override
       {
         GetElementScale<probdim>(xyze_, scale_);
 
@@ -414,12 +414,12 @@ namespace CORE::GEO
           : PositionGeneric<probdim, eletype, numNodesElement, dim, floattype>(xyze, xyz){};
 
       /// destructor
-      virtual ~ComputePosition(){};
+      ~ComputePosition() override{};
 
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
      protected:
-      virtual void Distance(double* distance) const
+      void Distance(double* distance) const override
       {
         dserror("Unsupported for the standard case!");
       }
@@ -430,16 +430,16 @@ namespace CORE::GEO
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
-      virtual bool Compute(const double& Tol, const bool& allow_dist)
+      bool Compute(const double& Tol, const bool& allow_dist) override
       {
         if (allow_dist) dserror("Compute: allow_dist for ComputePosition not possible!");
         return Compute(Tol);
       }
-      virtual bool Compute(const double& Tol);
+      bool Compute(const double& Tol) override;
 
-      virtual bool IsGivenPointWithinElement() { return Position::Compute(); }
+      bool IsGivenPointWithinElement() override { return Position::Compute(); }
 
-      virtual bool WithinLimitsTol(const double& Tol) const
+      bool WithinLimitsTol(const double& Tol) const override
       {
         return KERNEL::WithinLimits<eletype>(this->xsi_, Tol);
       }
@@ -467,7 +467,7 @@ namespace CORE::GEO
       };
 
       /// destructor
-      virtual ~ComputeEmbeddedPosition(){};
+      ~ComputeEmbeddedPosition() override{};
 
       /* Don't call any of these methods directly! Use the base class public
        * methods, instead. */
@@ -478,13 +478,13 @@ namespace CORE::GEO
        *  \param allow_dist (in) : If TRUE, the method allows an offset in normal direction,
        *                           otherwise the higher-dimensional point \c px_ has to lie
        *                           on the lower dimensional element. */
-      virtual bool Compute(const double& tol) { return Compute(tol, false); }
-      virtual bool Compute(const double& Tol, const bool& allow_dist);
+      bool Compute(const double& tol) override { return Compute(tol, false); }
+      bool Compute(const double& Tol, const bool& allow_dist) override;
 
-      virtual bool IsGivenPointWithinElement();
+      bool IsGivenPointWithinElement() override;
 
       /*! \brief Return the perpendicular distance between given point to the side */
-      virtual double Distance() const
+      double Distance() const override
       {
         if (this->pos_status_ < Position::position_distance_valid)
         {
@@ -505,7 +505,7 @@ namespace CORE::GEO
         }
       }
 
-      virtual void Distance(double* distance) const
+      void Distance(double* distance) const override
       {
         if (this->pos_status_ < Position::position_distance_valid)
         {
@@ -519,7 +519,7 @@ namespace CORE::GEO
         std::copy(xsi_aug_.A() + dim, xsi_aug_.A() + probdim, distance);
       }
 
-      virtual bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const
+      bool WithinLimitsTol(const double& Tol, const bool& allow_dist) const override
       {
         double tol2 = Tol;
         double tol_xyze = this->xyze_.NormInf();

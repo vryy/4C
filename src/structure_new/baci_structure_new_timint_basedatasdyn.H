@@ -1006,7 +1006,7 @@ namespace STR
       GenAlphaDataSDyn();
 
       //! destructor
-      virtual ~GenAlphaDataSDyn(){};
+      ~GenAlphaDataSDyn() override{};
 
       //! Setup function [derived]
       void Setup() override;
@@ -1092,7 +1092,7 @@ namespace STR
       OneStepThetaDataSDyn();
 
       //! destructor
-      virtual ~OneStepThetaDataSDyn(){};
+      ~OneStepThetaDataSDyn() override{};
 
       //! Setup function [derived]
       void Setup() override;
@@ -1128,7 +1128,7 @@ namespace STR
       ExplEulerDataSDyn();
 
       //! destructor
-      virtual ~ExplEulerDataSDyn(){};
+      ~ExplEulerDataSDyn() override{};
 
       //! Setup function [derived]
       void Setup() override;

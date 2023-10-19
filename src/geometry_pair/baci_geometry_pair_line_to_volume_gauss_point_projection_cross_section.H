@@ -54,7 +54,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToVolumeGaussPointProjectionCrossSection(){};
+    ~GeometryPairLineToVolumeGaussPointProjectionCrossSection() override{};
 
     /**
      * \brief Setup the projection tracker for this line element.

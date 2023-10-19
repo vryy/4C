@@ -42,7 +42,7 @@ namespace FSI
 
    public:
     /// setup this object
-    virtual void Setup();
+    void Setup() override;
 
    protected:
     /// setup
@@ -61,11 +61,11 @@ namespace FSI
      *
      * \returns interface force
      */
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> FluidOp(
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) final;
 
 
-    void ExtractPreviousInterfaceSolution();
+    void ExtractPreviousInterfaceSolution() override;
 
     /// structure to ale mapping
     Teuchos::RCP<Epetra_Vector> StuctureToAle(Teuchos::RCP<Epetra_Vector> iv) const;

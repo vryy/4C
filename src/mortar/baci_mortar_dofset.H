@@ -40,10 +40,10 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~MortarDofSet() = default;
+    ~MortarDofSet() override = default;
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new MortarDofSet(*this)); }
+    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new MortarDofSet(*this)); }
 
     //! @}
 
@@ -62,8 +62,8 @@ namespace MORTAR
 
     @return Maximum dof number of this dofset
     */
-    virtual int AssignDegreesOfFreedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     //! @}
 

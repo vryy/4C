@@ -34,32 +34,32 @@ namespace ELCH
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~MovingBoundaryAlgorithm() = default;
+    ~MovingBoundaryAlgorithm() override = default;
 
     /// setup
-    virtual void Setup();
+    void Setup() override;
 
     /// init
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+    void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
         const Teuchos::ParameterList&
             scatradyn,  ///< parameter list for scalar transport subproblem
         const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
         const std::string& disname = "scatra",       ///< name of scalar transport discretization
         const bool isale = false                     ///< ALE flag
-    );
+        ) override;
 
     /// outer level ELCH time loop
-    void TimeLoop();
+    void TimeLoop() override;
 
     /// read restart data
-    void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /// Add tests to global problem and start tests
     void TestResults();
 
    protected:
     /// start a new time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// solve Navier-Stokes and ALE for current time step
     void SolveFluidAle();
@@ -72,10 +72,10 @@ namespace ELCH
         Teuchos::RCP<Epetra_Vector> idispnp_, Teuchos::RCP<Epetra_Vector> iveln_);
 
     /// take current results for converged and save for next time step
-    void Update();
+    void Update() override;
 
     /// write output
-    void Output();
+    void Output() override;
 
    private:
     bool pseudotransient_;

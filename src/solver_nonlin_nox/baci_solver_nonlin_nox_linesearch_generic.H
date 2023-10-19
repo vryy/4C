@@ -33,7 +33,7 @@ namespace NOX
         Generic() = default;
 
         //! destructor
-        virtual ~Generic() = default;
+        ~Generic() override = default;
 
         //! @name NOX::NLN::LineSearch::Generic
         //! @{

@@ -30,13 +30,13 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntLomaGenAlpha();
+    ~TimIntLomaGenAlpha() override;
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
 
    protected:

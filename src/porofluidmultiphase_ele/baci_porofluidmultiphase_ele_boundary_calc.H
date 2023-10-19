@@ -41,7 +41,7 @@ namespace DRT
           const int numdofpernode, const std::string& disname);
 
       /// Empty destructor
-      virtual ~PoroFluidMultiPhaseEleBoundaryCalc() { return; };
+      ~PoroFluidMultiPhaseEleBoundaryCalc() override { return; };
 
       //! number of element nodes (nomenclature: T. Hughes, The finite element method)
       static const int nen_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
@@ -50,10 +50,10 @@ namespace DRT
       static const int nsd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
 
       //! Evaluate the element (using location array)
-      virtual int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           std::vector<CORE::LINALG::SerialDenseMatrix*>& elemat,
-          std::vector<CORE::LINALG::SerialDenseVector*>& elevec);
+          std::vector<CORE::LINALG::SerialDenseVector*>& elevec) override;
 
      protected:
       //! setup element evaluation

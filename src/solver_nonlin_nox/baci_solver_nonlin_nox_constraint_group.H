@@ -52,10 +52,10 @@ namespace NOX
         Group(const NOX::NLN::CONSTRAINT::Group& source, NOX::CopyType type = NOX::DeepCopy);
 
         //! destructor
-        virtual ~Group(){};
+        ~Group() override{};
 
         //! generate a clone of the given object concerning the given \c CopyType
-        Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const;
+        Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const override;
 
         NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;
 

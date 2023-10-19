@@ -415,12 +415,12 @@ namespace CORE::GEO
       }
 
       /// destructor
-      virtual ~Intersection(){};
+      ~Intersection() override{};
 
       // No public access to these methods! Use the base class accessors, instead.
      protected:
       /// get the number of detected feasible cut points
-      virtual unsigned NumCutPoints() const
+      unsigned NumCutPoints() const override
       {
         if (num_cut_points_ > 1 and (multiple_xsi_edge_.size() != num_cut_points_ or
                                         multiple_xsi_side_.size() != num_cut_points_))
@@ -430,10 +430,10 @@ namespace CORE::GEO
       }
 
       /// get the intersection status
-      virtual const IntersectionStatus& GetIntersectionStatus() const { return istatus_; }
+      const IntersectionStatus& GetIntersectionStatus() const override { return istatus_; }
 
       /// get the local cut coordinates
-      virtual double* LocalCoordinates() { return xsi_.A(); }
+      double* LocalCoordinates() override { return xsi_.A(); }
 
       /** \brief access the local coordinates of the cut point corresponding to the
        *  cut point ID \c cp_id on the side element
@@ -441,7 +441,7 @@ namespace CORE::GEO
        *  \param cp_id (in) : cut point id
        *
        *  \author hiermeier \date 01/17 */
-      virtual double* LocalSideCoordinates(unsigned cp_id)
+      double* LocalSideCoordinates(unsigned cp_id) override
       {
         if (NumCutPoints() < 2) return xsi_side_.A();
 
@@ -464,7 +464,7 @@ namespace CORE::GEO
       /// We need choose the edge, based on which we compute the global coordinates in a smart
       /// way -> If we choose so that the cut point will be close to endpoint, we essentially
       /// extend its tolerance and it therefore would lead to problems in the cut
-      double* FinalPointEdgeEdge()
+      double* FinalPointEdgeEdge() override
       {
         CheckInit();
         if (dimedge != dimside) dserror("This method only works for edge-edge intersection!");
@@ -549,7 +549,7 @@ namespace CORE::GEO
         // second un-do the scaling
         x.Scale(scale_);
       }
-      virtual double* FinalPoint()
+      double* FinalPoint() override
       {
         if (istatus_ != intersect_single_cut_point)
           dserror(
@@ -560,7 +560,7 @@ namespace CORE::GEO
         FinalPoint(xsi_edge_, x_);
         return x_.A();
       }
-      virtual double* FinalPoint(unsigned cp_id)
+      double* FinalPoint(unsigned cp_id) override
       {
         FinalPoint(LocalEdgeCoordinates(cp_id), x_);
         return x_.A();
@@ -632,8 +632,8 @@ namespace CORE::GEO
        *  All feasible cut points are within the given element bounds.
        *
        *  \author hiermeier \date 08/16 */
-      virtual IntersectionStatus ComputeEdgeSideIntersection(
-          double& tolerance, bool check_inside = true, std::vector<int>* touched_edges = nullptr)
+      IntersectionStatus ComputeEdgeSideIntersection(double& tolerance, bool check_inside = true,
+          std::vector<int>* touched_edges = nullptr) override
       {
         switch (GetOptionsPtr()->GeomIntersect_Floattype())
         {
@@ -780,24 +780,24 @@ namespace CORE::GEO
        *  mean that there is no intersection point.
        *
        *  \author ager */
-      virtual bool Intersect(PointSet& cuts);
+      bool Intersect(PointSet& cuts) override;
 
       // Try to find possible intersection points, if this intersection is between parallell size
       // and edge without using real ComputeIntersection
-      virtual ParallelIntersectionStatus HandleParallelIntersection(
-          PointSet& cuts, int id = -1, bool output = false);
+      ParallelIntersectionStatus HandleParallelIntersection(
+          PointSet& cuts, int id = -1, bool output = false) override;
 
       virtual void GenerateGmshDump();
 
       // Handle cases for which normal intersection procedure did not work
-      virtual bool HandleSpecialCases();
+      bool HandleSpecialCases() override;
 
       // compute intersection by splitting quad4 into two triangles
-      virtual bool TriangulatedIntersection(PointSet& cuts);
+      bool TriangulatedIntersection(PointSet& cuts) override;
 
       /** \brief Will return TRUE, if local side coordinates are within the side
        *  element parameter space bounds */
-      virtual bool SurfaceWithinLimits(double tol = REFERENCETOL) const
+      bool SurfaceWithinLimits(double tol = REFERENCETOL) const override
       {
         return CORE::GEO::CUT::KERNEL::WithinLimits<sidetype>(xsi_side_, tol);
       }
@@ -811,25 +811,25 @@ namespace CORE::GEO
 
       /** \brief Will return TRUE, if local edge coordinate is within the line
        *  element parameter space bounds */
-      virtual bool LineWithinLimits(double tol = REFERENCETOL) const
+      bool LineWithinLimits(double tol = REFERENCETOL) const override
       {
         return CORE::GEO::CUT::KERNEL::WithinLimits<edgetype>(xsi_edge_, tol);
       }
 
       /// access the problem dimension
-      virtual unsigned ProbDim() const { return probdim; }
+      unsigned ProbDim() const override { return probdim; }
 
       /// access the number of nodes of the side ( or 2-nd edge ) element
-      virtual unsigned NumNodesSide() const { return numNodesSide; }
+      unsigned NumNodesSide() const override { return numNodesSide; }
 
       /// access the number of nodes of the edge
-      virtual unsigned NumNodesEdge() const { return numNodesEdge; }
+      unsigned NumNodesEdge() const override { return numNodesEdge; }
 
       /// set the edge and side coordinates
-      virtual void SetCoordinates();
+      void SetCoordinates() override;
 
       /// set the edge and side coordinates
-      virtual void SetCoordinates(double* xyze_surfaceElement, double* xyze_lineElement)
+      void SetCoordinates(double* xyze_surfaceElement, double* xyze_lineElement) override
       {
         xyze_lineElement_.SetCopy(xyze_lineElement);
         xyze_surfaceElement_.SetCopy(xyze_surfaceElement);
@@ -843,7 +843,7 @@ namespace CORE::GEO
        *
        *  \author hiermeier
        *  \date 08/16 */
-      virtual void ScaleAndShift()
+      void ScaleAndShift() override
       {
         // ---------------------------------------------------------------------
         // scale the input elements if desired

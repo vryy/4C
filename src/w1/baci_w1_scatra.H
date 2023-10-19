@@ -23,19 +23,20 @@ namespace DRT
     class Wall1ScatraType : public Wall1Type
     {
      public:
-      std::string Name() const { return "Wall1ScatraType"; }
+      std::string Name() const override { return "Wall1ScatraType"; }
 
       static Wall1ScatraType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static Wall1ScatraType instance_;
@@ -51,7 +52,7 @@ namespace DRT
           int owner);
 
       /// Destructor
-      virtual ~Wall1_Scatra(){};
+      ~Wall1_Scatra() override{};
 
       /// Copy Constructor
       ///
@@ -62,13 +63,13 @@ namespace DRT
       ///
       /// The Clone() method is used from the virtual base class Element in cases
       /// where the type of the derived class is unknown and a copy-ctor is needed
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return Wall1ScatraType::Instance().UniqueParObjectId();
       }
@@ -76,12 +77,12 @@ namespace DRT
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
       /// \ref Pack and \ref Unpack are used to communicate this element
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
@@ -93,9 +94,9 @@ namespace DRT
       };
 
       /// Print this element
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return Wall1ScatraType::Instance(); }
+      DRT::ElementType& ElementType() const override { return Wall1ScatraType::Instance(); }
 
       //@}
 
@@ -104,7 +105,7 @@ namespace DRT
 
       /// Read input for this element
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -123,7 +124,7 @@ namespace DRT
       /// Evaluate Wall1 element stiffness, mass, internal forces etc
       ///
       /// \return 0 if successful, negative otherwise
-      virtual int Evaluate(
+      int Evaluate(
           Teuchos::ParameterList&
               params,  ///< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  ///< pointer to discretization for de-assembly
@@ -135,7 +136,7 @@ namespace DRT
               elevec1,  ///< (internal force-)vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec2,  ///< vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec3   ///< vector to be filled by element
-      );
+          ) override;
 
       /// @name params
       /// return SCATRA::ImplType

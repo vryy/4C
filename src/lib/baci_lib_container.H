@@ -31,11 +31,11 @@ namespace DRT
   class ContainerType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ContainerType"; }
+    std::string Name() const override { return "ContainerType"; }
 
     static ContainerType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ContainerType instance_;
@@ -79,7 +79,7 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~Container();
+    ~Container() override;
 
     /*!
     \brief Return unique ParObject id
@@ -88,7 +88,7 @@ namespace DRT
     top of this file.
 
     */
-    virtual int UniqueParObjectId() const;
+    int UniqueParObjectId() const override;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -96,7 +96,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -104,7 +104,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 

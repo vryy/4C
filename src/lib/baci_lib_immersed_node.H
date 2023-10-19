@@ -20,11 +20,11 @@ namespace DRT
   class ImmersedNodeType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ImmersedNodeType"; }
+    std::string Name() const override { return "ImmersedNodeType"; }
 
     static ImmersedNodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
 
    private:
@@ -70,13 +70,13 @@ namespace DRT
     \brief Deep copy the derived class and return pointer to it
 
     */
-    virtual DRT::ImmersedNode* Clone() const;
+    DRT::ImmersedNode* Clone() const override;
 
     /*!
     \brief Destructor
 
     */
-    virtual ~ImmersedNode();
+    ~ImmersedNode() override;
 
     /*!
     \brief Return unique ParObject id
@@ -84,7 +84,7 @@ namespace DRT
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ImmersedNodeType::Instance().UniqueParObjectId();
     }
@@ -95,7 +95,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -103,7 +103,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this node
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /*!
     \brief set 'true' if node is covered by an immersed discretization
@@ -139,17 +139,17 @@ namespace DRT
     /*!
     \brief Print this node
     */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*! \brief Query names of node data to be visualized using BINIO
      *
      */
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /*! \brief Query data to be visualized using BINIO of a given name
      *
      */
-    virtual bool VisData(const std::string& name, std::vector<double>& data);
+    bool VisData(const std::string& name, std::vector<double>& data) override;
 
    protected:
     //! @name immersed information

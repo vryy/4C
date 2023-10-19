@@ -115,7 +115,7 @@ namespace CORE::GEO
     BoundaryIntCell(const BoundaryIntCell& old);
 
     //! virtual destructor
-    virtual ~BoundaryIntCell();
+    ~BoundaryIntCell() override;
 
     //! assignment operator
     virtual BoundaryIntCell& operator=(const BoundaryIntCell& boundaryintcell);

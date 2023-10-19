@@ -79,7 +79,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! number of element nodes
       static const int bdrynen_ =
@@ -95,10 +95,10 @@ namespace DRT
       static const int numdofpernode_ = nsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
+      int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
-          CORE::LINALG::SerialDenseMatrix* elemat1);
+          CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
      protected:
       /*!

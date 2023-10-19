@@ -78,14 +78,14 @@ namespace DRT
       \param intpoints        (i) Gaussian integration points
 
       */
-      virtual int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int Evaluate(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
       /*!
       \brief Evaluate coupling terms (off diagonal terms) of the element at specified gauss points
@@ -104,14 +104,14 @@ namespace DRT
       \param intpoints        (i) Gaussian integration points
 
       */
-      virtual int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
+      int EvaluateOD(DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization,
           const std::vector<int>& lm, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          const CORE::DRT::UTILS::GaussIntegration& intpoints);
+          const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
      protected:
       /*!
@@ -269,15 +269,16 @@ namespace DRT
         \param ppmat          (o) element matrix (pressure - pressure weighting) to be filled
         \param preforce       (o) element rhs vector to be filled
        * */
-      virtual void EvaluatePressureEquation(Teuchos::ParameterList& params,
-          const double& timefacfacpre, const double& rhsfac, const double& dphi_dp,
-          const double& dphi_dJ, const double& dphi_dJdp, const double& dphi_dpp,
+      void EvaluatePressureEquation(Teuchos::ParameterList& params, const double& timefacfacpre,
+          const double& rhsfac, const double& dphi_dp, const double& dphi_dJ,
+          const double& dphi_dJdp, const double& dphi_dpp,
           const CORE::LINALG::Matrix<nen_, 1>* eporositydot,
           const CORE::LINALG::Matrix<nen_, 1>* eporositydotn,
           const CORE::LINALG::Matrix<nen_, 1>& echist,
           const CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp,
           CORE::LINALG::Matrix<nen_, nen_ * nsd_>& estif_q_u,
-          CORE::LINALG::Matrix<nen_, nen_>& ppmat, CORE::LINALG::Matrix<nen_, 1>& preforce);
+          CORE::LINALG::Matrix<nen_, nen_>& ppmat,
+          CORE::LINALG::Matrix<nen_, 1>& preforce) override;
 
       /*!
         \brief Compute porosity and derivatives
@@ -296,10 +297,11 @@ namespace DRT
         jacobian determinant \param dphi_dpp       (o) second derivative of porosity gradient w.r.t.
         fluid pressure \param save           (i) flag for saving porosity within structure material
       */
-      virtual void ComputePorosity(Teuchos::ParameterList& params, const double& press,
-          const double& J, const int& gp, const CORE::LINALG::Matrix<nen_, 1>& shapfct,
+      void ComputePorosity(Teuchos::ParameterList& params, const double& press, const double& J,
+          const int& gp, const CORE::LINALG::Matrix<nen_, 1>& shapfct,
           const CORE::LINALG::Matrix<nen_, 1>* myporosity, double& porosity, double* dphi_dp,
-          double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp, bool save);
+          double* dphi_dJ, double* dphi_dJdp, double* dphi_dJJ, double* dphi_dpp,
+          bool save) override;
 
       /*!
         \brief Compute spatial gradient of porosity
@@ -310,11 +312,11 @@ namespace DRT
         \param gradJ          (i) spatial gradient of jacobian determinant
         \param grad_porosity  (o) spatial gradient of porosity
       */
-      virtual void ComputePorosityGradient(const double& dphidp, const double& dphidJ,
+      void ComputePorosityGradient(const double& dphidp, const double& dphidJ,
           const CORE::LINALG::Matrix<nsd_, 1>& gradJ, const CORE::LINALG::Matrix<nsd_, 1>& gradp,
           const CORE::LINALG::Matrix<nen_, 1>* eporositynp,
           CORE::LINALG::Matrix<nsd_, 1>& grad_porosity,
-          CORE::LINALG::Matrix<nsd_, 1>& refgrad_porosity);
+          CORE::LINALG::Matrix<nsd_, 1>& refgrad_porosity) override;
 
       /*!
         \brief Compute linearization needed for diagonal terms (lin. of porosity gradient w.r.t.
@@ -328,7 +330,7 @@ namespace DRT
        */
       void ComputeLinearization(const double& dphi_dp, const double& dphi_dpp,
           const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
-          CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp);
+          CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp) override;
 
       /*!
         \brief Compute linearization needed for off diagonal terms
@@ -353,7 +355,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nsd_ * nsd_, nsd_>& F_X,
           const CORE::LINALG::Matrix<nsd_, 1>& gradJ, CORE::LINALG::Matrix<1, nsd_ * nen_>& dJ_dus,
           CORE::LINALG::Matrix<1, nsd_ * nen_>& dphi_dus,
-          CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus);
+          CORE::LINALG::Matrix<nsd_, nen_ * nsd_>& dgradphi_dus) override;
 
       //! Compute element matrix entries: PSPG
       void PSPG(

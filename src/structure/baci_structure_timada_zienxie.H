@@ -45,13 +45,13 @@ namespace STR
     );
 
     //! Destructor
-    ~TimAdaZienXie() { ; }
+    ~TimAdaZienXie() override { ; }
 
     //! @name Actions
     //@{
 
     //! Finalize the class initialization (nothing to do here)
-    void Init(Teuchos::RCP<TimInt>& sti) {}
+    void Init(Teuchos::RCP<TimInt>& sti) override {}
 
     /*! \brief Make one step with auxiliary scheme
      *
@@ -60,7 +60,7 @@ namespace STR
      *  - \f$D_{n+1}^{AUX}\f$ in #locdiserrn_
      *  - \f$V_{n+1}^{AUX}\f$ in #locvelerrn_
      */
-    void IntegrateStepAuxiliar();
+    void IntegrateStepAuxiliar() override;
 
     //@}
 
@@ -68,22 +68,25 @@ namespace STR
     //@{
 
     //! Provide the name
-    enum INPAR::STR::TimAdaKind MethodName() const { return INPAR::STR::timada_kind_zienxie; }
+    enum INPAR::STR::TimAdaKind MethodName() const override
+    {
+      return INPAR::STR::timada_kind_zienxie;
+    }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyDis() const { return 3; }
+    int MethodOrderOfAccuracyDis() const override { return 3; }
 
     //! Provide local order of accuracy
-    int MethodOrderOfAccuracyVel() const { return 2; }
+    int MethodOrderOfAccuracyVel() const override { return 2; }
 
     //! Return linear error coefficient of displacements
-    double MethodLinErrCoeffDis() const { return -1.0 / 24.0; }
+    double MethodLinErrCoeffDis() const override { return -1.0 / 24.0; }
 
     //! Return linear error coefficient of velocities
-    double MethodLinErrCoeffVel() const { return -1.0 / 12.0; }
+    double MethodLinErrCoeffVel() const override { return -1.0 / 12.0; }
 
     //! Provide type of algorithm
-    enum AdaEnum MethodAdaptDis() const { return ada_upward; }
+    enum AdaEnum MethodAdaptDis() const override { return ada_upward; }
 
     //@}
 

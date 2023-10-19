@@ -38,13 +38,14 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       //! compute integral of convective mass/heat flux over boundary surface
-      virtual std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
+      std::vector<double> CalcConvectiveFlux(const DRT::FaceElement* ele,
           const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp,
-          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp, CORE::LINALG::SerialDenseVector& erhs);
+          const CORE::LINALG::Matrix<nsd_, nen_>& evelnp,
+          CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual double ComputePorosity(

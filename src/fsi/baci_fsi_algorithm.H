@@ -60,7 +60,7 @@ namespace FSI
     explicit Algorithm(const Epetra_Comm& comm);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    ~Algorithm() override;
 
     /// setup this object
     virtual void Setup();
@@ -72,22 +72,22 @@ namespace FSI
     const Teuchos::RCP<ADAPTER::FluidMovingBoundary>& MBFluidField() { return fluid_; }
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
     //! @name Time loop building blocks
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     /// calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
     //@}
 

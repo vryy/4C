@@ -32,13 +32,13 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// fluid field
-    virtual const Teuchos::RCP<ADAPTER::Fluid>& FluidField() { return fluid_->FluidField(); }
+    const Teuchos::RCP<ADAPTER::Fluid>& FluidField() override { return fluid_->FluidField(); }
 
     /// return the boundary discretization that matches the structure discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization();
+    Teuchos::RCP<DRT::Discretization> Discretization() override;
 
     /// communication object at the interface
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const;
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override;
 
     //@}
 
@@ -47,28 +47,28 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// start new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// update at time step end
-    virtual void Update();
+    void Update() override;
 
     /// output results
-    virtual void Output();
+    void Output() override;
 
     /// read restart information for given time step
-    virtual double ReadRestart(int step);
+    double ReadRestart(int step) override;
 
     /*========================================================================*/
     //! @name Solver calls
     /*========================================================================*/
 
     /// nonlinear solve
-    virtual void NonlinearSolve(
-        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel);
+    void NonlinearSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, Teuchos::RCP<Epetra_Vector> ivel) override;
 
     /// relaxation solve
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(
-        Teuchos::RCP<Epetra_Vector> idisp, double dt);
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(
+        Teuchos::RCP<Epetra_Vector> idisp, double dt) override;
     //@}
 
     /*========================================================================*/
@@ -76,7 +76,7 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// After the fluid solve we need the forces at the FSI interface.
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override;
     //@}
 
     /*========================================================================*/
@@ -84,10 +84,10 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// extract the interface velocity at time t^(n+1)
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override;
 
     /// extract the interface velocity at time t^n
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override;
     //@}
 
     /*========================================================================*/
@@ -99,10 +99,10 @@ namespace ADAPTER
     /// Not used for IMMERSED yet !
 
     /// get the maximum number of iterations from the fluid field
-    virtual int Itemax() const { return fluidadapter_->Itemax(); }
+    int Itemax() const override { return fluidadapter_->Itemax(); }
 
     /// set the maximum number of iterations for the fluid field
-    virtual void SetItemax(int itemax) { FluidField()->SetItemax(itemax); }
+    void SetItemax(int itemax) override { FluidField()->SetItemax(itemax); }
 
     /// add dirichlet conditions to dirichlet condmap before next fluid solve
     virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd);
@@ -117,10 +117,10 @@ namespace ADAPTER
     /*========================================================================*/
 
     /// integrate the interface shape functions
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape();
+    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override;
 
     /// create the testing of fields
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
 
    private:

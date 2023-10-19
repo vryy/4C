@@ -57,12 +57,12 @@ namespace FSI
     //@{
 
     /// Returns the result of a Epetra_Operator inverse applied to an Epetra_MultiVector X in Y.
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     //@}
 
     /// setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
    protected:
     /// (symmetric) Gauss-Seidel block preconditioner
@@ -138,16 +138,16 @@ namespace FSI
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 
     /// setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// split is in structural matrix, interface equations belong to fluid block
     bool structuresplit_;

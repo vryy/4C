@@ -42,7 +42,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoCoupling2d() {}
+    ~CoCoupling2d() override {}
 
     //! @name Evlauation methods
 
@@ -58,7 +58,7 @@ namespace CONTACT
     integration includes the Mortar matrices D/M and the gap g.
 
     */
-    bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool IntegrateOverlap(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
     \brief Return type of wear surface definition
@@ -117,7 +117,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoCoupling2dManager() {}
+    ~CoCoupling2dManager() override {}
 
     /*!
     \brief Get communicator
@@ -144,16 +144,16 @@ namespace CONTACT
     \brief Evaluate mortar coupling
 
     */
-    virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
-    virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
     //@}
    private:
     /*!
     \brief Calculate consistent dual shape functions in boundary elements
 
     */
-    virtual void ConsistDualShape();
+    void ConsistDualShape() override;
 
    protected:
     // don't want = operator and cctor

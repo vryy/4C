@@ -182,7 +182,7 @@ namespace MAT
       CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~CrystalPlasticity() = default;
+      ~CrystalPlasticity() override = default;
 
       //! create material instance
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
@@ -274,7 +274,7 @@ namespace MAT
   class CrystalPlasticityType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "CrystalPlasticityType"; }
+    std::string Name() const override { return "CrystalPlasticityType"; }
 
     static CrystalPlasticityType& Instance() { return instance_; };
 

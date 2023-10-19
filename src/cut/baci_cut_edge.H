@@ -293,22 +293,22 @@ namespace CORE::GEO
       ConcreteEdge(const std::vector<Node*>& nodes) : Edge(nodes) {}
 
       /// destructor
-      virtual ~ConcreteEdge(){};
+      ~ConcreteEdge() override{};
 
       /// get the element dimension of this edge
-      virtual unsigned Dim() const { return dimEdge; }
+      unsigned Dim() const override { return dimEdge; }
 
       /// get the number of nodes of this edge
-      virtual unsigned NumNodes() const { return numNodesEdge; }
+      unsigned NumNodes() const override { return numNodesEdge; }
 
       /// get the problem dimension
-      virtual unsigned ProbDim() const { return probDim; }
+      unsigned ProbDim() const override { return probDim; }
 
       /// get the shape of this edge element
-      virtual ::DRT::Element::DiscretizationType Shape() const { return edgeType; }
+      ::DRT::Element::DiscretizationType Shape() const override { return edgeType; }
 
       /*! \brief Get the coordinates of the nodes of the side */
-      virtual void Coordinates(double* xyze)
+      void Coordinates(double* xyze) override
       {
         double* x = xyze;
         for (std::vector<Node*>::const_iterator i = Nodes().begin(); i != Nodes().end(); ++i)
@@ -319,18 +319,18 @@ namespace CORE::GEO
         }
       }
 
-      virtual void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& points,
-          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
+      void GetTouchingPoints(const std::vector<Node*>& nodes, std::vector<Node*>& points,
+          INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) override;
 
       /*! \brief Handles intersection of two edges that are close to each other */
       virtual bool HandleParallelCut(Edge* other, Side* side, PointSet* cut_points,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
-      virtual bool JustParallelCut(Mesh& mesh, Side& side, PointSet& cuts, int skip_id = -1);
+      bool JustParallelCut(Mesh& mesh, Side& side, PointSet& cuts, int skip_id = -1) override;
 
       /*! \brief Get the intersection points of this edge with the given side and
        * store the cut points in cuts */
-      virtual bool Cut(Mesh& mesh, Side& side, PointSet& cuts);
+      bool Cut(Mesh& mesh, Side& side, PointSet& cuts) override;
 
       /*! \brief Get the intersection point of THIS edge with the given \c other edge and
        *  store the global cut point in x and the local coordinate of THIS edge in \c pos.
@@ -346,12 +346,12 @@ namespace CORE::GEO
        *  point is within the edge limits.
        *
        *  \author hiermeier \date 12/16 */
-      virtual bool ComputeCut(
-          Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance);
+      bool ComputeCut(
+          Mesh* mesh, Edge* other, Side* side, PointSet* cut_points, double& tolerance) override;
 
       /*! \brief Get the intersection points of this edge with the level-set side
        *  and store the cut points in cuts */
-      virtual bool LevelSetCut(Mesh& mesh, Side& side, PointSet& cuts)
+      bool LevelSetCut(Mesh& mesh, Side& side, PointSet& cuts) override
       {
         double blsv = BeginNode()->LSV();
         double elsv = EndNode()->LSV();

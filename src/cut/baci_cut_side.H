@@ -674,21 +674,21 @@ namespace CORE::GEO
       }
 
       /// destructor
-      virtual ~ConcreteSide(){};
+      ~ConcreteSide() override{};
 
       /// Returns the geometrical shape of this side
-      virtual ::DRT::Element::DiscretizationType Shape() const { return sidetype; }
+      ::DRT::Element::DiscretizationType Shape() const override { return sidetype; }
 
       /// element dimension
-      virtual unsigned Dim() const { return dim; }
+      unsigned Dim() const override { return dim; }
 
       /// problem dimension
-      virtual unsigned ProbDim() const { return probdim; }
+      unsigned ProbDim() const override { return probdim; }
 
-      virtual unsigned NumNodes() const { return numNodesSide; }
+      unsigned NumNodes() const override { return numNodesSide; }
 
       /// Returns the topology data for the side from Shards library
-      virtual const CellTopologyData* Topology() const
+      const CellTopologyData* Topology() const override
       {
         switch (sidetype)
         {
@@ -710,12 +710,12 @@ namespace CORE::GEO
       }
 
       /// Calculates the points at which the side is cut by this edge
-      virtual bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points)
+      bool Cut(Mesh& mesh, Edge& edge, PointSet& cut_points) override
       {
         return edge.Cut(mesh, *this, cut_points);
       }
 
-      virtual bool JustParallelCut(Mesh& mesh, Edge& edge, PointSet& cut_points, int idx = -1)
+      bool JustParallelCut(Mesh& mesh, Edge& edge, PointSet& cut_points, int idx = -1) override
       {
         return edge.JustParallelCut(mesh, *this, cut_points, idx);
       }
@@ -794,7 +794,7 @@ namespace CORE::GEO
           CORE::LINALG::Matrix<probdim, 1>& rsd, bool allow_dist = false, double tol = POSITIONTOL);
 
       /// get local coordinates (rst) with respect to the element shape for all the corner points
-      virtual void LocalCornerCoordinates(double* rst_corners)
+      void LocalCornerCoordinates(double* rst_corners) override
       {
         switch (sidetype)
         {
@@ -940,29 +940,29 @@ namespace CORE::GEO
       }
 
       /*! \brief Returns the global coordinates of the nodes of this side */
-      virtual void Coordinates(double* xyze) const
+      void Coordinates(double* xyze) const override
       {
         ConcreteElement<probdim, sidetype>::Coordinates(xyze);
       }
 
      protected:
       /// derived
-      virtual bool IsCloserSide(
-          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer)
+      bool IsCloserSide(
+          const double* startpoint_xyz, CORE::GEO::CUT::Side* other, bool& is_closer) override
       {
         const CORE::LINALG::Matrix<probdim, 1> startpoint_xyz_mat(startpoint_xyz, true);
         return IsCloserSide(startpoint_xyz_mat, other, is_closer);
       }
 
       /// derived
-      virtual void EdgeAt(const double* rs, std::vector<Edge*>& edges)
+      void EdgeAt(const double* rs, std::vector<Edge*>& edges) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
         EdgeAt(rs_mat, edges);
       }
 
       /// derived
-      virtual void PointAt(const double* rs, double* xyz)
+      void PointAt(const double* rs, double* xyz) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
@@ -970,15 +970,15 @@ namespace CORE::GEO
       }
 
       /// derived
-      virtual void SideCenter(double* midpoint)
+      void SideCenter(double* midpoint) override
       {
         CORE::LINALG::Matrix<probdim, 1> midpoint_mat(midpoint, true);  // create view
         SideCenter(midpoint_mat);
       }
 
       /// derived
-      virtual bool LocalCoordinates(
-          const double* xyz, double* rsd, bool allow_dist = false, double tol = POSITIONTOL)
+      bool LocalCoordinates(const double* xyz, double* rsd, bool allow_dist = false,
+          double tol = POSITIONTOL) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> rsd_mat(rsd, true);        // create view
@@ -986,7 +986,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      virtual bool WithinSide(const double* xyz, double* rs, double& dist)
+      bool WithinSide(const double* xyz, double* rs, double& dist) override
       {
         const CORE::LINALG::Matrix<probdim, 1> xyz_mat(xyz, true);  // create view
         CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);              // create view
@@ -994,7 +994,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      virtual bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi)
+      bool RayCut(const double* p1_xyz, const double* p2_xyz, double* rs, double& line_xi) override
       {
         const CORE::LINALG::Matrix<probdim, 1> p1_xyz_mat(p1_xyz, true);  // create view
         const CORE::LINALG::Matrix<probdim, 1> p2_xyz_mat(p2_xyz, true);  // create view
@@ -1003,7 +1003,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      virtual void Normal(const double* rs, double* normal, bool unitnormal = true)
+      void Normal(const double* rs, double* normal, bool unitnormal = true) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);        // create view
         CORE::LINALG::Matrix<probdim, 1> normal_mat(normal, true);  // create view
@@ -1011,7 +1011,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      virtual void Basis(const double* rs, double* t1, double* t2, double* n)
+      void Basis(const double* rs, double* t1, double* t2, double* n) override
       {
         const CORE::LINALG::Matrix<dim, 1> rs_mat(rs, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> t1_mat(t1, true);    // create view
@@ -1021,7 +1021,7 @@ namespace CORE::GEO
       }
 
       /// derived
-      virtual void BasisAtCenter(double* t1, double* t2, double* n)
+      void BasisAtCenter(double* t1, double* t2, double* n) override
       {
         CORE::LINALG::Matrix<probdim, 1> t1_mat(t1, true);  // create view
         CORE::LINALG::Matrix<probdim, 1> t2_mat(t2, true);  // create view

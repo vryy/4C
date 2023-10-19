@@ -36,7 +36,7 @@ namespace MAT
       AAA_mixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~AAA_mixedeffects() { ; }
+      ~AAA_mixedeffects() override { ; }
 
       /// @name material parameters
       //@{
@@ -53,7 +53,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class AAA_mixedeffects
 
@@ -62,11 +62,11 @@ namespace MAT
   class AAA_mixedeffectsType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "AAA_mixedeffectsType"; }
+    std::string Name() const override { return "AAA_mixedeffectsType"; }
 
     static AAA_mixedeffectsType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static AAA_mixedeffectsType instance_;
@@ -93,7 +93,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return AAA_mixedeffectsType::Instance().UniqueParObjectId();
     }
@@ -108,7 +108,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -122,12 +122,12 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// shear modulus
     double ShearMod(double elelocalrad) const
@@ -139,17 +139,20 @@ namespace MAT
 
 
     // material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaa_mixedeffects; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_aaa_mixedeffects;
+    }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new AAA_mixedeffects(*this));
     }
@@ -160,13 +163,13 @@ namespace MAT
         double elelocalrad);
 
     // THE material routine
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
-        const int eleGID);
+        const int eleGID) override;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
 
    private:

@@ -53,7 +53,7 @@ namespace NOX
             Teuchos::ParameterList& params);
 
         //! Destructor
-        virtual ~Backtrack(){};
+        ~Backtrack() override{};
 
         /// hard reset
         bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);

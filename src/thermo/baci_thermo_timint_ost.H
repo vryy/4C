@@ -143,7 +143,7 @@ namespace THR
 
     //! Resize #TimIntMStep<T> multi-step quantities
     //! Single-step method: nothing to do here
-    void ResizeMStep() { ; }
+    void ResizeMStep() override { ; }
 
     //@}
 
@@ -151,20 +151,23 @@ namespace THR
     //@{
 
     //! Return name
-    enum INPAR::THR::DynamicType MethodName() const { return INPAR::THR::dyna_onesteptheta; }
+    enum INPAR::THR::DynamicType MethodName() const override
+    {
+      return INPAR::THR::dyna_onesteptheta;
+    }
 
     //! Provide number of steps, a single-step method returns 1
-    int MethodSteps() { return 1; }
+    int MethodSteps() override { return 1; }
 
     //! Give local order of accuracy of temperature part
-    int MethodOrderOfAccuracy() { return fabs(1. / 2. - theta_) < 1e-10 ? 2 : 1; }
+    int MethodOrderOfAccuracy() override { return fabs(1. / 2. - theta_) < 1e-10 ? 2 : 1; }
 
     //! Return linear error coefficient
-    virtual double MethodLinErrCoeff() { return 1. / 2. - theta_; }
+    double MethodLinErrCoeff() override { return 1. / 2. - theta_; }
 
     //! Consistent predictor with constant temperatures
     //! and consistent temperature rates and temperatures
-    void PredictConstTempConsistRate();
+    void PredictConstTempConsistRate() override;
 
     //! Evaluate ordinary internal force, its tangent at state
     void ApplyForceTangInternal(const double time,     //!< evaluation time
@@ -194,15 +197,15 @@ namespace THR
     );
 
     //! Create force residual #fres_ and its tangent #tang_
-    void EvaluateRhsTangResidual();
+    void EvaluateRhsTangResidual() override;
 
     //! Determine characteristic norm for temperatures
     //! \author lw (originally)
-    double CalcRefNormTemperature();
+    double CalcRefNormTemperature() override;
 
     //! Determine characteristic norm for force
     //! \author lw (originally)
-    double CalcRefNormForce();
+    double CalcRefNormForce() override;
 
     //! Update iteration incrementally
     //!
@@ -211,7 +214,7 @@ namespace THR
     //! respects the Dirichlet DOFs which are not touched.
     //! This method is necessary for certain predictors
     //! (like #PredictConstTempConsistRate)
-    void UpdateIterIncrementally();
+    void UpdateIterIncrementally() override;
 
     //! Update iteration iteratively
     //!
@@ -220,19 +223,19 @@ namespace THR
     //! temperatures #tempi_
     //! The Dirichlet BCs are automatically respected, because the
     //! residual temperatures #tempi_ are blanked at these DOFs.
-    void UpdateIterIteratively();
+    void UpdateIterIteratively() override;
 
     //! Update step
-    void UpdateStepState();
+    void UpdateStepState() override;
 
     //! Update element
-    void UpdateStepElement();
+    void UpdateStepElement() override;
 
     //! Read and set restart for forces
-    void ReadRestartForce();
+    void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override;
 
     //@}
 
@@ -240,10 +243,10 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() { return fext_; }
+    Teuchos::RCP<Epetra_Vector> Fext() override { return fext_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
-    Teuchos::RCP<Epetra_Vector> FextNew() { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> FextNew() override { return fextn_; }
 
     //@}
 

@@ -35,14 +35,14 @@ namespace CORE::LINEAR_SOLVER
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    virtual void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x,
-        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
-        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null);
+    void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
+        const bool refactor, const bool reset,
+        Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null) override;
 
     //! Actual call to the underlying amesos solver
-    virtual int Solve();
+    int Solve() override;
 
-    virtual int ApplyInverse(const VectorType& X, VectorType& Y);
+    int ApplyInverse(const VectorType& X, VectorType& Y) override;
 
     bool IsFactored() { return factored_; }
 

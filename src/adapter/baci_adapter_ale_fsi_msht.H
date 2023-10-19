@@ -49,7 +49,7 @@ namespace ADAPTER
     explicit AleFsiMshtWrapper(Teuchos::RCP<Ale> ale);
 
     //! Destructor
-    virtual ~AleFsiMshtWrapper() {}
+    ~AleFsiMshtWrapper() override {}
 
     //@}
 

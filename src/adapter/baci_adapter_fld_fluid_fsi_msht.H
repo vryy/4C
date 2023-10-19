@@ -37,7 +37,7 @@ namespace ADAPTER
         Teuchos::RCP<IO::DiscretizationWriter> output, bool isale, bool dirichletcond);
 
     /// initialize algorithm
-    virtual void Init();
+    void Init() override;
 
     /// communication object at the interface
     virtual Teuchos::RCP<FLD::UTILS::FsiMapExtractor> const& FsiInterface() const

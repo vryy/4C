@@ -293,27 +293,27 @@ namespace CORE::GEO
         /* intentionally left blank */
       }
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::point1; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::point1; }
 
-      virtual int CubatureDegree() const { return 0; }
+      int CubatureDegree() const override { return 0; }
 
-      virtual void DumpGmshNormal(std::ofstream& file);
+      void DumpGmshNormal(std::ofstream& file) override;
 
-      virtual double Area() { return 0.0; };
+      double Area() override { return 0.0; };
 
-      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
+      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
-      virtual void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
+      void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
+      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
-      virtual bool IsValidBoundaryCell() { return true; };
+      bool IsValidBoundaryCell() override { return true; };
 
      protected:
-      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
       {
         return CORE::DRT::UTILS::GaussRule2D::undefined;
       }
@@ -331,27 +331,27 @@ namespace CORE::GEO
         /* intentionally left blank */
       }
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::line2; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::line2; }
 
-      virtual int CubatureDegree() const { return 4; }
+      int CubatureDegree() const override { return 4; }
 
-      virtual void DumpGmshNormal(std::ofstream& file);
+      void DumpGmshNormal(std::ofstream& file) override;
 
-      virtual double Area();
+      double Area() override;
 
-      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
+      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
-      virtual void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
+      void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
+      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
-      virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); };
+      bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); };
 
      protected:
-      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
       {
         return CORE::DRT::UTILS::GaussRule2D::undefined;
       }
@@ -368,31 +368,31 @@ namespace CORE::GEO
       {
       }
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::tri3; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::tri3; }
 
-      virtual int CubatureDegree() const { return 20; }
+      int CubatureDegree() const override { return 20; }
 
-      virtual void DumpGmshNormal(std::ofstream& file);
+      void DumpGmshNormal(std::ofstream& file) override;
 
-      virtual double Area();
+      double Area() override;
 
-      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
+      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
-      virtual void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
+      void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
+      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
       /** \brief  A first step to validate if a boundary cell is valid.
        *
        *  \author winter
        *  \date 11/15 */
-      virtual bool IsValidBoundaryCell();
+      bool IsValidBoundaryCell() override;
 
      protected:
-      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
       {
         return CORE::DRT::UTILS::GaussRule2D::tri_3point;
       }
@@ -409,29 +409,29 @@ namespace CORE::GEO
       {
       }
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::quad4; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::quad4; }
 
-      virtual int CubatureDegree() const { return 20; }
+      int CubatureDegree() const override { return 20; }
 
-      virtual void DumpGmshNormal(std::ofstream& file);
+      void DumpGmshNormal(std::ofstream& file) override;
 
       // Maybe shoelace theorem can be used here?
-      virtual double Area() { return MyArea<::DRT::Element::quad4>(); }
+      double Area() override { return MyArea<::DRT::Element::quad4>(); }
 
-      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
+      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
-      virtual void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
+      void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
+      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
       // Probably not the best way...
-      virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); }
+      bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
       {
         return CORE::DRT::UTILS::GaussRule2D::quad_4point;
       }
@@ -449,27 +449,27 @@ namespace CORE::GEO
       {
       }
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::dis_none; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::dis_none; }
 
-      virtual int CubatureDegree() const { return 0; }
+      int CubatureDegree() const override { return 0; }
 
-      virtual void DumpGmshNormal(std::ofstream& file);
+      void DumpGmshNormal(std::ofstream& file) override;
 
-      virtual double Area() { return 0.0; }
+      double Area() override { return 0.0; }
 
-      virtual void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint);
+      void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
-      virtual void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const;
+      void Normal(
+          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
-      virtual CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree);
+      CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
-      virtual CORE::LINALG::Matrix<3, 1> GetNormalVector();
+      CORE::LINALG::Matrix<3, 1> GetNormalVector() override;
 
-      virtual bool IsValidBoundaryCell() { return (Area() > REF_AREA_BCELL); }
+      bool IsValidBoundaryCell() override { return (Area() > REF_AREA_BCELL); }
 
      protected:
-      virtual CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule()
+      CORE::DRT::UTILS::GaussRule2D MySimpleGaussRule() override
       {
         return CORE::DRT::UTILS::GaussRule2D::quad_4point;
       }

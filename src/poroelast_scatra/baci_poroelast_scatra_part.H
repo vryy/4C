@@ -44,7 +44,7 @@ namespace POROELASTSCATRA
     explicit PoroScatraPart(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// destructor
-    virtual ~PoroScatraPart(){};
+    ~PoroScatraPart() override{};
 
     // Methods
 

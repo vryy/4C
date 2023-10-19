@@ -78,10 +78,10 @@ namespace DRT
       static const int nsd_ = bdrynsd_ + 1;
 
       //! Evaluate a Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele,
-          Teuchos::ParameterList& params, DRT::Discretization& discretization,
-          DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra);
+      int EvaluateNeumann(DRT::ELEMENTS::ScaTraHDGBoundary* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la,
+          CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
+          CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! node coordinates for boundary element

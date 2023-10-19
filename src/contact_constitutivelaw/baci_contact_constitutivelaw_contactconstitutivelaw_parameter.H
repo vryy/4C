@@ -105,7 +105,7 @@ namespace CONTACT
       );
 
       /// Destructor
-      virtual ~Container() = default;
+      ~Container() override = default;
 
       //@}
 

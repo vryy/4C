@@ -78,7 +78,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~BinaryTreeNode(){};
+    ~BinaryTreeNode() override{};
 
     //! @name Evaluation methods
 
@@ -200,7 +200,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~BinaryTree(){};
+    ~BinaryTree() override{};
 
     //! @name Query methods
 

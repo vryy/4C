@@ -34,7 +34,7 @@ namespace STR
       Cardiovascular0D();
 
       //! destructor
-      virtual ~Cardiovascular0D() = default;
+      ~Cardiovascular0D() override = default;
 
       void Setup() override;
 
@@ -100,7 +100,7 @@ namespace STR
       void DetermineStressStrain() override;
 
       //! derived
-      void DetermineEnergy();
+      void DetermineEnergy() override;
 
       //! derived
       void DetermineOptionalQuantity() override;

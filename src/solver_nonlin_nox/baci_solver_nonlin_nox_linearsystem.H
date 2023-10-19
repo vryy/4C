@@ -124,7 +124,7 @@ namespace NOX
           const NOX::Epetra::Vector& cloneVector);
 
       //! Destructor.
-      virtual ~LinearSystem(){};
+      ~LinearSystem() override{};
 
       //! reset the linear solver parameters
       void reset(Teuchos::ParameterList& p);

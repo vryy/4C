@@ -62,7 +62,7 @@ namespace FSI
 
    public:
     /// setup this object
-    virtual void Setup();
+    void Setup() override;
 
     /**
      *  \brief Perform remeshing to account for mesh sliding at the interface
@@ -70,7 +70,7 @@ namespace FSI
      * This encompasses computation of rotation free ALE displacement values, remeshing
      * of the fluid field and reevaluation of the Mortar interface terms.
      */
-    void Remeshing();
+    void Remeshing() override;
 
    protected:
     /** \brief interface fluid operator
@@ -83,7 +83,7 @@ namespace FSI
      *
      * \returns interface force
      */
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> FluidOp(
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) final;
 
     /** \brief interface structural operator
@@ -96,11 +96,11 @@ namespace FSI
      *
      * \returns interface displacement
      */
-    virtual Teuchos::RCP<Epetra_Vector> StructOp(
+    Teuchos::RCP<Epetra_Vector> StructOp(
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) final;
 
     /// predictor
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
 
    private:
     //! Sliding Ale helper class

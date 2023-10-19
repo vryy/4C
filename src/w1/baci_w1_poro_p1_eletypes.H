@@ -25,7 +25,7 @@ namespace DRT
     class WallQuad4PoroP1Type : public DRT::ELEMENTS::WallQuad4PoroType
     {
      public:
-      std::string Name() const { return "WallQuad4PoroP1Type"; }
+      std::string Name() const override { return "WallQuad4PoroP1Type"; }
 
       static WallQuad4PoroP1Type& Instance();
 

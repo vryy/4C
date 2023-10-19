@@ -276,7 +276,7 @@ namespace NOX
           Dbc(const Teuchos::RCP<const ::STR::Dbc>& dbc_ptr);
 
           //! destructor
-          virtual ~Dbc(){};
+          ~Dbc() override{};
 
           //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
           void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,

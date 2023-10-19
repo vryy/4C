@@ -57,7 +57,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~IntElement() {}
+    ~IntElement() override {}
 
     /*!
     \brief Return local id of this IntElement
@@ -90,7 +90,7 @@ namespace MORTAR
     virtual bool MapToParent(const std::vector<CORE::GEN::pairedvector<int, double>>& dxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& dparxi);
 
-    virtual DRT::Node** Nodes()
+    DRT::Node** Nodes() override
     {
       if (parele_->Shape() != DRT::Element::nurbs9)
         return DRT::Element::Nodes();
@@ -108,8 +108,8 @@ namespace MORTAR
            Returns a vector of vector of maps. Outer vector for the (pseudo-)nodes,
            inner vector for the spatial dimensions, map for the derivatives.
     */
-    virtual void NodeLinearization(
-        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& nodelin);
+    void NodeLinearization(
+        std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& nodelin) override;
 
    protected:
     // don't want = operator and cctor

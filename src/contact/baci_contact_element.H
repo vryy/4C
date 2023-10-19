@@ -20,19 +20,19 @@ namespace CONTACT
   class CoElementType : public DRT::ElementType
   {
    public:
-    std::string Name() const { return "CoElementType"; }
+    std::string Name() const override { return "CoElementType"; }
 
     static CoElementType& Instance();
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
-    virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+    Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-    virtual void NodalBlockInformation(
-        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+    void NodalBlockInformation(
+        DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-    virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-        DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+    CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+        DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
    private:
     static CoElementType instance_;
@@ -74,13 +74,13 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoElement() { return; }
+    ~CoElement() override { return; }
 
     /*!
      \brief Deep copy the derived class and return pointer to it
 
      */
-    virtual DRT::Element* Clone() const;
+    DRT::Element* Clone() const override;
 
     /*!
      \brief Return unique ParObject id
@@ -89,7 +89,7 @@ namespace CONTACT
      top of parobject.H
 
      */
-    virtual int UniqueParObjectId() const { return CoElementType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return CoElementType::Instance().UniqueParObjectId(); }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -97,7 +97,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this element
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -105,9 +105,9 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this element
 
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
-    virtual CoElementType& ElementType() const { return CoElementType::Instance(); }
+    CoElementType& ElementType() const override { return CoElementType::Instance(); }
 
     //@}
 
@@ -120,13 +120,13 @@ namespace CONTACT
      standard Node objects!
 
      */
-    int NumDofPerNode(const DRT::Node& node) const;
+    int NumDofPerNode(const DRT::Node& node) const override;
 
     /*!
      \brief Print this element
 
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     //! @name Evaluation methods
 
@@ -156,10 +156,11 @@ namespace CONTACT
      given in params
      \return 0 if successful, negative otherwise
      */
-    virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
         CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+        CORE::LINALG::SerialDenseVector& elevec2,
+        CORE::LINALG::SerialDenseVector& elevec3) override;
 
     /*!
      \brief Evaluate a Neumann boundary condition dummy
@@ -180,9 +181,9 @@ namespace CONTACT
 
      \return 0 if successful, negative otherwise
      */
-    virtual int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+    int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
         DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
-        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr)
+        CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
     {
       return 0;
     }

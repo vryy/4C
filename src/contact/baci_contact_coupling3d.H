@@ -54,7 +54,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoCoupling3d() {}
+    ~CoCoupling3d() override {}
 
     //! @name Evlauation methods
 
@@ -68,7 +68,7 @@ namespace CONTACT
      defined by the slave normal at the slave element center.
 
      */
-    bool AuxiliaryPlane();
+    bool AuxiliaryPlane() override;
 
     /*!
      \brief Integrate the integration cells (3D)
@@ -85,7 +85,7 @@ namespace CONTACT
      and assembled into the slave element nodes.
 
      */
-    virtual bool IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool IntegrateCells(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     //@}
 
@@ -101,9 +101,9 @@ namespace CONTACT
      slave element paramater space. NOT implemented for AuxPlane case!
 
      */
-    virtual bool VertexLinearization(
+    bool VertexLinearization(
         std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
-        std::map<int, double>& projpar, bool printderiv = false);
+        std::map<int, double>& projpar, bool printderiv = false) override;
 
     /*!
      \brief Linearization of clip vertex coordinates (3D)
@@ -148,9 +148,9 @@ namespace CONTACT
      for AuxPlane case!
 
      */
-    virtual bool CenterLinearization(
+    bool CenterLinearization(
         const std::vector<std::vector<CORE::GEN::pairedvector<int, double>>>& linvertex,
-        std::vector<CORE::GEN::pairedvector<int, double>>& lincenter);
+        std::vector<CORE::GEN::pairedvector<int, double>>& lincenter) override;
 
     /*!
      \brief Return type of wear surface definition
@@ -215,7 +215,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoCoupling3dQuad() {}
+    ~CoCoupling3dQuad() override {}
 
     //! @name Access methods
 
@@ -223,19 +223,19 @@ namespace CONTACT
      \brief Get coupling slave integration element
 
      */
-    MORTAR::IntElement& SlaveIntElement() const { return sintele_; }
+    MORTAR::IntElement& SlaveIntElement() const override { return sintele_; }
 
     /*!
      \brief Get coupling master integration element
 
      */
-    MORTAR::IntElement& MasterIntElement() const { return mintele_; }
+    MORTAR::IntElement& MasterIntElement() const override { return mintele_; }
 
     /*!
      \brief Return the Lagrange multiplier interpolation and testing type
 
      */
-    INPAR::MORTAR::LagMultQuad LagMultQuad()
+    INPAR::MORTAR::LagMultQuad LagMultQuad() override
     {
       return DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(imortar_, "LM_QUAD");
     }
@@ -431,7 +431,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoCoupling3dQuadManager() {}
+    ~CoCoupling3dQuadManager() override {}
 
     /*!
      \brief Get number of slave / master integration pairs of this interface (proc local)
@@ -443,19 +443,19 @@ namespace CONTACT
      \brief Get number of integration cells of this interface (proc local)
 
      */
-    virtual const int& IntegrationCells() { return intcells_; }
+    const int& IntegrationCells() override { return intcells_; }
 
     /*!
      \brief Evaluate coupling pairs
 
      */
-    virtual bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    bool EvaluateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
      \brief Evaluate mortar coupling pairs
 
      */
-    virtual void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr);
+    void IntegrateCoupling(const Teuchos::RCP<MORTAR::ParamsInterface>& mparams_ptr) override;
 
     /*!
      \brief spatial dimension

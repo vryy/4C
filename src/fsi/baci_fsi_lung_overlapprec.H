@@ -57,22 +57,22 @@ namespace FSI
         double aomega = 1.0, int aiterations = 0, FILE* err = nullptr);
 
     /// destruction
-    ~LungOverlappingBlockMatrix(){};
+    ~LungOverlappingBlockMatrix() override{};
 
     /** \name Attribute access functions */
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 
     /// setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
    protected:
     /// symmetric Gauss-Seidel block preconditioner
-    virtual void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    void SGS(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     Teuchos::RCP<LungSchurComplement> StructSchur_;
     Teuchos::RCP<LungSchurComplement> FluidSchur_;

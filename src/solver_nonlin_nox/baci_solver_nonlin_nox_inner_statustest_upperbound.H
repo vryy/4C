@@ -46,19 +46,19 @@ namespace NOX
               const NOX::NLN::StatusTest::QuantityType qtype);
 
           //! destructor
-          virtual ~UpperBound(){};
+          ~UpperBound() override{};
 
           //! Test the line search stopping criterion
-          virtual NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
+          NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
               const NOX::NLN::INNER::StatusTest::Interface::Required& interface,
               const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType);
+              NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent checkStatus call
-          virtual NOX::NLN::INNER::StatusTest::StatusType GetStatus() const;
+          NOX::NLN::INNER::StatusTest::StatusType GetStatus() const override;
 
           ///! Output formatted description of stopping test to output stream.
-          virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
+          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          protected:
           double GetSearchDirectionLength(const NOX::NLN::LineSearch::Generic& linesearch,

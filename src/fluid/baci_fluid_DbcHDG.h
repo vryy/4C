@@ -34,7 +34,7 @@ namespace FLD
       DbcHDG_Fluid(){};
 
       /// destructor
-      virtual ~DbcHDG_Fluid(){};
+      ~DbcHDG_Fluid() override{};
 
      protected:
       /** \brief Determine Dirichlet condition
@@ -65,9 +65,10 @@ namespace FLD
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      virtual void DoDirichletCondition(const DRT::Discretization& discret,
-          const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+      void DoDirichletCondition(const DRT::Discretization& discret, const DRT::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle,
+          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
       void DoDirichletCondition(const DRT::DiscretizationFaces& discret, const DRT::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;

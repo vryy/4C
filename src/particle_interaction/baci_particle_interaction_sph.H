@@ -105,10 +105,10 @@ namespace PARTICLEINTERACTION
     void CommunicateInteractionHistory() const override;
 
     //! set current time
-    void SetCurrentTime(const double currenttime);
+    void SetCurrentTime(const double currenttime) override;
 
     //! set current step size
-    void SetCurrentStepSize(const double currentstepsize);
+    void SetCurrentStepSize(const double currentstepsize) override;
 
    private:
     //! init kernel handler

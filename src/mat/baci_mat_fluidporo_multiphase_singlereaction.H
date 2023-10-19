@@ -45,10 +45,10 @@ namespace MAT
       FluidPoroSingleReaction(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroSingleReaction() { ; }
+      ~FluidPoroSingleReaction() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -150,11 +150,11 @@ namespace MAT
   class FluidPoroSingleReactionType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "FluidPoroSingleReactionType"; }
+    std::string Name() const override { return "FluidPoroSingleReactionType"; }
 
     static FluidPoroSingleReactionType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSingleReactionType instance_;
@@ -174,13 +174,13 @@ namespace MAT
     explicit FluidPoroSingleReaction(MAT::PAR::FluidPoroSingleReaction* params);
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_fluidporo_singlereaction;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleReaction(*this));
     }
@@ -193,7 +193,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return FluidPoroSinglePhaseType::Instance().UniqueParObjectId();
     }
@@ -208,7 +208,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -222,15 +222,15 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize();
+    void Initialize() override;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// evaluate reaction
     void EvaluateReaction(std::vector<double>& reacval,

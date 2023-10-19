@@ -39,7 +39,7 @@ namespace SCATRA
     virtual ~MeshtyingStrategyStd() { return; };
 
     //! return global map of degrees of freedom
-    const Epetra_Map& DofRowMap() const;
+    const Epetra_Map& DofRowMap() const override;
 
     /*!
     \brief Evaluate a given condition
@@ -50,20 +50,21 @@ namespace SCATRA
     \date 08/16
     \author rauch
     */
-    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+    void EvaluateCondition(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid)
+        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
+        const int condid) override
     {
       dserror("EvaluateCondition(...) is not implemented in MeshtyingStrategyStd.");
     };
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying();
+    void EvaluateMeshtying() override;
 
     //! init meshtying objects
-    void InitMeshtying();
+    void InitMeshtying() override;
 
     const Teuchos::RCP<CORE::LINALG::MultiMapExtractor> InterfaceMaps() const override
     {
@@ -84,7 +85,7 @@ namespace SCATRA
     }
 
     //! setup meshtying objects
-    void SetupMeshtying();
+    void SetupMeshtying() override;
 
     //! solve resulting linear system of equations
     void Solve(const Teuchos::RCP<CORE::LINALG::Solver>& solver,         //!< solver
@@ -94,14 +95,14 @@ namespace SCATRA
         const Teuchos::RCP<Epetra_Vector>& phinp,  //!< state vector at time n+1
         const int& iteration,                      //!< number of current Newton-Raphson iteration
         const Teuchos::RCP<CORE::LINALG::KrylovProjector>& projector  //!< Krylov projector
-    ) const;
+    ) const override;
 
     //! return linear solver for global system of linear equations
-    const CORE::LINALG::Solver& Solver() const;
+    const CORE::LINALG::Solver& Solver() const override;
 
    protected:
     //! instantiate strategy for Newton-Raphson convergence check
-    virtual void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
 
    private:
     //! copy constructor

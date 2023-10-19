@@ -54,7 +54,7 @@ namespace FSI
    private:
     void Solve();
 
-    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv);
+    Teuchos::RCP<Epetra_Vector> StructToFluid(Teuchos::RCP<Epetra_Vector> iv) override;
 
     /// interface structural operator
 

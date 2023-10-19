@@ -66,7 +66,7 @@ namespace NOX
       Group(const NOX::NLN::Group& source, NOX::CopyType type = NOX::DeepCopy);
 
       //! Destructor
-      virtual ~Group(){};
+      ~Group() override{};
 
       /// assign operator
       NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source) override;

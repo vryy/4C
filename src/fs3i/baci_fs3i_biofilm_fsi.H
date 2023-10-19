@@ -46,13 +46,13 @@ namespace FS3I
    public:
     BiofilmFSI(const Epetra_Comm& comm);
 
-    ~BiofilmFSI(){};
+    ~BiofilmFSI() override{};
 
-    virtual void Init();
+    void Init() override;
 
-    virtual void Setup();
+    void Setup() override;
 
-    virtual void Timeloop();
+    void Timeloop() override;
 
     void InnerTimeloop();
 

@@ -59,14 +59,14 @@ namespace XFEM
     );
 
     //! destructor
-    ~XFLUID_SemiLagrange() { return; }
+    ~XFLUID_SemiLagrange() override { return; }
 
     /*========================================================================*/
     //! compute routines
     /*========================================================================*/
 
     //! get startvalues in time step for nodes which changed interface-side
-    void compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVectorsn);
+    void compute(std::vector<Teuchos::RCP<Epetra_Vector>>& newRowVectorsn) override;
 
    private:
     /*========================================================================*/

@@ -40,7 +40,7 @@ namespace ADAPTER
     explicit SSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     /// Destructor
-    virtual ~SSIStructureWrapper() { ; }
+    ~SSIStructureWrapper() override { ; }
 
     /// set pointer to model evaluator
     void SetModelEvaluatorPtr(Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedSSI> me)

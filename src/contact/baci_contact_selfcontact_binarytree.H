@@ -72,7 +72,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~SelfBinaryTreeNode(){};
+    ~SelfBinaryTreeNode() override{};
 
     //! @name Evaluation methods
 
@@ -517,7 +517,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~SelfBinaryTree(){};
+    ~SelfBinaryTree() override{};
 
     //! @name Evaluation methods
 

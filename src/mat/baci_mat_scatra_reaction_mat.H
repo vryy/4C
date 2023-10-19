@@ -235,10 +235,10 @@ namespace MAT
       ScatraReactionMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~ScatraReactionMat() { ; }
+      ~ScatraReactionMat() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// returns the enum of the current coupling type
       MAT::PAR::reaction_coupling SetCouplingType(Teuchos::RCP<MAT::PAR::Material> matdata);
@@ -286,11 +286,11 @@ namespace MAT
   class ScatraReactionMatType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ScatraReactionMatType"; }
+    std::string Name() const override { return "ScatraReactionMatType"; }
 
     static ScatraReactionMatType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraReactionMatType instance_;
@@ -317,7 +317,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ScatraReactionMatType::Instance().UniqueParObjectId();
     }
@@ -332,7 +332,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -346,7 +346,7 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -354,10 +354,10 @@ namespace MAT
     virtual void Initialize() { params_->Initialize(); }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_scatra_reaction; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_scatra_reaction; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraReactionMat(*this));
     }
@@ -418,7 +418,7 @@ namespace MAT
     bool GetIsDistrFunctReacCoeff() const { return params_->isdistrfunctreaccoeff_; }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// calculate advanced reaction terms
     double CalcReaBodyForceTerm(const int k,  //!< current scalar id

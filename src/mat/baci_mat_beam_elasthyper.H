@@ -40,11 +40,11 @@ namespace MAT
   class BeamElastHyperMaterialType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return typeid(this).name(); }
+    std::string Name() const override { return typeid(this).name(); }
 
     static BeamElastHyperMaterialType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static BeamElastHyperMaterialType instance_;
@@ -218,7 +218,7 @@ namespace MAT
      *         any kinds of beam interactions (contact, potentials, viscous drag forces ...)
      *
      */
-    double GetInteractionRadius() const;
+    double GetInteractionRadius() const override;
 
     void GetStiffnessMatrixOfMoments(CORE::LINALG::Matrix<3, 3, T>& stiffness_matrix,
         const CORE::LINALG::Matrix<3, 3, T>& C_M, const int gp) override;

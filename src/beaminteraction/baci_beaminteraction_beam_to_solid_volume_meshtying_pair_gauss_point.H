@@ -68,7 +68,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPairGaussPoint(){};
+    ~BeamToSolidVolumeMeshtyingPairGaussPoint() override{};
 
     /**
      * \brief Evaluate this contact element pair.

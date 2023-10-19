@@ -29,36 +29,36 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
-    virtual ~TimIntCardiacMonodomainHDG();
+    ~TimIntCardiacMonodomainHDG() override;
 
     //! setup time integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
     //! write current state to BINIO
-    void OutputState();
+    void OutputState() override;
 
    protected:
     //! update gating variables
     virtual void ElementMaterialTimeUpdate();
 
     //! write problem specific output
-    virtual void WriteProblemSpecificOutput(Teuchos::RCP<Epetra_Vector> interpolatedPhi);
+    void WriteProblemSpecificOutput(Teuchos::RCP<Epetra_Vector> interpolatedPhi) override;
 
     //! adapt material
-    virtual void PackMaterial();
+    void PackMaterial() override;
 
     //! adapt material
-    virtual void UnpackMaterial();
+    void UnpackMaterial() override;
 
     //! project material field
-    virtual void ProjectMaterial();
+    void ProjectMaterial() override;
 
     //! read restart
-    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null);
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override;
 
    private:
     //! activation time

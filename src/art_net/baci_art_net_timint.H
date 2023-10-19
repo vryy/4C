@@ -51,35 +51,35 @@ namespace ART
         FILE* errfile, IO::DiscretizationWriter& output);
 
     //! Destructor
-    virtual ~TimInt();
+    ~TimInt() override;
 
     //! initialize time integration
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
-        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname);
+    void Init(const Teuchos::ParameterList& globaltimeparams,
+        const Teuchos::ParameterList& arteryparams, const std::string& scatra_disname) override;
 
     //! get discretization
-    Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+    Teuchos::RCP<DRT::Discretization> Discretization() override { return discret_; }
 
-    virtual double Dt() const { return dta_; }
+    double Dt() const override { return dta_; }
 
     double Time() const { return time_; }
     int Step() const { return step_; }
 
     int Itemax() const { return params_.get<int>("max nonlin iter steps"); }
 
-    virtual void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) = 0;
+    void Output(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override = 0;
 
     /*!
     \brief start time loop for startingalgo, normal problems and restarts
 
     */
-    void Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams);
+    void Integrate(bool CoupledTo3D, Teuchos::RCP<Teuchos::ParameterList> CouplingParams) override;
 
     /*!
     \brief prepare the loop
 
     */
-    virtual void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     /*!
     \brief Do time integration (time loop)
@@ -98,33 +98,33 @@ namespace ART
 
 
     /// setup the variables to do a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// setup the variables to do a new time step
-    virtual void PrepareLinearSolve()
+    void PrepareLinearSolve() override
     {
       // each artery integration should overwrite this if used
       dserror("not implemented");
     }
 
     /// setup the variables to do a new time step
-    virtual void AssembleMatAndRHS()
+    void AssembleMatAndRHS() override
     {
       // each artery integration should overwrite this if used
       dserror("not implemented");
     }
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       return Teuchos::rcp_dynamic_cast<CORE::LINALG::SparseMatrix>(sysmat_);
     };
 
     //! right-hand side alias the dynamic force residual
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() const { return rhs_; }
+    Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
 
     //! iterative update of primary variable
-    virtual void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc)
+    void UpdateIter(const Teuchos::RCP<const Epetra_Vector> inc) override
     {
       // each artery integration should overwrite this if used
       dserror("not implemented");
@@ -132,7 +132,7 @@ namespace ART
     }
 
     // get solution vector
-    virtual Teuchos::RCP<const Epetra_Vector> Pressurenp() const
+    Teuchos::RCP<const Epetra_Vector> Pressurenp() const override
     {
       // each artery integration should overwrite this if used
       dserror("not implemented");
@@ -142,28 +142,28 @@ namespace ART
     \brief solve linearised artery and bifurcation
 
     */
-    virtual void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) = 0;
+    void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams) override = 0;
 
-    virtual void SolveScatra() = 0;
+    void SolveScatra() override = 0;
 
     //! is output needed for the current time step?
     bool DoOutput() { return ((step_ % upres_ == 0) or (step_ % uprestart_ == 0)); };
 
     // set solve scatra flag
-    void SetSolveScatra(const bool solvescatra)
+    void SetSolveScatra(const bool solvescatra) override
     {
       solvescatra_ = solvescatra;
       return;
     }
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() const override
     {
       return dbcmaps_;
     }
 
     // create field test
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override = 0;
 
    protected:
     //! @name general algorithm parameters

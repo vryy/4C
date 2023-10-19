@@ -47,13 +47,13 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! evaluate Neumann boundary condition
       int EvaluateNeumann(DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseVector& elevec1,
-          const double scalar);
+          const double scalar) override;
 
       //! evaluate an electrode kinetics boundary condition
       void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element
@@ -72,12 +72,12 @@ namespace DRT
           const double frt,                   ///< factor F/RT
           const double
               scalar  ///< scaling factor for element matrix and right-hand side contributions
-      );
+          ) override;
 
       //! extract valence of species k from element material
       double GetValence(const Teuchos::RCP<const MAT::Material>& material,  //! element material
           const int k                                                       //! species number
-      ) const;
+      ) const override;
     };  // class ScaTraEleBoundaryCalcElchNP
   }     // namespace ELEMENTS
 }  // namespace DRT

@@ -34,7 +34,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~LineTo3DEvaluationData(){};
+    ~LineTo3DEvaluationData() override{};
 
     /**
      * \brief Clear the evaluation data.

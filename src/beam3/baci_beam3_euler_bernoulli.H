@@ -162,7 +162,7 @@ namespace DRT::ELEMENTS
     /*!
     \brief Destructor
     */
-    virtual ~Beam3eb() = default;
+    ~Beam3eb() override = default;
 
     /*!
     \brief Deep copy this instance of Beam3eb and return pointer to the copy

@@ -35,14 +35,14 @@ namespace NOX
       AitkenRelaxation(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
       //! Destructor
-      ~AitkenRelaxation();
+      ~AitkenRelaxation() override;
 
       // derived
       bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 
       // derived
       bool compute(NOX::Abstract::Group& newgrp, double& step, const NOX::Abstract::Vector& dir,
-          const NOX::Solver::Generic& s);
+          const NOX::Solver::Generic& s) override;
 
       //! return relaxation parameter
       double GetOmega();
@@ -79,7 +79,7 @@ namespace NOX
     {
      public:
       Teuchos::RCP<NOX::LineSearch::Generic> buildLineSearch(
-          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
         if (aitken_ == Teuchos::null)
           aitken_ = Teuchos::rcp(new AitkenRelaxation(gd->getUtils(), params));

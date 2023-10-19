@@ -60,7 +60,7 @@ namespace UTILS
     \brief Destructor
 
     */
-    virtual ~Cardiovascular0DDofSet();
+    ~Cardiovascular0DDofSet() override;
 
 
     //! @name Access methods
@@ -83,7 +83,7 @@ namespace UTILS
         const int numdofs, const int start, const Teuchos::RCP<UTILS::MOR> mor);
 
     /// reset all internal variables
-    virtual void Reset();
+    void Reset() override;
 
     //@}
 

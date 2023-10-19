@@ -107,7 +107,7 @@ namespace TUTORIAL
       methods. This is an indicator, that this class is supposed to be part of some inheritance
       line. Check the internet on why it is then important to declare the destructor virtual.
       */
-      virtual ~TutorialMatStVenantKirchhoff(){};
+      ~TutorialMatStVenantKirchhoff() override{};
 
       /*!
       \brief evaluate stress and material linearization (called for each integration point of
@@ -125,9 +125,9 @@ namespace TUTORIAL
       determinant at integration point \param B (in)              : B Operator at integration point
 
       */
-      virtual void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress,
+      void EvaluateMaterial(TUTORIAL::ELEMENTS::TutorialElement* ele, double* stress,
           CORE::LINALG::Matrix<2, 2>* linearization, const double strain, const double defgrd,
-          const double J, const CORE::LINALG::Matrix<2, 1> B);
+          const double J, const CORE::LINALG::Matrix<2, 1> B) override;
 
 
     };  // class TutorialMatStVenantKirchhoff

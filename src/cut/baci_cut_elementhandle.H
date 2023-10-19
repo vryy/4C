@@ -282,11 +282,11 @@ namespace CORE::GEO
               or when an element side has more than one facet or is touched by fully/partially by
        the cut side
        */
-      virtual bool IsCut() { return element_->IsCut(); }
+      bool IsCut() override { return element_->IsCut(); }
 
       /// return true if the element has more than one volume-cell and therefore is intersected by a
       /// cut-side
-      virtual bool IsIntersected() { return element_->IsIntersected(); }
+      bool IsIntersected() override { return element_->IsIntersected(); }
 
       //@}
 
@@ -295,14 +295,14 @@ namespace CORE::GEO
       //! @name access to basic element data
 
       //! get the shape of the element
-      virtual ::DRT::Element::DiscretizationType Shape() { return element_->Shape(); }
+      ::DRT::Element::DiscretizationType Shape() override { return element_->Shape(); }
 
       //! get the nodes of the element
-      virtual const std::vector<Node*>& Nodes() { return element_->Nodes(); }
+      const std::vector<Node*>& Nodes() override { return element_->Nodes(); }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst)
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override
       {
         element_->LocalCoordinates(xyz, rst);
       }
@@ -314,18 +314,18 @@ namespace CORE::GEO
       //! @name access to the element's CORE::GEO::CUT::Elements (subelements)
 
       //! collect all sub-elements
-      virtual void CollectElements(plain_element_set& elements) { elements.insert(element_); }
+      void CollectElements(plain_element_set& elements) override { elements.insert(element_); }
       //@}
 
       //--------------------------------------------------------------------------//
       //! @name access to the element's volume-cells
 
       //! Collect all volume-cells belonging to this elements
-      virtual void GetVolumeCells(plain_volumecell_set& cells);
+      void GetVolumeCells(plain_volumecell_set& cells) override;
 
       //! Collect all volume-cells belonging to this element ordered by position
-      virtual void CollectVolumeCells(
-          plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside);
+      void CollectVolumeCells(
+          plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside) override;
 
       //@}
 
@@ -333,13 +333,13 @@ namespace CORE::GEO
       //! @name access to the element's volume integration specific quantities
 
       //! get the element's volumetric integration cells (just for Tessellation)
-      virtual void GetIntegrationCells(plain_integrationcell_set& cells)
+      void GetIntegrationCells(plain_integrationcell_set& cells) override
       {
         element_->GetIntegrationCells(cells);
       }
 
       //! ...
-      virtual int NumVolumeCellGaussPoints() { return element_->NumGaussPoints(Shape()); }
+      int NumVolumeCellGaussPoints() override { return element_->NumGaussPoints(Shape()); }
 
       //@}
 
@@ -350,7 +350,7 @@ namespace CORE::GEO
 
       //! get the element's boundary integration cells
       // TODO note which ones???
-      virtual void GetBoundaryCells(plain_boundarycell_set& bcells)
+      void GetBoundaryCells(plain_boundarycell_set& bcells) override
       {
         dserror(
             "Deprecated function! Use the GetBoundaryCellSet( Point::PointPosition ), "
@@ -364,8 +364,8 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      virtual const std::vector<plain_boundarycell_set>& GetBoundaryCellSet(
-          Point::PointPosition position)
+      const std::vector<plain_boundarycell_set>& GetBoundaryCellSet(
+          Point::PointPosition position) override
       {
         BoundaryCellSet(position);
         return bcell_sets_.at(position);
@@ -380,7 +380,7 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      virtual void BoundaryCellSet(Point::PointPosition position);
+      void BoundaryCellSet(Point::PointPosition position) override;
 
       //@}
 
@@ -389,17 +389,17 @@ namespace CORE::GEO
       //! @name access to the element's sets of volume-cells, nds-vectors and integration points
 
       //! get the element's sets of volume-cells ordered by inside/outside position
-      virtual void VolumeCellSets();
+      void VolumeCellSets() override;
 
       //! get the element's sets of volume-cells with inside position
-      const std::vector<plain_volumecell_set>& GetVcSetsInside()
+      const std::vector<plain_volumecell_set>& GetVcSetsInside() override
       {
         if (!cells_set_) VolumeCellSets();  // build the volume cell sets
         return vc_sets_inside_;
       };
 
       //! get the element's sets of volume-cells with outside position
-      const std::vector<plain_volumecell_set>& GetVcSetsOutside()
+      const std::vector<plain_volumecell_set>& GetVcSetsOutside() override
       {
         if (!cells_set_) VolumeCellSets();  // build the volume cell sets
         return vc_sets_outside_;
@@ -444,11 +444,11 @@ namespace CORE::GEO
                or when an element side has more than one facet or is touched by fully/partially by
         the cut side
        */
-      virtual bool IsCut();
+      bool IsCut() override;
 
       /// return true if the element has more than one volume-cell and therefore is intersected by a
       /// cut-side
-      virtual bool IsIntersected();
+      bool IsIntersected() override;
 
       //@}
 
@@ -457,7 +457,7 @@ namespace CORE::GEO
       //! @name access to basic element data
 
       //! get the nodes of the element
-      virtual const std::vector<Node*>& Nodes() { return nodes_; }
+      const std::vector<Node*>& Nodes() override { return nodes_; }
 
       //@}
 
@@ -466,7 +466,7 @@ namespace CORE::GEO
       //! @name access to the element's CORE::GEO::CUT::Elements (subelements)
 
       //! collect all sub-elements
-      virtual void CollectElements(plain_element_set& elements)
+      void CollectElements(plain_element_set& elements) override
       {
         std::copy(
             subelements_.begin(), subelements_.end(), std::inserter(elements, elements.begin()));
@@ -477,11 +477,11 @@ namespace CORE::GEO
       //! @name access to the element's volume-cells
 
       //! Collect all volume-cells belonging to this elements
-      virtual void GetVolumeCells(plain_volumecell_set& cells);
+      void GetVolumeCells(plain_volumecell_set& cells) override;
 
       //! Collect all volume-cells belonging to this element ordered by position
-      virtual void CollectVolumeCells(
-          plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside);
+      void CollectVolumeCells(
+          plain_volumecell_set& cells_inside, plain_volumecell_set& cells_outside) override;
 
       //! Collect volume-cells belonging to this element with the given position
       void CollectVolumeCells(
@@ -494,10 +494,10 @@ namespace CORE::GEO
       //! @name access to the element's volume integration specific quantities
 
       //! get the quadratic element's volumetric integration cells (just for Tessellation)
-      virtual void GetIntegrationCells(plain_integrationcell_set& cells);
+      void GetIntegrationCells(plain_integrationcell_set& cells) override;
 
       //! ...
-      virtual int NumVolumeCellGaussPoints()
+      int NumVolumeCellGaussPoints() override
       {
         int numgp = 0;
         for (std::vector<Element*>::iterator i = subelements_.begin(); i != subelements_.end(); ++i)
@@ -519,7 +519,7 @@ namespace CORE::GEO
 
       //! get all the quadratic element's boundary integration cells
       // TODO note which ones???
-      virtual void GetBoundaryCells(plain_boundarycell_set& bcells);
+      void GetBoundaryCells(plain_boundarycell_set& bcells) override;
 
      protected:
       /** \brief Fill the class internal connected boundary sets for the given position
@@ -531,7 +531,7 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      virtual void BoundaryCellSet(Point::PointPosition position);
+      void BoundaryCellSet(Point::PointPosition position) override;
 
       /** \brief Get the connected boundary cell sets with given position
        *  ( read access )
@@ -539,8 +539,8 @@ namespace CORE::GEO
        *  \param position (in) : desired position of the boundary cell
        *
        *  \author hiermeier \date 01/17 */
-      virtual const std::vector<plain_boundarycell_set>& GetBoundaryCellSet(
-          Point::PointPosition position)
+      const std::vector<plain_boundarycell_set>& GetBoundaryCellSet(
+          Point::PointPosition position) override
       {
         BoundaryCellSet(position);
         return connected_bcell_sets_.at(position);
@@ -572,17 +572,17 @@ namespace CORE::GEO
       //! @name access to the element's sets of volume-cells, nds-vectors and integration points
       /// @{
       //! get the element's sets of volume-cells ordered by inside/outside position
-      virtual void VolumeCellSets();
+      void VolumeCellSets() override;
 
       //! get connections/sets of volume-cells between sub-elements ordered by inside position
-      const std::vector<plain_volumecell_set>& GetVcSetsInside()
+      const std::vector<plain_volumecell_set>& GetVcSetsInside() override
       {
         if (!cells_connected_) VolumeCellSets();
         return connected_vc_sets_inside_;
       };
 
       //! get connections/sets of volume-cells between sub-elements ordered by outside position
-      const std::vector<plain_volumecell_set>& GetVcSetsOutside()
+      const std::vector<plain_volumecell_set>& GetVcSetsOutside() override
       {
         if (!cells_connected_) VolumeCellSets();
         return connected_vc_sets_outside_;
@@ -628,11 +628,11 @@ namespace CORE::GEO
       Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::hex20; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::hex20; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 
     /// hex27 element handle
@@ -643,11 +643,11 @@ namespace CORE::GEO
       Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::hex27; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::hex27; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 
     /// tet10 element handle
@@ -658,11 +658,11 @@ namespace CORE::GEO
       Tet10ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::tet10; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::tet10; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 
     /// wedge15 element handle
@@ -673,11 +673,11 @@ namespace CORE::GEO
       Wedge15ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::wedge15; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::wedge15; }
 
       //! compute local coordinates of the element for given global coordinates
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<3, 1>& rst) override;
     };
 
   }  // namespace CUT

@@ -28,9 +28,9 @@ namespace SCATRA
 
    private:
     //! get nodal result to be tested
-    virtual double ResultNode(const std::string quantity,  //! name of quantity to be tested
-        DRT::Node* node                                    //! node carrying the result to be tested
-    ) const;
+    double ResultNode(const std::string quantity,  //! name of quantity to be tested
+        DRT::Node* node                            //! node carrying the result to be tested
+    ) const override;
 
     //! time integrator
     Teuchos::RCP<const TimIntHDG> scatratiminthdg_;

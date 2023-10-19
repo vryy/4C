@@ -38,7 +38,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~UnbiasedSelfBinaryTree(){};
+    ~UnbiasedSelfBinaryTree() override{};
 
     /*!
     \brief Initialize the unbiased self binary tree

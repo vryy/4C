@@ -66,7 +66,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceMeshtyingPairMortarFAD(){};
+    ~BeamToSolidSurfaceMeshtyingPairMortarFAD() override{};
 
     /**
      * \brief Evaluate the pair and directly assemble it into the global force vector and stiffness

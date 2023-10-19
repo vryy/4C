@@ -41,7 +41,7 @@ namespace DRT
       using my::nsd_ele_;
 
      public:
-      virtual ~ScaTraEleCalcPoro() {}
+      ~ScaTraEleCalcPoro() override {}
 
       /// Singleton access method
       static ScaTraEleCalcPoro<distype>* Instance(
@@ -63,13 +63,13 @@ namespace DRT
 
      protected:
       //! evaluate action
-      virtual int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
           DRT::Element::LocationArray& la, CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //   int EvaluateODMesh(  DRT::Element*                 ele,
       //                        Teuchos::ParameterList&       params,
@@ -106,12 +106,12 @@ namespace DRT
       //   );
 
       //! read element coordinates
-      virtual void ReadElementCoordinates(const DRT::Element* ele);
+      void ReadElementCoordinates(const DRT::Element* ele) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! extract element based or nodal values
       //  return extracted values of phinp
@@ -120,13 +120,13 @@ namespace DRT
           DRT::Element::LocationArray& la);
 
       //! get the material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                          //!< density at t_(n)
-          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-          double& visc,                 //!< fluid viscosity
-          const int iquad = -1          //!< id of current gauss point (default = -1)
-      );
+      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                  //!< density at t_(n)
+          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          ) override;
 
       //! compute porosity based on solid, fluid and (potentially) scatra solution
       virtual void ComputePorosity(const DRT::Element* ele  //!< the element we are dealing with
@@ -136,7 +136,7 @@ namespace DRT
       virtual double ComputePorePressure();
 
       //! material ScaTra
-      virtual void MatScaTra(
+      void MatScaTra(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           double& densn,                                     //!< density at t_(n)
@@ -144,7 +144,7 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
 
       //! set diffusivity for poro scatra problem (i.e. scale by porosity)
@@ -200,7 +200,7 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleDiffManagerPoro(){};
+      ~ScaTraEleDiffManagerPoro() override{};
 
       void SetPorosity(double porosity) { porosity_ = porosity; }
 

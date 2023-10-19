@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceMeshtyingPairMortarBase(){};
+    ~BeamToSolidSurfaceMeshtyingPairMortarBase() override{};
 
     /**
      * \brief This pair enforces constraints via a mortar-type method, which requires an own

@@ -85,13 +85,13 @@ namespace CORE::GEO
                                                    // can be activated, otherwise this will fail!
 
       /// handles cut sides which cut each other
-      void Cut_SelfCut(bool include_inner, bool screenoutput = true);
+      void Cut_SelfCut(bool include_inner, bool screenoutput = true) override;
 
       /// detects if a side of the cut mesh possibly collides with an element of the background mesh
-      void Cut_CollisionDetection(bool include_inner, bool screenoutput = true);
+      void Cut_CollisionDetection(bool include_inner, bool screenoutput = true) override;
 
       /// Routine for cutting the mesh. This creates lines, facets, volumecells and quadrature rules
-      void Cut_MeshIntersection(bool screenoutput = true);
+      void Cut_MeshIntersection(bool screenoutput = true) override;
 
       /// Routine for deciding the inside-outside position. This creates the dofset data, just
       /// serial
@@ -112,7 +112,8 @@ namespace CORE::GEO
       /*========================================================================*/
 
       /// status
-      void Status(INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation);
+      void Status(
+          INPAR::CUT::VCellGaussPts gausstype = INPAR::CUT::VCellGaussPts_Tessellation) override;
 
      private:
       /*========================================================================*/

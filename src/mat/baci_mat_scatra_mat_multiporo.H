@@ -54,10 +54,10 @@ namespace MAT
       ScatraMatMultiPoroFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~ScatraMatMultiPoroFluid() { ; }
+      ~ScatraMatMultiPoroFluid() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -80,10 +80,10 @@ namespace MAT
       ScatraMatMultiPoroVolFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~ScatraMatMultiPoroVolFrac() { ; }
+      ~ScatraMatMultiPoroVolFrac() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// ID of fluid phase the scalar is associated with
       const int phaseID_;
@@ -99,10 +99,10 @@ namespace MAT
       /// standard constructor
       ScatraMatMultiPoroSolid(Teuchos::RCP<MAT::PAR::Material> matdata);
       /// destructor
-      virtual ~ScatraMatMultiPoroSolid() { ; }
+      ~ScatraMatMultiPoroSolid() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// delta used for modelling dependency of diffusivity on
       /// (saturation*porosity)^delta
@@ -121,10 +121,10 @@ namespace MAT
       ScatraMatMultiPoroTemperature(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~ScatraMatMultiPoroTemperature() { ; }
+      ~ScatraMatMultiPoroTemperature() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       const int numfluidphases_;
       const int numvolfrac_;
@@ -145,11 +145,11 @@ namespace MAT
   class ScatraMatMultiPoroFluidType : public ScatraMatType
   {
    public:
-    std::string Name() const { return "ScatraMatMultiPoroFluidType"; }
+    std::string Name() const override { return "ScatraMatMultiPoroFluidType"; }
 
     static ScatraMatMultiPoroFluidType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroFluidType instance_;
@@ -158,11 +158,11 @@ namespace MAT
   class ScatraMatMultiPoroVolFracType : public ScatraMatType
   {
    public:
-    std::string Name() const { return "ScatraMatMultiPoroVolFracType"; }
+    std::string Name() const override { return "ScatraMatMultiPoroVolFracType"; }
 
     static ScatraMatMultiPoroVolFracType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroVolFracType instance_;
@@ -171,11 +171,11 @@ namespace MAT
   class ScatraMatMultiPoroSolidType : public ScatraMatType
   {
    public:
-    std::string Name() const { return "ScatraMatMultiPoroSolidType"; }
+    std::string Name() const override { return "ScatraMatMultiPoroSolidType"; }
 
     static ScatraMatMultiPoroSolidType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroSolidType instance_;
@@ -183,11 +183,11 @@ namespace MAT
   class ScatraMatMultiPoroTemperatureType : public ScatraMatType
   {
    public:
-    std::string Name() const { return "ScatraMatMultiPoroTemperatureType"; }
+    std::string Name() const override { return "ScatraMatMultiPoroTemperatureType"; }
 
     static ScatraMatMultiPoroTemperatureType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ScatraMatMultiPoroTemperatureType instance_;
@@ -211,7 +211,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ScatraMatMultiPoroFluidType::Instance().UniqueParObjectId();
     }
@@ -226,7 +226,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -240,24 +240,24 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_scatra_multiporo_fluid;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroFluid(*this));
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return phase ID
     virtual int PhaseID() const { return params_->phaseID_; }
@@ -292,7 +292,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ScatraMatMultiPoroVolFracType::Instance().UniqueParObjectId();
     }
@@ -307,7 +307,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -321,24 +321,24 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_scatra_multiporo_volfrac;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return phase ID
     virtual int PhaseID() const { return params_->phaseID_; }
@@ -370,7 +370,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ScatraMatMultiPoroSolidType::Instance().UniqueParObjectId();
     }
@@ -385,7 +385,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -399,24 +399,24 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_scatra_multiporo_solid;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroSolid(*this));
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return delta
     virtual double Delta() const { return params_->delta_; }
@@ -445,7 +445,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ScatraMatMultiPoroTemperatureType::Instance().UniqueParObjectId();
     }
@@ -460,7 +460,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -474,24 +474,24 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_scatra_multiporo_temperature;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ScatraMatMultiPoroTemperature(*this));
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     std::vector<double> CP_Fluid() const { return params_->cp_fluid_; }
     double CP_Fluid(int phase) const { return params_->cp_fluid_[phase]; }

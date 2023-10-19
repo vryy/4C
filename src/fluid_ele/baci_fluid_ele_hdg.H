@@ -32,24 +32,25 @@ namespace DRT
     class FluidHDGType : public FluidType
     {
      public:
-      std::string Name() const { return "FluidHDGType"; }
+      std::string Name() const override { return "FluidHDGType"; }
 
       static FluidHDGType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
       virtual void ComputeNullSpace(DRT::Discretization& dis, std::vector<double>& ns,
           const double* x0, int numdf, int dimns);
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static FluidHDGType instance_;
@@ -86,13 +87,13 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~FluidHDG();
+      ~FluidHDG() override;
 
       /*!
       \brief Return unique ParObject id
@@ -100,7 +101,10 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const { return FluidHDGType::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override
+      {
+        return FluidHDGType::Instance().UniqueParObjectId();
+      }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -108,20 +112,20 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /*!
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -131,13 +135,13 @@ namespace DRT
 
       HDG element: No dofs are associated with nodes
       */
-      virtual int NumDofPerNode(const DRT::Node&) const { return 0; }
+      int NumDofPerNode(const DRT::Node&) const override { return 0; }
 
       /*!
       \brief Get number of degrees of freedom per face
 
       */
-      virtual int NumDofPerFace(const unsigned face) const
+      int NumDofPerFace(const unsigned face) const override
       {
         return CORE::DRT::UTILS::getDimension(distype_) * NumDofPerComponent(face);
       }
@@ -145,7 +149,7 @@ namespace DRT
       /*!
       \brief Get number of dofs per component per face
       */
-      virtual int NumDofPerComponent(const unsigned face) const
+      int NumDofPerComponent(const unsigned face) const override
       {
         return CORE::DRT::UTILS::getBasisSize(
             CORE::DRT::UTILS::getEleFaceShapeType(distype_), this->Degree(), completepol_);
@@ -155,12 +159,12 @@ namespace DRT
       \brief Get number of degrees of freedom per element, zero for the primary dof set
       and equal to the given number for the secondary dof set
       */
-      virtual int NumDofPerElement() const { return 1; }
+      int NumDofPerElement() const override { return 1; }
 
       /*!
        \brief Returns the degree of the element
        */
-      int Degree() const { return degree_; }
+      int Degree() const override { return degree_; }
 
       /*!
        \brief Returns the degree of the element
@@ -205,19 +209,20 @@ namespace DRT
                               to fill this vector
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //@}
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return FluidHDGType::Instance(); }
+      DRT::ElementType& ElementType() const override { return FluidHDGType::Instance(); }
 
      private:
       // don't want = operator

@@ -42,7 +42,7 @@ namespace WEAR
     \brief Destructor
 
     */
-    virtual ~WearLagrangeStrategy(){};
+    ~WearLagrangeStrategy() override{};
 
     /*!
     \brief Condense discr. wear and lm. for frictional contact
@@ -134,7 +134,7 @@ namespace WEAR
     elements of #dmatrix_.
 
     */
-    void OutputWear();
+    void OutputWear() override;
 
 
     /*!
@@ -145,8 +145,8 @@ namespace WEAR
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    virtual void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
-        bool forcedrestart = false) const;
+    void DoWriteRestart(std::map<std::string, Teuchos::RCP<Epetra_Vector>>& restart_vectors,
+        bool forcedrestart = false) const override;
 
     /*!
     \brief Perform a write restart
@@ -156,7 +156,8 @@ namespace WEAR
     performed on the level of the contact algorithm, for short: here's the right place.
 
     */
-    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis);
+    void DoReadRestart(
+        IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
     \brief Update active set and check for convergence
@@ -179,7 +180,7 @@ namespace WEAR
 
     \param[in] firstStepPredictor Boolean flag to indicate the predictor step in the first time step
     */
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false);
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override;
 
     /*!
     \brief Store/Reset nodal wear quantities for pv approach
@@ -197,20 +198,23 @@ namespace WEAR
     \brief Update wear contact at end of time step
 
     */
-    void Update(Teuchos::RCP<const Epetra_Vector> dis);
+    void Update(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
     \brief Store wear data into wear data container
 
     */
-    void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type);
+    void StoreNodalQuantities(MORTAR::StrategyBase::QuantityType type) override;
 
     /*!
     \brief Return vector of wear (t_n+1) - D^-1 \times weighted wear!
 
     */
-    Teuchos::RCP<Epetra_Vector> ContactWear() { return wearoutput_; }              // for slave side
-    Teuchos::RCP<const Epetra_Vector> ContactWear() const { return wearoutput_; }  // for slave side
+    Teuchos::RCP<Epetra_Vector> ContactWear() override { return wearoutput_; }  // for slave side
+    Teuchos::RCP<const Epetra_Vector> ContactWear() const override
+    {
+      return wearoutput_;
+    }                                                                    // for slave side
     Teuchos::RCP<Epetra_Vector> ContactWear2() { return wearoutput2_; }  // for master side
 
     /*!
@@ -223,13 +227,13 @@ namespace WEAR
     \brief Return master map for both sided wear (slip), mapped from slave side
 
     */
-    Teuchos::RCP<const Epetra_Map> MasterSlipNodes() const { return gmslipnodes_; };
+    Teuchos::RCP<const Epetra_Map> MasterSlipNodes() const override { return gmslipnodes_; };
 
     /*!
     \brief Return master map for both sided wear (active), mapped from slave side
 
     */
-    Teuchos::RCP<const Epetra_Map> MasterActiveNodes() const { return gmactivenodes_; };
+    Teuchos::RCP<const Epetra_Map> MasterActiveNodes() const override { return gmactivenodes_; };
 
     /*!
      \brief Return discrete wear vector (t_n+1)
@@ -247,45 +251,45 @@ namespace WEAR
      \brief Return wear rhs vector (only in saddle-point formulation
 
      */
-    Teuchos::RCP<Epetra_Vector> WearRhs() { return wearrhs_; }
+    Teuchos::RCP<Epetra_Vector> WearRhs() override { return wearrhs_; }
 
     /*!
      \brief Return wear-master rhs vector (only in saddle-point formulation
 
      */
-    Teuchos::RCP<Epetra_Vector> WearMRhs() { return wearmrhs_; }
+    Teuchos::RCP<Epetra_Vector> WearMRhs() override { return wearmrhs_; }
 
     /*!
      \brief Returns increment of W solution vector in SaddlePointSolve routine
 
      */
-    Teuchos::RCP<Epetra_Vector> WSolveIncr() { return wincr_; }
+    Teuchos::RCP<Epetra_Vector> WSolveIncr() override { return wincr_; }
 
     /*!
      \brief Returns increment of W-master solution vector in SaddlePointSolve routine
 
      */
-    Teuchos::RCP<Epetra_Vector> WMSolveIncr() { return wmincr_; }
+    Teuchos::RCP<Epetra_Vector> WMSolveIncr() override { return wmincr_; }
 
     /*!
      \brief Return global both sided wear status
 
      */
-    bool WearBothDiscrete() const { return wbothpv_; }
+    bool WearBothDiscrete() const override { return wbothpv_; }
 
     /*!
      \brief Return global wear status
 
      */
-    bool WeightedWear() const { return weightedwear_; }
+    bool WeightedWear() const override { return weightedwear_; }
 
    private:
     /*!
     \brief Evaluate frictional contact
 
     */
-    void EvaluateFriction(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
     \brief Initialize and evaluate Mortar stuff for the next Newton step
@@ -300,8 +304,8 @@ namespace WEAR
     stiffness K or the effective load vector f.
 
     */
-    void InitMortar();
-    void AssembleMortar();
+    void InitMortar() override;
+    void AssembleMortar() override;
 
     /*!
     \brief Initialize general contact variables for next Newton step
@@ -310,7 +314,7 @@ namespace WEAR
     the global derivative matrices S and P and Tresca friction matrix L + vector r.
 
     */
-    void Initialize();
+    void Initialize() override;
 
     /*!
     \brief Setup this strategy object (maps, vectors, etc.)
@@ -324,7 +328,7 @@ namespace WEAR
     method is given the input parameter init=TRUE to account
     for initialization of the active set.
       */
-    virtual void Setup(bool redistributed, bool init);
+    void Setup(bool redistributed, bool init) override;
 
     /*!
     \brief Setup this strategy object (maps, vectors, etc.)

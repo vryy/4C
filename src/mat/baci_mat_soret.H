@@ -23,10 +23,10 @@ namespace MAT
       Soret(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~Soret() { return; };
+      ~Soret() override { return; };
 
       //! create instance of Soret material
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //! return Soret coefficient
       double SoretCoefficient() const { return soretcoefficient_; };
@@ -45,11 +45,11 @@ namespace MAT
   class SoretType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "SoretType"; };
+    std::string Name() const override { return "SoretType"; };
 
     static SoretType& Instance() { return instance_; };
 
-    DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static SoretType instance_;
@@ -74,7 +74,7 @@ namespace MAT
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    int UniqueParObjectId() const { return SoretType::Instance().UniqueParObjectId(); };
+    int UniqueParObjectId() const override { return SoretType::Instance().UniqueParObjectId(); };
 
     /*!
       \brief Pack this class so it can be communicated
@@ -86,7 +86,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -99,21 +99,21 @@ namespace MAT
 
       \param data (in) : vector storing all data to be unpacked into this instance.
     */
-    void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
     //@}
 
     //! return material type
-    INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_soret; };
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_soret; };
 
     //! clone Soret material
-    Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Soret(*this)); };
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Soret(*this)); };
 
     //! return Soret coefficient
     double SoretCoefficient() const { return params_->SoretCoefficient(); };
 
    private:
     //! return material parameters
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! material parameters
     MAT::PAR::Soret* params_;

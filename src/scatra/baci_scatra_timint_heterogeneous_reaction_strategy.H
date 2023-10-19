@@ -41,16 +41,16 @@ namespace SCATRA
     explicit HeterogeneousReactionStrategy(SCATRA::ScaTraTimIntImpl* scatratimint);
 
     //! destructor
-    virtual ~HeterogeneousReactionStrategy() { return; };
+    ~HeterogeneousReactionStrategy() override { return; };
 
     //! compute residual terms and their linearizations
-    void EvaluateMeshtying();
+    void EvaluateMeshtying() override;
 
     //! setup meshtying objects
-    void SetupMeshtying();
+    void SetupMeshtying() override;
 
     //! initialize meshtying objects
-    void InitMeshtying();
+    void InitMeshtying() override;
 
     /*!
     \brief Evaluate a given condition
@@ -74,11 +74,12 @@ namespace SCATRA
     \date 08/16
     \author rauch
     */
-    virtual void EvaluateCondition(Teuchos::ParameterList& params,
+    void EvaluateCondition(Teuchos::ParameterList& params,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix1,
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix2,
         Teuchos::RCP<Epetra_Vector> systemvector1, Teuchos::RCP<Epetra_Vector> systemvector2,
-        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring, const int condid);
+        Teuchos::RCP<Epetra_Vector> systemvector3, const std::string& condstring,
+        const int condid) override;
 
     /*!
     \brief Set state on an discretization hidden in any MeshtyingStrategy.
@@ -94,8 +95,8 @@ namespace SCATRA
     \date 12/16
     \author rauch
     */
-    virtual void SetState(
-        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state);
+    void SetState(
+        unsigned nds, const std::string& name, Teuchos::RCP<const Epetra_Vector> state) override;
 
    private:
     //! the discretization for the reaction

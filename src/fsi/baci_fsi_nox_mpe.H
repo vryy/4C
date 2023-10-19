@@ -75,18 +75,18 @@ namespace NOX
       MinimalPolynomial(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
       //! Destructor
-      ~MinimalPolynomial();
+      ~MinimalPolynomial() override;
 
       // derived
-      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
 
       // derived
       bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-          const NOX::Solver::Generic& solver);
+          const NOX::Solver::Generic& solver) override;
 
       // derived
-      virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-          const NOX::Solver::LineSearchBased& solver);
+      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+          const NOX::Solver::LineSearchBased& solver) override;
 
      private:
       //! Print error message and throw error
@@ -106,8 +106,8 @@ namespace NOX
     class MinimalPolynomialFactory : public NOX::Direction::UserDefinedFactory
     {
      public:
-      virtual Teuchos::RCP<NOX::Direction::Generic> buildDirection(
-          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const
+      Teuchos::RCP<NOX::Direction::Generic> buildDirection(
+          const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) const override
       {
         return Teuchos::rcp(new MinimalPolynomial(gd->getUtils(), params));
       }

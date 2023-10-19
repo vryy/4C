@@ -35,17 +35,18 @@ namespace DRT
 
      public:
       /// dtor
-      virtual ~FluidEleCalcXWall() {}
+      ~FluidEleCalcXWall() override {}
 
       /// Singleton access method
       static FluidEleCalcXWall<distype, enrtype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
-      virtual int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
+      int EvaluateService(DRT::ELEMENTS::Fluid* ele, Teuchos::ParameterList& params,
           Teuchos::RCP<MAT::Material>& mat, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /// Evaluate supporting methods of the element for xwall
       /*!
@@ -101,17 +102,17 @@ namespace DRT
           const CORE::DRT::UTILS::GaussIntegration& intpoints) override;
 
       //! get ALE grid displacements and grid velocity for element
-      virtual void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
-          CORE::LINALG::Matrix<nsd_, nen_>& edispnp);
+      void GetGridDispALE(DRT::Discretization& discretization, const std::vector<int>& lm,
+          CORE::LINALG::Matrix<nsd_, nen_>& edispnp) override;
 
       //! linearisation in the case of mesh motion 3-D
-      virtual void LinMeshMotion_3D(
+      void LinMeshMotion_3D(
           CORE::LINALG::Matrix<(nsd_ + 1) * nen_, (nsd_ + 1) * nen_>& emesh,  ///< mesh motion
           const CORE::LINALG::Matrix<nsd_, nen_>& evelaf,  ///< velocity at time n+alpha_f / n+1
           const double& press,                             ///< pressure at integration point
           const double& timefac,                           ///< time factor
           const double& timefacfac                         ///< = timefac x fac
-      );
+          ) override;
 
      private:
       const static int enren_ =
@@ -121,10 +122,10 @@ namespace DRT
       FluidEleCalcXWall();
 
       //! brief evaluate shape functions and their derivatives at integration point
-      virtual void EvalShapeFuncAndDerivsAtIntPoint(
+      void EvalShapeFuncAndDerivsAtIntPoint(
           const double* gpcoords,  ///< actual integration point (coords)
           double gpweight          ///< actual integration point (weight)
-      );
+          ) override;
 
       //! brief evaluate shape functions and their derivatives at integration point
       virtual void EvalStdShapeFuncAndDerivsAtIntPoint(
@@ -173,7 +174,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec2);
 
       //! Get MK
-      virtual double GetMK();
+      double GetMK() override;
 
       /*! \brief Calculate statilization parameter mk entry routine
        *

@@ -298,21 +298,21 @@ namespace FLD
         Teuchos::RCP<Epetra_Vector> gridv);
 
     /// Destructor
-    virtual ~XWallAleFSI() { return; };
+    ~XWallAleFSI() override { return; };
 
     void UpdateWDistWALE();
 
     // set element params for xwall EnrichmentType
-    void SetXWallParams(Teuchos::ParameterList& eleparams);
+    void SetXWallParams(Teuchos::ParameterList& eleparams) override;
 
     // returns, if Properties for GenAlpha have to be updated
     void UpdateTauW(int step, Teuchos::RCP<Epetra_Vector> trueresidual, int itnum,
         Teuchos::RCP<Epetra_Vector> accn, Teuchos::RCP<Epetra_Vector> velnp,
-        Teuchos::RCP<Epetra_Vector> veln);
+        Teuchos::RCP<Epetra_Vector> veln) override;
 
    private:
     // set element params for xwall EnrichmentType, distributed for xwall discretization
-    void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams);
+    void SetXWallParamsXWDis(Teuchos::ParameterList& eleparams) override;
     Teuchos::RCP<Epetra_Vector> mydispnp_;
     Teuchos::RCP<Epetra_Vector> mygridv_;
 

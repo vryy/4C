@@ -207,7 +207,7 @@ namespace MORTAR
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
     //! Destructor
-    virtual ~StrategyBase() = default;
+    ~StrategyBase() override = default;
 
     //! @name Access methods
     //! @{
@@ -359,10 +359,10 @@ namespace MORTAR
     virtual Teuchos::RCP<const Epetra_Map> MasterActiveNodes() const { return Teuchos::null; };
 
     // constraint preconditioner functions
-    virtual bool IsSaddlePointSystem() const = 0;
-    virtual bool IsCondensedSystem() const = 0;
+    bool IsSaddlePointSystem() const override = 0;
+    bool IsCondensedSystem() const override = 0;
     virtual bool IsPenalty() const = 0;
-    virtual void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const = 0;
+    void FillMapsForPreconditioner(std::vector<Teuchos::RCP<Epetra_Map>>& maps) const override = 0;
     //@}
 
    private:

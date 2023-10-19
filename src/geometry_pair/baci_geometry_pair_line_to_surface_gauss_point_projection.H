@@ -51,7 +51,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToSurfaceGaussPointProjection(){};
+    ~GeometryPairLineToSurfaceGaussPointProjection() override{};
 
     /**
      * \brief Setup the projection tracker for this line element.

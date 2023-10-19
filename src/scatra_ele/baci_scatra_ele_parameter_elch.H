@@ -29,7 +29,7 @@ namespace DRT
     {
      public:
       //! destructor
-      virtual ~ScaTraEleParameterElch() { return; };
+      ~ScaTraEleParameterElch() override { return; };
 
       //! singleton access method
       static ScaTraEleParameterElch* Instance(
@@ -42,7 +42,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       //! return type of closing equation for electric potential
       INPAR::ELCH::EquPot EquPot() const { return equpot_; };

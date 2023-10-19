@@ -71,7 +71,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoPenaltyStrategy() = default;
+    ~CoPenaltyStrategy() override = default;
 
     //! @name Access methods
 
@@ -79,7 +79,7 @@ namespace CONTACT
     \brief Return L2-norm of active constraints
 
     */
-    double ConstraintNorm() const { return constrnorm_; }
+    double ConstraintNorm() const override { return constrnorm_; }
 
     /*!
     \brief Return L2-norm of slip constraints
@@ -92,7 +92,7 @@ namespace CONTACT
     \brief Return initial penalty parameter for non-penetration
 
     */
-    double InitialPenalty() { return initialpenalty_; }
+    double InitialPenalty() override { return initialpenalty_; }
 
     /*!
     \brief Return initial penalty parameter for tangential direction
@@ -115,7 +115,7 @@ namespace CONTACT
     for a penalty strategy since the weighted gap determines the lagrangian multipliers.
 
     */
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis);
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override;
 
     /*!
     \brief Evaluate relative movement of contact bodies in predictor
@@ -127,7 +127,7 @@ namespace CONTACT
 
     */
 
-    void EvaluateRelMovPredict();
+    void EvaluateRelMovPredict() override;
 
     /*!
     \brief Initialize general contact variables for next Newton step
@@ -136,7 +136,7 @@ namespace CONTACT
     multipliers.
 
     */
-    void Initialize();
+    void Initialize() override;
 
     /*!
     \brief Evaluate contact
@@ -146,8 +146,8 @@ namespace CONTACT
     stiffness contributions to kteff and extra contact forces to feff.
 
     */
-    void EvaluateContact(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void EvaluateContact(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
     \brief Evaluate frictional contact
@@ -155,8 +155,8 @@ namespace CONTACT
     This includes the evaluation of of the frictional contact forces.
 
     */
-    void EvaluateFriction(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void EvaluateFriction(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
     \brief Reset penalty parameter to intial value
@@ -170,9 +170,9 @@ namespace CONTACT
     at the beginning of each time step and resets the penalty parameter to its initial value.
 
     */
-    void ResetPenalty();
+    void ResetPenalty() override;
 
-    void ModifyPenalty();
+    void ModifyPenalty() override;
 
     /*!
     \brief Initialize Uzawa step
@@ -186,8 +186,8 @@ namespace CONTACT
     and finally Evaluate().
 
     */
-    void InitializeUzawa(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff);
+    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override;
 
     /*!
     \brief Compute L2-norm of active constraints
@@ -199,7 +199,7 @@ namespace CONTACT
     in this method, too.
 
     */
-    void UpdateConstraintNorm(int uzawaiter = 0);
+    void UpdateConstraintNorm(int uzawaiter = 0) override;
 
     /*!
     \brief Store Lagrange multipliers for next Uzawa step
@@ -209,7 +209,7 @@ namespace CONTACT
     in the variable zuzawa_, which is then used in the next Uzawa step.
 
     */
-    void UpdateUzawaAugmentedLagrange();
+    void UpdateUzawaAugmentedLagrange() override;
 
     /*! \brief Compute force terms
      *
@@ -230,14 +230,14 @@ namespace CONTACT
      *         set force evaluation flag
      *
      */
-    virtual void PreEvaluate(CONTACT::ParamsInterface& cparams);
+    void PreEvaluate(CONTACT::ParamsInterface& cparams) override;
 
     /*! \brief Run in the end of the Evaluate() routine to reset
      *         force evaluation flag
      *
      *
      */
-    virtual void PostEvaluate(CONTACT::ParamsInterface& cparams);
+    void PostEvaluate(CONTACT::ParamsInterface& cparams) override;
 
 
     /*! \brief Return the desired right-hand-side block pointer (read-only)
@@ -246,8 +246,8 @@ namespace CONTACT
      *  contributions are present.
      *
      *  \param bt (in): Desired vector block type, e.g. displ, constraint,*/
-    virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const;
+    Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+        const enum DRT::UTILS::VecBlockType& bt) const override;
 
     /*! \brief Return the desired matrix block pointer (read-only)
      *
@@ -256,9 +256,9 @@ namespace CONTACT
      *
      *  \param bt (in): Desired matrix block type, e.g. displ_displ, displ_lm, ...
      *  \param cparams (in): contact parameter interface (read-only) */
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
         const enum DRT::UTILS::MatBlockType& bt,
-        const CONTACT::ParamsInterface* cparams = nullptr) const;
+        const CONTACT::ParamsInterface* cparams = nullptr) const override;
 
     //@}
 
@@ -266,12 +266,12 @@ namespace CONTACT
 
     // All these functions only have functionality in Lagrange contact simulations,
     // thus they are defined empty here in the case of Penalty contact.
-    virtual Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const { return Teuchos::null; };
-    virtual Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const { return Teuchos::null; };
-    bool ActiveSetSemiSmoothConverged() const { return true; }
-    bool ActiveSetConverged() { return true; }
-    int ActiveSetSteps() { return 0; }
-    void ResetActiveSet() {}
+    Teuchos::RCP<const Epetra_Map> GetOldActiveRowNodes() const override { return Teuchos::null; };
+    Teuchos::RCP<const Epetra_Map> GetOldSlipRowNodes() const override { return Teuchos::null; };
+    bool ActiveSetSemiSmoothConverged() const override { return true; }
+    bool ActiveSetConverged() override { return true; }
+    int ActiveSetSteps() override { return 0; }
+    void ResetActiveSet() override {}
     void Recover(Teuchos::RCP<Epetra_Vector> disi) override { return; };
     void BuildSaddlePointSystem(Teuchos::RCP<CORE::LINALG::SparseOperator> kdd,
         Teuchos::RCP<Epetra_Vector> fd, Teuchos::RCP<Epetra_Vector> sold,
@@ -289,17 +289,17 @@ namespace CONTACT
           "A penalty approach does not have Lagrange multiplier DOFs. So, saddle point system "
           "makes no sense here.");
     }
-    void EvalConstrRHS() {}
-    void UpdateActiveSet() {}
-    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) {}
+    void EvalConstrRHS() override {}
+    void UpdateActiveSet() override {}
+    void UpdateActiveSetSemiSmooth(const bool firstStepPredictor = false) override {}
     bool IsPenalty() const override { return true; };
     void ResetLagrangeMultipliers(
-        const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew)
+        const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xnew) override
     {
     }
-    virtual bool IsSaddlePointSystem() const { return false; }
-    virtual bool IsCondensedSystem() const { return false; }
-    virtual bool IsNitsche() const { return false; }
+    bool IsSaddlePointSystem() const override { return false; }
+    bool IsCondensedSystem() const override { return false; }
+    bool IsNitsche() const override { return false; }
 
     /*! \brief Recover the current state
      *
@@ -317,21 +317,21 @@ namespace CONTACT
      *
      *  \date 05/2016
      *  \author hiermeier */
-    virtual void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
-        const Epetra_Vector& dir, const Epetra_Vector& xnew)
+    void RunPostComputeX(const CONTACT::ParamsInterface& cparams, const Epetra_Vector& xold,
+        const Epetra_Vector& dir, const Epetra_Vector& xnew) override
     {
     }
-    virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const;
-    virtual Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const;
-    virtual Teuchos::RCP<Epetra_Vector> LagrMultOld();
-    virtual Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const;
+    Teuchos::RCP<const Epetra_Vector> GetLagrMultN(const bool& redist) const override;
+    Teuchos::RCP<const Epetra_Vector> GetLagrMultNp(const bool& redist) const override;
+    Teuchos::RCP<Epetra_Vector> LagrMultOld() override;
+    Teuchos::RCP<const Epetra_Map> LMDoFRowMapPtr(const bool& redist) const override;
 
    protected:
     //! derived
-    virtual std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() { return interface_; }
+    std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() override { return interface_; }
 
     //! derived
-    virtual const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const
+    const std::vector<Teuchos::RCP<CONTACT::CoInterface>>& Interfaces() const override
     {
       return interface_;
     }

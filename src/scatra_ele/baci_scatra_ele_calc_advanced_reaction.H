@@ -48,7 +48,7 @@ namespace DRT
       using my::nsd_;
 
      public:
-      virtual ~ScaTraEleCalcAdvReac() { return; };
+      ~ScaTraEleCalcAdvReac() override { return; };
 
       /// Singleton access method
       static ScaTraEleCalcAdvReac<distype, probdim>* Instance(const int numdofpernode,
@@ -57,20 +57,20 @@ namespace DRT
 
      protected:
       //! set internal variables
-      virtual void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! get the material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                          //!< density at t_(n)
-          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-          double& visc,                 //!< fluid viscosity
-          const int iquad = -1          //!< id of current gauss point (default = -1)
-      );
+      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                  //!< density at t_(n)
+          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          ) override;
 
 
       //! evaluate material
-      virtual void Materials(
+      void Materials(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           double& densn,                                     //!< density at t_(n)
@@ -78,20 +78,19 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
 
       //! Get right hand side including reaction bodyforce term
-      virtual void GetRhsInt(double& rhsint,  //!< rhs containing bodyforce at Gauss point
-          const double densnp,                //!< density at t_(n+1)
-          const int k                         //!< index of current scalar
-      );
+      void GetRhsInt(double& rhsint,  //!< rhs containing bodyforce at Gauss point
+          const double densnp,        //!< density at t_(n+1)
+          const int k                 //!< index of current scalar
+          ) override;
 
 
       //! calculation of reactive element matrix
-      virtual void CalcMatReact(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                            //!< index of current scalar
+      void CalcMatReact(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                          //!< index of current scalar
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double
               timetaufac,  //!< domain-integration factor times time-integration factor times tau
@@ -99,7 +98,7 @@ namespace DRT
           const double densnp,                          //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nen_, 1>& sgconv,  //!< subgrid-scale convective operator
           const CORE::LINALG::Matrix<nen_, 1>& diff     //!< laplace term
-      );
+          ) override;
 
 
       //! Set advanced reaction terms and derivatives
@@ -109,7 +108,7 @@ namespace DRT
       );
 
       //! evaluate shape functions and their derivatives at element center
-      virtual double EvalShapeFuncAndDerivsAtEleCenter();
+      double EvalShapeFuncAndDerivsAtEleCenter() override;
 
       //! array for shape function at element center
       CORE::LINALG::Matrix<nen_, 1> funct_elementcenter_;
@@ -155,7 +154,7 @@ namespace DRT
       //! @name set routines
 
       //! Clear everything and resize to length numscal
-      void Clear(int numscal)
+      void Clear(int numscal) override
       {
         // clear base class
         ScaTraEleReaManager::Clear(numscal);
@@ -203,7 +202,7 @@ namespace DRT
       }
 
       //! Return the stabilization coefficient
-      virtual double GetStabilizationCoeff(const int k, const double phinp_k) const
+      double GetStabilizationCoeff(const int k, const double phinp_k) const override
       {
         double stabboeff = ScaTraEleReaManager::GetStabilizationCoeff(k, phinp_k);
 

@@ -39,7 +39,7 @@ namespace DRT
       using my::nsd_ele_;
 
      public:
-      virtual ~ScaTraEleCalcCardiacMonodomain() {}
+      ~ScaTraEleCalcCardiacMonodomain() override {}
 
 
       /// Singleton access method
@@ -53,7 +53,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       /*========================================================================*/
@@ -61,11 +61,11 @@ namespace DRT
       /*========================================================================*/
 
       //! extract element based or nodal values
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! evaluate material
-      virtual void Materials(
+      void Materials(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           double& densn,                                     //!< density at t_(n)
@@ -73,7 +73,7 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
       //! material ScaTra
       void MatMyocard(
@@ -87,11 +87,11 @@ namespace DRT
       );
 
       //! calculate matrix and rhs for ep
-      virtual void Sysmat(DRT::Element* ele,          ///< the element whose matrix is calculated
+      void Sysmat(DRT::Element* ele,                  ///< the element whose matrix is calculated
           CORE::LINALG::SerialDenseMatrix& emat,      ///< element matrix to calculate
           CORE::LINALG::SerialDenseVector& erhs,      ///< element rhs to calculate
           CORE::LINALG::SerialDenseVector& subgrdiff  ///< subgrid-diff.-scaling vector
-      );
+          ) override;
     };
 
   }  // namespace ELEMENTS

@@ -41,12 +41,12 @@ namespace AIRWAY
     RedAirwayResultTest(RedAirwayImplicitTimeInt& red_airways);
 
 
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /*!
       Element test routine, our version of element value tests
     */
-    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// Teuchos::RCP to scalar transport discretization

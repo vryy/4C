@@ -26,11 +26,11 @@ namespace DRT
   class ConditionObjectType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ConditionObjectType"; }
+    std::string Name() const override { return "ConditionObjectType"; }
 
     static ConditionObjectType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ConditionObjectType instance_;
@@ -359,7 +359,7 @@ namespace DRT
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ConditionObjectType::Instance().UniqueParObjectId();
     }
@@ -370,7 +370,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -378,7 +378,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this class
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -431,7 +431,7 @@ namespace DRT
     /*!
     \brief Print this Condition (ostream << is also implemented for DRT::Condition)
     */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*!
     Return the id and the name of the condition

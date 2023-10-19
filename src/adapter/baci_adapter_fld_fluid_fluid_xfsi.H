@@ -32,7 +32,7 @@ namespace ADAPTER
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// initialize algorithm
-    virtual void Init();
+    void Init() override;
 
    protected:
     /// A casted pointer to a fluid with multiple discretizations

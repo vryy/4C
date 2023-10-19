@@ -649,7 +649,7 @@ namespace XFEM
     );
 
     //! destructor
-    virtual ~XFLUID_STD() { return; }
+    ~XFLUID_STD() override { return; }
 
     /*========================================================================*/
     //! compute routines

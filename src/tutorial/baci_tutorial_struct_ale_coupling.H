@@ -25,17 +25,17 @@ namespace TUTORIAL
     StructAleCoupling();
 
     /// constructor (ctor)
-    virtual ~StructAleCoupling(){};
+    ~StructAleCoupling() override{};
 
    protected:
     /// print the type of the tutorial to screen
-    virtual void PrintTutorialType();
+    void PrintTutorialType() override;
 
     /// post evaluate operator ( e.g. for manipulation of rhs and stiffness matrix after usual
     /// evaluate)
-    virtual void PostEvaluate(CORE::LINALG::Matrix<numele + 1, 1> rhs,
+    void PostEvaluate(CORE::LINALG::Matrix<numele + 1, 1> rhs,
         CORE::LINALG::Matrix<numele + 1, numele + 1> stiff, bool eval_rhs = true,
-        bool eval_stiff = true);
+        bool eval_stiff = true) override;
 
   };  // class StructAleCoupling
 }  // namespace TUTORIAL

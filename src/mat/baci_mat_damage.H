@@ -58,7 +58,7 @@ namespace MAT
       Damage(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~Damage() { ; }
+      ~Damage() override { ; }
 
       //! @name material parameters
       //@{
@@ -93,7 +93,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class Damage
 
@@ -103,11 +103,11 @@ namespace MAT
   class DamageType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "DamageType"; }
+    std::string Name() const override { return "DamageType"; }
 
     static DamageType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static DamageType instance_;
@@ -132,7 +132,7 @@ namespace MAT
     //!
     //!  every class implementing ParObject needs a unique id defined at the
     //!  top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return DamageType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return DamageType::Instance().UniqueParObjectId(); }
 
     //!  \brief Pack this class so it can be communicated
     //!
@@ -142,9 +142,8 @@ namespace MAT
     //!  identify the exact class on the receiving processor.
     //!
     //!  \param data (in/out): char vector to store class information
-    virtual void Pack(
-        DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
-    ) const;
+    void Pack(DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
+    ) const override;
 
     //!  \brief Unpack data from a char vector into this class
     //!
@@ -156,39 +155,39 @@ namespace MAT
     //!
     //!  \param data (in) : vector storing all data to be unpacked into this
     //!  instance.
-    virtual void Unpack(const std::vector<char>&
+    void Unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
-    );
+        ) override;
 
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_elpldamage; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_elpldamage; }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Damage(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Damage(*this)); }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_linear))
         dserror("element and material kinematics are not compatible");
     }
 
     //! initialise internal stress variables
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    virtual void Update();
+    void Update() override;
 
     //! evaluate material
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  //!< deformation gradient
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,     //!< linear total strains
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,       //!< deformation gradient
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* linstrain,  //!< linear total strains
         Teuchos::ParameterList& params,                  //!< parameter list for communication
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
         int gp,                                                    ///< Gauss point
-        int eleGID);
+        int eleGID) override;
 
     //! evaluate material using Lemaitre material model
     virtual void EvaluateFullLemaitre(
@@ -287,7 +286,7 @@ namespace MAT
     );
 
     //! return density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     //! return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
@@ -327,13 +326,13 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
     //! return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     //! my material parameters

@@ -46,7 +46,7 @@ namespace NOX
         Lagrangian(const std::string& identifier, const Teuchos::RCP<NOX::Utils>& u);
 
         //! Destructor
-        virtual ~Lagrangian(){};
+        ~Lagrangian() override{};
 
         /** \brief Computes the Lagrangian merit function
          *

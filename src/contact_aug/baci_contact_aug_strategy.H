@@ -56,7 +56,7 @@ namespace CONTACT
       DataContainer();
 
       //! Destructor
-      virtual ~DataContainer() { return; }
+      ~DataContainer() override { return; }
 
       //! initialize optional sub-data container
       void InitSubDataContainer(const INPAR::CONTACT::SolvingStrategy strat_type);
@@ -731,7 +731,7 @@ namespace CONTACT
           const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
 
       //! Destructor
-      virtual ~Strategy(){};
+      ~Strategy() override{};
 
       /// derived
       INPAR::CONTACT::SolvingStrategy Type() const override

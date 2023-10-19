@@ -57,7 +57,7 @@ namespace CONTACT
       InterfaceDataContainer();
 
       /// destructor
-      virtual ~InterfaceDataContainer(){};
+      ~InterfaceDataContainer() override{};
 
       /// @name Accessors
       /// @{
@@ -379,7 +379,7 @@ namespace CONTACT
       //! @{
 
       //! Update augmented active set for each interface
-      virtual bool BuildActiveSet(bool init = false);
+      bool BuildActiveSet(bool init = false) override;
 
       //! Split augmented active dof set for each interface
       void SplitAugActiveDofs();

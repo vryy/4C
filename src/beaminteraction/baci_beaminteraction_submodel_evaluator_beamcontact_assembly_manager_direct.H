@@ -41,7 +41,7 @@ namespace BEAMINTERACTION
       /**
        * \brief Destructor.
        */
-      virtual ~BeamContactAssemblyManagerDirect(){};
+      ~BeamContactAssemblyManagerDirect() override{};
 
       /**
        * \brief Evaluate all force and stiffness terms and add them to the global matrices.

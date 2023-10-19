@@ -59,7 +59,7 @@ namespace ADAPTER
     \brief Virtual destructor
 
     */
-    virtual ~CouplingPoroMortar(){};
+    ~CouplingPoroMortar() override{};
 
     virtual void EvaluatePoroMt(Teuchos::RCP<Epetra_Vector> fvel, Teuchos::RCP<Epetra_Vector> svel,
         Teuchos::RCP<Epetra_Vector> fpres, Teuchos::RCP<Epetra_Vector> sdisp,
@@ -84,38 +84,38 @@ namespace ADAPTER
     \brief Read Mortar Condition
 
     */
-    virtual void ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
+    void ReadMortarCondition(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, std::vector<int> coupleddof,
         const std::string& couplingcond, Teuchos::ParameterList& input,
         std::map<int, DRT::Node*>& mastergnodes, std::map<int, DRT::Node*>& slavegnodes,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
-        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements);
+        std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements) override;
 
     /*!
     \brief Add Mortar Elments
 
     */
-    virtual void AddMortarElements(Teuchos::RCP<DRT::Discretization> masterdis,
+    void AddMortarElements(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
         std::map<int, Teuchos::RCP<DRT::Element>>& masterelements,
         std::map<int, Teuchos::RCP<DRT::Element>>& slaveelements,
-        Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof);
+        Teuchos::RCP<CONTACT::CoInterface>& interface, int numcoupleddof) override;
 
     /*!
     \brief complete interface, store as internal variable
            store maps as internal variable and do parallel redist.
 
     */
-    virtual void CompleteInterface(
-        Teuchos::RCP<DRT::Discretization> masterdis, Teuchos::RCP<CONTACT::CoInterface>& interface);
+    void CompleteInterface(Teuchos::RCP<DRT::Discretization> masterdis,
+        Teuchos::RCP<CONTACT::CoInterface>& interface) override;
 
     /*!
     \brief create strategy object if required
 
     */
-    virtual void CreateStrategy(Teuchos::RCP<DRT::Discretization> masterdis,
+    void CreateStrategy(Teuchos::RCP<DRT::Discretization> masterdis,
         Teuchos::RCP<DRT::Discretization> slavedis, Teuchos::ParameterList& input,
-        int numcoupleddof);
+        int numcoupleddof) override;
 
    private:
     // poro lagrange strategy

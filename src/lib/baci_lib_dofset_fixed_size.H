@@ -62,16 +62,16 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~FixedSizeDofSet() { return; }
+    ~FixedSizeDofSet() override { return; }
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new FixedSizeDofSet(*this)); }
+    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new FixedSizeDofSet(*this)); }
 
     /// Get maximum GID of degree of freedom row map
-    virtual int MaxAllGID() const { return MinAllGID() + numMyReservedDofs_; }
+    int MaxAllGID() const override { return MinAllGID() + numMyReservedDofs_; }
 
     /// Get minimum GID of degree of freedom row map
-    virtual int MinAllGID() const
+    int MinAllGID() const override
     {
       int mymindof;
       if (minGID_ == -1)
@@ -88,7 +88,7 @@ namespace DRT
     virtual void SetMinGID(int mingid) { minGID_ = mingid; }
 
     /// Get Reserved Max Number Dofs per Node
-    virtual void GetReservedMaxNumDofperNode(int& maxnodenumdf)
+    void GetReservedMaxNumDofperNode(int& maxnodenumdf) override
     {
       if (maxnodenumdf > numMyReservedDofsperNode_)
       {

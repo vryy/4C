@@ -32,7 +32,7 @@ namespace ADAPTER
     explicit AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra);
 
     /// virtual to get polymorph destruction
-    virtual ~AdapterScatraWrapper(){};
+    ~AdapterScatraWrapper() override{};
 
     /// compute contribution of mechanical state to eq. system
     virtual void EvaluateAdditionalSolutionDependingModels(
@@ -43,13 +43,13 @@ namespace ADAPTER
 
    protected:
     //! return discretization
-    virtual Teuchos::RCP<DRT::Discretization> Discretization() const
+    Teuchos::RCP<DRT::Discretization> Discretization() const override
     {
       return scatra_timint_->Discretization();
     };
 
     //! add parameters specific for time-integration scheme
-    virtual void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false)
+    void AddTimeIntegrationSpecificVectors(bool forcedincrementalsolver = false) override
     {
       scatra_timint_->AddTimeIntegrationSpecificVectors(forcedincrementalsolver);
     };
@@ -58,19 +58,19 @@ namespace ADAPTER
     virtual int NdsDisp() { return scatra_timint_->NdsDisp(); };
 
     /// return rcp ptr to neumann loads vector
-    virtual Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr()
+    Teuchos::RCP<Epetra_Vector> GetNeumannLoadsPtr() override
     {
       return scatra_timint_->GetNeumannLoadsPtr();
     };
 
     //! return meshtying strategy (includes standard case without meshtying)
-    virtual const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const
+    const Teuchos::RCP<SCATRA::MeshtyingStrategyBase>& Strategy() const override
     {
       return scatra_timint_->Strategy();
     };
 
     //! return scalar field phi at time n
-    Teuchos::RCP<Epetra_Vector> Phin() { return scatra_timint_->Phin(); }
+    Teuchos::RCP<Epetra_Vector> Phin() override { return scatra_timint_->Phin(); }
 
    private:
     Teuchos::RCP<ScatraInterface> scatra_timint_;  ///< underlying structural time integration

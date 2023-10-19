@@ -52,46 +52,46 @@ class Myocard_Fitzhugh_Nagumo : public Myocard_General
       const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
   /// destructor
-  virtual ~Myocard_Fitzhugh_Nagumo() { ; }
+  ~Myocard_Fitzhugh_Nagumo() override { ; }
 
   /// compute reaction coefficient
-  double ReaCoeff(const double phi, const double dt);
+  double ReaCoeff(const double phi, const double dt) override;
 
   /// compute reaction coefficient for multiple points per element
-  double ReaCoeff(const double phi, const double dt, int gp);
+  double ReaCoeff(const double phi, const double dt, int gp) override;
 
   ///  returns number of internal state variables of the material
-  int GetNumberOfInternalStateVariables() const;
+  int GetNumberOfInternalStateVariables() const override;
 
   ///  returns current internal state of the material
-  double GetInternalState(const int k) const;
+  double GetInternalState(const int k) const override;
 
   ///  returns current internal state of the material for multiple points per element
-  double GetInternalState(const int k, int gp) const;
+  double GetInternalState(const int k, int gp) const override;
 
   ///  set internal state of the material
-  void SetInternalState(const int k, const double val);
+  void SetInternalState(const int k, const double val) override;
 
   ///  set internal state of the material for multiple points per element
-  void SetInternalState(const int k, const double val, int gp);
+  void SetInternalState(const int k, const double val, int gp) override;
 
   ///  return number of ionic currents
-  int GetNumberOfIonicCurrents() const;
+  int GetNumberOfIonicCurrents() const override;
 
   ///  return ionic currents
-  double GetIonicCurrents(const int k) const;
+  double GetIonicCurrents(const int k) const override;
 
   ///  return ionic currents for multiple points per element
-  double GetIonicCurrents(const int k, int gp) const;
+  double GetIonicCurrents(const int k, int gp) const override;
 
   /// time update for this material
-  void Update(const double phi, const double dt);
+  void Update(const double phi, const double dt) override;
 
   /// get number of Gauss points
-  int GetNumberOfGP() const { return r0_.size(); };
+  int GetNumberOfGP() const override { return r0_.size(); };
 
   /// resize internal state variables if number of Gauss point changes
-  void ResizeInternalStateVariables(int gp)
+  void ResizeInternalStateVariables(int gp) override
   {
     r0_.resize(gp);
     r_.resize(gp);

@@ -66,7 +66,7 @@ namespace STR
        *  purpose we only need the right order of magnitude, so we don't
        *  mind evaluating the corresponding norms at possibly different
        *  points within the time-step (end point, generalized midpoint). */
-      virtual double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const = 0;
+      double CalcRefNormForce(const enum NOX::Abstract::Vector::NormType& type) const override = 0;
 
       //! return the default step length of the used NOX::LineSearch method
       double GetDefaultStepLength() const;
@@ -199,7 +199,7 @@ namespace NOX
               : impl_(implicit), default_step_(implicit.GetDefaultStepLength()){/* empty */};
 
           //! destructor
-          virtual ~Generic(){};
+          ~Generic() override{};
 
           /*! \brief Derived function, which is called at the very beginning of a call to
            *  NOX::NLN::Group::computeX()

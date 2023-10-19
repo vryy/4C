@@ -42,7 +42,7 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~DiscretizationXFEM() { return; };
+    ~DiscretizationXFEM() override { return; };
 
     /*!
     \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
@@ -237,7 +237,7 @@ namespace DRT
      *  \param node (in) : the node those number of dofs are requested
      *
      *  \author hiermeier \date 10/16 */
-    virtual int NumStandardDof(const unsigned& nds, const Node* node) const
+    int NumStandardDof(const unsigned& nds, const Node* node) const override
     {
       std::vector<int> dofs(0);
       // get the first dofs of the node (not enriched)

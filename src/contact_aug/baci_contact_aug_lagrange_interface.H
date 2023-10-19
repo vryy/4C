@@ -39,7 +39,7 @@ namespace CONTACT
             const Teuchos::ParameterList& icontact, const bool selfcontact);
 
         /// destructor
-        virtual ~Interface(){};
+        ~Interface() override{};
 
        protected:
         /** \brief Assemble the linearization matrix contributions for the
@@ -48,8 +48,8 @@ namespace CONTACT
          *  This term vanishes in the standard Lagrange formulation.
          *
          *  \author hiermeier \date 03/17 */
-        virtual void AssembleDGGLinMatrix(
-            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const;
+        void AssembleDGGLinMatrix(
+            CORE::LINALG::SparseMatrix& dGGLinMatrix, const Epetra_Vector& cnVec) const override;
 
       };  // class Interface
     }     // namespace LAGRANGE

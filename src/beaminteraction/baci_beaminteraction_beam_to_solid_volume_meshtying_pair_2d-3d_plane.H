@@ -44,13 +44,13 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPair2D3DPlane(){};
+    ~BeamToSolidVolumeMeshtyingPair2D3DPlane() override{};
 
     /*!
      *\brief things that need to be done in a separate loop before the actual evaluation loop
      *      over all contact pairs
      */
-    virtual void PreEvaluate() override;
+    void PreEvaluate() override;
 
     /**
      * \brief Evaluate this contact element pair.

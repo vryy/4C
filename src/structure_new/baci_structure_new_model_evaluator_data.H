@@ -314,7 +314,7 @@ namespace STR
        * \sa SumIntoMyUpdateNorm
        */
       void SumIntoMyPreviousSolNorm(const enum NOX::NLN::StatusTest::QuantityType& qtype,
-          const int& numentries, const double* my_old_sol_values, const int& owner);
+          const int& numentries, const double* my_old_sol_values, const int& owner) override;
 
       //!@}
 
@@ -978,7 +978,7 @@ namespace STR
       BeamData();
 
       //! destructor
-      virtual ~BeamData(){};
+      ~BeamData() override{};
 
       //! initialize the stuff coming from outside
       void Init();
@@ -1084,7 +1084,7 @@ namespace STR
       ContactData();
 
       //! destructor
-      virtual ~ContactData(){};
+      ~ContactData() override{};
 
       //! initialize the stuff coming from outside
       void Init(const Teuchos::RCP<const STR::MODELEVALUATOR::Data>& str_data_ptr);
@@ -1289,7 +1289,7 @@ namespace STR
       BrownianDynData();
 
       //! destructor
-      virtual ~BrownianDynData(){};
+      ~BrownianDynData() override{};
 
       //! initialize the stuff coming from outside
       void Init(Teuchos::RCP<const STR::MODELEVALUATOR::Data> const& str_data_ptr);
@@ -1340,14 +1340,14 @@ namespace STR
       /*! @name set routines which are allowed to be called by the elements
        */
       //! @{
-      Teuchos::RCP<Epetra_MultiVector> const& GetRandomForces() const
+      Teuchos::RCP<Epetra_MultiVector> const& GetRandomForces() const override
       {
         CheckInitSetup();
         return randomforces_;
       };
 
       /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
-      double const& GetViscosity() const
+      double const& GetViscosity() const override
       {
         CheckInitSetup();
         return viscosity_;

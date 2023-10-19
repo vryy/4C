@@ -50,7 +50,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToSurfaceSegmentation(){};
+    ~GeometryPairLineToSurfaceSegmentation() override{};
 
     /**
      * \brief Setup the segment tracker for this line element.

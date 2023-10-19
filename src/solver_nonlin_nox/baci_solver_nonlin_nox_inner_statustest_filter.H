@@ -158,22 +158,22 @@ namespace NOX
           Filter(const FilterParams& fparams, const NOX::Utils& utils);
 
           /// destructor
-          virtual ~Filter(){};
+          ~Filter() override{};
 
           /** \brief %Test the inner stopping criterion
            *
            *  The test can (and should, if possible) be skipped if
            *  checkType is NOX::StatusType::None.  If the test is skipped, then
            *  the status should be set to NOX::StatusTest::Unevaluated. */
-          virtual StatusType CheckStatus(const Interface::Required& interface,
+          StatusType CheckStatus(const Interface::Required& interface,
               const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-              NOX::StatusTest::CheckType checkType);
+              NOX::StatusTest::CheckType checkType) override;
 
           //! Return the result of the most recent inner checkStatus call
-          virtual StatusType GetStatus() const;
+          StatusType GetStatus() const override;
 
           //! Output formatted description of inner stopping test to output stream.
-          virtual std::ostream& Print(std::ostream& stream, int indent = 0) const;
+          std::ostream& Print(std::ostream& stream, int indent = 0) const override;
 
          private:
           /// initialize the (filter) points
@@ -397,12 +397,12 @@ namespace NOX
                 : SOCBase(filter, user_type){/* empty */};
 
             SecondOrderCorrection() = delete;
-            virtual ~SecondOrderCorrection(){};
+            ~SecondOrderCorrection() override{};
 
             /// compute the SOC step
-            virtual StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
+            StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
                 const NOX::Solver::Generic& solver, const NOX::Abstract::Group& grp,
-                NOX::StatusTest::CheckType checkType);
+                NOX::StatusTest::CheckType checkType) override;
 
            private:
             /// compute the SOC system

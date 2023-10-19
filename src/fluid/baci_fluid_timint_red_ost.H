@@ -31,19 +31,19 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntRedModelsOst();
+    ~TimIntRedModelsOst() override;
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief read restart data
 
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
 
    protected:

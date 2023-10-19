@@ -47,68 +47,66 @@ class PostVtuWriterNode : public PostVtuWriter
   PostVtuWriterNode(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~PostVtuWriterNode() {}
+  ~PostVtuWriterNode() override {}
 
  protected:
   //! Return the opening xml tag for this writer type
-  virtual const std::string& WriterOpeningTag() const;
+  const std::string& WriterOpeningTag() const override;
 
   //! Return the parallel opening xml tag for this writer type
-  virtual const std::string& WriterPOpeningTag() const;
+  const std::string& WriterPOpeningTag() const override;
 
   //! Return a vector of parallel piece tags for each file
-  virtual const std::vector<std::string>& WriterPPieceTags() const;
+  const std::vector<std::string>& WriterPPieceTags() const override;
 
   //! Give every writer a chance to do preparations before writing
-  virtual void WriterPrepTimestep(){};
+  void WriterPrepTimestep() override{};
 
   //! Return the parallel file suffix including the dot for this file type
-  virtual const std::string& WriterPSuffix() const;
+  const std::string& WriterPSuffix() const override;
 
   //! Return the string of this writer type
-  virtual const std::string& WriterString() const;
+  const std::string& WriterString() const override;
 
   //! Return the file suffix including the dot for this file type
-  virtual const std::string& WriterSuffix() const;
+  const std::string& WriterSuffix() const override;
 
   //! Write a single result step
-  virtual void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
+  void WriteDofResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_Vector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from,
-      const bool fillzeros);
+      const bool fillzeros) override;
 
   //! Write a single result step
-  virtual void WriteNodalResultStep(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+  void WriteNodalResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::string& name, const int numdf);
+      const std::string& groupname, const std::string& name, const int numdf) override;
 
   //! Write a single result step
-  virtual void WriteElementResultStep(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+  void WriteElementResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::string& name, const int numdf, const int from);
+      const std::string& groupname, const std::string& name, const int numdf,
+      const int from) override;
 
   //! write the geometry of one time step
-  virtual void WriteGeo();
+  void WriteGeo() override;
 
   //! write the geometry of Nurbs Element
   virtual void WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_t>& celltypes,
       int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates);
 
   //! write the geometry of beam element (special treatment due to Hermite interpolation)
-  virtual void WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
-      std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-      std::vector<double>& coordinates);
+  void WriteGeoBeamEle(const DRT::ELEMENTS::Beam3Base* beamele, std::vector<uint8_t>& celltypes,
+      int& outNodeId, std::vector<int32_t>& celloffset, std::vector<double>& coordinates) override;
 
   //! Write a single result step for one Nurbs Element
   virtual void WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncomponents, const int numdf,
       std::vector<double>& solution, Teuchos::RCP<Epetra_Vector> ghostedData, const int from,
       const bool fillzeros);
 
-  virtual void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele,
-      const int& ncomponents, const int& numdf, std::vector<double>& solution,
-      Teuchos::RCP<Epetra_Vector>& ghostedData, const int& from, const bool fillzeros);
+  void WriteDofResultStepBeamEle(const DRT::ELEMENTS::Beam3Base* beamele, const int& ncomponents,
+      const int& numdf, std::vector<double>& solution, Teuchos::RCP<Epetra_Vector>& ghostedData,
+      const int& from, const bool fillzeros) override;
 
   //! Write a single result step for one Nurbs Element
   virtual void WriteNodalResultStepNurbsEle(const DRT::Element* ele, int ncomponents,

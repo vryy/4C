@@ -56,7 +56,7 @@ namespace POROMULTIPHASESCATRA
         const std::map<int, std::set<int>>* nearbyelepairs) = 0;
 
     //! read restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     //! create result test for subproblems
     void CreateFieldTest();
@@ -77,7 +77,7 @@ namespace POROMULTIPHASESCATRA
     virtual void TimeStep() = 0;
 
     //! time step of coupled problem
-    void PrepareTimeStep() { PrepareTimeStep(false); };
+    void PrepareTimeStep() override { PrepareTimeStep(false); };
 
     //! time step of coupled problem
     void PrepareTimeStep(bool printheader);

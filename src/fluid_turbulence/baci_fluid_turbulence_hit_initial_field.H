@@ -95,10 +95,10 @@ namespace FLD
         FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
 
     //! destructor
-    ~HomIsoTurbInitialFieldHDG() { return; };
+    ~HomIsoTurbInitialFieldHDG() override { return; };
 
     //! calculate initial field
-    void CalculateInitialField();
+    void CalculateInitialField() override;
 
    protected:
     Teuchos::RCP<Epetra_Vector> intveln_;

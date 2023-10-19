@@ -65,7 +65,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceContactPairBase(){};
+    ~BeamToSolidSurfaceContactPairBase() override{};
 
     /**
      * \brief Update state of translational nodal DoFs (absolute positions and tangents) of the beam

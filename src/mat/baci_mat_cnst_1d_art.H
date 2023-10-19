@@ -44,7 +44,7 @@ namespace MAT
       Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Cnst_1d_art() {}
+      ~Cnst_1d_art() override {}
 
       /// @name material parameters
       //@{
@@ -77,7 +77,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class NewtonianFluid
 
@@ -86,11 +86,11 @@ namespace MAT
   class Cnst_1d_artType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "Cnst_1d_artType"; }
+    std::string Name() const override { return "Cnst_1d_artType"; }
 
     static Cnst_1d_artType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Cnst_1d_artType instance_;
@@ -117,7 +117,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return Cnst_1d_artType::Instance().UniqueParObjectId();
     }
@@ -132,7 +132,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -146,21 +146,21 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_cnst_art; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_cnst_art; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Cnst_1d_art(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Cnst_1d_art(*this)); }
 
     /// return viscosity
     double Viscosity() const;
 
     /// return density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// return DiameterLaw
     virtual MAT::PAR::ArteryDiameterLaw DiameterLaw() const { return params_->diameterlaw_; }
@@ -217,7 +217,7 @@ namespace MAT
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /*! \brief Calculate blood viscosity based on empirical law for blood fully saturated with

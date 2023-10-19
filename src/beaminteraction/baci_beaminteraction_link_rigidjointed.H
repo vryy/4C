@@ -39,7 +39,7 @@ namespace BEAMINTERACTION
   class BeamLinkRigidJointedType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "BeamLinkRigidJointedType"; };
+    std::string Name() const override { return "BeamLinkRigidJointedType"; };
 
     static BeamLinkRigidJointedType& Instance() { return instance_; };
 
@@ -68,16 +68,16 @@ namespace BEAMINTERACTION
     BeamLinkRigidJointed(const BeamLinkRigidJointed& old);
 
     //! Destructor
-    virtual ~BeamLinkRigidJointed() {}
+    ~BeamLinkRigidJointed() override {}
 
     //! Initialization
-    virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
+    void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,
         const std::vector<CORE::LINALG::Matrix<3, 3>>& inittriad,
-        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset);
+        INPAR::BEAMINTERACTION::CrosslinkerType linkertype, double timelinkwasset) override;
 
     //! Setup
-    virtual void Setup(const int matnum);
+    void Setup(const int matnum) override;
 
     /*!
     \brief Return unique ParObject id
@@ -85,7 +85,7 @@ namespace BEAMINTERACTION
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    virtual int UniqueParObjectId() const = 0;
+    int UniqueParObjectId() const override = 0;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -101,7 +101,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -120,7 +120,8 @@ namespace BEAMINTERACTION
     }
 
     //! get force in first or second binding spot
-    virtual void GetBindingSpotForce(int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const
+    void GetBindingSpotForce(
+        int bspotid, CORE::LINALG::SerialDenseVector& bspotforce) const override
     {
       dserror(" needs to be implemented in derived classes.");
     }
@@ -133,29 +134,29 @@ namespace BEAMINTERACTION
     /*!
     \brief Evaluate forces
     */
-    virtual bool EvaluateForce(
-        CORE::LINALG::SerialDenseVector& forcevec1, CORE::LINALG::SerialDenseVector& forcevec2) = 0;
+    bool EvaluateForce(CORE::LINALG::SerialDenseVector& forcevec1,
+        CORE::LINALG::SerialDenseVector& forcevec2) override = 0;
 
     /*!
     \brief Evaluate stiffness contribution
     */
-    virtual bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
+    bool EvaluateStiff(CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) override = 0;
 
     /*!
     \brief Evaluate forces and stiffness contribution
     */
-    virtual bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
+    bool EvaluateForceStiff(CORE::LINALG::SerialDenseVector& forcevec1,
         CORE::LINALG::SerialDenseVector& forcevec2, CORE::LINALG::SerialDenseMatrix& stiffmat11,
         CORE::LINALG::SerialDenseMatrix& stiffmat12, CORE::LINALG::SerialDenseMatrix& stiffmat21,
-        CORE::LINALG::SerialDenseMatrix& stiffmat22) = 0;
+        CORE::LINALG::SerialDenseMatrix& stiffmat22) override = 0;
 
     /*
     \brief Update position and triad of both connection sites (a.k.a. binding spots)
     */
     void ResetState(std::vector<CORE::LINALG::Matrix<3, 1>>& bspotpos,
-        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad);
+        std::vector<CORE::LINALG::Matrix<3, 3>>& bspottriad) override;
 
     //! return appropriate instance of the desired class (acts as a simple factory)
     static Teuchos::RCP<BeamLinkRigidJointed> Create();

@@ -43,7 +43,7 @@ namespace STR
       StructAle();
 
       //! destructor
-      virtual ~StructAle(){};
+      ~StructAle() override{};
 
       //! get pointer to mat. displ. vector at time level n+1 (full structural map).
       const Teuchos::RCP<Epetra_Vector>& GetMaterialDisplacementNpPtr()
@@ -52,14 +52,14 @@ namespace STR
       };
 
       //! setup class variables [derived]
-      virtual void Setup();
+      void Setup() override;
 
      protected:
       //! @name Functions which are derived from the base Structure class
       //! @{
 
       //! pre-operator EvalutaInternal
-      virtual void PreEvaluateInternal();
+      void PreEvaluateInternal() override;
 
       //! @}
 

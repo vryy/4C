@@ -119,7 +119,7 @@ namespace ALE
         Teuchos::RCP<IO::DiscretizationWriter> output  ///< output writing
     );
 
-    virtual ~Ale(){};
+    ~Ale() override{};
 
     /*!
      *  \brief Set initial displacement field
@@ -141,7 +141,7 @@ namespace ALE
      */
     void CreateSystemMatrix(
         Teuchos::RCP<const ALE::UTILS::MapExtractor> interface = Teuchos::null  //!< interface
-    );
+        ) override;
 
     /*! \brief evaluate and assemble residual #residual_ and jacobian matrix #sysmat_
      *
@@ -149,24 +149,24 @@ namespace ALE
      *  Update in case of monolithic coupling is done by passing stepinc, Teuchos::null is assumed
      * for non monolithic case.
      */
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
-                              Teuchos::null,  ///< step increment such that \f$ x_{n+1}^{k+1} =
-                                              ///< x_{n}^{converged}+ stepinc \f$
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc =
+                      Teuchos::null,  ///< step increment such that \f$ x_{n+1}^{k+1} =
+                                      ///< x_{n}^{converged}+ stepinc \f$
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std  ///< application-specific type of Dirichlet set
-    );
+        ) override;
 
     /// linear solve
-    virtual int Solve();
+    int Solve() override;
 
     /// get the linear solver object used for this field
-    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return solver_; }
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return solver_; }
 
     //! update displacement with iterative increment
-    virtual void UpdateIter();
+    void UpdateIter() override;
 
     /// take the current solution to be the final one for this time step
-    virtual void Update();
+    void Update() override;
 
     /// convergence test for newton
     virtual bool Converged(const int iter);
@@ -183,7 +183,7 @@ namespace ALE
     //@{
 
     /// access the preconditioner
-    Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner();
+    Teuchos::RCP<CORE::LINALG::Preconditioner> ConstPreconditioner() override;
 
     /// create the preconditioner
     virtual void CreatePreconditioner(
@@ -195,20 +195,20 @@ namespace ALE
     //! @name Time step helpers
 
     /// a very simple time loop to be used for standalone ALE problems
-    virtual int Integrate();
+    int Integrate() override;
 
     /// start a new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /*! \brief Do a single time step
      *
      *  Perform Newton iteration to solve the nonlinear problem.
      */
-    virtual void TimeStep(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std);
+    void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+                      ALE::UTILS::MapExtractor::dbc_set_std) override;
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
     /*! \brief Reset time step
      *
@@ -218,7 +218,7 @@ namespace ALE
      *
      *  \author mayr.mt \date 08/2013
      */
-    virtual void ResetStep();
+    void ResetStep() override;
 
     /*! \brief Reset time and step in case that a time step has to be repeated
      *
@@ -230,22 +230,22 @@ namespace ALE
      *
      *  \author mayr.mt \date 08/2013
      */
-    virtual void ResetTime(const double dtold);
+    void ResetTime(const double dtold) override;
 
     /// Get current simulation time
-    virtual double Time() const { return time_; }
+    double Time() const override { return time_; }
 
     /// Get current step counter
-    virtual double Step() const { return step_; }
+    double Step() const override { return step_; }
 
     /// Get the time step size
-    virtual double Dt() const { return dt_; }
+    double Dt() const override { return dt_; }
 
     /// set time step step size
-    virtual void SetDt(const double dtnew);
+    void SetDt(const double dtnew) override;
 
     /// read restart for given step
-    virtual void ReadRestart(const int step);
+    void ReadRestart(const int step) override;
 
     //@}
 
@@ -253,46 +253,46 @@ namespace ALE
     //@{
 
     /// get the whole displacement field at time step \f$t^{n+1}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() const { return dispnp_; }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() const override { return dispnp_; }
 
     /// get the whole displacement field at time step \f$t^{n}\f$
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() const { return dispn_; }
+    Teuchos::RCP<const Epetra_Vector> Dispn() const override { return dispn_; }
 
     //@}
 
     //! @name Writing access to displacement
 
     /// write access to whole displacement field at time step \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const { return dispnp_; }
+    Teuchos::RCP<Epetra_Vector> WriteAccessDispnp() const override { return dispnp_; }
 
     //@}
 
     //! @name Vector access
 
     /// initial guess of Newton's method
-    Teuchos::RCP<const Epetra_Vector> InitialGuess() const { return zeros_; }
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() const override { return zeros_; }
 
     /// rhs of Newton's method
-    Teuchos::RCP<const Epetra_Vector> RHS() const { return rhs_; }
+    Teuchos::RCP<const Epetra_Vector> RHS() const override { return rhs_; }
 
     //@}
 
     //! @name Misc
 
     /// dof map of vector of unknowns
-    Teuchos::RCP<const Epetra_Map> DofRowMap() const;
+    Teuchos::RCP<const Epetra_Map> DofRowMap() const override;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix();
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override;
 
     /// direct access to system matrix
-    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix();
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override;
 
     /// direct access to discretization
-    Teuchos::RCP<const DRT::Discretization> Discretization() const { return discret_; }
+    Teuchos::RCP<const DRT::Discretization> Discretization() const override { return discret_; }
 
     /// writing access to discretization
-    Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() { return discret_; }
+    Teuchos::RCP<DRT::Discretization> WriteAccessDiscretization() override { return discret_; }
 
     /*! \brief setup Dirichlet boundary condition map extractor.
      *
@@ -312,15 +312,15 @@ namespace ALE
         Teuchos::RCP<const ALE::UTILS::XFluidFluidMapExtractor> xff_interface =
             Teuchos::null  //!< interface for creation of a Dirichlet map extractor, taylored to
                            //!< XFFSI
-    );
+        ) override;
 
     /// create result test for encapsulated algorithm
-    Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override;
 
     const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor(
         ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
             ALE::UTILS::MapExtractor::dbc_set_std  //!< application-specific type of Dirichlet set
-    )
+        ) override
     {
       return dbcmaps_[dbc_type];
     }
@@ -329,10 +329,10 @@ namespace ALE
     Teuchos::RCP<const CORE::LINALG::SparseMatrix> GetLocSysTrafo() const;
 
     //! Update slave dofs for multifield simulations with ale
-    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a);
+    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>& a) override;
 
     //! Return locsys manager
-    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() { return locsysman_; }
+    Teuchos::RCP<DRT::UTILS::LocsysManager> LocsysManager() override { return locsysman_; }
 
     //! Apply Dirichlet boundary conditions on provided state vectors
     void ApplyDirichletBC(Teuchos::ParameterList& params,
@@ -347,10 +347,10 @@ namespace ALE
     );
 
     /// Reset state vectors to zero
-    void Reset();
+    void Reset() override;
 
     //! Set time and step
-    void SetTimeStep(const double time, const int step)
+    void SetTimeStep(const double time, const int step) override
     {
       time_ = time;
       step_ = step;
@@ -551,7 +551,7 @@ namespace ALE
     );
 
     // Destructor
-    virtual ~AleLinear(){};
+    ~AleLinear() override{};
 
     //@}
 
@@ -566,7 +566,7 @@ namespace ALE
      *
      *  \author mayr.mt \date 12/2015
      */
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /*! \brief Do a single time step
      *
@@ -574,8 +574,8 @@ namespace ALE
      *
      *  \author mayr.mt \date 11/2015
      */
-    virtual void TimeStep(
-        ALE::UTILS::MapExtractor::AleDBCSetType dbc_type = ALE::UTILS::MapExtractor::dbc_set_std);
+    void TimeStep(ALE::UTILS::MapExtractor::AleDBCSetType dbc_type =
+                      ALE::UTILS::MapExtractor::dbc_set_std) override;
 
     /*! \brief Evaluate all elements
      *
@@ -593,13 +593,13 @@ namespace ALE
      *
      *  \author mayr.mt \date 11/2015
      */
-    virtual void EvaluateElements();
+    void EvaluateElements() override;
 
     //@}
 
    protected:
    private:
-    virtual bool UpdateSysMatEveryStep() const { return updateeverystep_; }
+    bool UpdateSysMatEveryStep() const override { return updateeverystep_; }
 
     //! Is the #sysmat_ valid (true) or does it need to be re-evaluated (false)
     bool validsysmat_;

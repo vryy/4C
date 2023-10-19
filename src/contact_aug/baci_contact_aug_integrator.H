@@ -43,33 +43,34 @@ namespace CONTACT
           const Epetra_Comm& comm);
 
       /// destructor
-      virtual ~IntegrationWrapper(){};
+      ~IntegrationWrapper() override{};
 
       //! @name 2D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      virtual void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
+      void IntegrateDerivSegment2D(MORTAR::MortarElement& sele, double& sxia, double& sxib,
           MORTAR::MortarElement& mele, double& mxia, double& mxib, const Epetra_Comm& comm,
-          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! [derived]
-      virtual void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
+      void IntegrateDerivEle2D(MORTAR::MortarElement& sele,
           std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele,
-          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! @}
 
       //! @name 3D augmented Lagrange integration methods
       //! @{
       //! [derived]
-      virtual void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele,
-          MORTAR::MortarElement& mele, Teuchos::RCP<MORTAR::IntCell> cell, double* auxn,
-          const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+      void IntegrateDerivCell3DAuxPlane(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+          Teuchos::RCP<MORTAR::IntCell> cell, double* auxn, const Epetra_Comm& comm,
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! [derived]
-      virtual void IntegrateDerivEle3D(MORTAR::MortarElement& sele,
+      void IntegrateDerivEle3D(MORTAR::MortarElement& sele,
           std::vector<MORTAR::MortarElement*> meles, bool* boundary_ele, bool* proj_,
-          const Epetra_Comm& comm, const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr);
+          const Epetra_Comm& comm,
+          const Teuchos::RCP<CONTACT::ParamsInterface>& cparams_ptr) override;
 
       //! @}
 
@@ -455,7 +456,7 @@ namespace CONTACT
 
       EvaluatorDeriv1stOnly(const class_type& source) = delete;
 
-      virtual ~EvaluatorDeriv1stOnly(){};
+      ~EvaluatorDeriv1stOnly() override{};
 
      protected:
       typename base_type::Type GetType() const override { return base_type::Type::deriv1st_only; };
@@ -509,7 +510,7 @@ namespace CONTACT
 
       EvaluatorFull(const class_type& source) = delete;
 
-      virtual ~EvaluatorFull(){};
+      ~EvaluatorFull() override{};
 
      private:
       typename base_type::Type GetType() const override { return base_type::Type::full; };

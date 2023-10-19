@@ -21,43 +21,43 @@ namespace FSI
     explicit PartitionedImmersed(const Epetra_Comm& comm);
 
     //! setup this object
-    virtual void Setup();
+    void Setup() override;
 
     //! overrides method of base class.
-    virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
+    void SetupCoupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm) override;
 
     //! call the time loop of the base class
-    virtual void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface)
+    void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface) override
     {
       FSI::Partitioned::Timeloop(interface);
     };
 
     //! override version of fsi partitioned
-    virtual void ExtractPreviousInterfaceSolution();
+    void ExtractPreviousInterfaceSolution() override;
 
     //! Implement pure virtual functions (again overloaded by corresponding partitioned subclass in
     //! immersed_problem)
-    virtual void FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag)
+    void FSIOp(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override
     {
       return;
     };
 
     //! empty; overridden in sub class
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
-        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag)
+    Teuchos::RCP<Epetra_Vector> FluidOp(
+        Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) override
     {
       return Teuchos::null;
     };
 
     //! empty; overridden in sub class
-    virtual Teuchos::RCP<Epetra_Vector> StructOp(
-        Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag)
+    Teuchos::RCP<Epetra_Vector> StructOp(
+        Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override
     {
       return Teuchos::null;
     };
 
     //! empty; overridden in sub class
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess() { return Teuchos::null; };
+    Teuchos::RCP<Epetra_Vector> InitialGuess() override { return Teuchos::null; };
 
 
   };  // class PartitionedImmersed
