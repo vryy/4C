@@ -143,7 +143,7 @@ void DRT::ELEMENTS::ScaTraEleParameterBoundary::SetParameters(Teuchos::Parameter
       break;
     }
 
-    case DRT::Condition::ConditionType::S2ICouplingGrowth:
+    case DRT::Condition::ConditionType::S2IKineticsGrowth:
     {
       // set parameters to internal members depending on kinetic model
       switch (kineticmodel_)

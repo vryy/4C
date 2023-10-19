@@ -96,7 +96,7 @@ namespace DRT
       /// equation
       double convtolimplicitBV_;
 
-      /// density of the interface layer material associated to S2ICouplingGrowth condition
+      /// density of the interface layer material associated to S2IKineticsGrowth condition
       double density_;
 
       /// ratio between flux of species (amount) and flux of energy
@@ -116,7 +116,7 @@ namespace DRT
       /// charge transfer constant
       double kr_;
 
-      /// molar mass of the interface layer material associated to S2ICouplingGrowth condition
+      /// molar mass of the interface layer material associated to S2IKineticsGrowth condition
       double molarmass_;
 
       /// number of electrons involved in charge transfer
@@ -134,16 +134,16 @@ namespace DRT
       /// vector of constant permeabilities
       std::vector<double>* permeabilities_;
 
-      /// regularization factor for S2ICouplingGrowth condition
+      /// regularization factor for S2IKineticsGrowth condition
       double regularizationparameter_;
 
-      /// type of regularization for S2ICouplingGrowth condition
+      /// type of regularization for S2IKineticsGrowth condition
       INPAR::S2I::RegularizationType regularizationtype_;
 
       /// interface resistance associated with S2ICoupling condition
       double resistance_;
 
-      /// resistivity of the interface layer material associated to S2ICouplingGrowth condition
+      /// resistivity of the interface layer material associated to S2IKineticsGrowth condition
       double resistivity_;
 
       /// surface capacitance at interface associated with S2ICoupling condition

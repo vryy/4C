@@ -233,7 +233,7 @@ namespace DRT
       S2IKinetics,
       S2IMeshtying,
       S2INoEvaluation,
-      S2ICouplingGrowth,
+      S2IKineticsGrowth,
       S2ISCLCoupling,
       ElectrodeSOC,
       CCCVCycling,

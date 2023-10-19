@@ -586,17 +586,17 @@ void INPAR::S2I::SetValidConditions(
   {
     // definition of scatra-scatra interface coupling line condition involving interface layer
     // growth
-    auto s2igrowthline = Teuchos::rcp(
-        new ConditionDefinition("DESIGN S2I COUPLING GROWTH LINE CONDITIONS", "S2ICouplingGrowth",
-            "Scatra-scatra line interface coupling involving interface layer growth",
-            DRT::Condition::S2ICouplingGrowth, true, DRT::Condition::Line));
+    auto s2igrowthline =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS GROWTH LINE CONDITIONS",
+            "S2IKineticsGrowth", "Scatra-scatra line interface layer growth kinetics",
+            DRT::Condition::S2IKineticsGrowth, true, DRT::Condition::Line));
 
     // definition of scatra-scatra interface coupling surface condition involving interface layer
     // growth
-    auto s2igrowthsurf = Teuchos::rcp(
-        new ConditionDefinition("DESIGN S2I COUPLING GROWTH SURF CONDITIONS", "S2ICouplingGrowth",
-            "Scatra-scatra surface interface coupling involving interface layer growth",
-            DRT::Condition::S2ICouplingGrowth, true, DRT::Condition::Surface));
+    auto s2igrowthsurf =
+        Teuchos::rcp(new ConditionDefinition("DESIGN S2I KINETICS GROWTH SURF CONDITIONS",
+            "S2IKineticsGrowth", "Scatra-scatra surface interface layer growth kinetics",
+            DRT::Condition::S2IKineticsGrowth, true, DRT::Condition::Surface));
 
     // equip condition definitions with input file line components
     std::vector<Teuchos::RCP<::INPUT::LineComponent>> s2igrowthcomponents;

@@ -70,7 +70,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
+  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -177,7 +177,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
   const DRT::Condition::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
   if (s2iconditiontype != DRT::Condition::S2IKinetics and
-      s2iconditiontype != DRT::Condition::S2ICouplingGrowth)
+      s2iconditiontype != DRT::Condition::S2IKineticsGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -267,7 +267,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype, probdim>::
 
         break;
       }
-      case DRT::Condition::S2ICouplingGrowth:
+      case DRT::Condition::S2IKineticsGrowth:
       {
         // equilibrium electric potential difference and its derivative w.r.t. concentration at
         // electrode surface
@@ -429,7 +429,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   const DRT::Condition::ConditionType& s2iconditiontype =
       my::scatraparamsboundary_->ConditionType();
   if (s2iconditiontype != DRT::Condition::S2IKinetics and
-      s2iconditiontype != DRT::Condition::S2ICouplingGrowth)
+      s2iconditiontype != DRT::Condition::S2IKineticsGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -529,7 +529,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
 
         break;
       }
-      case DRT::Condition::S2ICouplingGrowth:
+      case DRT::Condition::S2IKineticsGrowth:
       {
         // equilibrium electric potential difference at electrode surface
         const double epd = 0.0;
@@ -609,7 +609,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
       my::numdofpernode_, CORE::LINALG::Matrix<nen_, 1>(true));
   my::ExtractNodeValues(emasterphinp, discretization, la, "imasterphinp");
 
-  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
+  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition
@@ -725,7 +725,7 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowth<distype,
   my::ExtractNodeValues(
       eslavegrowthhist, discretization, la, "growthhist", my::scatraparams_->NdsGrowth());
 
-  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2ICouplingGrowth)
+  if (my::scatraparamsboundary_->ConditionType() != DRT::Condition::S2IKineticsGrowth)
     dserror("Received illegal condition type!");
 
   // access input parameters associated with condition

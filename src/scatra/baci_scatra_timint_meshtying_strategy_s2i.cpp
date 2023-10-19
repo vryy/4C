@@ -865,7 +865,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
   }
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<DRT::Condition*> s2icoupling_growth_conditions;
-  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", s2icoupling_growth_conditions);
+  scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", s2icoupling_growth_conditions);
 
   // evaluate scatra-scatra interface layer growth
   if (s2icoupling_growth_conditions.size())
@@ -893,7 +893,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
         SetConditionSpecificScaTraParameters(*s2icoupling_growth_conditions[0]);
         // evaluate the condition
         scatratimint_->Discretization()->EvaluateCondition(conditionparams, islavematrix_,
-            imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2ICouplingGrowth");
+            imastermatrix_, islaveresidual_, Teuchos::null, Teuchos::null, "S2IKineticsGrowth");
 
         // finalize interface matrices
         islavematrix_->Complete();
@@ -999,7 +999,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
           // the corresponding boundary condition for scatra-scatra interface coupling is expected
           // to have the same ID
           const int condid = scatratimint_->Discretization()
-                                 ->GetCondition("S2ICouplingGrowth")
+                                 ->GetCondition("S2IKineticsGrowth")
                                  ->GetInt("ConditionID");
 
           // set global state vectors according to time-integration scheme
@@ -1074,13 +1074,13 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface layer
                 // growth
                 auto* s2i_coupling_growth_cond =
-                    scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+                    scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
 
                 // collect condition specific data and store to scatra boundary parameter class
                 SetConditionSpecificScaTraParameters(*s2i_coupling_growth_cond);
 
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix block
                 islavematrix->Complete(dofrowmap_growth, dofrowmap_scatra);
@@ -1131,7 +1131,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix blocks
                 islavematrix->Complete(dofrowmap_scatra, dofrowmap_growth);
@@ -1211,7 +1211,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
                 // evaluate off-diagonal linearizations arising from scatra-scatra interface layer
                 // growth
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // derive linearizations of master fluxes associated with scatra-scatra interface
                 // layer growth w.r.t. scatra-scatra interface layer thicknesses
@@ -1263,7 +1263,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
                 // evaluate off-diagonal linearizations
                 scatratimint_->Discretization()->EvaluateCondition(
-                    condparams, strategy, "S2ICouplingGrowth", condid);
+                    condparams, strategy, "S2IKineticsGrowth", condid);
 
                 // finalize auxiliary matrix blocks
                 blockslavematrix->Complete();
@@ -1332,7 +1332,7 @@ void SCATRA::MeshtyingStrategyS2I::EvaluateMeshtying()
 
             // evaluate main-diagonal linearizations and corresponding residuals
             scatratimint_->Discretization()->EvaluateCondition(
-                condparams, strategy, "S2ICouplingGrowth", condid);
+                condparams, strategy, "S2IKineticsGrowth", condid);
 
             // finalize global matrix block
             growthgrowthblock_->Complete();
@@ -2700,7 +2700,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
 
   // extract boundary condition for scatra-scatra interface layer growth
   const DRT::Condition* const condition =
-      scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+      scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
 
   // setup evaluation of scatra-scatra interface layer growth if applicable
   if (condition)
@@ -3040,7 +3040,7 @@ void SCATRA::MeshtyingStrategyS2I::WriteS2IKineticsSpecificScaTraParametersToPar
       break;
     }
 
-    case DRT::Condition::ConditionType::S2ICouplingGrowth:
+    case DRT::Condition::ConditionType::S2IKineticsGrowth:
     {
       // set the kinetic model specific parameters
       switch (kineticmodel)
@@ -3180,7 +3180,7 @@ void SCATRA::MeshtyingStrategyS2I::Output() const
 
     // extract boundary condition for scatra-scatra interface layer growth
     const DRT::Condition* const condition =
-        scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth");
+        scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth");
 
     // extract nodal cloud from condition
     const std::vector<int>* nodegids = condition->Nodes();
@@ -3329,7 +3329,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
 
   // extract boundary conditions for scatra-scatra interface layer growth
   std::vector<Teuchos::RCP<DRT::Condition>> conditions;
-  scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth", conditions);
+  scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth", conditions);
 
   // initialize scatra-scatra interface layer growth
   if (conditions.size())
@@ -3377,7 +3377,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
     {
       // add one degree of freedom for scatra-scatra interface layer growth to current node if
       // applicable
-      if (scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2ICouplingGrowth"))
+      if (scatratimint_->Discretization()->lColNode(inode)->GetCondition("S2IKineticsGrowth"))
         (*numdofpernode)[inode] = 1;
     }
 
@@ -3427,7 +3427,7 @@ void SCATRA::MeshtyingStrategyS2I::InitMeshtying()
           "Adaptive time stepping for scatra-scatra interface layer growth requires "
           "ADAPTIVE_TIMESTEPPING flag to be set!");
     }
-    if (not scatratimint_->Discretization()->GetCondition("S2ICouplingGrowth"))
+    if (not scatratimint_->Discretization()->GetCondition("S2IKineticsGrowth"))
     {
       dserror(
           "Adaptive time stepping for scatra-scatra interface layer growth requires corresponding "
