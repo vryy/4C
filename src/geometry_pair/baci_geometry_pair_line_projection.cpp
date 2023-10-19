@@ -18,6 +18,8 @@
 #include "baci_geometry_pair_line_to_volume_gauss_point_projection.H"
 #include "baci_geometry_pair_line_to_volume_segmentation.H"
 #include "baci_geometry_pair_scalar_types.H"
+#include "baci_geometry_pair_utility_functions.H"
+#include "baci_utils_fad.H"
 
 
 /**
@@ -54,7 +56,7 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectPointsOnLineToOther(const pai
   n_projections_valid = 0;
   n_projections = 0;
 
-  // Loop over points and check if they project to this other geomety.
+  // Loop over points and check if they project to this other geometry.
   for (auto& point : projection_points)
   {
     // Project the point.
@@ -124,10 +126,41 @@ void GEOMETRYPAIR::LineTo3DBase<pair_type>::ProjectGaussPointsOnSegmentToOther(
 
   // Check if all points could be projected.
   if (n_valid_projections != (unsigned int)gauss_points.nquad)
-    dserror(
-        "All Gauss points need to have a valid projection. The number of Gauss points is %d, but "
-        "the number of valid projections is %d!",
+  {
+    // Add detailed error output that allows for a reconstruction of the failed segmentation
+    std::stringstream error_message;
+
+    // Get the geometry information of the line and other geometry
+    PrintPairInformation(error_message, pair, q_line, q_other, optional_args...);
+
+    // Print a projection point
+    auto print_projection_point = [&error_message](const auto& projection_point)
+    {
+      error_message << "\n  line parameter coorindate: "
+                    << CORE::FADUTILS::CastToDouble(projection_point.GetEta());
+      error_message << "\n  other parameter coorindate: ";
+      CORE::FADUTILS::CastToDouble(projection_point.GetXi()).Print(error_message);
+      error_message << "  projection result: " << (int)projection_point.GetProjectionResult();
+    };
+
+    // Print the segment information
+    error_message << "\nSegment start point:";
+    print_projection_point(segment.GetStartPoint());
+    error_message << "\nSegment end point:";
+    print_projection_point(segment.GetEndPoint());
+
+    // Print the projection result for each Gauss point on the segment
+    for (unsigned int i_point = 0; i_point < projection_points.size(); i_point++)
+    {
+      error_message << "\nGauss point " << i_point;
+      print_projection_point(projection_points[i_point]);
+    }
+
+    dserror(error_message.str() +
+                "\n\nAll Gauss points need to have a valid projection. The number of Gauss points "
+                "is %d, but the number of valid projections is %d!",
         gauss_points.nquad, n_valid_projections);
+  }
 }
 
 
