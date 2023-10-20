@@ -36,13 +36,13 @@
 #include "baci_mat_superelastic_sma.H"
 
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
 
-using VoigtMapping = UTILS::VOIGT::IndexMappings;
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 
 /*----------------------------------------------------------------------*

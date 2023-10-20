@@ -9,7 +9,7 @@
 #define BACI_SO3_SH8P8_EAS_H
 
 /*----------------------------------------------------------------------*/
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_so3_sh8p8.H"
 
 #include <Teuchos_SerialDenseSolver.hpp>
@@ -132,7 +132,7 @@ void DRT::ELEMENTS::So_sh8p8::EasConstraintAndTangent(
       double pseudoidentity_CBe = 0.0;
       for (int D = 0; D < NUMDIM_; ++D)
       {
-        const int DB = ::UTILS::VOIGT::IndexMappings::SymToVoigt6(D, B);
+        const int DB = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(D, B);
         const double DBfact = (D == B) ? 1.0 : 0.5;
         pseudoidentity_CBe += invrgtstrD(C, D) * DBfact * rgtstrbyalpha(DB, e);
       }

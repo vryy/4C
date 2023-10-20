@@ -14,7 +14,7 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_base.H"
 
@@ -444,27 +444,27 @@ double STR::ResultTest::GetNodalStressComponent(const std::string& label, int no
   int stress_voigt_index = -1;
   if (label == "stress_xx")
   {
-    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 0);
+    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 0);
   }
   else if (label == "stress_yy")
   {
-    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 1);
+    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 1);
   }
   else if (label == "stress_zz")
   {
-    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(2, 2);
+    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(2, 2);
   }
   else if (label == "stress_xy")
   {
-    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 1);
+    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 1);
   }
   else if (label == "stress_xz")
   {
-    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(0, 2);
+    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(0, 2);
   }
   else if (label == "stress_yz")
   {
-    stress_voigt_index = UTILS::VOIGT::IndexMappings::SymToVoigt6(1, 2);
+    stress_voigt_index = CORE::LINALG::VOIGT::IndexMappings::SymToVoigt6(1, 2);
   }
 
   if (stress_voigt_index < 0)

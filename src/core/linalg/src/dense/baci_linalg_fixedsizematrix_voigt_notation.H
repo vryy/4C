@@ -3,14 +3,14 @@
 \brief Voigt notation definition and utilities
 */
 
-#ifndef BACI_LIB_VOIGT_NOTATION_H
-#define BACI_LIB_VOIGT_NOTATION_H
+#ifndef BACI_LINALG_FIXEDSIZEMATRIX_VOIGT_NOTATION_H
+#define BACI_LINALG_FIXEDSIZEMATRIX_VOIGT_NOTATION_H
 
 #include "baci_linalg_fixedsizematrix.H"
 
 
 
-namespace UTILS::VOIGT
+namespace CORE::LINALG::VOIGT
 {
   /*! Voigt notation types
    *
@@ -331,11 +331,11 @@ namespace UTILS::VOIGT
 
   //! typedefs for improved readability
   //! @{
-  using Stresses = VoigtUtils<UTILS::VOIGT::NotationType::stress>;
-  using Strains = VoigtUtils<UTILS::VOIGT::NotationType::strain>;
+  using Stresses = VoigtUtils<CORE::LINALG::VOIGT::NotationType::stress>;
+  using Strains = VoigtUtils<CORE::LINALG::VOIGT::NotationType::strain>;
   //! @}
 
-}  // namespace UTILS::VOIGT
+}  // namespace CORE::LINALG::VOIGT
 
 
-#endif  // LIB_VOIGT_NOTATION_H
+#endif  // BACI_LINALG_FIXEDSIZE_VOIGT_NOTATION_H

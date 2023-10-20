@@ -16,13 +16,10 @@
 // forward declarations
 struct _SOH8_DATA;
 
-namespace UTILS
+namespace CORE::LINALG::VOIGT
 {
-  namespace VOIGT
-  {
-    enum class NotationType;
-  }
-}  // namespace UTILS
+  enum class NotationType;
+}
 
 namespace DRT
 {
@@ -658,7 +655,7 @@ namespace DRT
           CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, MAT::NUM_STRESS_3D>&
               sqfderf,                                         ///< diff. squared matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& fmat,  ///< symmetric 2-tensor
-          ::UTILS::VOIGT::NotationType outvoigt6);
+          CORE::LINALG::VOIGT::NotationType outvoigt6);
 
       /// Derivative of "square" of non-symmetric 2-tensor by itself
       ///
@@ -753,8 +750,9 @@ namespace DRT
               bm,                                            ///< (out) 6x6 Voigt matrix
           const CORE::LINALG::Matrix<NUMDIM_, NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
           const bool transpose,                              ///< 3x3 input matrix is transposed
-          ::UTILS::VOIGT::NotationType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
-          ::UTILS::VOIGT::NotationType
+          CORE::LINALG::VOIGT::NotationType
+              rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
+          CORE::LINALG::VOIGT::NotationType
               colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
       );
 

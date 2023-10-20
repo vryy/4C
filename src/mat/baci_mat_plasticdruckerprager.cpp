@@ -13,9 +13,9 @@ John Wiley & Sons, Ltd, 2008
 #include "baci_inpar_structure.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_parobject.H"
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_FADmatrix_utils.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_material.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_parameter.H"
@@ -166,7 +166,7 @@ void MAT::PlasticDruckerPrager::SetupCmatElastoPlasticCone(
   cmat.Clear();
 
   CORE::LINALG::Matrix<NUM_STRESS_3D, 1> id2(true);
-  ::UTILS::VOIGT::IdentityMatrix(id2);
+  CORE::LINALG::VOIGT::IdentityMatrix(id2);
   CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D> id4sharp(true);
   for (int i = 0; i < 3; i++) id4sharp(i, i) = 1.0;
   for (int i = 3; i < 6; i++) id4sharp(i, i) = 0.5;

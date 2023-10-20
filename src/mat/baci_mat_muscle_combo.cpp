@@ -13,7 +13,7 @@ activations
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_muscle_utils.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
@@ -195,21 +195,21 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
   // compute matrices
   // right Cauchy Green tensor C
-  CORE::LINALG::Matrix<3, 3> C(false);              // matrix notation
-  C.MultiplyTN(*defgrd, *defgrd);                   // C = F^T F
-  CORE::LINALG::Matrix<6, 1> Cv(false);             // Voigt notation
-  ::UTILS::VOIGT::Stresses::MatrixToVector(C, Cv);  // Cv
+  CORE::LINALG::Matrix<3, 3> C(false);                   // matrix notation
+  C.MultiplyTN(*defgrd, *defgrd);                        // C = F^T F
+  CORE::LINALG::Matrix<6, 1> Cv(false);                  // Voigt notation
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(C, Cv);  // Cv
 
   // inverse right Cauchy Green tensor C^-1
-  CORE::LINALG::Matrix<3, 3> invC(false);                 // matrix notation
-  invC.Invert(C);                                         // invC = C^-1
-  CORE::LINALG::Matrix<6, 1> invCv(false);                // Voigt notation
-  ::UTILS::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
+  CORE::LINALG::Matrix<3, 3> invC(false);                      // matrix notation
+  invC.Invert(C);                                              // invC = C^-1
+  CORE::LINALG::Matrix<6, 1> invCv(false);                     // Voigt notation
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
   CORE::LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
-  CORE::LINALG::Matrix<6, 1> Mv(false);             // Voigt notation
-  ::UTILS::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
+  CORE::LINALG::Matrix<6, 1> Mv(false);                  // Voigt notation
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(M, Mv);  // Mv
   // structural tensor L = omega0/3*Identity + omegap*M
   CORE::LINALG::Matrix<3, 3> L(M);
   L.Scale(1.0 - omega0);  // omegap*M
@@ -223,7 +223,7 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<3, 3> invCLinvC(false);  // matrix notation
   invCLinvC.MultiplyNN(invCL, invC);
   CORE::LINALG::Matrix<6, 1> invCLinvCv(false);  // Voigt notation
-  ::UTILS::VOIGT::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(invCLinvC, invCLinvCv);
 
   // stretch in fibre direction lambdaM
   // lambdaM = sqrt(C:M) = sqrt(tr(C^T M)), see Holzapfel2000, p.14
@@ -276,18 +276,18 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<3, 3> LomegaaM(L);
   LomegaaM.Update(omegaa, M, 1.0);  // LomegaaM = L + omegaa*M
   CORE::LINALG::Matrix<6, 1> LomegaaMv(false);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(LomegaaM, LomegaaMv);
 
   CORE::LINALG::Matrix<3, 3> LfacomegaaM(L);  // LfacomegaaM = L + fac*M
   LfacomegaaM.Update((1.0 + omegaa * alpha * std::pow(lambdaM, 2)) / (alpha * std::pow(lambdaM, 2)),
       M, 1.0);  // + fac*M
   CORE::LINALG::Matrix<6, 1> LfacomegaaMv(false);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(LfacomegaaM, LfacomegaaMv);
 
   CORE::LINALG::Matrix<3, 3> transpCLomegaaM(false);
   transpCLomegaaM.MultiplyTN(1.0, C, LomegaaM);  // C^T*(L+omegaa*M)
   CORE::LINALG::Matrix<6, 1> transpCLomegaaMv(false);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(transpCLomegaaM, transpCLomegaaMv);
 
   // generalized invariants including active material properties
   double detC = C.Determinant();  // detC = det(C)
@@ -306,7 +306,7 @@ void MAT::Muscle_Combo::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   stressM.Update(J * expbeta - std::pow(detC, -kappa), invC, 1.0);
   stressM.Update(0.5 * eta, M, 1.0);
   stressM.Scale(0.5 * gamma);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(
       stressM, Sc_stress);  // convert to Voigt notation and update stress
 
   // compute cmat

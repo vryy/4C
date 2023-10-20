@@ -13,8 +13,8 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"
 #include "baci_matelast_coupanisoexpo.H"
@@ -61,7 +61,8 @@ namespace
         for (std::size_t i = 0; i < 2; ++i)
         {
           gpTensors_[gp][i].MultiplyNT(gpFibers_[gp][i], gpFibers_[gp][i]);
-          UTILS::VOIGT::Stresses::MatrixToVector(gpTensors_[gp][i], gpTensors_stress_[gp][i]);
+          CORE::LINALG::VOIGT::Stresses::MatrixToVector(
+              gpTensors_[gp][i], gpTensors_stress_[gp][i]);
         }
       }
 

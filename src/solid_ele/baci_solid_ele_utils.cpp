@@ -9,14 +9,14 @@
 
 #include "baci_lib_element.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 
 
 void STR::UTILS::Pk2ToCauchy(const CORE::LINALG::Matrix<6, 1>& pk2,
     const CORE::LINALG::Matrix<3, 3>& defgrd, CORE::LINALG::Matrix<6, 1>& cauchy)
 {
   CORE::LINALG::Matrix<3, 3> S_matrix;
-  ::UTILS::VOIGT::Stresses::VectorToMatrix(pk2, S_matrix);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(pk2, S_matrix);
 
   CORE::LINALG::Matrix<3, 3> FS;
   FS.MultiplyNN(defgrd, S_matrix);
@@ -24,7 +24,7 @@ void STR::UTILS::Pk2ToCauchy(const CORE::LINALG::Matrix<6, 1>& pk2,
   CORE::LINALG::Matrix<3, 3> cauchy_matrix;
   cauchy_matrix.MultiplyNT(1.0 / defgrd.Determinant(), FS, defgrd, 0.0);
 
-  ::UTILS::VOIGT::Stresses::MatrixToVector(cauchy_matrix, cauchy);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(cauchy_matrix, cauchy);
 }
 
 CORE::LINALG::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
@@ -34,7 +34,7 @@ CORE::LINALG::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
   invdefgrd.Invert();
 
   CORE::LINALG::Matrix<3, 3> E_matrix;
-  ::UTILS::VOIGT::Strains::VectorToMatrix(gl, E_matrix);
+  CORE::LINALG::VOIGT::Strains::VectorToMatrix(gl, E_matrix);
 
   CORE::LINALG::Matrix<3, 3> iFTE;
   iFTE.MultiplyTN(invdefgrd, E_matrix);
@@ -43,7 +43,7 @@ CORE::LINALG::Matrix<6, 1> STR::UTILS::GreenLagrangeToEulerAlmansi(
   ea_matrix.MultiplyNN(iFTE, invdefgrd);
 
   CORE::LINALG::Matrix<6, 1> ea;
-  ::UTILS::VOIGT::Strains::MatrixToVector(ea_matrix, ea);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(ea_matrix, ea);
   return ea;
 }
 

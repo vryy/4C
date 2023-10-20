@@ -18,7 +18,7 @@
 #include "baci_lib_element.H"
 #include "baci_lib_element_integration_select.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_element_service.H"
 #include "baci_solid_ele_utils.H"
@@ -1022,7 +1022,7 @@ namespace DRT::ELEMENTS
       case INPAR::STR::strain_gl:
       {
         CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain_stress_like;
-        ::UTILS::VOIGT::Strains::ToStressLike(gl_strain, gl_strain_stress_like);
+        CORE::LINALG::VOIGT::Strains::ToStressLike(gl_strain, gl_strain_stress_like);
         AssembleVectorToMatrixRow(gl_strain_stress_like, data, row);
         return;
       }
@@ -1031,7 +1031,7 @@ namespace DRT::ELEMENTS
         const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> ea =
             STR::UTILS::GreenLagrangeToEulerAlmansi(gl_strain, defgrd);
         CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> ea_stress_like;
-        ::UTILS::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
+        CORE::LINALG::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
         AssembleVectorToMatrixRow(ea_stress_like, data, row);
         return;
       }

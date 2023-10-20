@@ -17,8 +17,8 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
@@ -26,7 +26,7 @@ ISOHARD 0.12924 EXPISOHARD 16.93 INFYIELD 0.715 KINHARD 0.0
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-using vmap = UTILS::VOIGT::IndexMappings;
+using vmap = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1053,7 +1053,7 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int gp, const int el
       ce_stresslike(i) = 0.5 * ce(i);
 
   CORE::LINALG::Matrix<3, 1> prinv;
-  UTILS::VOIGT::Strains::InvariantsPrincipal(prinv, ce);
+  CORE::LINALG::VOIGT::Strains::InvariantsPrincipal(prinv, ce);
 
   CORE::LINALG::Matrix<3, 1> dPI;
   CORE::LINALG::Matrix<6, 1> ddPII;
@@ -1099,16 +1099,16 @@ void MAT::PlasticElastHyperVCU::EvaluateKinQuantPlast(const int gp, const int el
   //    CeFpiTC.Multiply(CeM,FpiTC);
   CORE::LINALG::Matrix<3, 3> tmp;
   tmp.Multiply(RCG, *fpi);
-  UTILS::VOIGT::Matrix3x3to9x1(tmp, CFpi);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp, CFpi);
   tmp33.Multiply(tmp, ce3x3);
-  UTILS::VOIGT::Matrix3x3to9x1(tmp33, CFpiCe);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp33, CFpiCe);
 
 
 
   tmp.Invert(ce3x3);
   tmp33.Multiply(*fpi, tmp);
   tmp.Multiply(RCG, tmp33);
-  UTILS::VOIGT::Matrix3x3to9x1(tmp, CFpiCei);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(tmp, CFpiCei);
 }
 void MAT::PlasticElastHyperVCU::Dpk2dFpi(const int gp, const int eleGID,
     const CORE::LINALG::Matrix<3, 3>* defgrd, const CORE::LINALG::Matrix<3, 3>* fpi,
