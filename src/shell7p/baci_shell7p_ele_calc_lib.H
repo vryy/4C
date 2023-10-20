@@ -10,7 +10,7 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_lib_tensor_transformation.H"
+#include "baci_linalg_fixedsizematrix_tensor_transformation.H"
 #include "baci_mat_so3_material.H"
 #include "baci_shell7p_ele.H"
 

@@ -9,8 +9,8 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_tensor_transformation.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_tensor_transformation.H"
 #include "baci_unittest_utils_assertions_test.H"
 
 namespace
