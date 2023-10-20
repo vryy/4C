@@ -31,10 +31,10 @@ namespace MAT
       MatList(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~MatList() { ; }
+      ~MatList() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// @name material parameters
       //@{
@@ -69,11 +69,11 @@ namespace MAT
   class MatListType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "MatListType"; }
+    std::string Name() const override { return "MatListType"; }
 
     static MatListType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MatListType instance_;
@@ -98,7 +98,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const { return MatListType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return MatListType::Instance().UniqueParObjectId(); }
 
     /*!
       \brief Pack this class so it can be communicated
@@ -110,7 +110,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -124,15 +124,15 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_matlist; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_matlist; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new MatList(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new MatList(*this)); }
 
     /// number of materials
     int NumMat() const { return params_->nummat_; }
@@ -144,7 +144,7 @@ namespace MAT
     virtual Teuchos::RCP<MAT::Material> MaterialById(const int id) const;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::MatList* Parameter() const { return params_; }
+    MAT::PAR::MatList* Parameter() const override { return params_; }
 
    protected:
     /// return pointer to the materials map, which has read-only access.

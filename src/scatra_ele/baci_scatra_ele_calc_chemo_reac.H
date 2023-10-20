@@ -36,7 +36,7 @@ namespace DRT
       typedef ScaTraEleCalcAdvReac<distype, probdim> advreac;
 
      public:
-      virtual ~ScaTraEleCalcChemoReac() {}
+      ~ScaTraEleCalcChemoReac() override {}
 
       //! Singleton access method
       static ScaTraEleCalcChemoReac<distype, probdim>* Instance(
@@ -44,13 +44,13 @@ namespace DRT
 
      protected:
       //! get the material parameters
-      virtual void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
-          std::vector<double>& densn,                          //!< density at t_(n)
-          std::vector<double>& densnp,  //!< density at t_(n+1) or t_(n+alpha_F)
-          std::vector<double>& densam,  //!< density at t_(n+alpha_M)
-          double& visc,                 //!< fluid viscosity
-          const int iquad = -1          //!< id of current gauss point (default = -1)
-      );
+      void GetMaterialParams(const DRT::Element* ele,  //!< the element we are dealing with
+          std::vector<double>& densn,                  //!< density at t_(n)
+          std::vector<double>& densnp,                 //!< density at t_(n+1) or t_(n+alpha_F)
+          std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
+          double& visc,                                //!< fluid viscosity
+          const int iquad = -1                         //!< id of current gauss point (default = -1)
+          ) override;
 
     };  // end class ScaTraEleCalcChemoReac
 

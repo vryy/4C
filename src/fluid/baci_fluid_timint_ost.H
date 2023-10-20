@@ -28,19 +28,19 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntOneStepTheta();
+    ~TimIntOneStepTheta() override;
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief Print information about current time step to screen (reimplementation)
 
     */
-    virtual void PrintTimeStepInfo();
+    void PrintTimeStepInfo() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -66,45 +66,44 @@ namespace FLD
 
 
     */
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /*!
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    virtual void SetStateTimInt();
+    void SetStateTimInt() override;
 
     /*!
     \brief Calculate time derivatives for
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    virtual void CalculateAcceleration(
-        const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at     n+1
+    void CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
         const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
         const Teuchos::RCP<Epetra_Vector> accnp         ///< acceleration at n+1
-    );
+        ) override;
 
     /*!
     \brief Set gamma to a value
 
     */
-    virtual void SetGamma(Teuchos::ParameterList& eleparams);
+    void SetGamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    virtual void Sep_Multiply();
+    void Sep_Multiply() override;
 
     /*!
     \brief Output of filtered velocity
 
     */
-    virtual void OutputofFilteredVel(
-        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec);
+    void OutputofFilteredVel(
+        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
 
     /*!
 
@@ -113,25 +112,25 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementTimeParameter();
+    void SetElementTimeParameter() override;
 
     /*!
     \brief set theta if starting algorithm is chosen.
 
     */
-    virtual void SetTheta();
+    void SetTheta() override;
 
     /*!
     \brief return scheme-specific time integration parameter
 
     */
-    virtual double TimIntParam() const { return 0.0; }
+    double TimIntParam() const override { return 0.0; }
 
     /*!
     \brief return scaling factor for the residual
 
     */
-    virtual double ResidualScaling() const
+    double ResidualScaling() const override
     {
       if (params_->get<bool>("ost new"))
         return 1.0 / (dta_);
@@ -143,46 +142,46 @@ namespace FLD
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    virtual Teuchos::RCP<const Epetra_Vector> EvaluationVel() { return velnp_; };
+    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return velnp_; };
 
     /*!
     \ apply external forces to the fluid
 
     */
-    virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext);
+    void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) override;
 
     /*!
     \output of external forces for restart
 
     */
-    virtual void OutputExternalForces();
+    void OutputExternalForces() override;
 
     /*!
     \brief read restart data
 
     */
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /*!
     \ Update of external forces
 
     */
-    virtual void TimeUpdateExternalForces();
+    void TimeUpdateExternalForces() override;
 
     /*!
     \brief treat turbulence models in AssembleMatAndRHS
 
     */
-    virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+    void TreatTurbulenceModels(Teuchos::ParameterList& eleparams) override;
 
     //! @name Time Step Size Adaptivity
     //@{
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const;
+    int MethodOrderOfAccuracyVel() const override;
 
     //! Give local order of accuracy of pressure part
-    virtual int MethodOrderOfAccuracyPres() const;
+    int MethodOrderOfAccuracyPres() const override;
 
     /*! \brief Return linear error coefficient of velocity
      *
@@ -195,7 +194,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    virtual double MethodLinErrCoeffVel() const;
+    double MethodLinErrCoeffVel() const override;
 
     //@}
 

@@ -53,7 +53,7 @@ namespace DRT
       /*!
       \brief Destructor
       */
-      virtual ~Wall1_Poro_Scatra(){};
+      ~Wall1_Poro_Scatra() override{};
 
       //@}
 
@@ -63,7 +63,7 @@ namespace DRT
       The Clone() method is used from the virtual base class Element in cases
       where the type of the derived class is unknown and a copy-ctor is needed
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -71,7 +71,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         int parobjectid(-1);
         switch (distype)
@@ -115,26 +115,26 @@ namespace DRT
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! @name Access methods
 
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       /*!
       \brief Return elementtype instance
       */
-      virtual DRT::ElementType& ElementType() const
+      DRT::ElementType& ElementType() const override
       {
         switch (distype)
         {
@@ -167,8 +167,8 @@ namespace DRT
       /*!
       \brief Read input for this element
       */
-      virtual bool ReadElement(const std::string& eletype, const std::string& eledistype,
-          DRT::INPUT::LineDefinition* linedef);
+      bool ReadElement(const std::string& eletype, const std::string& eledistype,
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 

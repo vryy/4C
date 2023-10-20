@@ -341,25 +341,25 @@ namespace CORE::DRT::UTILS
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    virtual std::size_t Size() const { return Size(polySpace1d_.size() - 1); }
+    std::size_t Size() const override { return Size(polySpace1d_.size() - 1); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    virtual void Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const;
+    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
@@ -402,7 +402,7 @@ namespace CORE::DRT::UTILS
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
     std::vector<POLY> polySpace1d_;
@@ -434,7 +434,7 @@ namespace CORE::DRT::UTILS
       for (unsigned int i = 0; i < renumbering_.size(); ++i) renumbering_[i] = i;
     }
 
-    virtual ~PolynomialSpaceComplete() {}
+    ~PolynomialSpaceComplete() override {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)
@@ -453,30 +453,30 @@ namespace CORE::DRT::UTILS
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    virtual std::size_t Size() const { return Size(polySpace1d_.size() - 1); }
+    std::size_t Size() const override { return Size(polySpace1d_.size() - 1); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    virtual void Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const;
+    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
     std::vector<POLY> polySpace1d_;
@@ -503,7 +503,7 @@ namespace CORE::DRT::UTILS
     {
     }
 
-    ~LagrangeBasis() {}
+    ~LagrangeBasis() override {}
   };
 
 
@@ -556,7 +556,7 @@ namespace CORE::DRT::UTILS
       ComputeVandermondeMatrices(degree);
     }
 
-    virtual ~LagrangeBasisTet() {}
+    ~LagrangeBasisTet() override {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)
@@ -575,30 +575,30 @@ namespace CORE::DRT::UTILS
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
-    virtual std::size_t Size() const { return legendre_.Size(); }
+    std::size_t Size() const override { return legendre_.Size(); }
 
     /*
      \brief Evaluates the values of the whole polynomial space in the given point
      */
-    virtual void Evaluate(
-        const CORE::LINALG::Matrix<nsd_, 1> &point, CORE::LINALG::SerialDenseVector &values) const;
+    void Evaluate(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseVector &values) const override;
 
     /*
      \brief Evaluates the first derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv1(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Evaluates the second derivative of the whole polynomial space in the given point
      */
-    virtual void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
-        CORE::LINALG::SerialDenseMatrix &derivatives) const;
+    void Evaluate_deriv2(const CORE::LINALG::Matrix<nsd_, 1> &point,
+        CORE::LINALG::SerialDenseMatrix &derivatives) const override;
 
     /*
      \brief Creates an array with coordinates of the nodes supporting the polynomials.
      */
-    virtual void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const;
+    void FillUnitNodePoints(CORE::LINALG::SerialDenseMatrix &matrix) const override;
 
    private:
     void FillFeketePoints(const unsigned int degree);

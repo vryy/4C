@@ -74,7 +74,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToSurface(){};
+    ~GeometryPairLineToSurface() override{};
 
     /**
      * \brief Initialize the pair.

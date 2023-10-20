@@ -38,25 +38,25 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntGenAlpha();
+    ~TimIntGenAlpha() override;
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief Print information about current time step to screen (reimplementation)
 
     */
-    virtual void PrintTimeStepInfo();
+    void PrintTimeStepInfo() override;
 
     /*!
     \brief Set theta_ to its value, dependent on integration method for GenAlpha and BDF2
 
     */
-    virtual void SetTheta();
+    void SetTheta() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -82,32 +82,31 @@ namespace FLD
 
 
     */
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /*!
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    virtual void SetStateTimInt();
+    void SetStateTimInt() override;
 
     /*!
     \brief Set time factor in GenAlpha
 
     */
-    virtual double SetTimeFac();
+    double SetTimeFac() override;
 
     /*!
     \brief Calculate time derivatives for
            stationary/one-step-theta/BDF2/af-generalized-alpha time integration
            for incompressible and low-Mach-number flow
     */
-    virtual void CalculateAcceleration(
-        const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at     n+1
+    void CalculateAcceleration(const Teuchos::RCP<const Epetra_Vector> velnp,  ///< velocity at n+1
         const Teuchos::RCP<const Epetra_Vector> veln,   ///< velocity at     n
         const Teuchos::RCP<const Epetra_Vector> velnm,  ///< velocity at     n-1
         const Teuchos::RCP<const Epetra_Vector> accn,   ///< acceleration at n-1
         const Teuchos::RCP<Epetra_Vector> accnp         ///< acceleration at n+1
-    );
+        ) override;
 
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
@@ -115,33 +114,33 @@ namespace FLD
            Helper method which can be called from outside fluid (e.g. for coupled problems)
 
     */
-    virtual void GenAlphaIntermediateValues(
-        Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn);
+    void GenAlphaIntermediateValues(
+        Teuchos::RCP<Epetra_Vector>& vecnp, Teuchos::RCP<Epetra_Vector>& vecn) override;
 
     /*!
     \brief Set gamma to a value
 
     */
-    virtual void SetGamma(Teuchos::ParameterList& eleparams);
+    void SetGamma(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Scale separation
 
     */
-    virtual void Sep_Multiply();
+    void Sep_Multiply() override;
 
     /*!
     \brief Update velaf_ for GenAlpha
 
     */
-    virtual void UpdateVelafGenAlpha();
+    void UpdateVelafGenAlpha() override;
 
     /*!
     \brief Output of filtered velocity
 
     */
-    virtual void OutputofFilteredVel(
-        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec);
+    void OutputofFilteredVel(
+        Teuchos::RCP<Epetra_Vector> outvec, Teuchos::RCP<Epetra_Vector> fsoutvec) override;
 
     /*!
 
@@ -150,13 +149,13 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    virtual void SetElementTimeParameter();
+    void SetElementTimeParameter() override;
 
     /*!
     \brief return scheme-specific time integration parameter
 
     */
-    virtual double TimIntParam() const { return (1.0 - alphaF_); }
+    double TimIntParam() const override { return (1.0 - alphaF_); }
 
     virtual double AlphaM() const { return alphaM_; }
 
@@ -165,13 +164,13 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector> ExtrapolateEndPoint(
         Teuchos::RCP<Epetra_Vector> vecn,  ///< vector at time level t_n
         Teuchos::RCP<Epetra_Vector> vecm   ///< vector at time level of equilibrium
-    );
+        ) override;
 
     /*!
     \brief treat turbulence models in AssembleMatAndRHS
 
     */
-    virtual void TreatTurbulenceModels(Teuchos::ParameterList& eleparams);
+    void TreatTurbulenceModels(Teuchos::ParameterList& eleparams) override;
 
     //! @name Time Step Size Adaptivity
     //@{
@@ -184,7 +183,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    virtual int MethodOrderOfAccuracyVel() const;
+    int MethodOrderOfAccuracyVel() const override;
 
     /*! \brief Give local order of accuracy of pressure part
      *
@@ -194,7 +193,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    virtual int MethodOrderOfAccuracyPres() const;
+    int MethodOrderOfAccuracyPres() const override;
 
     /*! \brief Return linear error coefficient of velocity
      *
@@ -207,7 +206,7 @@ namespace FLD
      *
      *  \author mayr.mt \date 04/2015
      */
-    virtual double MethodLinErrCoeffVel() const;
+    double MethodLinErrCoeffVel() const override;
 
     //@}
 
@@ -219,25 +218,25 @@ namespace FLD
     \brief update acceleration for generalized-alpha time integration
 
     */
-    virtual void GenAlphaUpdateAcceleration();
+    void GenAlphaUpdateAcceleration() override;
 
     /*!
     \brief compute values at intermediate time steps for gen.-alpha
 
     */
-    virtual void GenAlphaIntermediateValues();
+    void GenAlphaIntermediateValues() override;
 
     /*!
     \brief return scaling of the residual
 
     */
-    virtual double ResidualScaling() const { return alphaM_ / (gamma_ * dta_); }
+    double ResidualScaling() const override { return alphaM_ / (gamma_ * dta_); }
 
     /*!
     \brief velocity required for evaluation of related quantites required on element level
 
     */
-    virtual Teuchos::RCP<const Epetra_Vector> EvaluationVel() { return velaf_; };
+    Teuchos::RCP<const Epetra_Vector> EvaluationVel() override { return velaf_; };
 
     /// time factors for generalized-alpha time integration
     double alphaM_;

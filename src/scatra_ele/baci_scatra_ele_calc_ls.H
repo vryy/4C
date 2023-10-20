@@ -29,7 +29,7 @@ namespace DRT
       using my::nsd_;
 
      public:
-      virtual ~ScaTraEleCalcLS() {}
+      ~ScaTraEleCalcLS() override {}
 
       /// Singleton access method
       static ScaTraEleCalcLS<distype>* Instance(
@@ -41,7 +41,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      private:
       // calculate error compared to analytical solution

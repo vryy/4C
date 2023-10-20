@@ -27,10 +27,10 @@ namespace SCATRA
     void Init() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    void ComputeIntermediateValues() { return; };
+    void ComputeIntermediateValues() override { return; };
 
     /// routine to return time integration specific parameters
-    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
+    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() override
     {
       dserror("Not yet implemented!");
       return Teuchos::null;
@@ -44,27 +44,27 @@ namespace SCATRA
     TimIntStationaryHDG(const TimIntStationaryHDG& old);
 
     /// set time parameter for element evaluation
-    void SetElementTimeParameter(bool forcedincrementalsolver = false) const;
+    void SetElementTimeParameter(bool forcedincrementalsolver = false) const override;
 
     /// set time for evaluation of Neumann boundary conditions
-    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
 
     /// calculate consistent initial conditions in compliance with initial scalar field
     /// this is not necessary for stationary calculations
-    void CalcInitialTimeDerivative() { return; };
+    void CalcInitialTimeDerivative() override { return; };
 
     /// do explicit predictor step (nothing to predict for stationary problems!)
-    void ExplicitPredictor() const { return; };
+    void ExplicitPredictor() const override { return; };
 
     /// dynamic Smagorinsky model
-    void DynamicComputationOfCs()
+    void DynamicComputationOfCs() override
     {
       dserror("no turbulence in stationary flows!");
       return;
     };
 
     /// dynamic Vreman model
-    void DynamicComputationOfCv()
+    void DynamicComputationOfCv() override
     {
       dserror("no turbulence in stationary flows!");
       return;

@@ -26,7 +26,7 @@ namespace MAT
           : Parameter(matdata), constrelpermeability_(constrelpermeability){};
 
       /// destructor
-      virtual ~FluidPoroRelPermeabilityLaw() { ; }
+      ~FluidPoroRelPermeabilityLaw() override { ; }
 
       // get relative permeability
       virtual double GetRelPermeability(const double saturation) const = 0;
@@ -52,16 +52,19 @@ namespace MAT
       explicit FluidPoroRelPermeabilityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroRelPermeabilityLawConstant() { ; }
+      ~FluidPoroRelPermeabilityLawConstant() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get permeability
-      double GetRelPermeability(const double saturation) const { return relpermeability_; };
+      double GetRelPermeability(const double saturation) const override
+      {
+        return relpermeability_;
+      };
 
       // get derivative of relative permeability with respect to the saturation of this phase
-      virtual double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const
+      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const override
       {
         return 0.0;
       };
@@ -85,13 +88,13 @@ namespace MAT
       explicit FluidPoroRelPermeabilityLawExponent(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroRelPermeabilityLawExponent() { ; }
+      ~FluidPoroRelPermeabilityLawExponent() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get permeability
-      double GetRelPermeability(const double saturation) const
+      double GetRelPermeability(const double saturation) const override
       {
         if (saturation > minsat_)
           return std::pow(saturation, exp_);
@@ -100,7 +103,7 @@ namespace MAT
       };
 
       // get derivative of relative permeability with respect to the saturation of this phase
-      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const
+      double GetDerivOfRelPermeabilityWrtSaturation(const double saturation) const override
       {
         if (saturation > minsat_)
           return exp_ * std::pow(saturation, (exp_ - 1.0));

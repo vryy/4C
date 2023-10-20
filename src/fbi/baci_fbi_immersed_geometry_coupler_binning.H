@@ -51,7 +51,7 @@ namespace FBI
 
    public:
     /// empty destructor
-    virtual ~FBIBinningGeometryCoupler() = default;
+    ~FBIBinningGeometryCoupler() override = default;
 
     /**
      * \brief Sets the binning strategy in the binning coupler
@@ -65,7 +65,7 @@ namespace FBI
      * \param[in] discretizations vector containing the structure and fluid discretization
      * \param[in] structure_displacement vector containing the column structure displacement
      */
-    virtual void Setup(std::vector<Teuchos::RCP<DRT::Discretization>>&,
+    void Setup(std::vector<Teuchos::RCP<DRT::Discretization>>&,
         Teuchos::RCP<const Epetra_Vector> structure_displacement) override;
 
     /**
@@ -81,9 +81,9 @@ namespace FBI
      *
      * \returns map relating the beam element IDs to a vector of nearby fluid element IDs
      */
-    virtual Teuchos::RCP<std::map<int, std::vector<int>>> Search(
+    Teuchos::RCP<std::map<int, std::vector<int>>> Search(
         std::vector<Teuchos::RCP<DRT::Discretization>>& discretizations,
-        Teuchos::RCP<const Epetra_Vector>& column_structure_displacement);
+        Teuchos::RCP<const Epetra_Vector>& column_structure_displacement) override;
 
     /** \brief Update distribution of elements to bins
      *

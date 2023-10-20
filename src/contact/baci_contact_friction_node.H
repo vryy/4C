@@ -18,7 +18,7 @@ namespace CONTACT
 
     static FriNodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FriNodeType instance_;
@@ -411,13 +411,13 @@ namespace CONTACT
      \brief Deep copy the derived class and return pointer to it
 
      */
-    virtual CONTACT::FriNode* Clone() const;
+    CONTACT::FriNode* Clone() const override;
 
     /*!
      \brief Destructor
 
      */
-    virtual ~FriNode() = default;
+    ~FriNode() override = default;
 
     /*!
      \brief Return unique ParObject id
@@ -426,7 +426,7 @@ namespace CONTACT
      top of lib/parobject.H.
 
      */
-    virtual int UniqueParObjectId() const { return FriNodeType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return FriNodeType::Instance().UniqueParObjectId(); }
 
     /*!
      \brief Pack this class so it can be communicated
@@ -434,7 +434,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -442,7 +442,7 @@ namespace CONTACT
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -451,7 +451,7 @@ namespace CONTACT
     /*!
      \brief Print this cnode
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*!
      \brief Return of data container of this node
@@ -500,7 +500,7 @@ namespace CONTACT
      \brief Add a value to the SNode set of this node
 
      */
-    void AddSNode(int node);
+    void AddSNode(int node) override;
 
     /*!
      \brief Add a value to the 'T' map of this node
@@ -544,7 +544,7 @@ namespace CONTACT
      \brief Add a value to the MNode set of this node
 
      */
-    void AddMNode(int node);
+    void AddMNode(int node) override;
 
     /*!
      \brief Add a value to the map of Jump derivatives of this node
@@ -593,7 +593,7 @@ namespace CONTACT
      is initialized.
 
      */
-    virtual void InitializeDataContainer();
+    void InitializeDataContainer() override;
 
     /*!
      \brief Resets the data container of the node
@@ -602,7 +602,7 @@ namespace CONTACT
      is deleted / reset to Teuchos::null pointer
 
      */
-    virtual void ResetDataContainer();
+    void ResetDataContainer() override;
 
     //@}
 

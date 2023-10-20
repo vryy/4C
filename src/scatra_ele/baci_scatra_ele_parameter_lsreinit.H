@@ -35,7 +35,7 @@ namespace DRT
       );
 
      public:
-      virtual ~ScaTraEleParameterLsReinit() {}
+      ~ScaTraEleParameterLsReinit() override {}
 
       /// Singleton access method
       static ScaTraEleParameterLsReinit* Instance(
@@ -48,7 +48,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       /*========================================================================*/
       //! @name access-routines

@@ -36,18 +36,18 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! virtual destructor
-    virtual ~TimIntCardiacMonodomain() { return; };
+    ~TimIntCardiacMonodomain() override { return; };
 
     //! setup algorithm
-    virtual void Setup();
+    void Setup() override;
 
     //! time update of time-dependent materials
     void ElementMaterialTimeUpdate();
 
-    void OutputState();
+    void OutputState() override;
 
     //! Set ep-specific parameters
-    void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const;
+    void SetElementSpecificScaTraParameters(Teuchos::ParameterList& eleparams) const override;
 
     //! return pointer to old scatra dofrowmap for coupled problems
     virtual Teuchos::RCP<const Epetra_Map> DofRowMapScatra() { return dofmap_; };

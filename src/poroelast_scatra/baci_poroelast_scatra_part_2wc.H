@@ -24,35 +24,35 @@ namespace POROELASTSCATRA
     explicit PoroScatraPart2WC(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor
-    virtual ~PoroScatraPart2WC(){};
+    ~PoroScatraPart2WC() override{};
 
     //! full time loop
-    virtual void Timeloop();
+    void Timeloop() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     //! prepare time step for single fields
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve();
+    void Solve() override;
 
     //! prepare output
-    void PrepareOutput();
+    void PrepareOutput() override;
 
     //! update time step
-    void Update();
+    void Update() override;
 
     //! write output print to screen
-    void Output();
+    void Output() override;
 
    protected:
     //! perform iteration step of structure field
-    void DoPoroStep();
+    void DoPoroStep() override;
 
     //! perform iteration step of scatra field
-    void DoScatraStep();
+    void DoScatraStep() override;
 
     //! convergence check of outer loop
     bool ConvergenceCheck(int itnum);

@@ -30,13 +30,13 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntLoma();
+    ~TimIntLoma() override;
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief set scalar fields within outer iteration loop
@@ -46,7 +46,7 @@ namespace FLD
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<DRT::Discretization> scatradis);
+        Teuchos::RCP<DRT::Discretization> scatradis) override;
 
     /*!
     \brief set scalar fields
@@ -54,7 +54,7 @@ namespace FLD
     */
     void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
         Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1);
+        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) override;
 
     /*!
     \brief parameter (fix over all time step) are set in this method.
@@ -66,40 +66,41 @@ namespace FLD
     \brief print turbulence model
 
     */
-    void PrintTurbulenceModel();
+    void PrintTurbulenceModel() override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsApplyNonlinearBoundaryConditions(Teuchos::ParameterList& eleparams);
+    void SetCustomEleParamsApplyNonlinearBoundaryConditions(
+        Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams);
+    void SetCustomEleParamsLinearRelaxationSolve(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Call statistics manager (special case in TimIntLoma)
 
     */
-    void CallStatisticsManager();
+    void CallStatisticsManager() override;
 
     /// prepare AVM3-based scale separation
-    void AVM3Preparation();
+    void AVM3Preparation() override;
 
     /*!
     \brief return thermpressaf_ in TimIntLoma
 
     */
-    double ReturnThermpressaf() { return thermpressaf_; }
+    double ReturnThermpressaf() override { return thermpressaf_; }
 
 
    protected:

@@ -72,7 +72,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToVolume(){};
+    ~GeometryPairLineToVolume() override{};
 
     /**
      * \brief Initialize the pair.

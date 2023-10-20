@@ -130,7 +130,7 @@ namespace DRT
       FluidInternalSurfaceStab();
 
       /// empty destructor
-      ~FluidInternalSurfaceStab() { return; };
+      ~FluidInternalSurfaceStab() override { return; };
 
       /// number of space dimensions of the FluidIntFace element
       static const int facensd_ = CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -169,7 +169,7 @@ namespace DRT
         Burman Fernandez and Hansbo (2006-2009)
 
       */
-      virtual int EvaluateEdgeBasedStabilization(
+      int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace* intface,   ///< internal face element
           Teuchos::RCP<MAT::Material>& material,  ///< material associated with the faces
           DRT::ELEMENTS::FluidEleParameterTimInt& fldparatimint,  ///< time-integration parameter
@@ -187,7 +187,7 @@ namespace DRT
               lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
           std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  ///< element matrix blocks
           std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   ///< element vector blocks
-      );
+          ) override;
 
      private:
       int Degree(const DRT::Element::DiscretizationType parent_ele_distype);

@@ -38,7 +38,7 @@ namespace DRT
       // not needed, since class is purely virtual
 
       //! destructor
-      virtual ~ScaTraEleBoundaryCalcElch() { return; };
+      ~ScaTraEleBoundaryCalcElch() override { return; };
 
 
      protected:
@@ -47,7 +47,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       //! evaluate action
-      virtual int EvaluateAction(DRT::FaceElement* ele,     //!< boundary element
+      int EvaluateAction(DRT::FaceElement* ele,             //!< boundary element
           Teuchos::ParameterList& params,                   //!< parameter list
           DRT::Discretization& discretization,              //!< discretization
           SCATRA::BoundaryAction action,                    //!< action
@@ -57,7 +57,7 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! evaluate an electrode kinetics boundary condition
       virtual void EvaluateElchBoundaryKinetics(const DRT::Element* ele,  ///< current element

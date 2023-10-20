@@ -28,24 +28,25 @@ namespace DRT
     class FluidXWallType : public FluidType
     {
      public:
-      std::string Name() const { return "FluidXWallType"; }
+      std::string Name() const override { return "FluidXWallType"; }
 
       static FluidXWallType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static FluidXWallType instance_;
@@ -82,7 +83,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      virtual DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Get number of degrees of freedom of a certain node
@@ -93,7 +94,7 @@ namespace DRT
       number of degrees of freedom per node along the way for each of it's nodes
       separately.
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         // number of Dof's is fluid-specific.
         const int nsd = CORE::DRT::UTILS::getDimension(distype_);
@@ -106,7 +107,7 @@ namespace DRT
         return 0;
       }
 
-      virtual DRT::ElementType& ElementType() const { return FluidXWallType::Instance(); }
+      DRT::ElementType& ElementType() const override { return FluidXWallType::Instance(); }
 
       /*!
       \brief Return value how expensive it is to evaluate this element
@@ -114,9 +115,9 @@ namespace DRT
       \param double (out): cost to evaluate this element
       */
       // the standard element is 10.0
-      virtual double EvaluationCost() { return 50.0; }
+      double EvaluationCost() override { return 50.0; }
 
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return FluidXWallType::Instance().UniqueParObjectId();
       }
@@ -124,17 +125,17 @@ namespace DRT
       /*!
       \brief Get vector of Teuchos::RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the surfaces of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
       /*!
       \brief Get vector of Teuchos::RCPs to the volume of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Volumes();
+      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
 
       //@}
 
@@ -143,13 +144,13 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~FluidXWall();
+      ~FluidXWall() override;
 
 
      protected:
@@ -162,9 +163,9 @@ namespace DRT
     class FluidXWallBoundaryType : public FluidBoundaryType
     {
      public:
-      std::string Name() const { return "FluidXWallBoundaryType"; }
+      std::string Name() const override { return "FluidXWallBoundaryType"; }
 
-      Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
       static FluidXWallBoundaryType& Instance();
 
@@ -210,7 +211,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
       \brief Return unique ParObject id
@@ -218,7 +219,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of the parobject.H file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return FluidXWallBoundaryType::Instance().UniqueParObjectId();
       }
@@ -227,7 +228,7 @@ namespace DRT
       \brief Destructor
 
       */
-      virtual ~FluidXWallBoundary(){};
+      ~FluidXWallBoundary() override{};
 
       //@}
 
@@ -236,9 +237,9 @@ namespace DRT
       /*!
       \brief Print this element
       */
-      void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
-      virtual DRT::ElementType& ElementType() const { return FluidXWallBoundaryType::Instance(); }
+      DRT::ElementType& ElementType() const override { return FluidXWallBoundaryType::Instance(); }
 
       //@}
 
@@ -280,8 +281,8 @@ namespace DRT
       \param condstring (in) : Name of condition to be evaluated
       \param params (in)     : List of parameters for use at element level
       */
-      virtual void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
-          const std::string& condstring, Teuchos::ParameterList& params) const;
+      void LocationVector(const Discretization& dis, LocationArray& la, bool doDirichlet,
+          const std::string& condstring, Teuchos::ParameterList& params) const override;
 
      private:
       // don't want = operator

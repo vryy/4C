@@ -132,7 +132,7 @@ namespace STR
        *        + C \cdot [\theta  * V_{n+1} + (1-\theta) * V_{n}]
        *        + \theta * Res_{\mathrm{statics},n+1} + (1-\theta) * Res_{\mathrm{statics},n}
        *  \f] */
-      void AddViscoMassContributions(Epetra_Vector& f) const;
+      void AddViscoMassContributions(Epetra_Vector& f) const override;
 
       /*! \brief Add the viscous and mass contributions to the jacobian (TR-rule)
        *
@@ -147,7 +147,7 @@ namespace STR
        *                + (1 - \frac{1}{\Delta t} \boldsymbol{C}
        *                + theta  \boldsymbol{K}_{T}
        *  \f] */
-      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const;
+      void AddViscoMassContributions(CORE::LINALG::SparseOperator& jac) const override;
 
       /** \brief Access the time integration coefficient \f$\theta\f$
        *

@@ -53,15 +53,15 @@ namespace CORE::DRT::UTILS
         myCub->getCubature(cub_points_, cub_weights_);
       }
 
-      virtual int NumPoints() const { return cub_points_.dimension(0); }
+      int NumPoints() const override { return cub_points_.dimension(0); }
 
-      virtual int NumDimension() const { return cub_points_.dimension(1); }
+      int NumDimension() const override { return cub_points_.dimension(1); }
 
-      virtual const double* Point(int point) const { return &cub_points_(point, 0); }
+      const double* Point(int point) const override { return &cub_points_(point, 0); }
 
-      virtual double Weight(int point) const { return cub_weights_(point); }
+      double Weight(int point) const override { return cub_weights_(point); }
 
-      virtual void Print() const
+      void Print() const override
       {
         // cell type: tetrahedron
         shards::CellTopology cellType = shards::getCellTopologyData<topology>();
@@ -126,15 +126,15 @@ namespace CORE::DRT::UTILS
         cub_weights_(7) = 0.23254745125351;
       }
 
-      virtual int NumPoints() const { return cub_points_.dimension(0); }
+      int NumPoints() const override { return cub_points_.dimension(0); }
 
-      virtual int NumDimension() const { return cub_points_.dimension(1); }
+      int NumDimension() const override { return cub_points_.dimension(1); }
 
-      virtual const double* Point(int point) const { return &cub_points_(point, 0); }
+      const double* Point(int point) const override { return &cub_points_(point, 0); }
 
-      virtual double Weight(int point) const { return cub_weights_(point); }
+      double Weight(int point) const override { return cub_weights_(point); }
 
-      virtual void Print() const
+      void Print() const override
       {
         // cell type: tetrahedron
         shards::CellTopology cellType = shards::getCellTopologyData<shards::Pyramid<5>>();

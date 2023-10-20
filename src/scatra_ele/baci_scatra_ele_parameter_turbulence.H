@@ -42,7 +42,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       //! @name return turbulence parameters
       //! @{

@@ -28,10 +28,10 @@ namespace FLD
     static TDSEleDataType& Instance() { return instance_; };
 
     /// Create ParObject from packed data
-    virtual DRT::ParObject* Create(const std::vector<char>& data) { return nullptr; }
+    DRT::ParObject* Create(const std::vector<char>& data) override { return nullptr; }
 
     /// internal name of this ParObjectType.
-    virtual std::string Name() const { return "TDSEleData"; }
+    std::string Name() const override { return "TDSEleData"; }
 
    private:
     static TDSEleDataType instance_;
@@ -53,14 +53,14 @@ namespace FLD
     \ref Pack and \ref Unpack are used to communicate this class object
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
 
     \ref Pack and \ref Unpack are used to communicate this class object
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /*!
     \brief Return unique ParObject id
@@ -68,7 +68,7 @@ namespace FLD
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return FLD::TDSEleDataType::Instance().UniqueParObjectId();
     }
@@ -76,7 +76,7 @@ namespace FLD
     /*!
     \brief Destructor
     */
-    virtual ~TDSEleData();
+    ~TDSEleData() override;
 
     //! @name Time-dependent subgrid scales
     /*!

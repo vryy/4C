@@ -51,7 +51,7 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~DiscretizationHDG() { return; };
+    ~DiscretizationHDG() override { return; };
 
 
     /*!
@@ -94,7 +94,7 @@ namespace DRT
     \note Sets Filled()=true
     */
     int FillComplete(bool assigndegreesoffreedom = true, bool initelements = true,
-        bool doboundaryconditions = true);
+        bool doboundaryconditions = true) override;
 
     /*!
      * this function has the same functionality as the function in the base class,
@@ -104,9 +104,9 @@ namespace DRT
      *
      *  schoeder 06/14
      */
-    virtual void AssignGlobalIDs(const Epetra_Comm& comm,
+    void AssignGlobalIDs(const Epetra_Comm& comm,
         const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<DRT::Element>>& finalelements);
+        std::map<int, Teuchos::RCP<DRT::Element>>& finalelements) override;
 
     /*!
      * this function computes a slightly modified layer for ghosting around the elements:
@@ -134,7 +134,7 @@ namespace DRT
       DbcHDG(){};
 
       /// destructor
-      virtual ~DbcHDG(){};
+      ~DbcHDG() override{};
 
      protected:
       /** \brief Determine Dirichlet condition
@@ -165,9 +165,10 @@ namespace DRT
        * Dirichlet boundary conditions
        *
        *  \author kronbichler \date 02/08 */
-      virtual void DoDirichletCondition(const DRT::Discretization& discret,
-          const DRT::Condition& cond, double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
-          const Epetra_IntVector& toggle, const Teuchos::RCP<std::set<int>>* dbcgids) const;
+      void DoDirichletCondition(const DRT::Discretization& discret, const DRT::Condition& cond,
+          double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
+          const Epetra_IntVector& toggle,
+          const Teuchos::RCP<std::set<int>>* dbcgids) const override;
       void DoDirichletCondition(const DRT::DiscretizationFaces& discret, const DRT::Condition& cond,
           double time, const Teuchos::RCP<Epetra_Vector>* systemvectors,
           const Epetra_IntVector& toggle) const;

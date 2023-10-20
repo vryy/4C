@@ -42,7 +42,7 @@ namespace DRT
 
       //! set parameters
       void SetParameters(Teuchos::ParameterList& parameters  //!< parameter list
-      );
+          ) override;
 
       //! return flag for current as solution variable
       bool CurSolVar() const { return cursolvar_; }

@@ -56,7 +56,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToBeamPointCouplingPair(){};
+    ~BeamToBeamPointCouplingPair() override{};
 
     /**
      * \brief Setup the beam coupling pair.

@@ -42,18 +42,18 @@ namespace ADAPTER
     explicit AleXFFsiWrapper(Teuchos::RCP<Ale> ale);
 
     //! Destructor
-    virtual ~AleXFFsiWrapper() {}
+    ~AleXFFsiWrapper() override {}
 
     //@}
 
     //! Return MapExtractor for Dirichlet boundary conditions
-    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor();
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override;
 
     /// evaluate and assemble residual and jacobian matrix
     void Evaluate(
         Teuchos::RCP<const Epetra_Vector> stepinc  ///< step increment such that \f$ x_{n+1}^{k+1} =
                                                    ///< x_{n}^{converged}+ stepinc \f$
-    );
+        ) override;
 
     /*! \brief Relax ALE after some deformation has occured
      *
@@ -63,7 +63,7 @@ namespace ADAPTER
      *  dirichlet and we solve the ALE again to find the real ALE
      *  displacement.
      */
-    int Solve();
+    int Solve() override;
 
    private:
     /// map extractor for the fluid-fluid interface dof

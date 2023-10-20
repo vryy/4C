@@ -118,18 +118,18 @@ namespace DRT
 
 
       //! Evaluate (la required in case of multiple dofsets)
-      virtual int Evaluate(DRT::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
+      int Evaluate(DRT::ELEMENTS::ThermoBoundary* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! Evaluate a Neumann boundary condition
-      virtual int EvaluateNeumann(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateNeumann(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra) override;
 
      private:
       //! prepare the evaluation of NURBS shape functions

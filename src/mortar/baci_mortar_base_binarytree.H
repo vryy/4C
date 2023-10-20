@@ -64,7 +64,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~BaseBinaryTreeNode(){};
+    ~BaseBinaryTreeNode() override{};
 
     //! @name Evaluation methods
 
@@ -72,19 +72,19 @@ namespace MORTAR
     \brief Calculate slabs of dop
 
     */
-    virtual void CalculateSlabsDop();
+    void CalculateSlabsDop() override;
 
     /*!
     \brief Update slabs of current tree node in bottom up way
 
     */
-    virtual void UpdateSlabsBottomUp(double& eps) = 0;
+    void UpdateSlabsBottomUp(double& eps) override = 0;
 
     /*!
     \brief Enlarge geometry of a tree node by an offset, dependent on size
 
     */
-    virtual void EnlargeGeometry(double& eps);
+    void EnlargeGeometry(double& eps) override;
     //@}
 
     //! @name Print methods
@@ -232,7 +232,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~BaseBinaryTree(){};
+    ~BaseBinaryTree() override{};
 
     //! @name Evaluation methods
 
@@ -240,7 +240,7 @@ namespace MORTAR
     \brief Evaluate search tree
 
     */
-    virtual void EvaluateSearch() = 0;
+    void EvaluateSearch() override = 0;
 
     /*!
     \brief Initialize the base binary tree

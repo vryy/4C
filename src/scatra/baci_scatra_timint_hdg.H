@@ -27,7 +27,7 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! destructor
-    virtual ~TimIntHDG() {}
+    ~TimIntHDG() override {}
 
     //! setup
     void Setup() override;
@@ -60,7 +60,7 @@ namespace SCATRA
     //! set the initial scalar field phi
     void SetInitialField(const INPAR::SCATRA::InitialField init,  //!< type of initial field
         const int startfuncno                                     //!< number of spatial function
-    );
+        ) override;
 
     //! accessor to interior concentrations
     virtual Teuchos::RCP<Epetra_Vector> ReturnIntPhinp() { return intphinp_; }
@@ -70,7 +70,7 @@ namespace SCATRA
     virtual Teuchos::RCP<Epetra_Vector> InterpolatedPhinp() const { return interpolatedPhinp_; }
 
     //! prepare time loop
-    void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     /*!
     \brief Compare the numerical solution to the analytical one.
@@ -118,10 +118,10 @@ namespace SCATRA
     //@}
 
     //! calculate intermediate solution
-    virtual void ComputeIntermediateValues();
+    void ComputeIntermediateValues() override;
 
     //! compute values at the interior of the elements
-    virtual void ComputeInteriorValues();
+    void ComputeInteriorValues() override;
 
     //! update interior variables
     virtual void UpdateInteriorVariables(Teuchos::RCP<Epetra_Vector> updatevector);
@@ -130,13 +130,13 @@ namespace SCATRA
     virtual void WriteProblemSpecificOutput(Teuchos::RCP<Epetra_Vector> interpolatedPhi) { return; }
 
     //! calculate consistent initial scalar time derivatives in compliance with initial scalar field
-    void CalcInitialTimeDerivative() { return; };
+    void CalcInitialTimeDerivative() override { return; };
 
     //! fd check
-    virtual void FDCheck();
+    void FDCheck() override;
 
     //! calculation of error with reference to analytical solution during the simulation
-    virtual void EvaluateErrorComparedToAnalyticalSol();
+    void EvaluateErrorComparedToAnalyticalSol() override;
 
     //! adapt degree of test functions and change dofsets accordingly
     virtual void AdaptDegree();
@@ -151,7 +151,7 @@ namespace SCATRA
     virtual void CalcMatInitial();
 
     //! chooses the assemble process (assemble matrix and rhs or only rhs)
-    void AssembleMatAndRHS();
+    void AssembleMatAndRHS() override;
 
     //! contains the assembly process only for rhs
     void AssembleRHS();

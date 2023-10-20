@@ -87,14 +87,14 @@ namespace CORE::GEO
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const
+      unsigned Dim() const override
       {
         return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::line2>::dim;
       };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::line2; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::line2; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
     };  // class Line2IntegrationCell
 
@@ -107,14 +107,14 @@ namespace CORE::GEO
           const std::vector<Point*>& points, VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const
+      unsigned Dim() const override
       {
         return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::tri3>::dim;
       };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::tri3; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::tri3; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -128,14 +128,14 @@ namespace CORE::GEO
           VolumeCell* cell)
           : IntegrationCell(position, xyz, points, cell){/* empty construction */};
 
-      virtual unsigned Dim() const
+      unsigned Dim() const override
       {
         return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::quad4>::dim;
       };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::quad4; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::quad4; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
     };  // class Tri3IntegrationCell
 
@@ -150,11 +150,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::hex8; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::hex8; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
       // virtual double Volume() const;
 
@@ -172,11 +172,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::tet4; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::tet4; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
       // virtual double Volume() const;
     };
@@ -193,11 +193,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::wedge6; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::wedge6; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
       // virtual double Volume() const;
      private:
@@ -215,11 +215,11 @@ namespace CORE::GEO
       {
       }
 
-      virtual unsigned Dim() const { return 3; };
+      unsigned Dim() const override { return 3; };
 
-      virtual ::DRT::Element::DiscretizationType Shape() const { return ::DRT::Element::pyramid5; }
+      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::pyramid5; }
 
-      virtual int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const;
+      int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
       // virtual double Volume() const;
      private:

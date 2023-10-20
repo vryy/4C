@@ -32,11 +32,11 @@ namespace DRT
 
      protected:
       //! Factor needed for the calculation of reference concentrations
-      virtual double FacForRefConc(const int iquad,  ///< current boundary integration point
-          const DRT::FaceElement* bele,              ///< current boundary element
-          Teuchos::ParameterList& params,            ///< parameter list
-          DRT::Discretization& discretization        ///< discretization
-      );
+      double FacForRefConc(const int iquad,    ///< current boundary integration point
+          const DRT::FaceElement* bele,        ///< current boundary element
+          Teuchos::ParameterList& params,      ///< parameter list
+          DRT::Discretization& discretization  ///< discretization
+          ) override;
 
      private:
       /// private constructor since we are singleton

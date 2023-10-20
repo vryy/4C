@@ -176,7 +176,7 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(
+      int Evaluate(
           Teuchos::ParameterList&
               params,  //!< ParameterList for communication between control routine and elements
           DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
@@ -188,7 +188,7 @@ namespace DRT
               elevec1,  //!< (internal force-)vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec2,  //!< vector to be filled by element
           CORE::LINALG::SerialDenseVector& elevec3   //!< vector to be filled by element
-      );
+          ) override;
 
       virtual void PreEvaluate(
           Teuchos::ParameterList&

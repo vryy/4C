@@ -23,22 +23,22 @@ namespace POROMULTIPHASESCATRA
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
         const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
         int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
-        const std::map<int, std::set<int>>* nearbyelepairs);
+        const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// setup solver (only needed for poromultiphase monolithic coupling)
-    virtual void SetupSolver();
+    void SetupSolver() override;
 
     /// time step of coupled problem
-    void TimeStep() { return Solve(); };
+    void TimeStep() override { return Solve(); };
 
     /// print header
     void PrintHeaderPartitioned();
@@ -96,16 +96,16 @@ namespace POROMULTIPHASESCATRA
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
         const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
         int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
-        const std::map<int, std::set<int>>* nearbyelepairs);
+        const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! perform iteration loop between fields
-    virtual void Solve();
+    void Solve() override;
 
   };  // PoroMultiPhaseScatraPartitionedTwoWayNested
 
@@ -127,19 +127,19 @@ namespace POROMULTIPHASESCATRA
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
-    virtual ~PoroMultiPhaseScaTraPartitionedTwoWaySequential(){};
+    ~PoroMultiPhaseScaTraPartitionedTwoWaySequential() override{};
 
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
         const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
         int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
-        const std::map<int, std::set<int>>* nearbyelepairs);
+        const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! perform iteration loop between fields
-    virtual void Solve();
+    void Solve() override;
 
   };  // PoroMultiPhaseScatraPartitionedTwoWayNested
 

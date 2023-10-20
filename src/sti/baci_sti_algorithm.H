@@ -41,7 +41,7 @@ namespace STI
 
     //! read restart data
     void ReadRestart(int step  //! time step for restart
-    );
+        ) override;
 
     //! access scatra time integrator
     const Teuchos::RCP<SCATRA::ScaTraTimIntImpl> ScaTraField() const
@@ -71,7 +71,7 @@ namespace STI
     );
 
     //! prepare time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! pass scatra degrees of freedom to thermo discretization
     void TransferScatraToThermo(
@@ -122,14 +122,14 @@ namespace STI
     void ModifyFieldParametersForThermoField();
 
     //! output solution to screen and files
-    void Output();
+    void Output() override;
 
     //! evaluate time step using Newton-Raphson iteration (monolithic algorithm) or outer coupling
     //! iteration (partitioned algorithm)
     virtual void Solve() = 0;
 
     //! update scatra and thermo fields after time step evaluation
-    void Update();
+    void Update() override;
   };  // class Algorithm : public ADAPTER::AlgorithmBase
 }  // namespace STI
 #endif

@@ -80,12 +80,12 @@ namespace CONTACT
      * \params[in/out] localactivesetchange true if the active set changed
      *
      */
-    virtual void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange);
+    void AssembleRegNormalForces(bool& localisincontact, bool& localactivesetchange) override;
 
     /**
      * \brief Throws an error since frictional contact is not yet tested
      */
-    virtual void AssembleRegTangentForcesPenalty();
+    void AssembleRegTangentForcesPenalty() override;
 
     /** \brief return the multi-scale constitutive law used for the contact containing information
      i.e. on the micro roughness

@@ -66,7 +66,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
     };
 
   }  // namespace PAR

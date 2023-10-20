@@ -48,7 +48,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~MtLagrangeStrategy() = default;
+    ~MtLagrangeStrategy() override = default;
 
     /*!
     \brief Do mortar coupling in reference configuration
@@ -90,7 +90,7 @@ namespace CONTACT
 
     */
     void EvaluateMeshtying(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
-        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis);
+        Teuchos::RCP<Epetra_Vector>& feff, Teuchos::RCP<Epetra_Vector> dis) override;
 
     /*!
     \brief Build 2x2 saddle point system
@@ -143,17 +143,17 @@ namespace CONTACT
      * thus they are defined as dserror here in the case of Lagrange meshtying.
      */
 
-    double ConstraintNorm() const { return 0.0; }
-    void InitializeUzawa(
-        Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff)
+    double ConstraintNorm() const override { return 0.0; }
+    void InitializeUzawa(Teuchos::RCP<CORE::LINALG::SparseOperator>& kteff,
+        Teuchos::RCP<Epetra_Vector>& feff) override
     {
     }
-    double InitialPenalty() { return 0.0; }
-    void ResetPenalty() {}
-    void ModifyPenalty() {}
-    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) {}
-    void UpdateUzawaAugmentedLagrange() {}
-    void UpdateConstraintNorm(int uzawaiter = 0) {}
+    double InitialPenalty() override { return 0.0; }
+    void ResetPenalty() override {}
+    void ModifyPenalty() override {}
+    void SaveReferenceState(Teuchos::RCP<const Epetra_Vector> dis) override {}
+    void UpdateUzawaAugmentedLagrange() override {}
+    void UpdateConstraintNorm(int uzawaiter = 0) override {}
     bool IsPenalty() const override { return false; };
 
     //@}
@@ -204,10 +204,10 @@ namespace CONTACT
      *
      * \todo Is this really the right-hand side vector or the residual?
      */
-    virtual void RunPreApplyJacobianInverse(
-        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs);
+    void RunPreApplyJacobianInverse(
+        Teuchos::RCP<CORE::LINALG::SparseMatrix> kteff, Epetra_Vector& rhs) override;
 
-    virtual void RunPostApplyJacobianInverse(Epetra_Vector& result);
+    void RunPostApplyJacobianInverse(Epetra_Vector& result) override;
 
     void RunPostComputeX(
         const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;

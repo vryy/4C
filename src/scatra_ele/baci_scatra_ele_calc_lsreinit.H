@@ -39,7 +39,7 @@ namespace DRT
       using my::nsd_ele_;
 
      public:
-      virtual ~ScaTraEleCalcLsReinit() {}
+      ~ScaTraEleCalcLsReinit() override {}
 
       //! Singleton access method
       static ScaTraEleCalcLsReinit<distype, probDim>* Instance(
@@ -50,7 +50,7 @@ namespace DRT
       /*========================================================================*/
 
       //! setup element evaluation
-      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization);
+      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override;
 
       //! evaluate the element
       int Evaluate(DRT::Element* ele, Teuchos::ParameterList& params,
@@ -59,7 +59,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       int EvaluateAction(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, const SCATRA::Action& action,
@@ -67,7 +67,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      protected:
       //! calculate matrix and rhs. Here the whole thing is hidden. Hyperbolic reinit.
@@ -121,11 +121,10 @@ namespace DRT
       /*========================================================================*/
 
       //! calculation of diffusive element matrix
-      virtual void CalcMatDiff(
-          CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
-          const int k,                            //!< index of current scalar
+      void CalcMatDiff(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
+          const int k,                                         //!< index of current scalar
           const double timefacfac  //!< domain-integration factor times time-integration factor
-      );
+          ) override;
 
       //! standard Galerkin diffusive term on right hand side
       void CalcRHSDiff(CORE::LINALG::SerialDenseVector& erhs,  //!< element vector to be filled
@@ -257,7 +256,7 @@ namespace DRT
         return;
       }
 
-      ~ScaTraEleDiffManagerLsReinit(){};
+      ~ScaTraEleDiffManagerLsReinit() override{};
 
       //! set the isotropic diffusion coefficient, which may be negative for elliptic
       //! reinitialization
@@ -343,7 +342,7 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleInternalVariableManagerLsReinit(){};
+      ~ScaTraEleInternalVariableManagerLsReinit() override{};
 
       /** \brief compute and set internal variables
        *
@@ -386,13 +385,13 @@ namespace DRT
         return;
       };
       //! set spatial gradient of current scalar value
-      void SetGradPhi(const int k, CORE::LINALG::Matrix<NSD, 1>& gradphi)
+      void SetGradPhi(const int k, CORE::LINALG::Matrix<NSD, 1>& gradphi) override
       {
         my::gradphi_[k] = gradphi;
         return;
       };
       //! set convective term of current scalar value
-      void SetConvPhi(const int k, double conv_phi)
+      void SetConvPhi(const int k, double conv_phi) override
       {
         my::conv_phi_[k] = conv_phi;
         return;
@@ -421,14 +420,14 @@ namespace DRT
       /*========================================================================*/
 
       //! set convective term of current scalar value
-      void AddToConvPhi(const int k, double conv_phi)
+      void AddToConvPhi(const int k, double conv_phi) override
       {
         dserror("Currently unused!");
         return;
       };
       //{my::conv_phi_[k] += conv_phi;};
       //! set convective term of current scalar value
-      void ScaleConvPhi(const int k, double scale)
+      void ScaleConvPhi(const int k, double scale) override
       {
         dserror("Currently unused!");
         return;

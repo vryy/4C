@@ -37,7 +37,7 @@ namespace MAT
       AAAgasser(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~AAAgasser() { ; }
+      ~AAAgasser() override { ; }
 
       /// @name material parameters
       //@{
@@ -61,7 +61,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class AAAgasser
 
@@ -70,11 +70,11 @@ namespace MAT
   class AAAgasserType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "AAAgasserType"; }
+    std::string Name() const override { return "AAAgasserType"; }
 
     static AAAgasserType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static AAAgasserType instance_;
@@ -175,7 +175,7 @@ namespace MAT
     ///
     ///  every class implementing ParObject needs a unique id defined at the
     ///  top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return AAAgasserType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return AAAgasserType::Instance().UniqueParObjectId(); }
 
     ///  \brief Pack this class so it can be communicated
     ///
@@ -185,7 +185,7 @@ namespace MAT
     ///  identify the exact class on the receiving processor.
     ///
     ///  \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     ///  \brief Unpack data from a char vector into this class
     ///
@@ -197,13 +197,13 @@ namespace MAT
     ///
     ///  \param data (in) : vector storing all data to be unpacked into this
     ///  instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// shear modulus
     double ShearMod() const
@@ -213,17 +213,17 @@ namespace MAT
     }
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_aaagasser; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_aaagasser; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new AAAgasser(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new AAAgasser(*this)); }
 
     /// <h2>Calculation of location dependent stiffness parameter c in GASSER material
     /// formulation:</h2>
@@ -436,14 +436,14 @@ namespace MAT
     ///
     /// \author goe
     /// \date 11/09
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
-        const int eleGID);
+        const int eleGID) override;
 
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

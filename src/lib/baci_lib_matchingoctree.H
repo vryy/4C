@@ -268,34 +268,35 @@ namespace DRT
       NodeMatchingOctree();
 
       //! Destructor
-      virtual ~NodeMatchingOctree();
+      ~NodeMatchingOctree() override;
 
      protected:
       //! calc unique coordinate, associated to node
-      virtual void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord);
+      void CalcPointCoordinate(
+          const DRT::Discretization* dis, const int id, double* coord) override;
 
       //! calc unique coordinate of Node
-      virtual void CalcPointCoordinate(DRT::ParObject* entity, double* coord);
+      void CalcPointCoordinate(DRT::ParObject* entity, double* coord) override;
 
       //! check if node with gid = id is on calling proc
-      virtual bool CheckHaveEntity(const DRT::Discretization* dis, const int id);
+      bool CheckHaveEntity(const DRT::Discretization* dis, const int id) override;
 
       //! returns true if node with gid = id is owned by calling proc
-      virtual bool CheckEntityOwner(const DRT::Discretization* dis, const int id);
+      bool CheckEntityOwner(const DRT::Discretization* dis, const int id) override;
 
       //! pack node to PackPuffer
-      virtual void PackEntity(PackBuffer& data, const DRT::Discretization* dis, const int id);
+      void PackEntity(PackBuffer& data, const DRT::Discretization* dis, const int id) override;
 
       //! unpack node from PackPuffer
-      virtual void UnPackEntity(std::vector<char>::size_type& index,
-          std::vector<char>& rblockofnodes, std::vector<char>& data);
+      void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
+          std::vector<char>& data) override;
 
       //! check if unpacked type is correct
-      virtual int CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o);
+      int CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o) override;
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
-          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
+      Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
     };  // class NodeMatchingOctree
 
@@ -308,34 +309,35 @@ namespace DRT
       ElementMatchingOctree();
 
       //! Destructor
-      virtual ~ElementMatchingOctree();
+      ~ElementMatchingOctree() override;
 
      protected:
       //! calc unique coordinate, associated to element
-      virtual void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord);
+      void CalcPointCoordinate(
+          const DRT::Discretization* dis, const int id, double* coord) override;
 
       //! calc unique coordinate of entity
-      virtual void CalcPointCoordinate(DRT::ParObject* entity, double* coord);
+      void CalcPointCoordinate(DRT::ParObject* entity, double* coord) override;
 
       //! check if element with gid = id is on calling proc
-      virtual bool CheckHaveEntity(const DRT::Discretization* dis, const int id);
+      bool CheckHaveEntity(const DRT::Discretization* dis, const int id) override;
 
       //! returns true if element is owned by calling proc
-      virtual bool CheckEntityOwner(const DRT::Discretization* dis, const int id);
+      bool CheckEntityOwner(const DRT::Discretization* dis, const int id) override;
 
       //! pack element to PackPuffer
-      virtual void PackEntity(PackBuffer& data, const DRT::Discretization* dis, const int id);
+      void PackEntity(PackBuffer& data, const DRT::Discretization* dis, const int id) override;
 
       //! unpack element from PackPuffer
-      virtual void UnPackEntity(std::vector<char>::size_type& index,
-          std::vector<char>& rblockofnodes, std::vector<char>& data);
+      void UnPackEntity(std::vector<char>::size_type& index, std::vector<char>& rblockofnodes,
+          std::vector<char>& data) override;
 
       //! check if unpacked type is correct
-      virtual int CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o);
+      int CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o) override;
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
-          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
+      Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
      private:
       //! \brief Map that stores id and RCP to flying nodes
@@ -538,15 +540,16 @@ namespace DRT
       OctreeNodalElement();
 
       //! Destructor
-      virtual ~OctreeNodalElement() { return; };
+      ~OctreeNodalElement() override { return; };
 
      protected:
       //! calc unique coordinate of node
-      virtual void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord);
+      void CalcPointCoordinate(
+          const DRT::Discretization* dis, const int id, double* coord) override;
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
-          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
+      Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
     };  // OctreeNodalElement
 
@@ -559,15 +562,16 @@ namespace DRT
       OctreeElementElement();
 
       //! Destructor
-      virtual ~OctreeElementElement() { return; };
+      ~OctreeElementElement() override { return; };
 
      protected:
       //! calc unique coordinate of element
-      virtual void CalcPointCoordinate(const DRT::Discretization* dis, const int id, double* coord);
+      void CalcPointCoordinate(
+          const DRT::Discretization* dis, const int id, double* coord) override;
 
       //! create an octree element
-      virtual Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
-          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer);
+      Teuchos::RCP<OctreeElement> CreateOctreeElement(std::vector<int>& nodeidstoadd,
+          CORE::LINALG::SerialDenseMatrix& boundingboxtoadd, int layer) override;
 
     };  // OctreeNodalElement
 

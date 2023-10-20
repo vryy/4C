@@ -44,7 +44,7 @@ namespace XFEM
           const int& g_num_std_dof_per_node, const std::map<int, int>& my_num_dofs_per_node);
 
       /// destructor
-      virtual ~CouplingDofSet(){};
+      ~CouplingDofSet() override{};
 
       /** \brief Get the GIDs of all DoFs of a node.
        *
@@ -61,8 +61,8 @@ namespace XFEM
        *  \param nodal_dofset_id (in) : id of the nodal dofset
        *
        *  \author hiermeier \date 10/16 */
-      virtual void Dof(
-          std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const;
+      void Dof(
+          std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const override;
 
       /** \brief Get the number of standard DoFs per coupling node
        *
@@ -73,7 +73,7 @@ namespace XFEM
       int NumStandardDofPerNode() const;
 
      protected:
-      virtual int NumDofPerNode(const DRT::Node& node) const;
+      int NumDofPerNode(const DRT::Node& node) const override;
 
      private:
       /** \brief Get the number of DoFs of the node with the given nodal global ID

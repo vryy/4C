@@ -22,7 +22,7 @@ namespace POROMULTIPHASE
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
     /// virtual destructor
-    virtual ~PoroMultiPhaseMonolithic(){};
+    ~PoroMultiPhaseMonolithic() override{};
 
 
   };  // PoroMultiPhaseMonolithic

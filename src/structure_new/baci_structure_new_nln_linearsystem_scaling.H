@@ -55,10 +55,10 @@ namespace STR
         ~StcScaling() override = default;
 
         //! Scales the linear system.
-        void scaleLinearSystem(Epetra_LinearProblem& problem);
+        void scaleLinearSystem(Epetra_LinearProblem& problem) override;
 
         //! Remove the scaling from the linear system.
-        void unscaleLinearSystem(Epetra_LinearProblem& problem);
+        void unscaleLinearSystem(Epetra_LinearProblem& problem) override;
 
        private:
         //! stiffness matrix after scaling

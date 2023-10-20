@@ -52,7 +52,7 @@ namespace CORE::LINEAR_SOLVER
     /*!
         \brief Destructor
     */
-    virtual ~CheapSIMPLE_BlockPreconditioner()
+    ~CheapSIMPLE_BlockPreconditioner() override
     {
       vsolver_ = Teuchos::null;  // solver objects only generated for SIMPLE and SIMPLER (not for
                                  // CheapSIMPLE)
@@ -125,7 +125,7 @@ namespace CORE::LINEAR_SOLVER
     /*
      *  \brief Returns the label of this class.
      */
-    const char* Label() const { return label_.data(); }
+    const char* Label() const override { return label_.data(); }
 
     /*!
      \brief get Comm of this class
@@ -133,7 +133,7 @@ namespace CORE::LINEAR_SOLVER
      Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
 
      */
-    const Epetra_Comm& Comm() const { return (A_->Comm()); }
+    const Epetra_Comm& Comm() const override { return (A_->Comm()); }
 
 
     /*!
@@ -142,7 +142,7 @@ namespace CORE::LINEAR_SOLVER
      Derived from Epetra_Operator, get fine level OperatorDomainMap
 
      */
-    const Epetra_Map& OperatorDomainMap() const { return A_->FullDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return A_->FullDomainMap(); }
 
     /*!
       \brief Get fine level OperatorRangeMap
@@ -150,7 +150,7 @@ namespace CORE::LINEAR_SOLVER
       Derived from Epetra_Operator, get fine level OperatorRangeMap
 
     */
-    const Epetra_Map& OperatorRangeMap() const { return A_->FullRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return A_->FullRangeMap(); }
 
     /*!
       \brief ApplyInverse the preconditioner
@@ -162,12 +162,12 @@ namespace CORE::LINEAR_SOLVER
                          preconditioner
        \param Y (Out)  : Epetra_MultiVector containing the result on output
     */
-    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /*!
       \brief not implemented
      */
-    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
       dserror("Apply does not make sense for CORE::LINALG::SIMPLER_Operator");
       return (-1);
@@ -176,7 +176,7 @@ namespace CORE::LINEAR_SOLVER
     /*!
       \brief not implemented
     */
-    int SetUseTranspose(bool UseTranspose)
+    int SetUseTranspose(bool UseTranspose) override
     {
       dserror("SetUseTranspose not impl.");
       return -1;
@@ -185,7 +185,7 @@ namespace CORE::LINEAR_SOLVER
     /*!
       \brief not implemented
     */
-    double NormInf() const
+    double NormInf() const override
     {
       dserror("NormInf not impl.");
       return (-1.0);
@@ -194,7 +194,7 @@ namespace CORE::LINEAR_SOLVER
     /*!
      \brief not implemented
     */
-    bool UseTranspose() const
+    bool UseTranspose() const override
     {
       // TAW: we can safely remove this. The (new) Belos now always checks the UseTransposed flag.
       // dserror("UseTranspose not impl.");
@@ -204,7 +204,7 @@ namespace CORE::LINEAR_SOLVER
     /*!
       \brief not implemented
     */
-    bool HasNormInf() const
+    bool HasNormInf() const override
     {
       dserror("HasNormInf not impl.");
       return false;

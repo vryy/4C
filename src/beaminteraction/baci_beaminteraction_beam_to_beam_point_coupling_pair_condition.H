@@ -31,7 +31,7 @@ namespace BEAMINTERACTION
     {
     }
 
-    virtual ~BeamToBeamPointCouplingCondition() = default;
+    ~BeamToBeamPointCouplingCondition() override = default;
 
     /**
      * \brief Check if a combination of beam ids is in this condition.

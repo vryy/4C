@@ -57,7 +57,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~MtManager() = default;
+    ~MtManager() override = default;
 
     //!@}
 

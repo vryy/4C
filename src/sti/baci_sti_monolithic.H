@@ -115,10 +115,10 @@ namespace STI
     void FDCheck();
 
     //! prepare time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! evaluate time step using Newton-Raphson iteration
-    void Solve();
+    void Solve() override;
 
     //! absolute tolerance for residual vectors
     const double restol_;

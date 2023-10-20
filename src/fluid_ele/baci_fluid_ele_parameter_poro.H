@@ -23,7 +23,7 @@ namespace DRT
     class FluidEleParameterPoro : public FluidEleParameter
     {
      public:
-      virtual ~FluidEleParameterPoro() {}
+      ~FluidEleParameterPoro() override {}
 
       /// Singleton access method
       static FluidEleParameterPoro* Instance(

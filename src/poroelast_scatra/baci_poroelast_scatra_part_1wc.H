@@ -22,18 +22,18 @@ namespace POROELASTSCATRA
         : PoroScatraPart(comm, timeparams){};
 
     //! solve one time step of porous media problem
-    void DoPoroStep();
+    void DoPoroStep() override;
     //! solve one time step of scalar transport problem
-    void DoScatraStep();
+    void DoScatraStep() override;
 
     //! prepare output
-    void PrepareOutput();
+    void PrepareOutput() override;
 
     //! update time step
-    void Update();
+    void Update() override;
 
     //! write output print to screen
-    void Output();
+    void Output() override;
   };
 
   class PoroScatraPart1WCPoroToScatra : public PoroScatraPart1WC
@@ -44,19 +44,19 @@ namespace POROELASTSCATRA
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor
-    virtual ~PoroScatraPart1WCPoroToScatra(){};
+    ~PoroScatraPart1WCPoroToScatra() override{};
 
     //! actual time loop
-    void Timeloop();
+    void Timeloop() override;
 
     //! increment time and step and print header
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve();
+    void Solve() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
   };
 
   class PoroScatraPart1WCScatraToPoro : public PoroScatraPart1WC
@@ -67,19 +67,19 @@ namespace POROELASTSCATRA
         const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     //! virtual destructor
-    virtual ~PoroScatraPart1WCScatraToPoro(){};
+    ~PoroScatraPart1WCScatraToPoro() override{};
 
     //! actual time loop
-    void Timeloop();
+    void Timeloop() override;
 
     //! increment time and step and print header
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
 
     //! perform iteration loop between fields
-    void Solve();
+    void Solve() override;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
   };
 }  // namespace POROELASTSCATRA
 

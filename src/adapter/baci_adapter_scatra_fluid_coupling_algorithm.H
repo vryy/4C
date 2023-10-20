@@ -49,26 +49,26 @@ namespace ADAPTER
         const Teuchos::ParameterList& solverparams);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraFluidCouplingAlgorithm(){};
+    ~ScaTraFluidCouplingAlgorithm() override{};
 
     /// setup this class
-    virtual void Setup();
+    void Setup() override;
 
     /// init this class
-    virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
+    void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem
         const Teuchos::ParameterList&
             scatradyn,  ///< parameter list for scalar transport subproblem
         const Teuchos::ParameterList& solverparams,  ///< parameter list for scalar transport solver
         const std::string& disname = "scatra",       ///< name of scalar transport discretization
         const bool isale = false                     ///< ALE flag
-    );
+        ) override;
 
     /// outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
 
     /// read restart data
-    virtual void ReadRestart(int step  ///< step number where the calculation is continued
-    );
+    void ReadRestart(int step  ///< step number where the calculation is continued
+        ) override;
 
    protected:
     /// perform algorithm specific initialization stuff

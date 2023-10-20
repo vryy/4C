@@ -61,7 +61,7 @@ namespace MAT
       ThermoPlasticLinElast(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~ThermoPlasticLinElast() { ; }
+      ~ThermoPlasticLinElast() override { ; }
 
       //! @name material parameters
       //@{
@@ -92,7 +92,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class ThermoThermoPlasticLinElast
 
@@ -102,11 +102,11 @@ namespace MAT
   class ThermoPlasticLinElastType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "ThermoPlasticLinElastType"; }
+    std::string Name() const override { return "ThermoPlasticLinElastType"; }
 
     static ThermoPlasticLinElastType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static ThermoPlasticLinElastType instance_;
@@ -131,7 +131,7 @@ namespace MAT
     //!
     //!  every class implementing ParObject needs a unique id defined at the
     //!  top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return ThermoPlasticLinElastType::Instance().UniqueParObjectId();
     }
@@ -142,9 +142,8 @@ namespace MAT
     //!  The first information to be stored in data has to be the
     //!  unique parobject id delivered by UniqueParObjectId() which will then
     //!  identify the exact class on the receiving processor.
-    virtual void Pack(
-        DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
-    ) const;
+    void Pack(DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
+    ) const override;
 
     //!  \brief Unpack data from a char vector into this class
     //!
@@ -153,45 +152,48 @@ namespace MAT
     //!  The first entry in data has to be an integer which is the unique
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
-    virtual void Unpack(const std::vector<char>&
+    void Unpack(const std::vector<char>&
             data  //!< (i) : vector storing all data to be unpacked into this instance.
-    );
+        ) override;
 
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_thermopllinelast; }
+    INPAR::MAT::MaterialType MaterialType() const override
+    {
+      return INPAR::MAT::m_thermopllinelast;
+    }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_linear))
         dserror("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new ThermoPlasticLinElast(*this));
     }
 
     //! initialise internal stress variables
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    virtual void Update();
+    void Update() override;
 
     //! reset internal stress variables
     void Reset();
 
     //! evaluate material
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* glstrain,
         Teuchos::ParameterList& params,                  //!< parameter list for communication
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>* stress,  //!< 2nd PK-stress
         CORE::LINALG::Matrix<NUM_STRESS_3D, NUM_STRESS_3D>* cmat,  //!< material stiffness matrix
         int gp,                                                    ///< Gauss point
-        int eleGID);
+        int eleGID) override;
 
     // computes stress
     void Stress(const double p,                                   //!< volumetric stress tensor
@@ -247,7 +249,7 @@ namespace MAT
     );
 
     //! return density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     //! return scalar-valued accumulated strain at Gauss points
     //! use method to return values at END of time step
@@ -272,7 +274,7 @@ namespace MAT
     bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
     //! return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! @name temperature specific methods
     //@{
@@ -358,10 +360,10 @@ namespace MAT
     //@}
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
 
    private:

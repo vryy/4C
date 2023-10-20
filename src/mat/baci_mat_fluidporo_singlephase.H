@@ -42,10 +42,10 @@ namespace MAT
       FluidPoroSinglePhase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroSinglePhase() { ; }
+      ~FluidPoroSinglePhase() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -82,10 +82,10 @@ namespace MAT
       FluidPoroSingleVolFrac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroSingleVolFrac() { ; }
+      ~FluidPoroSingleVolFrac() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -124,10 +124,10 @@ namespace MAT
       FluidPoroVolFracPressure(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroVolFracPressure() { ; }
+      ~FluidPoroVolFracPressure() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// initialize
       void Initialize();
@@ -161,11 +161,11 @@ namespace MAT
   class FluidPoroSinglePhaseType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "FluidPoroSinglePhaseType"; }
+    std::string Name() const override { return "FluidPoroSinglePhaseType"; }
 
     static FluidPoroSinglePhaseType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSinglePhaseType instance_;
@@ -177,11 +177,11 @@ namespace MAT
   class FluidPoroSingleVolFracType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "FluidPoroSingleVolFracType"; }
+    std::string Name() const override { return "FluidPoroSingleVolFracType"; }
 
     static FluidPoroSingleVolFracType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroSingleVolFracType instance_;
@@ -193,11 +193,11 @@ namespace MAT
   class FluidPoroVolFracPressureType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "FluidPoroVolFracPressureType"; }
+    std::string Name() const override { return "FluidPoroVolFracPressureType"; }
 
     static FluidPoroVolFracPressureType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static FluidPoroVolFracPressureType instance_;
@@ -238,7 +238,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return FluidPoroSinglePhaseType::Instance().UniqueParObjectId();
     }
@@ -253,7 +253,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -267,27 +267,27 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize();
+    void Initialize() override;
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_fluidporo_singlephase;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSinglePhase(*this));
     }
 
     /// return density
-    double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// return relative permeability
     double RelPermeability(const double saturation) const
@@ -354,7 +354,7 @@ namespace MAT
         int phasenum, int doftoderive, const std::vector<double>& state) const;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
    private:
     /// my material parameters
@@ -383,7 +383,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return FluidPoroSingleVolFracType::Instance().UniqueParObjectId();
     }
@@ -398,7 +398,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -412,30 +412,30 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize();
+    void Initialize() override;
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_fluidporo_singlevolfrac;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroSingleVolFrac(*this));
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return density
-    double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// return diffusivity
     double Diffusivity() const { return params_->diffusivity_; }
@@ -478,7 +478,7 @@ namespace MAT
      every class implementing ParObject needs a unique id defined at the
      top of parobject.H (this file) and should return it in this method.
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return FluidPoroVolFracPressureType::Instance().UniqueParObjectId();
     }
@@ -493,7 +493,7 @@ namespace MAT
 
      \param data (in/out): char vector to store class information
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -507,27 +507,27 @@ namespace MAT
      \param data (in) : vector storing all data to be unpacked into this
      instance.
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// initialize
-    void Initialize();
+    void Initialize() override;
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_fluidporo_volfracpressure;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new FluidPoroVolFracPressure(*this));
     }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// return permeability
     double Permeability() const { return params_->permeability_; }

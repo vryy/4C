@@ -49,7 +49,7 @@ namespace FSI
 
    public:
     /// setup this object
-    virtual void Setup();
+    void Setup() override;
 
    protected:
     /** \brief interface fluid operator
@@ -62,7 +62,7 @@ namespace FSI
      *
      * \returns interface force
      */
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
+    Teuchos::RCP<Epetra_Vector> FluidOp(
         Teuchos::RCP<Epetra_Vector> idisp, const FillType fillFlag) override;
 
     /** \brief interface structural operator
@@ -75,11 +75,11 @@ namespace FSI
      *
      * \returns interface displacement
      */
-    virtual Teuchos::RCP<Epetra_Vector> StructOp(
+    Teuchos::RCP<Epetra_Vector> StructOp(
         Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) final;
 
     //! Predictor
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess();
+    Teuchos::RCP<Epetra_Vector> InitialGuess() override;
   };
 
 }  // namespace FSI

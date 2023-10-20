@@ -131,7 +131,7 @@ namespace CORE::GEO
       }
 
       /// does one of the nodal dofset's contain the point?
-      bool Contains(CORE::GEO::CUT::Point* p)
+      bool Contains(CORE::GEO::CUT::Point* p) override
       {
         for (unsigned int i = 0; i < nodal_dofsets_.size(); i++)
           if (nodal_dofsets_[i]->Contains(p)) return true;
@@ -139,7 +139,7 @@ namespace CORE::GEO
         return false;
       }
 
-      void Print();
+      void Print() override;
 
      private:
       std::vector<Teuchos::RCP<NodalDofSet>>

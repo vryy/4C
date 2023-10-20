@@ -317,7 +317,7 @@ namespace DRT
         );
 
         //! dtor
-        virtual ~NitscheInterface(){};
+        ~NitscheInterface() override{};
 
         //! add contributions from convective stabilization
         //! this method can also be applied in a non-Nitsche context (e.g. MHVS) by
@@ -473,7 +473,7 @@ namespace DRT
         }
 
         //! dtor
-        virtual ~HybridLMInterface(){};
+        ~HybridLMInterface() override{};
 
         //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
         virtual void MHCS_buildCouplingMatrices(

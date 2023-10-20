@@ -71,7 +71,7 @@ namespace FSI
     //@{
 
     //! setup of block preconditioners
-    virtual void SetupPreconditioner();
+    void SetupPreconditioner() override;
 
     //@}
 
@@ -93,7 +93,7 @@ namespace FSI
      *  stationary Richardson iteration, where each ApplyInverse() might also be
      *  a stationary Richardson iteration by itself.
      */
-    virtual int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     //@}
 
@@ -101,7 +101,7 @@ namespace FSI
     //@{
 
     /// Returns a character string describing the operator.
-    virtual const char* Label() const;
+    const char* Label() const override;
 
     //@}
 

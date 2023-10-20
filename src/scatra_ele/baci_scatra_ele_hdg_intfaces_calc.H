@@ -120,7 +120,7 @@ namespace DRT
 
 
       //! Assemble internal faces integrals using data from both parent elements
-      virtual void AssembleInternalFacesUsingNeighborData(
+      void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           std::vector<int>& nds_master,              //!< nodal dofset w.r.t. master element
           std::vector<int>& nds_slave,               //!< nodal dofset w.r.t. slave element
@@ -128,10 +128,10 @@ namespace DRT
           DRT::DiscretizationFaces& discretization,  //!< faces discretization
           Teuchos::RCP<CORE::LINALG::SparseMatrix> systemmatrix,  //!< systemmatrix
           Teuchos::RCP<Epetra_Vector> systemvector                //!< systemvector
-      );
+          ) override;
 
       //! Evaluate internal faces
-      virtual int EvaluateInternalFaces(
+      int EvaluateInternalFaces(
           DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element
           Teuchos::ParameterList& params,            //!< parameter list
           DRT::Discretization& discretization,       //!< discretization
@@ -145,7 +145,7 @@ namespace DRT
               lm_slaveNodeToPatch,  //!< local map between slave nodes and nodes in patch
           std::vector<CORE::LINALG::SerialDenseMatrix>& elemat_blocks,  //!< element matrix blocks
           std::vector<CORE::LINALG::SerialDenseVector>& elevec_blocks   //!< element vector blocks
-      );
+          ) override;
 
       //! decide which terms have to be assembled and decide the assembly pattern, return if no
       //! assembly required

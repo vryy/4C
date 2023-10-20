@@ -27,13 +27,13 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntAC();
+    ~TimIntAC() override;
 
     /// read restart from step
-    void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
    protected:
    private:

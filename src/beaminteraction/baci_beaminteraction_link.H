@@ -38,7 +38,7 @@ namespace BEAMINTERACTION
   class BeamLinkType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "BeamLinkType"; };
+    std::string Name() const override { return "BeamLinkType"; };
 
     static BeamLinkType& Instance() { return instance_; };
 
@@ -67,7 +67,7 @@ namespace BEAMINTERACTION
     BeamLink(const BeamLink& old);
 
     //! Destructor
-    virtual ~BeamLink() {}
+    ~BeamLink() override {}
 
     //! Initialization
     virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
@@ -84,7 +84,7 @@ namespace BEAMINTERACTION
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    virtual int UniqueParObjectId() const = 0;
+    int UniqueParObjectId() const override = 0;
 
     //! return copy of this linking object object
     virtual Teuchos::RCP<BeamLink> Clone() const = 0;
@@ -95,7 +95,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -103,7 +103,7 @@ namespace BEAMINTERACTION
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 

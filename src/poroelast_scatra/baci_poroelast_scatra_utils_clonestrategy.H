@@ -32,7 +32,7 @@ namespace POROELASTSCATRA
       //! constructor
       explicit PoroelastCloneStrategyforScatraElements() = default;
       //! destructor
-      virtual ~PoroelastCloneStrategyforScatraElements() = default;
+      ~PoroelastCloneStrategyforScatraElements() override = default;
       //! determine element type string and whether element is copied or not
       bool DetermineEleType(
           DRT::Element* actele, const bool ismyele, std::vector<std::string>& eletype);

@@ -1116,7 +1116,7 @@ namespace NOX
             RotVecUpdater(const Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 
             //! destructor
-            virtual ~RotVecUpdater(){};
+            ~RotVecUpdater() override{};
 
             /*! \brief Derived function, which is called before a call to
              * NOX::NLN::Group::computeX()

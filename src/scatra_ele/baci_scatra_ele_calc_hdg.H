@@ -45,20 +45,20 @@ namespace DRT
         Interface function for supporting methods of the element
        */
 
-      virtual ~ScaTraEleCalcHDG() { return; }
+      ~ScaTraEleCalcHDG() override { return; }
 
       //! Singleton access method
       static ScaTraEleCalcHDG<distype, probdim>* Instance(const int numdofpernode,
           const int numscal, const std::string& disname, bool create = true);
 
       //! evaluate service routine
-      virtual int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateService(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! interpolates an HDG solution to the element nodes for output
       virtual int NodeBasedValues(DRT::Element* ele, DRT::Discretization& discretization,
@@ -76,18 +76,18 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3) override;
 
       //! evaluate action for off-diagonal system matrix block
-      virtual int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
+      int EvaluateOD(DRT::Element* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3)
+          CORE::LINALG::SerialDenseVector& elevec3) override
       {
         dserror("Not implemented!");
         return -1;
       }
 
       //! Setup element evaluation
-      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) { return 0; }
+      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override { return 0; }
 
       //! projection of Dirichlet function field
       int ProjectDirichField(DRT::Element* ele, Teuchos::ParameterList& params,

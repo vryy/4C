@@ -26,19 +26,19 @@ namespace FS3I
    public:
     PartFS3I_2WC(const Epetra_Comm& comm);
 
-    virtual ~PartFS3I_2WC(){};
+    ~PartFS3I_2WC() override{};
 
     //! initialize this class
-    virtual void Init();
+    void Init() override;
 
     //! setup this class
-    virtual void Setup();
+    void Setup() override;
 
-    virtual void Timeloop();
+    void Timeloop() override;
 
     void InitialCalculations();
 
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     void OuterLoop();
 
@@ -48,7 +48,7 @@ namespace FS3I
 
     bool ConvergenceCheck(int itnum);
 
-    virtual bool ScatraConvergenceCheck(int itnum);
+    bool ScatraConvergenceCheck(int itnum) override;
 
     void TimeUpdateAndOutput();
 

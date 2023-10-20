@@ -120,7 +120,7 @@ namespace MAT
           int gp,                                 ///< Gauss point
           int eleGID,                             ///< element GID
           Teuchos::ParameterList& params          ///< Container for additional information
-      );
+          ) override;
 
       /// retrieve coefficients of first, second and third derivative
       /// of summand with respect to anisotropic invariants

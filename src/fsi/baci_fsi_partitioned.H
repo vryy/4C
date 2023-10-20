@@ -101,7 +101,7 @@ namespace FSI
     explicit Partitioned(const Epetra_Comm& comm);
 
     /// setup this object
-    virtual void Setup();
+    void Setup() override;
 
     /*! \brief Outer level FSI time loop
      *
@@ -110,7 +110,7 @@ namespace FSI
     virtual void Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface);
 
     /// compute FSI interface residual S^{-1}(F(d)) - d
-    bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag);
+    bool computeF(const Epetra_Vector& x, Epetra_Vector& F, const FillType fillFlag) override;
 
     /// return true if nodes at interface are matching
     bool matchingnodes() { return matchingnodes_; }
@@ -122,7 +122,7 @@ namespace FSI
     virtual void SetupCoupling(const Teuchos::ParameterList& fsidyn, const Epetra_Comm& comm);
 
     /// read restart data
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
    protected:
     //! @name Transfer helpers
@@ -218,7 +218,7 @@ namespace FSI
         const Teuchos::ParameterList& fsidyn, Teuchos::ParameterList& list);
 
     /// write output
-    virtual void Output();
+    void Output() override;
 
    private:
     /// create linear solver framework

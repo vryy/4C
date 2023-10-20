@@ -96,13 +96,14 @@ namespace DRT
       /*!
         The evaluate function for the general inter-acinar linker case.
        */
-      virtual int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
+      int Evaluate(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1_epetra,
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra,
+          Teuchos::RCP<MAT::Material> mat) override;
 
       /*!
         \brief calculate element matrix and rhs
@@ -122,9 +123,10 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& rhs);
 
 
-      virtual void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
+      void EvaluateTerminalBC(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& disctretization, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1_epetra, Teuchos::RCP<MAT::Material> mat);
+          CORE::LINALG::SerialDenseVector& elevec1_epetra,
+          Teuchos::RCP<MAT::Material> mat) override;
 
       /*!
         \brief get the initial values of the degrees of freedom at the node
@@ -140,25 +142,25 @@ namespace DRT
         \param time             (i) current simulation time
         \param dt               (i) timestep
         */
-      virtual void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
+      void Initial(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
-          Teuchos::RCP<const MAT::Material> material);
+          Teuchos::RCP<const MAT::Material> material) override;
 
       /*!
        \Essential functions to compute the results of essential matrices
       */
-      virtual void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
+      void CalcFlowRates(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, CORE::LINALG::SerialDenseVector& a_volumen_strain_np,
           CORE::LINALG::SerialDenseVector& a_volumenp, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> mat);
+          Teuchos::RCP<MAT::Material> mat) override;
 
       /*!
        \Essential functions to evaluate the coupled results
       */
-      virtual void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
+      void GetCoupledValues(RedInterAcinarDep* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
-          Teuchos::RCP<MAT::Material> material);
+          Teuchos::RCP<MAT::Material> material) override;
 
      private:
     };

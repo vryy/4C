@@ -103,7 +103,7 @@ namespace DRT
     DofSet();
 
     /// Destructor
-    virtual ~DofSet();
+    ~DofSet() override;
 
     /// create a copy of this object
     virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new DofSet(*this)); }
@@ -111,7 +111,7 @@ namespace DRT
     //! @name Access methods
 
     /// Get number of dofs for given node
-    virtual int NumDof(const Node* node) const
+    int NumDof(const Node* node) const override
     {
       int lid = node->LID();
       if (lid == -1) return 0;
@@ -119,7 +119,7 @@ namespace DRT
     }
 
     /// Get number of dofs for given element
-    virtual int NumDof(const Element* element) const
+    int NumDof(const Element* element) const override
     {
       // check if this is a face element
       int lid = element->LID();
@@ -131,7 +131,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given node
-    virtual int Dof(const Node* node, int dof) const
+    int Dof(const Node* node, int dof) const override
     {
       int lid = node->LID();
       if (lid == -1) return -1;
@@ -142,7 +142,7 @@ namespace DRT
     }
 
     /// Get the gid of a dof for given element
-    virtual int Dof(const Element* element, int dof) const
+    int Dof(const Element* element, int dof) const override
     {
       int lid = element->LID();
       if (lid == -1) return -1;
@@ -153,7 +153,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual std::vector<int> Dof(const Node* node) const
+    std::vector<int> Dof(const Node* node) const override
     {
       const int lid = node->LID();
       if (lid == -1) return std::vector<int>();
@@ -170,17 +170,17 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
-        const Node* node,                    ///< the node
+    void Dof(std::vector<int>& dof,  ///< vector of dof gids (to be filled)
+        const Node* node,            ///< the node
         unsigned nodaldofset  ///< number of nodal dof set of the node (currently !=0 only for XFEM)
-    ) const
+    ) const override
     {
       dsassert(nodaldofset == 0, "only one nodal dofset supported!");
       dof = Dof(node);
     }
 
     /// Get the gid of all dofs of a element
-    virtual std::vector<int> Dof(const Element* element) const
+    std::vector<int> Dof(const Element* element) const override
     {
       int lid = element->LID();
       if (lid == -1) return std::vector<int>();
@@ -195,7 +195,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Node* node, std::vector<int>& lm) const
+    void Dof(const Node* node, std::vector<int>& lm) const override
     {
       int lid = node->LID();
       if (lid == -1) return;
@@ -211,10 +211,10 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a node
-    virtual void Dof(const Node* node,  ///< node, for which you want the dof positions
-        const unsigned startindex,      ///< first index of vector at which will be written to end
-        std::vector<int>& lm  ///< already allocated vector to be filled with dof positions
-    ) const
+    void Dof(const Node* node,      ///< node, for which you want the dof positions
+        const unsigned startindex,  ///< first index of vector at which will be written to end
+        std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
+    ) const override
     {
       const int lid = node->LID();
       if (lid == -1) return;
@@ -231,7 +231,7 @@ namespace DRT
     }
 
     /// Get the gid of all dofs of a element
-    virtual void Dof(const Element* element, std::vector<int>& lm) const
+    void Dof(const Element* element, std::vector<int>& lm) const override
     {
       int lid = element->LID();
       if (lid == -1) return;
@@ -244,11 +244,11 @@ namespace DRT
     }
 
     /// Get the GIDs of the first DOFs of a node of which the associated element is interested in
-    virtual void Dof(
+    void Dof(
         const Element* element,  ///< element which provides its expected number of DOFs per node
         const Node* node,        ///< node, for which you want the DOF positions
         std::vector<int>& lm     ///< already allocated vector to be filled with DOF positions
-    ) const
+    ) const override
     {
       const int lid = node->LID();
       if (lid == -1) return;
@@ -266,19 +266,19 @@ namespace DRT
     }
 
     /// are the dof maps already initialized?
-    virtual bool Initialized() const;
+    bool Initialized() const override;
 
     /// Get degree of freedom row map
-    virtual const Epetra_Map* DofRowMap() const;
+    const Epetra_Map* DofRowMap() const override;
 
     /// Get degree of freedom column map
-    virtual const Epetra_Map* DofColMap() const;
+    const Epetra_Map* DofColMap() const override;
 
     //! Print this class
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     //! Return true if \ref AssignDegreesOfFreedom was called
-    virtual bool Filled() const { return filled_; }
+    bool Filled() const override { return filled_; }
 
     //@}
 
@@ -293,11 +293,11 @@ namespace DRT
 
     @return Maximum dof number of this dofset
     */
-    virtual int AssignDegreesOfFreedom(
-        const Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const Discretization& dis, const unsigned dspos, const int start) override;
 
     /// reset all internal variables
-    virtual void Reset();
+    void Reset() override;
 
     //@}
 
@@ -305,23 +305,23 @@ namespace DRT
     /// Proxies need to know about changes to the DofSet.
 
     /// our original DofSet dies
-    virtual void Disconnect(DofSetInterface* dofset) { return; };
+    void Disconnect(DofSetInterface* dofset) override { return; };
 
     //@}
 
     /// Get Number of Global Elements of degree of freedom row map
-    virtual int NumGlobalElements() const;
+    int NumGlobalElements() const override;
 
     /// Get maximum GID of degree of freedom row map
-    virtual int MaxAllGID() const;
+    int MaxAllGID() const override;
 
     /// Get minimum GID of degree of freedom row map
-    virtual int MinAllGID() const;
+    int MinAllGID() const override;
 
 
    protected:
     /// get number of nodal dofs
-    virtual int NumDofPerNode(const Node& node) const
+    int NumDofPerNode(const Node& node) const override
     {
       const int numele = node.NumElement();
       const DRT::Element* const* myele = node.Elements();

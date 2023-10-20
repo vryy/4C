@@ -31,11 +31,11 @@ namespace NOX
 
 
       // derived
-      virtual bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
+      bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
 
       // derived
-      virtual bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
-          const NOX::Solver::Generic& solver);
+      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+          const NOX::Solver::Generic& solver) override;
 
       void Residual(double current, double desired);
 

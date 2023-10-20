@@ -23,7 +23,7 @@ namespace ADAPTER
     explicit FPSIStructureWrapper(Teuchos::RCP<Structure> structure);
 
     /// Destructor
-    virtual ~FPSIStructureWrapper() { ; }
+    ~FPSIStructureWrapper() override { ; }
 
     /*!
     \brief extract interface displacements at \f$t_{n}\f$

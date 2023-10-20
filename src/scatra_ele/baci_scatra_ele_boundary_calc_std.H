@@ -29,7 +29,7 @@ namespace DRT
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Empty destructor
-      virtual ~ScaTraEleBoundaryCalcStd() { return; };
+      ~ScaTraEleBoundaryCalcStd() override { return; };
 
      private:
       /// private constructor since we are singleton

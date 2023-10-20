@@ -128,7 +128,7 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~DiscretizationFaces() { return; };
+    ~DiscretizationFaces() override { return; };
 
 
 
@@ -145,8 +145,8 @@ namespace DRT
     \param solveparams (in): List of parameters
     \param recompute (in)  : force method to recompute the nullspace
     */
-    virtual void ComputeNullSpaceIfNecessary(
-        Teuchos::ParameterList& solveparams, bool recompute = false)
+    void ComputeNullSpaceIfNecessary(
+        Teuchos::ParameterList& solveparams, bool recompute = false) override
     {
       // remark: the null space is not computed correctly for XFEM discretizations, since the number
       // of

@@ -25,7 +25,7 @@ namespace MAT
           : Parameter(matdata), constviscosity_(constviscosity){};
 
       /// destructor
-      virtual ~FluidPoroViscosityLaw() { ; }
+      ~FluidPoroViscosityLaw() override { ; }
 
       // get viscosity
       virtual double GetViscosity(const double abspressgrad) const = 0;
@@ -51,16 +51,19 @@ namespace MAT
       explicit FluidPoroViscosityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroViscosityLawConstant() { ; }
+      ~FluidPoroViscosityLawConstant() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get viscosity
-      double GetViscosity(const double abspressgrad) const { return viscosity_; };
+      double GetViscosity(const double abspressgrad) const override { return viscosity_; };
 
       // get derivative of viscosity wrt |grad(p)|  --> 0 in case of const. viscosity
-      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const { return 0.0; };
+      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const override
+      {
+        return 0.0;
+      };
 
      private:
       /// @name material parameters
@@ -82,16 +85,16 @@ namespace MAT
       explicit FluidPoroViscosityLawCellAdherence(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroViscosityLawCellAdherence() { ; }
+      ~FluidPoroViscosityLawCellAdherence() override { ; }
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       // get viscosity
-      double GetViscosity(const double abspressgrad) const;
+      double GetViscosity(const double abspressgrad) const override;
 
       // get derivative of viscosity wrt |grad(p)|
-      virtual double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const;
+      double GetDerivOfViscosityWrtAbsPressGrad(const double abspressgrad) const override;
 
      private:
       /// @name material parameters

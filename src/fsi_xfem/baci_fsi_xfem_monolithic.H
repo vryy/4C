@@ -75,7 +75,7 @@ namespace FSI
 
     //! setup of the monolithic XFSI system, setup a new combined block row map and a new block
     //! matrix
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     virtual void CreateSystemMatrix();
     //@}
@@ -96,7 +96,7 @@ namespace FSI
     //! @name Restart routine
 
     /// read restart data for monolithic XFSI system
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step) override;
 
     //@}
 
@@ -105,17 +105,17 @@ namespace FSI
     //! @name Time loop building blocks
 
     //! time loop of the monolithic system
-    virtual void Timeloop();
+    void Timeloop() override;
 
     //! prepare the time step for fluid and structure
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! recover Lagrange multiplier (structural forces) needed for rhs in next time step and update
     //! single fields
-    virtual void Update();
+    void Update() override;
 
     //! write output
-    virtual void Output();
+    void Output() override;
 
     //@}
 

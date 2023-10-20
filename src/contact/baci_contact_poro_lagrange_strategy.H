@@ -46,7 +46,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~PoroLagrangeStrategy(){};
+    ~PoroLagrangeStrategy() override{};
 
     //! @name Access methods
 
@@ -54,8 +54,8 @@ namespace CONTACT
 
     //! @name Evaluation methods
 
-    virtual void DoReadRestart(IO::DiscretizationReader& reader,
-        Teuchos::RCP<const Epetra_Vector> dis, Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr);
+    void DoReadRestart(IO::DiscretizationReader& reader, Teuchos::RCP<const Epetra_Vector> dis,
+        Teuchos::RCP<CONTACT::ParamsInterface> cparams_ptr) override;
 
     /*! \brief Setup this strategy object (maps, vectors, etc.)
 
@@ -67,7 +67,7 @@ namespace CONTACT
      when called for the first time (in the constructor) this
      method is given the input parameter init=TRUE to account
      for initialization of the active set. */
-    virtual void Setup(bool redistributed, bool init);
+    void Setup(bool redistributed, bool init) override;
 
     /*!
     /brief Activate the No Penetration Condition for the active contact surface!
@@ -171,13 +171,13 @@ namespace CONTACT
     \param statetype (in): enumerator defining which quantity to set (see mortar_interface.H for an
     overview) \param vec (in): current global state of the quantity defined by statetype
     */
-    virtual void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec);
+    void SetState(const enum MORTAR::StateType& statetype, const Epetra_Vector& vec) override;
 
-    virtual void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
-        const Teuchos::RCP<DRT::Discretization> dis);
+    void SetParentState(const std::string& statename, const Teuchos::RCP<Epetra_Vector> vec,
+        const Teuchos::RCP<DRT::Discretization> dis) override;
 
     // Flag for Poro No Penetration Condition
-    bool HasPoroNoPenetration() const { return no_penetration_; }
+    bool HasPoroNoPenetration() const override { return no_penetration_; }
 
     // Return Lagrange Multiplier for No Penetration Condition!
     Teuchos::RCP<Epetra_Vector> LambdaNoPen() { return lambda_; }

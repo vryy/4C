@@ -55,25 +55,26 @@ namespace NOX
             const NOX::Epetra::Vector& cloneVector);
 
         //! Destructor.
-        virtual ~LinearSystem(){};
+        ~LinearSystem() override{};
 
         //! Sets the options of the underlying solver
-        virtual void SetSolverOptions(Teuchos::ParameterList& p,
+        void SetSolverOptions(Teuchos::ParameterList& p,
             Teuchos::RCP<CORE::LINALG::Solver>& solverPtr,
-            const NOX::NLN::SolutionType& solverType);
+            const NOX::NLN::SolutionType& solverType) override;
 
         //! Returns a pointer to linear solver, which has to be used
-        virtual NOX::NLN::SolutionType GetActiveLinSolver(
+        NOX::NLN::SolutionType GetActiveLinSolver(
             const std::map<NOX::NLN::SolutionType, Teuchos::RCP<CORE::LINALG::Solver>>& solvers,
-            Teuchos::RCP<CORE::LINALG::Solver>& currSolver);
+            Teuchos::RCP<CORE::LINALG::Solver>& currSolver) override;
 
         //! derived
-        virtual void SetLinearProblemForSolve(Epetra_LinearProblem& linear_problem,
-            CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs, Epetra_Vector& rhs) const;
+        void SetLinearProblemForSolve(Epetra_LinearProblem& linear_problem,
+            CORE::LINALG::SparseOperator& jac, Epetra_Vector& lhs,
+            Epetra_Vector& rhs) const override;
 
         //! Combine the linear solution parts [derived]
-        virtual void CompleteSolutionAfterSolve(
-            const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const;
+        void CompleteSolutionAfterSolve(
+            const Epetra_LinearProblem& linProblem, Epetra_Vector& lhs) const override;
 
        private:
         //! throws an error message

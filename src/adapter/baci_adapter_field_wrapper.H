@@ -45,7 +45,7 @@ namespace ADAPTER
     //@{
 
     /// right-hand-side of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() { return field_->RHS(); }
+    Teuchos::RCP<const Epetra_Vector> RHS() override { return field_->RHS(); }
 
     //@}
 
@@ -53,16 +53,16 @@ namespace ADAPTER
     //@{
 
     /// dof map of vector of unknowns
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { return field_->DofRowMap(); }
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override { return field_->DofRowMap(); }
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       return field_->SystemMatrix();
     }
 
     /// direct access to system matrix
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return field_->BlockSystemMatrix();
     }
@@ -74,7 +74,7 @@ namespace ADAPTER
     //@{
 
     /// start new time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// update state with given increment vector
     void UpdateStateIncrementally(
@@ -82,26 +82,26 @@ namespace ADAPTER
         ) override;
 
     /// update state and evaluate elements
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc) override;
 
 
     /// update state and evaluate elements
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc, bool firstiter) override;
 
     /// update at time step end
-    virtual void Update() { field_->Update(); }
+    void Update() override { field_->Update(); }
 
     /// prepare output (i.e. calculate stresses, strains, energies)
     void PrepareOutput(bool force_prepare) override { return field_->PrepareOutput(force_prepare); }
 
     /// output results
-    virtual void Output(bool forced_writerestart = false)
+    void Output(bool forced_writerestart = false) override
     {
       return field_->Output(forced_writerestart);
     }
 
     /// read restart information for given time step
-    virtual void ReadRestart(const int step) { return field_->ReadRestart(step); }
+    void ReadRestart(const int step) override { return field_->ReadRestart(step); }
 
     //@}
 

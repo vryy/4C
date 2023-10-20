@@ -59,7 +59,7 @@ namespace STR
     TimIntExpl(const TimIntExpl& old) : TimInt(old) { ; }
 
     //! Destructor
-    virtual ~TimIntExpl() { ; };
+    ~TimIntExpl() override { ; };
 
     /*! \brief Initialize this object
 
@@ -82,9 +82,9 @@ namespace STR
     \return bool
     \date 08/16
     \author rauch  */
-    virtual void Init(const Teuchos::ParameterList& timeparams,
-        const Teuchos::ParameterList& sdynparams, const Teuchos::ParameterList& xparams,
-        Teuchos::RCP<DRT::Discretization> actdis, Teuchos::RCP<CORE::LINALG::Solver> solver);
+    void Init(const Teuchos::ParameterList& timeparams, const Teuchos::ParameterList& sdynparams,
+        const Teuchos::ParameterList& xparams, Teuchos::RCP<DRT::Discretization> actdis,
+        Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     /*! \brief Setup all class internal objects and members
 
@@ -104,7 +104,7 @@ namespace STR
     \return void
     \date 08/16
     \author rauch  */
-    virtual void Setup();
+    void Setup() override;
 
     //@}
 
@@ -112,19 +112,19 @@ namespace STR
     //@{
 
     //! Resize \p TimIntMStep<T> multi-step quantities
-    virtual void ResizeMStep() = 0;
+    void ResizeMStep() override = 0;
 
     //! Do time integration of single step
-    virtual int IntegrateStep() = 0;
+    int IntegrateStep() override = 0;
 
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awaiting the next time step.
-    virtual void UpdateStepState() = 0;
+    void UpdateStepState() override = 0;
 
     //! Update Element
-    virtual void UpdateStepElement() = 0;
+    void UpdateStepElement() override = 0;
     /*
         //! Update configuration and time after time step
         void UpdateStepAndTime()
@@ -147,7 +147,7 @@ namespace STR
     //@{
 
     //! print summary after step
-    void PrintStep();
+    void PrintStep() override;
 
     //! The text for summary print, see #PrintStep
     void PrintStepText(FILE* ofile  //!< output file handle
@@ -159,29 +159,29 @@ namespace STR
     //@{
 
     //! Return time integrator name
-    virtual enum INPAR::STR::DynamicType MethodName() const = 0;
+    enum INPAR::STR::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
-    bool MethodImplicit() { return false; }
+    bool MethodImplicit() override { return false; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual int MethodSteps() const = 0;
+    int MethodSteps() const override = 0;
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracyDis() const = 0;
+    int MethodOrderOfAccuracyDis() const override = 0;
 
     //! Give local order of accuracy of velocity part
-    virtual int MethodOrderOfAccuracyVel() const = 0;
+    int MethodOrderOfAccuracyVel() const override = 0;
 
     //! Return linear error coefficient of displacements
-    virtual double MethodLinErrCoeffDis() const = 0;
+    double MethodLinErrCoeffDis() const override = 0;
 
     //! Return linear error coefficient of velocities
-    virtual double MethodLinErrCoeffVel() const = 0;
+    double MethodLinErrCoeffVel() const override = 0;
 
     //! return time integration factor
-    virtual double TimIntParam() const { return 0.0; }
+    double TimIntParam() const override { return 0.0; }
 
     //@}
 
@@ -189,37 +189,37 @@ namespace STR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+    Teuchos::RCP<Epetra_Vector> Fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Epetra_Vector> Freact()
+    Teuchos::RCP<Epetra_Vector> Freact() override
     {
       dserror("Not impl.");
       return Teuchos::null;
     };
 
     //! Read and set external forces from file
-    virtual void ReadRestartForce() = 0;
+    void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override = 0;
 
     //! InitialGuess is not available for explicit time integrators
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override
     {
       dserror("InitialGuess() is not available for explicit time integrators");
       return Teuchos::null;
     }
 
     //! RHS() is not available for explicit time integrators
-    virtual Teuchos::RCP<const Epetra_Vector> RHS()
+    Teuchos::RCP<const Epetra_Vector> RHS() override
     {
       dserror("RHS() is not available for explicit time integrators");
       return Teuchos::null;
     }
 
     //! Prepare time step
-    virtual void PrepareTimeStep()
+    void PrepareTimeStep() override
     {
       // safety checks
       CheckIsInit();
@@ -247,9 +247,8 @@ namespace STR
     }
 
     //!  Evaluate routine for coupled problems with monolithic approach
-    virtual void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
-    )
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> disiterinc  ///< iterative solution increment
+        ) override
     {
       dserror(
           "All monolithically coupled problems work with implicit time "
@@ -265,7 +264,7 @@ namespace STR
     );
 
     /// has to be renamed either here or PrintStep()
-    virtual void Output(bool forced_writerestart)
+    void Output(bool forced_writerestart) override
     {
       OutputStep(forced_writerestart);
       // write Gmsh output
@@ -274,7 +273,7 @@ namespace STR
     }
 
     /// has to be renamed either here or UpdateStepState() /UpdateStepStateElement()
-    virtual void Update()
+    void Update() override
     {
       PreUpdate();
       UpdateStepState();
@@ -285,21 +284,21 @@ namespace STR
     }
 
     //! Update routine for coupled problems with monolithic approach with time adaptivity
-    virtual void Update(const double endtime)
+    void Update(const double endtime) override
     {
       dserror("Not implemented. No time adaptivity available for explicit time integration.");
     }
 
 
     /* Linear structure solve with just an interface load */
-    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear()
+    Teuchos::RCP<Epetra_Vector> SolveRelaxationLinear() override
     {
       dserror("SolveRelaxationLinear() not implemented");
       return Teuchos::null;
     }
 
     /// are there any algebraic constraints?
-    virtual bool HaveConstraint()
+    bool HaveConstraint() override
     {
       dserror("HaveConstraint() has not been tested for explicit time integrators");
       return false;
@@ -313,14 +312,14 @@ namespace STR
     };
 
     /// are there any spring dashpot BCs?
-    virtual bool HaveSpringDashpot()
+    bool HaveSpringDashpot() override
     {
       dserror("HaveSpringDashpot() has not been tested for explicit time integrators");
       return false;
     };
 
     //! Return Teuchos::rcp to ConstraintManager conman_
-    virtual const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager()
+    const Teuchos::RCP<::UTILS::ConstrManager> GetConstraintManager() override
     {
       dserror("GetConstraintManager() has not been tested for explicit time integrators");
       return Teuchos::null;
@@ -334,37 +333,37 @@ namespace STR
     };
 
     //! Return Teuchos::rcp to SpringDashpotManager springman_
-    virtual const Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager()
+    const Teuchos::RCP<::UTILS::SpringDashpotManager> GetSpringDashpotManager() override
     {
       dserror("GetSpringDashpotManager() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
     //! Get type of thickness scaling for thin shell structures
-    virtual INPAR::STR::STC_Scale GetSTCAlgo()
+    INPAR::STR::STC_Scale GetSTCAlgo() override
     {
       dserror("GetSTCAlgo() has not been tested for explicit time integrators");
       return INPAR::STR::stc_none;
     };
 
     //! Access to scaling matrix for STC
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> GetSTCMat() override
     {
       dserror("GetSTCMat() has not been tested for explicit time integrators");
       return Teuchos::null;
     };
 
-    virtual void UpdateIterIncrConstr(
+    void UpdateIterIncrConstr(
         Teuchos::RCP<Epetra_Vector> lagrincr  ///< Lagrange multiplier increment
-    )
+        ) override
     {
       dserror("UpdateIterIncrConstr() has not been tested for explicit time integrators");
       return;
     }
 
-    virtual void UpdateIterIncrCardiovascular0D(
+    void UpdateIterIncrCardiovascular0D(
         Teuchos::RCP<Epetra_Vector> presincr  ///< pressure increment
-    )
+        ) override
     {
       dserror("UpdateIterIncrCardiovascular0D() has not been tested for explicit time integrators");
       return;
@@ -373,21 +372,21 @@ namespace STR
     /// Do the nonlinear solve, i.e. (multiple) corrector,
     /// for the time step. All boundary conditions have
     /// been set.
-    virtual INPAR::STR::ConvergenceStatus Solve() final
+    INPAR::STR::ConvergenceStatus Solve() final
     {
       IntegrateStep();
       return INPAR::STR::conv_success;
     }
 
     //! prepare partiton step
-    virtual void PreparePartitionStep()
+    void PreparePartitionStep() override
     {
       // do nothing for explicit time integrators
       return;
     }
 
-    virtual void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
-        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps)
+    void UseBlockMatrix(Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> domainmaps,
+        Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> rangemaps) override
     {
       dserror("UseBlockMatrix() not implemented");
     }

@@ -50,7 +50,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingPair2D3DBase(){};
+    ~BeamToSolidVolumeMeshtyingPair2D3DBase() override{};
 
     /**
      * \brief Create the geometry pair for this contact pair. We overload that function because this

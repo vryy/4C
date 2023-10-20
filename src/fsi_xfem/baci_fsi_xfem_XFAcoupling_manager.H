@@ -39,38 +39,38 @@ namespace XFEM
     //@{
 
     /// virtual to get polymorph destruction
-    virtual ~XFACoupling_Manager() {}
+    ~XFACoupling_Manager() override {}
 
     //! predict states in the coupling object
-    virtual void PredictCouplingStates();
+    void PredictCouplingStates() override;
 
     //! Set required displacement & velocity states in the coupling object
-    virtual void SetCouplingStates();
+    void SetCouplingStates() override;
 
     //! Initializes the couplings (done at the beginning of the algorithm after fields have their
     //! state for timestep n) -- not yet done here
-    virtual void InitCouplingStates() { return; }
+    void InitCouplingStates() override { return; }
 
     //! Add the coupling matrixes to the global systemmatrix
     // in ... scaling between xfluid evaluated coupling matrixes and coupled systemmatrix
-    virtual void AddCouplingMatrix(
-        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling);
+    void AddCouplingMatrix(
+        CORE::LINALG::BlockSparseMatrixBase& systemmatrix, double scaling) override;
 
     //! Add the coupling rhs
 
     // in scaling ... scaling between xfluid evaluated coupling rhs and coupled rhs
     // in me ... global map extractor of coupled problem (same index used as for idx)
-    virtual void AddCouplingRHS(
-        Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me, double scaling);
+    void AddCouplingRHS(Teuchos::RCP<Epetra_Vector> rhs, const CORE::LINALG::MultiMapExtractor& me,
+        double scaling) override;
 
     //! Update (Perform after Each Timestep) -- nothing to do here
-    virtual void Update(double scaling) { return; }
+    void Update(double scaling) override { return; }
 
     //! Write Output -- nothing to do here
-    virtual void Output(IO::DiscretizationWriter& writer) { return; }
+    void Output(IO::DiscretizationWriter& writer) override { return; }
 
     //! Read Restart -- nothing to do here
-    virtual void ReadRestart(IO::DiscretizationReader& reader) { return; }
+    void ReadRestart(IO::DiscretizationReader& reader) override { return; }
 
    private:
     //! Ale Object

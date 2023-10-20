@@ -32,13 +32,13 @@ namespace MAT
       explicit FluidPoroPhaseLaw(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroPhaseLaw() { ; }
+      ~FluidPoroPhaseLaw() override { ; }
 
       //! build the phase law
       static FluidPoroPhaseLaw* CreatePhaseLaw(int phaselawId);
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial() { return Teuchos::null; };
+      Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
 
       /// initialize
       virtual void Initialize() = 0;
@@ -73,10 +73,10 @@ namespace MAT
       explicit FluidPoroPhaseLawLinear(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroPhaseLawLinear() { ; }
+      ~FluidPoroPhaseLawLinear() override { ; }
 
       /// initialize
-      virtual void Initialize() { return; };
+      void Initialize() override { return; };
 
       /// @name material parameters
       //@{
@@ -91,24 +91,24 @@ namespace MAT
       //@}
 
       /// pressure ids involved in phase law
-      virtual const std::vector<int>* PresIds() { return presids_; };
+      const std::vector<int>* PresIds() override { return presids_; };
 
       //! evaluate saturation of phase
-      virtual double EvaluateSaturation(const std::vector<double>& pressure);
+      double EvaluateSaturation(const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
-      virtual double EvaluateGenPressure(double saturation);
+      double EvaluateGenPressure(double saturation) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
-      virtual double EvaluateDerivOfSaturationWrtPressure(
-          int doftoderive, const std::vector<double>& pressure);
+      double EvaluateDerivOfSaturationWrtPressure(
+          int doftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      virtual double EvaluateSecondDerivOfSaturationWrtPressure(
-          int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure);
+      double EvaluateSecondDerivOfSaturationWrtPressure(int firstdoftoderive, int seconddoftoderive,
+          const std::vector<double>& pressure) override;
 
       //! evaluate derivative of pressure w.r.t. saturtion
-      virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation);
+      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override;
     };
     // class FluidPoroPhaseLawLinear
 
@@ -121,10 +121,10 @@ namespace MAT
       explicit FluidPoroPhaseLawTangent(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroPhaseLawTangent() { ; }
+      ~FluidPoroPhaseLawTangent() override { ; }
 
       /// initialize
-      virtual void Initialize() { return; };
+      void Initialize() override { return; };
 
       /// @name material parameters
       //@{
@@ -141,24 +141,24 @@ namespace MAT
       //@}
 
       /// pressure ids involved in phase law
-      virtual const std::vector<int>* PresIds() { return presids_; };
+      const std::vector<int>* PresIds() override { return presids_; };
 
       //! evaluate saturation of phase
-      virtual double EvaluateSaturation(const std::vector<double>& pressure);
+      double EvaluateSaturation(const std::vector<double>& pressure) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
-      virtual double EvaluateDerivOfSaturationWrtPressure(
-          int doftoderive, const std::vector<double>& pressure);
+      double EvaluateDerivOfSaturationWrtPressure(
+          int doftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      virtual double EvaluateSecondDerivOfSaturationWrtPressure(
-          int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure);
+      double EvaluateSecondDerivOfSaturationWrtPressure(int firstdoftoderive, int seconddoftoderive,
+          const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
-      virtual double EvaluateGenPressure(double saturation);
+      double EvaluateGenPressure(double saturation) override;
 
       //! evaluate derivative of pressure w.r.t. saturation
-      virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation);
+      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override;
     };
     // class FluidPoroPhaseLawTangent
 
@@ -173,13 +173,13 @@ namespace MAT
           : FluidPoroPhaseLaw(matdata){};
 
       /// destructor
-      virtual ~FluidPoroPhaseLawConstraint() { ; }
+      ~FluidPoroPhaseLawConstraint() override { ; }
 
       /// initialize
-      virtual void Initialize() { return; };
+      void Initialize() override { return; };
 
       /// pressure ids involved in phase law
-      virtual const std::vector<int>* PresIds()
+      const std::vector<int>* PresIds() override
       {
         dserror(
             "The constraint phase law does not have pressure coupling! \n "
@@ -189,37 +189,37 @@ namespace MAT
 
 
       //! evaluate saturation of phase
-      virtual double EvaluateSaturation(const std::vector<double>& pressure)
+      double EvaluateSaturation(const std::vector<double>& pressure) override
       {
         dserror("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
       //! evaluate derivative of saturation w.r.t. pressure
-      virtual double EvaluateDerivOfSaturationWrtPressure(
-          int doftoderive, const std::vector<double>& pressure)
+      double EvaluateDerivOfSaturationWrtPressure(
+          int doftoderive, const std::vector<double>& pressure) override
       {
         dserror("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      virtual double EvaluateSecondDerivOfSaturationWrtPressure(
-          int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure)
+      double EvaluateSecondDerivOfSaturationWrtPressure(
+          int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure) override
       {
         dserror("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
       //! evaluate generalized pressure related to phase law
-      virtual double EvaluateGenPressure(double saturation)
+      double EvaluateGenPressure(double saturation) override
       {
         dserror("The constraint phase law does not implement evaluation routines!");
         return 0.0;
       };
 
       //! evaluate derivative of pressure w.r.t. saturation
-      virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation)
+      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override
       {
         dserror("The constraint phase law does not implement evaluation routines!");
         return 0.0;
@@ -236,10 +236,10 @@ namespace MAT
       explicit FluidPoroPhaseLawByFunction(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~FluidPoroPhaseLawByFunction() { ; }
+      ~FluidPoroPhaseLawByFunction() override { ; }
 
       /// initialize
-      virtual void Initialize();
+      void Initialize() override;
 
       /// @name material parameters
       //@{
@@ -254,24 +254,24 @@ namespace MAT
       //@}
 
       /// pressure ids involved in phase law
-      virtual const std::vector<int>* PresIds() { return presids_; };
+      const std::vector<int>* PresIds() override { return presids_; };
 
       //! evaluate saturation of phase
-      virtual double EvaluateSaturation(const std::vector<double>& pressure);
+      double EvaluateSaturation(const std::vector<double>& pressure) override;
 
       //! evaluate derivative of saturation w.r.t. pressure
-      virtual double EvaluateDerivOfSaturationWrtPressure(
-          int doftoderive, const std::vector<double>& pressure);
+      double EvaluateDerivOfSaturationWrtPressure(
+          int doftoderive, const std::vector<double>& pressure) override;
 
       //! evaluate second derivative of saturation w.r.t. pressure
-      virtual double EvaluateSecondDerivOfSaturationWrtPressure(
-          int firstdoftoderive, int seconddoftoderive, const std::vector<double>& pressure);
+      double EvaluateSecondDerivOfSaturationWrtPressure(int firstdoftoderive, int seconddoftoderive,
+          const std::vector<double>& pressure) override;
 
       //! evaluate generalized pressure related to phase law
-      virtual double EvaluateGenPressure(double saturation);
+      double EvaluateGenPressure(double saturation) override;
 
       //! evaluate derivative of pressure w.r.t. saturation
-      virtual double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation);
+      double EvaluateDerivOfPressureWrtSaturation(int doftoderive, double saturation) override;
 
      private:
       //! templated internal Initialize implementation

@@ -36,59 +36,59 @@ namespace CORE::LINALG
     /*!
     \brief Destructor
     */
-    virtual ~BGS2x2_Operator()
+    ~BGS2x2_Operator() override
     {
       solver1_ = Teuchos::null;
       solver2_ = Teuchos::null;
     }
 
     /// Llabel of this class.
-    const char* Label() const { return "CORE::LINALG::BGS2x2_Operator"; }
+    const char* Label() const override { return "CORE::LINALG::BGS2x2_Operator"; }
 
     /// Comm of this class
-    const Epetra_Comm& Comm() const { return (A_->Comm()); }
+    const Epetra_Comm& Comm() const override { return (A_->Comm()); }
 
 
     /// Operator domain map
-    const Epetra_Map& OperatorDomainMap() const { return A_->FullDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return A_->FullDomainMap(); }
 
     /// Operator range map
-    const Epetra_Map& OperatorRangeMap() const { return A_->FullRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return A_->FullRangeMap(); }
 
     /// Setup of preconditioners for individual blocks
     void SetupBlockPreconditioners();
 
     /// Apply inverse of the preconditioner
-    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /// not implemented
-    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
       dserror("Apply does not make sense for CORE::LINALG::BGS2x2_Operator");
       return (-1);
     }
 
-    int SetUseTranspose(bool UseTranspose)
+    int SetUseTranspose(bool UseTranspose) override
     {
       // we default to false
       return 0;
     }
 
     /// not implemented
-    double NormInf() const
+    double NormInf() const override
     {
       dserror("NormInf not impl.");
       return (-1.0);
     }
 
-    bool UseTranspose() const
+    bool UseTranspose() const override
     {
       // we default to false
       return false;
     }
 
     /// not implemented
-    bool HasNormInf() const
+    bool HasNormInf() const override
     {
       dserror("HasNormInf not impl.");
       return false;

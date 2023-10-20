@@ -63,7 +63,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidCondition(){};
+    ~BeamToSolidCondition() override{};
 
     /**
      * \brief Check if a combination of beam and solid id is in this condition.
@@ -152,7 +152,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    ~BeamToSolidConditionVolumeMeshtying(){};
+    ~BeamToSolidConditionVolumeMeshtying() override{};
 
     /**
      * \brief Build the volume ID sets for this condition.
@@ -165,7 +165,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
         const std::vector<DRT::Element const*>& ele_ptrs) override;
 
     /**
@@ -200,7 +200,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    ~BeamToSolidConditionSurface(){};
+    ~BeamToSolidConditionSurface() override{};
 
     /**
      * \brief Build the surface ID sets for this condition. The BuildIdSets method from the base
@@ -227,7 +227,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Return the created beam contact pair for this condition. (derived)
      */
-    virtual Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
+    Teuchos::RCP<BEAMINTERACTION::BeamContactPair> CreateContactPairInternal(
         const std::vector<DRT::Element const*>& ele_ptrs) override;
 
     /**

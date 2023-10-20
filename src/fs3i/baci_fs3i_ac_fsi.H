@@ -58,19 +58,19 @@ namespace FS3I
     ACFSI(const Epetra_Comm& comm);
 
     /// destructor
-    virtual ~ACFSI(){};
+    ~ACFSI() override{};
 
     /// initialize this class
-    virtual void Init();
+    void Init() override;
 
     /// setup this class
-    virtual void Setup();
+    void Setup() override;
 
     /// Read restart
-    void ReadRestart();
+    void ReadRestart() override;
 
     /// timeloop
-    void Timeloop();
+    void Timeloop() override;
 
     /// timeloop for small time scales
     void SmallTimeScaleLoop();
@@ -82,7 +82,7 @@ namespace FS3I
     void SmallTimeScalePrepareTimeStep();
 
     /// Prepare time step
-    void PrepareTimeStep()
+    void PrepareTimeStep() override
     {
       dserror(
           "This function is not implemented! Use SmallTimeScalePrepareTimeStep() or "
@@ -107,7 +107,7 @@ namespace FS3I
     void IsFsiPeriodic();
 
     /// provide wall shear stresses from FS3I subproblem for scatra subproblem
-    void SetWallShearStresses() const;
+    void SetWallShearStresses() const override;
 
     /// Decide if fluid scatra problem is periodic
     void IsScatraPeriodic();
@@ -144,7 +144,7 @@ namespace FS3I
     void FsiOutput();
 
     /// check convergence of scatra fields
-    bool ScatraConvergenceCheck(const int itnum);
+    bool ScatraConvergenceCheck(const int itnum) override;
 
     /// Convergence check for iterative staggered FS3I scheme
     bool PartFs3iConvergenceCkeck(const int itnum);

@@ -49,7 +49,7 @@ namespace MAT
       Robinson(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~Robinson() { ; }
+      ~Robinson() override { ; }
 
       //! @name material parameters
       //@{
@@ -97,7 +97,7 @@ namespace MAT
       //@}
 
       //! create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class Robinson
 
@@ -107,11 +107,11 @@ namespace MAT
   class RobinsonType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "RobinsonType"; }
+    std::string Name() const override { return "RobinsonType"; }
 
     static RobinsonType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static RobinsonType instance_;
@@ -136,7 +136,7 @@ namespace MAT
     //!
     //!  every class implementing ParObject needs a unique id defined at the
     //!  top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return RobinsonType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return RobinsonType::Instance().UniqueParObjectId(); }
 
     //!  \brief Pack this class so it can be communicated
     //!
@@ -145,8 +145,8 @@ namespace MAT
     //!  unique parobject id delivered by UniqueParObjectId() which will then
     //!  identify the exact class on the receiving processor.
     //!
-    virtual void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
-    ) const;
+    void Pack(DRT::PackBuffer& data  //!< (i/o): char vector to store class information
+    ) const override;
 
     //!  \brief Unpack data from a char vector into this class
     //!
@@ -156,35 +156,36 @@ namespace MAT
     //!  parobject id defined at the top of this file and delivered by
     //!  UniqueParObjectId().
     //!
-    virtual void Unpack(const std::vector<char>&
+    void Unpack(const std::vector<char>&
             data  //!< (i) vector storing all data to be unpacked into this instance
-    );
+        ) override;
 
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_vp_robinson; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_vp_robinson; }
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_linear))
         dserror("element and material kinematics are not compatible");
     }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Robinson(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Robinson(*this)); }
 
     //! initialise internal stress variables
-    virtual void Setup(const int numgp,  //!< number of Gauss points
-        DRT::INPUT::LineDefinition* linedef);
+    void Setup(const int numgp,  //!< number of Gauss points
+        DRT::INPUT::LineDefinition* linedef) override;
 
     //! update internal stress variables
-    virtual void Update();
+    void Update() override;
 
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
-        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp, int eleGID);
+        CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, int gp,
+        int eleGID) override;
 
     //! computes Cauchy stress
     void Stress(const double p,                                   //!< volumetric stress tensor
@@ -366,13 +367,13 @@ namespace MAT
     );
 
     //! return density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     //! check if history variables are already initialised
     bool Initialized() const { return (isinit_ and (strainplcurr_ != Teuchos::null)); }
 
     //! return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     //! flag plastic step was called
     bool plastic_step;

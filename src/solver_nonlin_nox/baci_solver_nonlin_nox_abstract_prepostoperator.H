@@ -92,7 +92,7 @@ namespace NOX
         PrePostOperator(const NOX::NLN::Abstract::PrePostOperator& source){};
 
         //! destructor (does nothing)
-        virtual ~PrePostOperator(){};
+        ~PrePostOperator() override{};
 
         /** @name Solver Pre/Post Operator
          *  Non-linear solver pre/post-operator functions. See the  NOX::Solver::PrePostOperator

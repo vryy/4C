@@ -49,7 +49,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToVolumeSegmentation(){};
+    ~GeometryPairLineToVolumeSegmentation() override{};
 
     /**
      * \brief Setup the segment tracker for this line element.

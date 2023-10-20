@@ -22,11 +22,11 @@ namespace DRT
     class KnotvectorObjectType : public DRT::ParObjectType
     {
      public:
-      std::string Name() const { return "KnotvectorObjectType"; }
+      std::string Name() const override { return "KnotvectorObjectType"; }
 
       static KnotvectorObjectType& Instance() { return instance_; };
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
      private:
       static KnotvectorObjectType instance_;
@@ -69,7 +69,7 @@ namespace DRT
       \brief destructor
 
       */
-      virtual ~Knotvector() = default;
+      ~Knotvector() override = default;
 
       /*!
       \brief copy constructor
@@ -305,7 +305,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined in the
       ParObject header file
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return KnotvectorObjectType::Instance().UniqueParObjectId();
       }
@@ -316,7 +316,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this class
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -324,7 +324,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this class
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //! @}
 

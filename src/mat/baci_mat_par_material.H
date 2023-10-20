@@ -42,7 +42,7 @@ namespace MAT
     class ParMaterialType : public DRT::ParObjectType
     {
      public:
-      std::string Name() const { return "ParMaterialType"; }
+      std::string Name() const override { return "ParMaterialType"; }
 
       static ParMaterialType& Instance() { return instance_; };
 
@@ -80,13 +80,13 @@ namespace MAT
       Material(const MAT::PAR::Material& old);
 
       /// Destructor
-      virtual ~Material();
+      ~Material() override;
 
       /// Return unique ParObject id
       ///
       /// every class implementing ParObject needs a unique id defined at the
       /// top of this file.
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ParMaterialType::Instance().UniqueParObjectId();
       }
@@ -94,12 +94,12 @@ namespace MAT
       /// Pack this class so it can be communicated
       ///
       /// \ref Pack and \ref Unpack are used to communicate this class
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /// Unpack data from a char vector into this class
       ///
       /// \ref Pack and \ref Unpack are used to communicate this class
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       /// Set pointer to readily allocated 'quick access' material parameters
       ///
@@ -123,7 +123,7 @@ namespace MAT
       inline virtual std::string Name() const { return name_; }
 
       /// Print this Condition (std::ostream << is also implemented for DRT::Condition)
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       /// Return type of condition
       inline virtual INPAR::MAT::MaterialType Type() const { return type_; }

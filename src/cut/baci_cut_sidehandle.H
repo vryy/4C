@@ -153,16 +153,16 @@ namespace CORE::GEO
 
       explicit LinearSideHandle(Side* s) : side_(s) {}
 
-      virtual ::DRT::Element::DiscretizationType Shape() { return side_->Shape(); }
+      ::DRT::Element::DiscretizationType Shape() override { return side_->Shape(); }
 
-      virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze)
+      void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze) override
       {
         xyze.reshape(3, side_->Nodes().size());
         side_->Coordinates(xyze.values());
       }
 
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rs)
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rs) override
       {
         CORE::LINALG::Matrix<3, 1> rst;
         side_->LocalCoordinates(xyz, rst);
@@ -170,10 +170,10 @@ namespace CORE::GEO
         rs(1) = rst(1);
       }
 
-      virtual void CollectSides(plain_side_set& sides) { sides.insert(side_); }
+      void CollectSides(plain_side_set& sides) override { sides.insert(side_); }
 
       /// gets all facets of a linear side
-      virtual void Facets(std::vector<Facet*>& facets)
+      void Facets(std::vector<Facet*>& facets) override
       {
         std::vector<Facet*> sidefacets = side_->Facets();
         for (std::vector<Facet*>::iterator i = sidefacets.begin(); i != sidefacets.end(); ++i)
@@ -184,7 +184,7 @@ namespace CORE::GEO
       }
 
       /// Get the nodes of the Sidehandle
-      virtual const std::vector<Node*>& GetNodes() const { return side_->Nodes(); }
+      const std::vector<Node*>& GetNodes() const override { return side_->Nodes(); }
 
 
      private:
@@ -195,7 +195,7 @@ namespace CORE::GEO
     class QuadraticSideHandle : public SideHandle
     {
      public:
-      virtual void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze)
+      void Coordinates(CORE::LINALG::SerialDenseMatrix& xyze) override
       {
         xyze.reshape(3, nodes_.size());
         for (std::vector<Node*>::iterator i = nodes_.begin(); i != nodes_.end(); ++i)
@@ -205,13 +205,13 @@ namespace CORE::GEO
         }
       }
 
-      virtual void CollectSides(plain_side_set& sides)
+      void CollectSides(plain_side_set& sides) override
       {
         std::copy(subsides_.begin(), subsides_.end(), std::inserter(sides, sides.begin()));
       }
 
       /// gets all facets of a quadratic side
-      virtual void Facets(std::vector<Facet*>& facets)
+      void Facets(std::vector<Facet*>& facets) override
       {
         for (std::vector<Side*>::iterator i = subsides_.begin(); i != subsides_.end(); ++i)
         {
@@ -226,7 +226,7 @@ namespace CORE::GEO
       }
 
       /// Remove the SubSidePointer of given side from this Sidehandle
-      virtual void RemoveSubSidePointer(const Side* side)
+      void RemoveSubSidePointer(const Side* side) override
       {
         std::vector<Side*>::iterator tmpssit = subsides_.end();
         for (std::vector<Side*>::iterator ssit = subsides_.begin(); ssit != subsides_.end(); ++ssit)
@@ -244,7 +244,7 @@ namespace CORE::GEO
       }
 
       /// Add the SubSidePointer of given side to this Sidehandle
-      virtual void AddSubSidePointer(Side* side)
+      void AddSubSidePointer(Side* side) override
       {
         std::vector<Side*>::iterator tmpssit = subsides_.end();
         for (std::vector<Side*>::iterator ssit = subsides_.begin(); ssit != subsides_.end(); ++ssit)
@@ -262,7 +262,7 @@ namespace CORE::GEO
       }
 
       /// Add the SubSide in to the unphysical list
-      virtual void MarkSubSideunphysical(Side* side)
+      void MarkSubSideunphysical(Side* side) override
       {
         std::vector<Side*>::iterator tmpssit = subsides_.end();
         for (std::vector<Side*>::iterator ssit = subsides_.begin(); ssit != subsides_.end(); ++ssit)
@@ -285,7 +285,7 @@ namespace CORE::GEO
       }
 
       /// Is this side and unphysical subside
-      virtual bool IsunphysicalSubSide(Side* side)
+      bool IsunphysicalSubSide(Side* side) override
       {
         for (std::vector<Side*>::iterator ssit = unphysical_subsides_.begin();
              ssit != unphysical_subsides_.end(); ++ssit)
@@ -296,10 +296,10 @@ namespace CORE::GEO
       }
 
       /// Does this sidehandle have unphysical subsides
-      virtual bool HasunphysicalSubSide() { return unphysical_subsides_.size(); }
+      bool HasunphysicalSubSide() override { return unphysical_subsides_.size(); }
 
       /// Get the nodes of the Sidehandle
-      virtual const std::vector<Node*>& GetNodes() const { return nodes_; }
+      const std::vector<Node*>& GetNodes() const override { return nodes_; }
 
      protected:
       std::vector<Side*> subsides_;
@@ -315,10 +315,10 @@ namespace CORE::GEO
      public:
       Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
 
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::tri6; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::tri6; }
 
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 
     /// quad4 side handle
@@ -330,10 +330,10 @@ namespace CORE::GEO
      public:
       Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
 
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad4; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::quad4; }
 
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 
     /// quad8 side handle
@@ -342,10 +342,10 @@ namespace CORE::GEO
      public:
       Quad8SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
 
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad8; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::quad8; }
 
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 
     /// quad9 side handle
@@ -354,10 +354,10 @@ namespace CORE::GEO
      public:
       Quad9SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
 
-      virtual ::DRT::Element::DiscretizationType Shape() { return ::DRT::Element::quad9; }
+      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::quad9; }
 
-      virtual void LocalCoordinates(
-          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst);
+      void LocalCoordinates(
+          const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
     };
 
   }  // namespace CUT

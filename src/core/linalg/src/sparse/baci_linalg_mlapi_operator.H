@@ -60,12 +60,12 @@ namespace CORE::LINALG
     /*!
     \brief Destructor
     */
-    virtual ~AMG_Operator() {}
+    ~AMG_Operator() override {}
 
     /*!
     \brief Returns the label of this class.
     */
-    const char* Label() const { return label_.data(); }
+    const char* Label() const override { return label_.data(); }
 
     /*!
     \brief get Comm of this class
@@ -73,7 +73,7 @@ namespace CORE::LINALG
     Derived from Epetra_Operator, returns ref to the Epetra_Comm of this class
 
     */
-    const Epetra_Comm& Comm() const { return (Ainput_->Comm()); }
+    const Epetra_Comm& Comm() const override { return (Ainput_->Comm()); }
 
     /*!
     \brief get reference to parameter list
@@ -93,7 +93,7 @@ namespace CORE::LINALG
     Derived from Epetra_Operator, get fine level OperatorDomainMap
 
     */
-    const Epetra_Map& OperatorDomainMap() const { return Ainput_->OperatorDomainMap(); }
+    const Epetra_Map& OperatorDomainMap() const override { return Ainput_->OperatorDomainMap(); }
 
     /*!
     \brief Get fine level OperatorRangeMap
@@ -101,7 +101,7 @@ namespace CORE::LINALG
     Derived from Epetra_Operator, get fine level OperatorRangeMap
 
     */
-    const Epetra_Map& OperatorRangeMap() const { return Ainput_->OperatorRangeMap(); }
+    const Epetra_Map& OperatorRangeMap() const override { return Ainput_->OperatorRangeMap(); }
 
     /*!
     \brief ApplyInverse the preconditioner
@@ -113,12 +113,12 @@ namespace CORE::LINALG
                        preconditioner
      \param Y (Out)  : Epetra_MultiVector containing the result on output
     */
-    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const;
+    int ApplyInverse(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override;
 
     /*!
     \brief not implemented
     */
-    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const
+    int Apply(const Epetra_MultiVector& X, Epetra_MultiVector& Y) const override
     {
       dserror("Apply does not make sense for CORE::LINALG::AMG_Operator");
       return (-1);
@@ -127,7 +127,7 @@ namespace CORE::LINALG
     /*!
     \brief not implemented
     */
-    int SetUseTranspose(bool UseTranspose)
+    int SetUseTranspose(bool UseTranspose) override
     {
       dserror("SetUseTranspose not impl.");
       return -1;
@@ -136,7 +136,7 @@ namespace CORE::LINALG
     /*!
     \brief not implemented
     */
-    double NormInf() const
+    double NormInf() const override
     {
       dserror("NormInf not impl.");
       return (-1.0);
@@ -146,7 +146,7 @@ namespace CORE::LINALG
     /*!
     \brief not implemented
     */
-    bool UseTranspose() const
+    bool UseTranspose() const override
     {
       dserror("UseTranspose not impl.");
       return false;
@@ -155,7 +155,7 @@ namespace CORE::LINALG
     /*!
     \brief not implemented
     */
-    bool HasNormInf() const
+    bool HasNormInf() const override
     {
       dserror("HasNormInf not impl.");
       return false;

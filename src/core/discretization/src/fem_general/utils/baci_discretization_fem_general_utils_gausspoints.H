@@ -61,15 +61,15 @@ namespace CORE::DRT::UTILS
 
     void IncreaseReserved(int size) { gp_.reserve(gp_.size() + size); }
 
-    virtual int NumPoints() const { return gp_.size(); }
+    int NumPoints() const override { return gp_.size(); }
 
-    virtual int NumDimension() const { return 3; }
+    int NumDimension() const override { return 3; }
 
-    virtual const double* Point(int point) const { return &gp_[point].data[0]; }
+    const double* Point(int point) const override { return &gp_[point].data[0]; }
 
-    virtual double Weight(int point) const { return gp_[point].data[3]; }
+    double Weight(int point) const override { return gp_[point].data[3]; }
 
-    virtual void Print() const
+    void Print() const override
     {
       std::cout << " collected gauss points:\n";
       for (int i = 0; i < NumPoints(); ++i)
@@ -108,7 +108,7 @@ namespace CORE::DRT::UTILS
     void Append(Teuchos::RCP<GaussPoints> gp) { gp_.push_back(gp); }
 
     /// number of gauss points
-    virtual int NumPoints() const
+    int NumPoints() const override
     {
       int numpoints = 0;
       for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
@@ -121,17 +121,17 @@ namespace CORE::DRT::UTILS
     }
 
     /// spacial dimension
-    virtual int NumDimension() const { return gp_[0]->NumDimension(); }
+    int NumDimension() const override { return gp_[0]->NumDimension(); }
 
     /// gauss point coordinates
-    virtual const double* Point(int point) const
+    const double* Point(int point) const override
     {
       Teuchos::RCP<GaussPoints> gp = Find(point);
       return gp->Point(point);
     }
 
     /// gauss weight
-    virtual double Weight(int point) const
+    double Weight(int point) const override
     {
       Teuchos::RCP<GaussPoints> gp = Find(point);
       return gp->Weight(point);
@@ -146,7 +146,7 @@ namespace CORE::DRT::UTILS
     }
 
     /// debug print
-    virtual void Print() const
+    void Print() const override
     {
       for (std::vector<Teuchos::RCP<GaussPoints>>::const_iterator i = gp_.begin(); i != gp_.end();
            ++i)

@@ -60,7 +60,7 @@ namespace CONTACT
           const Teuchos::RCP<const Epetra_Comm>& comm, const int maxdof);
 
       /// destructor
-      virtual ~ComboStrategy(){};
+      ~ComboStrategy() override{};
 
       /* Hide the public derived methods as well, since we do not want to access
        * any of these methods directly.                         hiermeier 03/17 */
@@ -124,8 +124,8 @@ namespace CONTACT
       const Epetra_Map& SlTangentialDoFRowMap(const bool& redist) const override;
 
       /// function wrapper
-      virtual Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-          const enum DRT::UTILS::VecBlockType& bt) const;
+      Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
+          const enum DRT::UTILS::VecBlockType& bt) const override;
 
       /// function wrapper
       Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtrForNormCheck(
@@ -499,7 +499,7 @@ namespace CONTACT
       PreAsymptoticSwitching(ComboStrategy& combo, const Teuchos::ParameterList& p_combo);
 
       /// destructor
-      virtual ~PreAsymptoticSwitching(){};
+      ~PreAsymptoticSwitching() override{};
 
      private:
       /// derived

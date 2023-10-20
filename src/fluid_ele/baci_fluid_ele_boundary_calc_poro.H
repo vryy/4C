@@ -64,7 +64,7 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Empty destructor
-      virtual ~FluidEleBoundaryCalcPoro() = default;
+      ~FluidEleBoundaryCalcPoro() override = default;
       ;
 
       /// determines which boundary integral is to be evaluated
@@ -72,7 +72,7 @@ namespace DRT
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix& elemat1, CORE::LINALG::SerialDenseMatrix& elemat2,
           CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2,
-          CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
      protected:
       /// protected constructor since we are singleton
@@ -392,7 +392,7 @@ namespace DRT
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Empty destructor
-      virtual ~FluidEleBoundaryCalcPoroP1() = default;
+      ~FluidEleBoundaryCalcPoroP1() override = default;
       ;
 
      protected:
@@ -406,7 +406,8 @@ namespace DRT
       \param eporosity (in/out)  : matrix to be filled with nodal porosities
       */
       bool ComputeNodalPorosity(DRT::ELEMENTS::FluidBoundary* ele,
-          const std::vector<double>& mydispnp, CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity);
+          const std::vector<double>& mydispnp,
+          CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity) override;
 
       /*!
       \brief compute the porosity at nodes
@@ -421,7 +422,7 @@ namespace DRT
       void ComputePorosityAtGP(Teuchos::ParameterList& params, DRT::ELEMENTS::FluidBoundary* ele,
           const CORE::LINALG::Matrix<Base::bdrynen_, 1>& funct,
           const CORE::LINALG::Matrix<Base::bdrynen_, 1>& eporosity, double press, double J, int gp,
-          double& porosity, double& dphi_dp, double& dphi_dJ, bool save);
+          double& porosity, double& dphi_dp, double& dphi_dJ, bool save) override;
     };
 
   }  // namespace ELEMENTS

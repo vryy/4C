@@ -35,10 +35,10 @@ namespace MAT
       Maxwell_0d_acinus_Ogden(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Maxwell_0d_acinus_Ogden() {}
+      ~Maxwell_0d_acinus_Ogden() override {}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       /// enum for mapping between material parameter and entry in the matparams_ vector
       enum matparamnames_
@@ -56,11 +56,11 @@ namespace MAT
   class Maxwell_0d_acinusOgdenType : public Maxwell_0d_acinusType
   {
    public:
-    std::string Name() const { return "maxwell_0d_acinusOgdenType"; }
+    std::string Name() const override { return "maxwell_0d_acinusOgdenType"; }
 
     static Maxwell_0d_acinusOgdenType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Maxwell_0d_acinusOgdenType instance_;
@@ -87,7 +87,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return Maxwell_0d_acinusOgdenType::Instance().UniqueParObjectId();
     }
@@ -103,7 +103,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -117,17 +117,17 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_0d_maxwell_acinus_ogden;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new Maxwell_0d_acinus(*this));
     }
@@ -135,28 +135,27 @@ namespace MAT
     /*!
       \brief
     */
-    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+    void Setup(DRT::INPUT::LineDefinition* linedef) override;
 
     /*!
        \brief
      */
-    virtual void Evaluate(CORE::LINALG::SerialDenseVector& epnp,
-        CORE::LINALG::SerialDenseVector& epn, CORE::LINALG::SerialDenseVector& epnm,
-        CORE::LINALG::SerialDenseMatrix& sysmat, CORE::LINALG::SerialDenseVector& rhs,
-        const DRT::REDAIRWAYS::ElemParams& params, const double NumOfAcini, const double Vo,
-        double time, double dt);
+    void Evaluate(CORE::LINALG::SerialDenseVector& epnp, CORE::LINALG::SerialDenseVector& epn,
+        CORE::LINALG::SerialDenseVector& epnm, CORE::LINALG::SerialDenseMatrix& sysmat,
+        CORE::LINALG::SerialDenseVector& rhs, const DRT::REDAIRWAYS::ElemParams& params,
+        const double NumOfAcini, const double Vo, double time, double dt) override;
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int eleID) override;
 
     /// Return value of class parameter
-    virtual double GetParams(std::string parametername);
+    double GetParams(std::string parametername) override;
 
     /// Set value of class parameter
-    virtual void SetParams(std::string parametername, double new_value);
+    void SetParams(std::string parametername, double new_value) override;
 
    private:
     double kappa_;

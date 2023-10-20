@@ -41,7 +41,7 @@ namespace NOX
             const NOX::Utils* u = nullptr);
 
         //! Destructor
-        virtual ~Combo(){};
+        ~Combo() override{};
 
         //! Add another test to this combination.
         /*!

@@ -34,7 +34,7 @@ namespace CONTACT
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
 
       /// destructor
-      virtual ~PowerConstitutiveLawParams() = default;
+      ~PowerConstitutiveLawParams() override = default;
 
       /// create constitutive law instance of matching type with my parameters
       Teuchos::RCP<ConstitutiveLaw> CreateConstitutiveLaw() override;

@@ -71,8 +71,8 @@ namespace NOX
         where \f$J\f$ is the Jacobian, \f$u\f$ is the input vector,
         and \f$v\f$ is the result vector.  Returns true if successful.
       */
-      virtual bool applyJacobian(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
+      bool applyJacobian(
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
 
       /*!
         \brief Applies Jacobian-Transpose to the given input vector and puts the answer in the
@@ -84,8 +84,8 @@ namespace NOX
         vector.  Returns true if successful.
 
       */
-      virtual bool applyJacobianTranspose(
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
+      bool applyJacobianTranspose(
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
 
       /*!
         \brief Applies the inverse of the Jacobian matrix to the given
@@ -98,8 +98,8 @@ namespace NOX
 
         The parameter list contains the linear solver options.
       */
-      virtual bool applyJacobianInverse(Teuchos::ParameterList& params,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result);
+      bool applyJacobianInverse(Teuchos::ParameterList& params, const NOX::Epetra::Vector& input,
+          NOX::Epetra::Vector& result) override;
 
       /*!
         \brief Apply right preconditiong to the given input vector
@@ -120,11 +120,11 @@ namespace NOX
 
         The parameter list contains the linear solver options.
       */
-      virtual bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& params,
-          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const;
+      bool applyRightPreconditioning(bool useTranspose, Teuchos::ParameterList& params,
+          const NOX::Epetra::Vector& input, NOX::Epetra::Vector& result) const override;
 
       //! Get the scaling object
-      virtual Teuchos::RCP<NOX::Epetra::Scaling> getScaling();
+      Teuchos::RCP<NOX::Epetra::Scaling> getScaling() override;
 
       /*!
         \brief Sets the diagonal scaling vector(s) used in scaling the linear system.
@@ -132,10 +132,10 @@ namespace NOX
         See NOX::Epetra::Scaling for details on how to specify scaling
         of the linear system.
       */
-      virtual void resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& s);
+      void resetScaling(const Teuchos::RCP<NOX::Epetra::Scaling>& s) override;
 
       //! Evaluates the Jacobian based on the solution vector x.
-      virtual bool computeJacobian(const NOX::Epetra::Vector& x);
+      bool computeJacobian(const NOX::Epetra::Vector& x) override;
 
       /*!
         \brief Explicitly constructs a preconditioner based on the solution vector x and the
@@ -145,8 +145,8 @@ namespace NOX
         preconditioner is created. The NOX::Epetra::Group controls the
         isValid flag for the preconditioner and will control when to call this.
       */
-      virtual bool createPreconditioner(
-          const NOX::Epetra::Vector& x, Teuchos::ParameterList& p, bool recomputeGraph) const;
+      bool createPreconditioner(const NOX::Epetra::Vector& x, Teuchos::ParameterList& p,
+          bool recomputeGraph) const override;
 
       /*!
         \brief Deletes the preconditioner.
@@ -154,7 +154,7 @@ namespace NOX
         The NOX::Epetra::Group controls the isValid flag for the preconditioner and will control
         when to call this.
       */
-      virtual bool destroyPreconditioner() const;
+      bool destroyPreconditioner() const override;
 
       /*! \brief Recalculates the preconditioner using an already allocated graph.
 
@@ -163,47 +163,47 @@ namespace NOX
       reallocating the memory required for the preconditioner and
       results in a big speed-up for large-scale jobs.
       */
-      virtual bool recomputePreconditioner(
-          const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const;
+      bool recomputePreconditioner(
+          const NOX::Epetra::Vector& x, Teuchos::ParameterList& linearSolverParams) const override;
 
       /*! \brief  Evaluates the preconditioner policy at the current state.
 
       NOTE: This can change values between nonlienar iterations.  It is
       not a static value.
       */
-      virtual PreconditionerReusePolicyType getPreconditionerPolicy(
-          bool advanceReuseCounter = true);
+      PreconditionerReusePolicyType getPreconditionerPolicy(
+          bool advanceReuseCounter = true) override;
 
       //! Indicates whether a preconditioner has been constructed
-      virtual bool isPreconditionerConstructed() const;
+      bool isPreconditionerConstructed() const override;
 
       //! Indicates whether the linear system has a preconditioner
-      virtual bool hasPreconditioner() const;
+      bool hasPreconditioner() const override;
 
       //! Return Jacobian operator
-      virtual Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const;
+      Teuchos::RCP<const Epetra_Operator> getJacobianOperator() const override;
 
       //! Return Jacobian operator
-      virtual Teuchos::RCP<Epetra_Operator> getJacobianOperator();
+      Teuchos::RCP<Epetra_Operator> getJacobianOperator() override;
 
       //! Return preconditioner operator
       /*!
        * Note:  This should only be called if hasPreconditioner() returns true.
        */
-      virtual Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const;
+      Teuchos::RCP<const Epetra_Operator> getGeneratedPrecOperator() const override;
 
       //! Return preconditioner operator
-      virtual Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator();
+      Teuchos::RCP<Epetra_Operator> getGeneratedPrecOperator() override;
 
       //! Set Jacobian operator for solve
-      virtual void setJacobianOperatorForSolve(
-          const Teuchos::RCP<const Epetra_Operator>& solveJacOp);
+      void setJacobianOperatorForSolve(
+          const Teuchos::RCP<const Epetra_Operator>& solveJacOp) override;
 
       //! Set preconditioner operator for solve
       /*!
        * Note:  This should only be called if hasPreconditioner() returns true.
        */
-      virtual void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp);
+      void setPrecOperatorForSolve(const Teuchos::RCP<const Epetra_Operator>& solvePrecOp) override;
 
       //! Returns the type of operator that is passed into the group constructors.
       /*! Uses dynamic casting to identify the underlying object type. */

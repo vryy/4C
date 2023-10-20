@@ -33,7 +33,7 @@ namespace SCATRA
 
     //! get special result to be tested
     double ResultSpecial(const std::string quantity  //! name of quantity to be tested
-    ) const;
+    ) const override;
   };  // class ElchResultTest : public ScaTraResultTest
 }  // namespace SCATRA
 #endif

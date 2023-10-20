@@ -301,10 +301,10 @@ namespace NOX
            public:
             Plot(const Teuchos::RCP<::CONTACT::AUG::Plot>& plot_ptr);
 
-            virtual ~Plot(){};
+            ~Plot() override{};
 
-            virtual void runPreIterate(const NOX::Solver::Generic& solver);
-            virtual void runPostIterate(const NOX::Solver::Generic& solver);
+            void runPreIterate(const NOX::Solver::Generic& solver) override;
+            void runPostIterate(const NOX::Solver::Generic& solver) override;
 
            private:
             Teuchos::RCP<::CONTACT::AUG::Plot> plot_ptr_;

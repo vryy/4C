@@ -59,16 +59,16 @@ namespace FSI
    protected:
     /// time update
     /// recover the Lagrange multiplier and relax ALE (if requested)
-    void Update();
+    void Update() override;
 
     /// start a new time step
-    void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     /// Prepare preconditioner for a new time step
-    virtual void PrepareTimeStepPreconditioner(){};
+    void PrepareTimeStepPreconditioner() override{};
 
     /// output of fluid, structure & ALE-quantities and Lagrange multiplier
-    virtual void Output() = 0;
+    void Output() override = 0;
 
     /// Evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
     void Evaluate(
@@ -83,12 +83,12 @@ namespace FSI
     //! 1) the single fields residuals
     //! 2) the Lagrange multiplier field lambda_
     //! 3) terms in the first nonlinear iteration
-    virtual void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
+    void SetupRHS(Epetra_Vector& f,  ///< empty rhs vector (to be filled)
         bool firstcall  ///< indicates whether this is the first nonlinear iteration or not
-        ) = 0;
+        ) override = 0;
 
     /// setup composed system matrix from field solvers
-    virtual void SetupSystemMatrix() = 0;
+    void SetupSystemMatrix() override = 0;
     //@}
 
     /// create merged map of DOF in the final system from all fields
@@ -134,10 +134,10 @@ namespace FSI
     //! @name Methods for infnorm-scaling of the system
 
     /// apply infnorm scaling to linear block system
-    virtual void ScaleSystem(Epetra_Vector& b) {}
+    void ScaleSystem(Epetra_Vector& b) override {}
 
     /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
+    void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) override {}
 
     //@}
 

@@ -33,18 +33,18 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// virtual destructor
-    virtual ~ScaTraTimIntPoroMulti(){};
+    ~ScaTraTimIntPoroMulti() override{};
 
     // -----------------------------------------------------------------
     // general methods
     // -----------------------------------------------------------------
 
     /// initialize algorithm
-    virtual void Init();
+    void Init() override;
 
     //! update the solution after convergence of the nonlinear iteration.
-    virtual void Update(const int num = 0  //!< field number
-    )
+    void Update(const int num = 0  //!< field number
+        ) override
     {
       return;
     };
@@ -82,15 +82,14 @@ namespace SCATRA
     };
 
     //! write state vectors (phinp and convective velocity) to BINIO
-    virtual void OutputState();
+    void OutputState() override;
 
     //! problem specific output
-    void OutputProblemSpecific();
+    void OutputProblemSpecific() override;
 
     //! add parameters depending on the problem
-    virtual void AddProblemSpecificParametersAndVectors(
-        Teuchos::ParameterList& params  //!< parameter list
-    );
+    void AddProblemSpecificParametersAndVectors(Teuchos::ParameterList& params  //!< parameter list
+        ) override;
 
    protected:
     //! output of oxygen partial pressure
@@ -111,14 +110,14 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
-    virtual ~ScaTraTimIntPoroMultiOST();
+    ~ScaTraTimIntPoroMultiOST() override;
 
     //! initialize time integration scheme
-    void Init();
+    void Init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
   };  // class TimIntPoroMultiOST
 
@@ -134,14 +133,14 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
-    virtual ~ScaTraTimIntPoroMultiBDF2();
+    ~ScaTraTimIntPoroMultiBDF2() override;
 
     //! initialize time integration scheme
-    void Init();
+    void Init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
   };  // class TimIntPoroMultiBDF2
 
@@ -157,14 +156,14 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
-    virtual ~ScaTraTimIntPoroMultiGenAlpha();
+    ~ScaTraTimIntPoroMultiGenAlpha() override;
 
     //! initialize time integration scheme
-    void Init();
+    void Init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
   };  // class TimIntPoroMultiGenAlpha
 
@@ -180,14 +179,14 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
-    virtual ~ScaTraTimIntPoroMultiStationary();
+    ~ScaTraTimIntPoroMultiStationary() override;
 
     //! initialize time integration scheme
-    void Init();
+    void Init() override;
 
     //! Update the solution after convergence of the nonlinear iteration.
     //! Current solution becomes old solution of next timestep.
-    void Update(const int num = 0);
+    void Update(const int num = 0) override;
 
   };  // class TimIntPoroMultiStationary
 }  // namespace SCATRA

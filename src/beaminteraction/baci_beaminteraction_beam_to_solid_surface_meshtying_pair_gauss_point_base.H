@@ -40,7 +40,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceMeshtyingPairGaussPointBase(){};
+    ~BeamToSolidSurfaceMeshtyingPairGaussPointBase() override{};
 
     /**
      * \brief Get energy for Gauss point to segment coupling.

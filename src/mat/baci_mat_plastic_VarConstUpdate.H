@@ -43,7 +43,7 @@ namespace MAT
       PlasticElastHyperVCU(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~PlasticElastHyperVCU() { ; }
+      ~PlasticElastHyperVCU() override { ; }
 
       /// @name material parameters
       //@{
@@ -54,7 +54,7 @@ namespace MAT
       ) const;
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
       //@}
 
     };  // class PlasticElastHyper
@@ -64,11 +64,11 @@ namespace MAT
   class PlasticElastHyperVCUType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "PlasticElastHyperVCUType"; }
+    std::string Name() const override { return "PlasticElastHyperVCUType"; }
 
     static PlasticElastHyperVCUType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static PlasticElastHyperVCUType instance_;
@@ -93,7 +93,7 @@ namespace MAT
     ///
     /// every class implementing ParObject needs a unique id defined at the
     /// top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return PlasticElastHyperVCUType::Instance().UniqueParObjectId();
     }
@@ -106,7 +106,7 @@ namespace MAT
     /// identify the exact class on the receiving processor.
     ///
     /// \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -118,15 +118,15 @@ namespace MAT
     ///
     /// \param data (in) : vector storing all data to be unpacked into this
     ///                    instance.
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_plelasthyperVCU; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_plelasthyperVCU; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new PlasticElastHyperVCU(*this));
     }
@@ -134,25 +134,25 @@ namespace MAT
 
     /// hyperelastic stress response plus elasticity tensor
     /// (pure virtual in material base class. Not allowed here)
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
-        const CORE::LINALG::Matrix<6, 1>* glstrain,                  ///< Green-Lagrange strain
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,  ///< Deformation gradient
+        const CORE::LINALG::Matrix<6, 1>* glstrain,          ///< Green-Lagrange strain
         Teuchos::ParameterList& params,      ///< Container for additional information
         CORE::LINALG::Matrix<6, 1>* stress,  ///< 2nd Piola-Kirchhoff stresses
         CORE::LINALG::Matrix<6, 6>* cmat,    ///< Constitutive matrix
         int gp,                              ///< Gauss point
-        int eleGID);                         ///< Element GID
+        int eleGID) override;                ///< Element GID
 
     /// setup material data
-    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+    void Setup(int numgp, DRT::INPUT::LineDefinition* linedef) override;
 
     /// update sumands
-    virtual void Update();
+    void Update() override;
 
     //! return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     //! return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
     // ********************************************************* //
     // ** here are some functions we don't need variationally ** //
@@ -243,13 +243,13 @@ namespace MAT
     }
 
     /// update plastic history variables
-    virtual void UpdateGP(const int gp, const CORE::LINALG::Matrix<3, 3>* deltaDp)
+    void UpdateGP(const int gp, const CORE::LINALG::Matrix<3, 3>* deltaDp) override
     {
       dserror("Don't need this for Variationally consistent constitutive update");
     }
 
     /// get plastic algorithm parameters
-    virtual void GetParams(double s, double cpl)
+    void GetParams(double s, double cpl) override
     {
       dserror("Don't need this for Variationally consistent constitutive update");
     }
@@ -262,7 +262,7 @@ namespace MAT
     }
 
     /// heating at this gp
-    virtual double& HepDiss(int gp)
+    double& HepDiss(int gp) override
     {
       dserror("Don't need this for Variationally consistent constitutive update");
       static double a = 0.;
@@ -270,7 +270,7 @@ namespace MAT
     }
 
     /// derivative of heating at this gp
-    virtual CORE::LINALG::SerialDenseVector& dHepDissDd(int gp)
+    CORE::LINALG::SerialDenseVector& dHepDissDd(int gp) override
     {
       dserror("Don't need this for Variationally consistent constitutive update");
       static CORE::LINALG::SerialDenseVector tmp(0);
@@ -278,7 +278,7 @@ namespace MAT
     }
 
     // derivative of heating w.r.t. temperature
-    virtual double& dHepDT(int gp)
+    double& dHepDT(int gp) override
     {
       dserror("Don't need this for Variationally consistent constitutive update");
       static double a = 0.;
@@ -287,7 +287,7 @@ namespace MAT
 
     // derivative of heating at each gp w.r.t. nodal temperature vector
     // (only EAS contribution)
-    virtual Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseVector>> dHepDTeas()
+    Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseVector>> dHepDTeas() override
     {
       dserror("Don't need this for Variationally consistent constitutive update");
       return Teuchos::null;
@@ -379,10 +379,10 @@ namespace MAT
 
 
     /// Access to material params
-    virtual MAT::PAR::PlasticElastHyperVCU* MatParams() const { return params_; }
+    MAT::PAR::PlasticElastHyperVCU* MatParams() const override { return params_; }
 
     /// get dissipation mode
-    virtual INPAR::TSI::DissipationMode DisMode() const { return INPAR::TSI::pl_flow; }
+    INPAR::TSI::DissipationMode DisMode() const override { return INPAR::TSI::pl_flow; }
 
     /// inverse plastic deformation gradient for each Gauss point at current state
     std::vector<CORE::LINALG::Matrix<3, 3>> plastic_defgrd_inverse_;

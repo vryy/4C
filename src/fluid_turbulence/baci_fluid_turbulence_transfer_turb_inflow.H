@@ -122,7 +122,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TransferTurbulentInflowConditionXW();
+    ~TransferTurbulentInflowConditionXW() override;
 
     /*!
     \brief Transfer process copying values from master boundary to slave
@@ -134,12 +134,13 @@ namespace FLD
            of the last time step on the master boundary
     */
     void Transfer(const Teuchos::RCP<Epetra_Vector> veln, Teuchos::RCP<Epetra_Vector> velnp,
-        const double time);
+        const double time) override;
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
     void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vel, Teuchos::RCP<Epetra_Vector> velnp);
+        std::vector<std::vector<double>>& mymasters_vel,
+        Teuchos::RCP<Epetra_Vector> velnp) override;
   };
 
 
@@ -157,7 +158,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TransferTurbulentInflowConditionNodal();
+    ~TransferTurbulentInflowConditionNodal() override;
 
     /*!
     \brief Transfer process copying values from master boundary to slave
@@ -169,14 +170,15 @@ namespace FLD
            of the last time step on the master boundary
     */
     void Transfer(const Teuchos::RCP<Epetra_Vector> invec, Teuchos::RCP<Epetra_Vector> outvec,
-        const double time);
+        const double time) override;
 
     bool IsActive() { return active_; }
 
    private:
     //! for all values avaible on the processor, do the final setting of the value
     void SetValuesAvailableOnThisProc(std::vector<int>& mymasters,
-        std::vector<std::vector<double>>& mymasters_vec, Teuchos::RCP<Epetra_Vector> outvec);
+        std::vector<std::vector<double>>& mymasters_vec,
+        Teuchos::RCP<Epetra_Vector> outvec) override;
   };
 
 }  // end namespace FLD

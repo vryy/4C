@@ -49,13 +49,13 @@ namespace POROFLUIDMULTIPHASE
     /*!
       Possible position flags is only "pre"
      */
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     /// our version of element value tests
-    virtual void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestElement(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
     //! test special quantity not associated with a particular element or node
-    virtual void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    protected:
     //! get nodal result to be tested

@@ -39,12 +39,12 @@ namespace NOX
       void CaptureSystemState();
 
       /// calculate the RHS vector
-      virtual NOX::Abstract::Group::ReturnType computeF();
+      NOX::Abstract::Group::ReturnType computeF() override;
 
       /// calculate the Jacobian matrix
-      virtual NOX::Abstract::Group::ReturnType computeJacobian();
+      NOX::Abstract::Group::ReturnType computeJacobian() override;
 
-      NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
+      NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p) override;
 
      private:
       ::FSI::MonolithicInterface& mfsi_;

@@ -47,7 +47,7 @@ namespace NOX
         Factory();
 
         //! Destructor
-        virtual ~Factory(){};
+        ~Factory() override{};
 
         /*! \brief Factory to build user-defined direction objects.
 

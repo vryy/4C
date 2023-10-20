@@ -56,7 +56,7 @@ namespace UTILS
     \brief Destructor
 
     */
-    virtual ~ConstraintDofSet();
+    ~ConstraintDofSet() override;
 
 
     //! @name Access methods
@@ -79,7 +79,7 @@ namespace UTILS
         const Teuchos::RCP<DRT::Discretization> dis, const int numdofs, const int start);
 
     /// reset all internal variables
-    virtual void Reset();
+    void Reset() override;
 
     //@}
 

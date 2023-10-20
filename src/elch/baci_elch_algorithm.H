@@ -36,17 +36,17 @@ namespace ELCH
     );
 
     /// virtual destructor to support polymorph destruction
-    virtual ~Algorithm() = default;
+    ~Algorithm() override = default;
 
    protected:
     /// provide information about initial field
-    void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     /// print scatra solver type to screen
-    void PrintScaTraSolver();
+    void PrintScaTraSolver() override;
 
     /// convergence check for natural convection solver
-    bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol);
+    bool ConvergenceCheck(int natconvitnum, int natconvitmax, double natconvittol) override;
   };
 }  // namespace ELCH
 

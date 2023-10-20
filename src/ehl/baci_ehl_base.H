@@ -45,7 +45,7 @@ namespace EHL
         const std::string lubrication_disname);  // Problem builder
 
     /// virtual destructor
-    virtual ~Base(){};
+    ~Base() override{};
 
     /// setup
     virtual void SetupSystem() = 0;
@@ -57,10 +57,10 @@ namespace EHL
     void TestResults(const Epetra_Comm& comm);
 
     /// read restart
-    void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     /// read restart from given time
-    void ReadRestartfromTime(double restarttime);
+    void ReadRestartfromTime(double restarttime) override;
 
     //! access to structural field
     const Teuchos::RCP<ADAPTER::Structure>& StructureField() { return structure_; }
@@ -128,7 +128,7 @@ namespace EHL
         const std::string struct_disname, const std::string lubrication_disname);
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! write output
     virtual void Output(bool forced_writerestart = false);

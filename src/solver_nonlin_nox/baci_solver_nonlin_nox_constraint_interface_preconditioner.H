@@ -48,7 +48,7 @@ namespace NOX
         {
          public:
           //! destructor
-          virtual ~Preconditioner(){};
+          ~Preconditioner() override{};
 
           /*! \brief Is the (CURRENT) system to solve a saddle-point system?
            *

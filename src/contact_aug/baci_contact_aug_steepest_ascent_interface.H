@@ -42,7 +42,7 @@ namespace CONTACT
             bool selfcontact);
 
         /// destructor
-        virtual ~Interface(){};
+        ~Interface() override{};
 
        protected:
         Teuchos::RCP<CONTACT::AUG::INTERFACE::AssembleStrategy> CreateNodeBasedAssembleStrategy()
@@ -73,7 +73,7 @@ namespace CONTACT
           }
 
           /// destructor
-          virtual ~NodeBasedAssembleStrategy(){};
+          ~NodeBasedAssembleStrategy() override{};
 
           /// derived
           void Add_Var_A_GG(Epetra_Vector& sl_force_g, const Epetra_Vector& cnVec) const override;

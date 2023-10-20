@@ -24,26 +24,26 @@ namespace DRT
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      virtual DRT::ParObject* Create(const std::vector<char>& data) = 0;
+      DRT::ParObject* Create(const std::vector<char>& data) override = 0;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
 
       */
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
       /*!
       \brief Decide which element type should be created : FLUIDIMMERSED or FLUIDPOROIMMERSED
       */
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner) = 0;
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override = 0;
 
       /*!
       \brief Setup the definition line for this element
       */
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>&
-              definitions) = 0;
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override = 0;
 
 
     };  // class FluidTypeImmersed
@@ -77,7 +77,7 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
 
       */
-      virtual DRT::Element* Clone() const
+      DRT::Element* Clone() const override
       {
         dserror("not implemented in base class");
         return nullptr;
@@ -89,7 +89,7 @@ namespace DRT
       every class implementing ParObject needs a unique id defined at the
       top of this file.
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         dserror("not implemented in base class");
         return -1234;
@@ -253,7 +253,7 @@ namespace DRT
       \param name (in):   Name of data that is currently processed for visualization
       \param data (out):  data to be filled by element if it recognizes the name
       */
-      virtual bool VisData(const std::string& name, std::vector<double>& data)
+      bool VisData(const std::string& name, std::vector<double>& data) override
       {
         dserror("not implemented in base class");
         return false;
@@ -265,14 +265,14 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const { dserror("not implemented in base class"); };
+      void Pack(DRT::PackBuffer& data) const override { dserror("not implemented in base class"); };
 
       /*!
       \brief Unpack data from a char vector into this class
 
       \ref Pack and \ref Unpack are used to communicate this element
       */
-      virtual void Unpack(const std::vector<char>& data)
+      void Unpack(const std::vector<char>& data) override
       {
         dserror("not implemented in base class");
       };
@@ -280,7 +280,7 @@ namespace DRT
       /*!
       \brief Destructor
       */
-      ~FluidImmersedBase() { return; }
+      ~FluidImmersedBase() override { return; }
 
 
     };  // class FluidImmersedBase

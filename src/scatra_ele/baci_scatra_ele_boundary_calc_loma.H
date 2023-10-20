@@ -39,7 +39,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      private:
       //! private constructor for singletons
@@ -53,11 +53,11 @@ namespace DRT
       //! calculate Neumann inflow boundary conditions
       void NeumannInflow(const DRT::FaceElement* ele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, DRT::Element::LocationArray& la,
-          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs);
+          CORE::LINALG::SerialDenseMatrix& emat, CORE::LINALG::SerialDenseVector& erhs) override;
 
       //! get density at integration point
       double GetDensity(Teuchos::RCP<const MAT::Material> material,
-          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k);
+          const std::vector<CORE::LINALG::Matrix<nen_, 1>>& ephinp, const int k) override;
 
       //! integral of normal diffusive flux and velocity over boundary surface
       void NormDiffFluxAndVelIntegral(const DRT::Element* ele, Teuchos::ParameterList& params,

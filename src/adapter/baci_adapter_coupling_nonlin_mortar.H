@@ -60,7 +60,7 @@ namespace ADAPTER
     \brief Virtual destructor
 
     */
-    virtual ~CouplingNonLinMortar(){};
+    ~CouplingNonLinMortar() override{};
 
     /*!
     \brief initialize routine
@@ -119,7 +119,7 @@ namespace ADAPTER
     };
 
     // create projection operator Dinv*M
-    void CreateP();
+    void CreateP() override;
 
     virtual Teuchos::RCP<Epetra_Vector> Gap()
     {
@@ -196,7 +196,7 @@ namespace ADAPTER
     const bool& IsSetup() const { return issetup_; };
 
     /// check init and setup call
-    void CheckSetup() const
+    void CheckSetup() const override
     {
       if (!IsSetup()) dserror("ERROR: Call Setup() first!");
     }

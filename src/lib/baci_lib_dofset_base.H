@@ -34,48 +34,48 @@ namespace DRT
     DofSetBase();
 
     /// Destructor
-    virtual ~DofSetBase();
+    ~DofSetBase() override;
 
 
     //! @name Utility Methods
 
     /// Print this class
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /// Get Max of all GID assigned in the DofSets in front of current one in the list
     /// #static_dofsets_
-    virtual int MaxGIDinList(const Epetra_Comm& comm) const;
+    int MaxGIDinList(const Epetra_Comm& comm) const override;
 
     //@}
 
     //! @name Construction
 
     /// Add Dof Set to list #static_dofsets_
-    virtual void AddDofSettoList();
+    void AddDofSettoList() override;
 
     /// Replace a Dof Set in list #static_dofsets_ with this
-    virtual void ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset);
+    void ReplaceInStaticDofsets(Teuchos::RCP<DofSetInterface> olddofset) override;
 
     //@}
 
     /// Print the dofsets in the static_dofsets_ list
-    virtual void PrintAllDofsets(const Epetra_Comm& comm) const;
+    void PrintAllDofsets(const Epetra_Comm& comm) const override;
 
 
     //! @name DofSet management
     /// Registered DofSets need to know about changes to the DofSet.
 
     /// Notify proxies of new dofs
-    virtual void NotifyAssigned();
+    void NotifyAssigned() override;
 
     /// Notify proxies of reset
-    virtual void NotifyReset();
+    void NotifyReset() override;
 
     /// Register new dofset to notify
-    virtual void Register(DofSetInterface* dofset);
+    void Register(DofSetInterface* dofset) override;
 
     /// Remove dofset from list
-    virtual void Unregister(DofSetInterface* dofset);
+    void Unregister(DofSetInterface* dofset) override;
 
     //@}
 

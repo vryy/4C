@@ -26,11 +26,11 @@ namespace DRT
     class ControlPointType : public DRT::ParObjectType
     {
      public:
-      std::string Name() const { return "ControlPointType"; }
+      std::string Name() const override { return "ControlPointType"; }
 
       static ControlPointType& Instance() { return instance_; };
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
      private:
       static ControlPointType instance_;
@@ -88,13 +88,13 @@ namespace DRT
              pointer to it
 
       */
-      virtual DRT::NURBS::ControlPoint* Clone() const;
+      DRT::NURBS::ControlPoint* Clone() const override;
 
       /*!
       \brief Destructor
 
       */
-      virtual ~ControlPoint();
+      ~ControlPoint() override;
 
       /*!
       \brief Return unique ParObject id
@@ -104,7 +104,7 @@ namespace DRT
 
       \return the parobject id
       */
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return ControlPointType::Instance().UniqueParObjectId();
       }
@@ -117,7 +117,7 @@ namespace DRT
       \param data (in/out): a char vector to pack the data into
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -127,7 +127,7 @@ namespace DRT
       \param data (in): a char vector to unpack the data from
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       //@}
 
@@ -146,7 +146,7 @@ namespace DRT
 
       \param os ofstrem
       */
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //@}
 

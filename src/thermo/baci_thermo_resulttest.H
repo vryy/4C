@@ -44,7 +44,7 @@ namespace THR
     //!
     //! Possible position flags are "temp",
     //!                             "rate",
-    virtual void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     //! our discretisation

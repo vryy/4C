@@ -40,7 +40,7 @@ namespace MAT
       AAAneohooke_stopro(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~AAAneohooke_stopro() { ; }
+      ~AAAneohooke_stopro() override { ; }
 
       /// @name material parameters
       //@{
@@ -59,7 +59,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class AAAneohooke
   }     // namespace PAR
@@ -68,11 +68,11 @@ namespace MAT
   class AAAneohooke_stoproType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "AAAneohooke_stoproType"; }
+    std::string Name() const override { return "AAAneohooke_stoproType"; }
 
     static AAAneohooke_stoproType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static AAAneohooke_stoproType instance_;
@@ -90,7 +90,7 @@ namespace MAT
     AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params);
 
     /// check if element kinematics and material kinematics are compatible
-    virtual void ValidKinematics(INPAR::STR::KinemType kinem)
+    void ValidKinematics(INPAR::STR::KinemType kinem) override
     {
       if (!(kinem == INPAR::STR::kinem_nonlinearTotLag))
         dserror("element and material kinematics are not compatible");
@@ -104,7 +104,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return AAAneohooke_stoproType::Instance().UniqueParObjectId();
     }
@@ -119,7 +119,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -133,7 +133,7 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -144,19 +144,19 @@ namespace MAT
     double Youngs() const { return youngs_; }
 
     /// material mass density
-    virtual double Density() const { return params_->density_; }
+    double Density() const override { return params_->density_; }
 
     /// shear modulus
     double ShearMod() const { return 0.5 * params_->youngs_mean_ / (1.0 + params_->nue_); }
 
     // material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_aaaneohooke_stopro;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new AAAneohooke_stopro(*this));
     }
@@ -165,23 +165,23 @@ namespace MAT
     void Init(double value_stopro, std::string stochpar);
 
     // THE material routine
-    virtual void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
+    void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
         const CORE::LINALG::Matrix<6, 1>* glstrain, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>* stress, CORE::LINALG::Matrix<6, 6>* cmat, const int gp,
-        const int eleGID);
+        const int eleGID) override;
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// evaluate strain energy function
-    virtual void StrainEnergy(
-        const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp, const int eleGID);
+    void StrainEnergy(const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, const int gp,
+        const int eleGID) override;
 
     /// Return names of visualization data
-    virtual void VisNames(std::map<std::string, int>& names);
+    void VisNames(std::map<std::string, int>& names) override;
 
     /// Return visualization data
-    virtual bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID);
+    bool VisData(const std::string& name, std::vector<double>& data, int numgp, int eleID) override;
 
    private:
     /// my material parameters

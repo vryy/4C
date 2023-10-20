@@ -51,28 +51,28 @@ class Myocard_SAN_Garny : public Myocard_General
   explicit Myocard_SAN_Garny(const double eps_deriv_myocard, const std::string tissue);
 
   /// destructor
-  virtual ~Myocard_SAN_Garny() { ; }
+  ~Myocard_SAN_Garny() override { ; }
 
   /// compute reaction coefficient
-  double ReaCoeff(const double phi, const double dt);
+  double ReaCoeff(const double phi, const double dt) override;
 
   ///  returns number of internal state variables of the material
-  int GetNumberOfInternalStateVariables() const;
+  int GetNumberOfInternalStateVariables() const override;
 
   ///  returns current internal state of the material
-  double GetInternalState(const int k) const;
+  double GetInternalState(const int k) const override;
 
   ///  set internal state of the material
-  void SetInternalState(const int k, const double val);
+  void SetInternalState(const int k, const double val) override;
 
   ///  return number of ionic currents
-  int GetNumberOfIonicCurrents() const;
+  int GetNumberOfIonicCurrents() const override;
 
   ///  return ionic currents
-  double GetIonicCurrents(const int k) const;
+  double GetIonicCurrents(const int k) const override;
 
   /// time update for this material
-  void Update(const double phi, const double dt);
+  void Update(const double phi, const double dt) override;
 
  private:
   Myocard_Tools tools_;

@@ -51,7 +51,7 @@ namespace ADAPTER
     explicit AleFsiWrapper(Teuchos::RCP<Ale> ale);
 
     //! Destructor
-    virtual ~AleFsiWrapper() {}
+    ~AleFsiWrapper() override {}
 
     //@}
 
@@ -65,7 +65,7 @@ namespace ADAPTER
     }
 
     //! get Dirichlet map extractor
-    virtual const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    const Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return AleWrapper::GetDBCMapExtractor();
     }

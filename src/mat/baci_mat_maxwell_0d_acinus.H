@@ -35,7 +35,7 @@ namespace MAT
       Maxwell_0d_acinus(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Maxwell_0d_acinus() {}
+      ~Maxwell_0d_acinus() override {}
 
       /// @name material parameters
       //@{
@@ -50,7 +50,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class Maxwell_0d_acinus
 
@@ -59,11 +59,11 @@ namespace MAT
   class Maxwell_0d_acinusType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "maxwell_0d_acinusType"; }
+    std::string Name() const override { return "maxwell_0d_acinusType"; }
 
     static Maxwell_0d_acinusType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static Maxwell_0d_acinusType instance_;
@@ -90,7 +90,7 @@ namespace MAT
       every class implementing ParObject needs a unique id defined at the
       top of parobject.H (this file) and should return it in this method.
     */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return Maxwell_0d_acinusType::Instance().UniqueParObjectId();
     }
@@ -105,7 +105,7 @@ namespace MAT
 
       \param data (in/out): char vector to store class information
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
       \brief Unpack data from a char vector into this class
@@ -119,7 +119,7 @@ namespace MAT
       \param data (in) : vector storing all data to be unpacked into this
       instance.
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /*!
       \brief
@@ -146,19 +146,19 @@ namespace MAT
     //@}
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const
+    INPAR::MAT::MaterialType MaterialType() const override
     {
       return INPAR::MAT::m_0d_maxwell_acinus;
     }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const
+    Teuchos::RCP<Material> Clone() const override
     {
       return Teuchos::rcp(new Maxwell_0d_acinus(*this));
     }
 
     /// return density
-    virtual double Density() const { return -1; }
+    double Density() const override { return -1; }
 
     /// return first stiffness of the Maxwell model
     double Stiffness1() const { return params_->stiffness1_; }
@@ -173,7 +173,7 @@ namespace MAT
     double Viscosity2() const { return params_->viscosity2_; }
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+    MAT::PAR::Parameter* Parameter() const override { return params_; }
 
     /// Return value of class parameter
     virtual double GetParams(std::string parametername);

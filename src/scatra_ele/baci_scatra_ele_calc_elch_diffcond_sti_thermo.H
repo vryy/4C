@@ -59,14 +59,14 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec1_epetra,  //!< element right-hand side vector 1
           CORE::LINALG::SerialDenseVector& elevec2_epetra,  //!< element right-hand side vector 2
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< element right-hand side vector 3
-      );
+          ) override;
 
       //! extract quantities for element evaluation
       void ExtractElementAndNodeValues(DRT::Element* ele,  //!< current element
           Teuchos::ParameterList& params,                  //!< parameter list
           DRT::Discretization& discretization,             //!< discretization
           DRT::Element::LocationArray& la                  //!< location array
-      );
+          ) override;
 
       //! get material parameters
       void GetMaterialParams(const DRT::Element* ele,  //!< current element
@@ -75,7 +75,7 @@ namespace DRT
           std::vector<double>& densam,                 //!< density at t_(n+alpha_M)
           double& visc,                                //!< fluid viscosity
           const int iquad = -1                         //!< ID of current integration point
-      );
+          ) override;
 
       //! calculate element matrix and element right-hand side vector
       void CalcMatAndRhs(CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix
@@ -93,7 +93,7 @@ namespace DRT
           CORE::LINALG::Matrix<nen_, 1>&
               tauderpot,  //!< derivatives of stabilization parameter w.r.t. electric potential
           double& rhsint  //!< body force value
-      );
+          ) override;
 
       //! fill element matrix with linearizations of discrete scatra residuals w.r.t. thermo dofs
       void SysmatODScatraThermo(DRT::Element* ele,  //!< current element
@@ -101,7 +101,7 @@ namespace DRT
       );
 
       //! set internal variables for element evaluation
-      void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! get internal variable manager for thermodynamic diffusion-conduction formulation
       Teuchos::RCP<ScaTraEleInternalVariableManagerElchDiffCondSTIThermo<nsd_, nen_>> VarManager()
@@ -166,7 +166,7 @@ namespace DRT
       }
 
       //! set factor F/RT
-      void SetFRT()
+      void SetFRT() override
       {
         vmelch::frt_ = DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->Faraday() /
                        (DRT::ELEMENTS::ScaTraEleParameterElch::Instance("scatra")->GasConstant() *

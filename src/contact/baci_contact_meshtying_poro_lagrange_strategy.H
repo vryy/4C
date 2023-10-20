@@ -32,7 +32,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~PoroMtLagrangeStrategy(){};
+    ~PoroMtLagrangeStrategy() override{};
 
     /*!
     /brief initial Poro Meshtying calculations

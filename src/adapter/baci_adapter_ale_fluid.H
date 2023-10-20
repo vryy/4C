@@ -49,7 +49,7 @@ namespace ADAPTER
     explicit AleFluidWrapper(Teuchos::RCP<Ale> ale);
 
     //! Destructor
-    virtual ~AleFluidWrapper() {}
+    ~AleFluidWrapper() override {}
 
     //@}
 
@@ -57,7 +57,7 @@ namespace ADAPTER
     Teuchos::RCP<const ALE::UTILS::MapExtractor> Interface() const;
 
     //! solve
-    int Solve();
+    int Solve() override;
 
     //! apply displacements at the free surface nodes
     void ApplyFreeSurfaceDisplacements(Teuchos::RCP<const Epetra_Vector> fsdisp);

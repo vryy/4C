@@ -33,28 +33,28 @@ namespace DRT
     {
      public:
       //!< name of specific element type
-      std::string Name() const { return "MeshfreeMultiBinType"; }
+      std::string Name() const override { return "MeshfreeMultiBinType"; }
 
       //!< returning instance of specific element type
       static MeshfreeMultiBinType& Instance();
 
       //!< create parallel object of this element type
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
       //!< create element of this element type
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
       //!< create element of this element type
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np)
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override
       {
       }
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& node, const double* x0, const int numdof, const int dimnsp)
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& node, const double* x0, const int numdof, const int dimnsp) override
       {
         CORE::LINALG::SerialDenseMatrix nullspace;
         dserror("method ComputeNullSpace not implemented!");
@@ -105,7 +105,7 @@ namespace DRT
        * \brief Destructor
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      virtual ~MeshfreeMultiBin();
+      ~MeshfreeMultiBin() override;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -117,7 +117,7 @@ namespace DRT
        *
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      virtual DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -127,7 +127,7 @@ namespace DRT
        * top of parobject.H
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      virtual int UniqueParObjectId() const
+      int UniqueParObjectId() const override
       {
         return MeshfreeMultiBinType::Instance().UniqueParObjectId();
       };
@@ -140,7 +140,7 @@ namespace DRT
        *
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -150,15 +150,15 @@ namespace DRT
        *
        *///                                                  (public) ghamm 04/13
       /*------------------------------------------------------------------------*/
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
       // return meshfree bin type instance
-      virtual DRT::ElementType& ElementType() const { return MeshfreeMultiBinType::Instance(); }
+      DRT::ElementType& ElementType() const override { return MeshfreeMultiBinType::Instance(); }
 
       /*!
       \brief Get number of degrees of freedom of a certain node
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const { return 3; }
+      int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -168,7 +168,7 @@ namespace DRT
        * Meshfree bins do not have dofs
        *///
       /*------------------------------------------------------------------------*/
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*========================================================================*/
       //! @name Query methods
@@ -277,7 +277,7 @@ namespace DRT
        * usually be called by the print method of a derived class.
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       /*!
       \brief Evaluate a Neumann boundary condition dummy
@@ -298,10 +298,9 @@ namespace DRT
 
       \return 0 if successful, negative otherwise
       */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr)
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1 = nullptr) override
       {
         return 0;
       }
@@ -309,7 +308,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      virtual DiscretizationType Shape() const { return DRT::Element::dis_none; };
+      DiscretizationType Shape() const override { return DRT::Element::dis_none; };
 
      private:
       //! \brief element ids contained in this bin

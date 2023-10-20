@@ -60,10 +60,10 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamToSpherePotentialPair(){};
+    ~BeamToSpherePotentialPair() override{};
 
     //! Setup
-    virtual void Setup();
+    void Setup() override;
     //@}
 
     //! @name Derived methods from base class
@@ -71,30 +71,31 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
         CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
         CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
         CORE::LINALG::SerialDenseMatrix* stiffmat22,
-        const std::vector<DRT::Condition*> linechargeconds, const double k, const double m);
+        const std::vector<DRT::Condition*> linechargeconds, const double k,
+        const double m) override;
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
     elements
     */
-    virtual void ResetState(double time, const std::vector<double>& centerline_dofvec_ele1,
-        const std::vector<double>& centerline_dofvec_ele2);
+    void ResetState(double time, const std::vector<double>& centerline_dofvec_ele1,
+        const std::vector<double>& centerline_dofvec_ele2) override;
 
     /*!
     \brief Get coordinates of all interacting points on element1 and element2
     */
-    virtual void GetAllInteractingPointCoordsElement1(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const
+    void GetAllInteractingPointCoordsElement1(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not implemented yet");
     }
 
-    virtual void GetAllInteractingPointCoordsElement2(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const
+    void GetAllInteractingPointCoordsElement2(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override
     {
       dserror("not implemented yet");
     }
@@ -102,14 +103,14 @@ namespace BEAMINTERACTION
     /*!
     \brief Get forces at all interacting points on element1 and element2
     */
-    virtual void GetForcesAtAllInteractingPointsElement1(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const
+    void GetForcesAtAllInteractingPointsElement1(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
       dserror("not implemented yet");
     }
 
-    virtual void GetForcesAtAllInteractingPointsElement2(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const
+    void GetForcesAtAllInteractingPointsElement2(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& forces) const override
     {
       dserror("not implemented yet");
     }
@@ -117,14 +118,14 @@ namespace BEAMINTERACTION
     /*!
     \brief Get moments at all interacting points on element1 and element2
     */
-    virtual void GetMomentsAtAllInteractingPointsElement1(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const
+    void GetMomentsAtAllInteractingPointsElement1(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
       dserror("not implemented yet");
     }
 
-    virtual void GetMomentsAtAllInteractingPointsElement2(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const
+    void GetMomentsAtAllInteractingPointsElement2(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& moments) const override
     {
       dserror("not implemented yet");
     }
@@ -137,12 +138,12 @@ namespace BEAMINTERACTION
     /** \brief print this beam potential-based element pair to screen
      *
      *  \author grill */
-    virtual void Print(std::ostream& out) const;
+    void Print(std::ostream& out) const override;
 
     /** \brief print this beam potential element pair to screen
      *
      *  \author grill */
-    virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const;
+    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
     //@}
 
     //! @name Access methods

@@ -203,7 +203,7 @@ namespace DRT
       //! Re-initialize EAS data, needed for sosh8 morphing
       void ReInitEas(const DRT::ELEMENTS::So3Plast_EASType EASType);
 
-      virtual void InvalidGpData()
+      void InvalidGpData() override
       {
         So3_Plast<DRT::Element::hex8>::InvalidGpData();
         jac_refe_.first = false;

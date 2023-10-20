@@ -204,7 +204,7 @@ namespace MAT
         const int eleGID) final;
 
     /// \brief Return material mass density given by mixture rule
-    double Density() const { return mixture_rule_->ReturnMassDensity(); };
+    double Density() const override { return mixture_rule_->ReturnMassDensity(); };
 
     void RegisterVtkOutputDataNames(
         std::unordered_map<std::string, int>& names_and_size) const override;

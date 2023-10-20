@@ -21,7 +21,7 @@ namespace FSI
    public:
     explicit FluidAleAlgorithm(const Epetra_Comm& comm);
 
-    virtual ~FluidAleAlgorithm();
+    ~FluidAleAlgorithm() override;
 
     /// time loop
     void Timeloop();

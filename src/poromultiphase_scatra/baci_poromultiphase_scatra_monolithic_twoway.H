@@ -38,22 +38,22 @@ namespace POROMULTIPHASESCATRA
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,
         const Teuchos::ParameterList& structparams, const Teuchos::ParameterList& fluidparams,
         const Teuchos::ParameterList& scatraparams, const std::string& struct_disname,
         const std::string& fluid_disname, const std::string& scatra_disname, bool isale,
         int nds_disp, int nds_vel, int nds_solidpressure, int ndsporofluid_scatra,
-        const std::map<int, std::set<int>>* nearbyelepairs);
+        const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// setup solver (only needed for poromultiphase monolithic coupling)
-    virtual void SetupSolver();
+    void SetupSolver() override;
 
     /// time step of coupled problem
-    void TimeStep();
+    void TimeStep() override;
 
     //! extractor to communicate between full monolithic map and block maps
     Teuchos::RCP<const CORE::LINALG::MultiMapExtractor> Extractor() const
@@ -294,10 +294,10 @@ namespace POROMULTIPHASESCATRA
 
    private:
     // Setup full map
-    virtual void SetupMaps();
+    void SetupMaps() override;
 
     // update the scatra field
-    virtual void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc);
+    void UpdateScatra(Teuchos::RCP<const Epetra_Vector> scatrainc) override;
 
     //! extract the field vectors from a given composed vector x.
     /*!
@@ -308,24 +308,24 @@ namespace POROMULTIPHASESCATRA
      \param scx (o) scatra vector (primary variables of scatra field, i.e. mass fraction)
       and mass fractions in 1D artery network
      */
-    virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
+    void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
         Teuchos::RCP<const Epetra_Vector>& stx, Teuchos::RCP<const Epetra_Vector>& flx,
-        Teuchos::RCP<const Epetra_Vector>& scx);
+        Teuchos::RCP<const Epetra_Vector>& scx) override;
 
     //! setup monolithic system matrix
-    virtual void SetupSystemMatrix();
+    void SetupSystemMatrix() override;
 
     // Setup monolithic rhs-vector
-    virtual void SetupRHS();
+    void SetupRHS() override;
 
     //! evaluate scatra field
-    virtual void EvaluateScatra();
+    void EvaluateScatra() override;
 
     //! build the combined dirichletbcmap
-    virtual void BuildCombinedDBCMap();
+    void BuildCombinedDBCMap() override;
 
     /// setup
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! return arteryscatra-artery coupling sparse matrix
     Teuchos::RCP<CORE::LINALG::SparseMatrix> ArteryScatraArteryCouplingMatrix();
@@ -334,10 +334,10 @@ namespace POROMULTIPHASESCATRA
     void ApplyArteryScatraArteryCouplMatrix(Teuchos::RCP<CORE::LINALG::SparseOperator> k_asa);
 
     //! build the block null spaces
-    virtual void BuildBlockNullSpaces();
+    void BuildBlockNullSpaces() override;
 
     //! build norms for convergence check
-    void BuildConvergenceNorms();
+    void BuildConvergenceNorms() override;
 
     //! dof row map (not splitted), only artery and porofluid
     Teuchos::RCP<Epetra_Map> fullmap_artporo_;

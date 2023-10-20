@@ -20,212 +20,212 @@ namespace ADAPTER
    public:
     explicit FluidWrapper(Teuchos::RCP<Fluid> fluid) : fluid_(fluid) {}
 
-    virtual void Init()
+    void Init() override
     {
       fluid_->Init();
       return;
     }
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess() { return fluid_->InitialGuess(); }
-    virtual Teuchos::RCP<const Epetra_Vector> RHS() { return fluid_->RHS(); }
-    virtual Teuchos::RCP<const Epetra_Vector> TrueResidual() { return fluid_->TrueResidual(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Velnp() { return fluid_->Velnp(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Velaf() { return fluid_->Velaf(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Veln() { return fluid_->Veln(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Velnm()
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override { return fluid_->InitialGuess(); }
+    Teuchos::RCP<const Epetra_Vector> RHS() override { return fluid_->RHS(); }
+    Teuchos::RCP<const Epetra_Vector> TrueResidual() override { return fluid_->TrueResidual(); }
+    Teuchos::RCP<const Epetra_Vector> Velnp() override { return fluid_->Velnp(); }
+    Teuchos::RCP<const Epetra_Vector> Velaf() override { return fluid_->Velaf(); }
+    Teuchos::RCP<const Epetra_Vector> Veln() override { return fluid_->Veln(); }
+    Teuchos::RCP<const Epetra_Vector> Velnm() override
     {
       dserror("not implemented");
       return Teuchos::null;
     };
-    virtual Teuchos::RCP<const Epetra_Vector> Stepinc() { return fluid_->Stepinc(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Accnp() { return fluid_->Accnp(); };
-    virtual Teuchos::RCP<const Epetra_Vector> Accn() { return fluid_->Accn(); };
-    virtual Teuchos::RCP<const Epetra_Vector> Accnm() { return fluid_->Accnm(); };
-    virtual Teuchos::RCP<const Epetra_Vector> Accam() { return fluid_->Accam(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Scaaf() { return fluid_->Scaaf(); };
-    virtual Teuchos::RCP<const Epetra_Vector> Scaam()
+    Teuchos::RCP<const Epetra_Vector> Stepinc() override { return fluid_->Stepinc(); }
+    Teuchos::RCP<const Epetra_Vector> Accnp() override { return fluid_->Accnp(); };
+    Teuchos::RCP<const Epetra_Vector> Accn() override { return fluid_->Accn(); };
+    Teuchos::RCP<const Epetra_Vector> Accnm() override { return fluid_->Accnm(); };
+    Teuchos::RCP<const Epetra_Vector> Accam() override { return fluid_->Accam(); }
+    Teuchos::RCP<const Epetra_Vector> Scaaf() override { return fluid_->Scaaf(); };
+    Teuchos::RCP<const Epetra_Vector> Scaam() override
     {
       dserror("not implemented");
       return Teuchos::null;
     };
-    virtual Teuchos::RCP<const Epetra_Vector> Hist() { return fluid_->Hist(); }
-    virtual Teuchos::RCP<const Epetra_Vector> GridVel() { return fluid_->GridVel(); }
-    virtual Teuchos::RCP<const Epetra_Vector> GridVeln() { return fluid_->GridVeln(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Dispnp() { return fluid_->Dispnp(); }
-    virtual Teuchos::RCP<const Epetra_Vector> Dispn() { return fluid_->Dispn(); }
-    virtual Teuchos::RCP<const Epetra_Vector> ConvectiveVel() { return fluid_->ConvectiveVel(); }
-    virtual Teuchos::RCP<const Epetra_Vector> FsVel()
+    Teuchos::RCP<const Epetra_Vector> Hist() override { return fluid_->Hist(); }
+    Teuchos::RCP<const Epetra_Vector> GridVel() override { return fluid_->GridVel(); }
+    Teuchos::RCP<const Epetra_Vector> GridVeln() override { return fluid_->GridVeln(); }
+    Teuchos::RCP<const Epetra_Vector> Dispnp() override { return fluid_->Dispnp(); }
+    Teuchos::RCP<const Epetra_Vector> Dispn() override { return fluid_->Dispn(); }
+    Teuchos::RCP<const Epetra_Vector> ConvectiveVel() override { return fluid_->ConvectiveVel(); }
+    Teuchos::RCP<const Epetra_Vector> FsVel() override
     {
       dserror("not implemented");
       return Teuchos::null;
     };
-    virtual Teuchos::RCP<Epetra_Vector> StdVeln()
+    Teuchos::RCP<Epetra_Vector> StdVeln() override
     {
       dserror("not implemented");
       return Teuchos::null;
     };
-    virtual Teuchos::RCP<Epetra_Vector> StdVelnp()
+    Teuchos::RCP<Epetra_Vector> StdVelnp() override
     {
       dserror("not implemented");
       return Teuchos::null;
     };
-    virtual Teuchos::RCP<Epetra_Vector> StdVelaf()
+    Teuchos::RCP<Epetra_Vector> StdVelaf() override
     {
       dserror("not implemented");
       return Teuchos::null;
     };
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap() { return fluid_->DofRowMap(); }
-    virtual Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds)
+    Teuchos::RCP<const Epetra_Map> DofRowMap() override { return fluid_->DofRowMap(); }
+    Teuchos::RCP<const Epetra_Map> DofRowMap(unsigned nds) override
     {
       return fluid_->DofRowMap(nds);
     };
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemMatrix() override
     {
       return fluid_->SystemMatrix();
     }
-    virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix()
+    Teuchos::RCP<CORE::LINALG::SparseMatrix> SystemSparseMatrix() override
     {
       return fluid_->SystemSparseMatrix();
     }
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> BlockSystemMatrix() override
     {
       return fluid_->BlockSystemMatrix();
     }
-    virtual Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives()
+    Teuchos::RCP<CORE::LINALG::BlockSparseMatrixBase> ShapeDerivatives() override
     {
       return fluid_->ShapeDerivatives();
     }
-    virtual const Teuchos::RCP<DRT::Discretization>& Discretization()
+    const Teuchos::RCP<DRT::Discretization>& Discretization() override
     {
       return fluid_->Discretization();
     }
-    virtual Teuchos::RCP<const DRT::DofSet> DofSet() { return fluid_->DofSet(); }
-    virtual Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor()
+    Teuchos::RCP<const DRT::DofSet> DofSet() override { return fluid_->DofSet(); }
+    Teuchos::RCP<const CORE::LINALG::MapExtractor> GetDBCMapExtractor() override
     {
       return fluid_->GetDBCMapExtractor();
     }
-    virtual void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno)
+    void SetInitialFlowField(
+        const INPAR::FLUID::InitialField initfield, const int startfuncno) override
     {
       return fluid_->SetInitialFlowField(initfield, startfuncno);
     }
-    virtual void SetInitialPorosityField(
-        const INPAR::POROELAST::InitialField initfield, const int startfuncno)
+    void SetInitialPorosityField(
+        const INPAR::POROELAST::InitialField initfield, const int startfuncno) override
     {
       return fluid_->SetInitialPorosityField(initfield, startfuncno);
     };
-    virtual void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext)
+    void ApplyExternalForces(Teuchos::RCP<Epetra_MultiVector> fext) override
     {
       return fluid_->ApplyExternalForces(fext);
     };
-    virtual void AddContributionToExternalLoads(
-        const Teuchos::RCP<const Epetra_Vector> contributing_vector)
+    void AddContributionToExternalLoads(
+        const Teuchos::RCP<const Epetra_Vector> contributing_vector) override
     {
       return fluid_->AddContributionToExternalLoads(contributing_vector);
     };
-    virtual void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd)
+    void AddDirichCond(const Teuchos::RCP<const Epetra_Map> maptoadd) override
     {
       return fluid_->AddDirichCond(maptoadd);
     };
-    virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove)
+    void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove) override
     {
       return fluid_->RemoveDirichCond(maptoremove);
     };
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
+    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel) override
     {
       return fluid_->UpdateNewton(vel);
     };
-    virtual void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    void SetLomaIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
         Teuchos::RCP<const Epetra_Vector> fsscalaraf, const double thermpressaf,
         const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-        Teuchos::RCP<DRT::Discretization> scatradis)
+        Teuchos::RCP<DRT::Discretization> scatradis) override
     {
       return fluid_->SetLomaIterScalarFields(scalaraf, scalaram, scalardtam, fsscalaraf,
           thermpressaf, thermpressam, thermpressdtaf, thermpressdtam, scatradis);
     }
-    virtual void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+    void SetIterScalarFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
         Teuchos::RCP<const Epetra_Vector> scalaram, Teuchos::RCP<const Epetra_Vector> scalardtam,
-        Teuchos::RCP<DRT::Discretization> scatradis, int dofset = 0)
+        Teuchos::RCP<DRT::Discretization> scatradis, int dofset = 0) override
     {
       return fluid_->SetIterScalarFields(scalaraf, scalaram, scalardtam, scatradis, dofset);
     }
-    virtual void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
-        const double thermpressnp, Teuchos::RCP<const Epetra_Vector> scatraresidual,
-        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1)
+    void SetScalarFields(Teuchos::RCP<const Epetra_Vector> scalarnp, const double thermpressnp,
+        Teuchos::RCP<const Epetra_Vector> scatraresidual,
+        Teuchos::RCP<DRT::Discretization> scatradis, const int whichscalar = -1) override
     {
       return fluid_->SetScalarFields(
           scalarnp, thermpressnp, scatraresidual, scatradis, whichscalar);
     }
-    virtual Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager()
+    Teuchos::RCP<FLD::TurbulenceStatisticManager> TurbulenceStatisticManager() override
     {
       return fluid_->TurbulenceStatisticManager();
     }
-    virtual Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() { return fluid_->DynSmagFilter(); }
-    virtual Teuchos::RCP<FLD::Vreman> Vreman() { return fluid_->Vreman(); }
-    virtual void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp)
+    Teuchos::RCP<FLD::DynSmagFilter> DynSmagFilter() override { return fluid_->DynSmagFilter(); }
+    Teuchos::RCP<FLD::Vreman> Vreman() override { return fluid_->Vreman(); }
+    void SetVelocityField(Teuchos::RCP<const Epetra_Vector> velnp) override
     {
       dserror("not implemented!");
       return;
     };
     //    virtual void TimeLoop()
     //    { return fluid_->TimeLoop(); }
-    virtual void Integrate() { return fluid_->Integrate(); }
-    virtual void PrepareTimeStep() { return fluid_->PrepareTimeStep(); }
-    virtual void IncrementTimeAndStep()
+    void Integrate() override { return fluid_->Integrate(); }
+    void PrepareTimeStep() override { return fluid_->PrepareTimeStep(); }
+    void IncrementTimeAndStep() override
     {
       dserror("not implemented!");
       return;
     }
-    virtual void PrepareSolve() { fluid_->PrepareSolve(); }
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
+    void PrepareSolve() override { fluid_->PrepareSolve(); }
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc) override
     {
       return fluid_->Evaluate(stepinc);
     }
-    virtual bool ConvergenceCheck(int itnum, int itmax, const double velrestol,
-        const double velinctol, const double presrestol, const double presinctol)
+    bool ConvergenceCheck(int itnum, int itmax, const double velrestol, const double velinctol,
+        const double presrestol, const double presinctol) override
     {
       dserror("not implemented!");
       return false;
     }
-    virtual void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment)
+    void IterUpdate(const Teuchos::RCP<const Epetra_Vector> increment) override
     {
       dserror("not implemented!");
       return;
     }
-    virtual void Update() { return fluid_->Update(); }
-    virtual void StatisticsAndOutput() { return fluid_->StatisticsAndOutput(); }
-    virtual void Output() { return fluid_->Output(); }
-    virtual void StatisticsOutput()
+    void Update() override { return fluid_->Update(); }
+    void StatisticsAndOutput() override { return fluid_->StatisticsAndOutput(); }
+    void Output() override { return fluid_->Output(); }
+    void StatisticsOutput() override
     {
       dserror("not implemented!");
       return;
     }
-    virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter()
+    const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() override
     {
       return fluid_->DiscWriter();
     }
-    virtual const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter()
+    const Teuchos::RCP<CORE::LINALG::MapExtractor> GetVelPressSplitter() override
     {
       return fluid_->GetVelPressSplitter();
     }
-    virtual void ReadRestart(int step) { return fluid_->ReadRestart(step); }
-    virtual void SetRestart(const int step, const double time,
-        Teuchos::RCP<const Epetra_Vector> readvelnp, Teuchos::RCP<const Epetra_Vector> readveln,
-        Teuchos::RCP<const Epetra_Vector> readvelnm, Teuchos::RCP<const Epetra_Vector> readaccnp,
-        Teuchos::RCP<const Epetra_Vector> readaccn)
+    void ReadRestart(int step) override { return fluid_->ReadRestart(step); }
+    void SetRestart(const int step, const double time, Teuchos::RCP<const Epetra_Vector> readvelnp,
+        Teuchos::RCP<const Epetra_Vector> readveln, Teuchos::RCP<const Epetra_Vector> readvelnm,
+        Teuchos::RCP<const Epetra_Vector> readaccnp,
+        Teuchos::RCP<const Epetra_Vector> readaccn) override
     {
       dserror("not implemented!");
       return;
     }
-    virtual double Time() const { return fluid_->Time(); }
-    virtual int Step() const { return fluid_->Step(); }
-    virtual double Dt() const { return fluid_->Dt(); }
+    double Time() const override { return fluid_->Time(); }
+    int Step() const override { return fluid_->Step(); }
+    double Dt() const override { return fluid_->Dt(); }
 
     //! @name Write access to field solution variables at \f$t^{n+1}\f$
     //@{
 
     /// write access to extract velocities at \f$t^{n+1}\f$
-    virtual Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() { return fluid_->WriteAccessVelnp(); }
+    Teuchos::RCP<Epetra_Vector> WriteAccessVelnp() override { return fluid_->WriteAccessVelnp(); }
 
     //@}
 
@@ -240,13 +240,13 @@ namespace ADAPTER
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void TimeStepAuxiliar(){};
+    void TimeStepAuxiliar() override{};
 
     /*! Indicate norms of temporal discretization error
      *
      *  \author mayr.mt \date 12/2013
      */
-    virtual void IndicateErrorNorms(
+    void IndicateErrorNorms(
         double& err,       ///< L2-norm of temporal discretization error based on all DOFs
         double& errcond,   ///< L2-norm of temporal discretization error based on interface DOFs
         double& errother,  ///< L2-norm of temporal discretization error based on interior DOFs
@@ -254,169 +254,172 @@ namespace ADAPTER
         double&
             errinfcond,  ///< L-inf-norm of temporal discretization error based on interface DOFs
         double& errinfother  ///< L-inf-norm of temporal discretization error based on interior DOFs
-    )
+        ) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     };
 
     //! Set fluid time step size that was computed outside
-    virtual void SetDt(const double dtnew) { fluid_->SetDt(dtnew); }
+    void SetDt(const double dtnew) override { fluid_->SetDt(dtnew); }
 
     //! Reset last time step
-    virtual void ResetStep() { fluid_->ResetStep(); }
+    void ResetStep() override { fluid_->ResetStep(); }
 
     //! Reset time and step number of last time step, needed for time step size adaptivity an FSI
-    virtual void ResetTime(const double dtold) { fluid_->ResetTime(dtold); }
+    void ResetTime(const double dtold) override { fluid_->ResetTime(dtold); }
 
     //! Set time and step
-    virtual void SetTimeStep(const double time, const int step) { fluid_->SetTimeStep(time, step); }
+    void SetTimeStep(const double time, const int step) override
+    {
+      fluid_->SetTimeStep(time, step);
+    }
 
     //@}
 
-    virtual double EvalTime() const
+    double EvalTime() const override
     {
       dserror("not implemented!");
       return 0.0;
     }
-    virtual void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
+    void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph) override
     {
       dserror("not implemented!");
       return;
     }
-    virtual void Solve() { return fluid_->Solve(); }
-    virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel)
+    void Solve() override { return fluid_->Solve(); }
+    Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       return Teuchos::null;
     }
-    virtual Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() { return fluid_->LinearSolver(); }
-    virtual void CalcIntermediateSolution() { return fluid_->CalcIntermediateSolution(); }
-    virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap()
+    Teuchos::RCP<CORE::LINALG::Solver> LinearSolver() override { return fluid_->LinearSolver(); }
+    void CalcIntermediateSolution() override { return fluid_->CalcIntermediateSolution(); }
+    Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() override
     {
       return fluid_->InnerVelocityRowMap();
     }
-    virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap() { return fluid_->VelocityRowMap(); }
-    virtual Teuchos::RCP<const Epetra_Map> PressureRowMap() { return fluid_->PressureRowMap(); }
-    virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0)
+    Teuchos::RCP<const Epetra_Map> VelocityRowMap() override { return fluid_->VelocityRowMap(); }
+    Teuchos::RCP<const Epetra_Map> PressureRowMap() override { return fluid_->PressureRowMap(); }
+    void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm, const int nds_master = 0) override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// Use ResidualScaling() to convert the implemented fluid residual to an actual force with unit
     /// Newton [N]
-    virtual double ResidualScaling() const { return fluid_->ResidualScaling(); }
+    double ResidualScaling() const override { return fluid_->ResidualScaling(); }
 
     /// Velocity-displacement conversion at the fsi interface
-    virtual double TimeScaling() const { return fluid_->TimeScaling(); }
+    double TimeScaling() const override { return fluid_->TimeScaling(); }
 
     /// return time integration factor
-    virtual double TimIntParam() const { return fluid_->TimIntParam(); }
+    double TimIntParam() const override { return fluid_->TimIntParam(); }
 
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& Interface() const override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
       return ret;
     }
 
-    virtual Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const
+    Teuchos::RCP<FLD::UTILS::MapExtractor> const& FPSIInterface() const override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
       static Teuchos::RCP<FLD::UTILS::MapExtractor> ret = Teuchos::null;
       return ret;
     }
-    virtual INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const
+    INPAR::FLUID::TimeIntegrationScheme TimIntScheme() const override
     {
       return fluid_->TimIntScheme();
     }
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
-        Teuchos::RCP<const Epetra_Vector> velpres)
+    Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(
+        Teuchos::RCP<const Epetra_Vector> velpres) override
     {
       return fluid_->ExtractVelocityPart(velpres);
     }
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
-        Teuchos::RCP<const Epetra_Vector> velpres)
+    Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(
+        Teuchos::RCP<const Epetra_Vector> velpres) override
     {
       return fluid_->ExtractPressurePart(velpres);
     }
-    virtual void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
+    void ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel) override
     {
       return fluid_->ApplyInterfaceVelocities(ivel);
     }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVelnp() override
     {
       return fluid_->ExtractInterfaceVelnp();
     }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceVeln() override
     {
       return fluid_->ExtractInterfaceVeln();
     }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln()
+    Teuchos::RCP<Epetra_Vector> ExtractFreeSurfaceVeln() override
     {
       return fluid_->ExtractFreeSurfaceVeln();
     }
-    virtual Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces()
+    Teuchos::RCP<Epetra_Vector> ExtractInterfaceForces() override
     {
       return fluid_->ExtractInterfaceForces();
     }
     /// Apply initial mesh displacement
-    virtual void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp)
+    void ApplyInitialMeshDisplacement(Teuchos::RCP<const Epetra_Vector> initfluiddisp) override
     {
       fluid_->ApplyInitialMeshDisplacement(initfluiddisp);
     }
-    virtual void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp)
+    void ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> fluiddisp) override
     {
       return fluid_->ApplyMeshDisplacement(fluiddisp);
     }
-    virtual void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc)
+    void ApplyMeshDisplacementIncrement(Teuchos::RCP<const Epetra_Vector> dispstepinc) override
     {
       return fluid_->ApplyMeshDisplacementIncrement(dispstepinc);
     }
-    virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel)
+    void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) override
     {
       return fluid_->ApplyMeshVelocity(gridvel);
     }
-    virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+    void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override
     {
       return fluid_->DisplacementToVelocity(fcx);
     }
-    virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+    void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) override
     {
       return fluid_->VelocityToDisplacement(fcx);
     }
-    virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
+    void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) override
     {
       return fluid_->FreeSurfDisplacementToVelocity(fcx);
     }
-    virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
+    void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) override
     {
       return fluid_->FreeSurfVelocityToDisplacement(fcx);
     }
-    virtual int Itemax() const { return fluid_->Itemax(); }
-    virtual void SetItemax(int itemax) { return fluid_->SetItemax(itemax); }
-    virtual Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape()
+    int Itemax() const override { return fluid_->Itemax(); }
+    void SetItemax(int itemax) override { return fluid_->SetItemax(itemax); }
+    Teuchos::RCP<Epetra_Vector> IntegrateInterfaceShape() override
     {
       return fluid_->IntegrateInterfaceShape();
     }
-    virtual void UseBlockMatrix(bool splitmatrix) { return fluid_->UseBlockMatrix(splitmatrix); }
-    virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() { return fluid_->CreateFieldTest(); }
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1)
+    void UseBlockMatrix(bool splitmatrix) override { return fluid_->UseBlockMatrix(splitmatrix); }
+    Teuchos::RCP<DRT::ResultTest> CreateFieldTest() override { return fluid_->CreateFieldTest(); }
+    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override
     {
       return fluid_->Reset(completeReset, numsteps, iter);
     };
-    virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
+    void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) override
     {
       return fluid_->SetFldGrDisp(fluid_growth_disp);
     }
 
     /// calculate error in comparison to analytical solution
-    virtual void CalculateError()
+    void CalculateError() override
     {
       dserror("Not implemented in the base class, may be overridden by a subclass.");
     }
 
     /// return physical type of fluid algorithm
-    virtual INPAR::FLUID::PhysicalType PhysicalType() const { return fluid_->PhysicalType(); }
+    INPAR::FLUID::PhysicalType PhysicalType() const override { return fluid_->PhysicalType(); }
 
    protected:
     Teuchos::RCP<Fluid> fluid_;

@@ -101,32 +101,32 @@ namespace DRT
       void FlowDepPressureBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+          CORE::LINALG::SerialDenseVector::Base& elevec) override;
 
       void SlipSuppBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+          CORE::LINALG::SerialDenseVector::Base& elevec) override;
 
       void NavierSlipBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+          CORE::LINALG::SerialDenseVector::Base& elevec) override;
 
       void EvaluateWeakDBC(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+          CORE::LINALG::SerialDenseVector::Base& elevec) override;
 
       void EstimateNitscheTraceMaxEigenvalue(DRT::FaceElement* surfele,
           Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat1,
-          CORE::LINALG::SerialDenseMatrix::Base& elemat2);
+          CORE::LINALG::SerialDenseMatrix::Base& elemat2) override;
 
       void MixHybDirichlet(DRT::ELEMENTS::FluidBoundary* surfele, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
           CORE::LINALG::SerialDenseMatrix::Base& elemat,
-          CORE::LINALG::SerialDenseVector::Base& elevec);
+          CORE::LINALG::SerialDenseVector::Base& elevec) override;
 
 
      private:

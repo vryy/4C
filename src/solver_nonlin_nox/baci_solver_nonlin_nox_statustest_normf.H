@@ -51,7 +51,7 @@ namespace NOX
             const NOX::Utils* u = nullptr);
 
         //! Destructor.
-        virtual ~NormF(){};
+        ~NormF() override{};
 
         /* @name Accessor Functions
            Used to query current values of variables in the status test.

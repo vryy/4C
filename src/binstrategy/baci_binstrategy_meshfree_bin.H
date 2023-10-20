@@ -64,7 +64,7 @@ namespace DRT
        * \brief Destructor
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual ~MeshfreeBin();
+      ~MeshfreeBin() override;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -76,7 +76,7 @@ namespace DRT
        *
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual DRT::Element* Clone() const = 0;
+      DRT::Element* Clone() const override = 0;
 
       /*------------------------------------------------------------------------*/
       /*!
@@ -86,7 +86,7 @@ namespace DRT
        * top of parobject.H
        *///                                                  (public) ghamm 11/12
       /*------------------------------------------------------------------------*/
-      virtual int UniqueParObjectId() const = 0;
+      int UniqueParObjectId() const override = 0;
 
       /*========================================================================*/
       //! @name Query methods

@@ -50,7 +50,7 @@ namespace THR
     TimIntExpl(const TimIntExpl& old) : TimInt(old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    virtual void ResizeMStep() = 0;
+    void ResizeMStep() override = 0;
 
     //@}
 
@@ -58,11 +58,11 @@ namespace THR
     //@{
 
     //! Do time integration of single step
-    virtual void IntegrateStep() = 0;
+    void IntegrateStep() override = 0;
 
     //! Solve dynamic equilibrium
     //! This is a general wrapper around the specific techniques.
-    virtual INPAR::THR::ConvergenceStatus Solve()
+    INPAR::THR::ConvergenceStatus Solve() override
     {
       IntegrateStep();
       return INPAR::THR::conv_success;
@@ -70,7 +70,7 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi)
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> tempi) override
     {
       dserror("not implemented for explicit time integration");
       return;
@@ -78,21 +78,21 @@ namespace THR
 
     //! build linear system tangent matrix, rhs/force residual
     //! Monolithic TSI accesses the linearised thermo problem
-    virtual void Evaluate()
+    void Evaluate() override
     {
       dserror("not implemented for explicit time integration");
       return;
     }
 
     //! prepare time step
-    virtual void PrepareTimeStep()
+    void PrepareTimeStep() override
     {
       // do nothing
       return;
     }
 
     //! for implicit partitioned schemes
-    virtual void PreparePartitionStep()
+    void PreparePartitionStep() override
     {
       // do nothing
       return;
@@ -102,16 +102,16 @@ namespace THR
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
-    virtual void UpdateStepState() = 0;
+    void UpdateStepState() override = 0;
 
     //! Update Element
-    virtual void UpdateStepElement() = 0;
+    void UpdateStepElement() override = 0;
 
     //! update at time step end
-    virtual void Update();
+    void Update() override;
 
     //! update Newton step
-    virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
+    void UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi) override
     {
       dserror("not needed for explicit time integration");
       return;
@@ -138,7 +138,7 @@ namespace THR
     //@{
 
     //! print summary after step
-    void PrintStep();
+    void PrintStep() override;
 
     //! The text for summary print, see #PrintStep
     void PrintStepText(FILE* ofile  //!< output file handle
@@ -150,20 +150,20 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    virtual enum INPAR::THR::DynamicType MethodName() const = 0;
+    enum INPAR::THR::DynamicType MethodName() const override = 0;
 
     //! These time integrators are all explicit (mark their name)
-    bool MethodImplicit() { return false; }
+    bool MethodImplicit() override { return false; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    virtual int MethodSteps() = 0;
+    int MethodSteps() override = 0;
 
     //! Give local order of accuracy of displacement part
-    virtual int MethodOrderOfAccuracy() = 0;
+    int MethodOrderOfAccuracy() override = 0;
 
     //! Return linear error coefficient of temperatures
-    virtual double MethodLinErrCoeff() = 0;
+    double MethodLinErrCoeff() override = 0;
 
     //@}
 
@@ -171,34 +171,34 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    virtual Teuchos::RCP<Epetra_Vector> Fext() = 0;
+    Teuchos::RCP<Epetra_Vector> Fext() override = 0;
 
     //! Return reaction forces
-    Teuchos::RCP<Epetra_Vector> Freact()
+    Teuchos::RCP<Epetra_Vector> Freact() override
     {
       dserror("Not impl.");
       return Teuchos::null;
     };
 
     //! initial guess of Newton's method
-    virtual Teuchos::RCP<const Epetra_Vector> InitialGuess()
+    Teuchos::RCP<const Epetra_Vector> InitialGuess() override
     {
       dserror("not needed for explicit time integration");
       return Teuchos::null;
     }
 
     //! right-hand side alias the dynamic force residual
-    virtual Teuchos::RCP<const Epetra_Vector> RHS()
+    Teuchos::RCP<const Epetra_Vector> RHS() override
     {
       dserror("not needed for explicit time integration");
       return Teuchos::null;
     }
 
     //! Read and set external forces from file
-    virtual void ReadRestartForce() = 0;
+    void ReadRestartForce() override = 0;
 
     //! Write internal and external forces for restart
-    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override = 0;
 
     //@}
 

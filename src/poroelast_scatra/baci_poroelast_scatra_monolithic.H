@@ -49,16 +49,16 @@ namespace POROELASTSCATRA
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
     /// virtual destructor
-    virtual ~PoroScatraMono(){};
+    ~PoroScatraMono() override{};
 
     //! Main time loop.
-    virtual void Timeloop();
+    void Timeloop() override;
 
     //! read and set fields needed for restart
-    virtual void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     //! prepare time step
-    void PrepareTimeStep(bool printheader = true);
+    void PrepareTimeStep(bool printheader = true) override;
 
     //! is convergence reached of iterative solution technique?
     bool Converged();
@@ -77,7 +77,7 @@ namespace POROELASTSCATRA
      ReadMesh is called), the dofmaps for the blocks might get invalid.
      */
     //! Setup the monolithic Poroelasticity system
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     //! setup composed right hand side from field solvers
     virtual void SetupRHS(bool firstcall = false);
@@ -91,16 +91,16 @@ namespace POROELASTSCATRA
     );
 
     //! solve one time step
-    virtual void Solve();
+    void Solve() override;
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! write output
-    virtual void Output();
+    void Output() override;
 
     // Setup solver for monolithic system
-    virtual bool SetupSolver();
+    bool SetupSolver() override;
 
     //! @name Access methods
 
@@ -158,7 +158,7 @@ namespace POROELASTSCATRA
     void DoTimeStep();
 
     //! calculate stress, strains, energies ...
-    void PrepareOutput();
+    void PrepareOutput() override;
 
     //! @name helper methods for Newton loop
 

@@ -21,60 +21,60 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams);
 
     //! destructor
-    virtual ~MeshtyingStrategyStd();
+    ~MeshtyingStrategyStd() override;
 
     //! prepare time loop
-    virtual void PrepareTimeLoop();
+    void PrepareTimeLoop() override;
 
     //! prepare time step
-    virtual void PrepareTimeStep();
+    void PrepareTimeStep() override;
 
     //! update
-    virtual void Update();
+    void Update() override;
 
     //! output
-    virtual void Output();
+    void Output() override;
 
     //! Initialize the linear solver
     void InitializeLinearSolver(Teuchos::RCP<CORE::LINALG::Solver> solver) override;
 
     //! solve linear system of equations
-    virtual void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
+    void LinearSolve(Teuchos::RCP<CORE::LINALG::Solver> solver,
         Teuchos::RCP<CORE::LINALG::SparseOperator> sysmat, Teuchos::RCP<Epetra_Vector> increment,
-        Teuchos::RCP<Epetra_Vector> residual);
+        Teuchos::RCP<Epetra_Vector> residual) override;
 
     //! calculate norms for convergence checks
-    virtual void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
-        std::vector<double>& prenorm, const Teuchos::RCP<const Epetra_Vector> increment);
+    void CalculateNorms(std::vector<double>& preresnorm, std::vector<double>& incprenorm,
+        std::vector<double>& prenorm, const Teuchos::RCP<const Epetra_Vector> increment) override;
 
     //! create the field test
-    virtual void CreateFieldTest();
+    void CreateFieldTest() override;
 
     //! restart
-    virtual void ReadRestart(const int step);
+    void ReadRestart(const int step) override;
 
     //! evaluate mesh tying
-    virtual void Evaluate();
+    void Evaluate() override;
 
     //! extract increments and update mesh tying
-    virtual Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(
-        const Teuchos::RCP<const Epetra_Vector> inc);
+    Teuchos::RCP<const Epetra_Vector> ExtractAndUpdateIter(
+        const Teuchos::RCP<const Epetra_Vector> inc) override;
 
     //! access to global (combined) increment of coupled problem
-    virtual Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
-        const Teuchos::RCP<const Epetra_Vector> inc) const;
+    Teuchos::RCP<const Epetra_Vector> CombinedIncrement(
+        const Teuchos::RCP<const Epetra_Vector> inc) const override;
 
     //! check if initial fields on coupled DOFs are equal
-    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const;
+    void CheckInitialFields(Teuchos::RCP<const Epetra_Vector> vec_cont) const override;
 
     //! set the element pairs that are close as found by search algorithm
-    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs);
+    void SetNearbyElePairs(const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     //! setup the strategy
-    void Setup();
+    void Setup() override;
 
     //! apply the mesh movement
-    void ApplyMeshMovement() const;
+    void ApplyMeshMovement() const override;
   };
 
 }  // namespace POROFLUIDMULTIPHASE

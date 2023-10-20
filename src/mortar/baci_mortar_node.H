@@ -22,11 +22,11 @@ namespace MORTAR
   class MortarNodeType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "MortarNodeType"; }
+    std::string Name() const override { return "MortarNodeType"; }
 
     static MortarNodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MortarNodeType instance_;
@@ -320,13 +320,13 @@ namespace MORTAR
      \brief Deep copy the derived class and return pointer to it
 
      */
-    virtual MORTAR::MortarNode* Clone() const;
+    MORTAR::MortarNode* Clone() const override;
 
     /*!
      \brief Destructor
 
      */
-    virtual ~MortarNode() { return; }
+    ~MortarNode() override { return; }
 
     /*!
      \brief Return unique ParObject id
@@ -346,7 +346,7 @@ namespace MORTAR
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -354,7 +354,7 @@ namespace MORTAR
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -363,7 +363,7 @@ namespace MORTAR
     /*!
      \brief Print this MortarNode
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
     /*!
      \brief Is node on slave or master side of mortar interface

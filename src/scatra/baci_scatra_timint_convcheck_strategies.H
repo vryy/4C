@@ -101,17 +101,17 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyStd() { return; };
+    ~ConvCheckStrategyStd() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
     bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-    ) const;
+    ) const override;
 
    private:
     //! copy constructor
@@ -137,13 +137,13 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyStdMicroScale() { return; };
+    ~ConvCheckStrategyStdMicroScale() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
    private:
     //! copy constructor
@@ -169,13 +169,13 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyStdElch() { return; };
+    ~ConvCheckStrategyStdElch() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
    private:
     //! copy constructor
@@ -201,13 +201,13 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyS2ILM() { return; };
+    ~ConvCheckStrategyS2ILM() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
    private:
     //! copy constructor
@@ -233,13 +233,13 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyS2ILMElch() { return; };
+    ~ConvCheckStrategyS2ILMElch() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
    private:
     //! copy constructor
@@ -265,17 +265,17 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyStdMacroScaleElch() { return; };
+    ~ConvCheckStrategyStdMacroScaleElch() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
     //! perform convergence check for outer iteration in partitioned coupling schemes
     bool AbortOuterIter(const ScaTraTimIntImpl& scatratimint  //!< scalar transport time integrator
-    ) const;
+    ) const override;
 
    private:
     //! copy constructor
@@ -302,13 +302,13 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyPoroMultiphaseScatra() { return; };
+    ~ConvCheckStrategyPoroMultiphaseScatra() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
    private:
     //! copy constructorexit
@@ -335,13 +335,13 @@ namespace SCATRA
     };
 
     //! destructor
-    virtual ~ConvCheckStrategyPoroMultiphaseScatraArtMeshTying() { return; };
+    ~ConvCheckStrategyPoroMultiphaseScatraArtMeshTying() override { return; };
 
     //! perform convergence check for Newton-Raphson iteration
     bool AbortNonlinIter(
         const ScaTraTimIntImpl& scatratimint,  //!< scalar transport time integrator
         double& actresidual                    //!< return maximum current residual value
-    ) const;
+    ) const override;
 
    private:
     //! copy constructorexit

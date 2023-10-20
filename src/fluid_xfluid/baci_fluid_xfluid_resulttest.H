@@ -45,7 +45,7 @@ namespace FLD
       Possible position flags are "velx", "vely", "velz" and
       "pressure". With the obvious meaning.
      */
-    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count);
+    void TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count) override;
 
    private:
     /// nodal value test (one can specify discretization and corresponding solution here!)

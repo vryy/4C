@@ -27,23 +27,23 @@ namespace POROFLUIDMULTIPHASE
     );
 
     /// Destructor
-    virtual ~TimIntOneStepTheta();
+    ~TimIntOneStepTheta() override;
 
     /// Print information about current time step to screen (reimplementation for OST)
-    virtual void PrintTimeStepInfo();
+    void PrintTimeStepInfo() override;
 
     /// compute values at intermediate time steps (required for generalized-alpha)
-    void ComputeIntermediateValues() { return; };
+    void ComputeIntermediateValues() override { return; };
 
     ///  compute scalar time derivative
-    void ComputeTimeDerivative();
+    void ComputeTimeDerivative() override;
 
     /// update the solution after convergence of the nonlinear iteration.
     /// current solution becomes old solution of next timestep.
-    virtual void Update();
+    void Update() override;
 
     /// read restart data
-    void ReadRestart(const int step);
+    void ReadRestart(const int step) override;
 
    protected:
     /// don't want = operator and cctor
@@ -53,31 +53,31 @@ namespace POROFLUIDMULTIPHASE
     TimIntOneStepTheta(const TimIntOneStepTheta& old);
 
     /// set time parameter for element evaluation (called before every time step)
-    virtual void SetElementTimeStepParameter() const;
+    void SetElementTimeStepParameter() const override;
 
     //! set time for evaluation of Neumann boundary conditions
-    virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params);
+    void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) override;
 
     //! initialization procedure prior to evaluation of first time step
-    virtual void CalcInitialTimeDerivative();
+    void CalcInitialTimeDerivative() override;
 
     /// set part of residual vector belonging to previous time step
-    virtual void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /// do explicit predictor step (-> better starting value for nonlinear solver)
     virtual void ExplicitPredictor();
 
     /// add actual Neumann loads with time factor
-    void AddNeumannToResidual();
+    void AddNeumannToResidual() override;
 
     /// add parameters specific for time-integration scheme
-    void AddTimeIntegrationSpecificVectors();
+    void AddTimeIntegrationSpecificVectors() override;
 
     /// write additional data required for restart
-    void OutputRestart();
+    void OutputRestart() override;
 
     /// return the right time-scaling-factor for the true residual
-    double ResidualScaling() const { return 1.0 / (dt_ * theta_); }
+    double ResidualScaling() const override { return 1.0 / (dt_ * theta_); }
 
     /// time factor for one-step-theta/BDF2 time integration
     double theta_;

@@ -78,11 +78,12 @@ namespace XFEM
     \param node            (in) : the node
     \param nodal_dofset_id (in) : id of the nodal dofset
     */
-    virtual void Dof(std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const;
+    void Dof(
+        std::vector<int>& dofs, const DRT::Node* node, unsigned nodal_dofset_id) const override;
 
    protected:
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode(const DRT::Node& node) const;
+    int NumDofPerNode(const DRT::Node& node) const override;
 
    private:
     /// the cut wizard, holds information about the number of XFEM dofsets per node

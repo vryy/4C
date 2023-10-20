@@ -65,20 +65,20 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~PBCDofSet();
+    ~PBCDofSet() override;
 
     /// Get maximum GID of degree of freedom row map
-    virtual int MaxAllGID() const;
+    int MaxAllGID() const override;
 
     /// Get minimum GID of degree of freedom row map
-    virtual int MinAllGID() const;
+    int MinAllGID() const override;
 
     /// create a copy of this object
-    virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new PBCDofSet(*this)); }
+    Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new PBCDofSet(*this)); }
 
     /// Assign dof numbers using all elements and nodes of the discretization.
-    virtual int AssignDegreesOfFreedom(
-        const DRT::Discretization& dis, const unsigned dspos, const int start);
+    int AssignDegreesOfFreedom(
+        const DRT::Discretization& dis, const unsigned dspos, const int start) override;
 
     /// Update the coupled nodes map of dofset
     virtual void SetCoupledNodes(Teuchos::RCP<std::map<int, std::vector<int>>> couplednodes);
@@ -97,7 +97,7 @@ namespace DRT
 
    protected:
     /// get number of nodal dofs for this element at this node
-    virtual int NumDofPerNode(const DRT::Node& node) const
+    int NumDofPerNode(const DRT::Node& node) const override
     {
       if (slavenodeids_->count(node.Id()) == 0)
       {

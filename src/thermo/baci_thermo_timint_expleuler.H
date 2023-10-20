@@ -54,7 +54,7 @@ namespace THR
     TimIntExplEuler(const TimIntExplEuler& old) : TimIntExpl(old) { ; }
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    void ResizeMStep() { dserror("not a multistep method"); }
+    void ResizeMStep() override { dserror("not a multistep method"); }
 
     //@}
 
@@ -62,16 +62,16 @@ namespace THR
     //@{
 
     //! Do time integration of single step
-    void IntegrateStep();
+    void IntegrateStep() override;
 
     //! Update configuration after time step
     //!
     //! Thus the 'last' converged is lost and a reset of the time step
     //! becomes impossible. We are ready and keen awating the next time step.
-    void UpdateStepState();
+    void UpdateStepState() override;
 
     //! Update Element
-    void UpdateStepElement();
+    void UpdateStepElement() override;
 
     //@}
 
@@ -79,17 +79,17 @@ namespace THR
     //@{
 
     //! Return time integrator name
-    enum INPAR::THR::DynamicType MethodName() const { return INPAR::THR::dyna_expleuler; }
+    enum INPAR::THR::DynamicType MethodName() const override { return INPAR::THR::dyna_expleuler; }
 
     //! Provide number of steps, e.g. a single-step method returns 1,
     //! a m-multistep method returns m
-    int MethodSteps() { return 1; }
+    int MethodSteps() override { return 1; }
 
     //! Give local order of accuracy of temperature part
-    int MethodOrderOfAccuracy() { return 1; }
+    int MethodOrderOfAccuracy() override { return 1; }
 
     //! Return linear error coefficient of temperatures
-    double MethodLinErrCoeff()
+    double MethodLinErrCoeff() override
     {
       dserror("no time adaptivity possible.");
       return 0.0;
@@ -101,7 +101,7 @@ namespace THR
     //@{
 
     //! Return external force \f$F_{ext,n}\f$
-    Teuchos::RCP<Epetra_Vector> Fext() { return fextn_; }
+    Teuchos::RCP<Epetra_Vector> Fext() override { return fextn_; }
 
     //! Return external force \f$F_{ext,n+1}\f$
     Teuchos::RCP<Epetra_Vector> FextNew()
@@ -111,10 +111,10 @@ namespace THR
     }
 
     //! Read and set restart for forces
-    void ReadRestartForce();
+    void ReadRestartForce() override;
 
     //! Write internal and external forces for restart
-    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) override;
 
     //@}
 

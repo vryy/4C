@@ -24,30 +24,30 @@ namespace POROMULTIPHASE
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
     /// virtual destructor
-    virtual ~PoroMultiPhasePartitionedTwoWay(){};
+    ~PoroMultiPhasePartitionedTwoWay() override{};
 
     /// initialization
-    virtual void Init(const Teuchos::ParameterList& globaltimeparams,
+    void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& structparams,
         const Teuchos::ParameterList& fluidparams, const std::string& struct_disname,
         const std::string& fluid_disname, bool isale, int nds_disp, int nds_vel,
         int nds_solidpressure, int ndsporofluid_scatra,
-        const std::map<int, std::set<int>>* nearbyelepairs);
+        const std::map<int, std::set<int>>* nearbyelepairs) override;
 
     /// setup
-    virtual void SetupSystem();
+    void SetupSystem() override;
 
     /// time step of coupled problem
-    virtual void TimeStep() { OuterLoop(); };
+    void TimeStep() override { OuterLoop(); };
 
     /// read restart
-    virtual void ReadRestart(int restart);
+    void ReadRestart(int restart) override;
 
     // update
-    virtual void UpdateAndOutput();
+    void UpdateAndOutput() override;
 
     // update
-    virtual Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const { return fluidphinp_; }
+    Teuchos::RCP<const Epetra_Vector> RelaxedFluidPhinp() const override { return fluidphinp_; }
 
    private:
     //! perform iteration loop between fields
@@ -68,10 +68,10 @@ namespace POROMULTIPHASE
     virtual bool ConvergenceCheck(int itnum);
 
     //! perform relaxation
-    virtual void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum);
+    void PerformRelaxation(Teuchos::RCP<const Epetra_Vector> phi, const int itnum) override;
 
     /// set (relaxed) fluid solution on structure field
-    void SetRelaxedFluidSolution();
+    void SetRelaxedFluidSolution() override;
 
     /// perform aitken
     void AitkenRelaxation(double& omega, const int itnum);

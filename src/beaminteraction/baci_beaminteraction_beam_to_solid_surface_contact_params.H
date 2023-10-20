@@ -37,7 +37,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceContactParams(){};
+    ~BeamToSolidSurfaceContactParams() override{};
 
     /**
      * \brief Initialize with the stuff coming from input file.

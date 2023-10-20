@@ -43,7 +43,7 @@ namespace NOX
         Jacobian(){};
 
         //! Destructor.
-        virtual ~Jacobian(){};
+        ~Jacobian() override{};
 
         /*! \brief Compute RHS and Jacobian at once.
          *

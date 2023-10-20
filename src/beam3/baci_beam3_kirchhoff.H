@@ -115,27 +115,28 @@ namespace DRT
     class Beam3kType : public DRT::ElementType
     {
      public:
-      std::string Name() const { return "Beam3kType"; }
+      std::string Name() const override { return "Beam3kType"; }
 
       static Beam3kType& Instance();
 
-      virtual DRT::ParObject* Create(const std::vector<char>& data);
+      DRT::ParObject* Create(const std::vector<char>& data) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(
-          const std::string eletype, const std::string eledistype, const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const std::string eletype, const std::string eledistype,
+          const int id, const int owner) override;
 
-      virtual Teuchos::RCP<DRT::Element> Create(const int id, const int owner);
+      Teuchos::RCP<DRT::Element> Create(const int id, const int owner) override;
 
-      virtual int Initialize(DRT::Discretization& dis);
+      int Initialize(DRT::Discretization& dis) override;
 
-      virtual void NodalBlockInformation(
-          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np);
+      void NodalBlockInformation(
+          DRT::Element* dwele, int& numdf, int& dimns, int& nv, int& np) override;
 
-      virtual CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
-          DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp);
+      CORE::LINALG::SerialDenseMatrix ComputeNullSpace(
+          DRT::Node& actnode, const double* x0, const int numdof, const int dimnsp) override;
 
-      virtual void SetupElementDefinition(
-          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions);
+      void SetupElementDefinition(
+          std::map<std::string, std::map<std::string, DRT::INPUT::LineDefinition>>& definitions)
+          override;
 
      private:
       static Beam3kType instance_;
@@ -172,7 +173,7 @@ namespace DRT
       /*!
       \brief Destructor
       */
-      virtual ~Beam3k();
+      ~Beam3k() override;
 
       /*!
       \brief Deep copy this instance of Beam3k and return pointer to the copy
@@ -181,12 +182,12 @@ namespace DRT
       where the type of the derived class is unknown and a copy-ctor is needed
     .
       */
-      virtual DRT::Element* Clone() const;
+      DRT::Element* Clone() const override;
 
       /*!
      \brief Get shape type of element
      */
-      virtual DiscretizationType Shape() const;
+      DiscretizationType Shape() const override;
 
 
       /*!
@@ -195,7 +196,7 @@ namespace DRT
       Every class implementing ParObject needs a unique id defined at the
       top of parobject.H
       */
-      virtual int UniqueParObjectId() const { return Beam3kType::Instance().UniqueParObjectId(); }
+      int UniqueParObjectId() const override { return Beam3kType::Instance().UniqueParObjectId(); }
 
       /*!
       \brief Pack this class so it can be communicated
@@ -203,7 +204,7 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Pack(DRT::PackBuffer& data) const;
+      void Pack(DRT::PackBuffer& data) const override;
 
       /*!
       \brief Unpack data from a char vector into this class
@@ -211,9 +212,9 @@ namespace DRT
       \ref Pack and \ref Unpack are used to communicate this element
 
       */
-      virtual void Unpack(const std::vector<char>& data);
+      void Unpack(const std::vector<char>& data) override;
 
-      virtual DRT::ElementType& ElementType() const { return Beam3kType::Instance(); }
+      DRT::ElementType& ElementType() const override { return Beam3kType::Instance(); }
 
       //@}
 
@@ -237,8 +238,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 06/16 */
-      virtual inline void GetRefTangentAtNode(
-          CORE::LINALG::Matrix<3, 1>& Tref_i, const int& i) const
+      inline void GetRefTangentAtNode(
+          CORE::LINALG::Matrix<3, 1>& Tref_i, const int& i) const override
       {
         if (not((unsigned)i < Tref().size()))
           dserror("asked for tangent at node index %d, but only %d centerline nodes existing", i,
@@ -250,15 +251,15 @@ namespace DRT
        *
        *  \author grill
        *  \date 06/16 */
-      virtual void GetPosAtXi(
-          CORE::LINALG::Matrix<3, 1>& pos, const double& xi, const std::vector<double>& disp) const;
+      void GetPosAtXi(CORE::LINALG::Matrix<3, 1>& pos, const double& xi,
+          const std::vector<double>& disp) const override;
 
       /** \brief get triad at xi \in [-1,1] (element parameter space)
        *
        *  \author grill
        *  \date 01/17 */
-      virtual void GetTriadAtXi(CORE::LINALG::Matrix<3, 3>& triad, const double& xi,
-          const std::vector<double>& disp) const;
+      void GetTriadAtXi(CORE::LINALG::Matrix<3, 3>& triad, const double& xi,
+          const std::vector<double>& disp) const override;
 
       /** \brief Get scaled base vectors describing the cross-section orientation and size at given
        * parameter coordinate xi
@@ -278,9 +279,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 01/17 */
-      virtual void GetGeneralizedInterpolationMatrixVariationsAtXi(
-          CORE::LINALG::SerialDenseMatrix& Ivar, const double& xi,
-          const std::vector<double>& disp) const;
+      void GetGeneralizedInterpolationMatrixVariationsAtXi(CORE::LINALG::SerialDenseMatrix& Ivar,
+          const double& xi, const std::vector<double>& disp) const override;
 
       /** \brief get linearization of the product of (generalized interpolation matrix for
        * variations (see above) and applied force vector) with respect to the primary DoFs of this
@@ -288,24 +288,24 @@ namespace DRT
        *
        *  \author grill
        *  \date 01/17 */
-      virtual void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
+      void GetStiffmatResultingFromGeneralizedInterpolationMatrixAtXi(
           CORE::LINALG::SerialDenseMatrix& stiffmat, const double& xi,
-          const std::vector<double>& disp, const CORE::LINALG::SerialDenseVector& force) const;
+          const std::vector<double>& disp,
+          const CORE::LINALG::SerialDenseVector& force) const override;
 
       /** \brief get generalized interpolation matrix which yields the increments of the position
        * and orientation at xi \in [-1,1] if multiplied with the vector of primary DoF increments
        *
        *  \author grill
        *  \date 01/17 */
-      virtual void GetGeneralizedInterpolationMatrixIncrementsAtXi(
-          CORE::LINALG::SerialDenseMatrix& Iinc, const double& xi,
-          const std::vector<double>& disp) const;
+      void GetGeneralizedInterpolationMatrixIncrementsAtXi(CORE::LINALG::SerialDenseMatrix& Iinc,
+          const double& xi, const std::vector<double>& disp) const override;
 
       /** \brief get access to the reference length
        *
        *  \author grill
        *  \date 05/16 */
-      virtual inline double RefLength() const { return length_; }
+      inline double RefLength() const override { return length_; }
 
       /*!
       \brief Get jacobi factor of first Gauss point
@@ -316,16 +316,16 @@ namespace DRT
        *
        *  \author grill
        *  \date 06/16 */
-      virtual double GetJacobiFacAtXi(const double& xi) const;
+      double GetJacobiFacAtXi(const double& xi) const override;
 
       /** \brief Get material cross-section deformation measures, i.e. strain resultants
        *
        *  \author grill
        *  \date 04/17 */
-      virtual inline void GetMaterialStrainResultantsAtAllGPs(std::vector<double>& axial_strain_GPs,
+      inline void GetMaterialStrainResultantsAtAllGPs(std::vector<double>& axial_strain_GPs,
           std::vector<double>& shear_strain_2_GPs, std::vector<double>& shear_strain_3_GPs,
           std::vector<double>& twist_GPs, std::vector<double>& curvature_2_GPs,
-          std::vector<double>& curvature_3_GPs) const
+          std::vector<double>& curvature_3_GPs) const override
       {
         axial_strain_GPs = axial_strain_GP_;
         // note: shear deformations are zero by definition for Kirchhoff beam formulation
@@ -341,10 +341,10 @@ namespace DRT
        *
        *  \author grill
        *  \date 04/17 */
-      virtual inline void GetMaterialStressResultantsAtAllGPs(std::vector<double>& axial_force_GPs,
+      inline void GetMaterialStressResultantsAtAllGPs(std::vector<double>& axial_force_GPs,
           std::vector<double>& shear_force_2_GPs, std::vector<double>& shear_force_3_GPs,
           std::vector<double>& torque_GPs, std::vector<double>& bending_moment_2_GPs,
-          std::vector<double>& bending_moment_3_GPs) const
+          std::vector<double>& bending_moment_3_GPs) const override
       {
         axial_force_GPs = axial_force_GP_;
         // note: shear deformations are zero by definition for Kirchhoff beam formulation
@@ -357,22 +357,22 @@ namespace DRT
       }
 
       //! get internal (elastic) energy of element
-      double GetInternalEnergy() const { return Eint_; };
+      double GetInternalEnergy() const override { return Eint_; };
 
       //! get kinetic energy of element
-      double GetKineticEnergy() const { return Ekin_; };
+      double GetKineticEnergy() const override { return Ekin_; };
 
       /** \brief get number of nodes used for centerline interpolation
        *
        *  \author grill
        *  \date 05/16 */
-      virtual inline int NumCenterlineNodes() const { return 2; }
+      inline int NumCenterlineNodes() const override { return 2; }
 
       /** \brief find out whether given node is used for centerline interpolation
        *
        *  \author grill
        *  \date 10/16 */
-      virtual inline bool IsCenterlineNode(const DRT::Node& node) const
+      inline bool IsCenterlineNode(const DRT::Node& node) const override
       {
         if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
           return true;
@@ -383,19 +383,19 @@ namespace DRT
       /*!
       \brief Return number of lines to this element
       */
-      virtual int NumLine() const { return 1; }
+      int NumLine() const override { return 1; }
 
 
       /*!
       \brief Get vector of RCPs to the lines of this element
       */
-      virtual std::vector<Teuchos::RCP<DRT::Element>> Lines();
+      std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
 
       /*!
       \brief Get number of degrees of freedom of a single node
       */
-      virtual int NumDofPerNode(const DRT::Node& node) const
+      int NumDofPerNode(const DRT::Node& node) const override
       {
         /*note: this is not necessarily the number of DOF assigned to this node by the
          *discretization finally, but only the number of DOF requested for this node by this
@@ -414,12 +414,12 @@ namespace DRT
       /*!
       \brief Get number of degrees of freedom per element not including nodal degrees of freedom
       */
-      virtual int NumDofPerElement() const { return 0; }
+      int NumDofPerElement() const override { return 0; }
 
       /*!
       \brief Print this element
       */
-      virtual void Print(std::ostream& os) const;
+      void Print(std::ostream& os) const override;
 
       //@}
 
@@ -440,7 +440,7 @@ namespace DRT
       \brief Read input for this element
       */
       bool ReadElement(const std::string& eletype, const std::string& distype,
-          DRT::INPUT::LineDefinition* linedef);
+          DRT::INPUT::LineDefinition* linedef) override;
 
       //@}
 
@@ -473,10 +473,11 @@ namespace DRT
                                   given in params
       \return 0 if successful, negative otherwise
       */
-      virtual int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+      int Evaluate(Teuchos::ParameterList& params, DRT::Discretization& discretization,
           std::vector<int>& lm, CORE::LINALG::SerialDenseMatrix& elemat1,
           CORE::LINALG::SerialDenseMatrix& elemat2, CORE::LINALG::SerialDenseVector& elevec1,
-          CORE::LINALG::SerialDenseVector& elevec2, CORE::LINALG::SerialDenseVector& elevec3);
+          CORE::LINALG::SerialDenseVector& elevec2,
+          CORE::LINALG::SerialDenseVector& elevec3) override;
 
       /*!
       \brief Evaluate a Neumann boundary condition
@@ -499,9 +500,9 @@ namespace DRT
 
       \author meier
       \date 01/16 */
-      virtual int EvaluateNeumann(Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Condition& condition, std::vector<int>& lm,
-          CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseMatrix* elemat1);
+      int EvaluateNeumann(Teuchos::ParameterList& params, DRT::Discretization& discretization,
+          DRT::Condition& condition, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& elevec1,
+          CORE::LINALG::SerialDenseMatrix* elemat1) override;
 
       /*!
       \brief Set rotations in the initial configuration
@@ -531,7 +532,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual inline void PositionDofIndices(std::vector<int>& posdofs, const DRT::Node& node) const
+      inline void PositionDofIndices(
+          std::vector<int>& posdofs, const DRT::Node& node) const override
       {
         if (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id())
         {
@@ -547,7 +549,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual inline void TangentDofIndices(std::vector<int>& tangdofs, const DRT::Node& node) const
+      inline void TangentDofIndices(
+          std::vector<int>& tangdofs, const DRT::Node& node) const override
       {
         if ((not rotvec_) and
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -564,8 +567,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual inline void RotationVecDofIndices(
-          std::vector<int>& rotvecdofs, const DRT::Node& node) const
+      inline void RotationVecDofIndices(
+          std::vector<int>& rotvecdofs, const DRT::Node& node) const override
       {
         if ((rotvec_) and
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -583,8 +586,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual inline void Rotation1DDofIndices(
-          std::vector<int>& twistdofs, const DRT::Node& node) const
+      inline void Rotation1DDofIndices(
+          std::vector<int>& twistdofs, const DRT::Node& node) const override
       {
         if ((not rotvec_) and
             (node.Id() == this->Nodes()[0]->Id() or node.Id() == this->Nodes()[1]->Id()))
@@ -604,8 +607,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 07/16 */
-      virtual inline void TangentLengthDofIndices(
-          std::vector<int>& tangnormdofs, const DRT::Node& node) const
+      inline void TangentLengthDofIndices(
+          std::vector<int>& tangnormdofs, const DRT::Node& node) const override
       {
         if (rotvec_)
         {
@@ -621,8 +624,8 @@ namespace DRT
        *
        *  \author grill
        *  \date 12/16 */
-      virtual inline void CenterlineDofIndicesOfElement(
-          std::vector<unsigned int>& centerlinedofindices) const
+      inline void CenterlineDofIndicesOfElement(
+          std::vector<unsigned int>& centerlinedofindices) const override
       {
         if (rotvec_)
           dserror(
@@ -645,13 +648,12 @@ namespace DRT
        *
        *  \author grill
        *  \date 11/16 */
-      virtual void ExtractCenterlineDofValuesFromElementStateVector(
-          const std::vector<double>& dofvec, std::vector<double>& dofvec_centerline,
-          bool add_reference_values = false) const;
+      void ExtractCenterlineDofValuesFromElementStateVector(const std::vector<double>& dofvec,
+          std::vector<double>& dofvec_centerline, bool add_reference_values = false) const override;
 
       //! computes the number of different random numbers required in each time step for generation
       //! of stochastic forces
-      virtual int HowManyRandomNumbersINeed() const;
+      int HowManyRandomNumbersINeed() const override;
 
      private:
       // Functions

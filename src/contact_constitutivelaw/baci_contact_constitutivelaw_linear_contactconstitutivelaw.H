@@ -33,7 +33,7 @@ namespace CONTACT
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
 
       /// destructor
-      virtual ~LinearConstitutiveLawParams() = default;
+      ~LinearConstitutiveLawParams() override = default;
 
       /// create constitutive law instance of matching type with my parameters
       Teuchos::RCP<CONTACT::CONSTITUTIVELAW::ConstitutiveLaw> CreateConstitutiveLaw() override;
@@ -80,7 +80,7 @@ namespace CONTACT
       double GetB() { return params_->GetB(); }
 
       /// Return quick accessible contact constitutive law parameter data
-      virtual CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const { return params_; }
+      CONTACT::CONSTITUTIVELAW::Parameter* Parameter() const override { return params_; }
 
       //! @name Evaluation methods
       //@{

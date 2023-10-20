@@ -74,13 +74,13 @@ class EnsightWriter : public PostWriterBase
   EnsightWriter(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~EnsightWriter() {}
+  ~EnsightWriter() override {}
 
   //! write the whole thing
-  virtual void WriteFiles(PostFilterBase& filter);
+  void WriteFiles(PostFilterBase& filter) override;
 
   //! write the whole thing for changing geometries
-  virtual void WriteFilesChangingGeom(PostFilterBase& filter);
+  void WriteFilesChangingGeom(PostFilterBase& filter) override;
 
  protected:
   /*!
@@ -102,7 +102,7 @@ class EnsightWriter : public PostWriterBase
       const int numdf,              ///< number of dofs per node to this result
       const int from = 0,           ///< start position of values in nodes
       const bool fillzeros = false  ///< zeros are filled to ensight file when no data is available
-  );
+      ) override;
 
 
   /*!
@@ -132,7 +132,7 @@ class EnsightWriter : public PostWriterBase
       bool firststep,            ///< bool whether this is the first time step
       bool laststep,             ///< bool whether this is the last time step
       const int from = 0         ///< start position of values in nodes
-  );
+      ) override;
 
   /*!
    \brief write a particular variable to file
@@ -145,10 +145,10 @@ class EnsightWriter : public PostWriterBase
    \author kronbichler
    \date 04/14
    */
-  virtual void WriteSpecialField(SpecialFieldInterface& special,
+  void WriteSpecialField(SpecialFieldInterface& special,
       PostResult& result,  ///< result group in the control file
       const ResultType restype, const std::string& groupname,
-      const std::vector<std::string>& fieldnames, const std::string& outinfo);
+      const std::vector<std::string>& fieldnames, const std::string& outinfo) override;
 
   template <class T>
   void Write(std::ofstream& os, T i) const
@@ -324,20 +324,19 @@ class EnsightWriter : public PostWriterBase
   void WriteNodalResultStep(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf);
-  virtual void WriteNodalResultStep(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+  void WriteNodalResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::string& name, const int numdf);
+      const std::string& groupname, const std::string& name, const int numdf) override;
   void WriteElementDOFResultStep(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from) const;
   void WriteElementResultStep(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from);
-  virtual void WriteElementResultStep(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+  void WriteElementResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::string& name, const int numdf, const int from);
+      const std::string& groupname, const std::string& name, const int numdf,
+      const int from) override;
   void WriteIndexTable(
       std::ofstream& file, const std::vector<std::ofstream::pos_type>& filepos) const;
 

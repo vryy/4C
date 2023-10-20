@@ -39,26 +39,26 @@ namespace DRT
       using my::nsd_;
       using my::nsd_ele_;
 
-      virtual ~ScaTraEleCalcArtery() {}
+      ~ScaTraEleCalcArtery() override {}
 
       //! Singleton access method
       static ScaTraEleCalcArtery<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);
 
       /// Setup element evaluation
-      virtual int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization);
+      int SetupCalc(DRT::Element* ele, DRT::Discretization& discretization) override;
 
      protected:
       //! extract element based or nodal values
       //  return extracted values of phinp
-      virtual void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+      void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! evaluate shape functions and their derivatives at current integration point
-      virtual double EvalShapeFuncAndDerivsAtIntPoint(
+      double EvalShapeFuncAndDerivsAtIntPoint(
           const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_>& intpoints,  //!< integration points
           const int iquad  //!< id of current Gauss point
-      )
+          ) override
       {
         const double fac = my::EvalShapeFuncAndDerivsAtIntPoint(intpoints, iquad);
 
@@ -67,7 +67,7 @@ namespace DRT
       }
 
       //! evaluate shape functions and their derivatives at element center
-      virtual double EvalShapeFuncAndDerivsAtEleCenter()
+      double EvalShapeFuncAndDerivsAtEleCenter() override
       {
         // use one-point Gauss rule to do calculations at the element center
         const CORE::DRT::UTILS::IntPointsAndWeights<nsd_ele_> intpoints_tau(
@@ -82,7 +82,7 @@ namespace DRT
       }
 
       //! evaluate material
-      virtual void Materials(
+      void Materials(
           const Teuchos::RCP<const MAT::Material> material,  //!< pointer to current material
           const int k,                                       //!< id of current scalar
           double& densn,                                     //!< density at t_(n)
@@ -90,28 +90,28 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
       //! calculation of convective element matrix in convective form (off diagonal term fluid)
-      virtual void CalcMatConvODFluid(
+      void CalcMatConvODFluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const CORE::LINALG::Matrix<nsd_, 1>& gradphi  //!< scalar gradient
-      );
+          ) override;
 
       //! calculation of convective element matrix: add conservative contributions (off diagonal
       //! term fluid)
-      virtual void CalcMatConvAddConsODFluid(
+      void CalcMatConvAddConsODFluid(
           CORE::LINALG::SerialDenseMatrix& emat,  //!< element matrix to be filled
           const int k,                            //!< index of current scalar
           const int ndofpernodefluid,             //!< number of dofs per node of fluid element
           const double timefacfac,  //!< domain-integration factor times time-integration factor
           const double densnp,      //!< density at time_(n+1)
           const double phinp        //!< scalar at time_(n+1)
-      )
+          ) override
       {
         dserror("not possible");
         return;
@@ -125,7 +125,7 @@ namespace DRT
       };
 
       //! set internal variables
-      virtual void SetInternalVariablesForMatAndRHS();
+      void SetInternalVariablesForMatAndRHS() override;
 
       //! artery pressure values at t_(n+1)
       CORE::LINALG::Matrix<nen_, 1> earterypressurenp_;
@@ -143,7 +143,7 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleInternalVariableManagerArtery(){};
+      ~ScaTraEleInternalVariableManagerArtery() override{};
 
       // compute and set internal variables -- no L2-projection but evaluation at GP
       void SetInternalVariablesArtery(

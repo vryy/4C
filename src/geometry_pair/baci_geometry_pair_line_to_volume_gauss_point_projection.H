@@ -50,7 +50,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~GeometryPairLineToVolumeGaussPointProjection(){};
+    ~GeometryPairLineToVolumeGaussPointProjection() override{};
 
     /**
      * \brief Setup the projection tracker for this line element.

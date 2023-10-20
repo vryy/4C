@@ -240,7 +240,7 @@ namespace NTS
      \brief Interpolate for nts problems
 
      */
-    virtual void Interpolate(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles);
+    void Interpolate(MORTAR::MortarNode& snode, std::vector<MORTAR::MortarElement*> meles) override;
 
    private:
     /*!

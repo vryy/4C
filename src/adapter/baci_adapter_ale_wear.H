@@ -42,7 +42,7 @@ namespace ADAPTER
     explicit AleWearWrapper(Teuchos::RCP<Ale> ale);
 
     //! Destructor
-    virtual ~AleWearWrapper() {}
+    ~AleWearWrapper() override {}
 
     //@}
 

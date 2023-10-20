@@ -25,7 +25,7 @@ namespace DRT
       typedef ScaTraEleCalc<distype, probdim> my;
 
       //! destructor
-      virtual ~ScaTraEleCalcStd() { return; };
+      ~ScaTraEleCalcStd() override { return; };
 
       //! singleton access method
       static ScaTraEleCalcStd<distype, probdim>* Instance(

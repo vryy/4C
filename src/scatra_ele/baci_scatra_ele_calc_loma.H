@@ -43,7 +43,7 @@ namespace DRT
       using my::nsd_;
 
      public:
-      virtual ~ScaTraEleCalcLoma() {}
+      ~ScaTraEleCalcLoma() override {}
 
       /// Singleton access method
       static ScaTraEleCalcLoma<distype>* Instance(
@@ -55,7 +55,7 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
      private:
       /*========================================================================*/
@@ -71,7 +71,7 @@ namespace DRT
           double& densam,       //!< density at t_(n+alpha_M)
           double& visc,         //!< fluid viscosity
           const int iquad = -1  //!< id of current gauss point (default = -1)
-      );
+          ) override;
 
       //! material mixfrac
       void MatMixFrac(
@@ -171,7 +171,7 @@ namespace DRT
       void GetRhsInt(double& rhsint,  //!< rhs containing bodyforce at Gauss point
           const double densnp,        //!< density at t_(n+1)
           const int k                 //!< index of current scalar
-      );
+          ) override;
 
       //! calculation of convective element matrix: add conservative contributions
       void CalcMatConvAddCons(
@@ -207,11 +207,11 @@ namespace DRT
 
       //! extract element based or nodal values and return extracted values of phinp
       void ExtractElementAndNodeValues(DRT::Element* ele, Teuchos::ParameterList& params,
-          DRT::Discretization& discretization, DRT::Element::LocationArray& la);
+          DRT::Discretization& discretization, DRT::Element::LocationArray& la) override;
 
       //! get density at integration point
       double GetDensity(const DRT::Element* ele, Teuchos::RCP<const MAT::Material> material,
-          Teuchos::ParameterList& params, const double tempnp);
+          Teuchos::ParameterList& params, const double tempnp) override;
 
       //! calculate viscous part of subgrid-scale velocity
       void CalcSubgrVelocityVisc(CORE::LINALG::Matrix<nsd_, 1>& epsilonvel) override;

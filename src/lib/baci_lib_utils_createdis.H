@@ -286,7 +286,7 @@ namespace DRT
       explicit DiscretizationCreator(){};
 
       /// destructor
-      virtual ~DiscretizationCreator(){};
+      ~DiscretizationCreator() override{};
 
       /// Create the clone field material map from the input file
       void CreateCloneFieldMatMap(std::map<int, int>& matmap, const DRT::Discretization& sourcedis,

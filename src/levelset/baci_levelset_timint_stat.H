@@ -29,16 +29,16 @@ namespace SCATRA
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// Destructor
-    virtual ~LevelSetTimIntStationary();
+    ~LevelSetTimIntStationary() override;
 
     /// initialize time-integration scheme
-    virtual void Init();
+    void Init() override;
 
     /// setup time-integration scheme
-    virtual void Setup();
+    void Setup() override;
 
     /// read restart data
-    virtual void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null)
+    void ReadRestart(const int step, Teuchos::RCP<IO::InputControl> input = Teuchos::null) override
     {
       dserror("You should not need this function!");
       return;
@@ -54,7 +54,7 @@ namespace SCATRA
    protected:
     /// update state vectors
     /// current solution becomes old solution of next time step
-    void UpdateState()
+    void UpdateState() override
     {
       dserror("You should not need this function!");
       return;
@@ -62,14 +62,14 @@ namespace SCATRA
 
     /// update the solution after Solve()
     /// extended version for coupled level-set problems including reinitialization
-    void Update(const int num = 0)
+    void Update(const int num = 0) override
     {
       dserror("You should not need this function!");
       return;
     };
 
     /// update phi within the reinitialization loop
-    void UpdateReinit()
+    void UpdateReinit() override
     {
       dserror("You should not need this function!");
       return;

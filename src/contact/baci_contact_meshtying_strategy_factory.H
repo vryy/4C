@@ -47,7 +47,7 @@ namespace MORTAR
       virtual ~FactoryMT(){};
 
       //! derived
-      virtual void Setup();
+      void Setup() override;
 
       /*! \brief Read and check meshtying/contact input parameters
        *

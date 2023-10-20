@@ -58,10 +58,10 @@ namespace BEAMINTERACTION
     /*!
     \brief Destructor
     */
-    virtual ~BeamToBeamContactPair(){};
+    ~BeamToBeamContactPair() override{};
 
     //! Setup
-    virtual void Setup();
+    void Setup() override;
     //@}
 
     //! @name Derived methods from base class
@@ -75,30 +75,30 @@ namespace BEAMINTERACTION
     \brief Evaluate this contact element pair, return value indicates whether pair is active,
            i.e. non-zero values for force and stiffmat are returned
     */
-    virtual bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
+    bool Evaluate(CORE::LINALG::SerialDenseVector* forcevec1,
         CORE::LINALG::SerialDenseVector* forcevec2, CORE::LINALG::SerialDenseMatrix* stiffmat11,
         CORE::LINALG::SerialDenseMatrix* stiffmat12, CORE::LINALG::SerialDenseMatrix* stiffmat21,
-        CORE::LINALG::SerialDenseMatrix* stiffmat22);
+        CORE::LINALG::SerialDenseMatrix* stiffmat22) override;
 
     /*
     \brief Update state of translational nodal DoFs (absolute positions and tangents) of both
     elements
     */
-    virtual void ResetState(const std::vector<double>& centerline_dofvec_ele1,
-        const std::vector<double>& centerline_dofvec_ele2);
+    void ResetState(const std::vector<double>& centerline_dofvec_ele1,
+        const std::vector<double>& centerline_dofvec_ele2) override;
 
     /** \brief print information about this beam contact element pair to screen
      *
      *  \author grill
      *  \date 05/16 */
-    virtual void Print(std::ostream& out) const;
+    void Print(std::ostream& out) const override;
 
 
     /** \brief print this beam contact element pair to screen
      *
      *  \author grill
      *  \date 12/16 */
-    virtual void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const;
+    void PrintSummaryOneLinePerActiveSegmentPair(std::ostream& out) const override;
     //@}
 
     //! @name Access methods
@@ -106,7 +106,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get flag indicating whether contact is active (true) or inactive (false)
     */
-    virtual inline bool GetContactFlag() const
+    inline bool GetContactFlag() const override
     {
       // The element pair is assumed to be active when we have at least one active contact point
       return (cpvariables_.size() + gpvariables_.size() + epvariables_.size());
@@ -115,7 +115,7 @@ namespace BEAMINTERACTION
     /*!
     \brief Get number of active contact point pairs on this element pair
     */
-    virtual unsigned int GetNumAllActiveContactPointPairs() const
+    unsigned int GetNumAllActiveContactPointPairs() const override
     {
       return (unsigned int)(cpvariables_.size() + gpvariables_.size() + epvariables_.size());
     }
@@ -123,21 +123,21 @@ namespace BEAMINTERACTION
     /*!
     \brief Get coordinates of all active contact points on element1 and element2
     */
-    virtual void GetAllActiveContactPointCoordsElement1(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const;
+    void GetAllActiveContactPointCoordsElement1(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override;
 
-    virtual void GetAllActiveContactPointCoordsElement2(
-        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const;
+    void GetAllActiveContactPointCoordsElement2(
+        std::vector<CORE::LINALG::Matrix<3, 1, double>>& coords) const override;
 
     /*!
     \brief Get all (scalar) contact forces of this contact pair
     */
-    virtual void GetAllActiveContactForces(std::vector<double>& forces) const;
+    void GetAllActiveContactForces(std::vector<double>& forces) const override;
 
     /*!
     \brief Get all (scalar) gap values of this contact pair
     */
-    virtual void GetAllActiveContactGaps(std::vector<double>& gaps) const;
+    void GetAllActiveContactGaps(std::vector<double>& gaps) const override;
 
     /*!
     \brief Get energy of penalty contact.

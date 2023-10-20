@@ -38,11 +38,11 @@ namespace UTILS
             params,  ///< parameter list to communicate between elements and discretization
         Teuchos::RCP<Epetra_Vector> systemvector  ///< distributed vector that may be filled by
                                                   ///< assembly of element contributions
-    );
+        ) override;
 
     /// initialization routine called at restart to activate the right conditions
     void Initialize(const double& time  ///< current time
-    );
+        ) override;
 
     //! Evaluate routine to call from outside. In here the right action is determined and the
     //! #EvaluateConstraint routine is called
@@ -61,7 +61,7 @@ namespace UTILS
                                                     ///< assembly of element contributions
         Teuchos::RCP<Epetra_Vector> systemvector3   ///< distributed vector that may be filled by
                                                     ///< assembly of element contributions
-    );
+        ) override;
 
    private:
     // don't want = operator, cctor
@@ -83,12 +83,13 @@ namespace UTILS
         Teuchos::RCP<CORE::LINALG::SparseOperator>
             systemmatrix2,  ///< sparse (rectangular) matrix that may be filled by assembly of
                             ///< element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector1,   ///< distributed vector that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector2,   ///< distributed vector that may be filled by
-                                                     ///< assembly of element contributions
-        Teuchos::RCP<Epetra_Vector> systemvector3);  ///< distributed vector that may be filled by
-                                                     ///< assembly of element contributions
+        Teuchos::RCP<Epetra_Vector> systemvector1,  ///< distributed vector that may be filled by
+                                                    ///< assembly of element contributions
+        Teuchos::RCP<Epetra_Vector> systemvector2,  ///< distributed vector that may be filled by
+                                                    ///< assembly of element contributions
+        Teuchos::RCP<Epetra_Vector> systemvector3)
+        override;  ///< distributed vector that may be filled by
+                   ///< assembly of element contributions
 
 
     //! creating a new discretization based on conditions containing constraint elements
@@ -97,7 +98,7 @@ namespace UTILS
         std::vector<DRT::Condition*> constrcond,  ///< conditions as discretization basis
         const std::string& discret_name,          ///< name of new discretization
         const std::string& element_name,          ///< name of element type to create
-        int& startID);
+        int& startID) override;
 
     //! Reorder MPC nodes based on condition input
     void ReorderConstraintNodes(std::vector<int>& nodeids,  ///< reordered node ids

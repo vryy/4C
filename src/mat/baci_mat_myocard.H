@@ -38,7 +38,7 @@ namespace MAT
       Myocard(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       /// destructor
-      virtual ~Myocard() { ; }
+      ~Myocard() override { ; }
 
       /// @name material parameters
       //@{
@@ -66,7 +66,7 @@ namespace MAT
       //@}
 
       /// create material instance of matching type with my parameters
-      virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+      Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
     };  // class myocard
   }     // namespace PAR
@@ -74,9 +74,9 @@ namespace MAT
   class MyocardType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "MyocardType"; }
+    std::string Name() const override { return "MyocardType"; }
     static MyocardType& Instance() { return instance_; };
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static MyocardType instance_;
@@ -109,7 +109,7 @@ namespace MAT
     ///
     ///  every class implementing ParObject needs a unique id defined at the
     ///  top of parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return MyocardType::Instance().UniqueParObjectId(); }
+    int UniqueParObjectId() const override { return MyocardType::Instance().UniqueParObjectId(); }
 
     /// Pack this class so it can be communicated
     ///
@@ -117,8 +117,8 @@ namespace MAT
     /// The first information to be stored in data has to be the
     /// unique parobject id delivered by UniqueParObjectId() which will then
     /// identify the exact class on the receiving processor.
-    virtual void Pack(
-        DRT::PackBuffer& data) const;  ///< (in/out): char vector to store class information
+    void Pack(DRT::PackBuffer& data)
+        const override;  ///< (in/out): char vector to store class information
 
     /// \brief Unpack data from a char vector into this class
     ///
@@ -128,8 +128,8 @@ namespace MAT
     /// parobject id defined at the top of this file and delivered by
     /// UniqueParObjectId().
     ///
-    virtual void Unpack(
-        const std::vector<char>& data);  ///< vector storing all data to be unpacked into this
+    void Unpack(const std::vector<char>& data)
+        override;  ///< vector storing all data to be unpacked into this
 
     //@}
 
@@ -140,10 +140,10 @@ namespace MAT
     void SetGP(int gp) { params_->num_gp = gp; };
 
     /// material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_myocard; }
+    INPAR::MAT::MaterialType MaterialType() const override { return INPAR::MAT::m_myocard; }
 
     /// return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp(new Myocard(*this)); }
+    Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new Myocard(*this)); }
 
     /// material call from DRT::ELEMENTS::Transport::ReadElement function
     /// to setup conductivity tensor for each element
@@ -211,7 +211,7 @@ namespace MAT
     int GetNumberOfInternalStateVariables() const;
 
     ///  returns current internal state of the material
-    double GetInternalState(const int k) const;
+    double GetInternalState(const int k) const override;
 
     ///  returns current internal state of the material for multiple points per element
     double GetInternalState(const int k, int gp) const;
@@ -251,7 +251,7 @@ namespace MAT
     //@}
 
     /// Return quick accessible material parameter data
-    virtual MAT::PAR::Myocard* Parameter() const { return params_; }
+    MAT::PAR::Myocard* Parameter() const override { return params_; }
 
    private:
     /// my material parameters

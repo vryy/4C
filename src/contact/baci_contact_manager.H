@@ -56,7 +56,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoManager() = default;
+    ~CoManager() override = default;
 
     //! @name Access methods
     //! @{

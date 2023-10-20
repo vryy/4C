@@ -54,7 +54,7 @@ namespace FSI
         const ADAPTER::FieldWrapper::Fieldtype type);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~AlgorithmXFEM();
+    ~AlgorithmXFEM() override;
 
     //! setup
     virtual void Setup();
@@ -66,8 +66,8 @@ namespace FSI
     virtual void SetupSystem() = 0;
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-        ) = 0;
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override = 0;
 
     //--------------------------------------------------------------------------//
     //! @name Access to single fields
@@ -94,16 +94,16 @@ namespace FSI
     //! @name Time loop building blocks
 
     //! start a new time step
-    virtual void PrepareTimeStep() = 0;
+    void PrepareTimeStep() override = 0;
 
     //! calculate stresses, strains, energies
     virtual void PrepareOutput(bool force_prepare);
 
     //! take current results for converged and save for next time step
-    virtual void Update();
+    void Update() override;
 
     //! write output
-    virtual void Output() = 0;
+    void Output() override = 0;
 
     //@}
 

@@ -49,13 +49,13 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoIntegratorEhl() {}
+    ~CoIntegratorEhl() override {}
 
    protected:
     /*!
      \brief Perform integration at GP
      */
-    virtual void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_2D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -64,12 +64,12 @@ namespace CONTACT
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
 
     /*!
      \brief Perform integration at GP
      */
-    virtual void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
+    void IntegrateGP_3D(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& lmval,
         CORE::LINALG::SerialDenseVector& mval, CORE::LINALG::SerialDenseMatrix& sderiv,
         CORE::LINALG::SerialDenseMatrix& mderiv, CORE::LINALG::SerialDenseMatrix& lmderiv,
@@ -78,7 +78,7 @@ namespace CONTACT
         std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double& gap,
         CORE::GEN::pairedvector<int, double>& deriv_gap, double* sxi, double* mxi,
         std::vector<CORE::GEN::pairedvector<int, double>>& derivsxi,
-        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi);
+        std::vector<CORE::GEN::pairedvector<int, double>>& derivmxi) override;
 
    private:
     // integrate surface gradient

@@ -54,7 +54,7 @@ namespace DRT
           const double timefacfac,  //!< domain integration factor times time integration factor
           const double rhsfac       //!< domain integration factor times time integration factor for
                                     //!< right-hand side vector
-      );
+          ) override;
 
       //! calculate electrode state of charge and C rate
       void CalculateElectrodeSOCAndCRate(
@@ -86,14 +86,14 @@ namespace DRT
           CORE::LINALG::SerialDenseMatrix& elemat2_epetra,
           CORE::LINALG::SerialDenseVector& elevec1_epetra,
           CORE::LINALG::SerialDenseVector& elevec2_epetra,
-          CORE::LINALG::SerialDenseVector& elevec3_epetra);
+          CORE::LINALG::SerialDenseVector& elevec3_epetra) override;
 
       //! compute element matrix and element right-hand side vector
       void Sysmat(DRT::Element* ele,                  //!< element
           CORE::LINALG::SerialDenseMatrix& emat,      //!< element matrix
           CORE::LINALG::SerialDenseVector& erhs,      //!< element right-hand side vector
           CORE::LINALG::SerialDenseVector& subgrdiff  //!< subgrid diffusivity vector
-      );
+          ) override;
     };  // class implementation
 
 

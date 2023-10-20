@@ -67,14 +67,14 @@ namespace WEAR
     explicit Algorithm(const Epetra_Comm& comm);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~Algorithm();
+    ~Algorithm() override;
 
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;
 
     //! read restart data
-    virtual void ReadRestart(int step  //!< step number where the calculation is continued
-        ) = 0;
+    void ReadRestart(int step  //!< step number where the calculation is continued
+        ) override = 0;
 
     //! access to structural field
     Teuchos::RCP<ADAPTER::FSIStructureWrapper> StructureField() { return structure_; }

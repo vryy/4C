@@ -38,94 +38,94 @@ namespace STR
       BeamInteractionOld();
 
       //! destructor
-      virtual ~BeamInteractionOld(){};
+      ~BeamInteractionOld() override{};
 
-      virtual void Setup();
-
-      //! derived
-      INPAR::STR::ModelType Type() const { return INPAR::STR::model_beam_interaction_old; }
+      void Setup() override;
 
       //! derived
-      virtual void Reset(const Epetra_Vector& x);
+      INPAR::STR::ModelType Type() const override { return INPAR::STR::model_beam_interaction_old; }
 
       //! derived
-      virtual bool EvaluateForce();
+      void Reset(const Epetra_Vector& x) override;
 
       //! derived
-      virtual bool EvaluateStiff();
+      bool EvaluateForce() override;
 
       //! derived
-      virtual bool EvaluateForceStiff();
+      bool EvaluateStiff() override;
+
+      //! derived
+      bool EvaluateForceStiff() override;
 
       //! derived
       void PreEvaluate() override { return; };
 
       //! derived
-      virtual void PostEvaluate(){/* currently unused */};
+      void PostEvaluate() override{/* currently unused */};
 
       //! derived
-      virtual bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const;
+      bool AssembleForce(Epetra_Vector& f, const double& timefac_np) const override;
 
       //! Assemble the jacobian at \f$t_{n+1}\f$
-      virtual bool AssembleJacobian(
-          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const;
+      bool AssembleJacobian(
+          CORE::LINALG::SparseOperator& jac, const double& timefac_np) const override;
 
       //! derived
-      virtual void WriteRestart(
-          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const;
+      void WriteRestart(
+          IO::DiscretizationWriter& iowriter, const bool& forced_writerestart) const override;
 
       //! derived
-      virtual void ReadRestart(IO::DiscretizationReader& ioreader);
+      void ReadRestart(IO::DiscretizationReader& ioreader) override;
 
       //! [derived]
-      virtual void Predict(const INPAR::STR::PredEnum& pred_type) { return; };
+      void Predict(const INPAR::STR::PredEnum& pred_type) override { return; };
 
       //! derived
-      virtual void RunPreComputeX(
-          const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::NLN::Group& curr_grp)
+      void RunPreComputeX(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
+          const NOX::NLN::Group& curr_grp) override
       {
         return;
       };
 
       //! derived
-      virtual void RunPostComputeX(
-          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew);
+      void RunPostComputeX(
+          const Epetra_Vector& xold, const Epetra_Vector& dir, const Epetra_Vector& xnew) override;
 
       //! derived
-      virtual void RunPostIterate(const NOX::Solver::Generic& solver) { return; };
+      void RunPostIterate(const NOX::Solver::Generic& solver) override { return; };
 
       //! derived
-      virtual void UpdateStepState(const double& timefac_n);
+      void UpdateStepState(const double& timefac_n) override;
 
       //! derived
-      virtual void UpdateStepElement();
+      void UpdateStepElement() override;
 
       //! derived
-      virtual void DetermineStressStrain();
+      void DetermineStressStrain() override;
 
       //! derived
-      virtual void DetermineEnergy();
+      void DetermineEnergy() override;
 
       //! derived
-      virtual void DetermineOptionalQuantity() override;
+      void DetermineOptionalQuantity() override;
 
       //! derived
-      virtual void OutputStepState(IO::DiscretizationWriter& iowriter) const;
+      void OutputStepState(IO::DiscretizationWriter& iowriter) const override;
 
       //! derived
-      virtual void ResetStepState();
+      void ResetStepState() override;
 
       //! [derived]
-      virtual void PostOutput();
+      void PostOutput() override;
 
       //! derived
-      virtual Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const;
+      Teuchos::RCP<const Epetra_Map> GetBlockDofRowMapPtr() const override;
 
       //! derived
-      virtual Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetCurrentSolutionPtr() const override;
 
       //! derived
-      virtual Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const;
+      Teuchos::RCP<const Epetra_Vector> GetLastTimeStepSolutionPtr() const override;
 
      private:
       //! structural displacement at \f$t_{n+1}\f$

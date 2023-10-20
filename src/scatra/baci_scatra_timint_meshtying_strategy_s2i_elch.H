@@ -46,12 +46,12 @@ namespace SCATRA
     void ComputeTimeStepSize(double& dt) final;
 
     //! compute meshtying residual terms and their linearizations
-    void EvaluateMeshtying();
+    void EvaluateMeshtying() override;
 
     void EvaluatePointCoupling() override;
 
     //! update solution after convergence of the nonlinear Newton-Raphson iteration
-    void Update() const;
+    void Update() const override;
 
    private:
     //! copy constructor
@@ -64,7 +64,7 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
 
     //! minimum interfacial overpotential associated with scatra-scatra interface layer growth
     double etagrowthmin_;
@@ -147,7 +147,7 @@ namespace SCATRA
             k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
         CORE::LINALG::SerialDenseVector& r_s,  //!< slave-side residual vector
         CORE::LINALG::SerialDenseVector& r_m   //!< master-side residual vector
-    );
+        ) override;
 
     //! evaluate and assemble interface linearizations and residuals for node-to-segment coupling
     void EvaluateConditionNTS(
@@ -171,7 +171,7 @@ namespace SCATRA
             k_mm,  //!< linearizations of master-side residuals w.r.t. master-side dofs
         CORE::LINALG::SerialDenseVector& r_s,  //!< slave-side residual vector
         CORE::LINALG::SerialDenseVector& r_m   //!< master-side residual vector
-    );
+        ) override;
 
     //! evaluate factor F/RT
     virtual double GetFRT() const;
@@ -208,7 +208,7 @@ namespace SCATRA
         CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
         CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
         CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
-    );
+        ) override;
 
    private:
     //! abbreviation
@@ -245,10 +245,10 @@ namespace SCATRA
     void ExtractNodeValues(const DRT::Discretization& idiscret,  //!< interface discretization
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master                   //!< master-side location array
-    );
+        ) override;
 
     //! evaluate factor F/RT
-    double GetFRT() const;
+    double GetFRT() const override;
 
     //! nodal, slave-side temperature variables associated with time t_{n+1} or t_{n+alpha_f}
     CORE::LINALG::Matrix<nen_slave_, 1> etempnp_slave_;
@@ -284,7 +284,7 @@ namespace SCATRA
         CORE::LINALG::SerialDenseMatrix& cellmatrix4,   //!< cell matrix 4
         CORE::LINALG::SerialDenseVector& cellvector1,   //!< cell vector 1
         CORE::LINALG::SerialDenseVector& cellvector2    //!< cell vector 2
-    );
+        ) override;
 
    private:
     //! abbreviation
@@ -333,7 +333,7 @@ namespace SCATRA
     void ExtractNodeValues(const DRT::Discretization& idiscret,  //!< interface discretization
         DRT::Element::LocationArray& la_slave,                   //!< slave-side location array
         DRT::Element::LocationArray& la_master                   //!< master-side location array
-    );
+        ) override;
 
     //! nodal, slave-side electrochemistry variables associated with time t_{n+1} or t_{n+alpha_f}
     std::vector<CORE::LINALG::Matrix<nen_slave_, 1>> eelchnp_slave_;

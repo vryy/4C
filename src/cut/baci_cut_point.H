@@ -468,12 +468,12 @@ namespace CORE::GEO
       };
 
       /// destructor
-      virtual ~ConcretePoint(){};
+      ~ConcretePoint() override{};
 
       /** \brief Get the coordinates of this point */
-      virtual void Coordinates(double* x) const { std::copy(this->x_, this->x_ + probDim, x); };
+      void Coordinates(double* x) const override { std::copy(this->x_, this->x_ + probDim, x); };
 
-      virtual void MovePoint(const double* new_coord);
+      void MovePoint(const double* new_coord) override;
 
     };  // class ConcretePoint
 
@@ -582,7 +582,7 @@ namespace CORE::GEO
         {
         }
 
-        virtual bool operator()(Line* line) const { return line != line_ and filter_(line); }
+        bool operator()(Line* line) const override { return line != line_ and filter_(line); }
 
        private:
         Line* line_;
@@ -594,7 +594,7 @@ namespace CORE::GEO
        public:
         SideCutFilter(Side* side) : side_(side) {}
 
-        virtual bool operator()(Line* line) const;
+        bool operator()(Line* line) const override;
 
        private:
         Side* side_;
@@ -605,7 +605,7 @@ namespace CORE::GEO
        public:
         SideElementCutFilter(Side* side, Element* element) : side_(side), element_(element) {}
 
-        virtual bool operator()(Line* line) const;
+        bool operator()(Line* line) const override;
 
        private:
         Side* side_;
@@ -617,7 +617,7 @@ namespace CORE::GEO
        public:
         SideSideCutFilter(Side* side1, Side* side2) : side1_(side1), side2_(side2) {}
 
-        virtual bool operator()(Line* line) const;
+        bool operator()(Line* line) const override;
 
        private:
         Side* side1_;

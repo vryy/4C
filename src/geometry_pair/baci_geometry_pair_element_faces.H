@@ -214,7 +214,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~FaceElementTemplate(){};
+    ~FaceElementTemplate() override{};
 
     /**
      * \brief Get the face GIDs and set the reference configuration.
@@ -355,7 +355,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~FaceElementPatchTemplate(){};
+    ~FaceElementPatchTemplate() override{};
 
     /**
      * \brief Set the patch information of the patch connected to this face element.
@@ -474,7 +474,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    ~FaceElementTemplateExtendedVolume() = default;
+    ~FaceElementTemplateExtendedVolume() override = default;
 
     /**
      * \brief Get the face GIDs and set the reference configuration.

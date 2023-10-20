@@ -60,7 +60,7 @@ namespace FSI
     //    Teuchos::RCP<DirichletNeumann> FSI::DirichletNeumann::Factory(_PROBLEM_TYP type); \FIXME
 
     /// setup this object
-    virtual void Setup();
+    void Setup() override;
 
     /// Access function for the #kinematiccoupling_ flag
     bool GetKinematicCoupling() const { return kinematiccoupling_; }
@@ -81,7 +81,7 @@ namespace FSI
      * \param[in, out] F residual vector
      * \param[in] fillFlag Type of evaluation in computeF() (cf. NOX documentation for details)
      */
-    virtual void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag);
+    void FSIOp(const Epetra_Vector &x, Epetra_Vector &F, const FillType fillFlag) override;
 
     /** \brief interface fluid operator
      * \param[in] icoup kinematic interface variable
@@ -89,8 +89,8 @@ namespace FSI
      *
      * \returns interface force
      */
-    virtual Teuchos::RCP<Epetra_Vector> FluidOp(
-        Teuchos::RCP<Epetra_Vector> icoup, const FillType fillFlag) = 0;
+    Teuchos::RCP<Epetra_Vector> FluidOp(
+        Teuchos::RCP<Epetra_Vector> icoup, const FillType fillFlag) override = 0;
 
     /** \brief interface structural operator
      * \param[in] iforce interface force
@@ -98,10 +98,10 @@ namespace FSI
      *
      * \returns kinematic interface variable
      */
-    virtual Teuchos::RCP<Epetra_Vector> StructOp(
-        Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) = 0;
+    Teuchos::RCP<Epetra_Vector> StructOp(
+        Teuchos::RCP<Epetra_Vector> iforce, const FillType fillFlag) override = 0;
 
-    virtual Teuchos::RCP<Epetra_Vector> InitialGuess() = 0;
+    Teuchos::RCP<Epetra_Vector> InitialGuess() override = 0;
 
    private:
     /**

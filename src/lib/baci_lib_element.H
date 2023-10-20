@@ -217,7 +217,7 @@ namespace DRT
     \brief Destructor
 
     */
-    virtual ~Element();
+    ~Element() override;
 
     /*!
     \brief Deep copy the derived class and return pointer to it
@@ -236,7 +236,7 @@ namespace DRT
     Every class implementing ParObject needs a unique id defined at the
     top of parobject.H
     */
-    virtual int UniqueParObjectId() const = 0;
+    int UniqueParObjectId() const override = 0;
 
     /*!
     \brief Pack this class so it can be communicated
@@ -244,7 +244,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -252,7 +252,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /// return ElementType instance
     virtual DRT::ElementType& ElementType() const = 0;
@@ -1373,7 +1373,7 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this face element
 
     */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
     \brief Unpack data from a char vector into this class
@@ -1381,13 +1381,13 @@ namespace DRT
     \ref Pack and \ref Unpack are used to communicate this face element
 
     */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     /*!
     \brief Returns whether the given element actually is a face element with degrees of freedom
     living there
     */
-    virtual bool IsFaceElement() const { return true; }
+    bool IsFaceElement() const override { return true; }
 
     /*!
     \brief Return the parent element id the face element is connected to (for interior faces, the

@@ -58,7 +58,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceMeshtyingPairMortar(){};
+    ~BeamToSolidSurfaceMeshtyingPairMortar() override{};
 
     /**
      * \brief Evaluate the global matrices and vectors resulting from mortar coupling. (derived)

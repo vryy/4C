@@ -32,7 +32,7 @@ namespace ADAPTER
     explicit AleFpsiWrapper(Teuchos::RCP<Ale> ale);
 
     //! Destructor
-    virtual ~AleFpsiWrapper() {}
+    ~AleFpsiWrapper() override {}
 
     //! specialized method to apply displacements to fpsi interface
     void ApplyInterfaceDisplacements(Teuchos::RCP<const Epetra_Vector> idisp);

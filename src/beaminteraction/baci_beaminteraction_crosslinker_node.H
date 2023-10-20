@@ -32,11 +32,11 @@ namespace CROSSLINKING
   class CrosslinkerNodeType : public DRT::ParObjectType
   {
    public:
-    std::string Name() const { return "CrosslinkerNodeType"; };
+    std::string Name() const override { return "CrosslinkerNodeType"; };
 
     static CrosslinkerNodeType& Instance() { return instance_; };
 
-    virtual DRT::ParObject* Create(const std::vector<char>& data);
+    DRT::ParObject* Create(const std::vector<char>& data) override;
 
    private:
     static CrosslinkerNodeType instance_;
@@ -190,13 +190,13 @@ namespace CROSSLINKING
      \brief Deep copy the derived class and return pointer to it
 
      */
-    virtual CROSSLINKING::CrosslinkerNode* Clone() const;
+    CROSSLINKING::CrosslinkerNode* Clone() const override;
 
     /*!
     \brief Destructor
 
     */
-    virtual ~CrosslinkerNode() { return; }
+    ~CrosslinkerNode() override { return; }
 
     /*!
      \brief Return unique ParObject id
@@ -205,7 +205,7 @@ namespace CROSSLINKING
      top of lib/parobject.H.
 
      */
-    virtual int UniqueParObjectId() const
+    int UniqueParObjectId() const override
     {
       return CrosslinkerNodeType::Instance().UniqueParObjectId();
     }
@@ -216,7 +216,7 @@ namespace CROSSLINKING
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Pack(DRT::PackBuffer& data) const;
+    void Pack(DRT::PackBuffer& data) const override;
 
     /*!
      \brief Unpack data from a char vector into this class
@@ -224,7 +224,7 @@ namespace CROSSLINKING
      \ref Pack and \ref Unpack are used to communicate this node
 
      */
-    virtual void Unpack(const std::vector<char>& data);
+    void Unpack(const std::vector<char>& data) override;
 
     //@}
 
@@ -233,7 +233,7 @@ namespace CROSSLINKING
     /*!
      \brief Print this MortarNode
      */
-    virtual void Print(std::ostream& os) const;
+    void Print(std::ostream& os) const override;
 
 
     /*!

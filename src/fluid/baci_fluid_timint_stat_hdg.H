@@ -31,13 +31,13 @@ namespace FLD
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
     /// Destructor
-    virtual ~TimIntStationaryHDG() {}
+    ~TimIntStationaryHDG() override {}
 
     /*!
     \brief initialization
 
     */
-    virtual void Init();
+    void Init() override;
 
     /*!
     \brief Set the part of the righthandside belonging to the last
@@ -53,34 +53,34 @@ namespace FLD
     /*!
       \brief Reset state vectors
        */
-    virtual void Reset(bool completeReset = false, int numsteps = 1, int iter = -1);
+    void Reset(bool completeReset = false, int numsteps = 1, int iter = -1) override;
 
-    void SetOldPartOfRighthandside();
+    void SetOldPartOfRighthandside() override;
 
     /*!
       \brief Set custom parameters in the respective time integration class (Loma, RedModels...)
 
     */
-    virtual void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams);
+    void SetCustomEleParamsAssembleMatAndRHS(Teuchos::ParameterList& eleparams) override;
 
     /*!
     \brief Set states in the time integration schemes: differs between GenAlpha and the others
 
     */
-    void SetStateTimInt();
+    void SetStateTimInt() override;
 
     /*!
     \brief Call discret_->ClearState() after assembly (HDG needs to read from state vectors...)
 
     */
-    virtual void ClearStateAssembleMatAndRHS();
+    void ClearStateAssembleMatAndRHS() override;
 
     /*!
     \brief set initial flow field for analytical test problems
 
     */
-    virtual void SetInitialFlowField(
-        const INPAR::FLUID::InitialField initfield, const int startfuncno);
+    void SetInitialFlowField(
+        const INPAR::FLUID::InitialField initfield, const int startfuncno) override;
 
     /*!
 
@@ -89,7 +89,7 @@ namespace FLD
            and in the fluid boundary element
 
     */
-    void SetElementTimeParameter();
+    void SetElementTimeParameter() override;
 
     //@}
 

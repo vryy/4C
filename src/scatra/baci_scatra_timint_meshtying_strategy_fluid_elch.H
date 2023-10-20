@@ -36,10 +36,10 @@ namespace SCATRA
     explicit MeshtyingStrategyFluidElch(SCATRA::ScaTraTimIntElch* elchtimint);
 
     //! destructor
-    virtual ~MeshtyingStrategyFluidElch() { return; };
+    ~MeshtyingStrategyFluidElch() override { return; };
 
     //! initialize meshtying objects
-    void InitMeshtying();
+    void InitMeshtying() override;
 
     //! setup meshtying objects
     void SetupMeshtying() override;
@@ -55,7 +55,7 @@ namespace SCATRA
     };
 
     //! instantiate strategy for Newton-Raphson convergence check
-    void InitConvCheckStrategy();
+    void InitConvCheckStrategy() override;
   };  // class MeshtyingStrategyFluidElch
 }  // namespace SCATRA
 #endif  // SCATRA_TIMINT_MESHTYING_STRATEGY_FLUID_ELCH_H

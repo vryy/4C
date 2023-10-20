@@ -49,13 +49,13 @@ class PostVtkWriter : public PostWriterBase
   PostVtkWriter(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~PostVtkWriter() {}
+  ~PostVtkWriter() override {}
 
   //! write the whole thing
-  virtual void WriteFiles(PostFilterBase& filter);
+  void WriteFiles(PostFilterBase& filter) override;
 
   //! write the whole thing for changing geometries
-  virtual void WriteFilesChangingGeom(PostFilterBase& filter);
+  void WriteFilesChangingGeom(PostFilterBase& filter) override;
 
  protected:
   //! Return the opening xml tag for this writer type
@@ -86,16 +86,15 @@ class PostVtkWriter : public PostWriterBase
       const bool fillzeros) = 0;
 
   //! Write a single result step
-  virtual void WriteNodalResultStep(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+  void WriteNodalResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::string& name, const int numdf) = 0;
+      const std::string& groupname, const std::string& name, const int numdf) override = 0;
 
   //! Write a single result step
-  virtual void WriteElementResultStep(std::ofstream& file,
-      const Teuchos::RCP<Epetra_MultiVector>& data,
+  void WriteElementResultStep(std::ofstream& file, const Teuchos::RCP<Epetra_MultiVector>& data,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::string& name, const int numdf, const int from) = 0;
+      const std::string& groupname, const std::string& name, const int numdf,
+      const int from) override = 0;
 
   //! write the geometry of one time step
   virtual void WriteGeo() = 0;
@@ -110,25 +109,24 @@ class PostVtkWriter : public PostWriterBase
    pressure) and we want to write just one part of it. So we have to
    specify which part.
    */
-  virtual void WriteResult(
-      const std::string groupname,  ///< name of the result group in the control file
-      const std::string name,       ///< name of the result to be written
+  void WriteResult(const std::string groupname,  ///< name of the result group in the control file
+      const std::string name,                    ///< name of the result to be written
       const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
       const int numdf,              ///< number of dofs per node to this result
       const int from = 0,           ///< start position of values in nodes
       const bool fillzeros = false  ///< zeros are filled to vtk file when no data is available
-  );
+      ) override;
 
 
-  virtual void WriteResultOneTimeStep(PostResult& result,  ///< result group in the control file
-      const std::string groupname,  ///< name of the result group in the control file
-      const std::string name,       ///< name of the result to be written
-      const ResultType restype,     ///< type of the result to be written (nodal-/element-based)
-      const int numdf,              ///< number of dofs per node to this result
-      bool firststep,               ///< bool whether this is the first time step
-      bool laststep,                ///< bool whether this is the last time step
-      const int from = 0            ///< start position of values in nodes
-  )
+  void WriteResultOneTimeStep(PostResult& result,  ///< result group in the control file
+      const std::string groupname,                 ///< name of the result group in the control file
+      const std::string name,                      ///< name of the result to be written
+      const ResultType restype,  ///< type of the result to be written (nodal-/element-based)
+      const int numdf,           ///< number of dofs per node to this result
+      bool firststep,            ///< bool whether this is the first time step
+      bool laststep,             ///< bool whether this is the last time step
+      const int from = 0         ///< start position of values in nodes
+      ) override
   {
     dserror("Not yet implemented");
   }
@@ -144,10 +142,10 @@ class PostVtkWriter : public PostWriterBase
    \author kronbichler
    \date 04/14
    */
-  virtual void WriteSpecialField(SpecialFieldInterface& special,
+  void WriteSpecialField(SpecialFieldInterface& special,
       PostResult& result,  ///< result group in the control file
       const ResultType restype, const std::string& groupname,
-      const std::vector<std::string>& fieldnames, const std::string& outinfo);
+      const std::vector<std::string>& fieldnames, const std::string& outinfo) override;
 
 
   //! write the solution data collected in the given vector
