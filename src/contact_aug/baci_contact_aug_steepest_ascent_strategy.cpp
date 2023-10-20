@@ -17,11 +17,11 @@
 #include "baci_contact_paramsinterface.H"
 #include "baci_inpar_structure.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_matrix_transform.H"
 #include "baci_mortar_utils.H"
+#include "baci_utils_epetra_exceptions.H"
 
 // #define LAGRANGE_FUNC
 

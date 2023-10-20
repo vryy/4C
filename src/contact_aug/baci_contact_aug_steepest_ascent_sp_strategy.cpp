@@ -15,9 +15,9 @@
 #include "baci_contact_aug_steepest_ascent_strategy.H"
 #include "baci_contact_paramsinterface.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
+#include "baci_utils_epetra_exceptions.H"
 
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/

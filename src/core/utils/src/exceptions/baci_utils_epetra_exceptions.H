@@ -9,8 +9,8 @@
 */
 /*---------------------------------------------------------------------*/
 
-#ifndef BACI_LIB_EPETRA_UTILS_H
-#define BACI_LIB_EPETRA_UTILS_H
+#ifndef BACI_UTILS_EPETRA_EXCEPTIONS_H
+#define BACI_UTILS_EPETRA_EXCEPTIONS_H
 
 #include "baci_utils_exceptions.H"
 
@@ -46,4 +46,4 @@ void set_trace_back_mode(int tracebackmode);
   }
 
 
-#endif  // LIB_EPETRA_UTILS_H
+#endif  // BACI_UTILS_EPETRA_EXCEPTIONS_H

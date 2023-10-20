@@ -14,12 +14,12 @@
 #include "baci_contact_paramsinterface.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_mortar_binarytree.H"
 #include "baci_mortar_element.H"
+#include "baci_utils_epetra_exceptions.H"
 
 #include <Epetra_IntVector.h>
 #include <Teuchos_TimeMonitor.hpp>
