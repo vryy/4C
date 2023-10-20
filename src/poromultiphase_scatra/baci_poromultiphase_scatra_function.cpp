@@ -125,46 +125,15 @@ void POROMULTIPHASESCATRA::AddValidPoroFunctions(DRT::UTILS::FunctionManager& fu
       TryCreatePoroFunctionDispatch);
 }
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
 POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::TumorGrowthLawHeaviside(
-    std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 5)
-  {
-    dserror(
-        "Wrong size of funct_params for TUMOR_GROWTH_LAW_HEAVISIDE, it should have exactly\n"
-        "5 funct_params (in this order) gamma_T_growth, w_nl_crit, w_nl_env, lambda and p_t_crit");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "gamma_T_growth")
-    dserror("First parameter for TUMOR_GROWTH_LAW_HEAVISIDE has to be gamma_T_growth");
-
-  if (funct_params[1].first != "w_nl_crit")
-    dserror("Second parameter for TUMOR_GROWTH_LAW_HEAVISIDE has to be w_nl_crit");
-
-  if (funct_params[2].first != "w_nl_env")
-    dserror("Third parameter for TUMOR_GROWTH_LAW_HEAVISIDE has to be w_nl_env");
-
-  if (funct_params[3].first != "lambda")
-    dserror("Fourth parameter for TUMOR_GROWTH_LAW_HEAVISIDE has to be lambda");
-
-  if (funct_params[4].first != "p_t_crit")
-    dserror("Fifth parameter for TUMOR_GROWTH_LAW_HEAVISIDE has to be p_t_crit");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(5);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -199,13 +168,6 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  // read function params
-  const double gamma_T_growth = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double lambda = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   // read variables and constants (order is crucial)
   const double p2 = variables[1].second;
   const double S2 = variables[4].second;
@@ -214,14 +176,14 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate(
   const double necr_frac = variables[8].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay =
-      gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
   // evaluate function
   const double functval = (macaulay * heaviside_pres) * (1 - necr_frac) * porosity * S2 -
-                          lambda * porosity * oxy_mass_frac * S2;
+                          parameter.lambda * porosity * oxy_mass_frac * S2;
   return functval;
 }
 
@@ -235,13 +197,6 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  // read function params
-  const double gamma_T_growth = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double lambda = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   // read variables and constants
   const double p2 = variables[1].second;
   const double S2 = variables[4].second;
@@ -250,29 +205,30 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate
   const double necr_frac = variables[8].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay =
-      gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
   // set saturation derivs w.r.t. S2
-  const double saturationderiv =
-      (macaulay * heaviside_pres) * (1 - necr_frac) * porosity - lambda * necr_frac * porosity;
+  const double saturationderiv = (macaulay * heaviside_pres) * (1 - necr_frac) * porosity -
+                                 parameter.lambda * necr_frac * porosity;
   deriv[4] = saturationderiv;
 
   // set porosity derivs
   const double porosityderiv =
-      (macaulay * heaviside_pres) * (1 - necr_frac) * S2 - lambda * necr_frac * S2;
+      (macaulay * heaviside_pres) * (1 - necr_frac) * S2 - parameter.lambda * necr_frac * S2;
   deriv[6] = porosityderiv;
 
   // set scalar derivs w.r.t. phi1
-  const double oxygenderiv = gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
-                             (w_nl_env - w_nl_crit) * (1 - necr_frac) * porosity * S2;
+  const double oxygenderiv = parameter.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
+                             (parameter.w_nl_env - parameter.w_nl_crit) * (1 - necr_frac) *
+                             porosity * S2;
   deriv[7] = oxygenderiv;
 
   // set scalar derivs w.r.t. phi2
   const double necroticderiv =
-      -(macaulay * heaviside_pres) * porosity * S2 - lambda * porosity * S2;
+      -(macaulay * heaviside_pres) * porosity * S2 - parameter.lambda * porosity * S2;
   deriv[8] = necroticderiv;
 
   return deriv;
@@ -282,41 +238,11 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeaviside<dim>::Evaluate
 /*----------------------------------------------------------------------*/
 template <int dim>
 POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::NecrosisLawHeaviside(
-    std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 5)
-  {
-    dserror(
-        "Wrong size of funct_params for NECROSIS_LAW_HEAVISIDE, it should have exactly\n"
-        "5 funct_params (in this order) gamma_t_necr, w_nl_crit, w_nl_env, delta_a_t and p_t_crit");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "gamma_t_necr")
-    dserror("First parameter for NECROSIS_LAW_HEAVISIDE has to be gamma_t_necr");
-
-  if (funct_params[1].first != "w_nl_crit")
-    dserror("Second parameter for NECROSIS_LAW_HEAVISIDE has to be w_nl_crit");
-
-  if (funct_params[2].first != "w_nl_env")
-    dserror("Third parameter for NECROSIS_LAW_HEAVISIDE has to be w_nl_env");
-
-  if (funct_params[3].first != "delta_a_t")
-    dserror("Fourth parameter for NECROSIS_LAW_HEAVISIDE has to be delta_a_t");
-
-  if (funct_params[4].first != "p_t_crit")
-    dserror("Fifth parameter for NECROSIS_LAW_HEAVISIDE has to be p_t_crit");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(5);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
 }
+
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -351,13 +277,6 @@ double POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  // read function params
-  const double gamma_t_necr = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double delta_a_t = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
   const double S2 = constants[4].second;
@@ -366,14 +285,14 @@ double POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((-(oxy_mass_frac - w_nl_crit)) > 0. ? 1. : 0.);
-  const double macaulay =
-      -gamma_t_necr * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
-  const double heaviside_pres((p2 - p_t_crit) > 0. ? 1. : 0.);
+  const double heaviside_oxy((-(oxy_mass_frac - parameter.w_nl_crit)) > 0. ? 1. : 0.);
+  const double macaulay = -parameter.gamma_t_necr * (oxy_mass_frac - parameter.w_nl_crit) /
+                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+  const double heaviside_pres((p2 - parameter.p_t_crit) > 0. ? 1. : 0.);
 
   // evaluate the function
   const double functval =
-      (1.0 - necr_frac) * S2 * porosity * (macaulay + delta_a_t * heaviside_pres);
+      (1.0 - necr_frac) * S2 * porosity * (macaulay + parameter.delta_a_t * heaviside_pres);
 
   return functval;
 }
@@ -388,13 +307,6 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  // read function params
-  const double gamma_t_necr = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double delta_a_t = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
     // read variables and constants (order is crucial)
@@ -405,18 +317,20 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((-(oxy_mass_frac - w_nl_crit)) > 0. ? 1. : 0.);
-    const double macaulay =
-        -gamma_t_necr * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((p2 - p_t_crit) > 0. ? 1. : 0.);
+    const double heaviside_oxy((-(oxy_mass_frac - parameter.w_nl_crit)) > 0. ? 1. : 0.);
+    const double macaulay = -parameter.gamma_t_necr * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((p2 - parameter.p_t_crit) > 0. ? 1. : 0.);
 
     // derivative w.r.t. oxygen mass fraction
     const double oxy_deriv = (1.0 - necr_frac) * porosity * S2 *
-                             (-gamma_t_necr * heaviside_oxy * 1.0 / (w_nl_env - w_nl_crit));
+                             (-parameter.gamma_t_necr * heaviside_oxy * 1.0 /
+                                 (parameter.w_nl_env - parameter.w_nl_crit));
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
-    const double necro_deriv = porosity * S2 * (macaulay + delta_a_t * heaviside_pres) * (-1.0);
+    const double necro_deriv =
+        porosity * S2 * (macaulay + parameter.delta_a_t * heaviside_pres) * (-1.0);
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -429,17 +343,19 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((-(oxy_mass_frac - w_nl_crit)) > 0. ? 1. : 0.);
-    const double macaulay =
-        -gamma_t_necr * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((p2 - p_t_crit) > 0. ? 1. : 0.);
+    const double heaviside_oxy((-(oxy_mass_frac - parameter.w_nl_crit)) > 0. ? 1. : 0.);
+    const double macaulay = -parameter.gamma_t_necr * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((p2 - parameter.p_t_crit) > 0. ? 1. : 0.);
 
     // derivative w.r.t. tumor cell saturation S2
-    const double tc_deriv = (1.0 - necr_frac) * porosity * (macaulay + delta_a_t * heaviside_pres);
+    const double tc_deriv =
+        (1.0 - necr_frac) * porosity * (macaulay + parameter.delta_a_t * heaviside_pres);
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
-    const double poro_deriv = (1.0 - necr_frac) * S2 * (macaulay + delta_a_t * heaviside_pres);
+    const double poro_deriv =
+        (1.0 - necr_frac) * S2 * (macaulay + parameter.delta_a_t * heaviside_pres);
     deriv[6] = poro_deriv;
 
     // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
@@ -450,45 +366,15 @@ std::vector<double> POROMULTIPHASESCATRA::NecrosisLawHeaviside<dim>::EvaluateDer
   return deriv;
 }
 
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template <int dim>
 POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::OxygenConsumptionLawHeaviside(
-    std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 5)
-  {
-    dserror(
-        "Wrong size of funct_params for NECROSIS_LAW_HEAVISIDE, it should have exactly\n"
-        "5 funct_params (in this order) gamma_nl_growth, gamma_0_nl, w_nl_crit, w_nl_env and "
-        "p_t_crit");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "gamma_nl_growth")
-    dserror("First parameter for OXYGEN_CONSUMPTION_LAW_HEAVISIDE has to be gamma_nl_growth");
-
-  if (funct_params[1].first != "gamma_0_nl")
-    dserror("Second parameter for OXYGEN_CONSUMPTION_LAW_HEAVISIDE has to be gamma_0_nl");
-
-  if (funct_params[2].first != "w_nl_crit")
-    dserror("Third parameter for OXYGEN_CONSUMPTION_LAW_HEAVISIDE has to be w_nl_crit");
-
-  if (funct_params[3].first != "w_nl_env")
-    dserror("Fourth parameter for OXYGEN_CONSUMPTION_LAW_HEAVISIDE has to be w_nl_env");
-
-  if (funct_params[4].first != "p_t_crit")
-    dserror("Fifth parameter for OXYGEN_CONSUMPTION_LAW_HEAVISIDE has to be p_t_crit");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(5);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -524,13 +410,6 @@ double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  // read function params
-  const double gamma_nl_growth = this->myfunct_params_[0];
-  const double gamma_0_nl = this->myfunct_params_[1];
-  const double w_nl_crit = this->myfunct_params_[2];
-  const double w_nl_env = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   // read variables and constants (order is crucial)
   const double S2 = constants[4].second;
   const double porosity = constants[6].second;
@@ -539,15 +418,16 @@ double POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-  const double macaulay =
-      gamma_nl_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
-  const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
+  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+  const double macaulay = parameter.gamma_nl_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
 
   // evaluate the function
   const double functval =
       (1.0 - necr_frac) * S2 * porosity *
-      (macaulay * heaviside_pres + gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / w_nl_env));
+      (macaulay * heaviside_pres +
+          parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
 
   return functval;
 }
@@ -562,13 +442,6 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  // read function params
-  const double gamma_nl_growth = this->myfunct_params_[0];
-  const double gamma_0_nl = this->myfunct_params_[1];
-  const double w_nl_crit = this->myfunct_params_[2];
-  const double w_nl_env = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
     // read variables and constants (order is crucial)
@@ -579,22 +452,24 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-    const double macaulay =
-        gamma_nl_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
+    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+    const double macaulay = parameter.gamma_nl_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv =
-        (1.0 - necr_frac) * S2 * porosity *
-        (gamma_nl_growth * heaviside_oxy * heaviside_pres * 1.0 / (w_nl_env - w_nl_crit) +
-            gamma_0_nl * M_PI / 2.0 / w_nl_env * cos(M_PI / 2.0 * oxy_mass_frac / w_nl_env));
+    const double oxy_deriv = (1.0 - necr_frac) * S2 * porosity *
+                             (parameter.gamma_nl_growth * heaviside_oxy * heaviside_pres * 1.0 /
+                                     (parameter.w_nl_env - parameter.w_nl_crit) +
+                                 parameter.gamma_0_nl * M_PI / 2.0 / parameter.w_nl_env *
+                                     cos(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
     const double necro_deriv =
         S2 * porosity * (-1.0) *
-        (macaulay * heaviside_pres + gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / w_nl_env));
+        (macaulay * heaviside_pres +
+            parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -607,21 +482,23 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-    const double macaulay =
-        gamma_nl_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
-    const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
+    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+    const double macaulay = parameter.gamma_nl_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
+    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
 
     // derivative w.r.t. tumor cell saturation S2
     const double tc_deriv =
         (1.0 - necr_frac) * porosity *
-        (macaulay * heaviside_pres + gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / w_nl_env));
+        (macaulay * heaviside_pres +
+            parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
         (1.0 - necr_frac) * S2 *
-        (macaulay * heaviside_pres + gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / w_nl_env));
+        (macaulay * heaviside_pres +
+            parameter.gamma_0_nl * sin(M_PI / 2.0 * oxy_mass_frac / parameter.w_nl_env));
     deriv[6] = poro_deriv;
   }
   else
@@ -634,40 +511,9 @@ std::vector<double> POROMULTIPHASESCATRA::OxygenConsumptionLawHeaviside<dim>::Ev
 /*----------------------------------------------------------------------*/
 template <int dim>
 POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::TumorGrowthLawHeavisideOxy(
-    std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 5)
-  {
-    dserror(
-        "Wrong size of funct_params for TUMOR_GROWTH_LAW_HEAVISIDE_OXY, it should have exactly\n"
-        "5 funct_params (in this order) gamma_T_growth, w_nl_crit, w_nl_env, lambda and p_t_crit");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "gamma_T_growth")
-    dserror("First parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be gamma_T_growth");
-
-  if (funct_params[1].first != "w_nl_crit")
-    dserror("Second parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be w_nl_crit");
-
-  if (funct_params[2].first != "w_nl_env")
-    dserror("Third parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be w_nl_env");
-
-  if (funct_params[3].first != "lambda")
-    dserror("Fourth parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be lambda");
-
-  if (funct_params[4].first != "p_t_crit")
-    dserror("Fifth parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be p_t_crit");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(5);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -703,13 +549,6 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  // read function params
-  const double gamma_T_growth = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double lambda = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
   const double S2 = constants[4].second;
@@ -718,14 +557,15 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay =
-      gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
   // evaluate function
-  const double functval = oxy_mass_frac * S2 * porosity *
-                          ((macaulay * heaviside_pres) * (1 - necr_frac) - lambda * necr_frac);
+  const double functval =
+      oxy_mass_frac * S2 * porosity *
+      ((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac);
 
   return functval;
 }
@@ -740,13 +580,6 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  // read function params
-  const double gamma_T_growth = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double lambda = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
     // read variables and constants (order is crucial)
@@ -757,22 +590,23 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay =
-        gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. oxygen mass fraction
     const double oxy_deriv =
-        (gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 / (w_nl_env - w_nl_crit) *
-            (1 - necr_frac)) *
+        (parameter.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
+            (parameter.w_nl_env - parameter.w_nl_crit) * (1 - necr_frac)) *
             oxy_mass_frac * S2 * porosity +
-        ((macaulay * heaviside_pres) * (1 - necr_frac) - lambda * necr_frac) * S2 * porosity;
+        ((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) * S2 *
+            porosity;
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
     const double necro_deriv =
-        ((macaulay * heaviside_pres) * (-1.0) - lambda) * oxy_mass_frac * S2 * porosity;
+        ((macaulay * heaviside_pres) * (-1.0) - parameter.lambda) * oxy_mass_frac * S2 * porosity;
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -785,19 +619,21 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay =
-        gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. tumor cell saturation S2
-    const double tc_deriv = ((macaulay * heaviside_pres) * (1.0 - necr_frac) - lambda * necr_frac) *
-                            oxy_mass_frac * porosity;
+    const double tc_deriv =
+        ((macaulay * heaviside_pres) * (1.0 - necr_frac) - parameter.lambda * necr_frac) *
+        oxy_mass_frac * porosity;
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
-        (macaulay * heaviside_pres * (1.0 - necr_frac) - lambda * necr_frac) * oxy_mass_frac * S2;
+        (macaulay * heaviside_pres * (1.0 - necr_frac) - parameter.lambda * necr_frac) *
+        oxy_mass_frac * S2;
     deriv[6] = poro_deriv;
   }
   else
@@ -810,40 +646,9 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideOxy<dim>::Evalu
 /*----------------------------------------------------------------------*/
 template <int dim>
 POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::TumorGrowthLawHeavisideNecro(
-    std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 5)
-  {
-    dserror(
-        "Wrong size of funct_params for TUMOR_GROWTH_LAW_HEAVISIDE_OXY, it should have exactly\n"
-        "5 funct_params (in this order) gamma_T_growth, w_nl_crit, w_nl_env, lambda and p_t_crit");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "gamma_T_growth")
-    dserror("First parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be gamma_T_growth");
-
-  if (funct_params[1].first != "w_nl_crit")
-    dserror("Second parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be w_nl_crit");
-
-  if (funct_params[2].first != "w_nl_env")
-    dserror("Third parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be w_nl_env");
-
-  if (funct_params[3].first != "lambda")
-    dserror("Fourth parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be lambda");
-
-  if (funct_params[4].first != "p_t_crit")
-    dserror("Fifth parameter for TUMOR_GROWTH_LAW_HEAVISIDE_OXY has to be p_t_crit");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(5);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -879,13 +684,6 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  // read function params
-  const double gamma_T_growth = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double lambda = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   // read variables and constants (order is crucial)
   const double p2 = constants[1].second;
   const double S2 = constants[4].second;
@@ -894,16 +692,16 @@ double POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Evaluate(
   const double necr_frac = variables[1].second;
 
   // evaluate heaviside
-  const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-  const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-  const double macaulay =
-      gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+  const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+  const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+  const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                          (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
   // evaluate function
   const double functval =
       porosity * S2 *
-      (((macaulay * heaviside_pres) * (1 - necr_frac) - lambda * necr_frac) * necr_frac +
-          lambda * necr_frac);
+      (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) * necr_frac +
+          parameter.lambda * necr_frac);
 
   return functval;
 }
@@ -918,13 +716,6 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  // read function params
-  const double gamma_T_growth = this->myfunct_params_[0];
-  const double w_nl_crit = this->myfunct_params_[1];
-  const double w_nl_env = this->myfunct_params_[2];
-  const double lambda = this->myfunct_params_[3];
-  const double p_t_crit = this->myfunct_params_[4];
-
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
     // read variables and constants (order is crucial)
@@ -935,21 +726,21 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
     const double necr_frac = variables[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay =
-        gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. oxygen mass fraction
-    const double oxy_deriv =
-        (gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 / (w_nl_env - w_nl_crit)) *
-        (1 - necr_frac) * necr_frac * porosity * S2;
+    const double oxy_deriv = (parameter.gamma_T_growth * heaviside_oxy * heaviside_pres * 1.0 /
+                                 (parameter.w_nl_env - parameter.w_nl_crit)) *
+                             (1 - necr_frac) * necr_frac * porosity * S2;
     deriv[0] = oxy_deriv;
 
     // derivative w.r.t. necrotic cell mass fraction
-    const double necro_deriv =
-        ((macaulay * heaviside_pres) * (1 - 2.0 * necr_frac) - 2.0 * lambda * necr_frac + lambda) *
-        porosity * S2;
+    const double necro_deriv = ((macaulay * heaviside_pres) * (1 - 2.0 * necr_frac) -
+                                   2.0 * parameter.lambda * necr_frac + parameter.lambda) *
+                               porosity * S2;
     deriv[1] = necro_deriv;
   }
   else if (variables[0].first == "p1")  // OD-derivative
@@ -962,22 +753,23 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
     const double necr_frac = constants[1].second;
 
     // evaluate heaviside
-    const double heaviside_oxy((oxy_mass_frac - w_nl_crit) > 0. ? 1. : 0.);
-    const double heaviside_pres((p_t_crit - p2) > 0. ? 1. : 0.);
-    const double macaulay =
-        gamma_T_growth * (oxy_mass_frac - w_nl_crit) / (w_nl_env - w_nl_crit) * heaviside_oxy;
+    const double heaviside_oxy((oxy_mass_frac - parameter.w_nl_crit) > 0. ? 1. : 0.);
+    const double heaviside_pres((parameter.p_t_crit - p2) > 0. ? 1. : 0.);
+    const double macaulay = parameter.gamma_T_growth * (oxy_mass_frac - parameter.w_nl_crit) /
+                            (parameter.w_nl_env - parameter.w_nl_crit) * heaviside_oxy;
 
     // derivative w.r.t. tumor cell saturation S2
     const double tc_deriv =
-        porosity *
-        (((macaulay * heaviside_pres) * (1 - necr_frac) - lambda * necr_frac) * necr_frac +
-            lambda * necr_frac);
+        porosity * (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) *
+                           necr_frac +
+                       parameter.lambda * necr_frac);
     deriv[4] = tc_deriv;
 
     // derivative w.r.t. porosity
     const double poro_deriv =
-        S2 * (((macaulay * heaviside_pres) * (1 - necr_frac) - lambda * necr_frac) * necr_frac +
-                 lambda * necr_frac);
+        S2 * (((macaulay * heaviside_pres) * (1 - necr_frac) - parameter.lambda * necr_frac) *
+                     necr_frac +
+                 parameter.lambda * necr_frac);
     deriv[6] = poro_deriv;
 
     // Note: no pressure derivative, only coupling is with heaviside --> derivative zero
@@ -992,58 +784,9 @@ std::vector<double> POROMULTIPHASESCATRA::TumorGrowthLawHeavisideNecro<dim>::Eva
 /*----------------------------------------------------------------------*/
 template <int dim>
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::OxygenTransvascularExchangeLawCont(
-    std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 9)
-  {
-    dserror(
-        "Wrong size of funct_params for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT, it should have "
-        "exactly\n"
-        "9 funct_params (in this order) n, Pb50, CaO2_max, alpha_bl_eff, gamma*rho*S/V, rho_oxy, "
-        "rho_IF, rho_bl, alpha_IF");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "n")
-    dserror("First parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be n");
-
-  if (funct_params[1].first != "Pb50")
-    dserror("Second parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be Pb50");
-
-  if (funct_params[2].first != "CaO2_max")
-    dserror("Third parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be CaO2_max");
-
-  if (funct_params[3].first != "alpha_bl_eff")
-    dserror("Fourth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be alpha_bl_eff");
-
-  if (funct_params[4].first != "gamma*rho*S/V")
-    dserror("Fifth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be gamma*rho*S/V");
-
-  if (funct_params[5].first != "rho_oxy")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be rho_oxy");
-
-  if (funct_params[6].first != "rho_IF")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be rho_IF");
-
-  if (funct_params[7].first != "rho_bl")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be rho_bl");
-
-  if (funct_params[8].first != "alpha_IF")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT has to be alpha_IF");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(9);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
-  this->myfunct_params_[5] = funct_params[5].second;
-  this->myfunct_params_[6] = funct_params[6].second;
-  this->myfunct_params_[7] = funct_params[7].second;
-  this->myfunct_params_[8] = funct_params[8].second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1081,18 +824,7 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  // read function params
-  const double n = this->myfunct_params_[0];
-  const double Pb50 = this->myfunct_params_[1];
-  const double CaO2_max = this->myfunct_params_[2];
-  const double alpha_bl_eff = this->myfunct_params_[3];
-  const double gammarhoSV = this->myfunct_params_[4];
-  const double rho_oxy = this->myfunct_params_[5];
-  const double rho_if = this->myfunct_params_[6];
-  const double rho_bl = this->myfunct_params_[7];
-  const double alpha_IF = this->myfunct_params_[8];
-
-  const double fac_if = rho_oxy / rho_if * alpha_IF;
+  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
 
   // read variables and constants (order is crucial)
   double VF1 = constants[7].second;
@@ -1100,16 +832,17 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::Evaluate(
   double oxy_mass_frac_nv = variables[3].second;
 
   double Pb = 0.0;
-  double CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  double CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
 
   // evaluate function
   const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
-  const double functval = gammarhoSV * heaviside_oxy * (Pb - oxy_mass_frac_if / fac_if) * VF1;
+  const double functval =
+      parameter.gammarhoSV * heaviside_oxy * (Pb - oxy_mass_frac_if / fac_if) * VF1;
 
   return functval;
 }
@@ -1125,18 +858,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  // read function params
-  const double n = this->myfunct_params_[0];
-  const double Pb50 = this->myfunct_params_[1];
-  const double CaO2_max = this->myfunct_params_[2];
-  const double alpha_bl_eff = this->myfunct_params_[3];
-  const double gammarhoSV = this->myfunct_params_[4];
-  const double rho_oxy = this->myfunct_params_[5];
-  const double rho_if = this->myfunct_params_[6];
-  const double rho_bl = this->myfunct_params_[7];
-  const double alpha_IF = this->myfunct_params_[8];
-
-  const double fac_if = rho_oxy / rho_if * alpha_IF;
+  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
 
   double VF1 = 0.0, oxy_mass_frac_if = 0.0;
 
@@ -1163,22 +885,22 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
         "Something went wrong in derivative evaluation of OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_CONT");
 
   FAD Pb = 0.0;
-  FAD CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  FAD CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
   const double heaviside_oxy((Pb - oxy_mass_frac_if / fac_if) > 0. ? 1. : 0.);
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
-    deriv[0] = gammarhoSV * VF1 * (-1.0 / fac_if) * heaviside_oxy;
-    deriv[3] = gammarhoSV * VF1 * (Pb.fastAccessDx(0)) * heaviside_oxy;
+    deriv[0] = parameter.gammarhoSV * VF1 * (-1.0 / fac_if) * heaviside_oxy;
+    deriv[3] = parameter.gammarhoSV * VF1 * (Pb.fastAccessDx(0)) * heaviside_oxy;
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
-    deriv[7] = gammarhoSV * (Pb.val() - oxy_mass_frac_if / fac_if) * heaviside_oxy;
+    deriv[7] = parameter.gammarhoSV * (Pb.val() - oxy_mass_frac_if / fac_if) * heaviside_oxy;
   }
   else
     dserror(
@@ -1191,65 +913,9 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawCont<dim>::EvaluateDerivativ
 /*----------------------------------------------------------------------*/
 template <int dim>
 POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::OxygenTransvascularExchangeLawDisc(
-    std::vector<std::pair<std::string, double>> funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params), pos_oxy_art_(-1), pos_diam_(-1)
 {
-  // Check size
-  if (funct_params.size() != 10)
-  {
-    dserror(
-        "Wrong size of funct_params for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC, it should have "
-        "exactly\n"
-        "10 funct_params (in this order) n, Pb50, CaO2_max, alpha_bl_eff, gamma*rho,rho_oxy, "
-        "rho_IF, rho_bl, S2_max, alpha_IF");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "n")
-    dserror("First parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be n");
-
-  if (funct_params[1].first != "Pb50")
-    dserror("Second parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be Pb50");
-
-  if (funct_params[2].first != "CaO2_max")
-    dserror("Third parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be CaO2_max");
-
-  if (funct_params[3].first != "alpha_bl_eff")
-    dserror("Fourth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be alpha_bl_eff");
-
-  if (funct_params[4].first != "gamma*rho")
-    dserror("Fifth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be gamma*rho");
-
-  if (funct_params[5].first != "rho_oxy")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be rho_oxy");
-
-  if (funct_params[6].first != "rho_IF")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be rho_IF");
-
-  if (funct_params[7].first != "rho_bl")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be rho_bl");
-
-  if (funct_params[8].first != "S2_max")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be S2_max");
-
-  if (funct_params[9].first != "alpha_IF")
-    dserror("Sixth parameter for OXYGEN_TRANSVASCULAR_EXCHANGE_LAW_DISC has to be alpha_IF");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(10);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
-  this->myfunct_params_[5] = funct_params[5].second;
-  this->myfunct_params_[6] = funct_params[6].second;
-  this->myfunct_params_[7] = funct_params[7].second;
-  this->myfunct_params_[8] = funct_params[8].second;
-  this->myfunct_params_[9] = funct_params[9].second;
-
-  pos_oxy_art_ = -1;
-  pos_diam_ = -1;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1298,19 +964,7 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::Evaluate(
   // Check order (only once since it does not change)
   if (not this->order_checked_) CheckOrder(variables, constants);
 
-  // read function params
-  const double n = this->myfunct_params_[0];
-  const double Pb50 = this->myfunct_params_[1];
-  const double CaO2_max = this->myfunct_params_[2];
-  const double alpha_bl_eff = this->myfunct_params_[3];
-  const double gammarho = this->myfunct_params_[4];
-  const double rho_oxy = this->myfunct_params_[5];
-  const double rho_if = this->myfunct_params_[6];
-  const double rho_bl = this->myfunct_params_[7];
-  const double S2_max = this->myfunct_params_[8];
-  const double alpha_IF = this->myfunct_params_[9];
-
-  const double fac_if = rho_oxy / rho_if * alpha_IF;
+  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
 
   // read variables and constants (order is crucial)
   double oxy_mass_frac_if = variables[0].second;
@@ -1319,16 +973,17 @@ double POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::Evaluate(
   const double S2 = constants[4].second;
 
   double Pb = 0.0;
-  double CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  double CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
 
   // evaluate function
-  const double heaviside_S2 = ((S2 - S2_max) > 0. ? 0. : 1.);
-  const double functval = gammarho * M_PI * D * (Pb - oxy_mass_frac_if / fac_if) * heaviside_S2;
+  const double heaviside_S2 = ((S2 - parameter.S2_max) > 0. ? 0. : 1.);
+  const double functval =
+      parameter.gammarho * M_PI * D * (Pb - oxy_mass_frac_if / fac_if) * heaviside_S2;
 
   return functval;
 }
@@ -1344,19 +999,7 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivativ
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
 
-  // read function params
-  const double n = this->myfunct_params_[0];
-  const double Pb50 = this->myfunct_params_[1];
-  const double CaO2_max = this->myfunct_params_[2];
-  const double alpha_bl_eff = this->myfunct_params_[3];
-  const double gammarho = this->myfunct_params_[4];
-  const double rho_oxy = this->myfunct_params_[5];
-  const double rho_if = this->myfunct_params_[6];
-  const double rho_bl = this->myfunct_params_[7];
-  const double S2_max = this->myfunct_params_[8];
-  const double alpha_IF = this->myfunct_params_[9];
-
-  const double fac_if = rho_oxy / rho_if * alpha_IF;
+  const double fac_if = parameter.rho_oxy / parameter.rho_if * parameter.alpha_IF;
 
   // define Fad object for evaluation
   using FAD = Sacado::Fad::DFad<double>;
@@ -1369,18 +1012,18 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivativ
   const double S2 = constants[4].second;
 
   FAD Pb = 0.0;
-  FAD CaO2 = oxy_mass_frac_nv * rho_bl / rho_oxy;
+  FAD CaO2 = oxy_mass_frac_nv * parameter.rho_bl / parameter.rho_oxy;
   // safety check --> should not be larger than CaO2_max, which already correponds to partial
   // pressures of ~250Pa
-  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * CaO2_max));
+  CaO2 = std::max(0.0, std::min(CaO2, 1.0 * parameter.CaO2_max));
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      Pb, CaO2, CaO2_max, Pb50, n, alpha_bl_eff);
+      Pb, CaO2, parameter.CaO2_max, parameter.Pb50, parameter.n, parameter.alpha_bl_eff);
 
   // evaluate function
-  const double heaviside_S2 = ((S2 - S2_max) > 0. ? 0. : 1.);
+  const double heaviside_S2 = ((S2 - parameter.S2_max) > 0. ? 0. : 1.);
 
-  deriv[0] = gammarho * M_PI * D * (-1.0 / fac_if) * heaviside_S2;
-  deriv[pos_oxy_art_] = gammarho * M_PI * D * (Pb.fastAccessDx(0)) * heaviside_S2;
+  deriv[0] = parameter.gammarho * M_PI * D * (-1.0 / fac_if) * heaviside_S2;
+  deriv[pos_oxy_art_] = parameter.gammarho * M_PI * D * (Pb.fastAccessDx(0)) * heaviside_S2;
 
   return deriv;
 }
@@ -1390,61 +1033,8 @@ POROMULTIPHASESCATRA::OxygenTransvascularExchangeLawDisc<dim>::EvaluateDerivativ
 template <int dim>
 POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::LungOxygenExchangeLaw(
     const std::vector<std::pair<std::string, double>>& funct_params)
-    : PoroMultiPhaseScaTraFunction<dim>()
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 9)
-  {
-    dserror(
-        "Wrong size of funct_params for LUNG_OXYGEN_EXCHANGE_LAW, it should have "
-        "exactly\n"
-        "9 funct_params (in this order) rho_oxy, DiffAdVTLC, alpha_oxy, rho_air, rho_bl, "
-        "n, P_oB50, NC_Hb, P_atmospheric");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "rho_oxy")
-    dserror("First parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_oxy");
-
-  if (funct_params[1].first != "DiffAdVTLC")
-    dserror("Second parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be DiffAdVTLC");
-
-  if (funct_params[2].first != "alpha_oxy")
-    dserror("Third parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be alpha_oxy");
-
-  if (funct_params[3].first != "rho_air")
-    dserror("Third parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_air");
-
-  if (funct_params[4].first != "rho_bl")
-    dserror("Fourth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_bl");
-
-  if (funct_params[5].first != "n")
-    dserror("Fifth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be n");
-
-  if (funct_params[6].first != "P_oB50")
-    dserror("Sixth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be P_oB50");
-
-  if (funct_params[7].first != "NC_Hb")
-    dserror("Seventh parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be NC_Hb");
-
-  if (funct_params[8].first != "P_atmospheric")
-  {
-    dserror(
-        "Eighth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be P_atmospheric, which should be "
-        "1.013 bar");
-  }
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(9);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
-  this->myfunct_params_[5] = funct_params[5].second;
-  this->myfunct_params_[6] = funct_params[6].second;
-  this->myfunct_params_[7] = funct_params[7].second;
-  this->myfunct_params_[8] = funct_params[8].second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1497,17 +1087,6 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
   CheckOrder(variables, constants);
 #endif
 
-  // read function params
-  const double rho_oxy = this->myfunct_params_[0];
-  const double DiffAdVTLC = this->myfunct_params_[1];
-  const double alpha_oxy = this->myfunct_params_[2];
-  const double rho_air = this->myfunct_params_[3];
-  const double rho_bl = this->myfunct_params_[4];
-  const double n = this->myfunct_params_[5];
-  const double P_oB50 = this->myfunct_params_[6];
-  const double NC_Hb = this->myfunct_params_[7];
-  const double P_atmospheric = this->myfunct_params_[8];
-
   // read variables (order is crucial)
   const double oxy_mass_frac_air = variables[0].second;
   const double oxy_mass_frac_bl = variables[1].second;
@@ -1516,21 +1095,23 @@ double POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::Evaluate(
   const double P_air = constants[0].second;
 
   // partial pressure of oxygen in air
-  const double P_oA = oxy_mass_frac_air * (P_air + P_atmospheric) * rho_air / rho_oxy;
+  const double P_oA =
+      oxy_mass_frac_air * (P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_oxy;
 
   // CoB_total is total concentration of oxygen in blood (physically dissolved and bound to
   // hemoglobin)
-  const double CoB_total = oxy_mass_frac_bl * rho_bl / rho_oxy;
+  const double CoB_total = oxy_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
 
   // partial pressure of oxygen in blood
   double P_oB = 0.0;
 
   // Calculate partial pressure of oxygen in blood
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      P_oB, CoB_total, NC_Hb, P_oB50, n, alpha_oxy);
+      P_oB, CoB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
 
   // evaluate function
-  const double functval = rho_oxy * DiffAdVTLC * alpha_oxy * (P_oA - P_oB);
+  const double functval =
+      parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy * (P_oA - P_oB);
 
   return functval;
 }
@@ -1551,17 +1132,6 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
 
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
-
-  // read function params
-  const double rho_oxy = this->myfunct_params_[0];
-  const double DiffAdVTLC = this->myfunct_params_[1];
-  const double alpha_oxy = this->myfunct_params_[2];
-  const double rho_air = this->myfunct_params_[3];
-  const double rho_bl = this->myfunct_params_[4];
-  const double n = this->myfunct_params_[5];
-  const double P_oB50 = this->myfunct_params_[6];
-  const double NC_Hb = this->myfunct_params_[7];
-  const double P_atmospheric = this->myfunct_params_[8];
 
   // define Fad object for evaluation
   using FAD = Sacado::Fad::DFad<double>;
@@ -1589,21 +1159,23 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
         variables[0].first.c_str());
 
   FAD P_oB = 0.0;
-  FAD C_oB_total = oxy_mass_frac_bl * rho_bl / rho_oxy;
+  FAD C_oB_total = oxy_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
 
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      P_oB, C_oB_total, NC_Hb, P_oB50, n, alpha_oxy);
+      P_oB, C_oB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
-    deriv[0] = rho_oxy * DiffAdVTLC * alpha_oxy * ((P_air + P_atmospheric) * rho_air / rho_oxy);
-    deriv[1] = rho_oxy * DiffAdVTLC * alpha_oxy * (-1.0) * P_oB.fastAccessDx(0);
+    deriv[0] = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy *
+               ((P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_oxy);
+    deriv[1] = parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy * (-1.0) *
+               P_oB.fastAccessDx(0);
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
-    deriv[0] = (rho_oxy * DiffAdVTLC * alpha_oxy) *
-               ((oxy_mass_frac_air * rho_air) /
-                   rho_oxy);  // derivative wrt P_air (dFunc/dP_oA * dP_oA/P_air)
+    deriv[0] = (parameter.rho_oxy * parameter.DiffAdVTLC * parameter.alpha_oxy) *
+               ((oxy_mass_frac_air * parameter.rho_air) /
+                   parameter.rho_oxy);  // derivative wrt P_air (dFunc/dP_oA * dP_oA/P_air)
   }
   else
     dserror("Derivative w.r.t. <%s> not supported in LUNG_OXYGEN_EXCHANGE_LAW.",
@@ -1618,83 +1190,8 @@ std::vector<double> POROMULTIPHASESCATRA::LungOxygenExchangeLaw<dim>::EvaluateDe
 template <int dim>
 POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::LungCarbonDioxideExchangeLaw(
     const std::vector<std::pair<std::string, double>>& funct_params)
+    : PoroMultiPhaseScaTraFunction<dim>(), parameter(funct_params)
 {
-  // Check size
-  if (funct_params.size() != 14)
-  {
-    dserror(
-        "Wrong size of funct_params for LUNG_CARBONDIOXIDE_EXCHANGE_LAW, it should have "
-        "exactly\n"
-        "14 funct_params (in this order) rho_CO2, DiffAdVTLC, pH, rho_air, rho_bl, rho_oxy "
-        "n, P_oB50, C_Hb, NC_Hb, alpha_oxy, P_atmospheric, ScalingFormmHg, volfrac_blood_ref ");
-  }
-
-  // Check correct naming and order of funct_params
-  if (funct_params[0].first != "rho_CO2")
-    dserror("First parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be rho_CO2");
-
-  if (funct_params[1].first != "DiffsolAdVTLC")
-    dserror("Second parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be DiffsolAdVTLC");
-
-  if (funct_params[2].first != "pH")
-    dserror("Third parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be pH");
-
-  if (funct_params[3].first != "rho_air")
-    dserror("Fourth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be rho_air");
-
-  if (funct_params[4].first != "rho_bl")
-    dserror("Fifth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be rho_bl");
-
-  if (funct_params[5].first != "rho_oxy")
-    dserror("Sixth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be rho_oxy");
-
-  if (funct_params[6].first != "n")
-    dserror("Seventh parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be n");
-
-  if (funct_params[7].first != "P_oB50")
-    dserror("Eighth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be P_oB50");
-
-  if (funct_params[8].first != "C_Hb")
-    dserror("Ninth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be C_Hb");
-
-  if (funct_params[9].first != "NC_Hb")
-    dserror("Tenth parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be NC_Hb");
-
-  if (funct_params[10].first != "alpha_oxy")
-    dserror("Eleventh parameter for LUNG_OXYGEN_EXCHANGE_LAW has to be alpha_oxy");
-
-  if (funct_params[11].first != "P_atmospheric")
-  {
-    dserror(
-        "Twelfth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be P_atmospheric, which "
-        "should be "
-        "1.013 bar");
-  }
-  if (funct_params[12].first != "ScalingFormmHg")
-    dserror(
-        "Thirteenth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be ScalingFormmHg. It is "
-        "the scaling value necessary to get from mmHg to the used pressure unit in the input "
-        "file!");
-
-  if (funct_params[13].first != "volfrac_blood_ref")
-    dserror("fourteenth parameter for LUNG_CARBONDIOXIDE_EXCHANGE_LAW has to be volfrac_blood_ref");
-
-  // save funct_params in class variable
-  this->myfunct_params_.resize(14);
-  this->myfunct_params_[0] = funct_params[0].second;
-  this->myfunct_params_[1] = funct_params[1].second;
-  this->myfunct_params_[2] = funct_params[2].second;
-  this->myfunct_params_[3] = funct_params[3].second;
-  this->myfunct_params_[4] = funct_params[4].second;
-  this->myfunct_params_[5] = funct_params[5].second;
-  this->myfunct_params_[6] = funct_params[6].second;
-  this->myfunct_params_[7] = funct_params[7].second;
-  this->myfunct_params_[8] = funct_params[8].second;
-  this->myfunct_params_[9] = funct_params[9].second;
-  this->myfunct_params_[10] = funct_params[10].second;
-  this->myfunct_params_[11] = funct_params[11].second;
-  this->myfunct_params_[12] = funct_params[12].second;
-  this->myfunct_params_[13] = funct_params[13].second;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1757,22 +1254,6 @@ double POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Evaluate(
   CheckOrder(variables, constants);
 #endif
 
-  // read function params
-  const double rho_CO2 = this->myfunct_params_[0];
-  const double DiffsolAdVTLC = this->myfunct_params_[1];
-  const double pH = this->myfunct_params_[2];
-  const double rho_air = this->myfunct_params_[3];
-  const double rho_bl = this->myfunct_params_[4];
-  const double rho_oxy = this->myfunct_params_[5];
-  const double n = this->myfunct_params_[6];
-  const double P_oB50 = this->myfunct_params_[7];
-  const double C_Hb = this->myfunct_params_[8];
-  const double NC_Hb = this->myfunct_params_[9];
-  const double alpha_oxy = this->myfunct_params_[10];
-  const double P_atmospheric = this->myfunct_params_[11];
-  const double ScalingFormmHg = this->myfunct_params_[12];
-  const double volfrac_blood_ref = this->myfunct_params_[13];
-
   // read variables (order is crucial)
   const double O2_mass_frac_bl = variables[1].second;
   const double CO2_mass_frac_air = variables[2].second;
@@ -1783,35 +1264,38 @@ double POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Evaluate(
   const double volfrac_blood = constants[3].second;
 
   // partial pressure of carbon dioxide in air
-  const double P_CO2A = CO2_mass_frac_air * (P_air + P_atmospheric) * rho_air / rho_CO2;
+  const double P_CO2A =
+      CO2_mass_frac_air * (P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_CO2;
 
   // CoB_total is total concentration of oxygen in blood (physically dissolved and bound to
   // hemoglobin)
-  const double CoB_total = O2_mass_frac_bl * rho_bl / rho_oxy;
+  const double CoB_total = O2_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
 
   // partial pressure of oxygen in blood
   double P_O2B = 0.0;
 
   // Calculate partial pressure of oxygen in blood
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<double>(
-      P_O2B, CoB_total, NC_Hb, P_oB50, n, alpha_oxy);
+      P_O2B, CoB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
 
   // saturation of hemoglobin with oxygen from hill equation
-  const double SO2 = pow(P_O2B, n) / (pow(P_O2B, n) + pow(P_oB50, n));
+  const double SO2 =
+      pow(P_O2B, parameter.n) / (pow(P_O2B, parameter.n) + pow(parameter.P_oB50, parameter.n));
 
   // temporary help variable for calculating partial pressure of carbon dioxide in blood
-  const double temp = (1.0 - (0.02924 * C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - pH))) * 0.0301 *
-                      2.226 * (1 + pow(10, pH - 6.1));
+  const double temp =
+      (1.0 - (0.02924 * parameter.C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - parameter.pH))) *
+      0.0301 * 2.226 * (1 + pow(10, parameter.pH - 6.1));
 
   // partial pressure of carbon dioxide in blood
-  double P_CO2B = (CO2_mass_frac_bl * rho_bl) / (rho_CO2 * temp);
+  double P_CO2B = (CO2_mass_frac_bl * parameter.rho_bl) / (parameter.rho_CO2 * temp);
 
   // scaling of P_CO2B to get from mmHg to the used pressure unit in the input file
-  P_CO2B *= ScalingFormmHg;
+  P_CO2B *= parameter.ScalingFormmHg;
 
   // evaluate function
-  const double functval =
-      rho_CO2 * DiffsolAdVTLC * (volfrac_blood / volfrac_blood_ref) * (P_CO2B - P_CO2A);
+  const double functval = parameter.rho_CO2 * parameter.DiffsolAdVTLC *
+                          (volfrac_blood / parameter.volfrac_blood_ref) * (P_CO2B - P_CO2A);
 
   return functval;
 }
@@ -1833,22 +1317,6 @@ std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Eva
 
   // create derivative vector (should have size of variables)
   std::vector<double> deriv(variables.size(), 0.0);
-
-  // read function params
-  const double rho_CO2 = this->myfunct_params_[0];
-  const double DiffsolAdVTLC = this->myfunct_params_[1];
-  const double pH = this->myfunct_params_[2];
-  const double rho_air = this->myfunct_params_[3];
-  const double rho_bl = this->myfunct_params_[4];
-  const double rho_oxy = this->myfunct_params_[5];
-  const double n = this->myfunct_params_[6];
-  const double P_oB50 = this->myfunct_params_[7];
-  const double C_Hb = this->myfunct_params_[8];
-  const double NC_Hb = this->myfunct_params_[9];
-  const double alpha_oxy = this->myfunct_params_[10];
-  const double P_atmospheric = this->myfunct_params_[11];
-  const double ScalingFormmHg = this->myfunct_params_[12];
-  const double volfrac_blood_ref = this->myfunct_params_[13];
 
   // define Fad object for evaluation
   using FAD = Sacado::Fad::DFad<double>;
@@ -1880,54 +1348,62 @@ std::vector<double> POROMULTIPHASESCATRA::LungCarbonDioxideExchangeLaw<dim>::Eva
         variables[0].first.c_str());
 
   // volfrac relation
-  const double volfrac_relation = (volfrac_blood / volfrac_blood_ref);
+  const double volfrac_relation = (volfrac_blood / parameter.volfrac_blood_ref);
 
   FAD P_O2B = 0.0;
-  FAD C_oB_total = O2_mass_frac_bl * rho_bl / rho_oxy;
+  FAD C_oB_total = O2_mass_frac_bl * parameter.rho_bl / parameter.rho_oxy;
 
   POROMULTIPHASESCATRA::UTILS::GetOxyPartialPressureFromConcentration<FAD>(
-      P_O2B, C_oB_total, NC_Hb, P_oB50, n, alpha_oxy);
+      P_O2B, C_oB_total, parameter.NC_Hb, parameter.P_oB50, parameter.n, parameter.alpha_oxy);
 
   // saturation of hemoglobin with oxygen from hill equation
-  const double SO2 = pow(P_O2B.val(), n) / (pow(P_O2B.val(), n) + pow(P_oB50, n));
+  const double SO2 = pow(P_O2B.val(), parameter.n) /
+                     (pow(P_O2B.val(), parameter.n) + pow(parameter.P_oB50, parameter.n));
 
   // temporary help variable for calculating partial pressure of carbon dioxide in blood
-  const double temp = (1.0 - (0.02924 * C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - pH))) * 0.0301 *
-                      2.226 * (1.0 + pow(10.0, pH - 6.1));
+  const double temp =
+      (1.0 - (0.02924 * parameter.C_Hb) / ((2.244 - 0.422 * SO2) * (8.740 - parameter.pH))) *
+      0.0301 * 2.226 * (1.0 + pow(10.0, parameter.pH - 6.1));
 
 
   if (variables[0].first == "phi1")  // maindiag-derivative
   {
     // linearization w.r.t. phi2 (oxygen in blood) = dMassexchangeCO2/dwO2B = dMassexchangeCO2/dPCO2
     // * dPCO2/dSO2 * dSO2/dPO2B * dPO2B/dwO2B
-    double dMassexchangeCO2dPCO2 = rho_CO2 * DiffsolAdVTLC * volfrac_relation * ScalingFormmHg;
-    double dPCO2dSO2 = CO2_mass_frac_bl * (rho_bl / rho_CO2) * pow(temp, -2.0) * 0.0301 *
-                       (1.0 + pow(10.0, pH - 6.10)) * 2.226 * (0.02924 * C_Hb) / ((8.740 - pH)) *
+    double dMassexchangeCO2dPCO2 =
+        parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation * parameter.ScalingFormmHg;
+    double dPCO2dSO2 = CO2_mass_frac_bl * (parameter.rho_bl / parameter.rho_CO2) * pow(temp, -2.0) *
+                       0.0301 * (1.0 + pow(10.0, parameter.pH - 6.10)) * 2.226 *
+                       (0.02924 * parameter.C_Hb) / ((8.740 - parameter.pH)) *
                        pow(2.244 - 0.422 * SO2, -2.0) * 0.422;
     double dSO2dPO2B =
-        n * pow(P_O2B.val(), n - 1.0) * pow(pow(P_O2B.val(), n) + pow(P_oB50, n), -1.0) -
-        pow(pow(P_O2B.val(), n) + pow(P_oB50, n), -2.0) * pow(P_O2B.val(), n) * n *
-            pow(P_O2B.val(), n - 1.0);
+        parameter.n * pow(P_O2B.val(), parameter.n - 1.0) *
+            pow(pow(P_O2B.val(), parameter.n) + pow(parameter.P_oB50, parameter.n), -1.0) -
+        pow(pow(P_O2B.val(), parameter.n) + pow(parameter.P_oB50, parameter.n), -2.0) *
+            pow(P_O2B.val(), parameter.n) * parameter.n * pow(P_O2B.val(), parameter.n - 1.0);
     double dPO2BdwO2B = P_O2B.fastAccessDx(0);
     deriv[1] = dMassexchangeCO2dPCO2 * dPCO2dSO2 * dSO2dPO2B * dPO2BdwO2B;
 
-    deriv[2] = (-1.0) * rho_CO2 * DiffsolAdVTLC * volfrac_relation *
-               ((P_air + P_atmospheric) * rho_air / rho_CO2);
+    deriv[2] = (-1.0) * parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation *
+               ((P_air + parameter.P_atmospheric) * parameter.rho_air / parameter.rho_CO2);
 
-    deriv[3] =
-        rho_CO2 * DiffsolAdVTLC * volfrac_relation * ScalingFormmHg * rho_bl / (rho_CO2 * temp);
+    deriv[3] = parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation *
+               parameter.ScalingFormmHg * parameter.rho_bl / (parameter.rho_CO2 * temp);
   }
   else if (variables[0].first == "p1")  // OD-derivative
   {
     // derivative w.r.t. P_air (dFunc/dP_CO2A * dP_CO2A/P_air)
-    deriv[0] = (-1.0) * (rho_CO2 * DiffsolAdVTLC * volfrac_relation) *
-               ((CO2_mass_frac_air * rho_air) / rho_CO2);
+    deriv[0] = (-1.0) * (parameter.rho_CO2 * parameter.DiffsolAdVTLC * volfrac_relation) *
+               ((CO2_mass_frac_air * parameter.rho_air) / parameter.rho_CO2);
 
     // partial pressure of carbon dioxide in air
-    const double P_CO2A = CO2_mass_frac_air * (P_air + P_atmospheric) * rho_air / rho_CO2;
+    const double P_CO2A = CO2_mass_frac_air * (P_air + parameter.P_atmospheric) *
+                          parameter.rho_air / parameter.rho_CO2;
     // partial pressure of carbon dioxide in blood
-    double P_CO2B = ((CO2_mass_frac_bl * rho_bl / rho_CO2) / temp) * ScalingFormmHg;
-    deriv[3] = rho_CO2 * DiffsolAdVTLC * (1 / volfrac_blood_ref) * (P_CO2B - P_CO2A);
+    double P_CO2B = ((CO2_mass_frac_bl * parameter.rho_bl / parameter.rho_CO2) / temp) *
+                    parameter.ScalingFormmHg;
+    deriv[3] = parameter.rho_CO2 * parameter.DiffsolAdVTLC * (1 / parameter.volfrac_blood_ref) *
+               (P_CO2B - P_CO2A);
   }
   else
     dserror("Derivative w.r.t. <%s> not supported in LUNG_CARBONDIOXIDE_EXCHANGE_LAW.",

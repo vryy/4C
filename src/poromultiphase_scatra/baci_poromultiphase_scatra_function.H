@@ -10,13 +10,15 @@
 
     *----------------------------------------------------------------------*/
 
-#include "baci_lib_function.H"
-
-#include <Sacado.hpp>
-
 
 #ifndef BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
 #define BACI_POROMULTIPHASE_SCATRA_FUNCTION_H
+
+
+#include "baci_lib_function.H"
+#include "baci_poromultiphase_scatra_function_parameters.H"
+
+#include <Sacado.hpp>
 
 namespace DRT::UTILS
 {
@@ -60,9 +62,6 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const = 0;
 
    protected:
-    /// function parameters for the specific POROMULTIPHASESCATRA_FUNCTION (have to be read in from
-    /// input file)
-    std::vector<double> myfunct_params_;
     /// indicating if the order has already been check for this function
     mutable bool order_checked_;
   };
@@ -91,7 +90,7 @@ namespace POROMULTIPHASESCATRA
      * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
-    TumorGrowthLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
+    TumorGrowthLawHeaviside(const std::vector<std::pair<std::string, double>>& funct_params);
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
@@ -104,6 +103,9 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+   private:
+    const TumorGrowthLawHeavisideParameters parameter;
   };
 
   /*!
@@ -129,7 +131,7 @@ namespace POROMULTIPHASESCATRA
      * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
-    NecrosisLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
+    NecrosisLawHeaviside(const std::vector<std::pair<std::string, double>>& funct_params);
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
@@ -142,6 +144,9 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+   private:
+    const NecrosisLawHeavisideParameters parameter;
   };
 
   /*!
@@ -167,7 +172,7 @@ namespace POROMULTIPHASESCATRA
      * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
-    OxygenConsumptionLawHeaviside(std::vector<std::pair<std::string, double>> funct_params);
+    OxygenConsumptionLawHeaviside(const std::vector<std::pair<std::string, double>>& funct_params);
 
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
@@ -181,6 +186,9 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+   private:
+    const OxygenConsumptionLawHeavisideParameters parameter;
   };
 
   /*!
@@ -207,7 +215,7 @@ namespace POROMULTIPHASESCATRA
      * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
-    TumorGrowthLawHeavisideOxy(std::vector<std::pair<std::string, double>> funct_params);
+    TumorGrowthLawHeavisideOxy(const std::vector<std::pair<std::string, double>>& funct_params);
 
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
@@ -221,6 +229,9 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+   private:
+    const TumorGrowthLawHeavisideNecroOxyParameters parameter;
   };
 
   /*!
@@ -246,7 +257,7 @@ namespace POROMULTIPHASESCATRA
      * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
-    TumorGrowthLawHeavisideNecro(std::vector<std::pair<std::string, double>> funct_params);
+    TumorGrowthLawHeavisideNecro(const std::vector<std::pair<std::string, double>>& funct_params);
 
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
@@ -260,6 +271,9 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+   private:
+    const TumorGrowthLawHeavisideNecroOxyParameters parameter;
   };
 
   /*!
@@ -281,7 +295,8 @@ namespace POROMULTIPHASESCATRA
      * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
-    OxygenTransvascularExchangeLawCont(std::vector<std::pair<std::string, double>> funct_params);
+    OxygenTransvascularExchangeLawCont(
+        const std::vector<std::pair<std::string, double>>& funct_params);
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants,
@@ -294,6 +309,9 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+   private:
+    const OxygenTransvascularExchangeLawContParameters parameter;
   };
 
   /*!
@@ -315,7 +333,8 @@ namespace POROMULTIPHASESCATRA
      * \brief Constructor creating empty object. Add the function parameters (read from the
      * input file) to the function
      */
-    OxygenTransvascularExchangeLawDisc(std::vector<std::pair<std::string, double>> funct_params);
+    OxygenTransvascularExchangeLawDisc(
+        const std::vector<std::pair<std::string, double>>& funct_params);
 
 
     double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
@@ -331,6 +350,7 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
 
    private:
+    const OxygenTransvascularExchangeLawDiscParameters parameter;
     mutable int pos_oxy_art_;
     mutable int pos_diam_;
   };
@@ -370,6 +390,9 @@ namespace POROMULTIPHASESCATRA
 
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+   private:
+    const LungOxygenExchangeLawParameters parameter;
   };
 
   /*!
@@ -439,6 +462,10 @@ namespace POROMULTIPHASESCATRA
      */
     void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
         const std::vector<std::pair<std::string, double>>& constants) const override;
+
+
+   private:
+    const LungCarbonDioxideExchangeLawParameters parameter;
   };
 
 }  // namespace POROMULTIPHASESCATRA
