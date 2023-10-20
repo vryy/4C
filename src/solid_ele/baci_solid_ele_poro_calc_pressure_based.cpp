@@ -59,11 +59,9 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::EvaluateNonlinearFor
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
-          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp
-
-      )
+          const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
         const SpatialMaterialMapping<distype> spatial_material_mapping =
             EvaluateSpatialMaterialMapping<distype>(
@@ -174,7 +172,7 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingPoroelast(
 
   // Loop over all Gauss points
   ForEachGaussPoint(nodal_coordinates, gauss_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp
 

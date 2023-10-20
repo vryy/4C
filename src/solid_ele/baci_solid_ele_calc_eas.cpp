@@ -656,7 +656,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -670,14 +670,12 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
             Mtilde = EvaluateEASShapeFunctionsMaterialConfig<distype, eastype>(
                 jacobian_mapping.determinant_, centroid_transformation, xi);
 
-        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
-            consistent_defgrd = EvaluateConsistentDefgrd(
-                displacement_based_spatial_material_mapping.deformation_gradient_,
-                enhanced_gl_strain);
+        const CORE::LINALG::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
+            displacement_based_spatial_material_mapping.deformation_gradient_, enhanced_gl_strain);
 
         EvaluateGPCoordinatesAndAddToParameterList<distype>(
             nodal_coordinates, shape_functions, params);
@@ -735,7 +733,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::EvaluateNonlinearForceSti
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     ForEachGaussPoint<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -777,7 +775,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -788,14 +786,12 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::Update(const DRT::Element
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
-            consistent_defgrd = EvaluateConsistentDefgrd(
-                displacement_based_spatial_material_mapping.deformation_gradient_,
-                enhanced_gl_strain);
+        const CORE::LINALG::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
+            displacement_based_spatial_material_mapping.deformation_gradient_, enhanced_gl_strain);
 
         EvaluateGPCoordinatesAndAddToParameterList<distype>(
             nodal_coordinates, shape_functions, params);
@@ -830,7 +826,7 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -842,14 +838,12 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateStress(const DRT
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 
-        const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
-            consistent_defgrd = EvaluateConsistentDefgrd(
-                displacement_based_spatial_material_mapping.deformation_gradient_,
-                enhanced_gl_strain);
+        const CORE::LINALG::Matrix<num_dim_, num_dim_> consistent_defgrd = EvaluateConsistentDefgrd(
+            displacement_based_spatial_material_mapping.deformation_gradient_, enhanced_gl_strain);
 
         EvaluateGPCoordinatesAndAddToParameterList<distype>(
             nodal_coordinates, shape_functions, params);
@@ -882,7 +876,7 @@ double DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateInternalEnergy
   EvaluateAlpha<distype, eastype>(eas_iteration_data_, discretization, lm);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -893,7 +887,7 @@ double DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::CalculateInternalEnergy
         const SpatialMaterialMapping<distype> displacement_based_spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> enhanced_gl_strain =
+        const CORE::LINALG::Matrix<num_str_, 1> enhanced_gl_strain =
             EvaluateEnhancedAssumedGLStrains<distype, eastype>(
                 displacement_based_spatial_material_mapping, Mtilde, eas_iteration_data_.alpha_);
 

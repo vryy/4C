@@ -201,7 +201,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
   EvaluateCentroidCoordinatesAndAddToParameterList<distype>(nodal_coordinates, params);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -277,7 +277,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
     // integrate mass matrix
     dsassert(mean_density > 0, "It looks like the density is 0.0");
     ForEachGaussPoint<distype>(nodal_coordinates, mass_matrix_integration_,
-        [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+        [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
             const ShapeFunctionsAndDerivatives<distype>& shape_functions,
             const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
         { AddMassMatrix(shape_functions, integration_factor, mean_density, *mass); });
@@ -306,7 +306,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::Update(const DRT::Element& ele,
 
   // Loop over all Gauss points
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -352,7 +352,7 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateStress(const DRT::Elemen
 
   // Loop over all Gauss points
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
@@ -398,7 +398,7 @@ double DRT::ELEMENTS::SolidEleCalcFbar<distype>::CalculateInternalEnergy(const D
   auto detF_centroid = EvaluateDeformationGradientDeterminantCentroid<distype>(nodal_coordinates);
 
   ForEachGaussPoint<distype>(nodal_coordinates, stiffness_matrix_integration_,
-      [&](const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, 1>& xi,
+      [&](const CORE::LINALG::Matrix<num_dim_, 1>& xi,
           const ShapeFunctionsAndDerivatives<distype>& shape_functions,
           const JacobianMapping<distype>& jacobian_mapping, double integration_factor, int gp)
       {
