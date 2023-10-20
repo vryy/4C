@@ -15,8 +15,6 @@
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linecomponent.H"
-#include "baci_lib_utils_cond_and_mat_definition.H"
-#include "baci_lib_utils_reader.H"
 
 #include <algorithm>
 #include <iterator>

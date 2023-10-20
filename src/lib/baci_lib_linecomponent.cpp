@@ -7,11 +7,108 @@
 
 #include "baci_lib_linecomponent.H"
 
-#include "baci_lib_utils_cond_and_mat_definition.H"
-
-#include <cstddef>
 #include <iterator>
 #include <utility>
+
+
+namespace
+{
+  /*! brief Convert the string 'snumber' to number of type T and return that value number via
+   * stoi or stod
+   *
+   *  Depending on whether T is type int or double, use stoi or stod to convert 'snumber'.
+   */
+  template <typename T>
+  T ConvertStringToNumber(
+      const std::string&
+          snumber,        ///< string read from the line to be converted to an int or double
+      std::size_t& pos);  ///< position of the next character in string after the numerical value
+
+  /// specialization for int
+  template <>
+  inline int ConvertStringToNumber<int>(const std::string& snumber, std::size_t& pos)
+  {
+    return stoi(snumber, &pos);
+  }
+
+  /// specialization for double
+  template <>
+  inline double ConvertStringToNumber<double>(const std::string& snumber, std::size_t& pos)
+  {
+    return stod(snumber, &pos);
+  }
+
+  // Throw an error for the wrong data type in case 'nnumber' is of type int
+  void ThrowErrorWrongDataType(const std::string& snumbersubstring, int nnumber,
+      const std::string& variablename, const std::string& sectionname)
+  {
+    dserror(
+        "Failed to read value '%s' while reading variable '%s' in '%s'. BACI could only read "
+        "'%d', so the specified number format is probably not supported. The variable '%s' "
+        "has to be an integer.",
+        snumbersubstring.c_str(), variablename.c_str(), sectionname.c_str(), nnumber,
+        variablename.c_str());
+  }
+
+  // Throw an error for the wrong data type in case 'nnumber' is of type double
+  void ThrowErrorWrongDataType(const std::string& snumbersubstring, double nnumber,
+      const std::string& variablename, const std::string& sectionname)
+  {
+    dserror(
+        "Failed to read value '%s' while reading variable '%s' in '%s'. BACI could only read "
+        "'%f', so the specified number format is probably not supported. The variable '%s' "
+        "has to be a floating point.",
+        snumbersubstring.c_str(), variablename.c_str(), sectionname.c_str(), nnumber,
+        variablename.c_str());
+  }
+
+
+  // Convert a string to a number, i.e. to an int or a double
+  // Perform the appropriate error checks
+  template <typename T>
+  T ConvertAndValidateStringToNumber(const std::string& snumber, const std::string& variablename,
+      const std::string& sectionname, int variablelength, bool optional)
+  {
+    // value is set by the function stoi or stod to position of the next character in str after the
+    // numerical value. Needed to check for remaining characters after string to int or double
+    // conversion.
+    T nnumber;
+    std::size_t pos = 0;
+
+    try
+    {
+      // convert to int or double, depending on type T
+      nnumber = ConvertStringToNumber<T>(snumber, pos);
+    }
+    catch (std::invalid_argument& e)
+    {
+      // in case the parameter is mandatory and no value is given
+      if (!optional and snumber.empty())
+      {
+        dserror(
+            "Invalid argument! No value of variable '%s' in '%s' specified. Possibly you "
+            "didn't give enough input values. The variable '%s' expectes %i input values.",
+            variablename.c_str(), sectionname.c_str(), variablename.c_str(), variablelength);
+      }
+      // any other weird input values
+      else
+      {
+        dserror("Invalid argument! Failed to read the value '%s' of variable '%s' in '%s'.",
+            snumber.c_str(), variablename.c_str(), sectionname.c_str(), variablename.c_str());
+      }
+    }
+    // check if there are any other characters that were not converted
+    if (pos != snumber.size())
+    {
+      ThrowErrorWrongDataType(snumber.substr(pos), nnumber, variablename, sectionname);
+    }
+
+    return nnumber;
+  }
+
+
+
+}  // namespace
 
 namespace INPUT
 {
@@ -361,8 +458,8 @@ namespace INPUT
         // all other cases
         else
         {
-          nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
-              snumber, Name(), section_name, 1, optional_);
+          nnumber =
+              ConvertAndValidateStringToNumber<int>(snumber, Name(), section_name, 1, optional_);
         }
       }
       if (data_.fortran_style)
@@ -505,7 +602,7 @@ namespace INPUT
         // all other cases
         else
         {
-          current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<int>(
+          current_nnumber = ConvertAndValidateStringToNumber<int>(
               snumber, Name(), section_name, dynamic_length, optional_);
         }
 
@@ -588,8 +685,8 @@ namespace INPUT
 
       if (!(optional_ && snumber.empty()))
       {
-        nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
-            snumber, Name(), section_name, 1, optional_);
+        nnumber =
+            ConvertAndValidateStringToNumber<double>(snumber, Name(), section_name, 1, optional_);
 
         // remove parameter value from stringstream "condline"
         condline->str(
@@ -683,7 +780,7 @@ namespace INPUT
         // all other cases
         else
         {
-          current_nnumber = DRT::UTILS::ConvertAndValidateStringToNumber<double>(
+          current_nnumber = ConvertAndValidateStringToNumber<double>(
               snumber, Name(), section_name, dynamic_length, optional_);
         }
 
