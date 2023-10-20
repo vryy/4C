@@ -1,7 +1,7 @@
 /*-----------------------------------------------------------------------------------------------*/
 /*! \file
 
-\brief input parameters related to VTU output at runtime for fluid
+\brief input parameters related to output at runtime for fluid
 
 \level 3
 
@@ -9,8 +9,8 @@
 /*-----------------------------------------------------------------------------------------------*/
 
 
-#ifndef BACI_FLUID_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
-#define BACI_FLUID_DISCRETIZATION_RUNTIME_VTU_OUTPUT_PARAMS_H
+#ifndef BACI_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_H
+#define BACI_FLUID_DISCRETIZATION_RUNTIME_OUTPUT_PARAMS_H
 
 namespace Teuchos
 {
@@ -23,18 +23,18 @@ namespace DRT
 {
   namespace ELEMENTS
   {
-    /** \brief Input data container for VTU output at runtime for Fluid*/
-    class FluidRuntimeVtuOutputParams
+    /** \brief Input data container for output at runtime for Fluid*/
+    class FluidRuntimeOutputParams
     {
      public:
       /// constructor
-      FluidRuntimeVtuOutputParams() = default;
+      FluidRuntimeOutputParams() = default;
 
       /// destructor
-      virtual ~FluidRuntimeVtuOutputParams() = default;
+      virtual ~FluidRuntimeOutputParams() = default;
 
       /// initialize the class variables
-      void Init(const Teuchos::ParameterList& IO_vtk_fluid_paramslist);
+      void Init(const Teuchos::ParameterList& IO_fluid_paramslist);
 
       /// setup new class variables
       void Setup();

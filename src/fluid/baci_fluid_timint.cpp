@@ -56,7 +56,7 @@ FLD::TimInt::TimInt(const Teuchos::RCP<DRT::Discretization>& discret,
   bool output_fluid =
       (bool)DRT::INPUT::IntegralValue<int>(*fluid_runtime_output_list, "OUTPUT_FLUID");
 
-  // create and initialize parameter container object for fluid specific runtime vtk output
+  // create and initialize parameter container object for fluid specific runtime output
   if (output_fluid)
   {
     runtime_output_params_.Init(*fluid_runtime_output_list);
