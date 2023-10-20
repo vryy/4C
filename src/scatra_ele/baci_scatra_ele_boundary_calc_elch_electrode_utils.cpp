@@ -15,13 +15,12 @@
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-    CalculateButlerVolmerElchLinearizations(const int kineticmodel, const double j0,
-        const double frt, const double epdderiv, const double alphaa, const double alphac,
-        const double resistance, const double expterm1, const double expterm2, const double kr,
-        const double faraday, const double emasterphiint, const double eslavephiint,
-        const double cmax, const double eta, double& dj_dc_slave, double& dj_dc_master,
-        double& dj_dpot_slave, double& dj_dpot_master)
+void DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(const int kineticmodel, const double j0,
+    const double frt, const double epdderiv, const double alphaa, const double alphac,
+    const double resistance, const double expterm1, const double expterm2, const double kr,
+    const double faraday, const double emasterphiint, const double eslavephiint, const double cmax,
+    const double eta, double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave,
+    double& dj_dpot_master)
 {
   const double expterm = expterm1 - expterm2;
   // core linearizations associated with Butler-Volmer mass flux density
@@ -119,10 +118,10 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-    CalculateButlerVolmerTempLinearizations(const double alphaa, const double alphac,
-        const double depddT, const double eta, const double etempint, const double faraday,
-        const double frt, const double gasconstant, const double j0, double& dj_dT_slave)
+void DRT::ELEMENTS::CalculateButlerVolmerTempLinearizations(const double alphaa,
+    const double alphac, const double depddT, const double eta, const double etempint,
+    const double faraday, const double frt, const double gasconstant, const double j0,
+    double& dj_dT_slave)
 {
   // exponential Butler-Volmer terms
   const double exptermA = std::exp(alphaa * frt * eta);
@@ -149,10 +148,9 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-    CalculateButlerVolmerDispLinearizations(const int kineticmodel, const double alphaa,
-        const double alphac, const double frt, const double j0, const double eta,
-        const double depd_ddetF, double& dj_dsqrtdetg, double& dj_ddetF)
+void DRT::ELEMENTS::CalculateButlerVolmerDispLinearizations(const int kineticmodel,
+    const double alphaa, const double alphac, const double frt, const double j0, const double eta,
+    const double depd_ddetF, double& dj_dsqrtdetg, double& dj_ddetF)
 {
   double dj_depd;
 
@@ -177,11 +175,30 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-    CalculateModifiedButlerVolmerMassFluxDensity(const double j0, const double alphaa,
-        const double alphac, const double frt, const double pot_ed, const double pot_el,
-        const double epd, const double resistance, const double itemax, const double convtol,
-        const double faraday)
+double DRT::ELEMENTS::CalculateButlerVolmerExchangeMassFluxDensity(const double kr,
+    const double alpha_a, const double alpha_c, const double c_max, const double c_ed,
+    const double c_el, const int kinetic_model,
+    const DRT::Condition::ConditionType& s2i_condition_type)
+{
+  dsassert(s2i_condition_type == DRT::Condition::S2IKinetics,
+      "This method is called with the wrong condition type. Check the implementation!");
+
+  if (IsReducedButlerVolmer(kinetic_model))
+  {
+    return kr;
+  }
+  else
+  {
+    return kr * std::pow(c_el, alpha_a) * std::pow(c_max - c_ed, alpha_a) * std::pow(c_ed, alpha_c);
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double DRT::ELEMENTS::CalculateModifiedButlerVolmerMassFluxDensity(const double j0,
+    const double alphaa, const double alphac, const double frt, const double pot_ed,
+    const double pot_el, const double epd, const double resistance, const double itemax,
+    const double convtol, const double faraday)
 {
   // Iterations are conducted over current density i which is scaled down to mass flux
   // density j by j = i / faraday at the end of the function in order to reduce the effect
@@ -235,8 +252,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsButlerVolmerLinearized(
-    int kineticmodel)
+bool DRT::ELEMENTS::IsButlerVolmerLinearized(const int kineticmodel)
 {
   return (kineticmodel == INPAR::S2I::kinetics_butlervolmerlinearized or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedlinearized);
@@ -244,7 +260,7 @@ bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsButlerVolmerLinea
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::IsReducedButlerVolmer(int kineticmodel)
+bool DRT::ELEMENTS::IsReducedButlerVolmer(const int kineticmodel)
 {
   return (kineticmodel == INPAR::S2I::kinetics_butlervolmerreduced or
           kineticmodel == INPAR::S2I::kinetics_butlervolmerreducedlinearized or

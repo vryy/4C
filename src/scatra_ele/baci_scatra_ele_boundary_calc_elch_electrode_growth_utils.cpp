@@ -10,51 +10,86 @@
 
 #include "baci_scatra_ele_boundary_calc_elch_electrode_growth_utils.H"
 
+#include "baci_scatra_ele_boundary_calc_elch_electrode_utils.H"
 #include "baci_scatra_ele_parameter_boundary.H"
 #include "baci_scatra_ele_parameter_std.H"
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double DRT::ELEMENTS::CalculateGrowthExchangeMassFluxDensity(const double kr, const double alpha_a,
+    const double c_el, const int kinetic_model,
+    const DRT::Condition::ConditionType& s2i_condition_type)
+{
+  dsassert(s2i_condition_type == DRT::Condition::S2ICouplingGrowth,
+      "This method is called with the wrong condition type. Check the implementation!");
+
+  switch (kinetic_model)
+  {
+    case INPAR::S2I::growth_kinetics_butlervolmer:
+    {
+      return kr * std::pow(c_el, alpha_a);
+    }
+    default:
+      dserror("Did not recognize kinetic model of S2ICouplingGrowth condition!");
+  }
+}
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
-    CalculateS2IElchElchLinearizations(const double i0, const double frt, const double epdderiv,
-        const double resistance, const double regfac, const double expterm1, const double expterm2,
-        const double faraday, const double emasterphiint, const double eslavephiint,
-        const double cmax,
-        const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
-        double& di_dc_slave, double& di_dc_master, double& di_dpot_slave, double& di_dpot_master)
+void DRT::ELEMENTS::CalculateS2IGrowthElchLinearizations(const double j0, const double frt,
+    const double epdderiv, const double eta, const double resistance, const double regfac,
+    const double emasterphiint, const double eslavephiint, const double cmax,
+    const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary,
+    double& dj_dc_slave, double& dj_dc_master, double& dj_dpot_slave, double& dj_dpot_master)
 {
   const double kr = scatraeleparamsboundary->ChargeTransferConstant();
   const double alphaa = scatraeleparamsboundary->AlphaA();
   const double alphac = scatraeleparamsboundary->AlphaC();
 
+  const double expterm1 = std::exp(alphaa * frt * eta);
+  const double expterm2 = std::exp(-alphac * frt * eta);
+
   // define linearization terms
   double dF_dc_slave(0.0), dF_dc_master(0.0), dF_dpot_slave(0.0), dF_dpot_master(0.0);
-  double dF_di_inverse(0.0);
+  double dF_dj_inverse(0.0);
 
   switch (scatraeleparamsboundary->RegularizationType())
   {
     case INPAR::S2I::RegularizationType::regularization_none:
+    {
+      const double expterm = expterm1 - expterm2;
+
+      // compute linearizations of Butler-Volmer mass flux density via implicit differentiation,
+      // where F = j0*expterm - j = 0
+      dF_dc_slave =
+          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2IKinetics
+              ? kr * std::pow(emasterphiint, alphaa) * std::pow(cmax - eslavephiint, alphaa - 1.0) *
+                        std::pow(eslavephiint, alphac - 1.0) *
+                        (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
+                    j0 * (alphaa * frt * epdderiv * expterm1 + alphac * frt * epdderiv * expterm2)
+              : 0.0;
+      dF_dc_master = j0 * alphaa / emasterphiint * expterm;
+      dF_dpot_slave = j0 * frt * (alphaa * expterm1 + alphac * expterm2);
+      dF_dpot_master = -dF_dpot_slave;
+      dF_dj_inverse =
+          -1.0 / (j0 * frt * resistance * (alphaa * expterm1 + alphac * expterm2) + 1.0);
+
+      break;
+    }
     case INPAR::S2I::RegularizationType::regularization_trigonometrical:
     case INPAR::S2I::RegularizationType::regularization_polynomial:
     {
       const double expterm = regfac * (expterm1 - expterm2);
 
-      // compute linearizations of Butler-Volmer current density via implicit differentiation, where
-      // F = i0*expterm - i = 0
-      // also true for this DRT::Condition::S2IKinetics, as regfac is equal to 1 in this case
-      dF_dc_slave =
-          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2IKinetics
-              ? kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
-                        pow(eslavephiint, alphac - 1.0) *
-                        (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
-                    i0 * (alphaa * frt * epdderiv * expterm1 + alphac * frt * epdderiv * expterm2)
-              : 0.0;
-      dF_dc_master = i0 * alphaa / emasterphiint * expterm;
-      dF_dpot_slave = i0 * frt * regfac * (alphaa * expterm1 + alphac * expterm2);
+      // compute linearizations of Butler-Volmer mass flux density via implicit differentiation,
+      // where F = j0*expterm - j = 0
+      dF_dc_slave = 0.0;
+      dF_dc_master = j0 * alphaa / emasterphiint * expterm;
+      dF_dpot_slave = j0 * frt * regfac * (alphaa * expterm1 + alphac * expterm2);
       dF_dpot_master = -dF_dpot_slave;
-      dF_di_inverse =
-          -1.0 / (i0 * frt * resistance * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
+      dF_dj_inverse =
+          -1.0 / (j0 * frt * resistance * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
 
       break;
     }
@@ -62,21 +97,14 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
     {
       const double expterm = regfac * expterm1 - expterm2;
 
-      // compute linearizations of Butler-Volmer current density via implicit differentiation, where
-      // F = i0*expterm - i = 0
-      // also true for this DRT::Condition::S2IKinetics, as regfac is equal to 1 in this case
-      dF_dc_slave =
-          scatraeleparamsboundary->ConditionType() == DRT::Condition::S2IKinetics
-              ? kr * faraday * pow(emasterphiint, alphaa) * pow(cmax - eslavephiint, alphaa - 1.0) *
-                        pow(eslavephiint, alphac - 1.0) *
-                        (-alphaa * eslavephiint + alphac * (cmax - eslavephiint)) * expterm -
-                    i0 * (alphaa * frt * epdderiv * expterm1 + alphac * frt * epdderiv * expterm2)
-              : 0.0;
-      dF_dc_master = i0 * alphaa / emasterphiint * expterm;
-      dF_dpot_slave = i0 * frt * (alphaa * regfac * expterm1 + alphac * expterm2);
+      // compute linearizations of Butler-Volmer mass flux density via implicit differentiation,
+      // where F = j0*expterm - j = 0
+      dF_dc_slave = 0.0;
+      dF_dc_master = j0 * alphaa / emasterphiint * expterm;
+      dF_dpot_slave = j0 * frt * (alphaa * regfac * expterm1 + alphac * expterm2);
       dF_dpot_master = -dF_dpot_slave;
-      dF_di_inverse =
-          -1.0 / (i0 * frt * resistance * (alphaa * regfac * expterm1 + alphac * expterm2) + 1.0);
+      dF_dj_inverse =
+          -1.0 / (j0 * frt * resistance * (alphaa * regfac * expterm1 + alphac * expterm2) + 1.0);
 
       break;
     }
@@ -84,53 +112,59 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::
     {
       dserror("Regularization type %i not recognized!",
           static_cast<int>(scatraeleparamsboundary->RegularizationType()));
-      break;
     }
   }
 
-  di_dc_slave = -dF_dc_slave * dF_di_inverse;
-  di_dc_master = -dF_dc_master * dF_di_inverse;
-  di_dpot_slave = -dF_dpot_slave * dF_di_inverse;
-  di_dpot_master = -dF_dpot_master * dF_di_inverse;
+  dj_dc_slave = -dF_dc_slave * dF_dj_inverse;
+  dj_dc_master = -dF_dc_master * dF_dj_inverse;
+  dj_dpot_slave = -dF_dpot_slave * dF_dj_inverse;
+  dj_dpot_master = -dF_dpot_master * dF_dj_inverse;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::CalculateS2IElchGrowthLinearizations(
-    const double i0, const double i, const double frt, const double resistivity,
-    const double resistance, const double regfac, const double regfacderiv, const double expterm1,
-    const double expterm2,
+double DRT::ELEMENTS::CalculateS2IElchGrowthLinearizations(const double j0, const double j,
+    const double frt, const double resistivity, const double resistance, const double regfac,
+    const double regfacderiv, const double expterm1, const double expterm2,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
   const double alphaa = scatraeleparamsboundary->AlphaA();
   const double alphac = scatraeleparamsboundary->AlphaC();
 
-  double dF_dgrowth(0.0), dF_di_inverse(0.0), di_dgrowth(0.0);
+  double dF_dgrowth(0.0), dF_dj_inverse(0.0);
 
   switch (scatraeleparamsboundary->RegularizationType())
   {
     case INPAR::S2I::RegularizationType::regularization_none:
+    {
+      // compute linearization of Butler-Volmer mass flux density w.r.t. scatra-scatra interface
+      // layer thickness via implicit differentiation, where F = j0*expterm - j = 0
+      dF_dgrowth = -j0 * j * frt * resistivity * (alphaa * expterm1 + alphac * expterm2);
+      dF_dj_inverse =
+          -1.0 / (j0 * frt * resistance * (alphaa * expterm1 + alphac * expterm2) + 1.0);
+
+      break;
+    }
     case INPAR::S2I::RegularizationType::regularization_trigonometrical:
     case INPAR::S2I::RegularizationType::regularization_polynomial:
     {
-      // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer
-      // thickness via implicit differentiation, where F = i0*expterm - i = 0
-      dF_dgrowth = -i0 * i * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
-                   regfacderiv * i0 * (expterm1 - expterm2);
-      dF_di_inverse =
-          -1.0 / (i0 * frt * resistance * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
+      // compute linearization of Butler-Volmer mass flux density w.r.t. scatra-scatra interface
+      // layer thickness via implicit differentiation, where F = j0*expterm - j = 0
+      dF_dgrowth = -j0 * j * frt * regfac * resistivity * (alphaa * expterm1 + alphac * expterm2) +
+                   regfacderiv * j0 * (expterm1 - expterm2);
+      dF_dj_inverse =
+          -1.0 / (j0 * frt * resistance * regfac * (alphaa * expterm1 + alphac * expterm2) + 1.0);
 
       break;
     }
     case INPAR::S2I::RegularizationType::regularization_hein:
     {
-      // compute linearization of Butler-Volmer current density w.r.t. scatra-scatra interface layer
-      // thickness via implicit differentiation, where F = i0*expterm - i = 0
-      dF_dgrowth = -i0 * i * frt * resistivity * (alphaa * regfac * expterm1 + alphac * expterm2) +
-                   i0 * regfacderiv * expterm1;
-      dF_di_inverse =
-          -1.0 / (i0 * frt * resistance * (alphaa * regfac * expterm1 + alphac * expterm2) + 1.0);
+      // compute linearization of Butler-Volmer mass flux density w.r.t. scatra-scatra interface
+      // layer thickness via implicit differentiation, where F = j0*expterm - j = 0
+      dF_dgrowth = -j0 * j * frt * resistivity * (alphaa * regfac * expterm1 + alphac * expterm2) +
+                   j0 * regfacderiv * expterm1;
+      dF_dj_inverse =
+          -1.0 / (j0 * frt * resistance * (alphaa * regfac * expterm1 + alphac * expterm2) + 1.0);
 
       break;
     }
@@ -138,25 +172,27 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::CalculateS2IElchGr
     {
       dserror("Regularization type %i not recognized!",
           static_cast<int>(scatraeleparamsboundary->RegularizationType()));
-      break;
     }
   }
 
-  di_dgrowth = -dF_dgrowth * dF_di_inverse;
-
-  return di_dgrowth;
+  return -dF_dgrowth * dF_dj_inverse;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetButlerVolmerCurrentDensity(
-    const double i0, const double frt, const double pot_ed, const double pot_el, const double epd,
-    const double resistance, const double thickness,
+double DRT::ELEMENTS::CalculateGrowthMassFluxDensity(const double j0, const double frt,
+    const double pot_ed, const double pot_el, const double epd, const double resistance,
+    const double thickness, const double faraday,
     const DRT::ELEMENTS::ScaTraEleParameterStd* const scatraparameterstd,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
+  // Iterations are conducted over current density i which is scaled down to mass flux
+  // density j by j = i / faraday at the end of the function in order to reduce the effect
+  // of numerical error introduced into global problem since i is roughly 10^5 times bigger than j
+
   // initialize Butler-Volmer current density
   double i(0.0);
+  const double i0 = j0 * faraday;
 
   const double alphaa = scatraeleparamsboundary->AlphaA();
   const double alphac = scatraeleparamsboundary->AlphaC();
@@ -171,8 +207,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetButlerVo
     double regfac = GetRegularizationFactor(thickness, eta, scatraeleparamsboundary);
     i = (scatraeleparamsboundary->RegularizationType() ==
             INPAR::S2I::RegularizationType::regularization_hein)
-            ? i0 * (regfac * exp(alphaa * frt * eta) - exp(-alphac * frt * eta))
-            : i0 * regfac * (exp(alphaa * frt * eta) - exp(-alphac * frt * eta));
+            ? i0 * (regfac * std::exp(alphaa * frt * eta) - std::exp(-alphac * frt * eta))
+            : i0 * regfac * (std::exp(alphaa * frt * eta) - std::exp(-alphac * frt * eta));
 
     // initialize Newton-Raphson iteration counter
     unsigned iternum(0);
@@ -187,8 +223,8 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetButlerVo
       // compute current Newton-Raphson residual
       eta = pot_ed - pot_el - epd - resistance * i;
       regfac = GetRegularizationFactor(thickness, eta, scatraeleparamsboundary);
-      const double expterm1 = exp(alphaa * frt * eta);
-      const double expterm2 = exp(-alphac * frt * eta);
+      const double expterm1 = std::exp(alphaa * frt * eta);
+      const double expterm2 = std::exp(-alphac * frt * eta);
       const double residual = (scatraeleparamsboundary->RegularizationType() ==
                                   INPAR::S2I::RegularizationType::regularization_hein)
                                   ? i0 * (regfac * expterm1 - expterm2) - i
@@ -218,14 +254,13 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetButlerVo
     if (std::abs(regfac) < 1.0e-16 and eta >= 0.0) i = 0.0;
   }
 
-  return i;
+  return i / faraday;
 }
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationFactor(
-    const double thickness, const double eta,
+double DRT::ELEMENTS::GetRegularizationFactor(const double thickness, const double eta,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
   // initialize regularization factor
@@ -259,8 +294,9 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
         const double thickness0 = regularizationparameter > 0.0 ? regularizationparameter : 4.8e-7;
 
         // compute regularization factor
-        regfac =
-            thickness <= 0.0 ? 0.0 : pow(thickness, 4) / (pow(thickness, 4) + pow(thickness0, 4));
+        regfac = thickness <= 0.0
+                     ? 0.0
+                     : std::pow(thickness, 4) / (std::pow(thickness, 4) + std::pow(thickness0, 4));
 
         break;
       }
@@ -276,7 +312,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
         if (thickness <= 0.0)
           regfac = 0.0;
         else if (thickness < thickness_regend)
-          regfac = 0.5 * cos(thickness / thickness_regend * M_PI - M_PI) + 0.5;
+          regfac = 0.5 * std::cos(thickness / thickness_regend * M_PI - M_PI) + 0.5;
 
         break;
       }
@@ -291,7 +327,6 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
       default:
         dserror("Invalid type of regularization: %i for lithium stripping!",
             static_cast<int>(regularizationtype));
-        break;
     }
   }
 
@@ -300,9 +335,7 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegulari
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double
-DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationFactorDerivative(
-    const double thickness, const double eta,
+double DRT::ELEMENTS::GetRegularizationFactorDerivative(const double thickness, const double eta,
     const DRT::ELEMENTS::ScaTraEleParameterBoundary* const scatraeleparamsboundary)
 {
   // initialize derivative of regularization factor
@@ -334,9 +367,9 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationF
         const double thickness0 = regularizationparameter > 0.0 ? regularizationparameter : 4.8e-7;
 
         // compute derivative of regularization factor
-        const double thickness0_pow4 = pow(thickness0, 4);
-        regfacderiv =
-            4. * pow(thickness, 3) * thickness0_pow4 / pow(thickness0_pow4 + pow(thickness, 4), 2);
+        const double thickness0_pow4 = std::pow(thickness0, 4);
+        regfacderiv = 4. * std::pow(thickness, 3) * thickness0_pow4 /
+                      std::pow(thickness0_pow4 + std::pow(thickness, 4), 2);
 
         break;
       }
@@ -351,7 +384,7 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationF
         // compute derivative of regularization factor
         const double thickness_regend_inverse = 1.0 / thickness_regend;
         if (thickness < thickness_regend)
-          regfacderiv = 0.5 * sin(thickness * thickness_regend_inverse * M_PI) * M_PI *
+          regfacderiv = 0.5 * std::sin(thickness * thickness_regend_inverse * M_PI) * M_PI *
                         thickness_regend_inverse;
 
         break;
@@ -367,7 +400,6 @@ DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeGrowthUtils::GetRegularizationF
       {
         dserror("Invalid type of regularization: %i for lithium stripping!",
             static_cast<int>(regularizationtype));
-        break;
       }
     }
   }

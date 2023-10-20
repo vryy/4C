@@ -403,11 +403,10 @@ void CONTACT::CoIntegratorNitscheSsiElch::IntegrateSSIInterfaceCondition(
         double dj_dc_electrode(0.0), dj_dc_electrolyte(0.0), dj_dpot_electrode(0.0),
             dj_dpot_electrolyte(0.0);
         // calculate flux linearizations
-        DRT::ELEMENTS::ScaTraEleBoundaryCalcElchElectrodeUtils::
-            CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, d_epd_dc, alphaa,
-                alphac, dummyresistance, expterm1, expterm2, kr, faraday, electrolyte_conc,
-                electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
-                dj_dpot_electrolyte);
+        DRT::ELEMENTS::CalculateButlerVolmerElchLinearizations(kinetic_model, j0, frt, d_epd_dc,
+            alphaa, alphac, dummyresistance, expterm1, expterm2, kr, faraday, electrolyte_conc,
+            electrode_conc, cmax, eta, dj_dc_electrode, dj_dc_electrolyte, dj_dpot_electrode,
+            dj_dpot_electrolyte);
 
         // derivative of flux w.r.t. OCP is the same value as w.r.t. electrolyte potential
         const double dj_depd = dj_dpot_electrolyte;
