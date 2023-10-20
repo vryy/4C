@@ -74,11 +74,13 @@ void UTILS::VOIGT::VoigtUtils<type>::MultiplyTensorVector(const CORE::LINALG::Ma
     const CORE::LINALG::Matrix<3, 1>& vec, CORE::LINALG::Matrix<3, 1>& res)
 {
   for (unsigned i = 0; i < 3; ++i)
+  {
     for (unsigned j = 0; j < 3; ++j)
     {
       const double fac = UnscaleFactor(IndexMappings::SymToVoigt6(i, j));
       res(i, 0) += strain(IndexMappings::SymToVoigt6(i, j)) * fac * vec(j, 0);
     }
+  }
 }
 
 /*----------------------------------------------------------------------------*
@@ -101,12 +103,18 @@ void UTILS::VOIGT::VoigtUtils<type>::PowerOfSymmetricTensor(const unsigned pow,
       std::fill(prod.A(), prod.A() + 6, 0.0);
 
       for (unsigned i = 0; i < 3; ++i)
+      {
         for (unsigned j = i; j < 3; ++j)
+        {
           for (unsigned k = 0; k < 3; ++k)
+          {
             prod(IndexMappings::SymToVoigt6(i, j), 0) +=
                 strain_pow(IndexMappings::SymToVoigt6(i, k), 0) *
                 unscale_fac_[IndexMappings::SymToVoigt6(k, j)] *
                 strain(IndexMappings::SymToVoigt6(k, j), 0);
+          }
+        }
+      }
 
       std::copy(prod.A(), prod.A() + 6, strain_pow.A());
     }
@@ -193,19 +201,6 @@ void UTILS::VOIGT::VoigtUtils<type>::UnscaleOffDiagonalVals(CORE::LINALG::Matrix
 {
   for (unsigned i = 3; i < 6; ++i) strain(i, 0) *= UnscaleFactor(i);
 }
-
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::unscale_fac_[6] = {
-    1.0, 1.0, 1.0, 0.5, 0.5, 0.5};
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::unscale_fac_[6] = {
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::strain>::scale_fac_[6] = {
-    1.0, 1.0, 1.0, 2.0, 2.0, 2.0};
-template <>
-const double UTILS::VOIGT::VoigtUtils<UTILS::VOIGT::NotationType::stress>::scale_fac_[6] = {
-    1.0, 1.0, 1.0, 1.0, 1.0, 1.0};
 
 // explicit template declarations
 template class UTILS::VOIGT::VoigtUtils<NotationType::strain>;
