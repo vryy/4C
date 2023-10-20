@@ -23,7 +23,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
-#include "baci_lib_utils_vector.H"
 #include "baci_linalg_equilibrate.H"
 #include "baci_linalg_matrixtransform.H"
 #include "baci_linalg_multiply.H"
@@ -2032,8 +2031,8 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
       }
       else
       {
-        std::vector<int> islavenodegidvec;
-        std::vector<int> imasternodegidvec;
+        std::set<int> islavenodegidset;
+        std::set<int> imasternodegidset;
 
         for (const auto& kinetics_slave_cond : kinetics_conditions_meshtying_slaveside_)
         {
@@ -2050,19 +2049,19 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
               static_cast<int>(INPAR::S2I::kinetics_nointerfaceflux))
           {
             DRT::UTILS::AddOwnedNodeGIDFromList(
-                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidvec);
+                *scatratimint_->Discretization(), *kinetics_condition->Nodes(), islavenodegidset);
 
             auto mastercondition = master_conditions_.find(kineticsID);
             if (mastercondition == master_conditions_.end())
               dserror("Could not find master condition");
             else
               DRT::UTILS::AddOwnedNodeGIDFromList(*scatratimint_->Discretization(),
-                  *mastercondition->second->Nodes(), imasternodegidvec);
+                  *mastercondition->second->Nodes(), imasternodegidset);
           }
         }
 
-        DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
-        DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
+        std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
+        std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
         icoup_->SetupCoupling(*(scatratimint_->Discretization()),
             *(scatratimint_->Discretization()), imasternodegidvec, islavenodegidvec,

@@ -32,7 +32,6 @@
 #include "baci_lib_periodicbc.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
-#include "baci_lib_utils_vector.H"
 #include "baci_linalg_krylov_projector.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_linear_solver_method_parameters.H"
@@ -3585,9 +3584,9 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
   }
 
   // nodes with 3 dofs
-  std::vector<int> multiscale_nodes;
+  std::set<int> multiscale_nodes;
   // nodes with 2 dofs
-  std::vector<int> other_nodes;
+  std::set<int> other_nodes;
 
   // loop over all element and search for nodes that are on elements with 2 dof on one side and 3
   // dofs at the other side
@@ -3620,8 +3619,6 @@ void SCATRA::ScaTraTimIntImpl::CalcMeanMicroConcentration()
       }
     }
   }
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(multiscale_nodes);
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(other_nodes);
 
   // find nodes that connect elements with 2 and 3 dofs ("hybrid nodes")
   std::vector<int> hybrid_nodes;

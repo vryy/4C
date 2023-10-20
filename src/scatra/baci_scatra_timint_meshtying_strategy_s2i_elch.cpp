@@ -14,7 +14,6 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_gid_vector.H"
 #include "baci_lib_utils_parameter_list.H"
-#include "baci_lib_utils_vector.H"
 #include "baci_linalg_mapextractor.H"
 #include "baci_linalg_sparseoperator.H"
 #include "baci_linear_solver_method_linalg.H"
@@ -1210,8 +1209,8 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
   std::vector<DRT::Condition*> s2imeshtying_conditions(0, nullptr);
   scatratimint_->Discretization()->GetCondition("S2IMeshtying", s2imeshtying_conditions);
 
-  std::vector<int> islavenodegidvec;
-  std::vector<int> imasternodegidvec;
+  std::set<int> islavenodegidset;
+  std::set<int> imasternodegidset;
 
   for (const auto& s2imeshtying_condition : s2imeshtying_conditions)
   {
@@ -1223,13 +1222,13 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
       case INPAR::S2I::side_slave:
       {
         DRT::UTILS::AddOwnedNodeGIDFromList(
-            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), islavenodegidvec);
+            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), islavenodegidset);
         break;
       }
       case INPAR::S2I::side_master:
       {
         DRT::UTILS::AddOwnedNodeGIDFromList(
-            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), imasternodegidvec);
+            *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), imasternodegidset);
         break;
       }
       default:
@@ -1240,8 +1239,8 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
     }
   }
 
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(islavenodegidvec);
-  DRT::UTILS::SortAndRemoveDuplicateVectorElements(imasternodegidvec);
+  std::vector<int> islavenodegidvec(islavenodegidset.begin(), islavenodegidset.end());
+  std::vector<int> imasternodegidvec(imasternodegidset.begin(), imasternodegidset.end());
 
   icoup_ = Teuchos::rcp(new CORE::ADAPTER::Coupling());
   icoup_->SetupCoupling(*(scatratimint_->Discretization()), *(scatratimint_->Discretization()),
