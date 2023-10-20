@@ -57,7 +57,7 @@ namespace IO
     visualization_data.GetFaceOffsets().push_back(visualization_data.GetFaceConnectivity().size());
 
     // Set the cell id
-    visualization_data.GetCellTypes().push_back(42);
+    visualization_data.GetCellTypes().push_back(polyhedron_cell_type);
   }
 
   //! Explicit template definition
