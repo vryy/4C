@@ -8,7 +8,7 @@
 */
 
 
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_writer.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_writer.H"
 
 #include "baci_adapter_str_fsiwrapper.H"
 #include "baci_beaminteraction_beam_to_solid_vtu_output_writer_base.H"
@@ -16,8 +16,8 @@
 #include "baci_beaminteraction_calc_utils.H"
 #include "baci_beaminteraction_contact_pair.H"
 #include "baci_fbi_adapter_constraintbridge_penalty.H"
+#include "baci_fbi_beam_to_fluid_meshtying_output_params.H"
 #include "baci_fbi_beam_to_fluid_meshtying_params.H"
-#include "baci_fbi_beam_to_fluid_meshtying_vtk_output_params.H"
 #include "baci_fbi_constraintenforcer.H"
 #include "baci_lib_discret.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -49,7 +49,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Init()
  *
  */
 void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
-    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> vtk_params,
+    Teuchos::RCP<const STR::TIMINT::ParamsRuntimeVtkOutput> visualization_output_params,
     Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_ptr,
     double restart_time)
 {
@@ -61,7 +61,7 @@ void BEAMINTERACTION::BeamToFluidMeshtyingVtkOutputWriter::Setup(
   // Initialize the writer base object and add the desired visualizations.
   output_writer_base_ptr_ = Teuchos::rcp<BEAMINTERACTION::BeamToSolidVtuOutputWriterBase>(
       new BEAMINTERACTION::BeamToSolidVtuOutputWriterBase(
-          "beam-to-fluid", vtk_params, restart_time));
+          "beam-to-fluid", visualization_output_params, restart_time));
 
   // Depending on the selected input parameters, create the needed writers. All node / cell data
   // fields that should be output eventually have to be defined here. This helps to prevent issues

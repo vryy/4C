@@ -120,10 +120,11 @@ namespace FBI
     inline CORE::DRT::UTILS::GaussRule1D GetGaussRule() const { return gauss_rule_; }
 
     /**
-     * \brief Returns a pointer to the vtk output parameters.
-     * @return Pointer to vtk output parameters.
+     * \brief Returns a pointer to the visualization output parameters.
+     * @return Pointer to visualization output parameters.
      */
-    const Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams> GetVtkOuputParamsPtr() const
+    const Teuchos::RCP<const FBI::BeamToFluidMeshtyingVtkOutputParams>
+    GetVisualizationOuputParamsPtr() const
     {
       return output_params_;
     }
@@ -167,7 +168,7 @@ namespace FBI
      */
     bool calcfluidweakdirichletforce_;
 
-    /// VTK output params. For now I see no reason to overload this
+    /// Visualization output params. For now I see no reason to overload this
     Teuchos::RCP<FBI::BeamToFluidMeshtyingVtkOutputParams> output_params_;
 
     //! Shape function for the mortar Lagrange-multiplicators
