@@ -34,6 +34,11 @@ namespace CORE::GEOMETRICSEARCH
      */
     double GetSphereBoundingVolumeScaling() const { return sphere_radius_extension_factor_; }
 
+    /*!
+     * \brief Returns a flag indicating if visualization output should be written or not
+     */
+    bool GetWriteVisualizationFlag() const { return write_visualization_; }
+
     /*! \brief verbosity level of the geometric search algorithm
      */
     IO::verbositylevel verbosity_;
@@ -41,6 +46,7 @@ namespace CORE::GEOMETRICSEARCH
    private:
     double beam_radius_extension_factor_;
     double sphere_radius_extension_factor_;
+    bool write_visualization_;
   };
 }  // namespace CORE::GEOMETRICSEARCH
 

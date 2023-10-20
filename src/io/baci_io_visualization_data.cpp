@@ -138,7 +138,7 @@ void IO::VisualizationData::CompleteCellConnectivity()
  */
 void IO::VisualizationData::CompleteFaceConnectivity()
 {
-  const int vtk_polyhedron_cell_id = 42;
+  const int vtk_polyhedron_cell_id = polyhedron_cell_type;
   const size_t n_polyhedron =
       std::count(cell_types_.begin(), cell_types_.end(), vtk_polyhedron_cell_id);
 

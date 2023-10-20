@@ -31,4 +31,7 @@ CORE::GEOMETRICSEARCH::GeometricSearchParams::GeometricSearchParams()
 
   Teuchos::ParameterList const& params_list_io = ::DRT::Problem::Instance()->IOParams();
   verbosity_ = ::DRT::INPUT::IntegralValue<IO::verbositylevel>(params_list_io, "VERBOSITY");
+
+  write_visualization_ =
+      DRT::INPUT::IntegralValue<int>(params_list, "WRITE_GEOMETRIC_SEARCH_VISUALIZATION");
 }

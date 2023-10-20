@@ -31,6 +31,7 @@
 #include "baci_binstrategy.H"
 #include "baci_discretization_geometric_search.H"
 #include "baci_discretization_geometric_search_params.H"
+#include "baci_discretization_geometric_search_visualization.H"
 #include "baci_geometry_pair_line_to_3D_evaluation_data.H"
 #include "baci_inpar_beamcontact.H"
 #include "baci_inpar_geometry_pair.H"
@@ -84,6 +85,16 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::Setup()
 
   // build a new data container to manage geometric search parameters
   geometric_search_params_ptr_ = Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchParams());
+  if (beam_interaction_params_ptr_->GetSearchStrategy() ==
+          INPAR::BEAMINTERACTION::SearchStrategy::bounding_volume_hierarchy &&
+      geometric_search_params_ptr_->GetWriteVisualizationFlag())
+  {
+    geometric_search_visualization_ptr_ =
+        Teuchos::rcp(new CORE::GEOMETRICSEARCH::GeometricSearchVisualization(
+            IO::VisualizationParametersFactory(
+                DRT::Problem::Instance()->IOParams().sublist("RUNTIME VTK OUTPUT")),
+            DiscretPtr()->Comm(), "beam-interaction-geometric-search"));
+  }
 
   // build a new data container to manage beam contact parameters
   beam_contact_params_ptr_ = Teuchos::rcp(new BEAMINTERACTION::BeamContactParams());
@@ -857,6 +868,15 @@ void BEAMINTERACTION::SUBMODELEVALUATOR::BeamContact::FindAndStoreNeighboringEle
       SelectElesToBeConsideredForContactEvaluation(currele, neighboring_elements);
 
       nearby_elements_map_[beam_gid] = neighboring_elements;
+    }
+
+    // Check if the primitives and predicates should be output
+    if (geometric_search_visualization_ptr_ != Teuchos::null)
+    {
+      // Output is desired, so create it right here, because we only search the pairs once per time
+      // step anyways.
+      geometric_search_visualization_ptr_->WritePrimitivesAndPredicatesToDisk(
+          GState().GetTimeN(), GState().GetStepN(), other_bounding_boxes, beam_bounding_boxes);
     }
   }
   else
