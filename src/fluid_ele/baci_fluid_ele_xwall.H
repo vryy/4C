@@ -132,11 +132,6 @@ namespace DRT
       */
       std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-      /*!
-      \brief Get vector of Teuchos::RCPs to the volume of this element
-      */
-      std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
       //@}
 
       //! @name Acess methods

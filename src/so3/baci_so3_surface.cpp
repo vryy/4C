@@ -173,7 +173,7 @@ void DRT::ELEMENTS::StructuralSurface::Print(std::ostream& os) const
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::StructuralSurface::Lines()
 {
   return DRT::UTILS::ElementBoundaryFactory<DRT::ELEMENTS::StructuralLine,
-      DRT::ELEMENTS::StructuralSurface>(DRT::UTILS::buildLines, this);
+      DRT::ELEMENTS::StructuralSurface>(DRT::UTILS::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*

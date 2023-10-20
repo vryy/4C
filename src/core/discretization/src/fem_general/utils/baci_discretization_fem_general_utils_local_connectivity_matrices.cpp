@@ -1406,6 +1406,9 @@ int CORE::DRT::UTILS::getDimension(const ::DRT::Element::DiscretizationType dist
     case ::DRT::Element::DiscretizationType::nurbs8:
       dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::nurbs8>::dim;
       break;
+    case ::DRT::Element::DiscretizationType::hex18:
+      dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex18>::dim;
+      break;
     case ::DRT::Element::DiscretizationType::hex20:
       dim = CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::hex20>::dim;
       break;

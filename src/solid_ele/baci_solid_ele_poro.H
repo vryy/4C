@@ -105,8 +105,6 @@ namespace DRT::ELEMENTS
 
     std::vector<Teuchos::RCP<DRT::Element>> Surfaces() override;
 
-    std::vector<Teuchos::RCP<DRT::Element>> Volumes() override;
-
     [[nodiscard]] int NumDofPerNode(const DRT::Node& node) const override { return 3; }
 
     [[nodiscard]] int NumDofPerElement() const override { return 0; }

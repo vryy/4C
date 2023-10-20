@@ -261,30 +261,7 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3::getParams(std::string name, int& var
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::RedAirBloodScatraLine3::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
+  dsassert(NumLine() == 1, "RED_AIRWAY element must have one and only one line");
 
-  // so we have to allocate new line elements:
-
-  if (NumLine() != 2)  // 1D boundary element and 2D/3D parent element
-  {
-    dserror("RED_AIR_BLOOD_SCATRA_LINE3 element must have one and only one line");
-    exit(1);
-  }
-  else if (NumLine() ==
-           2)  // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
-  {
-    // 1D (we return the element itself)
-    std::vector<Teuchos::RCP<Element>> lines(1);
-    lines[0] = Teuchos::rcp(this, false);
-    return lines;
-  }
-  else
-  {
-    dserror("Lines() does not exist for points ");
-    return DRT::Element::Surfaces();
-  }
+  return {Teuchos::rcpFromRef(*this)};
 }

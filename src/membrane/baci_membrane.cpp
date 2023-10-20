@@ -244,15 +244,8 @@ void DRT::ELEMENTS::Membrane<distype>::Print(std::ostream& os) const
 template <DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Lines()
 {
-  // do NOT store line or surface elements inside the parent element
-  // after their creation.
-  // Reason: if a Redistribute() is performed on the discretization,
-  // stored node ids and node pointers owned by these boundary elements might
-  // have become illegal and you will get a nice segmentation fault ;-)
-
-  // so we have to allocate new line elements:
   return DRT::UTILS::ElementBoundaryFactory<MembraneLine<distype>, Membrane<distype>>(
-      DRT::UTILS::buildLines, this);
+      DRT::UTILS::buildLines, *this);
 }
 
 /*----------------------------------------------------------------------*
@@ -261,9 +254,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Lines(
 template <DRT::Element::DiscretizationType distype>
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri3>;

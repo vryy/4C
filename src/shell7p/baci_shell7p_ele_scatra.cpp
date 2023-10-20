@@ -338,14 +338,12 @@ void DRT::ELEMENTS::Shell7pScatra::Print(std::ostream& os) const
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Lines()
 {
   return DRT::UTILS::ElementBoundaryFactory<Shell7pLine, Shell7pScatra>(
-      DRT::UTILS::buildLines, this);
+      DRT::UTILS::buildLines, *this);
 }
 
 std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Shell7pScatra::Surfaces()
 {
-  std::vector<Teuchos::RCP<Element>> surfaces(1);
-  surfaces[0] = Teuchos::rcp(this, false);
-  return surfaces;
+  return {Teuchos::rcpFromRef(*this)};
 }
 
 int DRT::ELEMENTS::Shell7pScatra::NumLine() const
