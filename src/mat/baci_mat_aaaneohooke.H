@@ -39,9 +39,6 @@ namespace MAT
       /// standard constructor
       AAAneohooke(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~AAAneohooke() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

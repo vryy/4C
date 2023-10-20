@@ -54,9 +54,6 @@ namespace ADAPTER
     friend ConstraintEnforcerFactory;
 
    public:
-    /// empty destructor
-    ~FBIPenaltyConstraintenforcer() override = default;
-
     /**
      * \brief Sets up the constraint enforcer
      *

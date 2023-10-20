@@ -95,11 +95,6 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 }  // cstr
 
 
-/*----------------------------------------------------------------------*
- | destructor (public)                                       dano 12/09 |
- *----------------------------------------------------------------------*/
-TSI::Partitioned::~Partitioned() {}
-
 
 /*----------------------------------------------------------------------*
  | read restart information for given time step (public)     dano 12/09 |

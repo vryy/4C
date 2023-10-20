@@ -96,11 +96,6 @@ void DRT::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 01/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Line::~Vele3Line() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                              mwgee 01/07|

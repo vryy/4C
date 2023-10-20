@@ -35,7 +35,7 @@ namespace STR
       Factory();
 
       //! destructor
-      virtual ~Factory(){};
+      virtual ~Factory() = default;
 
 
       Teuchos::RCP<STR::ModelEvaluator::Map> BuildModelEvaluators(

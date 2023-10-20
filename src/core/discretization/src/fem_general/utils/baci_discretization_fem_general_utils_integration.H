@@ -546,8 +546,6 @@ namespace CORE::DRT::UTILS
       return;
     }
 
-    ~IntegrationPoint();
-
     //! return string representation of this class
     std::string toString() const
     {

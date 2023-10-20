@@ -146,11 +146,6 @@ namespace DRT
       */
       void Print(std::ostream& os) const override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~FluidXWall() override;
 
 
      protected:
@@ -223,12 +218,6 @@ namespace DRT
       {
         return FluidXWallBoundaryType::Instance().UniqueParObjectId();
       }
-
-      /*!
-      \brief Destructor
-
-      */
-      ~FluidXWallBoundary() override{};
 
       //@}
 

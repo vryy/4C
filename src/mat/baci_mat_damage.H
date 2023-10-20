@@ -57,9 +57,6 @@ namespace MAT
       //! standard constructor
       Damage(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~Damage() override { ; }
-
       //! @name material parameters
       //@{
 

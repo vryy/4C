@@ -170,7 +170,6 @@ void CORE::GEO::CUT::TriangulateFacet::SplitConvex_1ptConcave_Facet(std::vector<
   }
 
   bool triDone = false, convex = true;
-  ;
   int firstPt = 0, secondPt = 0, thirdPt = 0, lastPt = 1, endPt = num - 1;
   if (ptConcavity.size() == 1)
   {

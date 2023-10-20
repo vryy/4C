@@ -20,10 +20,6 @@ namespace SSI
     /// setup SSI algorithm
     SSIPart(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    ~SSIPart() override = default;
-    ;
-
     /*!
     \brief Initialize this object
 

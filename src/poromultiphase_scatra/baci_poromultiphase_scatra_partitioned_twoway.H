@@ -126,9 +126,6 @@ namespace POROMULTIPHASESCATRA
     PoroMultiPhaseScaTraPartitionedTwoWaySequential(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    /// virtual destructor
-    ~PoroMultiPhaseScaTraPartitionedTwoWaySequential() override{};
-
     /// initialization
     void Init(const Teuchos::ParameterList& globaltimeparams,
         const Teuchos::ParameterList& algoparams, const Teuchos::ParameterList& poroparams,

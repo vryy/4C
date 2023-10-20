@@ -35,7 +35,7 @@ namespace DRT
       StructureRuntimeVtuOutputParams();
 
       /// destructor
-      virtual ~StructureRuntimeVtuOutputParams(){};
+      virtual ~StructureRuntimeVtuOutputParams() = default;
 
       /// initialize the class variables
       void Init(const Teuchos::ParameterList& IO_vtk_structure_paramslist);

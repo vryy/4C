@@ -215,11 +215,6 @@ void DRT::ELEMENTS::Elemag::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                       berardocco 02/18|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Elemag::~Elemag() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                         berardocco 02/18|
@@ -464,11 +459,6 @@ void DRT::ELEMENTS::ElemagBoundary::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                       berardocco 02/18|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagBoundary::~ElemagBoundary() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                        berardocco 02/18 |
@@ -655,10 +645,6 @@ void DRT::ELEMENTS::ElemagIntFace::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                      berardocco 02/18 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ElemagIntFace::~ElemagIntFace() { return; }
 
 
 /*----------------------------------------------------------------------*

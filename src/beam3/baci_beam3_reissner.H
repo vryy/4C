@@ -131,10 +131,7 @@ namespace DRT
       */
       Beam3r(const Beam3r& old);
 
-      /*!
-      \brief Destructor
-      */
-      ~Beam3r() override;
+
 
       // don't want = operator
       Beam3r& operator=(const Beam3r& old);

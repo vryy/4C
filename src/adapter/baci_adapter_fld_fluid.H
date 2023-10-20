@@ -91,7 +91,7 @@ namespace ADAPTER
   {
    public:
     /// virtual destructor to get polymorph destruction
-    virtual ~Fluid();
+    virtual ~Fluid() = default;
 
     /// initialize time integration
     virtual void Init() = 0;

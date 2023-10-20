@@ -33,9 +33,6 @@ namespace MAT
       //! constructor
       ParticleMaterialSPHFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! desctructor
-      ~ParticleMaterialSPHFluid() override{};
-
       //! speed of sound
       double SpeedOfSound() const { return std::sqrt(bulkModulus_ / initDensity_); };
 

@@ -66,8 +66,6 @@ namespace WEAR
     //! create using a Epetra_Comm
     explicit Algorithm(const Epetra_Comm& comm);
 
-    //! virtual destructor to support polymorph destruction
-    ~Algorithm() override;
 
     //! outer level time loop (to be implemented by deriving classes)
     virtual void TimeLoop() = 0;

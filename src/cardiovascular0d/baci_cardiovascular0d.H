@@ -76,7 +76,7 @@ namespace UTILS
         \brief Destructor
 
      */
-    virtual ~Cardiovascular0D() { return; };
+    virtual ~Cardiovascular0D() = default;
 
     /*!
      \brief Return if there are Cardiovascular0D functions

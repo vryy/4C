@@ -65,9 +65,6 @@ namespace NOX
         valid shared linear system. */
       Group(const NOX::NLN::Group& source, NOX::CopyType type = NOX::DeepCopy);
 
-      //! Destructor
-      ~Group() override{};
-
       /// assign operator
       NOX::Abstract::Group& operator=(const NOX::Abstract::Group& source) override;
       NOX::Abstract::Group& operator=(const NOX::Epetra::Group& source) override;

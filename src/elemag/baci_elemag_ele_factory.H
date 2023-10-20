@@ -26,8 +26,7 @@ namespace DRT
       ElemagFactory() { return; }
 
       //! dtor
-      virtual ~ElemagFactory() { return; }
-
+      virtual ~ElemagFactory() = default;
       //! ProvideImpl
       static ElemagEleInterface* ProvideImpl(
           DRT::Element::DiscretizationType distype, std::string problem);

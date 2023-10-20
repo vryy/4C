@@ -35,7 +35,6 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedVector CORE::LINEAR_SOLVER::AMGNXN::BlockedV
   BlockedVector out(this->GetNumBlocks());
   for (int i = 0; i < GetNumBlocks(); i++)
     out.SetVector(Teuchos::rcp(new Epetra_MultiVector(*(this->GetVector(i)))), i);
-  ;
   return out;
 }
 
@@ -50,7 +49,6 @@ CORE::LINEAR_SOLVER::AMGNXN::BlockedVector::DeepCopyRCP() const
   Teuchos::RCP<BlockedVector> out = Teuchos::rcp(new BlockedVector(this->GetNumBlocks()));
   for (int i = 0; i < GetNumBlocks(); i++)
     out->SetVector(Teuchos::rcp(new Epetra_MultiVector(*(this->GetVector(i)))), i);
-  ;
   return out;
 }
 

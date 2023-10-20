@@ -43,7 +43,7 @@ namespace BEAMINTERACTION
     SphereBeamLinkingParams();
 
     //! destructor
-    virtual ~SphereBeamLinkingParams(){};
+    virtual ~SphereBeamLinkingParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init(STR::TIMINT::BaseDataGlobalState const& gstate);

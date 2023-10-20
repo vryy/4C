@@ -79,7 +79,7 @@ namespace XFEM
         int enddim = 3);
 
     //! virtual destructor to support polymorph destruction
-    virtual ~Coupling_Comm_Manager();
+    virtual ~Coupling_Comm_Manager() = default;
 
     //! Insert a Vector A into vector B (choose type of transfer, add or scaling) - Version vor
     //! RCP<const Epetra_Vector> vecA

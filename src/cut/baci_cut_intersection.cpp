@@ -709,7 +709,6 @@ CORE::GEO::CUT::ParallelIntersectionStatus CORE::GEO::CUT::Intersection<probdim,
       {
         Edge* e = *i;
         Teuchos::RCP<BoundingBox> side_edge_bb = Teuchos::rcp(BoundingBox::Create(*e));
-        ;
         // skip this edge if it is too far or intersection has been done already
         if (not side_edge_bb->Within(1.0, *edge_bb)) continue;
 

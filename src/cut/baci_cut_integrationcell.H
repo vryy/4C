@@ -32,8 +32,7 @@ namespace CORE::GEO
       {
       }
 
-      virtual ~IntegrationCell() {}
-
+      virtual ~IntegrationCell() = default;
       /// get the dimension of the integration cell
       virtual unsigned Dim() const = 0;
 

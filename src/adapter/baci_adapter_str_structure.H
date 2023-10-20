@@ -524,7 +524,7 @@ namespace ADAPTER
         Teuchos::RCP<DRT::Discretization> actdis);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~StructureBaseAlgorithm();
+    virtual ~StructureBaseAlgorithm() = default;
 
     /// structural field solver
     Teuchos::RCP<Structure> StructureField() { return structure_; }

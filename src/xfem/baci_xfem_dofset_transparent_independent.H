@@ -45,10 +45,7 @@ namespace XFEM
     explicit XFEMTransparentIndependentDofSet(Teuchos::RCP<DRT::Discretization> sourcedis,
         bool parallel, Teuchos::RCP<CORE::GEO::CutWizard> wizard);
 
-    /*!
-      \brief Destructor
-     */
-    ~XFEMTransparentIndependentDofSet() override { return; }
+
 
    protected:
     int NumDofPerNode(const DRT::Node& node) const override;

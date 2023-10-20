@@ -39,10 +39,6 @@ namespace NOX
          *  \author hiermeier \date 08/18 */
         struct VolumeChangeParams
         {
-          VolumeChangeParams() = default;
-          VolumeChangeParams(const VolumeChangeParams& p) = default;
-          ~VolumeChangeParams() = default;
-
           /// upper bound ratio
           double upper_bound_ = 1.0;
 

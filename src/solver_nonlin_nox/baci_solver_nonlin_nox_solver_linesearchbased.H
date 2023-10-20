@@ -62,8 +62,6 @@ namespace NOX
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
-        //! Destructor
-        ~LineSearchBased() override = default;
 
         //! Necessary for the pre/post operator class
         //! Be careful: This version allows you to actually change the parameter list entries

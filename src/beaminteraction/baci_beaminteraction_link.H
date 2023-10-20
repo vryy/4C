@@ -66,9 +66,6 @@ namespace BEAMINTERACTION
     */
     BeamLink(const BeamLink& old);
 
-    //! Destructor
-    ~BeamLink() override {}
-
     //! Initialization
     virtual void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,

@@ -43,7 +43,7 @@ namespace STI
     explicit ScatraThermoCloneStrategy() { return; };
 
     //! destructor
-    virtual ~ScatraThermoCloneStrategy() { return; };
+    virtual ~ScatraThermoCloneStrategy() = default;
 
     //! check material of cloned element
     void CheckMaterialType(const int matid  //! material of cloned element

@@ -173,8 +173,6 @@ void DRT::ELEMENTS::So_sh18Plast::Unpack(const std::vector<char>& data)
   return;
 }
 
-DRT::ELEMENTS::So_sh18Plast::~So_sh18Plast() { return; }
-
 void DRT::ELEMENTS::So_sh18Plast::Print(std::ostream& os) const
 {
   os << "So_sh18Plast ";

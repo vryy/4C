@@ -50,9 +50,6 @@ class Myocard_Inada : public Myocard_General
   /// construct empty material object
   explicit Myocard_Inada(const double eps0_deriv_myocard, const std::string tissue);
 
-  /// destructor
-  ~Myocard_Inada() override { ; }
-
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
 

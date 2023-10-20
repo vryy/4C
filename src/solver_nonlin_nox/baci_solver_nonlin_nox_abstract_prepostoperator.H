@@ -91,9 +91,6 @@ namespace NOX
         //! Copy constructor (does nothing)
         PrePostOperator(const NOX::NLN::Abstract::PrePostOperator& source){};
 
-        //! destructor (does nothing)
-        ~PrePostOperator() override{};
-
         /** @name Solver Pre/Post Operator
          *  Non-linear solver pre/post-operator functions. See the  NOX::Solver::PrePostOperator
          *  class and its derived classes for more information. The virtual functions can be found

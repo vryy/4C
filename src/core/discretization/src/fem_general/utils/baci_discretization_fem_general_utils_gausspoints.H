@@ -19,8 +19,7 @@ namespace CORE::DRT::UTILS
   class GaussPoints
   {
    public:
-    virtual ~GaussPoints() {}
-
+    virtual ~GaussPoints() = default;
     /// number of gauss points
     virtual int NumPoints() const = 0;
 

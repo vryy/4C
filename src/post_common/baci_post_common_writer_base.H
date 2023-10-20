@@ -24,8 +24,7 @@ class Epetra_MultiVector;
 //! e.g.
 struct SpecialFieldInterface
 {
-  virtual ~SpecialFieldInterface() {}
-
+  virtual ~SpecialFieldInterface() = default;
   virtual std::vector<int> NumDfMap() = 0;
 
   virtual void operator()(std::vector<Teuchos::RCP<std::ofstream>>& files, PostResult& result,
@@ -42,8 +41,7 @@ class PostWriterBase
   PostWriterBase(PostField* field, const std::string& filename);
 
   //! destructor
-  virtual ~PostWriterBase() {}
-
+  virtual ~PostWriterBase() = default;
   //! return the field specified at construction
   PostField* GetField()
   {

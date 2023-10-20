@@ -51,9 +51,6 @@ class Myocard_Fitzhugh_Nagumo : public Myocard_General
   explicit Myocard_Fitzhugh_Nagumo(
       const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
-  /// destructor
-  ~Myocard_Fitzhugh_Nagumo() override { ; }
-
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
 

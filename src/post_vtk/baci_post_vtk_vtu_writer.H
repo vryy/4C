@@ -46,9 +46,6 @@ class PostVtuWriter : public PostVtkWriter
   //! constructor. Initializes the writer to a certain field.
   PostVtuWriter(PostField* field, const std::string& name);
 
-  //! destructor
-  ~PostVtuWriter() override {}
-
  protected:
   //! Return the opening xml tag for this writer type
   const std::string& WriterOpeningTag() const override;

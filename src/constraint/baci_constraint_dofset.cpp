@@ -18,11 +18,6 @@
 UTILS::ConstraintDofSet::ConstraintDofSet() : DRT::DofSet() { return; }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             ukue 04/07|
- *----------------------------------------------------------------------*/
-UTILS::ConstraintDofSet::~ConstraintDofSet() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  reset everything  (public)                                ukue 04/07|

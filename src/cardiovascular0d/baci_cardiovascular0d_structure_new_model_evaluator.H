@@ -33,8 +33,6 @@ namespace STR
       //! constructor
       Cardiovascular0D();
 
-      //! destructor
-      ~Cardiovascular0D() override = default;
 
       void Setup() override;
 

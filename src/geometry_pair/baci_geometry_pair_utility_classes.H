@@ -85,7 +85,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~ProjectionPoint1DTo3D(){};
+    virtual ~ProjectionPoint1DTo3D() = default;
 
     /**
      * \brief Construct the point from another point where all scalar values are cast to double.

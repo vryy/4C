@@ -46,8 +46,7 @@ namespace CORE::LINALG
     /*!
     \brief Destructor
     */
-    virtual ~DownwindMatrix() {}
-
+    virtual ~DownwindMatrix() = default;
     /*!
     \brief reindex a given matrix
     */

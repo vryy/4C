@@ -48,8 +48,7 @@ namespace DRT
       ElemagIntFaceImplInterface() {}
 
       /// Empty destructor
-      virtual ~ElemagIntFaceImplInterface() {}
-
+      virtual ~ElemagIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::ElemagIntFace* intface,     ///< internal face element

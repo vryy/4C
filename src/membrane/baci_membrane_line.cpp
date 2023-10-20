@@ -122,15 +122,6 @@ void DRT::ELEMENTS::MembraneLine<distype>::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  destructor (public)                                     fbraeu 06/16|
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::MembraneLine<distype>::~MembraneLine()
-{
-  return;
-}
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                             fbraeu 06/16|

@@ -217,11 +217,6 @@ int DRT::ELEMENTS::Lubrication::NumVolume() const
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           wirtz 10/15 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Lubrication::~Lubrication() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                             wirtz 10/15 |
@@ -386,10 +381,6 @@ void DRT::ELEMENTS::LubricationBoundary::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           wirtz 10/15 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::LubricationBoundary::~LubricationBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*

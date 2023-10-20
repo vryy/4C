@@ -50,9 +50,6 @@ class Myocard_Minimal : public Myocard_General
   /// construct empty material object
   explicit Myocard_Minimal(const double eps_deriv_myocard, const std::string tissue, int num_gp);
 
-  /// destructor
-  ~Myocard_Minimal() override { ; }
-
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
 

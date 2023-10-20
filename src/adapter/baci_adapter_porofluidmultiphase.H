@@ -46,7 +46,7 @@ namespace ADAPTER
     PoroFluidMultiphase(){};
 
     /// virtual destructor to support polymorph destruction
-    virtual ~PoroFluidMultiphase(){};
+    virtual ~PoroFluidMultiphase() = default;
 
     /// initialization
     virtual void Init(const bool isale,  ///< ALE flag

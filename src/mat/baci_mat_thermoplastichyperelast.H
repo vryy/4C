@@ -49,9 +49,6 @@ namespace MAT
       //! standard constructor
       ThermoPlasticHyperElast(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~ThermoPlasticHyperElast() override { ; }
-
       //! @name material parameters
       //@{
 

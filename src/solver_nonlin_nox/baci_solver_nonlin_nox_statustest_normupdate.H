@@ -81,9 +81,6 @@ namespace NOX
             const std::vector<NormUpdate::ScaleType>& stype, const double& alpha,
             const double& beta, const NOX::Utils* u = nullptr);
 
-        //! Destructor.
-        ~NormUpdate() override{};
-
         NOX::StatusTest::StatusType checkStatus(
             const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
 

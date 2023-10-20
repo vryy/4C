@@ -32,11 +32,6 @@ LUBRICATION::TimIntStationary::TimIntStationary(Teuchos::RCP<DRT::Discretization
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                  wirtz 11/15 |
-*----------------------------------------------------------------------*/
-LUBRICATION::TimIntStationary::~TimIntStationary() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                             wirtz 11/15 |

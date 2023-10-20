@@ -28,8 +28,7 @@ namespace DRT
       LubricationFactory() { return; }
 
       //! dtor
-      virtual ~LubricationFactory() { return; }
-
+      virtual ~LubricationFactory() = default;
       //! ProvideImpl
       static LubricationEleInterface* ProvideImpl(
           DRT::Element::DiscretizationType distype, const std::string& disname);

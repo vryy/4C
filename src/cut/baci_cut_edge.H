@@ -64,8 +64,7 @@ namespace CORE::GEO
 #endif
       }
 
-      virtual ~Edge() {}
-
+      virtual ~Edge() = default;
       virtual unsigned ProbDim() const = 0;
 
       virtual unsigned Dim() const = 0;
@@ -292,9 +291,6 @@ namespace CORE::GEO
       /// constructor
       ConcreteEdge(const std::vector<Node*>& nodes) : Edge(nodes) {}
 
-      /// destructor
-      ~ConcreteEdge() override{};
-
       /// get the element dimension of this edge
       unsigned Dim() const override { return dimEdge; }
 
@@ -410,7 +406,7 @@ namespace CORE::GEO
       EdgeFactory(){};
 
       /// destructor
-      virtual ~EdgeFactory(){};
+      virtual ~EdgeFactory() = default;
 
       /// create the concrete edge object
       Teuchos::RCP<Edge> CreateEdge(const ::DRT::Element::DiscretizationType& edgetype,

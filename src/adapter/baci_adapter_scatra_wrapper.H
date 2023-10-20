@@ -31,9 +31,6 @@ namespace ADAPTER
     /// constructor
     explicit AdapterScatraWrapper(Teuchos::RCP<ScatraInterface> scatra);
 
-    /// virtual to get polymorph destruction
-    ~AdapterScatraWrapper() override{};
-
     /// compute contribution of mechanical state to eq. system
     virtual void EvaluateAdditionalSolutionDependingModels(
         Teuchos::RCP<CORE::LINALG::SparseOperator> systemmatrix,  //!< system matrix

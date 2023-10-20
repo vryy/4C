@@ -79,7 +79,7 @@ namespace NOX
           Generic(){};
 
           //! destructor
-          virtual ~Generic(){};
+          virtual ~Generic() = default;
 
           /** \brief %Test the inner stopping criterion
            *

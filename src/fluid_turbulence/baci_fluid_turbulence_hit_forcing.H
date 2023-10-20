@@ -36,8 +36,7 @@ namespace FLD
     //! constructor
     ForcingInterface() {}
 
-    virtual ~ForcingInterface() {}
-
+    virtual ~ForcingInterface() = default;
     //! initialize with initial spectrum
     virtual void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) = 0;
 
@@ -59,9 +58,6 @@ namespace FLD
    public:
     //! constructor
     HomIsoTurbForcing(FluidImplicitTimeInt& timeint);
-
-    //! destructor
-    ~HomIsoTurbForcing() override {}
 
     //! initialize with initial spectrum
     void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) override;
@@ -169,9 +165,6 @@ namespace FLD
     //! constructor
     HomIsoTurbForcingHDG(FluidImplicitTimeInt& timeint);
 
-    //! destructor
-    ~HomIsoTurbForcingHDG() override {}
-
     //! initialize with initial spectrum
     void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) override;
 
@@ -190,9 +183,6 @@ namespace FLD
    public:
     //! constructor
     PeriodicHillForcing(FluidImplicitTimeInt& timeint);
-
-    //! destructor
-    ~PeriodicHillForcing() override {}
 
     //! initialize with initial spectrum
     void SetInitialSpectrum(INPAR::FLUID::InitialField init_field_type) override { return; }

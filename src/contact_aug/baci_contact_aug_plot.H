@@ -88,8 +88,6 @@ namespace CONTACT
       /// extra wrapper function to enable the plot of the predictor state as well
       void DoPredictor(const NOX::Solver::Generic& solver);
 
-      ~Plot(){};
-
      private:
       static bool Activated(const Teuchos::ParameterList& plot_params);
 

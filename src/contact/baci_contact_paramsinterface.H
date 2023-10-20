@@ -47,9 +47,6 @@ namespace CONTACT
   class ParamsInterface : public MORTAR::ParamsInterface
   {
    public:
-    //! destructor
-    ~ParamsInterface() override{};
-
     //! get the predictor status
     virtual bool IsPredictor() const = 0;
 

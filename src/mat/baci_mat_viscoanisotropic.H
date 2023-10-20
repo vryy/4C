@@ -32,9 +32,6 @@ namespace MAT
       /// standard constructor
       ViscoAnisotropic(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ViscoAnisotropic() override { ; }
-
       /// @name material parameters
       //@{
       const double kappa_;

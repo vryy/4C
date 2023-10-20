@@ -63,8 +63,7 @@ namespace MAT
       );
 
       /// destructor
-      virtual ~Parameter() { ; }
-
+      virtual ~Parameter() = default;
       /// (unique) material ID
       int Id() const { return id_; }
 

@@ -39,8 +39,7 @@ namespace CORE::LINALG
       LCBase() {}
 
       /// dtor
-      virtual ~LCBase() {}
-
+      virtual ~LCBase() = default;
       /*!
       \brief Return the range space of the result of the linear combination
       */
@@ -87,8 +86,7 @@ namespace CORE::LINALG
       LightWeightOperatorBase(const LightWeightOperatorBase& old) {}
 
       /// dtor
-      virtual ~LightWeightOperatorBase() {}
-
+      virtual ~LightWeightOperatorBase() = default;
       /*!
       \brief The derived class shall return a clone of itself by calling its own copy-ctor
       */
@@ -179,7 +177,6 @@ namespace CORE::LINALG
         return Teuchos::rcp(new LightWeightOperator(*this));
       }
 
-      ~LightWeightOperator() override {}
 
       int SetUseTranspose(bool UseTranspose) override
       {
@@ -236,7 +233,6 @@ namespace CORE::LINALG
       {
       }
 
-      ~OperatorTransposed() override {}
 
       const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
@@ -314,7 +310,6 @@ namespace CORE::LINALG
       {
       }
 
-      ~OperatorScaled() override {}
 
       const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
@@ -392,7 +387,6 @@ namespace CORE::LINALG
       {
       }
 
-      ~OperatorProduct() override {}
 
       const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
@@ -479,7 +473,6 @@ namespace CORE::LINALG
       {
       }
 
-      ~OperatorSum() override {}
 
       const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
@@ -598,7 +591,6 @@ namespace CORE::LINALG
       {
       }
 
-      ~OperatorInverse() override {}
 
       const Teuchos::RCP<LightWeightOperatorBase> Clone() const override
       {
@@ -682,9 +674,6 @@ namespace CORE::LINALG
       Vector(Epetra_DataAccess CV, const Epetra_MultiVector& mv, int i) : Epetra_Vector(CV, mv, i)
       {
       }
-
-      /// dtor
-      ~Vector() override {}
 
       /*!
       \brief Initialize this Vector from a scalar

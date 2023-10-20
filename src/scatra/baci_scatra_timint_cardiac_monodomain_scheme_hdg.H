@@ -28,8 +28,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~TimIntCardiacMonodomainHDG() override;
 
     //! setup time integration scheme
     void Setup() override;

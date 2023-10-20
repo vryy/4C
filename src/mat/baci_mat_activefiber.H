@@ -49,8 +49,6 @@ namespace MAT
       /// standard constructor
       ActiveFiber(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ActiveFiber() override = default;
 
       /// @name material parameters
       //@{

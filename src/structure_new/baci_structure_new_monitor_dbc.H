@@ -61,8 +61,6 @@ namespace STR
    public:
     MonitorDbc() = default;
 
-    ~MonitorDbc() = default;
-
     /// initialize class members
     void Init(const Teuchos::RCP<STR::TIMINT::BaseDataIO>& io_ptr, DRT::Discretization& discret,
         STR::TIMINT::BaseDataGlobalState& gstate, STR::Dbc& dbc);

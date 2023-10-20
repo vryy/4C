@@ -58,11 +58,6 @@ namespace CORE::LINALG
         Teuchos::RCP<Epetra_RowMatrix> A, Teuchos::ParameterList& params, const bool compute);
 
     /*!
-    \brief Destructor
-    */
-    ~AMG_Operator() override {}
-
-    /*!
     \brief Returns the label of this class.
     */
     const char* Label() const override { return label_.data(); }

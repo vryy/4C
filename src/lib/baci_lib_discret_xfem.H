@@ -39,12 +39,6 @@ namespace DRT
     DiscretizationXFEM(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
     /*!
-    \brief Destructor
-
-    */
-    ~DiscretizationXFEM() override { return; };
-
-    /*!
     \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
     This call is done at the initial state of the discretisation, therefore the initial dofset

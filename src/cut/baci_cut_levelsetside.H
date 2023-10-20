@@ -35,9 +35,6 @@ namespace CORE::GEO
         if (sid < 0) dserror("The level-set side must have a positive side id!");
       }
 
-      /// destructor
-      ~LevelSetSide() override{};
-
       /// Returns the geometric shape of this side
       ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::dis_none; }
 

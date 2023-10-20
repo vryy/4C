@@ -74,8 +74,6 @@ namespace NOX
               structure_solver,  ///< (used-defined) linear algebraic solver
           const Teuchos::RCP<NOX::Epetra::Scaling> scalingObject = Teuchos::null);
 
-      /// destructor
-      ~LinearSystem() override;
 
       /// provide storage pattern of tangent matrix, i.e. the operator
       virtual OperatorType getOperatorType(const Epetra_Operator& Op);

@@ -186,14 +186,6 @@ void DRT::ELEMENTS::Membrane<distype>::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  destructor (public)                                    fbraeu 06/16 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-DRT::ELEMENTS::Membrane<distype>::~Membrane()
-{
-  return;
-}
 
 /*----------------------------------------------------------------------*
  |  return solid material (public)                         sfuchs 05/17 |

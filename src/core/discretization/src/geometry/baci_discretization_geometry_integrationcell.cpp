@@ -51,8 +51,6 @@ CORE::GEO::IntCell& CORE::GEO::IntCell::operator=(const IntCell& intcell)
   return *this;
 }
 
-CORE::GEO::IntCell::~IntCell() {}
-
 
 ////////////// Boundary integration cell ////////////////////////////////
 
@@ -93,8 +91,6 @@ CORE::GEO::BoundaryIntCell::BoundaryIntCell(const BoundaryIntCell& old)
 {
   indomainplus_ = old.indomainplus_;
 }
-
-CORE::GEO::BoundaryIntCell::~BoundaryIntCell() {}
 
 CORE::GEO::BoundaryIntCell& CORE::GEO::BoundaryIntCell::operator=(
     const CORE::GEO::BoundaryIntCell& boundaryintcell)

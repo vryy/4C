@@ -34,9 +34,6 @@ namespace MAT
       /// standard constructor
       MatListChemoReac(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~MatListChemoReac() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

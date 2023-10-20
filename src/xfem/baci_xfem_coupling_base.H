@@ -65,8 +65,7 @@ namespace XFEM
     );
 
     //! destructor
-    virtual ~CouplingBase() { return; }
-
+    virtual ~CouplingBase() = default;
     virtual void SetDofSetCouplingMap(const std::map<std::string, int>& dofset_coupling_map)
     {
       dofset_coupling_map_ = dofset_coupling_map;

@@ -39,9 +39,6 @@ namespace NOX
         //! Constructor
         Required(){};
 
-        //! Destructor
-        ~Required() override{};
-
         //! returns the right-hand-side norms of the primary DoF fields
         virtual double GetPrimaryRHSNorms(const Epetra_Vector& F,
             const NOX::NLN::StatusTest::QuantityType& checkQuantity,

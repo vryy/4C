@@ -40,7 +40,7 @@ namespace DRT
     DofSetInterface(){};
 
     /// Destructor
-    virtual ~DofSetInterface(){};
+    virtual ~DofSetInterface() = default;
 
     //@}
 

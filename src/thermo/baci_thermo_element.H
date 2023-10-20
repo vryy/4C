@@ -202,8 +202,6 @@ namespace DRT
       //! \ref Pack and \ref Unpack are used to communicate this element
       void Unpack(const std::vector<char>& data) override;
 
-      //! \brief Destructor
-      ~Thermo() override;
 
       //@}
 
@@ -492,8 +490,6 @@ namespace DRT
       //! \ref Pack and \ref Unpack are used to communicate this element
       void Unpack(const std::vector<char>& data) override;
 
-      //! brief Destructor
-      ~ThermoBoundary() override;
 
       //@}
 

@@ -42,9 +42,6 @@ namespace XFEM
         const std::string& suffix = "",  ///< suffix for cutterdisname
         bool marked_geometry = false);
 
-    //! destructor
-    ~MeshCoupling() override { return; }
-
     //! get the coupling element (equal to the side for xfluid-sided, mesh-based coupling)
     DRT::Element* GetCouplingElement(
         const int sid  ///< global side element id w.r.t cutter discretization
@@ -217,9 +214,6 @@ namespace XFEM
         const std::string& suffix = ""  ///< suffix for cutterdisname
     );
 
-    //! destructor
-    ~MeshVolCoupling() override { return; }
-
     void Init() override;
 
     //! Initialize Volume Coupling
@@ -323,9 +317,6 @@ namespace XFEM
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
     );
 
-    //! destructor
-    ~MeshCouplingBC() override { return; }
-
 
    private:
     void EvaluateInterfaceDisplacement(std::vector<double>& final_values, DRT::Node* node,
@@ -371,9 +362,6 @@ namespace XFEM
         const int step,         ///< time step
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
     );
-
-    //! destructor
-    ~MeshCouplingWeakDirichlet() override { return; }
 
    public:
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
@@ -434,9 +422,6 @@ namespace XFEM
           inflow_stab_(false)
     {
     }
-
-    //! destructor
-    ~MeshCouplingNeumann() override { return; }
 
    public:
     //! Evaluate Neumann traction 3 components
@@ -505,9 +490,6 @@ namespace XFEM
         const int step,         ///< time step
         bool marked_geometry = false  ///< is this a marked geometry mesh boundary
     );
-
-    //! destructor
-    ~MeshCouplingNavierSlip() override { return; }
 
    public:
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
@@ -598,9 +580,6 @@ namespace XFEM
         const double time,      ///< time
         const int step          ///< time step
     );
-
-    //! destructor
-    ~MeshCouplingFSI() override { return; }
 
     // finalize the interface true residual vector
     void CompleteStateVectors() override;

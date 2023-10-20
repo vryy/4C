@@ -50,9 +50,6 @@ namespace NOX
             const std::vector<NOX::StatusTest::NormF::ScaleType>& stype,
             const NOX::Utils* u = nullptr);
 
-        //! Destructor.
-        ~NormF() override{};
-
         /* @name Accessor Functions
            Used to query current values of variables in the status test.
          */

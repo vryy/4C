@@ -56,9 +56,6 @@ namespace MAT
       /// parameter sets of the hyperelastic summands.
       ViscoElastHyper(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ViscoElastHyper() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

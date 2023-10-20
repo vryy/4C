@@ -33,8 +33,6 @@ namespace DRT
       typedef ScaTraEleCalcAdvReac<distype> advreac;
 
      public:
-      ~ScaTraEleCalcPoroReac() override {}
-
       /// Singleton access method
       static ScaTraEleCalcPoroReac<distype>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

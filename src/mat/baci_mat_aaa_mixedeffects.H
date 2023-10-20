@@ -35,9 +35,6 @@ namespace MAT
       /// standard constructor
       AAA_mixedeffects(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~AAA_mixedeffects() override { ; }
-
       /// @name material parameters
       //@{
 

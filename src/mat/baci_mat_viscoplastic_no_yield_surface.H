@@ -25,9 +25,6 @@ namespace MAT
     {
      public:
       explicit ViscoPlasticNoYieldSurface(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      ~ViscoPlasticNoYieldSurface() override = default;
-
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
       //! @name return methods of material parameters

@@ -23,7 +23,7 @@ namespace BEAMINTERACTION
     BeamToSphereContactParams();
 
     //! destructor
-    virtual ~BeamToSphereContactParams(){};
+    virtual ~BeamToSphereContactParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();

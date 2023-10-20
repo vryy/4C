@@ -1209,8 +1209,6 @@ DRT::UTILS::RestartManager::RestartManager()
     dserror("signal handler for action SIGUSR2 could not be registered");
 }
 
-DRT::UTILS::RestartManager::~RestartManager() {}
-
 /// set the time interval to enforce restart writing
 void DRT::UTILS::RestartManager::SetupRestartManager(
     const double restartinterval, const int restartevry)

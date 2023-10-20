@@ -386,8 +386,6 @@ void DRT::ELEMENTS::So_sh8Plast::Unpack(const std::vector<char>& data)
   return;
 }
 
-DRT::ELEMENTS::So_sh8Plast::~So_sh8Plast() { return; }
-
 void DRT::ELEMENTS::So_sh8Plast::Print(std::ostream& os) const
 {
   os << "So_sh8Plast ";

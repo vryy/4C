@@ -277,10 +277,6 @@ namespace DRT
         dserror("not implemented in base class");
       };
 
-      /*!
-      \brief Destructor
-      */
-      ~FluidImmersedBase() override { return; }
 
 
     };  // class FluidImmersedBase

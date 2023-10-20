@@ -50,8 +50,6 @@ namespace TSI
     //! create using a Epetra_Comm
     explicit Partitioned(const Epetra_Comm& comm);
 
-    //! virtual destructor to support polymorph destruction
-    ~Partitioned() override;
 
     //! outer level time loop (to be implemented by deriving classes)
     void TimeLoop() override;

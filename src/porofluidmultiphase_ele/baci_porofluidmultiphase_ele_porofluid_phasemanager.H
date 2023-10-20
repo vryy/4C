@@ -82,7 +82,7 @@ namespace DRT
         PhaseManagerInterface(){};
 
         //! destructor
-        virtual ~PhaseManagerInterface(){};
+        virtual ~PhaseManagerInterface() = default;
 
         //! factory method
         static Teuchos::RCP<DRT::ELEMENTS::POROFLUIDMANAGER::PhaseManagerInterface>
@@ -356,9 +356,6 @@ namespace DRT
 
         //! copy constructor
         PhaseManagerCore(const PhaseManagerCore& old);
-
-        //! destructor
-        ~PhaseManagerCore() override{};
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -849,9 +846,6 @@ namespace DRT
             Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager)
             : phasemanager_(phasemanager){};
 
-        //! destructor
-        ~PhaseManagerDecorator() override{};
-
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
         //! otherwise it has to be explicitly passed from the caller
@@ -1263,9 +1257,6 @@ namespace DRT
         explicit PhaseManagerDeriv(
             Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
 
-        //! destructor
-        ~PhaseManagerDeriv() override{};
-
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
@@ -1333,9 +1324,6 @@ namespace DRT
         explicit PhaseManagerDerivAndPorosity(
             Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
 
-        //! destructor
-        ~PhaseManagerDerivAndPorosity() override{};
-
         //! evaluate pressures, saturations and derivatives at GP (matnum is the material number of
         //! the porofluid-material on the current element) default is set to zero, if called from a
         //! porofluidmultiphase-element otherwise it has to be explicitly passed from the caller
@@ -1401,9 +1389,6 @@ namespace DRT
        public:
         //! constructor
         PhaseManagerReaction(Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
-
-        //! destructor
-        ~PhaseManagerReaction() override{};
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -1493,9 +1478,6 @@ namespace DRT
        public:
         //! constructor
         PhaseManagerDiffusion(Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
-
-        //! destructor
-        ~PhaseManagerDiffusion() override{};
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element
@@ -1598,9 +1580,6 @@ namespace DRT
        public:
         //! constructor
         PhaseManagerVolFrac(Teuchos::RCP<POROFLUIDMANAGER::PhaseManagerInterface> phasemanager);
-
-        //! destructor
-        ~PhaseManagerVolFrac() override{};
 
         //! setup (matnum is the material number of the porofluid-material on the current element)
         //! default is set to zero, if called from a porofluidmultiphase-element

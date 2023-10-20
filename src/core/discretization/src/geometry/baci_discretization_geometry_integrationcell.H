@@ -35,7 +35,7 @@ namespace CORE::GEO
     explicit IntCell(const IntCell& old);
 
     //! virtual destructor
-    virtual ~IntCell();
+    virtual ~IntCell() = default;
 
     virtual IntCell& operator=(const IntCell& intcell);
 
@@ -114,8 +114,6 @@ namespace CORE::GEO
     //! Copy Constructor
     BoundaryIntCell(const BoundaryIntCell& old);
 
-    //! virtual destructor
-    ~BoundaryIntCell() override;
 
     //! assignment operator
     virtual BoundaryIntCell& operator=(const BoundaryIntCell& boundaryintcell);

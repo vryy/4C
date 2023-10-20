@@ -63,7 +63,7 @@ namespace FLD
     XFluidOutputService(const Teuchos::RCP<DRT::DiscretizationXFEM>& discret,
         const Teuchos::RCP<XFEM::ConditionManager>& cond_manager);
 
-    virtual ~XFluidOutputService(){};
+    virtual ~XFluidOutputService() = default;
 
     /// prepare standard output
     void PrepareOutput();

@@ -159,11 +159,6 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
 }
 
 
-/*----------------------------------------------------------------------*
- | destructor (public)                                       dano 12/09 |
- *----------------------------------------------------------------------*/
-TSI::Algorithm::~Algorithm() {}
-
 
 /*----------------------------------------------------------------------*
  | update (protected)                                        dano 12/09 |
@@ -209,7 +204,6 @@ void TSI::Algorithm::Output(bool forced_writerestart)
       ((upres != 0 and (Step() % upres == 0)) or ((uprestart != 0) and (Step() % uprestart == 0))))
   {
     // displacement has already been written into thermo field for this step
-    ;
   }
   else if ((upres != 0 and (Step() % upres == 0)) or
            ((uprestart != 0) and (Step() % uprestart == 0)) or forced_writerestart == true)

@@ -135,8 +135,7 @@ namespace CORE::GEO
 
       virtual void Free(void* ptr) {}
 
-      virtual ~MemoryAllocator() {}
-      // Free free requests, etc
+      virtual ~MemoryAllocator() = default;  // Free free requests, etc
       virtual void Finalize(){};
       // Free container
       virtual void Delete(){};

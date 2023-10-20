@@ -30,9 +30,6 @@ namespace MAT
       /// standard constructor
       MatList(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~MatList() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

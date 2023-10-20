@@ -37,9 +37,6 @@ namespace MAT
       /// standard constructor
       AAAraghavanvorp_damage(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~AAAraghavanvorp_damage() override { ; }
-
       /// @name material parameters
       //@{
 

@@ -53,7 +53,7 @@ namespace SCATRA
     );
 
     //! destructor
-    virtual ~MeshtyingStrategyArtery() { return; };
+    virtual ~MeshtyingStrategyArtery() = default;
 
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const override;

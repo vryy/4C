@@ -30,8 +30,6 @@ namespace STR
       //! constructor
       PartitionedFSI();
 
-      //! destructor
-      ~PartitionedFSI() override = default;
 
       //! get pointer to force vector at time level n+1 (full structural map).
       //! interface part is inserted in ADAPTER::FSIStructureWrapper.

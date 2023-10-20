@@ -78,8 +78,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~MortarEleDataContainer() { return; }
-
+    virtual ~MortarEleDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -384,11 +383,7 @@ namespace MORTAR
     */
     MortarElement(const MORTAR::MortarElement& old);
 
-    /*!
-    \brief Destructor
 
-    */
-    ~MortarElement() override { return; }
 
     /*!
     \brief Deep copy the derived class and return pointer to it
@@ -1087,8 +1082,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~ElementIntegrator() {}
-
+    virtual ~ElementIntegrator() = default;
     //! @name Access methods
 
     /*!

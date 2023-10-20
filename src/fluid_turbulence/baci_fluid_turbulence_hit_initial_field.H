@@ -38,7 +38,7 @@ namespace FLD
         FluidImplicitTimeInt& timeint, const INPAR::FLUID::InitialField initfield);
 
     //! destructor
-    virtual ~HomIsoTurbInitialField() { return; };
+    virtual ~HomIsoTurbInitialField() = default;
 
     //! calculate initial field
     virtual void CalculateInitialField();

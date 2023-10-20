@@ -95,11 +95,6 @@ void DRT::ELEMENTS::Vele3Surface::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Vele3Surface::~Vele3Surface() { return; }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Vele3Surface::Print(std::ostream& os) const
 {
   os << "Vele3Surface " << DRT::DistypeToString(Shape());

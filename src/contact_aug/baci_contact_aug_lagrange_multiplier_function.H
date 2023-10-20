@@ -43,8 +43,6 @@ namespace CONTACT
       /// constructor
       LagrangeMultiplierFunction();
 
-      /// destructor
-      ~LagrangeMultiplierFunction(){};
 
       void Init(const Strategy* const strategy, CONTACT::AUG::DataContainer& data);
 

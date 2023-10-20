@@ -72,9 +72,6 @@ namespace SSTI
   {
    public:
     explicit SSTIMono(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
-
-    ~SSTIMono() override = default;
-
     //! get vector containing positions within system matrix for specific subproblem
     std::vector<int> GetBlockPositions(Subproblem subproblem) const;
 

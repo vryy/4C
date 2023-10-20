@@ -81,7 +81,7 @@ namespace STR
       BaseDataGlobalState();
 
       /// destructor
-      virtual ~BaseDataGlobalState(){};
+      virtual ~BaseDataGlobalState() = default;
 
       /** \brief copy the init information only and set the issetup flag to false
        *
@@ -1114,9 +1114,6 @@ namespace NOX
            public:
             //! constructor
             RotVecUpdater(const Teuchos::RCP<const ::STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
-
-            //! destructor
-            ~RotVecUpdater() override{};
 
             /*! \brief Derived function, which is called before a call to
              * NOX::NLN::Group::computeX()

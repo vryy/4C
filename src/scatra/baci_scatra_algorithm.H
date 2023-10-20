@@ -33,8 +33,6 @@ namespace SCATRA
         const Teuchos::ParameterList& solverparams  ///< solver parameter list
     );
 
-    /// virtual destructor to support polymorph destruction
-    ~ScaTraAlgorithm() override = default;
 
     void Setup() override;
 

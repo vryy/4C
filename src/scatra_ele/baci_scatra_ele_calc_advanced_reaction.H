@@ -149,7 +149,7 @@ namespace DRT
         return;
       }
 
-      virtual ~ScaTraEleReaManagerAdvReac(){};
+      virtual ~ScaTraEleReaManagerAdvReac() = default;
 
       //! @name set routines
 

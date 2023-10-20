@@ -28,8 +28,7 @@ class Myocard_Tools
   Myocard_Tools();
 
   /// destructor
-  virtual ~Myocard_Tools() { ; }
-
+  virtual ~Myocard_Tools() = default;
   /// compute Heaviside step function
   double GatingFunction(const double Gate1, const double Gate2, const double p, const double var,
       const double thresh) const;

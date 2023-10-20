@@ -104,8 +104,6 @@ namespace CONTACT
           const std::string name                           ///< name of contact constitutivelaw
       );
 
-      /// Destructor
-      ~Container() override = default;
 
       //@}
 

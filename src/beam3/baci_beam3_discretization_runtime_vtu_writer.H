@@ -68,8 +68,7 @@ class BeamDiscretizationRuntimeVtuWriter
       IO::VisualizationParameters parameters, const Epetra_Comm& comm);
 
   /// Destructor
-  virtual ~BeamDiscretizationRuntimeVtuWriter() {}
-
+  virtual ~BeamDiscretizationRuntimeVtuWriter() = default;
   /** \brief initialize object with all required data
    *
    *  \author grill

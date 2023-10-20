@@ -63,9 +63,6 @@ namespace MAT
       /// construct
       Bundle();
 
-      /// destructor
-      ~Bundle();
-
       /// insert new par of material ID and its data
       void Insert(int matid,                    ///< material ID
           Teuchos::RCP<MAT::PAR::Material> mat  ///< (validated) material parameters

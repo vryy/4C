@@ -44,7 +44,7 @@ namespace NOX
         /// allowed constructor
         PrePostOperator(Teuchos::ParameterList& linesearchSublist);
 
-        virtual ~PrePostOperator(){};
+        virtual ~PrePostOperator() = default;
 
         //! Resets the pre/post operator.
         virtual void reset(Teuchos::ParameterList& linesearchSublist);

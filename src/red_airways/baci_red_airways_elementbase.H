@@ -171,11 +171,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~RedAirway() override;
 
       //@}
 
@@ -574,11 +569,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~RedAcinus() override;
 
       //@}
 
@@ -975,11 +965,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~RedInterAcinarDep() override;
 
       //@}
 
@@ -1352,11 +1337,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~RedAirBloodScatra() override;
 
       //@}
 
@@ -1736,11 +1716,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~RedAirBloodScatraLine3() override;
 
       //@}
 

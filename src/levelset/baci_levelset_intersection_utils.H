@@ -56,7 +56,7 @@ namespace SCATRA
       Intersection();
 
       /// destructor
-      virtual ~Intersection(){};
+      virtual ~Intersection() = default;
 
       /** \brief construct zero iso-contour of level-set field
        *

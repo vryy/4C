@@ -38,8 +38,6 @@ namespace STR
       //! constructor
       Generic();
 
-      //! destructor
-      ~Generic() override = default;
 
       //! Setup (has to be implemented by the derived classes)
       void Setup() override;
@@ -197,9 +195,6 @@ namespace NOX
           //! constructor
           Generic(const ::STR::IMPLICIT::Generic& implicit)
               : impl_(implicit), default_step_(implicit.GetDefaultStepLength()){/* empty */};
-
-          //! destructor
-          ~Generic() override{};
 
           /*! \brief Derived function, which is called at the very beginning of a call to
            *  NOX::NLN::Group::computeX()

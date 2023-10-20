@@ -550,9 +550,6 @@ namespace ALE
         Teuchos::RCP<IO::DiscretizationWriter> output    ///< output writing
     );
 
-    // Destructor
-    ~AleLinear() override{};
-
     //@}
 
     //! Computation

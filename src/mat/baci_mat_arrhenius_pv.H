@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       ArrheniusPV(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ArrheniusPV() override { ; }
-
       /// @name material parameters
       //@{
 

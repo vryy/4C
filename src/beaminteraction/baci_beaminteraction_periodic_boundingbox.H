@@ -37,7 +37,7 @@ namespace CORE::GEO
      public:
       BoundingBox();
 
-      virtual ~BoundingBox(){};
+      virtual ~BoundingBox() = default;
 
       /// initialize bounding box object
       void Init();

@@ -26,8 +26,6 @@ namespace POROFLUIDMULTIPHASE
     explicit MeshtyingStrategyArtery(POROFLUIDMULTIPHASE::TimIntImpl* porofluidmultitimint,
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams);
 
-    //! destructor
-    ~MeshtyingStrategyArtery() override;
 
     //! prepare time loop
     void PrepareTimeLoop() override;

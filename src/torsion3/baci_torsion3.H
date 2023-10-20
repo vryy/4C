@@ -88,10 +88,7 @@ namespace DRT
       */
       Torsion3(const Torsion3& old);
 
-      /*!
-      \brief Destructor
-      */
-      ~Torsion3() override;
+
 
       /*!
       \brief Deep copy this instance of Torsion3 and return pointer to the copy

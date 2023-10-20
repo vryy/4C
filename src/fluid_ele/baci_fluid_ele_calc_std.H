@@ -25,8 +25,6 @@ namespace DRT
       typedef DRT::ELEMENTS::FluidEleCalc<distype> my;
 
      public:
-      ~FluidEleCalcStd() override {}
-
       /// Singleton access method
       static FluidEleCalcStd<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

@@ -60,9 +60,6 @@ namespace STR
     //! \author bborn \date 06/08 (originally)
     ResultTest();
 
-    //! destructor
-    ~ResultTest() override{};
-
     //! initialization of class variables
     virtual void Init(
         const STR::TIMINT::BaseDataGlobalState& gstate, const STR::MODELEVALUATOR::Data& data);

@@ -46,8 +46,6 @@ namespace MIXTURE
         LinearCauchyGrowthWithPoissonTurnoverGrowthEvolution<double> growth_evolution,
         double lambda_pre);
 
-    ~RemodelFiber();
-
     /*!
      * @brief Pack all internal data into tha #data
      *

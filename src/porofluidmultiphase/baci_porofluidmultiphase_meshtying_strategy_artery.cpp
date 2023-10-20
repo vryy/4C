@@ -107,10 +107,6 @@ POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::MeshtyingStrategyArtery(
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                             kremheller 04/18 |
-*-----------------------------------------------------------------------*/
-POROFLUIDMULTIPHASE::MeshtyingStrategyArtery::~MeshtyingStrategyArtery() { return; }
 
 /*----------------------------------------------------------------------*
  | prepare time loop                                   kremheller 04/18 |

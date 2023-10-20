@@ -53,7 +53,7 @@ namespace TUTORIAL
           This is an indicator, that this class is supposed to be part of some inheritance line.
           Check the internet on why it is then important to declare the destructor virtual.
     */
-    virtual ~NonlinearTruss(){};
+    virtual ~NonlinearTruss() = default;
 
     /// here you define your geometry and boundary conditions directly in the source code
     std::vector<CORE::LINALG::Matrix<7, 1>> ProblemDefinition();

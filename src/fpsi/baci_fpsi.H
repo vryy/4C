@@ -20,9 +20,6 @@ namespace FPSI
     /// constructor of base class
     FPSI_Base(const Epetra_Comm& comm, const Teuchos::ParameterList& fpsidynparams);
 
-    /// destructor of base class
-    ~FPSI_Base() override{};
-
     /// setup
     virtual void SetupSystem() = 0;
 

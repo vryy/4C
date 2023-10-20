@@ -51,9 +51,6 @@ namespace PARTICLEINTERACTION
     //! constructor
     explicit SPHHeatLossEvaporation(const Teuchos::ParameterList& params);
 
-    //! virtual destructor
-    ~SPHHeatLossEvaporation() = default;
-
     //! init evaporation induced heat loss handler
     void Init();
 

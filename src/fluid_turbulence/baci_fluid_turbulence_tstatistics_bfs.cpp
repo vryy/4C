@@ -584,14 +584,6 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(Teuchos::RCP<DRT::Discreti
   return;
 }  // TurbulenceStatisticsBfs::TurbulenceStatisticsBfs
 
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
-{
-  return;
-}  // TurbulenceStatisticsBfs::~TurbulenceStatisticsBfs()
-
 
 //----------------------------------------------------------------------
 // sampling of velocity/pressure values

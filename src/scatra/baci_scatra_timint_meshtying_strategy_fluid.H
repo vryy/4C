@@ -42,7 +42,7 @@ namespace SCATRA
     explicit MeshtyingStrategyFluid(SCATRA::ScaTraTimIntImpl* scatratimint);
 
     //! destructor
-    virtual ~MeshtyingStrategyFluid() { return; };
+    virtual ~MeshtyingStrategyFluid() = default;
 
     //! return global map of degrees of freedom
     const Epetra_Map& DofRowMap() const override;

@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       ElchPhase(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ElchPhase() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

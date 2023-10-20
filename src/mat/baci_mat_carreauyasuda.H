@@ -28,9 +28,6 @@ namespace MAT
       /// standard constructor
       CarreauYasuda(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~CarreauYasuda() override { ; }
-
       /// @name material parameters
       //@{
 

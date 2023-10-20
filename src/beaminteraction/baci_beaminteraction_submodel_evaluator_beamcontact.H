@@ -45,9 +45,6 @@ namespace BEAMINTERACTION
       //! constructor
       BeamContact();
 
-      //! destructor
-      ~BeamContact() override{};
-
       //! setup class variables
       void Setup() override;
 

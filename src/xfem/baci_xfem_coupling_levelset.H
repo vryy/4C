@@ -43,10 +43,6 @@ namespace XFEM
         const int step          ///< time step
     );
 
-
-    //! destructor
-    ~LevelSetCoupling() override { return; }
-
     void SetCouplingDofsets() override;
 
     bool HaveMatchingNodes(const Teuchos::RCP<DRT::Discretization>& dis_A,
@@ -175,9 +171,6 @@ namespace XFEM
         const int step          ///< time step
     );
 
-    //! destructor
-    ~LevelSetCouplingBC() override { return; }
-
 
     void PrepareSolve() override;
 
@@ -208,10 +201,6 @@ namespace XFEM
         : LevelSetCouplingBC(bg_dis, cond_name, cond_dis, coupling_id, time, step)
     {
     }
-
-
-    //! destructor
-    ~LevelSetCouplingWeakDirichlet() override { return; }
 
    public:
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,
@@ -268,10 +257,6 @@ namespace XFEM
           inflow_stab_(false)
     {
     }
-
-
-    //! destructor
-    ~LevelSetCouplingNeumann() override { return; }
 
    public:
     //! Evaluate Neumann traction 3 components
@@ -336,10 +321,6 @@ namespace XFEM
         const double time,      ///< time
         const int step          ///< time step
     );
-
-
-    //! destructor
-    ~LevelSetCouplingNavierSlip() override { return; }
 
    public:
     void EvaluateCouplingConditions(CORE::LINALG::Matrix<3, 1>& ivel,

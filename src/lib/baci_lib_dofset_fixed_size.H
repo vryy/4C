@@ -58,11 +58,7 @@ namespace DRT
       return;
     }
 
-    /*!
-    \brief Destructor
 
-    */
-    ~FixedSizeDofSet() override { return; }
 
     /// create a copy of this object
     Teuchos::RCP<DofSet> Clone() override { return Teuchos::rcp(new FixedSizeDofSet(*this)); }

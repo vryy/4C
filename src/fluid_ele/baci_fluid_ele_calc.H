@@ -79,8 +79,7 @@ namespace DRT
     {
      public:
       /// dtor
-      virtual ~FluidEleCalc() {}
-
+      virtual ~FluidEleCalc() = default;
       //! nen_: number of element nodes (T. Hughes: The Finite Element Method)
       static const int nen_ = DRT::ELEMENTS::MultipleNumNode<enrtype>::multipleNode *
                               CORE::DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;

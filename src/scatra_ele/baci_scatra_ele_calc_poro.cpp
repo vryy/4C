@@ -499,7 +499,6 @@ void DRT::ELEMENTS::ScaTraEleCalcPoro<distype>::CalculateScalars(const DRT::Elem
         {
           const double porosity = DiffManager()->GetPorosity(k);
           scalars[k] += fac_funct_i * my::ephinp_[k](i, 0) * porosity;
-          ;
         }
         // for domain volume
         scalars[my::numscal_] += fac_funct_i;

@@ -339,7 +339,6 @@ void DRT::ELEMENTS::ScaTraEleCalcChemo<distype, probdim>::CalcStrongResidual(
       {
         // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
         CORE::LINALG::Matrix<nen_, 1> laplace(true);
-        ;
         my::GetLaplacianStrongForm(laplace);
         laplattractant = laplace.Dot(my::ephinp_[partner]);
       }

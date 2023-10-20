@@ -102,8 +102,6 @@ namespace DRT
     /// Standard Constructor
     DofSet();
 
-    /// Destructor
-    ~DofSet() override;
 
     /// create a copy of this object
     virtual Teuchos::RCP<DofSet> Clone() { return Teuchos::rcp(new DofSet(*this)); }

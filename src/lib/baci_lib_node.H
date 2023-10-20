@@ -80,11 +80,6 @@ namespace DRT
     */
     virtual DRT::Node* Clone() const;
 
-    /*!
-    \brief Destructor
-
-    */
-    ~Node() override;
 
     /*!
     \brief Return unique ParObject id

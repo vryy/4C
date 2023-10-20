@@ -70,11 +70,6 @@ void SCATRA::TimIntLomaGenAlpha::Setup()
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     vg 11/08 |
-*-----------------------------------------------------------------------*/
-SCATRA::TimIntLomaGenAlpha::~TimIntLomaGenAlpha() { return; }
-
 
 /*----------------------------------------------------------------------*
  | predict thermodynamic pressure and time derivative          vg 12/08 |

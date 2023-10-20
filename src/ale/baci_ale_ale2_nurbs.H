@@ -67,11 +67,6 @@ namespace DRT
         */
         Ale2Nurbs(const Ale2Nurbs& old);
 
-        /*!
-        \brief Destructor
-
-        */
-        ~Ale2Nurbs() override;
 
 
         /*!

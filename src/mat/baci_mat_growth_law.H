@@ -54,8 +54,7 @@ namespace MAT
     explicit GrowthLaw(MAT::PAR::Parameter* params);
 
     //! destructor
-    virtual ~GrowthLaw() { ; }
-
+    virtual ~GrowthLaw() = default;
     //! @name Evaluation methods
     //@{
 
@@ -163,9 +162,6 @@ namespace MAT
       /// standard constructor
       GrowthLawDyn(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawDyn() override { ; }
-
       /// @name material parameters
       //@{
       /// tolerance for local Newton iteration
@@ -201,9 +197,6 @@ namespace MAT
     //! construct empty material object
     GrowthLawDyn();
     explicit GrowthLawDyn(MAT::PAR::Parameter* params);
-
-    //! destructor
-    ~GrowthLawDyn() override { ; }
 
 
     //! @name Evaluation methods
@@ -379,8 +372,6 @@ namespace MAT
     GrowthLawStatic();
     explicit GrowthLawStatic(MAT::PAR::Parameter* params);
 
-    ~GrowthLawStatic() override { ; }
-
     //! @name Evaluation methods
     //@{
 
@@ -477,9 +468,6 @@ namespace MAT
       /// standard constructor
       GrowthLawAnisoStrain(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawAnisoStrain() override { ; }
-
       /// @name material parameters
       //@{
       /// growth time scale
@@ -518,9 +506,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawAnisoStrain();
     explicit GrowthLawAnisoStrain(MAT::PAR::GrowthLawAnisoStrain* params);
-
-    /// destructor
-    ~GrowthLawAnisoStrain() override { ; }
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -627,9 +612,6 @@ namespace MAT
       /// standard constructor
       GrowthLawAnisoStress(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawAnisoStress() override { ; }
-
       /// @name material parameters
       //@{
       /// growth time scale
@@ -668,9 +650,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawAnisoStress();
     explicit GrowthLawAnisoStress(MAT::PAR::GrowthLawAnisoStress* params);
-
-    /// destructor
-    ~GrowthLawAnisoStress() override { ; }
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -776,9 +755,6 @@ namespace MAT
       /// standard constructor
       GrowthLawAnisoStrainConstTrig(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawAnisoStrainConstTrig() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
@@ -799,9 +775,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawAnisoStrainConstTrig();
     explicit GrowthLawAnisoStrainConstTrig(MAT::PAR::GrowthLawAnisoStrainConstTrig* params);
-
-    /// destructor
-    ~GrowthLawAnisoStrainConstTrig() override { ; }
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -884,9 +857,6 @@ namespace MAT
       /// standard constructor
       GrowthLawAnisoStressConstTrig(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawAnisoStressConstTrig() override { ; }
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 
@@ -907,9 +877,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawAnisoStressConstTrig();
     explicit GrowthLawAnisoStressConstTrig(MAT::PAR::GrowthLawAnisoStressConstTrig* params);
-
-    /// destructor
-    ~GrowthLawAnisoStressConstTrig() override { ; }
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -992,9 +959,6 @@ namespace MAT
       /// standard constructor
       GrowthLawIsoStress(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawIsoStress() override { ; }
-
       /// @name material parameters
       //@{
       /// maximal growth stretch
@@ -1042,9 +1006,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawIsoStress();
     explicit GrowthLawIsoStress(MAT::PAR::GrowthLawIsoStress* params);
-
-    /// destructor
-    ~GrowthLawIsoStress() override { ; }
 
     //! @name Evaluation methods for the ode's rhs
     //@{
@@ -1146,9 +1107,6 @@ namespace MAT
       /// standard constructor
       GrowthLawAC(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawAC() override { ; }
-
       /// @name material parameters
       //@{
       /// maximal growth stretch
@@ -1179,9 +1137,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawAC();
     explicit GrowthLawAC(MAT::PAR::GrowthLawAC* params);
-
-    /// destructor
-    ~GrowthLawAC() override { ; }
 
 
 
@@ -1253,9 +1208,6 @@ namespace MAT
       /// standard constructor
       GrowthLawACRadial(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawACRadial() override { ; }
-
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
 
@@ -1269,9 +1221,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawACRadial();
     explicit GrowthLawACRadial(MAT::PAR::GrowthLawAC* params);
-
-    /// destructor
-    ~GrowthLawACRadial() override { ; }
 
     //! @name Evaluation methods
     //@{
@@ -1343,9 +1292,6 @@ namespace MAT
       /// standard constructor
       GrowthLawACRadialRefConc(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawACRadialRefConc() override { ; }
-
       /// create growth law instance of matching type with my parameters
       Teuchos::RCP<MAT::GrowthLaw> CreateGrowthLaw();
 
@@ -1359,9 +1305,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawACRadialRefConc();
     explicit GrowthLawACRadialRefConc(MAT::PAR::GrowthLawAC* params);
-
-    /// destructor
-    ~GrowthLawACRadialRefConc() override { ; }
 
     //! @name Evaluation methods
     //@{
@@ -1434,9 +1377,6 @@ namespace MAT
       /// standard constructor
       GrowthLawConst(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~GrowthLawConst() override { ; }
-
       /// @name material parameters
       //@{
       //! enum for mapping between material parameter and entry in Parameter::matparams_
@@ -1465,9 +1405,6 @@ namespace MAT
     /// construct empty material object
     GrowthLawConst();
     explicit GrowthLawConst(MAT::PAR::GrowthLawConst* params);
-
-    /// destructor
-    ~GrowthLawConst() override { ; }
 
     //! @name Evaluation methods
     //@{

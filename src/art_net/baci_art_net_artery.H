@@ -160,11 +160,6 @@ namespace DRT
        */
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Artery() override;
 
       //@}
 

@@ -18,11 +18,6 @@
 #include "baci_rebalance.H"
 
 
-/*----------------------------------------------------------------------*
- | Destructor (public)                                   rasthofer 05/11|
- *----------------------------------------------------------------------*/
-FLD::FluidDiscretExtractor::~FluidDiscretExtractor() { return; }
-
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                  rasthofer 05/11|

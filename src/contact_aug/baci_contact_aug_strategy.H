@@ -55,9 +55,6 @@ namespace CONTACT
       //! Standard constructor
       DataContainer();
 
-      //! Destructor
-      ~DataContainer() override { return; }
-
       //! initialize optional sub-data container
       void InitSubDataContainer(const INPAR::CONTACT::SolvingStrategy strat_type);
 
@@ -684,9 +681,6 @@ namespace CONTACT
       /// gradient error container
       struct GradError
       {
-        GradError() = default;
-        ~GradError() = default;
-
         /// total error
         double total_ = 0.0;
 
@@ -729,9 +723,6 @@ namespace CONTACT
           const Epetra_Map* DofRowMap, const Epetra_Map* NodeRowMap,
           const Teuchos::ParameterList& params, const plain_interface_set& interfaces, int dim,
           const Teuchos::RCP<const Epetra_Comm>& comm, int maxdof);
-
-      //! Destructor
-      ~Strategy() override{};
 
       /// derived
       INPAR::CONTACT::SolvingStrategy Type() const override

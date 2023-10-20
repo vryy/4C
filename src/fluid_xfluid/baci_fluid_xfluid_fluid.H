@@ -61,8 +61,6 @@ namespace FLD
         bool ale_fluid = false    ///< embedded fluid in ALE-formulation
     );
 
-    ~XFluidFluid() override;
-
     /// initialization
     void Init() override { Init(true); }
     void Init(bool createinitialstate) override;

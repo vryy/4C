@@ -32,7 +32,6 @@ namespace CORE::GEO
           : matri_(matri), sourc_(sourc)
       {
       }
-      ~LeastSquares(){};
 
       /*!
       \brief Performs the linear least squares. The resulting equations are solved using

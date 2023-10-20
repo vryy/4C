@@ -29,8 +29,6 @@ namespace FLD
         const Teuchos::RCP<Teuchos::ParameterList>& params,
         const Teuchos::RCP<IO::DiscretizationWriter>& output, bool alefluid = false);
 
-    /// Destructor
-    ~TimIntLomaBDF2() override;
 
     /*!
     \brief initialization

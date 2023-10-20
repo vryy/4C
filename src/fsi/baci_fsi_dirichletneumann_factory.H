@@ -39,9 +39,6 @@ namespace FSI
     DirichletNeumannFactory(){};
 
    public:
-    /// destructor
-    ~DirichletNeumannFactory(){};
-
     /**
      *  \brief Creates the appropriate DirichletNeumann algorithm
      *

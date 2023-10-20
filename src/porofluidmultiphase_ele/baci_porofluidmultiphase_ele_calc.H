@@ -56,9 +56,6 @@ namespace DRT
       PoroFluidMultiPhaseEleCalc(const int numdofpernode, const std::string& disname);
 
      public:
-      /// virtual destructor
-      ~PoroFluidMultiPhaseEleCalc() override{};
-
       //! Singleton access method
       static PoroFluidMultiPhaseEleCalc<distype>* Instance(
           const int numdofpernode, const std::string& disname);

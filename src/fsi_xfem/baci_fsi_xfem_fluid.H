@@ -20,8 +20,6 @@ namespace FSI
    public:
     explicit FluidXFEMAlgorithm(const Epetra_Comm& comm);
 
-    ~FluidXFEMAlgorithm() override;
-
     /// time loop
     void Timeloop();
 

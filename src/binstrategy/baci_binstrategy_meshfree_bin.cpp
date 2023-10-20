@@ -30,14 +30,6 @@ DRT::MESHFREE::MeshfreeBin<ELEMENT>::MeshfreeBin(const DRT::MESHFREE::MeshfreeBi
   return;
 }
 
-/*--------------------------------------------------------------------------*
- |  dtor                                               (public) ghamm 11/12 |
- *--------------------------------------------------------------------------*/
-template <typename ELEMENT>
-DRT::MESHFREE::MeshfreeBin<ELEMENT>::~MeshfreeBin()
-{
-  return;
-}
 
 /*--------------------------------------------------------------------------*
  | Delete a single node from the element               (public) ghamm 11/12 |

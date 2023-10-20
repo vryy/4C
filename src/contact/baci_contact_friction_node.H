@@ -48,8 +48,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~FriNodeDataContainer() { return; }
-
+    virtual ~FriNodeDataContainer() = default;
     /*!
      \brief Pack this class so that it can be communicated
 
@@ -262,8 +261,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~FriNodeWearDataContainer() { return; }
-
+    virtual ~FriNodeWearDataContainer() = default;
     //@}
 
     //! @name Access methods

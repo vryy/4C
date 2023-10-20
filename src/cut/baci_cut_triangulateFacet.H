@@ -48,13 +48,6 @@ namespace CORE::GEO
         }
       }
 
-
-
-      /*!
-      \brief Destructor
-       */
-      ~TriangulateFacet(){};
-
       /*!
       \brief Split the facet into appropriate number of tri and quad
        */

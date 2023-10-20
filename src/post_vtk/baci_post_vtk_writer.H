@@ -48,9 +48,6 @@ class PostVtkWriter : public PostWriterBase
   //! constructor. Initializes the writer to a certain field.
   PostVtkWriter(PostField* field, const std::string& name);
 
-  //! destructor
-  ~PostVtkWriter() override {}
-
   //! write the whole thing
   void WriteFiles(PostFilterBase& filter) override;
 

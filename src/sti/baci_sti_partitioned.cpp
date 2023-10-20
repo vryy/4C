@@ -269,7 +269,6 @@ void STI::Partitioned::SolveTwoWay()
         // store current thermo state vector
         if (ThermoField()->PhinpInc()->Update(1., *ThermoField()->Phiafnp(), 0.))
           dserror("Update failed!");
-        ;
 
         // solve thermo field
         ThermoField()->Solve();

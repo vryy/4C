@@ -160,8 +160,6 @@ namespace NOX
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic>& innerTests,
             const Teuchos::RCP<Teuchos::ParameterList>& params);
 
-        //! destructor
-        ~PseudoTransient() override = default;
 
         //! reset the non-linear solver
         void reset(const NOX::Abstract::Vector& initialGuess,
@@ -395,8 +393,6 @@ namespace NOX
               Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
               const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
-          //! destructor
-          ~PseudoTransient() override = default;
 
           void runPostComputeJacobian(CORE::LINALG::SparseOperator& jac, const Epetra_Vector& x,
               const NOX::NLN::LinearSystem& linsys) override;
@@ -438,8 +434,6 @@ namespace NOX
               Teuchos::RCP<CORE::LINALG::SparseMatrix>& scalingMatrixOpPtr,
               const NOX::NLN::Solver::PseudoTransient& ptcsolver);
 
-          //! destructor
-          ~PseudoTransient() override = default;
 
           void runPreComputeF(Epetra_Vector& F, const NOX::NLN::Group& grp) override;
 

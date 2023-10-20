@@ -52,7 +52,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceVtkOutputWriter(){};
+    virtual ~BeamToSolidSurfaceVtkOutputWriter() = default;
 
     /**
      * \brief Initialize the object.

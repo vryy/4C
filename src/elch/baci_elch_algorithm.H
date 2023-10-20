@@ -35,8 +35,6 @@ namespace ELCH
         const Teuchos::ParameterList& solverparams  ///< solver parameter list
     );
 
-    /// virtual destructor to support polymorph destruction
-    ~Algorithm() override = default;
 
    protected:
     /// provide information about initial field

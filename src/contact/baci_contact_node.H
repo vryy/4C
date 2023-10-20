@@ -57,8 +57,7 @@ namespace CONTACT
      \brief Destructor
 
      */
-    virtual ~CoNodeDataContainer() { return; }
-
+    virtual ~CoNodeDataContainer() = default;
     /*!
      \brief Pack this class so that it can be communicated
 
@@ -420,7 +419,7 @@ namespace CONTACT
       NodeDataContainer(
           CoNode& parentNode, const int slMaElementAreaRatio, const bool isTriangleOnMaster);
 
-      virtual ~NodeDataContainer(){};
+      virtual ~NodeDataContainer() = default;
 
       void Setup();
 
@@ -644,8 +643,6 @@ namespace CONTACT
       {
         Debug() : d_(0), dd_(0), d_vec_(0), dd_vec_(0){};
 
-        ~Debug(){};
-
         void Complete();
 
         std::pair<int, double> x_;
@@ -691,8 +688,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoNodePoroDataContainer() { return; }
-
+    virtual ~CoNodePoroDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -815,8 +811,7 @@ namespace CONTACT
     \brief Destructor
 
     */
-    virtual ~CoNodeTSIDataContainer() { return; }
-
+    virtual ~CoNodeTSIDataContainer() = default;
     /*!
     \brief Pack this class so that it can be communicated
 
@@ -901,7 +896,7 @@ namespace CONTACT
     CoNodeEhlDataContainer() {}
 
     //! d-tor
-    virtual ~CoNodeEhlDataContainer(){};
+    virtual ~CoNodeEhlDataContainer() = default;
 
     //! pack for parallel communication
     virtual void Pack(DRT::PackBuffer& data) const {

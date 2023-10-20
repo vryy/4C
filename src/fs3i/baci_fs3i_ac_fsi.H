@@ -57,9 +57,6 @@ namespace FS3I
     /// constructor
     ACFSI(const Epetra_Comm& comm);
 
-    /// destructor
-    ~ACFSI() override{};
-
     /// initialize this class
     void Init() override;
 
@@ -274,7 +271,7 @@ namespace FS3I
     MeanManager(const Epetra_Map& wssmap, const Epetra_Map& phimap, const Epetra_Map& pressuremap);
 
     /// destructor
-    virtual ~MeanManager(){};
+    virtual ~MeanManager() = default;
 
     /// add value into the mean manager
     void AddValue(

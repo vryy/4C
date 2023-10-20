@@ -46,8 +46,7 @@ namespace CONTACT
     /*!
     \brief Destructor
     */
-    virtual ~Beam3contactinterface() {}
-
+    virtual ~Beam3contactinterface() = default;
     //@}
 
     //! @name Access methods

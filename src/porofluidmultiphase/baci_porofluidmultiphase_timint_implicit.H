@@ -76,8 +76,6 @@ namespace POROFLUIDMULTIPHASE
         const Teuchos::ParameterList& probparams, const Teuchos::ParameterList& poroparams,
         FILE* errfile, Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~TimIntImpl() override;
 
     //! initialize time integration
     void Init(bool isale, int nds_disp, int nds_vel, int nds_solidpressure, int nds_scalar,

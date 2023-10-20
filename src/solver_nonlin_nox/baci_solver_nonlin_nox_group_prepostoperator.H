@@ -74,7 +74,7 @@ namespace NOX
         PrePostOperator(Teuchos::ParameterList& groupOptionsSublist);
 
         //! Destructor.
-        virtual ~PrePostOperator(){};
+        virtual ~PrePostOperator() = default;
 
         //! Resets the pre/post operator.
         virtual void reset(Teuchos::ParameterList& groupOptionsSublist);

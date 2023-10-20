@@ -43,9 +43,6 @@ namespace MAT
       /// standard constructor
       Cnst_1d_art(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Cnst_1d_art() override {}
-
       /// @name material parameters
       //@{
       /// Newtonian viscosity of blood

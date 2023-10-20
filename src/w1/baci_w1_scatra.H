@@ -51,9 +51,6 @@ namespace DRT
       Wall1_Scatra(int id,  ///< A unique global id
           int owner);
 
-      /// Destructor
-      ~Wall1_Scatra() override{};
-
       /// Copy Constructor
       ///
       /// Makes a deep copy of a Element

@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       Yoghurt(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Yoghurt() override { ; }
-
       /// @name material parameters
       //@{
 

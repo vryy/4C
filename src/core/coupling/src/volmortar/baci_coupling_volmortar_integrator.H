@@ -49,7 +49,7 @@ namespace CORE::VOLMORTAR
     VolMortarIntegrator(Teuchos::ParameterList& params);
 
     // destructor
-    virtual ~VolMortarIntegrator(){};
+    virtual ~VolMortarIntegrator() = default;
 
     //! ns_: number of slave element nodes
     static const int ns_ = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
@@ -159,7 +159,7 @@ namespace CORE::VOLMORTAR
     VolMortarIntegratorEleBased(Teuchos::ParameterList& params);
 
     // destructor
-    virtual ~VolMortarIntegratorEleBased(){};
+    virtual ~VolMortarIntegratorEleBased() = default;
 
     //! ns_: number of slave element nodes
     static const int ns_ = ::CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeS>::numNodePerElement;
@@ -387,7 +387,7 @@ namespace CORE::VOLMORTAR
     ConsInterpolator();
 
     // destructor
-    virtual ~ConsInterpolator(){};
+    virtual ~ConsInterpolator() = default;
 
     /*!
     \brief interpolation functionality

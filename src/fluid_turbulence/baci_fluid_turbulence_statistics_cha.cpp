@@ -1345,15 +1345,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(Teuchos::RCP<DRT::Discreti
   return;
 }  // TurbulenceStatisticsCha::TurbulenceStatisticsCha
 
-/*----------------------------------------------------------------------*
 
-                           Destructor
-
- -----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
-{
-  return;
-}  // TurbulenceStatisticsCha::~TurbulenceStatisticsCha()
 
 /*----------------------------------------------------------------------*
 
@@ -2915,7 +2907,6 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 
   Teuchos::RCP<std::vector<double>> global_incr_Dphi_sum;
   global_incr_Dphi_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));
-  ;
 
   Teuchos::RCP<std::vector<double>> global_incr_Csgs_phi_sum;
   global_incr_Csgs_phi_sum = Teuchos::rcp(new std::vector<double>(nodeplanes_->size() - 1, 0.0));

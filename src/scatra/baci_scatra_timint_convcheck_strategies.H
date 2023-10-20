@@ -44,7 +44,7 @@ namespace SCATRA
     );
 
     //! destructor
-    virtual ~ConvCheckStrategyBase() { return; };
+    virtual ~ConvCheckStrategyBase() = default;
 
     //! perform convergence check for Newton-Raphson iteration
     virtual bool AbortNonlinIter(

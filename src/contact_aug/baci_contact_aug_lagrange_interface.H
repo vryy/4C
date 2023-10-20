@@ -38,9 +38,6 @@ namespace CONTACT
             const int id, const Epetra_Comm& comm, const int dim,
             const Teuchos::ParameterList& icontact, const bool selfcontact);
 
-        /// destructor
-        ~Interface() override{};
-
        protected:
         /** \brief Assemble the linearization matrix contributions for the
          *         augmentation term [derived]

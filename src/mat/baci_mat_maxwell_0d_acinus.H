@@ -34,9 +34,6 @@ namespace MAT
       /// standard constructor
       Maxwell_0d_acinus(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Maxwell_0d_acinus() override {}
-
       /// @name material parameters
       //@{
       /// first stiffness of the Maxwell model

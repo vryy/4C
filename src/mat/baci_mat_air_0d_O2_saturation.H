@@ -30,9 +30,6 @@ namespace MAT
       /// standard constructor
       Air_0d_O2_saturation(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Air_0d_O2_saturation() override {}
-
       /// @name material parameters
       //@{
       /// Atmospheric pressure

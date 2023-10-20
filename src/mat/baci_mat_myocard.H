@@ -37,9 +37,6 @@ namespace MAT
       /// standard constructor
       Myocard(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Myocard() override { ; }
-
       /// @name material parameters
       //@{
 

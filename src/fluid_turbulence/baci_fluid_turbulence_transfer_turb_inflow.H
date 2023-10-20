@@ -45,7 +45,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TransferTurbulentInflowCondition();
+    virtual ~TransferTurbulentInflowCondition() = default;
 
     /*!
     \brief Transfer process copying values from master boundary to slave
@@ -118,11 +118,6 @@ namespace FLD
     TransferTurbulentInflowConditionXW(
         Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~TransferTurbulentInflowConditionXW() override;
 
     /*!
     \brief Transfer process copying values from master boundary to slave
@@ -154,11 +149,6 @@ namespace FLD
     TransferTurbulentInflowConditionNodal(
         Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<CORE::LINALG::MapExtractor> dbcmaps);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~TransferTurbulentInflowConditionNodal() override;
 
     /*!
     \brief Transfer process copying values from master boundary to slave

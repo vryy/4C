@@ -30,7 +30,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~AbstractBinaryTreeNode(){};
+    virtual ~AbstractBinaryTreeNode() = default;
 
     //! @name Evaluation methods
 
@@ -71,7 +71,7 @@ namespace MORTAR
     \brief Destructor
 
     */
-    virtual ~AbstractBinaryTree(){};
+    virtual ~AbstractBinaryTree() = default;
 
     //! @name Query methods
 

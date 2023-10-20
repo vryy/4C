@@ -35,9 +35,6 @@ namespace MAT
       /// standard constructor
       FourierIso(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~FourierIso() override { ; }
-
       /// @name material parameters
       //@{
 

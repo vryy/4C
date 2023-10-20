@@ -33,8 +33,6 @@ namespace ELCH
         const Teuchos::ParameterList& solverparams    ///< solver parameter list
     );
 
-    /// virtual destructor to support polymorph destruction
-    ~MovingBoundaryAlgorithm() override = default;
 
     /// setup
     void Setup() override;

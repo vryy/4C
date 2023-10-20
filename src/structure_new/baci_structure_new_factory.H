@@ -45,7 +45,7 @@ namespace STR
     Factory();
 
     //! destructor
-    virtual ~Factory(){};
+    virtual ~Factory() = default;
 
     //! build the internal integrator
     Teuchos::RCP<STR::Integrator> BuildIntegrator(const STR::TIMINT::BaseDataSDyn& datasdyn) const;

@@ -477,8 +477,6 @@ namespace NOX
             /// constructor
             WriteOutputEveryIteration(IO::EveryIterationWriter& every_iter_writer);
 
-            /// destructor
-            ~WriteOutputEveryIteration() override = default;
 
             /// called at the very beginning of a Newton loop
             void runPreSolve(const NOX::Solver::Generic& solver) override;

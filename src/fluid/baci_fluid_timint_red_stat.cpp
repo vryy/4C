@@ -54,9 +54,3 @@ void FLD::TimIntRedModelsStat::ReadRestart(int step)
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                    bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntRedModelsStat::~TimIntRedModelsStat() { return; }

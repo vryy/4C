@@ -63,10 +63,6 @@ namespace DRT
       static FluidEleBoundaryCalcPoro<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
-      /// Empty destructor
-      ~FluidEleBoundaryCalcPoro() override = default;
-      ;
-
       /// determines which boundary integral is to be evaluated
       void EvaluateAction(DRT::ELEMENTS::FluidBoundary* ele1, Teuchos::ParameterList& params,
           DRT::Discretization& discretization, std::vector<int>& lm,
@@ -390,10 +386,6 @@ namespace DRT
       /// Singleton access method
       static FluidEleBoundaryCalcPoroP1<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
-
-      /// Empty destructor
-      ~FluidEleBoundaryCalcPoroP1() override = default;
-      ;
 
      protected:
       /*!

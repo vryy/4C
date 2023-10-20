@@ -32,8 +32,6 @@ namespace CONTACT
       CubicConstitutiveLawParams(
           const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> container);
 
-      /// destructor
-      ~CubicConstitutiveLawParams() override = default;
 
       /// create ConstitutiveLaw instance of matching type with my parameters
       Teuchos::RCP<ConstitutiveLaw> CreateConstitutiveLaw() override;

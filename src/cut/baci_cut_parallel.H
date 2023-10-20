@@ -52,7 +52,7 @@ namespace CORE::GEO
       /*!
       \brief Destructor
       */
-      virtual ~Parallel(){};
+      virtual ~Parallel() = default;
 
       /*!
       \brief Communicates the node positions

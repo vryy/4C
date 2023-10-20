@@ -47,9 +47,6 @@ namespace NOX
         class Preconditioner : public NOX::Epetra::Interface::Preconditioner
         {
          public:
-          //! destructor
-          ~Preconditioner() override{};
-
           /*! \brief Is the (CURRENT) system to solve a saddle-point system?
            *
            *  This check is supposed to return TRUE, only if the CURRENT system

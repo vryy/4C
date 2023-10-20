@@ -84,7 +84,7 @@ namespace STR
       Generic();
 
       //! destructor
-      virtual ~Generic(){};
+      virtual ~Generic() = default;
 
       /*! \brief Initialize the class variables
        *

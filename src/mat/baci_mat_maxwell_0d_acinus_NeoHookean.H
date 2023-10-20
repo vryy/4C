@@ -30,9 +30,6 @@ namespace MAT
       /// standard constructor
       Maxwell_0d_acinus_NeoHookean(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Maxwell_0d_acinus_NeoHookean() override {}
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

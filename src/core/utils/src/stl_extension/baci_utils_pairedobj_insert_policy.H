@@ -54,12 +54,6 @@ namespace CORE::GEN
     typedef typename pairedvector_type::const_iterator const_iterator;
 
    public:
-    default_insert_policy(){/* empty */};
-
-    default_insert_policy(const class_type& source){/*empty*/};
-
-    ~default_insert_policy() = default;
-
     iterator begin(const iterator& first) { return first; }
 
     const_iterator begin(const const_iterator& first) const { return first; }
@@ -181,12 +175,6 @@ namespace CORE::GEN
     typedef typename base_type::const_iterator const_iterator;
 
    public:
-    quick_insert_policy() = default;
-
-    quick_insert_policy(const class_type& source) { clone(source); }
-
-    ~quick_insert_policy() = default;
-
     /** @brief return a constant number of offset values
      *
      *  This number will be added to a new capacity and can be used for
@@ -511,8 +499,6 @@ namespace CORE::GEN
           _dyn_max_allowed_capacity(CONST_MAX_ALLOWED_CAPACITY),
           _isfilled(true),
           _max_value(0.0){};
-
-    ~insert_and_sort_policy(){};
 
     iterator begin(const iterator& first)
     {

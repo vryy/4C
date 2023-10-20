@@ -124,12 +124,6 @@ FLD::DynSmagFilter::DynSmagFilter(
 }
 
 
-/*----------------------------------------------------------------------*
- | Destructor (public)                                                  |
- |                                                           gammi 09/08|
- *----------------------------------------------------------------------*/
-FLD::DynSmagFilter::~DynSmagFilter() { return; }
-
 
 /*----------------------------------------------------------------------*
  | add some scatra specific parameters                  rasthofer 08/12 |

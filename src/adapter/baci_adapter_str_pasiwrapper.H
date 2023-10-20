@@ -47,9 +47,6 @@ namespace ADAPTER
     //! constructor
     explicit PASIStructureWrapper(Teuchos::RCP<Structure> structure);
 
-    //! Destructor
-    ~PASIStructureWrapper() override{};
-
     //! set pointer to model evaluator
     void SetModelEvaluatorPtr(Teuchos::RCP<::STR::MODELEVALUATOR::PartitionedPASI> me)
     {

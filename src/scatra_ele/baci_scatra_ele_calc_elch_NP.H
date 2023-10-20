@@ -377,12 +377,7 @@ namespace DRT
 
             //! internal variables evaluated at the Gauss point
             migvelint_(true),
-            migconv_(true)
-      {
-      }
-
-      ~ScaTraEleInternalVariableManagerElchNP() override = default;
-      ;
+            migconv_(true){};
 
       //! compute and set internal variables for the Nernst-Planck formulation
       void SetInternalVariablesElchNP(

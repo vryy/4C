@@ -215,7 +215,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        ;
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -254,7 +253,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       {
         Teuchos::RCP<const Epetra_Vector> dispmat =
             discretization.GetState("material_displacement");
-        ;
         DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
       }
 
@@ -386,7 +384,6 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
         const CORE::DRT::UTILS::IntegrationPoints2D intpoints(gaussrule_);
@@ -1507,7 +1504,6 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
           (*elestrain)(ip, 1) = strain(1);
           (*elestrain)(ip, 2) = 0.0;
           (*elestrain)(ip, 3) = strain(3);
-          ;
         }
         break;
         case INPAR::STR::strain_none:
@@ -1740,7 +1736,6 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
         (*elestrain)(ip, 1) = strain(1);
         (*elestrain)(ip, 2) = 0.0;
         (*elestrain)(ip, 3) = strain(3);
-        ;
       }
       break;
       case INPAR::STR::strain_none:

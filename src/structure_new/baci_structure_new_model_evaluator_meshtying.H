@@ -42,8 +42,6 @@ namespace STR
       //! constructor
       Meshtying();
 
-      //! destructor
-      ~Meshtying() override = default;
 
       /*! \brief Initialize class variables [derived]
        *

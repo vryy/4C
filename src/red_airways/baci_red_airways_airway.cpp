@@ -219,11 +219,6 @@ void DRT::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                           ismail 01/10|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::RedAirway::~RedAirway() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                             ismail 01/10|

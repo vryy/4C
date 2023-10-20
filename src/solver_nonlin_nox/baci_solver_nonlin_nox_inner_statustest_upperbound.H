@@ -45,9 +45,6 @@ namespace NOX
           UpperBound(const double& upperboundval, const NOX::Abstract::Vector::NormType normtype,
               const NOX::NLN::StatusTest::QuantityType qtype);
 
-          //! destructor
-          ~UpperBound() override{};
-
           //! Test the line search stopping criterion
           NOX::NLN::INNER::StatusTest::StatusType CheckStatus(
               const NOX::NLN::INNER::StatusTest::Interface::Required& interface,

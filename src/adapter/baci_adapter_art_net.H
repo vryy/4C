@@ -32,7 +32,7 @@ namespace ADAPTER
     ArtNet(){};
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ArtNet(){};
+    virtual ~ArtNet() = default;
 
     /// initialization
     virtual void Init(const Teuchos::ParameterList& globaltimeparams,

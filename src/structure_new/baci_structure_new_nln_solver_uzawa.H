@@ -25,8 +25,6 @@ namespace STR
       {
        public:
         Uzawa(){};
-
-        ~Uzawa() override = default;
       };
     }  // namespace SOLVER
   }    // namespace NLN

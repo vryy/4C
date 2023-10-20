@@ -37,9 +37,6 @@ namespace CORE::GEO
             // empty
           }
 
-          /// destructor
-          ~Graph() override{};
-
           /** \brief Simplified version of the base class implementation
            *
            *  \author hiermeier \date 11/16 */
@@ -51,9 +48,6 @@ namespace CORE::GEO
         /// constructor
         SimplePointGraph_1D(
             Mesh& mesh, Element* element, Side* side, Location location, Strategy strategy);
-
-        /// destructor
-        ~SimplePointGraph_1D() override{};
 
        protected:
         /** \brief Build the cycle of edge points [derived]
@@ -102,9 +96,6 @@ namespace CORE::GEO
                 correct_rotation_direction_(false){
                     // empty
                 };
-
-          /// destructor
-          ~Graph() override{};
 
           /** \brief Overloaded version of the base class implementation
            *
@@ -161,9 +152,6 @@ namespace CORE::GEO
 
         // empty constructor
         SimplePointGraph_2D();
-
-        /// destructor
-        ~SimplePointGraph_2D() override{};
 
         void FindLineFacetCycles(const plain_facet_set& line_facets, Element* parent_element);
 

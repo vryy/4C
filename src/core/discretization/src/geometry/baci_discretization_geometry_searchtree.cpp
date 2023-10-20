@@ -23,8 +23,6 @@ CORE::GEO::SearchTree::SearchTree(const int max_depth) : max_depth_(max_depth), 
 {
 }
 
-CORE::GEO::SearchTree::~SearchTree() {}
-
 /*----------------------------------------------------------------------*
  | initialize or rebuild tree with possibly new              u.may 07/08|
  | discretization, elements are sorted according to the given map       |
@@ -252,7 +250,6 @@ CORE::GEO::SearchTree::TreeNode::TreeNode(const TreeNode* const parent, const in
  *
  */
 /*====================================================================*/
-CORE::GEO::SearchTree::TreeNode::~TreeNode() {}
 
 void CORE::GEO::SearchTree::TreeNode::setElementList(
     const std::map<int, std::set<int>>& elementsByLabel)

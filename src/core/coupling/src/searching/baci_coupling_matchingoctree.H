@@ -269,9 +269,6 @@ namespace CORE::COUPLING
     //! Constructor
     NodeMatchingOctree();
 
-    //! Destructor
-    ~NodeMatchingOctree() override = default;
-
    protected:
     //! calc unique coordinate, associated to node
     void CalcPointCoordinate(
@@ -310,9 +307,6 @@ namespace CORE::COUPLING
    public:
     //! Constructor
     ElementMatchingOctree();
-
-    //! Destructor
-    ~ElementMatchingOctree() override = default;
 
    protected:
     //! calc unique coordinate, associated to element
@@ -543,9 +537,6 @@ namespace CORE::COUPLING
     //! Constructor
     OctreeNodalElement();
 
-    //! Destructor
-    ~OctreeNodalElement() override = default;
-
    protected:
     //! calc unique coordinate of node
     void CalcPointCoordinate(
@@ -564,9 +555,6 @@ namespace CORE::COUPLING
    public:
     //! Constructor
     OctreeElementElement();
-
-    //! Destructor
-    ~OctreeElementElement() override = default;
 
    protected:
     //! calc unique coordinate of element

@@ -27,8 +27,6 @@ namespace STR
       //! constructor
       AdamsBashforth2();
 
-      //! destructor
-      ~AdamsBashforth2() override = default;
 
       //! Setup class variables (derived)
       void Setup() override;

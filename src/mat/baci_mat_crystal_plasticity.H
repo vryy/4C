@@ -181,8 +181,6 @@ namespace MAT
       //! standard constructor
       CrystalPlasticity(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~CrystalPlasticity() override = default;
 
       //! create material instance
       Teuchos::RCP<MAT::Material> CreateMaterial() override;

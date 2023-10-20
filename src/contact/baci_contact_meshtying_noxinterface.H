@@ -26,9 +26,6 @@ namespace CONTACT
     /// constructor
     MtNoxInterface();
 
-    /// destructor
-    ~MtNoxInterface() override{};
-
     /// initialize important member variables
     void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr);
 

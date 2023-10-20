@@ -53,8 +53,6 @@ namespace FSI
     AlgorithmXFEM(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams,
         const ADAPTER::FieldWrapper::Fieldtype type);
 
-    //! virtual destructor to support polymorph destruction
-    ~AlgorithmXFEM() override;
 
     //! setup
     virtual void Setup();

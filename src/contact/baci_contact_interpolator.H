@@ -57,7 +57,7 @@ namespace NTS
      \brief Destructor
 
      */
-    virtual ~CoInterpolator(){};
+    virtual ~CoInterpolator() = default;
 
     /*!
      \brief Interpolate for nts algorithm
@@ -202,8 +202,7 @@ namespace NTS
     MTInterpolator(){};
 
     // destructor
-    virtual ~MTInterpolator() {}
-
+    virtual ~MTInterpolator() = default;
     //! @name Access methods
     /// Internal implementation class
     static MTInterpolator* Impl(std::vector<MORTAR::MortarElement*> meles);
@@ -228,7 +227,6 @@ namespace NTS
 
     /// Singleton access method
     static MTInterpolatorCalc<distypeM>* Instance(CORE::UTILS::SingletonAction action);
-    ;
 
     //! nm_: number of master element nodes
     static const int nm_ = CORE::DRT::UTILS::DisTypeToNumNodePerEle<distypeM>::numNodePerElement;

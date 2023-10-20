@@ -65,7 +65,7 @@ namespace MORTAR
     StratDataContainer();
 
     //! destructor
-    virtual ~StratDataContainer(){};
+    virtual ~StratDataContainer() = default;
 
     //! Return underlying problem dof row map (not only interfaces)
     Teuchos::RCP<Epetra_Map>& ProbDofsPtr() { return probdofs_; };
@@ -206,8 +206,6 @@ namespace MORTAR
         const Teuchos::ParameterList& params, const int spatialDim,
         const Teuchos::RCP<const Epetra_Comm>& comm, const double alphaf, const int maxdof);
 
-    //! Destructor
-    ~StrategyBase() override = default;
 
     //! @name Access methods
     //! @{

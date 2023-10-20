@@ -60,7 +60,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~DynSmagFilter();
+    virtual ~DynSmagFilter() = default;
 
     void AddScatra(Teuchos::RCP<DRT::Discretization> scatradis);
 

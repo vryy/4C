@@ -48,8 +48,7 @@ namespace DRT
       ScaTraHDGIntFaceImplInterface() {}
 
       //! Empty destructor
-      virtual ~ScaTraHDGIntFaceImplInterface() {}
-
+      virtual ~ScaTraHDGIntFaceImplInterface() = default;
       //! Assemble internal faces integrals using data from both parent elements
       virtual void AssembleInternalFacesUsingNeighborData(
           DRT::ELEMENTS::ScaTraHDGIntFace* intface,  //!< internal face element

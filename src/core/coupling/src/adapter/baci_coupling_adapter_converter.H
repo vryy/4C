@@ -45,8 +45,7 @@ namespace CORE::ADAPTER
   class CouplingConverter
   {
    public:
-    virtual ~CouplingConverter() {}
-
+    virtual ~CouplingConverter() = default;
     virtual Teuchos::RCP<Epetra_Vector> SrcToDst(Teuchos::RCP<const Epetra_Vector> s) const = 0;
 
     virtual Teuchos::RCP<Epetra_Vector> DstToSrc(Teuchos::RCP<const Epetra_Vector> d) const = 0;

@@ -32,8 +32,7 @@ namespace WEAR
     \brief Destructor
 
     */
-    virtual ~WearInterface() {}
-
+    virtual ~WearInterface() = default;
     /*!
     \brief Assemble second mortar D matrix for both-sided wear
 

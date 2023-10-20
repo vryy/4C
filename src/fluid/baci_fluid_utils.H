@@ -142,7 +142,6 @@ namespace FLD
             int rlid0;
             int rlid1;
             int rowblock = RowBlock(lrow, rgid);
-            ;
             if (rowblock == 0)
             {
               rlid0 = rowmap00.LID(rgid);

@@ -53,7 +53,7 @@ namespace NOX
           Required(){};
 
           //! Destrcutor
-          virtual ~Required(){};
+          virtual ~Required() = default;
 
           /*! @name Merit function support functions
            *  These functions are optional. They become only necessary, if you want to use the full

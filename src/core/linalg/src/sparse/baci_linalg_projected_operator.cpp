@@ -28,13 +28,6 @@ CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator(Teuchos::RCP<Epet
   return;
 }  // CORE::LINALG::LinalgProjectedOperator::LinalgProjectedOperator
 
-/* --------------------------------------------------------------------
-                           Destructor
-   -------------------------------------------------------------------- */
-CORE::LINALG::LinalgProjectedOperator::~LinalgProjectedOperator()
-{
-  return;
-}  // CORE::LINALG::LinalgProjectedOperator::~LinalgProjectedOperator
 
 /* --------------------------------------------------------------------
                       (Modified) Apply call

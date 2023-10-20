@@ -51,8 +51,6 @@ namespace STR
         //! Constructor.
         StcScaling(STR::TIMINT::BaseDataSDyn DataSDyn, STR::TIMINT::BaseDataGlobalState GState);
 
-        //! Virtual destructor
-        ~StcScaling() override = default;
 
         //! Scales the linear system.
         void scaleLinearSystem(Epetra_LinearProblem& problem) override;

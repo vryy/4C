@@ -185,8 +185,6 @@ namespace DRT
             ocpderiv_(0.),
             ocpderiv2_(0.){};
 
-      //! destructor
-      ~ScaTraEleDiffManagerSTIElchElectrode() override = default;
 
       //! compute and store half cell open circuit potential and its first and second derivatives
       //! w.r.t. concentration

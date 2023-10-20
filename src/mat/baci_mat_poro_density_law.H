@@ -23,9 +23,6 @@ namespace MAT
       /// standard constructor
       explicit PoroDensityLaw(Teuchos::RCP<MAT::PAR::Material> matdata) : Parameter(matdata){};
 
-      /// destructor
-      ~PoroDensityLaw() override { ; }
-
       //! compute derivative of density w.r.t. pressure
       virtual double ComputeCurDensityDerivative(
           const double& refdensity,  ///< (i) initial/reference density at gauss point
@@ -67,9 +64,6 @@ namespace MAT
       /// standard constructor
       explicit PoroDensityLawConstant(Teuchos::RCP<MAT::PAR::Material> matdata)
           : PoroDensityLaw(matdata){};
-
-      /// destructor
-      ~PoroDensityLawConstant() override { ; }
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override { return Teuchos::null; };
@@ -125,9 +119,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit PoroDensityLawExp(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~PoroDensityLawExp() override { ; }
 
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;

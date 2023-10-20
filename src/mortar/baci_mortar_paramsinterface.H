@@ -102,7 +102,7 @@ namespace MORTAR
   {
    public:
     //! destructor
-    virtual ~ParamsInterface(){};
+    virtual ~ParamsInterface() = default;
 
     //! Return the mortar/contact action type
     virtual enum ActionType GetActionType() const = 0;

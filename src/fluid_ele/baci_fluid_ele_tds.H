@@ -73,11 +73,6 @@ namespace FLD
       return FLD::TDSEleDataType::Instance().UniqueParObjectId();
     }
 
-    /*!
-    \brief Destructor
-    */
-    ~TDSEleData() override;
-
     //! @name Time-dependent subgrid scales
     /*!
     \brief Memory allocation for subgrid-scale arrays

@@ -124,12 +124,6 @@ namespace DRT
     */
     DiscretizationFaces(const std::string name, Teuchos::RCP<Epetra_Comm> comm);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~DiscretizationFaces() override { return; };
-
 
 
     /*!

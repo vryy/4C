@@ -48,8 +48,6 @@ namespace STR
       //! constructor
       AdamsBashforthX();
 
-      //! destructor
-      ~AdamsBashforthX() override = default;
 
       //! Setup class variables (derived)
       void Setup() override;

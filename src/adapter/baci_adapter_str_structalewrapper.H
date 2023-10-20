@@ -48,9 +48,6 @@ namespace ADAPTER
     /// constructor
     explicit StructAleWrapper(Teuchos::RCP<Structure> structure);
 
-    /// Destructor
-    ~StructAleWrapper() override { ; }
-
     /// return reference to material displacement RCP
     const Teuchos::RCP<Epetra_Vector>& GetMaterialDisplacementNpPtr();
 

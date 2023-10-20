@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       FerEchPV(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~FerEchPV() override { ; }
-
       /// @name material parameters
       //@{
 

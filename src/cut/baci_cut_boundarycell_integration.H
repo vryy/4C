@@ -38,11 +38,6 @@ namespace CORE::GEO
       }
 
       /*!
-       \brief Destructor
-       */
-      ~BoundarycellIntegration(){};
-
-      /*!
       \brief Generate integration rule for the considered boundarycell.
       Unlike facet integration facets, whose x-component of normal is zero, cannot be eliminated
       from the integration.

@@ -30,8 +30,7 @@ namespace CORE::GEO
       class PointLineFilter
       {
        public:
-        virtual ~PointLineFilter() {}
-
+        virtual ~PointLineFilter() = default;
         virtual bool operator()(Line* line) const = 0;
       };
 
@@ -80,7 +79,7 @@ namespace CORE::GEO
       Point(unsigned pid, double tolerance);
 
       /// destructor
-      virtual ~Point(){};
+      virtual ~Point() = default;
 
       int Id() const { return pid_; }
 
@@ -466,9 +465,6 @@ namespace CORE::GEO
 
         if ((cut_side != nullptr) && (cut_edge != nullptr)) this->AddPair(cut_side, cut_edge);
       };
-
-      /// destructor
-      ~ConcretePoint() override{};
 
       /** \brief Get the coordinates of this point */
       void Coordinates(double* x) const override { std::copy(this->x_, this->x_ + probDim, x); };

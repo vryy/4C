@@ -61,11 +61,6 @@ SCATRA::LevelSetAlgorithm::LevelSetAlgorithm(Teuchos::RCP<DRT::Discretization> d
 }
 
 
-/*----------------------------------------------------------------------*
- | deconstructor                                        rasthofer 09/13 |
- *----------------------------------------------------------------------*/
-SCATRA::LevelSetAlgorithm::~LevelSetAlgorithm() {}
-
 
 /*----------------------------------------------------------------------*
  | initialize algorithm                                     rauch 09/16 |

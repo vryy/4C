@@ -73,7 +73,7 @@ namespace DRT
         );
 
         //! dtor
-        virtual ~SlaveElementInterface(){};
+        virtual ~SlaveElementInterface() = default;
 
         //! add slave element's displacements and set current element's nodal coordinates
         virtual void AddSlaveEleDisp(
@@ -316,9 +316,6 @@ namespace DRT
                 fldparaxfem  ///< specific XFEM based fluid parameters
         );
 
-        //! dtor
-        ~NitscheInterface() override{};
-
         //! add contributions from convective stabilization
         //! this method can also be applied in a non-Nitsche context (e.g. MHVS) by
         //! employing shape functions and velocities from another coupling object (HybridLMCoupling)
@@ -471,9 +468,6 @@ namespace DRT
           dserror("Embedded-sided mixed/hybrid stress-based LM is not implemented yet!");
           return Teuchos::null;
         }
-
-        //! dtor
-        ~HybridLMInterface() override{};
 
         //! evaluate interface matrices for mixed/hybrid Cauchy stress-based (MHCS) coupling
         virtual void MHCS_buildCouplingMatrices(

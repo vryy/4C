@@ -106,7 +106,7 @@ namespace CONTACT
       PenaltyUpdate(const PenaltyUpdate& pu) = default;
 
       /// destructor
-      virtual ~PenaltyUpdate(){};
+      virtual ~PenaltyUpdate() = default;
 
       /// return the type enum
       virtual INPAR::CONTACT::PenaltyUpdate Type() const = 0;

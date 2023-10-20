@@ -29,10 +29,6 @@ POROFLUIDMULTIPHASE::TimIntOneStepTheta::TimIntOneStepTheta(
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                 vuong  08/16 |
-*-----------------------------------------------------------------------*/
-POROFLUIDMULTIPHASE::TimIntOneStepTheta::~TimIntOneStepTheta() { return; }
 
 /*----------------------------------------------------------------------*
  |  set parameter for element evaluation                    vuong 06/16 |

@@ -82,7 +82,7 @@ namespace BEAMINTERACTION
       Generic();
 
       //! destructor
-      virtual ~Generic(){};
+      virtual ~Generic() = default;
 
       //! initialize the class variables
       virtual void Init(Teuchos::RCP<::DRT::Discretization> const& ia_discret,

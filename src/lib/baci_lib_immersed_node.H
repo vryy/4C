@@ -72,11 +72,6 @@ namespace DRT
     */
     DRT::ImmersedNode* Clone() const override;
 
-    /*!
-    \brief Destructor
-
-    */
-    ~ImmersedNode() override;
 
     /*!
     \brief Return unique ParObject id

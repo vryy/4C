@@ -45,9 +45,6 @@ namespace MAT
       //! standard constructor
       PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~PlasticNlnLogNeoHooke() override { ; }
-
       //! @name material parameters
       //@{
 

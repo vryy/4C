@@ -38,7 +38,7 @@ namespace TUTORIAL
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);
 
       /// Empty destructor
-      virtual ~TutorialEleCalc(){};
+      virtual ~TutorialEleCalc() = default;
 
       /// evaluates the desired matrix and/or vector
       void Evaluate(TutorialElement* element, CORE::LINALG::Matrix<7, 1>* state,

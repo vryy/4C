@@ -35,8 +35,6 @@ namespace DRT
       );
 
      public:
-      ~ScaTraEleParameterLsReinit() override {}
-
       /// Singleton access method
       static ScaTraEleParameterLsReinit* Instance(
           const std::string& disname  //!< name of discretization

@@ -34,9 +34,6 @@ namespace MAT
       /// standard constructor
       Maxwell_0d_acinus_Ogden(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Maxwell_0d_acinus_Ogden() override {}
-
       /// create material instance of matching type with my parameters
       Teuchos::RCP<MAT::Material> CreateMaterial() override;
 

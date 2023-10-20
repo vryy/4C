@@ -199,7 +199,7 @@ namespace STR
     {
      public:
       //! destructor
-      virtual ~BeamParamsInterface(){};
+      virtual ~BeamParamsInterface() = default;
 
       /*! @name time integration parameters required for element-internal update of angular velocity
        *  and acceleration (in combination with GenAlphaLieGroup) */
@@ -222,7 +222,7 @@ namespace BROWNIANDYN
   {
    public:
     //! destructor
-    virtual ~ParamsInterface(){};
+    virtual ~ParamsInterface() = default;
 
     /// ~ 1e-3 / 2.27 according to cyron2011 eq 52 ff, viscosity of surrounding fluid
     virtual double const& GetViscosity() const = 0;

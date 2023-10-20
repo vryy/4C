@@ -31,8 +31,7 @@ namespace ADAPTER
     explicit AlgorithmBase(const Epetra_Comm& comm, const Teuchos::ParameterList& timeparams);
 
     /// virtual destruction
-    virtual ~AlgorithmBase() {}
-
+    virtual ~AlgorithmBase() = default;
     /// read restart data
     virtual void ReadRestart(int step) = 0;
 

@@ -38,11 +38,6 @@ SCATRA::LevelSetTimIntOneStepTheta::LevelSetTimIntOneStepTheta(
 }
 
 
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                              rasthofer 09/13 |
-*-----------------------------------------------------------------------*/
-SCATRA::LevelSetTimIntOneStepTheta::~LevelSetTimIntOneStepTheta() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  initialize time integration                             rauch 09/16 |

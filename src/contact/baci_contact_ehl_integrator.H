@@ -45,11 +45,6 @@ namespace CONTACT
     {
     }
 
-    /*!
-     \brief Destructor
-
-     */
-    ~CoIntegratorEhl() override {}
 
    protected:
     /*!

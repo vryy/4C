@@ -30,9 +30,6 @@ namespace BEAMINTERACTION
           rotational_penalty_parameter_(rotational_penalty_parameter)
     {
     }
-
-    ~BeamToBeamPointCouplingCondition() override = default;
-
     /**
      * \brief Check if a combination of beam ids is in this condition.
      */

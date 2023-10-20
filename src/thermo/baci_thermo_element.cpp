@@ -263,11 +263,6 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
 }  // Unpack()
 
 
-/*----------------------------------------------------------------------*
- | dtor (public)                                             dano 09/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Thermo::~Thermo() { return; }
-
 
 /*----------------------------------------------------------------------*
  | print this element (public)                               dano 09/09 |
@@ -491,11 +486,6 @@ void DRT::ELEMENTS::ThermoBoundary::Unpack(const std::vector<char>& data)
   return;
 }  // Unpack()
 
-
-/*----------------------------------------------------------------------*
- | dtor (public)                                             dano 09/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ThermoBoundary::~ThermoBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*

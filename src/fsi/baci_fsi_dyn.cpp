@@ -1003,7 +1003,6 @@ void xfpsi_drt()
 
       Teuchos::RCP<FSI::AlgorithmXFEM> fsi = Teuchos::rcp(
           new FSI::MonolithicXFEM(comm, fsidyn, ADAPTER::FieldWrapper::type_PoroField));
-      ;
 
       // read the restart information, set vectors and variables ---
 

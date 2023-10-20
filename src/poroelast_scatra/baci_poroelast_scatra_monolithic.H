@@ -48,9 +48,6 @@ namespace POROELASTSCATRA
     explicit PoroScatraMono(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);  // Problem builder
 
-    /// virtual destructor
-    ~PoroScatraMono() override{};
-
     //! Main time loop.
     void Timeloop() override;
 

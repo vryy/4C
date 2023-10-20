@@ -43,9 +43,6 @@ namespace CONTACT
             interval_((par_redist_interval > 0 ? par_redist_interval
                                                : std::numeric_limits<int>::max())){/* empty */};
 
-      /// destructor
-      ~ParallelDistributionController() = default;
-
       /// setup the controller
       void setup(CONTACT::ParamsInterface& cparams);
 

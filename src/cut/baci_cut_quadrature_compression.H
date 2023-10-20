@@ -38,8 +38,6 @@ namespace CORE::GEO
      public:
       QuadratureCompression();
 
-      ~QuadratureCompression(){};
-
       bool PerformCompressionOfQuadrature(
           CORE::DRT::UTILS::GaussPointsComposite& gin, CORE::GEO::CUT::VolumeCell* vc);
 

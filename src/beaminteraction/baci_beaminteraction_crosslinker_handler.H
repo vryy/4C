@@ -47,7 +47,7 @@ namespace BEAMINTERACTION
     void Setup();
 
     // destructor
-    virtual ~BeamCrosslinkerHandler(){};
+    virtual ~BeamCrosslinkerHandler() = default;
 
     /// get binning strategy
     virtual inline Teuchos::RCP<BINSTRATEGY::BinningStrategy>& BinStrategy()

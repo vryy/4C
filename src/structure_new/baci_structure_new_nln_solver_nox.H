@@ -60,8 +60,6 @@ namespace STR
         //! constructor
         Nox();
 
-        //! destructor
-        ~Nox() override = default;
 
         //! derived from the base class
         void Setup() override;

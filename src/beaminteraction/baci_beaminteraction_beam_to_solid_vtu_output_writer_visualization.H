@@ -58,7 +58,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVtuOutputWriterVisualization(){};
+    virtual ~BeamToSolidVtuOutputWriterVisualization() = default;
 
     /**
      * \brief Add all nodes of a discretization to the output.

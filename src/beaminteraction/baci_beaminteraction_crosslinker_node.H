@@ -67,8 +67,7 @@ namespace CROSSLINKING
      \brief Destructor
 
      */
-    virtual ~CrosslinkerNodeDataContainer() { return; }
-
+    virtual ~CrosslinkerNodeDataContainer() = default;
     /*!
      \brief Pack this class so that it can be communicated
 
@@ -192,11 +191,7 @@ namespace CROSSLINKING
      */
     CROSSLINKING::CrosslinkerNode* Clone() const override;
 
-    /*!
-    \brief Destructor
 
-    */
-    ~CrosslinkerNode() override { return; }
 
     /*!
      \brief Return unique ParObject id

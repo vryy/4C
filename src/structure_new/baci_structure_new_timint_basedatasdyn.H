@@ -65,7 +65,7 @@ namespace STR
       BaseDataSDyn();
 
       /// destructor
-      virtual ~BaseDataSDyn(){};
+      virtual ~BaseDataSDyn() = default;
 
       /// initialize class variables (already existing)
       virtual void Init(const Teuchos::RCP<DRT::Discretization> discret,
@@ -1005,9 +1005,6 @@ namespace STR
       //! contructor
       GenAlphaDataSDyn();
 
-      //! destructor
-      ~GenAlphaDataSDyn() override{};
-
       //! Setup function [derived]
       void Setup() override;
 
@@ -1091,9 +1088,6 @@ namespace STR
       //! contructor
       OneStepThetaDataSDyn();
 
-      //! destructor
-      ~OneStepThetaDataSDyn() override{};
-
       //! Setup function [derived]
       void Setup() override;
 
@@ -1126,9 +1120,6 @@ namespace STR
      public:
       //! contructor
       ExplEulerDataSDyn();
-
-      //! destructor
-      ~ExplEulerDataSDyn() override{};
 
       //! Setup function [derived]
       void Setup() override;

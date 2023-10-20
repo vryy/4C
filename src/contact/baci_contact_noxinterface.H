@@ -26,9 +26,6 @@ namespace CONTACT
     /// constructor
     NoxInterface();
 
-    /// destructor
-    ~NoxInterface() override{};
-
     /// initialize important member variables
     void Init(const Teuchos::RCP<CONTACT::CoAbstractStrategy>& strategy_ptr);
 

@@ -62,10 +62,6 @@ ELEMAG::ElemagTimeInt::ElemagTimeInt(const Teuchos::RCP<DRT::DiscretizationHDG> 
 
 }  // ElemagTimeInt
 
-/*----------------------------------------------------------------------*
- |  Desctructor (public)                               gravemeier 06/17 |
- *----------------------------------------------------------------------*/
-ELEMAG::ElemagTimeInt::~ElemagTimeInt() {}
 
 
 /*----------------------------------------------------------------------*

@@ -187,7 +187,6 @@ void DRT::ELEMENTS::So_tet10::Pack(DRT::PackBuffer& data) const
   AddtoPack(data, type);
   // add base class Element
   So_base::Pack(data);
-  ;
   // data_
   AddtoPack(data, data_);
   // detJ_
@@ -268,12 +267,6 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
   return;
 }
 
-
-
-/*----------------------------------------------------------------------***
- |  dtor (public)                                                       |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::So_tet10::~So_tet10() { return; }
 
 
 /*----------------------------------------------------------------------***

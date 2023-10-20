@@ -95,7 +95,7 @@ namespace GEOMETRYPAIR
     /**
      * \brief Destructor.
      */
-    virtual ~FaceElement(){};
+    virtual ~FaceElement() = default;
 
     /**
      * \brief Get the RCP to the DRT face element.

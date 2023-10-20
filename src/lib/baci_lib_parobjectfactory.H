@@ -58,8 +58,7 @@ namespace DRT
    public:
     ParObjectType();
 
-    virtual ~ParObjectType() {}
-
+    virtual ~ParObjectType() = default;
     /// Unique ParObject id. Automatically determined.
     int UniqueParObjectId();
 

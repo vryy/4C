@@ -47,7 +47,7 @@ namespace EXODUS
     Mesh();
 
     //! destructor
-    virtual ~Mesh();
+    virtual ~Mesh() = default;
 
     //! Print mesh info
     void Print(std::ostream& os, bool verbose = false) const;
@@ -236,7 +236,7 @@ namespace EXODUS
         Teuchos::RCP<std::map<int, std::vector<int>>>& eleconn,  // Element connectivity
         std::string name);
 
-    virtual ~ElementBlock();
+    virtual ~ElementBlock() = default;
 
     ElementBlock::Shape GetShape() const { return distype_; }
 
@@ -268,7 +268,7 @@ namespace EXODUS
    public:
     NodeSet(const std::set<int>& nodeids, const std::string& name, const std::string& propname);
 
-    virtual ~NodeSet();
+    virtual ~NodeSet() = default;
 
     std::set<int> GetNodeSet() const { return nodeids_; };
 
@@ -293,7 +293,7 @@ namespace EXODUS
    public:
     SideSet(const std::map<int, std::vector<int>>& sides, const std::string& name);
 
-    virtual ~SideSet();
+    virtual ~SideSet() = default;
 
     inline int GetNumSides() const { return sides_.size(); }
 

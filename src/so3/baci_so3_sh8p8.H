@@ -243,8 +243,6 @@ namespace DRT
           DRT::INPUT::LineDefinition* linedef) override;
 
 
-      /// Destructor
-      ~So_sh8p8() override;
 
       //@}
 

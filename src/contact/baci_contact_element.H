@@ -70,11 +70,7 @@ namespace CONTACT
      */
     CoElement(const CONTACT::CoElement& old);
 
-    /*!
-     \brief Destructor
 
-     */
-    ~CoElement() override { return; }
 
     /*!
      \brief Deep copy the derived class and return pointer to it

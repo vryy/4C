@@ -73,7 +73,7 @@ namespace FLD
     \brief Destructor (public)
 
     */
-    virtual ~TurbulenceStatisticsGeneralMean();
+    virtual ~TurbulenceStatisticsGeneralMean() = default;
 
     //! @name Averaging
 

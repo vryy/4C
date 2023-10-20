@@ -31,9 +31,6 @@ namespace MAT
       /// standard constructor
       MicroMaterial(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~MicroMaterial() override { ; }
-
       /// @name material parameters
       //@{
 

@@ -99,9 +99,6 @@ namespace CONTACT
       /// constructor
       TimeMonitor();
 
-      /// destructor
-      ~TimeMonitor() = default;
-
       /// set communicator
       void setComm(const Epetra_Comm* comm)
       {

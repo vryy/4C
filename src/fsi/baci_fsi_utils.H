@@ -74,8 +74,7 @@ namespace FSI
       );
 
       /// empty destructor
-      virtual ~SlideAleUtils() {}
-
+      virtual ~SlideAleUtils() = default;
       /// remesh ALE corresponding
       void Remeshing(::ADAPTER::FSIStructureWrapper& structure,  ///< structure adapter
           Teuchos::RCP<DRT::Discretization> fluiddis,            ///< fluid discretization

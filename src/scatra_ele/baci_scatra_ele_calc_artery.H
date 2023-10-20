@@ -39,7 +39,6 @@ namespace DRT
       using my::nsd_;
       using my::nsd_ele_;
 
-      ~ScaTraEleCalcArtery() override {}
 
       //! Singleton access method
       static ScaTraEleCalcArtery<distype, probdim>* Instance(

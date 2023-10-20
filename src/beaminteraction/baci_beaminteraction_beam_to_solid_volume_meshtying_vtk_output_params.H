@@ -32,7 +32,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidVolumeMeshtyingVtkOutputParams(){};
+    virtual ~BeamToSolidVolumeMeshtyingVtkOutputParams() = default;
 
     /**
      * \brief Initialize with the stuff coming from input file.

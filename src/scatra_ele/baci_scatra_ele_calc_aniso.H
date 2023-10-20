@@ -41,9 +41,6 @@ namespace DRT
       using varmanager = ScaTraEleInternalVariableManager<nsd_, nen_>;
 
      public:
-      ~ScaTraEleCalcAniso() override {}
-
-
       /// Singleton access method
       static ScaTraEleCalcAniso<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

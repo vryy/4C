@@ -50,9 +50,6 @@ class Myocard_SAN_Garny : public Myocard_General
   /// construct empty material object
   explicit Myocard_SAN_Garny(const double eps_deriv_myocard, const std::string tissue);
 
-  /// destructor
-  ~Myocard_SAN_Garny() override { ; }
-
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
 

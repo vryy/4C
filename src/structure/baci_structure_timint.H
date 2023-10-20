@@ -141,9 +141,6 @@ namespace STR
         Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
-    //! Destructor
-    ~TimInt() override { ; }
-
     //! Empty constructor
     TimInt() { ; }
 

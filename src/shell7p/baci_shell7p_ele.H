@@ -141,8 +141,6 @@ namespace DRT
         shell_interface_ = nullptr;
       };
 
-      //! destructor
-      ~Shell7p() override = default;
 
       //! copy constructor
       Shell7p(const DRT::ELEMENTS::Shell7p& other);

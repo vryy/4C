@@ -100,10 +100,7 @@ namespace DRT
       */
       Rigidsphere(const Rigidsphere& old);
 
-      /*!
-      \brief Destructor
-      */
-      ~Rigidsphere() override;
+
 
       /*!
       \brief Deep copy this instance of Beam3eb and return pointer to the copy

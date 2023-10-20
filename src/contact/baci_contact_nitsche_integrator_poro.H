@@ -41,8 +41,6 @@ namespace CONTACT
     CoIntegratorNitschePoro(Teuchos::ParameterList& params,
         DRT::Element::DiscretizationType eletype, const Epetra_Comm& comm);
 
-    ~CoIntegratorNitschePoro() override = default;
-
    protected:
     /*!
      \brief Perform integration at GP

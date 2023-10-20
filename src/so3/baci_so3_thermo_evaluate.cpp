@@ -506,7 +506,6 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
         // get the temperature dependent stress
         CORE::LINALG::Matrix<numgpt_post, numstr_> couplstress(true);
-        ;
 
         // initialise the vectors
         // Evaluate() is called the first time in ThermoBaseAlgorithm: at this stage the

@@ -2569,7 +2569,6 @@ int STR::TimIntImpl::UzawaLinearNewtonFull()
         if (stcscale_ == INPAR::STR::stc_currsym)
         {
           constr = CORE::LINALG::MLMultiply(*stcmat_, true, *constr, false, false, false, true);
-          ;
         }
       }
       // Call constraint solver to solve system with zeros on diagonal

@@ -18,11 +18,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 
-/*----------------------------------------------------------------------*
- | Destructor (public)                                   rasthofer 06/11|
- *----------------------------------------------------------------------*/
-FLD::TurbulentFlowAlgorithm::~TurbulentFlowAlgorithm() { return; }
-
 
 /*----------------------------------------------------------------------*
  | Constructor (public)                                  rasthofer 06/11|

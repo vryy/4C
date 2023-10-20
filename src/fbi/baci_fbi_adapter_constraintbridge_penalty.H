@@ -41,9 +41,6 @@ namespace ADAPTER
     friend class FBIConstraintenforcer;
 
    public:
-    /// empty destructor
-    ~FBIConstraintBridgePenalty() override = default;
-
     /**
      * \brief Initializes all members of the class     *
      */

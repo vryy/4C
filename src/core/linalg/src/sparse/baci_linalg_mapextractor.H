@@ -46,7 +46,7 @@ namespace CORE::LINALG
     MultiMapExtractor();
 
     /// destructor
-    virtual ~MultiMapExtractor(){};
+    virtual ~MultiMapExtractor() = default;
 
     /// create an extractor from fullmap to the given set of maps
     MultiMapExtractor(

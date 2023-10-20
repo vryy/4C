@@ -36,9 +36,6 @@ namespace BEAMINTERACTION
       //! constructor
       BeamPotential();
 
-      //! destructor
-      ~BeamPotential() override{};
-
       //! setup class variables
       void Setup() override;
 

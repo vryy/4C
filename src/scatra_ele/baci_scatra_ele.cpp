@@ -662,11 +662,6 @@ int DRT::ELEMENTS::Transport::NumVolume() const
 }
 
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             gjb 05/08 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Transport::~Transport() { return; }
-
 
 /*----------------------------------------------------------------------*
  |  print this element (public)                               gjb 05/08 |
@@ -940,10 +935,6 @@ void DRT::ELEMENTS::TransportBoundary::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                             gjb 01/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::TransportBoundary::~TransportBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*

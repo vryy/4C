@@ -314,8 +314,6 @@ namespace POROELAST
       }
     }
 
-    ~NoPenetrationConditionHandle() = default;
-
     //! build map containing dofs with no penetration condition (fluid)
     void BuidNoPenetrationMap(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
 

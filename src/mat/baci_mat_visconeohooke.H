@@ -34,9 +34,6 @@ namespace MAT
       /// standard constructor
       ViscoNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~ViscoNeoHooke() override { ; }
-
       /// @name material parameters
       //@{
       const double youngs_slow_;

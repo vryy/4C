@@ -91,10 +91,6 @@ FPSI::MonolithicBase::MonolithicBase(const Epetra_Comm& comm,
   }
   FluidField()->Discretization()->FillComplete(true, false, false);
 }  // MonolithicBase
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-FPSI::MonolithicBase::~MonolithicBase() {}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FPSI::MonolithicBase::ReadRestart(int step)
@@ -714,7 +710,6 @@ void FPSI::Monolithic::CreateLinearSolver()
   {
     std::string inv = "Inverse4";
     const Epetra_Map& oldmap = *(AleField()->DofRowMap());
-    ;
     const Epetra_Map& newmap =
         systemmatrix_->Matrix(ale_i_block_, ale_i_block_).EpetraMatrix()->RowMap();
     CORE::LINEAR_SOLVER::Parameters::FixNullSpace(

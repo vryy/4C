@@ -23,8 +23,6 @@ namespace DRT
     class FluidEleParameterPoro : public FluidEleParameter
     {
      public:
-      ~FluidEleParameterPoro() override {}
-
       /// Singleton access method
       static FluidEleParameterPoro* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

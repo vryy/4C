@@ -28,9 +28,6 @@ namespace MAT
       /// standard constructor
       Newman(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Newman() override { return; }
-
       /// @name material parameters
       //@{
       /// valence (= charge number)

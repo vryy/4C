@@ -58,12 +58,6 @@ namespace CORE::LINALG
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector);
 
 
-    /*!
-    \brief Destructor
-
-    */
-    ~LinalgPrecondOperator() override;
-
 
     //! @name Atribute set methods required to support the Epetra_Operator interface
 

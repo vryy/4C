@@ -58,9 +58,6 @@ namespace BEAMINTERACTION
       //! constructor
       Crosslinking();
 
-      //! destructor
-      ~Crosslinking() override{};
-
       //! setup class variables
       void Setup() override;
 

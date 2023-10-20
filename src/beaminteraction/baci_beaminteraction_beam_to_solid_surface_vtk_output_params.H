@@ -30,7 +30,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Destructor.
      */
-    virtual ~BeamToSolidSurfaceVtkOutputParams(){};
+    virtual ~BeamToSolidSurfaceVtkOutputParams() = default;
 
     /**
      * \brief Initialize with the stuff coming from input file.

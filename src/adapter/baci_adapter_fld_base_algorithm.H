@@ -43,7 +43,7 @@ namespace ADAPTER
         const Teuchos::ParameterList& prbdyn, const Teuchos::RCP<DRT::Discretization> discret);
 
     /// virtual destructor to support polymorph destruction
-    virtual ~FluidBaseAlgorithm();
+    virtual ~FluidBaseAlgorithm() = default;
 
     /// access to fluid field solver
     const Teuchos::RCP<Fluid>& FluidField() { return fluid_; }

@@ -94,7 +94,6 @@ void MAT::Maxwell_0d_acinus_NeoHookean::Unpack(const std::vector<char>& data)
   // Extract type
   int type = 0;
   ExtractfromPack(position, data, type);
-  ;
   if (type != UniqueParObjectId())
     dserror(
         "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",

@@ -27,8 +27,7 @@ namespace DRT
       PoroFluidMultiPhaseFactory() { return; }
 
       //! dtor
-      virtual ~PoroFluidMultiPhaseFactory() { return; }
-
+      virtual ~PoroFluidMultiPhaseFactory() = default;
       //! ProvideImpl
       static PoroFluidMultiPhaseEleInterface* ProvideImpl(DRT::Element::DiscretizationType distype,
           const int numdofpernode, const std::string& disname);

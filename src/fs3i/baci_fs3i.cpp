@@ -319,7 +319,6 @@ void FS3I::FS3I_Base::CheckFS3IInputs()
         }
 
         PermCoeffs[i].insert(std::pair<int, std::vector<double>*>(myID, params));
-        ;
       }
     }
   }

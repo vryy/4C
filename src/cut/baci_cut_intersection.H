@@ -187,7 +187,7 @@ namespace CORE::GEO
       }
 
       /// destructor
-      virtual ~IntersectionBase(){};
+      virtual ~IntersectionBase() = default;
 
       /** \brief Calculate the actual intersection of an edge and a side ( or 2-nd edge )
        *
@@ -413,9 +413,6 @@ namespace CORE::GEO
       {
         /* intentionally left blank */
       }
-
-      /// destructor
-      ~Intersection() override{};
 
       // No public access to these methods! Use the base class accessors, instead.
      protected:

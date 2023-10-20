@@ -62,7 +62,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~Vreman();
+    virtual ~Vreman() = default;
 
 
 

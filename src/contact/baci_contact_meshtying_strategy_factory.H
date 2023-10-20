@@ -44,7 +44,7 @@ namespace MORTAR
       FactoryMT(){};
 
       //! destructor
-      virtual ~FactoryMT(){};
+      virtual ~FactoryMT() = default;
 
       //! derived
       void Setup() override;

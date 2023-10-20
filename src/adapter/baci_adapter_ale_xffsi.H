@@ -41,9 +41,6 @@ namespace ADAPTER
     //! constructor
     explicit AleXFFsiWrapper(Teuchos::RCP<Ale> ale);
 
-    //! Destructor
-    ~AleXFFsiWrapper() override {}
-
     //@}
 
     //! Return MapExtractor for Dirichlet boundary conditions

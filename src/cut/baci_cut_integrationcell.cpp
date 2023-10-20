@@ -71,7 +71,6 @@ void CORE::GEO::CUT::IntegrationCell::DumpGmsh(std::ofstream& file, int* value)
 double CORE::GEO::CUT::IntegrationCell::Volume() const
 {
   return CORE::GEO::ElementVolume(Shape(), xyz_);
-  ;
 }
 
 /*----------------------------------------------------------------------------*

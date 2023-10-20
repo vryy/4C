@@ -29,8 +29,6 @@ namespace STR
       //! constructor
       Generic() = default;
 
-      //! destructor
-      ~Generic() override = default;
 
       //! Setup (has to be implemented by the derived classes)
       void Setup() override;
@@ -143,8 +141,6 @@ namespace NOX
           {
           }
 
-          //! destructor
-          ~Generic() override = default;
 
           //! derived
           void runPreIterate(const NOX::Solver::Generic& solver) override;

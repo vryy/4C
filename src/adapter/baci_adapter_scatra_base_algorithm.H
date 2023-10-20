@@ -51,7 +51,7 @@ namespace ADAPTER
     ScaTraBaseAlgorithm();
 
     /// virtual destructor to support polymorph destruction
-    virtual ~ScaTraBaseAlgorithm(){};
+    virtual ~ScaTraBaseAlgorithm() = default;
 
     /// initialize this class
     virtual void Init(const Teuchos::ParameterList& prbdyn,  ///< parameter list for global problem

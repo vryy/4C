@@ -40,9 +40,6 @@ namespace PARTICLEALGORITHM
      */
     explicit GravityHandler(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~GravityHandler() = default;
-
     /*!
      * \brief init gravity handler
      *

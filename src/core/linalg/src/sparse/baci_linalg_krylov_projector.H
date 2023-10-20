@@ -53,9 +53,6 @@ namespace CORE::LINALG
         const Epetra_BlockMap* map      //! map for kernel and weight vectors
     );
 
-    //! destructor
-    ~KrylovProjector();
-
     //! give out Teuchos::RCP to c_ for change
     Teuchos::RCP<Epetra_MultiVector> GetNonConstKernel();
 

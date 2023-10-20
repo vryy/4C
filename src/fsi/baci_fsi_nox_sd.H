@@ -107,8 +107,6 @@ namespace NOX
       //! Constructor
       SDRelaxation(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
-      //! Destructor
-      ~SDRelaxation() override;
 
       // derived
       bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);

@@ -60,9 +60,6 @@ namespace MAT
       //! standard constructor
       ThermoPlasticLinElast(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~ThermoPlasticLinElast() override { ; }
-
       //! @name material parameters
       //@{
 

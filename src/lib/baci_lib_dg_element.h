@@ -17,8 +17,7 @@ namespace DRT
     /*!
      \brief Destructor
     */
-    virtual ~DG_Element() {}
-
+    virtual ~DG_Element() = default;
     virtual int NumDofPerNodeAuxiliary() const = 0;
 
     virtual int NumDofPerElementAuxiliary() const = 0;

@@ -61,9 +61,6 @@ namespace THR
         Teuchos::RCP<IO::DiscretizationWriter> output   //!< the output
     );
 
-    //! Destructor
-    ~TimIntImpl() override { ; }
-
     //! Resize #TimIntMStep<T> multi-step quantities
     void ResizeMStep() override = 0;
 

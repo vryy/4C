@@ -37,8 +37,6 @@ namespace STR
       //! constructor
       GenAlpha();
 
-      //! destructor
-      ~GenAlpha() override = default;
 
       //! Setup the class variables
       void Setup() override;

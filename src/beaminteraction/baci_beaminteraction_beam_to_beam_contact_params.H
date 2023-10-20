@@ -25,7 +25,7 @@ namespace BEAMINTERACTION
     BeamToBeamContactParams();
 
     //! destructor
-    virtual ~BeamToBeamContactParams(){};
+    virtual ~BeamToBeamContactParams() = default;
 
     //! initialize with the stuff coming from input file
     void Init();

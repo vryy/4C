@@ -42,9 +42,6 @@ namespace MAT
       //! standard constructor
       explicit ThermoStVenantKirchhoff(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      //! destructor
-      ~ThermoStVenantKirchhoff() override { ; }
-
       //! @name material parameters
       //@{
 

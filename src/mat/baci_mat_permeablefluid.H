@@ -29,9 +29,6 @@ namespace MAT
       /// standard constructor
       PermeableFluid(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~PermeableFluid() override { ; }
-
       /// @name material parameters
       //@{
 

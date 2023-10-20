@@ -66,7 +66,7 @@ namespace CONTACT
       Potential(const CONTACT::AUG::Strategy& strategy, const CONTACT::AUG::DataContainer& data);
 
       /// destructor
-      virtual ~Potential(){};
+      virtual ~Potential() = default;
 
       /// setup the potential class
       void Setup();

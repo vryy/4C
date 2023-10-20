@@ -28,9 +28,6 @@ namespace MAT
       /// standard constructor
       LubricationMat(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~LubricationMat() override { ; }
-
       /// density
       const double density_;
 

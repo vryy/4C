@@ -43,8 +43,7 @@ class PostFilterBase
   PostFilterBase(PostField* field, const std::string& name);
 
   //! destructor
-  virtual ~PostFilterBase() {}
-
+  virtual ~PostFilterBase() = default;
   //! Writes the whole thing by invoking writer->WriteFiles()
   void WriteFiles();
 

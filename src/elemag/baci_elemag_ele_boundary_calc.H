@@ -41,8 +41,7 @@ namespace DRT
       /// Empty constructor
       ElemagBoundaryImplInterface() {}
       /// Empty destructor
-      virtual ~ElemagBoundaryImplInterface() {}
-
+      virtual ~ElemagBoundaryImplInterface() = default;
       /// Evaluate a Neumann boundary condition
       /*!
         This class does not provide a definition for this function, it

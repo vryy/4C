@@ -125,11 +125,6 @@ namespace DRT
       */
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_hex8fbar() override;
 
       //@}
 

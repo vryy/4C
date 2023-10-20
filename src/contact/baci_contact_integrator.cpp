@@ -4353,7 +4353,6 @@ void CONTACT::CoIntegrator::IntegrateDerivEle2D(MORTAR::MortarElement& sele,
           int ncol = 0;
 
           ncol = meles[nummaster]->NumNode();
-          ;
 
           CORE::LINALG::SerialDenseVector mval(ncol);
           CORE::LINALG::SerialDenseMatrix mderiv(ncol, 1);
@@ -12006,7 +12005,6 @@ void inline CONTACT::CoIntegrator::GP_2D_SlipIncr_Lin(int& iter, MORTAR::MortarE
 
   FriNode* snode = dynamic_cast<FriNode*>(snodes[iter]);
   if (snode->IsOnBoundorCE()) return;
-  ;
 
   // get the corresponding map as a reference
   std::map<int, double>& djumpmap = snode->FriData().GetDerivVarJump()[0];

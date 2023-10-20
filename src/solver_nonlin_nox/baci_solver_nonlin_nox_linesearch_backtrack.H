@@ -52,9 +52,6 @@ namespace NOX
             const Teuchos::RCP<NOX::NLN::INNER::StatusTest::Generic> innerTests,
             Teuchos::ParameterList& params);
 
-        //! Destructor
-        ~Backtrack() override{};
-
         /// hard reset
         bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params);
 

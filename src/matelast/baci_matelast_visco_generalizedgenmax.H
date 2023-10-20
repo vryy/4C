@@ -31,9 +31,6 @@ namespace MAT
         /// standard constructor
         GeneralizedGenMax(const Teuchos::RCP<MAT::PAR::Material>& matdata);
 
-        /// destructor
-        ~GeneralizedGenMax() override { ; }
-
         /// @name material parameters
         //@{
 
@@ -96,9 +93,6 @@ namespace MAT
        public:
         /// standard constructor
         ViscoPart(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-        /// destructor
-        ~ViscoPart() override { ; }
 
         /// @name material parameters
         //@{

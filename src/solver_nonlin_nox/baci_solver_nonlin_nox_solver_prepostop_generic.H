@@ -37,9 +37,6 @@ namespace NOX
           //! constructor
           Generic();
 
-          //! destructor
-          ~Generic() override{};
-
           void runPreIterate(const NOX::Solver::Generic& solver) override;
 
           void runPreSolve(const NOX::Solver::Generic& nlnSolver) override;

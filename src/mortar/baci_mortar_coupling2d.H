@@ -54,8 +54,7 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling2d() {}
-
+    virtual ~Coupling2d() = default;
     //! @name Access methods
 
     /*!
@@ -232,8 +231,7 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling2dManager() {}
-
+    virtual ~Coupling2dManager() = default;
     /*!
      \brief Get coupling slave element
 

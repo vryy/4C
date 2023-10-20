@@ -50,9 +50,6 @@ class Myocard_TenTusscher : public Myocard_General
   /// construct empty material object
   explicit Myocard_TenTusscher(const double eps_deriv_myocard, const std::string tissue);
 
-  /// destructor
-  ~Myocard_TenTusscher() override { ; }
-
   /// compute reaction coefficient
   double ReaCoeff(const double phi, const double dt) override;
 

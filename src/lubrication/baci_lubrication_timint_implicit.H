@@ -88,7 +88,7 @@ namespace LUBRICATION
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //! Destructor
-    virtual ~TimIntImpl();
+    virtual ~TimIntImpl() = default;
 
     //! initialize time integration
     virtual void Init();

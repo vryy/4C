@@ -21,9 +21,6 @@ namespace POROMULTIPHASE
     PoroMultiPhasePartitioned(const Epetra_Comm& comm,
         const Teuchos::ParameterList& globaltimeparams);  // Problem builder
 
-    /// virtual destructor
-    ~PoroMultiPhasePartitioned() override{};
-
 
   };  // PoroMultiPhasePartitioned
 

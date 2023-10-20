@@ -74,11 +74,6 @@ namespace DRT
         */
         Ale3Nurbs(const Ale3Nurbs& old);
 
-        /*!
-        \brief Destructor
-
-        */
-        ~Ale3Nurbs() override;
 
 
         /*!

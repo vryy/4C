@@ -37,9 +37,6 @@ namespace STR
       //! constructor
       BeamInteractionOld();
 
-      //! destructor
-      ~BeamInteractionOld() override{};
-
       void Setup() override;
 
       //! derived

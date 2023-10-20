@@ -48,8 +48,6 @@ namespace ADAPTER
         const std::string condname,  ///< name of condition that defines fluid-ale coupling
         const Teuchos::ParameterList& solverparams);
 
-    /// virtual destructor to support polymorph destruction
-    ~ScaTraFluidAleCouplingAlgorithm() override;
 
     /// setup
     void Setup() override;

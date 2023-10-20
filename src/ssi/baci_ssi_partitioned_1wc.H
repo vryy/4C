@@ -20,8 +20,6 @@ namespace SSI
     //! constructor
     SSIPart1WC(const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart1WC() override = default;
 
     /*!
     \brief Setup this object
@@ -64,8 +62,6 @@ namespace SSI
     SSIPart1WCSolidToScatra(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart1WCSolidToScatra() override = default;
 
     /*!
     \brief Setup this object
@@ -98,8 +94,6 @@ namespace SSI
     SSIPart1WCScatraToSolid(
         const Epetra_Comm& comm, const Teuchos::ParameterList& globaltimeparams);
 
-    //! virtual destructor
-    ~SSIPart1WCScatraToSolid() override = default;
 
     /*!
     \brief Setup this object

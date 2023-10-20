@@ -31,8 +31,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~TimIntCardiacMonodomainOST() override;
 
     //! setup time integration scheme
     void Setup() override;
@@ -68,8 +66,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~TimIntCardiacMonodomainBDF2() override;
 
     //! setup time integration scheme
     void Setup() override;
@@ -102,8 +98,6 @@ namespace SCATRA
         Teuchos::RCP<Teuchos::ParameterList> extraparams,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
-    //! Destructor
-    ~TimIntCardiacMonodomainGenAlpha() override;
 
     //! Setup time integration scheme
     void Setup() override;
@@ -144,7 +138,7 @@ namespace SCATRA
       Teuchos::RCP<IO::DiscretizationWriter>  output);
 
     //! Destructor
-    virtual ~TimIntCardiacMonodomainStationary();
+    virtual ~TimIntCardiacMonodomainStationary() = default;
 
     //! initialize time integration scheme
     virtual void Init();

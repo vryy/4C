@@ -47,8 +47,6 @@ namespace STR
         //! constructor
         PseudoTransient();
 
-        //! destructor
-        ~PseudoTransient() override = default;
 
         //! derived from the base class
         void Setup() override;

@@ -28,9 +28,6 @@ namespace MAT
       /// standard constructor
       explicit FluidPoroPhaseDof(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~FluidPoroPhaseDof() override { ; }
-
       //! build the phase dof
       static FluidPoroPhaseDof* CreatePhaseDof(int phasedofId);
 
@@ -73,9 +70,6 @@ namespace MAT
       /// standard constructor
       explicit FluidPoroPhaseDofPressure(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~FluidPoroPhaseDofPressure() override { ; }
-
       /// initialize
       void Initialize() override;
 
@@ -117,9 +111,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit FluidPoroPhaseDofDiffPressure(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~FluidPoroPhaseDofDiffPressure() override { ; }
 
       /// initialize
       void Initialize() override;
@@ -164,9 +155,6 @@ namespace MAT
      public:
       /// standard constructor
       explicit FluidPoroPhaseDofSaturation(Teuchos::RCP<MAT::PAR::Material> matdata);
-
-      /// destructor
-      ~FluidPoroPhaseDofSaturation() override { ; }
 
       /// initialize
       void Initialize() override;

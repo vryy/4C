@@ -55,7 +55,7 @@ namespace IMMERSED
     \brief destructor
 
     */
-    virtual ~ImmersedBase(){};
+    virtual ~ImmersedBase() = default;
 
 
     /*! \brief Initialize this object

@@ -42,9 +42,6 @@ namespace MAT
       /// standard constructor
       Membrane_ActiveStrain(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~Membrane_ActiveStrain() override { ; }
-
       /// @name material parameters
       //@{
 

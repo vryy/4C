@@ -73,9 +73,6 @@ class EnsightWriter : public PostWriterBase
   //! constructor, does nothing (SetField must be called before usage)
   EnsightWriter(PostField* field, const std::string& name);
 
-  //! destructor
-  ~EnsightWriter() override {}
-
   //! write the whole thing
   void WriteFiles(PostFilterBase& filter) override;
 

@@ -1292,7 +1292,6 @@ void XFEM::XFluid_Contact_Comm::GetCutSideIntegrationPoints(
         std::cout << "==| Ignore facet |==" << std::endl;
         std::cout << "facet->GetSplitCells().size(): " << facet->GetSplitCells().size()
                   << std::endl;
-        ;
         facet->Print(std::cout);
         if (!parallel_) dserror("Ignore Facet");
       }

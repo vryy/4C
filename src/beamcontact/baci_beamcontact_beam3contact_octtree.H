@@ -45,7 +45,7 @@ class Beam3ContactOctTree
       Teuchos::ParameterList& params, DRT::Discretization& discret, DRT::Discretization& searchdis);
 
   //!\brief Destructor
-  virtual ~Beam3ContactOctTree(){};
+  virtual ~Beam3ContactOctTree() = default;
 
   /*!\brief call octtree search routine
    * \param currentposition (in) node positions in column map format (fully overlapping)

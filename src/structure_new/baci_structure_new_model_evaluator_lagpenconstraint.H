@@ -38,8 +38,6 @@ namespace STR
       //! constructor
       LagPenConstraint();
 
-      //! destructor
-      ~LagPenConstraint() override = default;
 
       void Setup() override;
 

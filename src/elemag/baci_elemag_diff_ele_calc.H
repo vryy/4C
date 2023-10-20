@@ -79,9 +79,6 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra,
           const CORE::DRT::UTILS::GaussIntegration& intpoints, bool offdiag = false);
 
-      /// Deconstructor
-      ~ElemagDiffEleCalc() override {}
-
       /// Singleton access method.
       static ElemagDiffEleCalc<distype>* Instance(
           CORE::UTILS::SingletonAction action = CORE::UTILS::SingletonAction::create);

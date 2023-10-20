@@ -41,9 +41,6 @@ namespace DRT
        *  \return RCP to the created class object. */
       static Teuchos::RCP<So_Hex8_Determinant_Analysis> create();
 
-      /// destructor
-      ~So_Hex8_Determinant_Analysis() = default;
-
       /** \brief Test the validity of the current element
        *
        *  \param x_curr  Current nodal coordinates

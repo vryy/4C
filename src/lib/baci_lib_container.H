@@ -75,11 +75,6 @@ namespace DRT
     */
     Container(const DRT::Container& old);
 
-    /*!
-    \brief Destructor
-
-    */
-    ~Container() override;
 
     /*!
     \brief Return unique ParObject id

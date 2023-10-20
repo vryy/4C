@@ -41,9 +41,3 @@ void FLD::TimIntLomaGenAlpha::Init()
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                     bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntLomaGenAlpha::~TimIntLomaGenAlpha() { return; }

@@ -173,8 +173,6 @@ namespace DRT
       /// constructor
       DbcNurbs() = default;
 
-      /// destructor
-      ~DbcNurbs() override = default;
 
      protected:
       /** \brief Evaluate the NURBS DBCs

@@ -42,9 +42,6 @@ namespace MAT
       /// parameter sets of the hyperelastic summands.
       PlasticElastHyperVCU(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
-      ~PlasticElastHyperVCU() override { ; }
-
       /// @name material parameters
       //@{
 

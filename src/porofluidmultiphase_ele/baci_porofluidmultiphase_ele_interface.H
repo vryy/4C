@@ -39,7 +39,7 @@ namespace DRT
       PoroFluidMultiPhaseEleInterface() { return; };
 
       /// Empty destructor
-      virtual ~PoroFluidMultiPhaseEleInterface() { return; };
+      virtual ~PoroFluidMultiPhaseEleInterface() = default;
 
       /// Evaluate the element
       /*!

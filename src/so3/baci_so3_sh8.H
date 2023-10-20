@@ -143,11 +143,6 @@ namespace DRT
       bool ReadElement(const std::string& eletype, const std::string& distype,
           DRT::INPUT::LineDefinition* linedef) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~So_sh8() override;
 
 
       //@}

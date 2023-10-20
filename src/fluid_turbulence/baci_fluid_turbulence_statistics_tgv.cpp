@@ -263,14 +263,6 @@ FLD::TurbulenceStatisticsTgv::TurbulenceStatisticsTgv(Teuchos::RCP<DRT::Discreti
 }  // TurbulenceStatisticsCha::TurbulenceStatisticsTgv
 
 
-/*----------------------------------------------------------------------*
-                           Destructor
- -----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsTgv::~TurbulenceStatisticsTgv()
-{
-  return;
-}  // TurbulenceStatisticsCha::~TurbulenceStatisticsTgv()
-
 
 /*----------------------------------------------------------------------*
 ----------------------------------------------------------------------*/

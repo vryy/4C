@@ -31,7 +31,7 @@ namespace STR
       Factory();
 
       //! destructor
-      virtual ~Factory(){};
+      virtual ~Factory() = default;
 
       //! build the desired predictor
       Teuchos::RCP<STR::PREDICT::Generic> BuildPredictor(

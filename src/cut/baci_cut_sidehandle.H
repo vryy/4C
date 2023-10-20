@@ -29,8 +29,7 @@ namespace CORE::GEO
     class SideHandle
     {
      public:
-      virtual ~SideHandle() {}
-
+      virtual ~SideHandle() = default;
       /*!
       \brief Get the shape of this sides
        */

@@ -37,7 +37,7 @@ namespace NOX
             Required(){};
 
             //! destructor
-            virtual ~Required(){};
+            virtual ~Required() = default;
 
             //! Get the number of inner-loop nonlinear iterations (e.g. line search iterations)
             virtual int GetNumIterations() const = 0;

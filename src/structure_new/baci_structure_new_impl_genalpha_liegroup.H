@@ -87,8 +87,6 @@ namespace STR
       //! constructor
       GenAlphaLieGroup();
 
-      //! destructor
-      ~GenAlphaLieGroup() override = default;
 
       //! Setup the class variables [derived]
       void Setup() override;

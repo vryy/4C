@@ -157,9 +157,6 @@ namespace NOX
            *  \author hiermeier \date 04/17 */
           Filter(const FilterParams& fparams, const NOX::Utils& utils);
 
-          /// destructor
-          ~Filter() override{};
-
           /** \brief %Test the inner stopping criterion
            *
            *  The test can (and should, if possible) be skipped if
@@ -316,10 +313,6 @@ namespace NOX
           class BackupState
           {
            public:
-            BackupState() = default;
-
-            ~BackupState() = default;
-
             /** \brief Create a backup of the lastly accepted state at the very
              *  beginning of each new Newton step
              *
@@ -371,7 +364,7 @@ namespace NOX
             SOCBase() = delete;
 
             /// use default destructor
-            virtual ~SOCBase(){};
+            virtual ~SOCBase() = default;
 
             /// The base class does not perform a SOC step
             virtual StatusType execute(const NOX::NLN::LineSearch::Generic& linesearch,
@@ -463,9 +456,6 @@ namespace NOX
                   max_theta_red_(fparams.max_theta_blocking_red_),
                   init_max_theta_scaling_(fparams.init_max_theta_blocking_scaling_),
                   filter_(filter){};
-
-            /// destructor
-            ~Blocking() = default;
 
             /* \brief check if the current filter set blocks good iterates
              *

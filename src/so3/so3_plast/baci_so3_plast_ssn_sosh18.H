@@ -98,8 +98,6 @@ namespace DRT
       //! where the type of the derived class is unknown and a copy-ctor is needed
       DRT::Element* Clone() const override;
 
-      //! Destructor
-      ~So_sh18Plast() override;
 
       //! Return unique ParObject id
       //!

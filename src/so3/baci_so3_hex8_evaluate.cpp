@@ -532,7 +532,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 
@@ -1366,7 +1365,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList& params,
         {
           Teuchos::RCP<const Epetra_Vector> dispmat =
               discretization.GetState("material_displacement");
-          ;
           DRT::UTILS::ExtractMyValues(*dispmat, mydispmat, lm);
         }
 

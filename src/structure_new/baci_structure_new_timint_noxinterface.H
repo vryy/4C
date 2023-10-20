@@ -55,8 +55,6 @@ namespace STR
       //! constructor
       NoxInterface();
 
-      //! destructor
-      ~NoxInterface() override = default;
 
       //! Init function
       virtual void Init(const Teuchos::RCP<STR::TIMINT::BaseDataGlobalState>& gstate_ptr,

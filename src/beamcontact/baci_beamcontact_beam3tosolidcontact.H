@@ -53,8 +53,7 @@ namespace CONTACT
     /*!
     \brief Destructor
     */
-    virtual ~Beam3tosolidcontactinterface() {}
-
+    virtual ~Beam3tosolidcontactinterface() = default;
     //@}
 
     //! @name Access methods

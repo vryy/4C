@@ -61,8 +61,7 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling3d() {}
-
+    virtual ~Coupling3d() = default;
     //! @name Access methods
 
     /*!
@@ -490,11 +489,6 @@ namespace MORTAR
         Teuchos::ParameterList& params, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         MORTAR::IntElement& sintele, MORTAR::IntElement& mintele);
 
-    /*!
-     \brief Destructor
-
-     */
-    ~Coupling3dQuad() override {}
 
     //! @name Access methods
 
@@ -546,8 +540,7 @@ namespace MORTAR
      \brief Destructor
 
      */
-    virtual ~Coupling3dManager() {}
-
+    virtual ~Coupling3dManager() = default;
     /*!
      \brief Get coupling slave element
 
@@ -664,11 +657,6 @@ namespace MORTAR
         Teuchos::ParameterList& params, MORTAR::MortarElement* sele,
         std::vector<MORTAR::MortarElement*> mele);
 
-    /*!
-     \brief Destructor
-
-     */
-    ~Coupling3dQuadManager() override {}
 
     INPAR::MORTAR::LagMultQuad LagMultQuad() override
     {

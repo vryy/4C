@@ -35,7 +35,6 @@ MAT::ELASTIC::GeneralizedGenMax::GeneralizedGenMax(MAT::ELASTIC::PAR::Generalize
     Teuchos::RCP<MAT::ELASTIC::Summand> ViscoBranch = MAT::ELASTIC::Summand::Factory(matid);
 
     double nummat = -1.0;
-    ;
     const std::vector<int>* branchmatids = nullptr;
 
     ViscoBranch->ReadMaterialParameters(nummat, branchmatids);

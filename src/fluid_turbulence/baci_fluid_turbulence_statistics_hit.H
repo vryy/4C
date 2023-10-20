@@ -34,7 +34,7 @@ namespace FLD
         const bool forced);
 
     //! destructor
-    virtual ~TurbulenceStatisticsHit();
+    virtual ~TurbulenceStatisticsHit() = default;
 
     //! store scatra discretization if passive scalar is included
     virtual void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis)
@@ -164,8 +164,6 @@ namespace FLD
         Teuchos::ParameterList& params, const std::string& statistics_outfilename,
         const bool forced);
 
-    //! destructor
-    ~TurbulenceStatisticsHitHDG() override;
 
     //! store scatra discretization if passive scalar is included
     void StoreScatraDiscret(Teuchos::RCP<DRT::Discretization> scatradis) override

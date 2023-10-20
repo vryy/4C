@@ -48,9 +48,6 @@ namespace PARTICLEALGORITHM
      */
     explicit DirichletBoundaryConditionHandler(const Teuchos::ParameterList& params);
 
-    //! destructor
-    ~DirichletBoundaryConditionHandler() = default;
-
     /*!
      * \brief init dirichlet boundary condition handler
      *

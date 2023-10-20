@@ -67,9 +67,6 @@ namespace BEAMINTERACTION
     */
     BeamLinkRigidJointed(const BeamLinkRigidJointed& old);
 
-    //! Destructor
-    ~BeamLinkRigidJointed() override {}
-
     //! Initialization
     void Init(const int id, const std::vector<std::pair<int, int>>& eleids,
         const std::vector<CORE::LINALG::Matrix<3, 1>>& initpos,

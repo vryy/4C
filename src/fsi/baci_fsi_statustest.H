@@ -241,8 +241,6 @@ namespace NOX
       /*! This constructor defaults to the \c Absolute ToleranceType and \c TWO NormType. */
       GenericNormUpdate(std::string name, double tol, ScaleType stype = Scaled);
 
-      //! Destructor.
-      ~GenericNormUpdate() override;
 
       NOX::StatusTest::StatusType checkStatus(
           const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;
@@ -330,8 +328,6 @@ namespace NOX
        */
       MinIters(int minIterations, const NOX::Utils* u = nullptr);
 
-      //! Destructor.
-      ~MinIters() override;
 
       NOX::StatusTest::StatusType checkStatus(
           const NOX::Solver::Generic& problem, NOX::StatusTest::CheckType checkType) override;

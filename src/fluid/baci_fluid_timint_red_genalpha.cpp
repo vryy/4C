@@ -55,9 +55,3 @@ void FLD::TimIntRedModelsGenAlpha::ReadRestart(int step)
 
   return;
 }
-
-
-/*----------------------------------------------------------------------*
-| Destructor dtor (public)                                    bk 11/13 |
-*----------------------------------------------------------------------*/
-FLD::TimIntRedModelsGenAlpha::~TimIntRedModelsGenAlpha() { return; }

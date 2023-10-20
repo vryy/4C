@@ -461,15 +461,6 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
   return;
 }  // TurbulenceStatisticsCcy::TurbulenceStatisticsCcy
 
-/*----------------------------------------------------------------------*
-
-                           Destructor
-
- -----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsCcy::~TurbulenceStatisticsCcy()
-{
-  return;
-}  // TurbulenceStatisticsCcy::~TurbulenceStatisticsCcy()
 
 /*----------------------------------------------------------------------*
 

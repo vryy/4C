@@ -88,11 +88,6 @@ namespace DRT
       */
       DRT::Element* Clone() const override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~FluidHDGWeakComp() override;
 
       /*!
       \brief Return unique ParObject id

@@ -39,9 +39,6 @@ namespace DRT
       using my::nsd_ele_;
 
      public:
-      ~ScaTraEleCalcCardiacMonodomain() override {}
-
-
       /// Singleton access method
       static ScaTraEleCalcCardiacMonodomain<distype, probdim>* Instance(
           const int numdofpernode, const int numscal, const std::string& disname);

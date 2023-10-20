@@ -126,10 +126,6 @@ void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  dtor (public)                                            mwgee 01/07|
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::FluidBoundary::~FluidBoundary() { return; }
 
 
 /*----------------------------------------------------------------------*

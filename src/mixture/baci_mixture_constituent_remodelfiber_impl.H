@@ -30,9 +30,6 @@ namespace MIXTURE
     {
      public:
       explicit MixtureConstituent_RemodelFiberImpl(const Teuchos::RCP<MAT::PAR::Material>& matdata);
-
-      ~MixtureConstituent_RemodelFiberImpl() override = default;
-
       /// create material instance of matching type with my parameters
       std::unique_ptr<MIXTURE::MixtureConstituent> CreateConstituent(int id) override;
 

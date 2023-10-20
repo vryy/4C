@@ -268,8 +268,7 @@ namespace CORE::DRT::UTILS
   class PolynomialSpaceBase
   {
    public:
-    virtual ~PolynomialSpaceBase() {}
-
+    virtual ~PolynomialSpaceBase() = default;
     /*
      \brief Return the number of polynomials (over all dimensions)
      */
@@ -326,7 +325,6 @@ namespace CORE::DRT::UTILS
       for (unsigned int i = 0; i < renumbering_.size(); ++i) renumbering_[i] = i;
     }
 
-    ~PolynomialSpaceTensor() override {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)
@@ -434,7 +432,6 @@ namespace CORE::DRT::UTILS
       for (unsigned int i = 0; i < renumbering_.size(); ++i) renumbering_[i] = i;
     }
 
-    ~PolynomialSpaceComplete() override {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)
@@ -502,8 +499,6 @@ namespace CORE::DRT::UTILS
         : PolynomialSpaceTensor<nsd_, LagrangePolynomial>(generateLagrangeBasis1D(degree))
     {
     }
-
-    ~LagrangeBasis() override {}
   };
 
 
@@ -556,7 +551,6 @@ namespace CORE::DRT::UTILS
       ComputeVandermondeMatrices(degree);
     }
 
-    ~LagrangeBasisTet() override {}
 
     /*
      \brief Return the number of polynomials (over all dimensions)

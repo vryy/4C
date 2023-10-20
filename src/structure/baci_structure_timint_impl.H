@@ -80,9 +80,6 @@ namespace STR
         Teuchos::RCP<IO::DiscretizationWriter> output      //!< the output
     );
 
-    //! Destructor
-    ~TimIntImpl() override { ; }
-
     /*! \brief Initialize this object
 
     Hand in all objects/parameters/etc. from outside.

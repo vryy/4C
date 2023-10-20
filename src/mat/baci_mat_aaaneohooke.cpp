@@ -404,7 +404,6 @@ bool MAT::AAAneohooke::VisData(
   else if (name == "youngs")
   {
     if ((int)data.size() != 1) dserror("size mismatch");
-    ;
     data[0] = params_->GetParameter(params_->young, eleGID);
   }
   else if (name == "BaciEleId")

@@ -64,7 +64,7 @@ namespace STR
     Dbc();
 
     //! Destructor
-    virtual ~Dbc(){};
+    virtual ~Dbc() = default;
 
     //! Initialize class variables
     virtual void Init(const Teuchos::RCP<DRT::Discretization>& discret,
@@ -274,9 +274,6 @@ namespace NOX
          public:
           //! constructor
           Dbc(const Teuchos::RCP<const ::STR::Dbc>& dbc_ptr);
-
-          //! destructor
-          ~Dbc() override{};
 
           //! \brief Apply the DBC and rotate the system of equations if necessary (derived)
           void runPreApplyJacobianInverse(NOX::Abstract::Vector& rhs,

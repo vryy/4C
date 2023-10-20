@@ -39,8 +39,6 @@ namespace XFLUIDLEVELSET
             dofset_couling_map  ///< key=meaning of a dofset in a dis, nodal dofset number
     );
 
-    /// virtual destructor to support polymorph destruction
-    ~Algorithm() override;
 
     /*! \brief Initialize this object
 

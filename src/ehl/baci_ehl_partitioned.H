@@ -24,9 +24,6 @@ namespace EHL
         const std::string struct_disname,
         const std::string lubrication_disname);  // Problem builder
 
-    /// virtual destructor
-    ~Partitioned() override{};
-
     /// setup of single fields (if needed)
     void SetupSystem() override{};
 

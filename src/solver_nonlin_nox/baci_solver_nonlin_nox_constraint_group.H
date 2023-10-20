@@ -51,9 +51,6 @@ namespace NOX
           valid shared linear system. */
         Group(const NOX::NLN::CONSTRAINT::Group& source, NOX::CopyType type = NOX::DeepCopy);
 
-        //! destructor
-        ~Group() override{};
-
         //! generate a clone of the given object concerning the given \c CopyType
         Teuchos::RCP<NOX::Abstract::Group> clone(CopyType type) const override;
 

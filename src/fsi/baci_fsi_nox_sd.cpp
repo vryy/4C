@@ -35,8 +35,6 @@ NOX::FSI::SDRelaxation::SDRelaxation(
 }
 
 
-NOX::FSI::SDRelaxation::~SDRelaxation() {}
-
 
 bool NOX::FSI::SDRelaxation::reset(
     const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params)

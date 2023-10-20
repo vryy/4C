@@ -38,7 +38,7 @@ namespace FLD
     \brief Destructor
 
     */
-    virtual ~TurbulenceStatisticsTgv();
+    virtual ~TurbulenceStatisticsTgv() = default;
 
     //! @name functions for (spatial) averaging
 

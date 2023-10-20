@@ -74,8 +74,6 @@ namespace NOX
       //! Constructor
       MinimalPolynomial(const Teuchos::RCP<NOX::Utils>& utils, Teuchos::ParameterList& params);
 
-      //! Destructor
-      ~MinimalPolynomial() override;
 
       // derived
       bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;

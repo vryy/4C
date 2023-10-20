@@ -27,8 +27,6 @@ namespace STR
       //! constructor
       CentrDiff();
 
-      //! destructor
-      ~CentrDiff() override = default;
 
       //! Setup class variables (derived)
       void Setup() override;

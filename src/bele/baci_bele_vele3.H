@@ -190,11 +190,6 @@ namespace DRT
       void Unpack(const std::vector<char>& data) override;
 
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Vele3() override;
 
       //@}
 
@@ -372,11 +367,6 @@ namespace DRT
       void Pack(DRT::PackBuffer& data) const override;
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Vele3Surface() override;
 
       //@}
 
@@ -518,11 +508,6 @@ namespace DRT
       void Pack(DRT::PackBuffer& data) const override;
       void Unpack(const std::vector<char>& data) override;
 
-      /*!
-      \brief Destructor
-
-      */
-      ~Vele3Line() override;
 
       //@}
 

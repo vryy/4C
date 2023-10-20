@@ -925,13 +925,6 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(Teuchos::RCP<DRT::Discreti
   return;
 }  // TurbulenceStatisticsSqc::TurbulenceStatisticsSqc
 
-/*----------------------------------------------------------------------*
- *
- *----------------------------------------------------------------------*/
-FLD::TurbulenceStatisticsSqc::~TurbulenceStatisticsSqc()
-{
-  return;
-}  // TurbulenceStatisticsSqc::~TurbulenceStatisticsSqc()
 
 
 //----------------------------------------------------------------------
