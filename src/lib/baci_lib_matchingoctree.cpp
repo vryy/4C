@@ -27,8 +27,7 @@ DRT::UTILS::MatchingOctree::MatchingOctree()
       issetup_(false),
       isinit_(false)
 {
-  return;
-}  // MatchingOctree::MatchingOctree
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -52,7 +51,7 @@ int DRT::UTILS::MatchingOctree::Setup()
 {
   CheckIsInit();
 
-  const int nummygids = masterentityids_->size();
+  const unsigned int nummygids = masterentityids_->size();
 
   // extract all masternodes on this proc from the list masternodeids
   std::vector<int> masternodesonthisproc;
@@ -69,8 +68,8 @@ int DRT::UTILS::MatchingOctree::Setup()
     //                 +-            -+
     //
     CORE::LINALG::SerialDenseMatrix initialboundingbox(3, 2);
-    double pointcoord[3];
-    CalcPointCoordinate(discret_, masterentityids_->at(0), pointcoord);
+    std::array<double, 3> pointcoord;
+    CalcPointCoordinate(discret_, masterentityids_->at(0), pointcoord.data());
     for (int dim = 0; dim < 3; dim++)
     {
       initialboundingbox(dim, 0) = pointcoord[dim] - tol_;
@@ -82,17 +81,19 @@ int DRT::UTILS::MatchingOctree::Setup()
       masterplanecoords_.push_back(pointcoord[dim]);
     }
 
-    for (unsigned locn = 0; locn < (unsigned)nummygids; locn++)
+    for (unsigned locn = 0; locn < nummygids; locn++)
     {
       // check if entity is on this proc
       if (not CheckHaveEntity(discret_, masterentityids_->at(locn)))
+      {
         dserror(
             "MatchingOctree can only be constructed with entities,\n"
             "which are either owned, or ghosted by calling proc.");
+      }
 
       masternodesonthisproc.push_back(masterentityids_->at(locn));
 
-      CalcPointCoordinate(discret_, masternodesonthisproc[locn], pointcoord);
+      CalcPointCoordinate(discret_, masternodesonthisproc[locn], pointcoord.data());
 
       for (int dim = 0; dim < 3; dim++)
       {
@@ -114,10 +115,6 @@ int DRT::UTILS::MatchingOctree::Setup()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::MatchingOctree::~MatchingOctree() { return; }  // MatchingOctree::~MatchingOctree
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 bool DRT::UTILS::MatchingOctree::SearchClosestEntityOnThisProc(const std::vector<double>& x,
     int& idofclosestpoint, double& distofclosestpoint, bool searchsecond)
 {
@@ -126,7 +123,7 @@ bool DRT::UTILS::MatchingOctree::SearchClosestEntityOnThisProc(const std::vector
 
   nodeisinbox = octreeroot_->IsPointInBoundingBox(x);
 
-  if (nodeisinbox == true)
+  if (nodeisinbox)
   {
     // the node is inside the bounding box. So maybe the closest one is
     // here on this proc -> search for it
@@ -138,7 +135,7 @@ bool DRT::UTILS::MatchingOctree::SearchClosestEntityOnThisProc(const std::vector
 
     Teuchos::RCP<OctreeElement> octreeele = octreeroot_;
 
-    while (octreeele->IsLeaf() == false)
+    while (!octreeele->IsLeaf())
     {
       octreeele = octreeele->ReturnChildContainingPoint(x);
 
@@ -187,32 +184,32 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
   sblockofnodes.clear();
   rblockofnodes.clear();
 
-  DRT::PackBuffer data;
+  DRT::PackBuffer pack_data;
 
-  for (int globn = 0; globn < (int)slavenodeids.size(); globn++)
+  for (int slavenodeid : slavenodeids)
   {
     // is this slavenode on this proc?
-    if (CheckHaveEntity(discret_, slavenodeids[globn]))
+    if (CheckHaveEntity(discret_, slavenodeid))
     {
       // Add node to list of nodes which will be sent to the next proc
-      PackEntity(data, discret_, slavenodeids[globn]);
+      PackEntity(pack_data, discret_, slavenodeid);
     }  // end if slavenode on proc
   }    // end loop globn
 
-  data.StartPacking();
+  pack_data.StartPacking();
 
-  for (int globn = 0; globn < (int)slavenodeids.size(); globn++)
+  for (int slavenodeid : slavenodeids)
   {
     // is this slavenode on this proc?
-    if (CheckHaveEntity(discret_, slavenodeids[globn]))
+    if (CheckHaveEntity(discret_, slavenodeid))
     {
       // Add node to list of nodes which will be sent to the next proc
-      PackEntity(data, discret_, slavenodeids[globn]);
+      PackEntity(pack_data, discret_, slavenodeid);
 
     }  // end if slavenode on proc
   }    // end loop globn
 
-  swap(sblockofnodes, data());
+  swap(sblockofnodes, pack_data());
 
   //--------------------------------------------------------------------
   // -> 2) round robin loop
@@ -231,13 +228,13 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
       int frompid = myrank;
       int topid = (myrank + 1) % numprocs;
 
-      int length = sblockofnodes.size();
+      int length = static_cast<int>(sblockofnodes.size());
 
-      exporter.ISend(frompid, topid, sblockofnodes.data(), sblockofnodes.size(), tag, request);
+      exporter.ISend(frompid, topid, sblockofnodes.data(), length, tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
-      if (rblockofnodes.empty() == false)
+      if (!rblockofnodes.empty())
       {
         dserror("rblockofnodes not empty");
       }
@@ -285,10 +282,10 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
       //----------------------------------------------------------------
       // there is nothing to do if there are no master nodes on this
       // proc
-      if (masterplanecoords_.empty() != true)
+      if (!masterplanecoords_.empty())
       {
-        double pointcoord[3];
-        CalcPointCoordinate(o.getRawPtr(), pointcoord);
+        std::array<double, 3> pointcoord;
+        CalcPointCoordinate(o.getRawPtr(), pointcoord.data());
 
         // get its coordinates
         std::vector<double> x(3);
@@ -360,9 +357,9 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
 
         // If x is not in the bounding box on this proc, its probably not
         // matching a point in the box. We do nothing.
-        if (nodeisinbox == true)
+        if (nodeisinbox)
         {
-          std::map<int, std::vector<int>>::iterator found = midtosid.find(idofclosestpoint);
+          auto found = midtosid.find(idofclosestpoint);
 
           if (found != midtosid.end())
           {
@@ -408,8 +405,6 @@ void DRT::UTILS::MatchingOctree::CreateGlobalEntityMatching(const std::vector<in
       exporter.Comm().Barrier();
     }
   }  // end loop np
-
-  return;
 }  // MatchingOctree::CreateGlobalNodeMatching
 
 /*----------------------------------------------------------------------*/
@@ -439,31 +434,31 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
   std::vector<char> sblockofnodes;
   std::vector<char> rblockofnodes;
 
-  DRT::PackBuffer data;
+  DRT::PackBuffer pack_data;
 
-  for (unsigned globn = 0; globn < slavenodeids.size(); ++globn)
+  for (int slavenodeid : slavenodeids)
   {
     // is this slavenode on this proc?
-    if (CheckHaveEntity(&slavedis, slavenodeids[globn]))
+    if (CheckHaveEntity(&slavedis, slavenodeid))
     {
       // Add node to list of nodes which will be sent to the next proc
-      PackEntity(data, &slavedis, slavenodeids[globn]);
+      PackEntity(pack_data, &slavedis, slavenodeid);
     }
   }
 
-  data.StartPacking();
+  pack_data.StartPacking();
 
-  for (unsigned globn = 0; globn < slavenodeids.size(); ++globn)
+  for (int slavenodeid : slavenodeids)
   {
     // is this slavenode on this proc?
-    if (CheckHaveEntity(&slavedis, slavenodeids[globn]))
+    if (CheckHaveEntity(&slavedis, slavenodeid))
     {
       // Add node to list of nodes which will be sent to the next proc
-      PackEntity(data, &slavedis, slavenodeids[globn]);
+      PackEntity(pack_data, &slavedis, slavenodeid);
     }
   }
 
-  swap(sblockofnodes, data());
+  swap(sblockofnodes, pack_data());
 
   //--------------------------------------------------------------------
   // -> 2) round robin loop
@@ -486,9 +481,9 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
       int frompid = myrank;
       int topid = (myrank + 1) % numprocs;
 
-      int length = sblockofnodes.size();
+      int length = static_cast<int>(sblockofnodes.size());
 
-      exporter.ISend(frompid, topid, sblockofnodes.data(), sblockofnodes.size(), tag, request);
+      exporter.ISend(frompid, topid, sblockofnodes.data(), length, tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -537,11 +532,11 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
       // proc
       if (not masterplanecoords_.empty())
       {
-        double pointcoord[3];
-        CalcPointCoordinate(o.getRawPtr(), pointcoord);
+        std::array<double, 3> pointcoord;
+        CalcPointCoordinate(o.getRawPtr(), pointcoord.data());
 
         // get its coordinates
-        std::vector<double> x(pointcoord, pointcoord + 3);
+        std::vector<double> x(pointcoord.begin(), pointcoord.end());
 
         //--------------------------------------------------------
         // 3) now search for closest master point on this proc
@@ -552,7 +547,7 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
         // matching a point in the box. We do nothing.
         if (SearchClosestEntityOnThisProc(x, gid, dist))
         {
-          std::map<int, std::pair<int, double>>::iterator found = coupling.find(gid);
+          auto found = coupling.find(gid);
 
           // search for second point with same distance, if found gid is already in coupling
           if (found != coupling.end())
@@ -581,7 +576,6 @@ void DRT::UTILS::MatchingOctree::FindMatch(const DRT::Discretization& slavedis,
     // we need a new receive buffer
     rblockofnodes.clear();
   }
-  return;
 }  // MatchingOctree::FindMatch
 
 /*----------------------------------------------------------------------*/
@@ -611,21 +605,15 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
   std::vector<char> sblockofnodes;
   std::vector<char> rblockofnodes;
 
-  DRT::PackBuffer data;
+  DRT::PackBuffer pack_data;
 
-  for (unsigned globn = 0; globn < slavenodeids.size(); ++globn)
-  {
-    PackEntity(data, &slavedis, slavenodeids[globn]);
-  }
+  for (int slavenodeid : slavenodeids) PackEntity(pack_data, &slavedis, slavenodeid);
 
-  data.StartPacking();
+  pack_data.StartPacking();
 
-  for (unsigned globn = 0; globn < slavenodeids.size(); ++globn)
-  {
-    PackEntity(data, &slavedis, slavenodeids[globn]);
-  }
+  for (int slavenodeid : slavenodeids) PackEntity(pack_data, &slavedis, slavenodeid);
 
-  swap(sblockofnodes, data());
+  swap(sblockofnodes, pack_data());
 
   //--------------------------------------------------------------------
   // -> 2) round robin loop
@@ -648,9 +636,9 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
       int frompid = myrank;
       int topid = (myrank + 1) % numprocs;
 
-      int length = sblockofnodes.size();
+      int length = static_cast<int>(sblockofnodes.size());
 
-      exporter.ISend(frompid, topid, sblockofnodes.data(), sblockofnodes.size(), tag, request);
+      exporter.ISend(frompid, topid, sblockofnodes.data(), length, tag, request);
 
       // make sure that you do not think you received something if
       // you didn't
@@ -698,11 +686,11 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
       // proc
       if (not masterplanecoords_.empty())
       {
-        double pointcoord[3];
-        CalcPointCoordinate(o.getRawPtr(), pointcoord);
+        std::array<double, 3> pointcoord;
+        CalcPointCoordinate(o.getRawPtr(), pointcoord.data());
 
         // get its coordinates
-        std::vector<double> x(pointcoord, pointcoord + 3);
+        std::vector<double> x(pointcoord.begin(), pointcoord.end());
 
         //--------------------------------------------------------
         // 3) now search for closest master point on this proc
@@ -713,7 +701,7 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
         // matching a point in the box. We do nothing.
         if (SearchClosestEntityOnThisProc(x, gid, dist))
         {
-          std::map<int, std::vector<double>>::iterator found = coupling.find(id);
+          auto found = coupling.find(id);
 
           // search for second point with same distance,
           // if found gid is already in coupling
@@ -751,23 +739,13 @@ void DRT::UTILS::MatchingOctree::FillSlaveToMasterGIDMapping(const DRT::Discreti
     // we need a new receive buffer
     rblockofnodes.clear();
   }
-  return;
 }  // MatchingOctree::FillSlaveToMasterGIDMapping
 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree() : MatchingOctree()
-{
-  return;
-}  // NodeMatchingOctree::NodeMatchingOctree
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::UTILS::NodeMatchingOctree::~NodeMatchingOctree()
-{
-  return;
-}  // NodeMatchingOctree::~NodeMatchingOctree
+DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree()
+    : MatchingOctree() {}  // NodeMatchingOctree::NodeMatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -779,8 +757,6 @@ void DRT::UTILS::NodeMatchingOctree::CalcPointCoordinate(
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = actnode->X()[idim];
-
-  return;
 }  // NodeMatchingOctree::CalcPointCoordinate
 
 /*----------------------------------------------------------------------*/
@@ -788,14 +764,12 @@ void DRT::UTILS::NodeMatchingOctree::CalcPointCoordinate(
 //! calc unique coordinate of entity
 void DRT::UTILS::NodeMatchingOctree::CalcPointCoordinate(DRT::ParObject* entity, double* coord)
 {
-  DRT::Node* actnode = dynamic_cast<DRT::Node*>(entity);
+  auto* actnode = dynamic_cast<DRT::Node*>(entity);
   if (actnode == nullptr) dserror("dynamic_cast failed");
 
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = actnode->X()[idim];
-
-  return;
 }  // NodeMatchingOctree::CalcPointCoordinate
 
 /*----------------------------------------------------------------------*/
@@ -821,8 +795,6 @@ void DRT::UTILS::NodeMatchingOctree::PackEntity(
   DRT::Node* actnode = dis->gNode(id);
   // Add node to list of nodes which will be sent to the next proc
   DRT::ParObject::AddtoPack(data, actnode);
-
-  return;
 }  // NodeMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -831,7 +803,6 @@ void DRT::UTILS::NodeMatchingOctree::UnPackEntity(
     std::vector<char>::size_type& index, std::vector<char>& rblockofnodes, std::vector<char>& data)
 {
   DRT::ParObject::ExtractfromPack(index, rblockofnodes, data);
-  return;
 }  // NodeMatchingOctree::UnPackEntity
 
 /*----------------------------------------------------------------------*/
@@ -839,7 +810,7 @@ void DRT::UTILS::NodeMatchingOctree::UnPackEntity(
 int DRT::UTILS::NodeMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o)
 {
   // cast ParObject to Node
-  DRT::Node* actnode = dynamic_cast<DRT::Node*>(o.get());
+  auto* actnode = dynamic_cast<DRT::Node*>(o.get());
   if (actnode == nullptr) dserror("unpack of invalid data");
 
   return actnode->Id();
@@ -863,17 +834,8 @@ Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::NodeMatchingOctree::CreateOc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::ElementMatchingOctree::ElementMatchingOctree() : MatchingOctree()
-{
-  return;
-}  // ElementMatchingOctree::ElementMatchingOctree
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::UTILS::ElementMatchingOctree::~ElementMatchingOctree()
-{
-  return;
-}  // ElementMatchingOctree::~ElementMatchingOctree
+DRT::UTILS::ElementMatchingOctree::ElementMatchingOctree()
+    : MatchingOctree() {}  // ElementMatchingOctree::ElementMatchingOctree
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -889,15 +851,13 @@ void DRT::UTILS::ElementMatchingOctree::CalcPointCoordinate(
 
   for (int node = 0; node < numnode; node++)
     for (int idim = 0; idim < dim; idim++) coord[idim] += (actele->Nodes())[node]->X()[idim];
-
-  return;
 }  // ElementMatchingOctree::CalcPointCoordinate
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::ElementMatchingOctree::CalcPointCoordinate(DRT::ParObject* entity, double* coord)
 {
-  DRT::Element* actele = dynamic_cast<DRT::Element*>(entity);
+  auto* actele = dynamic_cast<DRT::Element*>(entity);
   if (actele == nullptr) dserror("dynamic_cast failed");
 
   DRT::Node** nodes = actele->Nodes();
@@ -910,8 +870,6 @@ void DRT::UTILS::ElementMatchingOctree::CalcPointCoordinate(DRT::ParObject* enti
 
   for (int node = 0; node < numnode; node++)
     for (int idim = 0; idim < dim; idim++) coord[idim] += (nodes[node]->X())[idim];
-
-  return;
 }  // ElementMatchingOctree::CalcPointCoordinate
 
 /*----------------------------------------------------------------------*/
@@ -942,8 +900,6 @@ void DRT::UTILS::ElementMatchingOctree::PackEntity(
   DRT::ParObject::AddtoPack(data, actele->NumNode());
   DRT::ParObject::AddtoPack(data, actele);
   for (int node = 0; node < actele->NumNode(); node++) DRT::ParObject::AddtoPack(data, nodes[node]);
-
-  return;
 }  // ElementMatchingOctree::PackEntity
 
 /*----------------------------------------------------------------------*/
@@ -965,7 +921,6 @@ void DRT::UTILS::ElementMatchingOctree::UnPackEntity(
     nodes_.insert(std::pair<int, Teuchos::RCP<DRT::Node>>(actnode->Id(), actnode));
   }
 
-  return;
 }  // ElementMatchingOctree::UnPackEntity
 
 /*----------------------------------------------------------------------*/
@@ -973,7 +928,7 @@ void DRT::UTILS::ElementMatchingOctree::UnPackEntity(
 int DRT::UTILS::ElementMatchingOctree::CheckValidEntityType(Teuchos::RCP<DRT::ParObject> o)
 {
   // cast ParObject to element
-  DRT::Element* actele = dynamic_cast<DRT::Element*>(o.get());
+  auto* actele = dynamic_cast<DRT::Element*>(o.get());
   if (actele == nullptr) dserror("unpack of invalid data");
 
   // set nodal pointers for this element
@@ -1000,10 +955,7 @@ Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::ElementMatchingOctree::Creat
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::OctreeNodalElement::OctreeNodalElement() : OctreeElement()
-{
-  return;
-}  // OctreeElement()
+DRT::UTILS::OctreeNodalElement::OctreeNodalElement() : OctreeElement() {}  // OctreeElement()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1015,8 +967,6 @@ void DRT::UTILS::OctreeNodalElement::CalcPointCoordinate(
   const int dim = 3;
 
   for (int idim = 0; idim < dim; idim++) coord[idim] = actnode->X()[idim];
-
-  return;
 }  // OctreeNodalElement::CalcPointCoordinate
 
 /*----------------------------------------------------------------------*/
@@ -1037,10 +987,8 @@ Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeNodalElement::CreateOc
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::UTILS::OctreeElementElement::OctreeElementElement() : OctreeElement()
-{
-  return;
-}  // OctreeElementElement::OctreeElementElement
+DRT::UTILS::OctreeElementElement::OctreeElementElement()
+    : OctreeElement() {}  // OctreeElementElement::OctreeElementElement
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1056,8 +1004,6 @@ void DRT::UTILS::OctreeElementElement::CalcPointCoordinate(
 
   for (int node = 0; node < numnode; node++)
     for (int idim = 0; idim < dim; idim++) coord[idim] += (actele->Nodes())[node]->X()[idim];
-
-  return;
 }  // OctreeElementElement::CalcPointCoordinate
 
 /*----------------------------------------------------------------------*/
@@ -1086,7 +1032,6 @@ DRT::UTILS::OctreeElement::OctreeElement()
       issetup_(false),
       isinit_(false)
 {
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1119,13 +1064,13 @@ int DRT::UTILS::OctreeElement::Setup()
     dserror("max.depth of octree: 200. Can't append further children\n");
   }
 
-  int numnodestoadd = nodeids_.size();
+  const int numnodestoadd = static_cast<int>(nodeids_.size());
   // if number of slavenodes on this proc is too large split the element
   if (numnodestoadd > maxtreenodesperleaf_)
   {
     // mean coordinate value in direction of the longest edge
-    double mean[3];
-    double pointcoord[3];
+    std::array<double, 3> mean;
+    std::array<double, 3> pointcoord;
 
     for (int dim = 0; dim < 3; dim++)
     {
@@ -1136,18 +1081,12 @@ int DRT::UTILS::OctreeElement::Setup()
     // calculate mean coordinate for all directions
     for (int locn = 0; locn < numnodestoadd; locn++)
     {
-      CalcPointCoordinate(discret_, nodeids_.at(locn), pointcoord);
+      CalcPointCoordinate(discret_, nodeids_.at(locn), pointcoord.data());
 
-      for (int dim = 0; dim < 3; dim++)
-      {
-        mean[dim] += pointcoord[dim];
-      }
+      for (int dim = 0; dim < 3; dim++) mean[dim] += pointcoord[dim];
     }
 
-    for (int dim = 0; dim < 3; dim++)
-    {
-      mean[dim] = mean[dim] / numnodestoadd;
-    }
+    for (int dim = 0; dim < 3; dim++) mean[dim] = mean[dim] / numnodestoadd;
 
     // direction specifies which side will be cut (the one with the largest
     // value of the mean distance to the "lower" boundary)
@@ -1250,19 +1189,19 @@ int DRT::UTILS::OctreeElement::Setup()
     // distribute nodes to children
     std::vector<int> childnodeids1;
     std::vector<int> childnodeids2;
-    for (int locn = 0; locn < (int)nodeids_.size(); locn++)
+    for (int& nodeid : nodeids_)
     {
-      CalcPointCoordinate(discret_, nodeids_.at(locn), pointcoord);
+      CalcPointCoordinate(discret_, nodeid, pointcoord.data());
 
       // node is in "lower" bounding box
       if (pointcoord[direction] < childboundingbox1(direction, 1))
       {
-        childnodeids1.push_back(nodeids_.at(locn));
+        childnodeids1.push_back(nodeid);
       }
       // node is in "upper" bounding box
       if (pointcoord[direction] > childboundingbox2(direction, 0))
       {
-        childnodeids2.push_back(nodeids_.at(locn));
+        childnodeids2.push_back(nodeid);
       }
     }
 
@@ -1298,10 +1237,10 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(const std::vector<double
 
   double thisdist;
   std::vector<double> dx(3);
-  double pointcoord[3];
+  std::array<double, 3> pointcoord;
 
   // the first node is the guess for the closest node
-  CalcPointCoordinate(discret_, nodeids_.at(0), pointcoord);
+  CalcPointCoordinate(discret_, nodeids_.at(0), pointcoord.data());
   for (int dim = 0; dim < 3; dim++)
   {
     dx[dim] = pointcoord[dim] - x[dim];
@@ -1313,7 +1252,7 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(const std::vector<double
   // now loop the others and check whether they are better
   for (int nn = 1; nn < (int)nodeids_.size(); nn++)
   {
-    CalcPointCoordinate(discret_, nodeids_.at(nn), pointcoord);
+    CalcPointCoordinate(discret_, nodeids_.at(nn), pointcoord.data());
 
     for (int dim = 0; dim < 3; dim++)
     {
@@ -1328,7 +1267,7 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(const std::vector<double
     }
     else
     {
-      if ((abs(thisdist - distofclosestpoint) < 1e-02 * elesize) & (searchsecond == true))
+      if ((abs(thisdist - distofclosestpoint) < 1e-02 * elesize) && searchsecond)
       {
         distofclosestpoint = thisdist;
         idofclosestpoint = nodeids_.at(nn);
@@ -1336,7 +1275,6 @@ void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(const std::vector<double
     }
   }
 
-  return;
 }  // OctreeElement::SearchClosestNodeInLeaf
 
 /*----------------------------------------------------------------------*/
@@ -1375,11 +1313,11 @@ Teuchos::RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildCo
     dserror("Asked leaf element for further children.");
   }
 
-  if (this->octreechild1_->IsPointInBoundingBox(x) == true)
+  if (this->octreechild1_->IsPointInBoundingBox(x))
   {
     nextelement = this->octreechild1_;
   }
-  else if (this->octreechild2_->IsPointInBoundingBox(x) == true)
+  else if (this->octreechild2_->IsPointInBoundingBox(x))
   {
     nextelement = this->octreechild2_;
   }
@@ -1412,14 +1350,9 @@ void DRT::UTILS::OctreeElement::Print(std::ostream& os) const
   // Print id and coordinates
   os << "Leaf in Layer " << layer_ << " Nodes ";
 
-  for (int nn = 0; nn < (int)nodeids_.size(); ++nn)
+  for (int nodeid : nodeids_)
   {
-    os << nodeids_.at(nn) << " ";
+    os << nodeid << " ";
   }
-  os << std::endl;
-  return;
+  os << '\n';
 }  // OctreeElement::Print(ostream& os)
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-DRT::UTILS::OctreeElement::~OctreeElement() { return; }  // ~OctreeElement()

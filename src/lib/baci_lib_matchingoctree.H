@@ -39,7 +39,7 @@ namespace DRT
       MatchingOctree();
 
       //! Destructor
-      virtual ~MatchingOctree();
+      virtual ~MatchingOctree() = default;
 
       /*! \brief initialize this class (public)
 
@@ -268,7 +268,7 @@ namespace DRT
       NodeMatchingOctree();
 
       //! Destructor
-      ~NodeMatchingOctree() override;
+      ~NodeMatchingOctree() override = default;
 
      protected:
       //! calc unique coordinate, associated to node
@@ -309,7 +309,7 @@ namespace DRT
       ElementMatchingOctree();
 
       //! Destructor
-      ~ElementMatchingOctree() override;
+      ~ElementMatchingOctree() override = default;
 
      protected:
       //! calc unique coordinate, associated to element
@@ -368,7 +368,7 @@ namespace DRT
       OctreeElement();
 
       //! Destructor
-      virtual ~OctreeElement();
+      virtual ~OctreeElement() = default;
 
       /*! \brief initialize this class
 
@@ -540,7 +540,7 @@ namespace DRT
       OctreeNodalElement();
 
       //! Destructor
-      ~OctreeNodalElement() override { return; };
+      ~OctreeNodalElement() override = default;
 
      protected:
       //! calc unique coordinate of node
@@ -562,7 +562,7 @@ namespace DRT
       OctreeElementElement();
 
       //! Destructor
-      ~OctreeElementElement() override { return; };
+      ~OctreeElementElement() override = default;
 
      protected:
       //! calc unique coordinate of element
