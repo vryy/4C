@@ -103,7 +103,10 @@ void MAT::Maxwell_0d_acinus_Ogden::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position, data, type);
   ;
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  if (type != UniqueParObjectId())
+    dserror(
+        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
+        type, UniqueParObjectId());
 
   // Extract kappa and beta
   ExtractfromPack(position, data, kappa_);

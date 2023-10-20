@@ -104,7 +104,10 @@ void MAT::Maxwell_0d_acinus_Exponential::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position, data, type);
   ;
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  if (type != UniqueParObjectId())
+    dserror(
+        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
+        type, UniqueParObjectId());
 
   // Extract e1_0_, e1_lin_, e1_exp_, tau_
   ExtractfromPack(position, data, e1_0_);

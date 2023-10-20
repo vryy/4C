@@ -92,7 +92,10 @@ void MAT::Maxwell_0d_acinus::Unpack(const std::vector<char>& data)
   // extract type
   int type = 0;
   ExtractfromPack(position, data, type);
-  if (type != UniqueParObjectId()) dserror("wrong instance type data");
+  if (type != UniqueParObjectId())
+    dserror(
+        "Wrong instance type data. The extracted type id is %d, while the UniqueParObjectId is %d",
+        type, UniqueParObjectId());
 
   // matid
   int matid;
