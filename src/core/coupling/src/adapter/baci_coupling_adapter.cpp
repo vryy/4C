@@ -11,8 +11,8 @@
 
 #include "baci_coupling_adapter.H"
 
+#include "baci_coupling_matchingoctree.H"
 #include "baci_lib_condition_utils.H"
-#include "baci_lib_matchingoctree.H"
 #include "baci_linalg_utils_densematrix_communication.H"
 
 #include <Epetra_IntVector.h>
@@ -363,7 +363,7 @@ void CORE::ADAPTER::Coupling::MatchNodes(const ::DRT::Discretization& masterdis,
     const double tolerance)
 {
   // match master and slave nodes using octree
-  ::DRT::UTILS::NodeMatchingOctree tree = ::DRT::UTILS::NodeMatchingOctree();
+  auto tree = CORE::COUPLING::NodeMatchingOctree();
   tree.Init(masterdis, masternodes, 150, tolerance);
   tree.Setup();
 
