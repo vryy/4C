@@ -8,8 +8,8 @@
 
 #include "baci_mixture_growth_strategy_anisotropic.H"
 
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
 #include "baci_matelast_aniso_structuraltensor_strategy.H"

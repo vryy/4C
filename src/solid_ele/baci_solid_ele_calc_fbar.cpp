@@ -106,7 +106,7 @@ namespace
           DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>>& stiffness_matrix)
   {
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> rcg_bar_voigt;
-    ::UTILS::VOIGT::Strains::MatrixToVector(cauchyGreen.right_cauchy_green_, rcg_bar_voigt);
+    CORE::LINALG::VOIGT::Strains::MatrixToVector(cauchyGreen.right_cauchy_green_, rcg_bar_voigt);
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> ccg;
     ccg.MultiplyNN(stress_bar.cmat_, rcg_bar_voigt);

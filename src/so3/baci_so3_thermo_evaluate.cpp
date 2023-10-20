@@ -11,7 +11,7 @@
  *----------------------------------------------------------------------*/
 #include "baci_discretization_fem_general_utils_nurbs_shapefunctions.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_robinson.H"
 #include "baci_mat_thermoplastichyperelast.H"
 #include "baci_mat_thermoplasticlinelast.H"
@@ -2001,7 +2001,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
       CORE::LINALG::Matrix<nsd_, nsd_> Cinv_bar(false);
       Cinv_bar.Invert(cauchygreen_bar);
       CORE::LINALG::Matrix<numstr_, 1> Cinv_barvct(false);
-      ::UTILS::VOIGT::Strains::MatrixToVector(Cinv_bar, Cinv_barvct);
+      CORE::LINALG::VOIGT::Strains::MatrixToVector(Cinv_bar, Cinv_barvct);
 
       // calculate nonlinear B-operator
       CORE::LINALG::Matrix<numstr_, numdofperelement_> bop(false);

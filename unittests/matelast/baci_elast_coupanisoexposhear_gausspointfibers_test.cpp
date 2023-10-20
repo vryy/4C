@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_matelast_coupanisoexpo.H"
 #include "baci_matelast_coupanisoexposhear.H"
@@ -77,7 +77,7 @@ namespace
             gpFibers_[gp][GetFiberIds()[0]], gpFibers_[gp][GetFiberIds()[1]], gpTensors_[gp]);
 
         // Setup structural tensors in stress like Voigt notation
-        UTILS::VOIGT::Stresses::MatrixToVector(gpTensors_[gp], gpTensors_stress_[gp]);
+        CORE::LINALG::VOIGT::Stresses::MatrixToVector(gpTensors_[gp], gpTensors_stress_[gp]);
 
         // setup scalar product
         gpScalarProducts_[gp] =

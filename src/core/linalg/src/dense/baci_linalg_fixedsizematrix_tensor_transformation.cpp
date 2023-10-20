@@ -3,7 +3,7 @@
 \brief Util functions for tensor transformations
 */
 
-#include "baci_lib_tensor_transformation.H"
+#include "baci_linalg_fixedsizematrix_tensor_transformation.H"
 
 template void UTILS::TENSOR::TensorRotation<3>(const CORE::LINALG::Matrix<3, 3>&,
     const CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<3, 3>&);

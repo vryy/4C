@@ -13,7 +13,7 @@ approach)
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_four_tensor.H"
 #include "baci_mat_muscle_utils.H"
 #include "baci_mat_par_bundle.H"
@@ -126,7 +126,7 @@ namespace
     // structural tensor L = omega0/3*Identity + omegap*M
     CORE::LINALG::Matrix<3, 3> L = ComputeStructuralTensorL(M, omega0);
     CORE::LINALG::Matrix<6, 1> Lv(false);  // Voigt notation
-    ::UTILS::VOIGT::Stresses::MatrixToVector(L, Lv);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(L, Lv);
 
     // elastic right Cauchy Green tensor Ce = Fe^T Fe
     // = Fa^-T C Fa^-1 = Fa^-1 C Fa^-1 (with Fa^-1 sym.)
@@ -145,7 +145,7 @@ namespace
     CORE::LINALG::Matrix<3, 3> invCe(true);
     invCe.Invert(Ce);
     CORE::LINALG::Matrix<6, 1> invCev(true);
-    ::UTILS::VOIGT::Stresses::MatrixToVector(invCe, invCev);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(invCe, invCev);
 
     // product invCe*L
     CORE::LINALG::Matrix<3, 3> invCeL(true);
@@ -155,7 +155,7 @@ namespace
     CORE::LINALG::Matrix<3, 3> invCeLinvCe(true);
     invCeLinvCe.MultiplyNN(invCeL, invCe);
     CORE::LINALG::Matrix<6, 1> invCeLinvCev(true);
-    ::UTILS::VOIGT::Stresses::MatrixToVector(invCeLinvCe, invCeLinvCev);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(invCeLinvCe, invCeLinvCev);
 
     // product Ce^T*L
     CORE::LINALG::Matrix<3, 3> transpCeL(true);
@@ -452,10 +452,10 @@ void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::FourTensor<3> dCdC = ComputeDCDC();
 
   // inverse right Cauchy Green tensor C^-1
-  CORE::LINALG::Matrix<3, 3> invC(true);                  // matrix notation
-  invC.Invert(C);                                         // invC = C^-1
-  CORE::LINALG::Matrix<6, 1> invCv(true);                 // Voigt notation
-  ::UTILS::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
+  CORE::LINALG::Matrix<3, 3> invC(true);                       // matrix notation
+  invC.Invert(C);                                              // invC = C^-1
+  CORE::LINALG::Matrix<6, 1> invCv(true);                      // Voigt notation
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(invC, invCv);  // invCv
 
   // structural tensor M, i.e. dyadic product of fibre directions
   CORE::LINALG::Matrix<3, 3> M = anisotropyExtension_.GetStructuralTensor(gp, 0);
@@ -466,7 +466,7 @@ void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   // derivative of lambdaM w.r.t. C
   CORE::LINALG::Matrix<3, 3> dlambdaMdC = MAT::UTILS::MUSCLE::DFiberStretch_DC(lambdaM, C, M);
   CORE::LINALG::Matrix<6, 1> dlambdaMdCv(true);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(dlambdaMdC, dlambdaMdCv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(dlambdaMdC, dlambdaMdCv);
 
   // contraction velocity dotLambdaM
   double dotLambdaM =
@@ -492,7 +492,7 @@ void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<3, 3> domegaadC(dlambdaMdC);
   domegaadC.Scale(omegaaAndDerivs.val_deriv_funct);
   CORE::LINALG::Matrix<6, 1> domegaadCv(false);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(domegaadC, domegaadCv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(domegaadC, domegaadCv);
 
   // second derivative of omegaa w.r.t. C
   // ddomegaaddC = (ddomegaaddlambdaM - 1/lambdaM domegaadlambdaM) dlambdaM_ij dlambdaM_kl
@@ -540,7 +540,7 @@ void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   CORE::LINALG::Matrix<3, 3> S1(true);
   MultiplyNNN(S1, detFa, invFa, Se_dSedC.Se, invFa);
   CORE::LINALG::Matrix<6, 1> S1v(true);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(S1, S1v);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(S1, S1v);
 
   // S2 = detFa * invF * dPsiedFe * (F * dinvFadF)  = 2 detFa (C Fa^-1 Se) dFa^-1dC
   // or: S2 = -2 S1 : (C Fa^-1 dFadomegaa) domegaadC
@@ -593,7 +593,7 @@ void MAT::Muscle_Giantesio::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
   MultiplyNNN(dscalardC, 1.0, S1, dFadomegaa, invFa);
   MAT::AddContractionMatrixFourTensor(dscalardC, CinvFadFadomegaa, dS1dC);
   CORE::LINALG::Matrix<6, 1> dscalardCv(true);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(dscalardC, dscalardCv);  // not yet scaled with -2.0
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(dscalardC, dscalardCv);  // not yet scaled with -2.0
 
   // compute cmat2 = 2 dS2dC = 2 [domegaadC_sl dscalardC_pq + scalar * ddomegaaddC_slpq]
   cmat2v.MultiplyNT(-4.0, domegaadCv, dscalardCv);             // 2 * dscalardC_pq domegaadC_sl

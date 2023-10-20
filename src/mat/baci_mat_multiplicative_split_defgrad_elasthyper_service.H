@@ -12,8 +12,8 @@ gradient.
 
 #ifndef BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
 #define BACI_MAT_MULTIPLICATIVE_SPLIT_DEFGRAD_ELASTHYPER_SERVICE_H
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_service.H"
 
@@ -93,9 +93,9 @@ namespace MAT
     MAT::CalculateGammaDelta(gamma, delta, principleInvariantsCe, dPIe, ddPIIe);
 
     // Convert necessary tensors to stress-like Voigt-Notation
-    UTILS::VOIGT::Stresses::MatrixToVector(iCin, iCinv);
-    UTILS::VOIGT::Stresses::MatrixToVector(iCinCiCin, iCinCiCinv);
-    UTILS::VOIGT::Stresses::MatrixToVector(iC, iCv);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(iCin, iCinv);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(iCinCiCin, iCinCiCinv);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(iC, iCv);
 
     // Contribution to 2nd Piola-Kirchhoff stress tensor
     S_stress.Update(gamma(0), iCinv, 1.0);

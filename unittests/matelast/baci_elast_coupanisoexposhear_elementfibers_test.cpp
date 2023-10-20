@@ -11,7 +11,7 @@
 
 #include <gtest/gtest.h>
 
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_anisotropy.H"
 #include "baci_matelast_coupanisoexpo.H"
 #include "baci_matelast_coupanisoexposhear.H"
@@ -61,7 +61,7 @@ namespace
           eleFibers_[GetFiberIds()[0]], eleFibers_[GetFiberIds()[1]], eleTensors_);
 
       // Setup structural tensors in stress like Voigt notation
-      UTILS::VOIGT::Stresses::MatrixToVector(eleTensors_, eleTensors_stress_);
+      CORE::LINALG::VOIGT::Stresses::MatrixToVector(eleTensors_, eleTensors_stress_);
 
       // setup scalar product
       eleScalarProducts_ = eleFibers_[GetFiberIds()[0]].Dot(eleFibers_[GetFiberIds()[1]]);

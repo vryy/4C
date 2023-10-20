@@ -21,7 +21,7 @@
 #include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
 #include "baci_lib_utils_elements.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
@@ -52,7 +52,7 @@
 #include <Teuchos_SerialDenseSolver.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
-using VoigtMapping = UTILS::VOIGT::IndexMappings;
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|

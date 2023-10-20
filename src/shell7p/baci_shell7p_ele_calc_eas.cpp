@@ -8,7 +8,7 @@
 #include "baci_shell7p_ele_calc_eas.H"
 
 #include "baci_lib_discret.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_inverse.H"

@@ -9,8 +9,8 @@
 #include <gtest/gtest.h>
 
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_electrode.H"
 #include "baci_mat_inelastic_defgrad_factors.H"
 #include "baci_mat_par_bundle.H"
@@ -504,7 +504,7 @@ namespace
     CORE::LINALG::Matrix<6, 1> iCV;
     CM.MultiplyTN(1.0, FM_, FM_, 0.0);
     iCM.Invert(CM);
-    UTILS::VOIGT::Stresses::MatrixToVector(iCM, iCV);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(iCM, iCV);
 
     // matrix to be filled by the methods
     CORE::LINALG::Matrix<6, 6> CMatAdd(true);

@@ -13,7 +13,7 @@
 #include "baci_discretization_fem_general_utils_gauss_point_postprocess.H"
 #include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_fourieriso.H"
 #include "baci_mat_plasticelasthyper.H"
 #include "baci_mat_service.H"
@@ -26,7 +26,7 @@
 
 #include <Teuchos_SerialDenseSolver.hpp>
 
-using VoigtMapping = UTILS::VOIGT::IndexMappings;
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  | evaluate the element (public)                            seitz 07/13 |

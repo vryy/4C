@@ -11,8 +11,8 @@ stress approach)
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
 #include "baci_linalg_fixedsizematrix_generators.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_elasthyper_service.H"
 #include "baci_mat_muscle_utils.H"
 #include "baci_mat_par_material.H"
@@ -85,7 +85,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
 {
   // right Cauchy Green tensor C in matrix notation
   CORE::LINALG::Matrix<3, 3> C(true);
-  ::UTILS::VOIGT::Strains::VectorToMatrix(rcg, C);
+  CORE::LINALG::VOIGT::Strains::VectorToMatrix(rcg, C);
 
   // compute volume ratio J
   double J = std::sqrt(I3);
@@ -153,13 +153,13 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
   // unitary 3x3 matrix
   const CORE::LINALG::Matrix<3, 3> Id3 = CORE::LINALG::IdentityMatrix<3>();
   CORE::LINALG::Matrix<6, 1> Id3v(false);
-  ::UTILS::VOIGT::IdentityMatrix(Id3v);
+  CORE::LINALG::VOIGT::IdentityMatrix(Id3v);
 
   // sum modC*M + M*modC = dI5/dC
   CORE::LINALG::Matrix<3, 3> modCMsumMmodC(modCM);
   modCMsumMmodC.MultiplyNN(1.0, M, modC, 1.0);
   CORE::LINALG::Matrix<6, 1> modCMsumMmodCv(false);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(modCMsumMmodC, modCMsumMmodCv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(modCMsumMmodC, modCMsumMmodCv);
 
   // ficticious 2nd Piola-Kirchhoff stress tensor modS
   CORE::LINALG::Matrix<3, 3> modS(true);
@@ -167,7 +167,7 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
   modS.Update(gamma4, M, 1.0);              // + gamma4*M
   modS.Update(gamma5, modCMsumMmodC, 1.0);  // dyad(a0,modC*a0)+dyad(a0*C,a0) = (modC*M)' +modC'*M
   CORE::LINALG::Matrix<6, 1> modSv(false);
-  ::UTILS::VOIGT::Stresses::MatrixToVector(modS, modSv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(modS, modSv);
 
   // isometirc 2nd Piola-Kirchhoff tensor S_iso from ficticious 2nd PK stress
   double traceCmodS = modSv(0) * rcg(0) + modSv(1) * rcg(1) + modSv(2) * rcg(2) +
@@ -240,18 +240,18 @@ void MAT::ELASTIC::IsoMuscleBlemker::AddStressAnisoModified(const CORE::LINALG::
 
   // Right Cauchy-Green tensor in stress-like Voigt notation
   static CORE::LINALG::Matrix<6, 1> rcg_stress(false);
-  ::UTILS::VOIGT::Strains::ToStressLike(rcg, rcg_stress);
+  CORE::LINALG::VOIGT::Strains::ToStressLike(rcg, rcg_stress);
 
   // compute the projection tensor P = II - 1/3 Cinv x C
   CORE::LINALG::Matrix<6, 6> P(false);
-  ::UTILS::VOIGT::FourthOrderIdentityMatrix<::UTILS::VOIGT::NotationType::stress,
-      ::UTILS::VOIGT::NotationType::stress>(P);
+  CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<CORE::LINALG::VOIGT::NotationType::stress,
+      CORE::LINALG::VOIGT::NotationType::stress>(P);
   P.MultiplyNT(-1.0 / 3.0, icg, rcg_stress, 1.0);
 
   // compute the transpose of the projection tensor PT = II - 1/3 C x Cinv
   CORE::LINALG::Matrix<6, 6> PT(false);
-  ::UTILS::VOIGT::FourthOrderIdentityMatrix<::UTILS::VOIGT::NotationType::stress,
-      ::UTILS::VOIGT::NotationType::stress>(PT);
+  CORE::LINALG::VOIGT::FourthOrderIdentityMatrix<CORE::LINALG::VOIGT::NotationType::stress,
+      CORE::LINALG::VOIGT::NotationType::stress>(PT);
   PT.MultiplyNT(-1.0 / 3.0, rcg_stress, icg, 1.0);
 
   // compute isochoric cmat from ficticious elasticiy tensor

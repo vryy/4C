@@ -10,7 +10,7 @@
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
 #include "baci_lib_element_integration_select.H"
-#include "baci_lib_tensor_transformation.H"
+#include "baci_linalg_fixedsizematrix_tensor_transformation.H"
 #include "baci_mat_so3_material.H"
 #include "baci_shell7p_ele.H"
 
@@ -933,7 +933,7 @@ namespace DRT::ELEMENTS::SHELL
     ::UTILS::TENSOR::InverseTensorRotation<DETAIL::num_dim>(
         g_reference.kontravariant_, gl_strain_tensor, gl_strain_tensor_cartesian);
     // GL strain vector glstrain for solid material E={E11,E22,E33,2*E12,2*E23,2*E31}
-    ::UTILS::VOIGT::Strains::MatrixToVector(gl_strain_tensor_cartesian, strains.gl_strain_);
+    CORE::LINALG::VOIGT::Strains::MatrixToVector(gl_strain_tensor_cartesian, strains.gl_strain_);
   }
 
   /*!
@@ -959,7 +959,7 @@ namespace DRT::ELEMENTS::SHELL
     // transform Piola-Kirchhoff-stresses from global cartesian coordinate system back to local
     // curvilinear coordinate system
     CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim> stress_tensor(true);
-    ::UTILS::VOIGT::Stresses::VectorToMatrix(stress.pk2_, stress_tensor);
+    CORE::LINALG::VOIGT::Stresses::VectorToMatrix(stress.pk2_, stress_tensor);
     CORE::LINALG::Matrix<DETAIL::num_dim, DETAIL::num_dim> tmp(true);
     ::UTILS::TENSOR::TensorRotation(g_reference.kontravariant_, stress_tensor, tmp);
 
@@ -1093,7 +1093,7 @@ namespace DRT::ELEMENTS::SHELL
     invdefgrd.Invert();
 
     CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> E_matrix;
-    ::UTILS::VOIGT::Strains::VectorToMatrix(gl, E_matrix);
+    CORE::LINALG::VOIGT::Strains::VectorToMatrix(gl, E_matrix);
 
     CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> invFTE;
     invFTE.MultiplyTN(invdefgrd, E_matrix);
@@ -1101,7 +1101,7 @@ namespace DRT::ELEMENTS::SHELL
     CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> ea_matrix;
     ea_matrix.MultiplyNN(invFTE, invdefgrd);
 
-    ::UTILS::VOIGT::Strains::MatrixToVector(ea_matrix, ea);
+    CORE::LINALG::VOIGT::Strains::MatrixToVector(ea_matrix, ea);
   }
 
   /*!
@@ -1118,7 +1118,7 @@ namespace DRT::ELEMENTS::SHELL
       CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1>& cauchy)
   {
     CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> S_matrix;
-    ::UTILS::VOIGT::Stresses::VectorToMatrix(pk2, S_matrix);
+    CORE::LINALG::VOIGT::Stresses::VectorToMatrix(pk2, S_matrix);
 
     CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> FS;
     FS.MultiplyNN(defgrd, S_matrix);
@@ -1126,7 +1126,7 @@ namespace DRT::ELEMENTS::SHELL
     CORE::LINALG::Matrix<SHELL::DETAIL::num_dim, SHELL::DETAIL::num_dim> cauchy_matrix;
     cauchy_matrix.MultiplyNT(1.0 / defgrd.Determinant(), FS, defgrd, 0.0);
 
-    ::UTILS::VOIGT::Stresses::MatrixToVector(cauchy_matrix, cauchy);
+    CORE::LINALG::VOIGT::Stresses::MatrixToVector(cauchy_matrix, cauchy);
   }
 
   /*!
@@ -1164,7 +1164,7 @@ namespace DRT::ELEMENTS::SHELL
       case INPAR::STR::strain_gl:
       {
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> gl_strain_stress_like;
-        ::UTILS::VOIGT::Strains::ToStressLike(strains.gl_strain_, gl_strain_stress_like);
+        CORE::LINALG::VOIGT::Strains::ToStressLike(strains.gl_strain_, gl_strain_stress_like);
         AssembleVectorToMatrixRow(gl_strain_stress_like, data, row, thickness_weight);
         return;
       }
@@ -1173,7 +1173,7 @@ namespace DRT::ELEMENTS::SHELL
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> ea;
         GreenLagrangeToEulerAlmansi<distype>(strains.gl_strain_, strains.defgrd_, ea);
         CORE::LINALG::Matrix<MAT::NUM_STRESS_3D, 1> ea_stress_like;
-        ::UTILS::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
+        CORE::LINALG::VOIGT::Strains::ToStressLike(ea, ea_stress_like);
         AssembleVectorToMatrixRow(ea_stress_like, data, row, thickness_weight);
         return;
       }

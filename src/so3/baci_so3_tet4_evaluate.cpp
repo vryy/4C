@@ -10,7 +10,7 @@
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_prestress_service.H"
 #include "baci_lib_utils.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_serialdensematrix.H"
 #include "baci_linalg_serialdensevector.H"
 #include "baci_linalg_utils_densematrix_eigen.H"
@@ -58,7 +58,7 @@ void writeComment(const std::string v)
 }
 #endif  // PRINT_DEBUG
 
-using VoigtMapping = UTILS::VOIGT::IndexMappings;
+using VoigtMapping = CORE::LINALG::VOIGT::IndexMappings;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              vlf 06/07|

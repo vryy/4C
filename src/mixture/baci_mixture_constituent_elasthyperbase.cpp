@@ -238,7 +238,7 @@ bool MIXTURE::MixtureConstituent_ElastHyperBase::EvaluateVtkOutputData(
     {
       static CORE::LINALG::Matrix<9, 1> tmp(false);
       tmp.Clear();
-      UTILS::VOIGT::Matrix3x3to9x1(prestretch_[gp], tmp);
+      CORE::LINALG::VOIGT::Matrix3x3to9x1(prestretch_[gp], tmp);
 
       for (int i = 0; i < 9; ++i)
       {

@@ -9,7 +9,7 @@
 #include "baci_matelast_remodelfiber.H"
 
 #include "baci_lib_linedefinition.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_linalg_utils_densematrix_inverse.H"
 #include "baci_mat_par_material.H"
 #include "baci_mat_service.H"
@@ -209,7 +209,7 @@ void MAT::ELASTIC::RemodelFiber::Setup(
       t2->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig_pre = 2.0 * dPI(0) * potsumfiber_[k]->G * potsumfiber_[k]->G;
       t2->EvaluateActiveStressCmatAniso(id, cmatactive, stressactv, 0, 0);
-      UTILS::VOIGT::Stresses::VectorToMatrix(stressactv, stressactM);
+      CORE::LINALG::VOIGT::Stresses::VectorToMatrix(stressactv, stressactM);
       sig_pre += stressactM.Dot(potsumfiber_[k]->AM);
       for (int gp = 0; gp < numgp; ++gp) cauchystress_[k][gp] = sig_pre;
       potsumfiber_[k]->growth = Teuchos::rcp(new GrowthEvolution(params_->k_growth_, sig_pre));
@@ -310,7 +310,7 @@ void MAT::ELASTIC::RemodelFiber::UpdateSigH()
       t2->GetDerivativesAniso(dPI, ddPII, dddPIII, CpreM, 0, 0);
       sig = 2.0 * dPI(0) * k->G * k->G;
       t2->EvaluateActiveStressCmatAniso(id, cmatactive, stressactv, 0, 0);
-      UTILS::VOIGT::Stresses::VectorToMatrix(stressactv, stressactM);
+      CORE::LINALG::VOIGT::Stresses::VectorToMatrix(stressactv, stressactM);
       sig += stressactM.Dot(k->AM);
       k->growth->SetSigH(sig);
       k->remodel->SetSigH(sig);
@@ -560,7 +560,7 @@ void MAT::ELASTIC::RemodelFiber::DerivdCdC(CORE::LINALG::Matrix<3, 3, T> const& 
   func.GetDerivativesAniso(dPIe, ddPIIe, dddPIIIe, CeM, gp, eleGID);
 
   static CORE::LINALG::Matrix<6, 1, T> Av(true);
-  UTILS::VOIGT::Stresses::MatrixToVector(AM, Av);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(AM, Av);
   dfuncdCdC.MultiplyNT(ddPIIe(0) / (CinM.Dot(AM) * CinM.Dot(AM)), Av, Av, 0.0);
 }
 
@@ -596,7 +596,7 @@ void MAT::ELASTIC::RemodelFiber::AddStressCmat(CORE::LINALG::Matrix<3, 3> const&
     cmat.Update(fiberdat.cur_rho[gp], cmatact, 1.0);
   }
 
-  UTILS::VOIGT::Stresses::MatrixToVector(firstderivM, firstderivv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(firstderivM, firstderivv);
   stress.Update(2.0 * fiberdat.cur_rho[gp], firstderivv, 1.0);
   cmat.Update(4.0 * fiberdat.cur_rho[gp], secderiv, 1.0);
 }
@@ -760,8 +760,8 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedsigdCedC(CORE::LINALG::Matrix<3, 3> co
 
   static CORE::LINALG::Matrix<6, 1> Agrv(true);
   static CORE::LINALG::Matrix<6, 1> Av(true);
-  UTILS::VOIGT::Stresses::MatrixToVector(AgrM, Agrv);
-  UTILS::VOIGT::Stresses::MatrixToVector(AM, Av);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(AgrM, Agrv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(AM, Av);
   dsigdCedC.MultiplyNT(
       2.0 / CinM.Dot(AM) * (dddPIIIe(0) * CM.Dot(AM) / CinM.Dot(AM) + 2.0 * ddPIIe(0)), Agrv, Av,
       0.0);
@@ -813,9 +813,9 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGrowth(
 
   static CORE::LINALG::Matrix<9, 1> diFgdrho9x1(true);
   static CORE::LINALG::Matrix<6, 1> tmp6x1(true);
-  UTILS::VOIGT::Matrix3x3to9x1(diFgdrhoM, diFgdrho9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(diFgdrhoM, diFgdrho9x1);
   tmp6x1.MultiplyNN(1.0, dsigdCediFg, diFgdrho9x1, 0.0);
-  UTILS::VOIGT::Stresses::VectorToMatrix(tmp6x1, dsigdCedrhoM);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(tmp6x1, dsigdCedrhoM);
 }
 
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyGrowth(
@@ -941,9 +941,9 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyRemodel(
 
   static CORE::LINALG::Matrix<9, 1> diFrdlambr9x1(true);
   static CORE::LINALG::Matrix<6, 1> tmp6x1(true);
-  UTILS::VOIGT::Matrix3x3to9x1(fiberdat.diFrdlambrM[gp], diFrdlambr9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(fiberdat.diFrdlambrM[gp], diFrdlambr9x1);
   tmp6x1.MultiplyNN(1.0, dsigdCediFr, diFrdlambr9x1, 0.0);
-  UTILS::VOIGT::Stresses::VectorToMatrix(tmp6x1, dsigdCedlambrM);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(tmp6x1, dsigdCedlambrM);
 }
 
 void MAT::ELASTIC::RemodelFiber::EvaluateDerivativesCauchyRemodel(
@@ -1196,7 +1196,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedEvolutionEquationdC(CORE::LINALG::Matr
   static CORE::LINALG::Matrix<3, 3> dsigdC(true);
   EvaluatedsigdC(CM, iFinM, fiberdat.AM, fiberdat.fiber, gp, eleGID, dsigdC);
   static CORE::LINALG::Matrix<6, 1> dsigdCv(true);
-  UTILS::VOIGT::Stresses::MatrixToVector(dsigdC, dsigdCv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(dsigdC, dsigdCv);
 
   fiberdat.growth->EvaluatedFuncidC(dWdC, dsigdCv, fiberdat.cur_rho[gp], dt, eleGID);
 
@@ -1211,7 +1211,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedEvolutionEquationdC(CORE::LINALG::Matr
   static CORE::LINALG::Matrix<3, 3> dsigdCeM(true);
   static CORE::LINALG::Matrix<9, 1> dsigdCe9x1(true);
   EvaluatedsigdCe(CM, iFgM, fiberdat.iFrM[gp], fiberdat.AM, fiberdat.fiber, gp, eleGID, dsigdCeM);
-  UTILS::VOIGT::Matrix3x3to9x1(dsigdCeM, dsigdCe9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(dsigdCeM, dsigdCe9x1);
 
   static CORE::LINALG::Matrix<3, 3> tmp(true);
   static CORE::LINALG::Matrix<3, 3> FrdotiFrM(true);
@@ -1222,7 +1222,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluatedEvolutionEquationdC(CORE::LINALG::Matr
   CeM.MultiplyTN(1.0, iFinM, tmp, 0.0);
   FrdotiFrM.MultiplyNN(1.0, fiberdat.FrdotM[gp], fiberdat.iFrM[gp], 0.0);
   YM.MultiplyNN(1.0, CeM, FrdotiFrM, 0.0);
-  UTILS::VOIGT::Strains::MatrixToVector(YM, Y_strain);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(YM, Y_strain);
 
   CORE::LINALG::Matrix<9, 6> dYdC(true);
   static CORE::LINALG::Matrix<3, 3> iFinTM(true);
@@ -1318,11 +1318,11 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemod
   for (int j = 0; j < 9; ++j) dSdiFg(5, j) = 0.5 * (S_fad(0, 2).dx(j) + S_fad(2, 0).dx(j));
 
   static CORE::LINALG::Matrix<9, 1> diFgdrho9x1(true);
-  UTILS::VOIGT::Matrix3x3to9x1(diFgdrhoM, diFgdrho9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(diFgdrhoM, diFgdrho9x1);
   static CORE::LINALG::Matrix<3, 3> firstderivM(true);
   static CORE::LINALG::Matrix<6, 1> firstderivv(true);
   firstderivM = firstderivM_fad.ConverttoDouble();
-  UTILS::VOIGT::Stresses::MatrixToVector(firstderivM, firstderivv);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(firstderivM, firstderivv);
   dSidrhoj.MultiplyNN(1.0, dSdiFg, diFgdrho9x1, 0.0);
   dSidrhoi.Update(1.0, dSidrhoj, 0.0);
   dSidrhoi.Update(2.0, firstderivv, 1.0);
@@ -1338,7 +1338,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemod
   for (int j = 0; j < 9; ++j) dSdiFr(5, j) = 0.5 * (S_fad(0, 2).dx(j + 9) + S_fad(2, 0).dx(j + 9));
 
   static CORE::LINALG::Matrix<9, 1> diFrdlambr9x1(true);
-  UTILS::VOIGT::Matrix3x3to9x1(fiberdat.diFrdlambrM[gp], diFrdlambr9x1);
+  CORE::LINALG::VOIGT::Matrix3x3to9x1(fiberdat.diFrdlambrM[gp], diFrdlambr9x1);
   dSdlambr.MultiplyNN(1.0, dSdiFr, diFrdlambr9x1, 0.0);
 }
 
@@ -1393,7 +1393,7 @@ void MAT::ELASTIC::RemodelFiber::EvaluateDerivatives2ndPiolaKirchhoffGrowthRemod
   }
 
   static CORE::LINALG::Matrix<6, 1> Av(true);
-  UTILS::VOIGT::Stresses::MatrixToVector(fiberdat.AM, Av);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(fiberdat.AM, Av);
   dSidrhoj.Update(4.0 * fiberdat.cur_rho[gp] / (CinM.Dot(fiberdat.AM) * CinM.Dot(fiberdat.AM)) *
                       (ddPIIe(0) * CAFgTM.Dot(diFgdrhoM) + dPIe(0) * CinAFgTM.Dot(diFgdrhoM)),
       Av, 0.0);

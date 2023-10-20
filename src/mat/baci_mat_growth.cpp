@@ -12,7 +12,7 @@ growth laws.
 
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_utils_factory.H"
-#include "baci_lib_voigt_notation.H"
+#include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_growth_law.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_service.H"
@@ -669,7 +669,7 @@ void MAT::GrowthVolumetric::Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,
 
     // elastic fiber stretch
     CORE::LINALG::Matrix<3, 3> C(true);
-    UTILS::VOIGT::Strains::VectorToMatrix(Cvec, C);
+    CORE::LINALG::VOIGT::Strains::VectorToMatrix(Cvec, C);
 
     CORE::LINALG::Matrix<3, 1> CDir(true);
     CDir.MultiplyNN(1.0, C, refdir_);
@@ -757,7 +757,7 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
 
   // transform Cdach into a vector
   CORE::LINALG::Matrix<6, 1> Cdachvec(true);
-  UTILS::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
+  CORE::LINALG::VOIGT::Strains::MatrixToVector(Cdach, Cdachvec);
 
   //--------------------------------------------------------------------------------------
   // call material law with elastic part of defgr and elastic part of glstrain
@@ -777,14 +777,14 @@ void MAT::GrowthVolumetric::GetSAndCmatdach(const double theta,
   // calculate stress
   // 2PK stress S = F_g^-1 Sdach F_g^-T
   CORE::LINALG::Matrix<3, 3> Sdach(true);
-  UTILS::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
+  CORE::LINALG::VOIGT::Stresses::VectorToMatrix(Sdachvec, Sdach);
 
   CORE::LINALG::Matrix<3, 3> tmp(true);
   tmp.MultiplyNT(Sdach, F_ginv);
   CORE::LINALG::Matrix<3, 3> S(true);
   S.MultiplyNN(F_ginv, tmp);
 
-  UTILS::VOIGT::Stresses::MatrixToVector(S, *stress);
+  CORE::LINALG::VOIGT::Stresses::MatrixToVector(S, *stress);
 
   // trace of elastic Mandel stress Mdach = Cdach Sdach
   tr_mandel_e_->at(gp) = Cdachvec(0) * Sdachvec(0) + Cdachvec(1) * Sdachvec(1) +
