@@ -87,24 +87,19 @@ getOrderedDirections[iDirection_,iMinMax_]:=Module[
 orderedDirections=Table[getOrderedDirections[iDirection,minMax],{iDirection,Length[directions3D]},{minMax,{False,True}}];
 
 
-(*Create strings for c++*)
-directionPossibleIntersectionPartners=Table[getOrderedDirections[iDirection,minMax],{iDirection,Length[directions3D]},{minMax,{False,True}}];
-string="";
-Do[
-  value=directionPossibleIntersectionPartners[[i]];
-  outerString="possible_intersection_partners["<>ToString[i-1]<>"]";
-
-  Do[
-    innerValue=directionPossibleIntersectionPartners[[i,j]];
-    innerString=outerString<>"["<>ToString[j-1]<>"]";
-    Do[
-      moreInnerValue=directionPossibleIntersectionPartners[[i,j,k]];
-      moreInnerString=innerString<>".emplace_back(std::make_pair("<>ToString[moreInnerValue[[1]]-1]<>","<>If[moreInnerValue[[2]],"true","false"]<>"));";
-      string=string<>"\n"<>moreInnerString;
-      ,{k,Length[innerValue]}
+directionPossibleIntersectionPartnersForCpp=orderedDirections;
+directionPossibleIntersectionPartnersForCpp[[All,All,All,1]]=orderedDirections[[All,All,All,1]]-1;
+directionPossibleIntersectionPartnersForCpp=ToString[{Table[
+  {Table[
+      Table[
+        Table[
+          itemD
+          ,{itemD,itemC}
+        ]
+        ,{itemC,itemB}
       ]
-    ,{j,2}
-    ]
-  ,{i,Length@directionPossibleIntersectionPartners}
-]
-string
+    ,{itemB,itemA}
+  ]}
+  ,{itemA,directionPossibleIntersectionPartnersForCpp}
+]}];
+StringReplace[directionPossibleIntersectionPartnersForCpp,{"F"->"f","T"->"t"}]
