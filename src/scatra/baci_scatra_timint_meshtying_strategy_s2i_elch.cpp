@@ -1222,13 +1222,13 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::SetupMeshtying()
     {
       case INPAR::S2I::side_slave:
       {
-        DRT::UTILS::AddOwnedNodeGIDVector(
+        DRT::UTILS::AddOwnedNodeGIDFromList(
             *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), islavenodegidvec);
         break;
       }
       case INPAR::S2I::side_master:
       {
-        DRT::UTILS::AddOwnedNodeGIDVector(
+        DRT::UTILS::AddOwnedNodeGIDFromList(
             *scatratimint_->Discretization(), *s2imeshtying_condition->Nodes(), imasternodegidvec);
         break;
       }
