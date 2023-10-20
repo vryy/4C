@@ -372,6 +372,75 @@ namespace POROMULTIPHASESCATRA
         const std::vector<std::pair<std::string, double>>& constants) const override;
   };
 
+  /*!
+   * @brief exchange of carbon dioxide between air (phase in multiphase pore space) and blood
+   * (additional porous network) in the lung: LUNG_CARBONDIOXIDE_EXCHANGE_LAW
+   *
+   * * rho_CO2*alpha_CO2*Diff_CO2*(1/d)*(A/V_TLC)*(P_CO2B - P_CO2B)
+   *
+   * with
+   * P_CO2A: partial pressures of carbon dioxide in air
+   * P_CO2B: partial pressures of carbon dioxide in blood (calculation based on "QUANTITATIVE
+   * DESCRIPTION OF WHOLE BLOOD CO2 DISSOCIATION CURVE AND HALDANE EFFECT"
+   * (DOI: 10.1016/0034-5687(83)90038-5))
+   *
+   * (possible) INPUT DEFINITION:
+   * POROMULTIPHASESCATRA_FUNCTION LUNG_CARBONDIOXIDE_EXCHANGE_LAW NUMPARAMS 14 PARAMS
+   * rho_CO2 1.98e-9 DiffsolAdVTLC 4.5192e-3 pH 7.352 rho_air 1.0e-9 rho_bl 1.03e-6 rho_oxy 1.429e-9
+   * n 3 P_oB50 3.6 C_Hb 18.2 NC_Hb 0.25 alpha_oxy 2.1e-4 P_atmospheric 101.3 ScalingFormmHg
+   * 133.3e-3 volfrac_blood_ref 0.1
+   */
+  template <int dim>
+  class LungCarbonDioxideExchangeLaw : public PoroMultiPhaseScaTraFunction<dim>
+  {
+   public:
+    /*!
+     * \brief Constructor creating empty object. Add the function parameters (read from the
+     * input file) to the function
+     */
+    LungCarbonDioxideExchangeLaw(const std::vector<std::pair<std::string, double>>& funct_params);
+
+    /*!
+     * \brief evaluate function for a given set of variables
+     *
+     * \param[in] index For vector-valued functions, index defines the function-component which
+     * should be evaluated
+     * \param[in] variables A vector containing a pair (variablename, value) for
+     * each variable
+     * \param[in] constants A vector containing a pair (variablename, value) for each
+     * constant
+     */
+    double Evaluate(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) const override;
+
+    /*!
+     * \brief evaluate derivative at given position in space for a given set of variables and
+     * constants
+     *
+     * \param[in] index For vector-valued functions, index defines the function-component which
+     * should be evaluated
+     * \param[in] variables A vector containing a pair (variablename, value) for
+     * each variable
+     * \param[in] constants A vector containing a pair (variablename, value) for each
+     * constant
+     */
+    std::vector<double> EvaluateDerivative(
+        const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants,
+        const size_t component) const override;
+
+    /*!
+     * \brief check for correct order of input parameters variables and constants this check is
+     * performed only once
+     *
+     * \param[in] variables A vector containing a pair (variablename, value) for each variable
+     * \param[in] constants A vector containing a pair (variablename, value) for each constant
+     */
+    void CheckOrder(const std::vector<std::pair<std::string, double>>& variables,
+        const std::vector<std::pair<std::string, double>>& constants) const override;
+  };
+
 }  // namespace POROMULTIPHASESCATRA
 
 #endif
