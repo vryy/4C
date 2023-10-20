@@ -30,5 +30,6 @@ void INPAR::GEOMETRICSEARCH::SetValidParameters(Teuchos::RCP<Teuchos::ParameterL
       &boundingvolumestrategy);
 
   BoolParameter("WRITE_GEOMETRIC_SEARCH_VISUALIZATION", "no",
-      "If visualization output for the geometric seach should be written", &boundingvolumestrategy);
+      "If visualization output for the geometric search should be written",
+      &boundingvolumestrategy);
 }

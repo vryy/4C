@@ -67,14 +67,14 @@ namespace CORE::GEOMETRICSEARCH
     // tolerance here
     const double eps = 1e-5;
 
-    // The k-dop visualizaion is based on polygons defined which are defined by intersections of the
-    // k-dop planes. This pre-computed array (see the Mathematica scrip in the scrips/
+    // The k-dop visualization is based on polygons defined which are defined by intersections
+    // of the k-dop planes. This pre-computed array (see the Mathematica scrip in the scrips/
     // sub-directory) contains data that describes all possible intersection points between all
     // k-dop planes.
     //
-    // The first array index is the k-dop direction
+    // The first array index is the k-dop direction.
     // The second array index specifies if the min (0) or max (1) value along a direction is to be
-    // considered. The element addressed by these two indices is a vector of tuples. Each element of
+    // considered. The element addressed by these two indices is a vector of pairs. Each element of
     // the vector is a possible intersection plane to the described by the first two indices. This
     // is stored in a tuple where the first index is the direction id and the second index is the
     // min/max flag.
@@ -468,7 +468,7 @@ namespace CORE::GEOMETRICSEARCH
           }
           if (found_starting_point) break;
         }
-        if (!found_starting_point) dserror("A starting point for the polygon coupld not be found");
+        if (!found_starting_point) dserror("A starting point for the polygon could not be found.");
 
         // Starting from the found point loop over the edges of the polygon
         unsigned int offset = 0;
@@ -501,7 +501,7 @@ namespace CORE::GEOMETRICSEARCH
           }
         }
 
-        if (polygon_points.size() == 0) dserror("No polygon points where found");
+        if (polygon_points.size() == 0) dserror("No polygon points where found.");
 
         // Check if the start and end point are the same, if so remove the double point
         auto diff = polygon_points.back();
