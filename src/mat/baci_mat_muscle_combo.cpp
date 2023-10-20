@@ -148,7 +148,12 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
       MAT::PAR::Parameter* mat =
           DRT::Problem::Instance(probinst)->Materials()->ParameterById(matid);
       if (mat->Type() == MaterialType())
+      {
         params_ = static_cast<MAT::PAR::Muscle_Combo*>(mat);
+        activationFunction_ =
+            &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
+                params_->actFunctId_ - 1);
+      }
       else
         dserror("Type of parameter material %d does not fit to calling type %d", mat->Type(),
             MaterialType());
@@ -156,9 +161,6 @@ void MAT::Muscle_Combo::Unpack(const std::vector<char>& data)
   }
 
   anisotropyExtension_.UnpackAnisotropy(data, position);
-
-  activationFunction_ = &DRT::Problem::Instance()->FunctionById<DRT::UTILS::FunctionOfSpaceTime>(
-      params_->actFunctId_ - 1);
 
   if (position != data.size()) dserror("Mismatch in size of data %d <-> %d", data.size(), position);
 }
