@@ -55,14 +55,16 @@ namespace MAT
         CORE::LINALG::Matrix<6, 1>* linmass_disp, CORE::LINALG::Matrix<6, 1>* linmass_vel, int gp,
         int eleGID)
     {
-      dserror("Material does not support evaluation of nonlinear mass matrix");
+      dserror("Material of type %d does not support evaluation of nonlinear mass matrix",
+          this->MaterialType());
     };
 
     /// Evaluate strain energy function (for hyperelastic materials only)
     virtual void StrainEnergy(
         const CORE::LINALG::Matrix<6, 1>& glstrain, double& psi, int gp, int eleGID)
     {
-      dserror("Material does not support calculation of strain energy");
+      dserror("Material of type %d does not support calculation of strain energy",
+          this->MaterialType());
     };
 
     /// Evaluate material law for GEMM
@@ -74,7 +76,7 @@ namespace MAT
         const CORE::LINALG::Matrix<3, 3>* rcg_new, const CORE::LINALG::Matrix<3, 3>* rcg_old,
         const int gp, const int eleGID)
     {
-      dserror("Material does not support evaluation for GEMM");
+      dserror("Material of type %d does not support evaluation for GEMM", this->MaterialType());
     };
 
     /*!
@@ -137,7 +139,8 @@ namespace MAT
         const double* concentration, const double* temp, double* d_cauchyndir_dT,
         CORE::LINALG::Matrix<9, 1>* d2_cauchyndir_dF_dT)
     {
-      dserror("EvaluateCauchyNDirAndDerivatives not implemented for this material");
+      dserror("EvaluateCauchyNDirAndDerivatives not implemented for material of type %d",
+          this->MaterialType());
     }
 
     /*!
@@ -150,7 +153,8 @@ namespace MAT
     virtual void EvaluateLinearizationOD(const CORE::LINALG::Matrix<3, 3>& defgrd,
         double concentration, CORE::LINALG::Matrix<9, 1>* d_F_dx)
     {
-      dserror("EvaluateLinearizationOD not implemented for this material");
+      dserror(
+          "EvaluateLinearizationOD not implemented for material of type %d", this->MaterialType());
     }
     //@}
 
