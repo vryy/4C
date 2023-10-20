@@ -100,13 +100,15 @@ namespace
                                   DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>>& Bop,
       const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>, 1>& Hop,
       const double f_bar_factor, const double integration_fac,
-      const DRT::ELEMENTS::CauchyGreen<distype> cauchyGreen,
+      const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>,
+          DRT::ELEMENTS::DETAIL::num_dim<distype>>
+          cauchyGreen,
       const DRT::ELEMENTS::Stress<distype> stress_bar,
       CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>,
           DRT::ELEMENTS::DETAIL::num_dof_per_ele<distype>>& stiffness_matrix)
   {
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> rcg_bar_voigt;
-    CORE::LINALG::VOIGT::Strains::MatrixToVector(cauchyGreen.right_cauchy_green_, rcg_bar_voigt);
+    CORE::LINALG::VOIGT::Strains::MatrixToVector(cauchyGreen, rcg_bar_voigt);
 
     CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> ccg;
     ccg.MultiplyNN(stress_bar.cmat_, rcg_bar_voigt);
@@ -143,10 +145,11 @@ namespace
     const DRT::ELEMENTS::SpatialMaterialMapping<distype> spatial_material_mapping_fbar_factor =
         EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
 
-    const DRT::ELEMENTS::CauchyGreen<distype> cauchygreen_fbar_factor =
-        EvaluateCauchyGreen(spatial_material_mapping_fbar_factor);
+    const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>,
+        DRT::ELEMENTS::DETAIL::num_dim<distype>>
+        cauchygreen_fbar_factor = EvaluateCauchyGreen(spatial_material_mapping_fbar_factor);
 
-    return EvaluateGreenLagrangeStrain(cauchygreen_fbar_factor);
+    return DRT::ELEMENTS::EvaluateGreenLagrangeStrain<distype>(cauchygreen_fbar_factor);
   }
 }  // namespace
 
@@ -201,7 +204,8 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
         const SpatialMaterialMapping<distype> spatial_material_mapping =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates);
 
-        const CauchyGreen<distype> cauchygreen = EvaluateCauchyGreen(spatial_material_mapping);
+        const CORE::LINALG::Matrix<num_dim_, num_dim_> cauchygreen =
+            EvaluateCauchyGreen<distype>(spatial_material_mapping);
 
         CORE::LINALG::Matrix<num_str_, num_dof_per_ele_> Bop =
             EvaluateStrainGradient(jacobian_mapping, spatial_material_mapping);
@@ -219,11 +223,11 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::EvaluateNonlinearForceStiffnessMa
         const SpatialMaterialMapping<distype> spatial_material_mapping_bar =
             EvaluateSpatialMaterialMapping(jacobian_mapping, nodal_coordinates, fbar_factor);
 
-        const CauchyGreen<distype> cauchygreen_bar =
+        const CORE::LINALG::Matrix<num_dim_, num_dim_> cauchygreen_bar =
             EvaluateCauchyGreen(spatial_material_mapping_bar);
 
         CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain_bar =
-            EvaluateGreenLagrangeStrain(cauchygreen_bar);
+            EvaluateGreenLagrangeStrain<distype>(cauchygreen_bar);
 
         EvaluateGPCoordinatesAndAddToParameterList<distype>(
             nodal_coordinates, shape_functions, params);

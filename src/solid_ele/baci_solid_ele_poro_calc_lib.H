@@ -734,6 +734,37 @@ namespace DRT::ELEMENTS
     }
   }
 
+  template <DRT::Element::DiscretizationType distype>
+  struct CauchyGreenAndInverse
+  {
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> right_cauchy_green_;
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
+        inverse_right_cauchy_green_;
+  };
+
+  /*!
+   * @brief Evaluates right Cauchy-Green deformation tensor and its inverse
+   *
+   * @tparam distype: Discretization type
+   * @param spatial_material_mapping (in) : An object holding quantities of the spatial material
+   * mapping (deformation_gradient, inverse_deformation_gradient,
+   * determinant_deformation_gradient)
+   * @return CauchyGreenAndInverse<distype> : An object holding the right Cauchy-Green deformation
+   * tensor and its inverse
+   */
+  template <DRT::Element::DiscretizationType distype,
+      std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
+  CauchyGreenAndInverse<distype> EvaluateCauchyGreenAndInverse(
+      const SpatialMaterialMapping<distype>& spatial_material_mapping)
+  {
+    CauchyGreenAndInverse<distype> cauchygreen;
+
+    cauchygreen.right_cauchy_green_ = DRT::ELEMENTS::EvaluateCauchyGreen(spatial_material_mapping);
+    cauchygreen.inverse_right_cauchy_green_.Invert(cauchygreen.right_cauchy_green_);
+
+    return cauchygreen;
+  }
+
   /*!
    * @brief Evaluates the derivative of the inverse right Cauchy-Green deformation tensor w.r.t. the
    * displacements
@@ -753,7 +784,7 @@ namespace DRT::ELEMENTS
       std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_str<distype>,
       DETAIL::num_dim<distype> * DETAIL::num_nodes<distype>>
-  EvaluateInverseCauchyGreenLinearization(CauchyGreen<distype> cauchygreen,
+  EvaluateInverseCauchyGreenLinearization(CauchyGreenAndInverse<distype> cauchygreen,
       JacobianMapping<distype> jacobian_mapping,
       SpatialMaterialMapping<distype> spatial_material_mapping)
   {
@@ -770,30 +801,30 @@ namespace DRT::ELEMENTS
         for (int i = 0; i < DETAIL::num_dim<distype>; ++i)
         {
           dInverseCauchyGreen_dDisp(0, gid) +=
-              -2 * cauchygreen.inverse_right_cauchy_green(0, i) * jacobian_mapping.N_XYZ_(i, n) *
+              -2 * cauchygreen.inverse_right_cauchy_green_(0, i) * jacobian_mapping.N_XYZ_(i, n) *
               spatial_material_mapping.inverse_deformation_gradient_(0, k);
           dInverseCauchyGreen_dDisp(1, gid) +=
-              -2 * cauchygreen.inverse_right_cauchy_green(1, i) * jacobian_mapping.N_XYZ_(i, n) *
+              -2 * cauchygreen.inverse_right_cauchy_green_(1, i) * jacobian_mapping.N_XYZ_(i, n) *
               spatial_material_mapping.inverse_deformation_gradient_(1, k);
           dInverseCauchyGreen_dDisp(2, gid) +=
-              -2 * cauchygreen.inverse_right_cauchy_green(2, i) * jacobian_mapping.N_XYZ_(i, n) *
+              -2 * cauchygreen.inverse_right_cauchy_green_(2, i) * jacobian_mapping.N_XYZ_(i, n) *
               spatial_material_mapping.inverse_deformation_gradient_(2, k);
           /* ~~~ */
           dInverseCauchyGreen_dDisp(3, gid) +=
-              -cauchygreen.inverse_right_cauchy_green(0, i) * jacobian_mapping.N_XYZ_(i, n) *
+              -cauchygreen.inverse_right_cauchy_green_(0, i) * jacobian_mapping.N_XYZ_(i, n) *
                   spatial_material_mapping.inverse_deformation_gradient_(1, k) -
               spatial_material_mapping.inverse_deformation_gradient_(0, k) *
-                  jacobian_mapping.N_XYZ_(i, n) * cauchygreen.inverse_right_cauchy_green(1, i);
+                  jacobian_mapping.N_XYZ_(i, n) * cauchygreen.inverse_right_cauchy_green_(1, i);
           dInverseCauchyGreen_dDisp(4, gid) +=
-              -cauchygreen.inverse_right_cauchy_green(1, i) * jacobian_mapping.N_XYZ_(i, n) *
+              -cauchygreen.inverse_right_cauchy_green_(1, i) * jacobian_mapping.N_XYZ_(i, n) *
                   spatial_material_mapping.inverse_deformation_gradient_(2, k) -
               spatial_material_mapping.inverse_deformation_gradient_(1, k) *
-                  jacobian_mapping.N_XYZ_(i, n) * cauchygreen.inverse_right_cauchy_green(2, i);
+                  jacobian_mapping.N_XYZ_(i, n) * cauchygreen.inverse_right_cauchy_green_(2, i);
           dInverseCauchyGreen_dDisp(5, gid) +=
-              -cauchygreen.inverse_right_cauchy_green(2, i) * jacobian_mapping.N_XYZ_(i, n) *
+              -cauchygreen.inverse_right_cauchy_green_(2, i) * jacobian_mapping.N_XYZ_(i, n) *
                   spatial_material_mapping.inverse_deformation_gradient_(0, k) -
               spatial_material_mapping.inverse_deformation_gradient_(2, k) *
-                  jacobian_mapping.N_XYZ_(i, n) * cauchygreen.inverse_right_cauchy_green(0, i);
+                  jacobian_mapping.N_XYZ_(i, n) * cauchygreen.inverse_right_cauchy_green_(0, i);
         }
       }
     }

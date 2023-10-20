@@ -451,11 +451,13 @@ namespace
           STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas>& Mtilde,
       const CORE::LINALG::Matrix<STR::ELEMENTS::EasTypeToNumEas<eastype>::num_eas, 1>& alpha)
   {
-    const DRT::ELEMENTS::CauchyGreen<distype> displacement_based_cauchygreen =
-        EvaluateCauchyGreen(displacement_based_mapping);
+    const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_dim<distype>,
+        DRT::ELEMENTS::DETAIL::num_dim<distype>>
+        displacement_based_cauchygreen =
+            DRT::ELEMENTS::EvaluateCauchyGreen<distype>(displacement_based_mapping);
 
     const CORE::LINALG::Matrix<DRT::ELEMENTS::DETAIL::num_str<distype>, 1> gl_strain =
-        EvaluateGreenLagrangeStrain(displacement_based_cauchygreen);
+        DRT::ELEMENTS::EvaluateGreenLagrangeStrain<distype>(displacement_based_cauchygreen);
 
     return EvaluateEnhancedAssumedGLStrains<distype, eastype>(gl_strain, Mtilde, alpha);
   }
