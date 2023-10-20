@@ -16,15 +16,17 @@
 
 #include "baci_beaminteraction_submodel_evaluator_generic.H"
 #include "baci_binstrategy_utils.H"
-#include "baci_discretization_geometric_search_params.H"
-#include "baci_discretization_geometric_search_visualization.H"
 #include "baci_io_visualization_manager.H"
 
-// forward declaration ...
 namespace DRT
 {
   class Element;
 }
+namespace CORE::GEOMETRICSEARCH
+{
+  class GeometricSearchParams;
+  class GeometricSearchVisualization;
+}  // namespace CORE::GEOMETRICSEARCH
 namespace BEAMINTERACTION
 {
   class BeamContactParams;

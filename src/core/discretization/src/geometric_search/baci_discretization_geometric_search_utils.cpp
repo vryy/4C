@@ -488,8 +488,7 @@ namespace CORE::GEOMETRICSEARCH
                 // Check if the new found point is the same as the last found point
                 auto diff = polygon_points.back();
                 diff -= intersection_result.second;
-                if (FADUTILS::VectorNorm(diff) > eps)
-                  polygon_points.push_back(intersection_result.second);
+                if (diff.Norm2() > eps) polygon_points.push_back(intersection_result.second);
               }
               else
               {
@@ -506,7 +505,7 @@ namespace CORE::GEOMETRICSEARCH
         // Check if the start and end point are the same, if so remove the double point
         auto diff = polygon_points.back();
         diff -= polygon_points[0];
-        if (FADUTILS::VectorNorm(diff) < eps)
+        if (diff.Norm2() < eps)
         {
           polygon_points.pop_back();
         }
@@ -523,7 +522,7 @@ namespace CORE::GEOMETRICSEARCH
             {
               auto diff = all_points[i_all_points];
               diff -= point;
-              if (FADUTILS::VectorNorm(diff) < eps)
+              if (diff.Norm2() < eps)
               {
                 my_point_ids.push_back(i_all_points);
                 found = true;
