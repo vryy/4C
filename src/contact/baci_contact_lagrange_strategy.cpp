@@ -19,7 +19,6 @@
 #include "baci_contact_utils.H"
 #include "baci_inpar_contact.H"
 #include "baci_io.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_create.H"
@@ -27,6 +26,7 @@
 #include "baci_mortar_defines.H"
 #include "baci_mortar_utils.H"
 #include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_utils_epetra_exceptions.H"
 
 #include <Epetra_FEVector.h>
 #include <Teuchos_TimeMonitor.hpp>

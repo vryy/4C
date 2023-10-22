@@ -18,7 +18,6 @@ MATLAB, PGFPlot or other tools.
 #include "baci_io_every_iteration_writer.H"
 #include "baci_io_pstream.H"
 #include "baci_lib_element.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_lib_node.H"
 #include "baci_linalg_utils_sparse_algebra_assemble.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
@@ -26,6 +25,7 @@ MATLAB, PGFPlot or other tools.
 #include "baci_solver_nonlin_nox_constraint_group.H"
 #include "baci_solver_nonlin_nox_solver_linesearchbased.H"
 #include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_utils_epetra_exceptions.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Map.h>

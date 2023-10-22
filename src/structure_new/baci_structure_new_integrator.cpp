@@ -12,7 +12,6 @@
 #include "baci_structure_new_integrator.H"
 
 #include "baci_io_pstream.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_lib_function.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_linalg_sparsematrix.H"
@@ -25,6 +24,7 @@
 #include "baci_structure_new_nox_nln_str_linearsystem.H"
 #include "baci_structure_new_timint_base.H"
 #include "baci_structure_new_timint_noxinterface.H"
+#include "baci_utils_epetra_exceptions.H"
 #include "baci_utils_exceptions.H"
 
 #include <Epetra_Vector.h>

@@ -18,10 +18,10 @@ parameter cn
 #include "baci_inpar_contact.H"
 #include "baci_inpar_structure.H"
 #include "baci_io_pstream.H"
-#include "baci_lib_epetra_utils.H"
 #include "baci_linalg_multiply.H"
 #include "baci_linalg_utils_sparse_algebra_manipulation.H"
 #include "baci_structure_new_model_evaluator_contact.H"
+#include "baci_utils_epetra_exceptions.H"
 
 #include <Teuchos_ParameterList.hpp>
 
