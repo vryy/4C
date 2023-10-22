@@ -418,7 +418,7 @@ void FPSI::Monolithic::TimeStep()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 
-void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FPSI::Monolithic::Evaluate");
 
@@ -438,9 +438,9 @@ void FPSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Teuchos::RCP<const Epetra_Vector> pfx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  if (x != Teuchos::null)
+  if (stepinc != Teuchos::null)
   {
-    ExtractFieldVectors(x, sx, pfx, fx, ax, (iter_ == 1 and !active_FD_check_));
+    ExtractFieldVectors(stepinc, sx, pfx, fx, ax, (iter_ == 1 and !active_FD_check_));
   }
   else
   {

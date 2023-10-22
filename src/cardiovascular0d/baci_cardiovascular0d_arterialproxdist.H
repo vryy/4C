@@ -64,8 +64,8 @@ namespace UTILS
 
     Cardiovascular0DArterialProxDist(Teuchos::RCP<DRT::Discretization>
                                          discr,  ///< Discretization where Cardiovascular0D lives on
-        const std::string& CondName,  ///< Name of condition to create Cardiovascular0D from
-        std::vector<int>& curID       ///< current ID
+        const std::string& conditionname,  ///< Name of condition to create Cardiovascular0D from
+        std::vector<int>& curID            ///< current ID
     );
 
 

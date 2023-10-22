@@ -273,7 +273,7 @@ namespace DRT
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
       ThicknessDirection sosh8_enfthickdir(CORE::LINALG::Matrix<NUMDIM_SOH8, 1>&
-              glothickdir  ///< global direction of enforced thickness direction
+              thickdirglo  ///< global direction of enforced thickness direction
       );
 
       //! return thickness direction

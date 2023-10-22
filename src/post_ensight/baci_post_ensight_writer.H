@@ -326,7 +326,8 @@ class EnsightWriter : public PostWriterBase
       const std::string& groupname, const std::string& name, const int numdf) override;
   void WriteElementDOFResultStep(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
-      const std::string& groupname, const std::string& name, const int numdf, const int from) const;
+      const std::string& groupname, const std::string& name, const int numdof,
+      const int from) const;
   void WriteElementResultStep(std::ofstream& file, PostResult& result,
       std::map<std::string, std::vector<std::ofstream::pos_type>>& resultfilepos,
       const std::string& groupname, const std::string& name, const int numdf, const int from);

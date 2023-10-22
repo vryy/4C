@@ -1425,7 +1425,7 @@ namespace CONTACT
      *
      *  \author hiermeier \date 06/17 */
     Teuchos::RCP<CORE::LINALG::SparseMatrix> ExtractMatrix(const CORE::LINALG::SparseMatrix& source,
-        const Epetra_Map& target_row_map, const Epetra_Map& target_col_map);
+        const Epetra_Map& target_range_map, const Epetra_Map& target_domain_map);
 
     /*--------------------------------------------------------------------------*/
     /*! \brief Scale the vector entries of the target vector with the entries of

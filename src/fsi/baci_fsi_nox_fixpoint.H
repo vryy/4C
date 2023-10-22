@@ -54,11 +54,11 @@ namespace NOX
       bool reset(const Teuchos::RCP<NOX::GlobalData>& gd, Teuchos::ParameterList& params) override;
 
       // derived
-      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& group,
           const NOX::Solver::Generic& solver) override;
 
       // derived
-      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& grp,
+      bool compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& group,
           const NOX::Solver::LineSearchBased& solver) override;
 
      private:

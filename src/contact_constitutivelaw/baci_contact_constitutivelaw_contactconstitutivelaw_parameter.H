@@ -66,8 +66,7 @@ namespace CONTACT
        * params[in] contactconstitutivelawdata "dumb" container containing the
        * contactconstitutivelaw data from the input file
        */
-      Parameter(
-          const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> contactconstitutivelawdata);
+      Parameter(const Teuchos::RCP<const CONTACT::CONSTITUTIVELAW::Container> coconstlawdata);
 
       /// destructor
       virtual ~Parameter() = default;

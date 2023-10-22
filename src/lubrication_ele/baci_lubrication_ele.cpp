@@ -277,12 +277,12 @@ bool DRT::ELEMENTS::Lubrication::ReadElement(
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::LubricationBoundary::LubricationBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Lubrication* parent, const int lbeleid)
+    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Lubrication* parent, const int lsurface)
     : DRT::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lbeleid);
+  SetParentMasterElement(parent, lsurface);
   return;
 }
 

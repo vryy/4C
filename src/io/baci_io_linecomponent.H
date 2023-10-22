@@ -116,7 +116,7 @@ namespace INPUT
     std::string WriteReadTheDocs() override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
    private:
     /// separator string, i.e. the NAME of variable in DAT input file
@@ -142,7 +142,7 @@ namespace INPUT
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
    private:
     /// default value
@@ -170,12 +170,12 @@ namespace INPUT
 
     std::string WriteReadTheDocs() override;
 
-    void Print(std::ostream& stream, const DRT::Container& cond) override;
+    void Print(std::ostream& stream, const DRT::Container& container) override;
 
     Teuchos::Array<std::string> GetOptions() override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
    private:
     std::string defaultvalue_;
@@ -213,7 +213,7 @@ namespace INPUT
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
     std::string WriteReadTheDocs() override;
 
@@ -242,7 +242,7 @@ namespace INPUT
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
     void SetLength(int newlength);
 
@@ -279,7 +279,7 @@ namespace INPUT
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
    private:
     RealComponentData data_;
@@ -308,7 +308,7 @@ namespace INPUT
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
    private:
     std::variant<int, LengthDefinition> length_;
@@ -332,7 +332,7 @@ namespace INPUT
     void Describe(std::ostream& stream) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& material) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
    private:
     void PrintYesNo(std::ostream& stream,  ///< stream to add output
@@ -379,10 +379,10 @@ namespace INPUT
 
     Teuchos::Array<std::string> GetOptions() override;
 
-    void Print(std::ostream& stream, const DRT::Container& cond) override;
+    void Print(std::ostream& stream, const DRT::Container& container) override;
 
     Teuchos::RCP<std::stringstream> Read(const std::string& section_name,
-        Teuchos::RCP<std::stringstream> condline, DRT::Container& condition) override;
+        Teuchos::RCP<std::stringstream> condline, DRT::Container& container) override;
 
    private:
     KeyType default_key_;

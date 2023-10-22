@@ -445,7 +445,7 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
 
 // determinant of jacobian matrix
 
-double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDenseMatrix& xye,
+double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDenseMatrix& xyze,
     const CORE::LINALG::SerialDenseMatrix& deriv,
     std::vector<double>* unrm,  // unit normal
     const int iel)
@@ -475,7 +475,7 @@ double DRT::ELEMENTS::Wall1Line::w1_substitution(const CORE::LINALG::SerialDense
   // compute derivative of parametrization
   double dr = 0.0;
   CORE::LINALG::SerialDenseMatrix der_par(1, 2);
-  int err = CORE::LINALG::multiplyNT(der_par, deriv, xye);
+  int err = CORE::LINALG::multiplyNT(der_par, deriv, xyze);
   if (err != 0) dserror("Multiply failed");
   dr = sqrt(der_par(0, 0) * der_par(0, 0) + der_par(0, 1) * der_par(0, 1));
   if (unrm != nullptr)

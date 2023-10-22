@@ -105,14 +105,14 @@ NOX::NLN::CONSTRAINT::Group::GetConstraintInterfacePtr(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::CONSTRAINT::Group::GetModelValue(
-    const enum NOX::NLN::MeritFunction::MeritFctName mf_type) const
+    const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const
 {
-  double mrtFctVal = NOX::NLN::Group::GetModelValue(mf_type);
+  double mrtFctVal = NOX::NLN::Group::GetModelValue(merit_func_type);
 
   // constraint contributions
   double constr_contr = 0.0;
   for (const auto& constr_iter : userConstraintInterfaces_)
-    constr_contr += constr_iter.second->GetModelValue(mf_type);
+    constr_contr += constr_iter.second->GetModelValue(merit_func_type);
 
   return mrtFctVal + constr_contr;
 }
@@ -120,19 +120,20 @@ double NOX::NLN::CONSTRAINT::Group::GetModelValue(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double NOX::NLN::CONSTRAINT::Group::GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
-    const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+    const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type,
     const enum NOX::NLN::MeritFunction::LinOrder linorder,
     const enum NOX::NLN::MeritFunction::LinType lintype) const
 {
   // contributions of the primary field
-  double linVal = NOX::NLN::Group::GetLinearizedModelTerms(dir, mf_type, linorder, lintype);
+  double linVal = NOX::NLN::Group::GetLinearizedModelTerms(dir, merit_func_type, linorder, lintype);
 
   const NOX::Epetra::Vector& dir_nox_epetra = dynamic_cast<const NOX::Epetra::Vector&>(dir);
   const Epetra_Vector& dir_epetra = dir_nox_epetra.getEpetraVector();
 
   // constraint contributions
   for (const auto& constr_iter : userConstraintInterfaces_)
-    linVal += constr_iter.second->GetLinearizedModelTerms(dir_epetra, mf_type, linorder, lintype);
+    linVal +=
+        constr_iter.second->GetLinearizedModelTerms(dir_epetra, merit_func_type, linorder, lintype);
 
   return linVal;
 }

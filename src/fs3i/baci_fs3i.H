@@ -139,7 +139,8 @@ namespace FS3I
 
    private:
     /// extracts membrane concentration in membrane (interface)
-    void ExtractMembraneConcentration(std::vector<Teuchos::RCP<Epetra_Vector>>& MeanConc) const;
+    void ExtractMembraneConcentration(
+        std::vector<Teuchos::RCP<Epetra_Vector>>& MembraneConcentration) const;
 
     /// Calculation of membane concentration in the membrane between fluid-scatra and
     /// structure-scatra

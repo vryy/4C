@@ -264,7 +264,7 @@ namespace DRT
        *  \author grill
        *  \date 07/16 */
       void GetTriadAtXi(CORE::LINALG::Matrix<3, 3>& triad, const double& xi,
-          const std::vector<double>& psi_totlag) const override;
+          const std::vector<double>& disp) const override;
 
       /** \brief get generalized interpolation matrix which yields the variation of the position and
        *         orientation at xi \in [-1,1] if multiplied with the vector of primary DoF
@@ -984,7 +984,7 @@ namespace DRT
 
       //! lump mass matrix
       template <unsigned int nnode>
-      void lumpmass(CORE::LINALG::SerialDenseMatrix* emass);
+      void lumpmass(CORE::LINALG::SerialDenseMatrix* massmatrix);
 
      public:
       //! determine Gauss rule from required type of integration and parameter list

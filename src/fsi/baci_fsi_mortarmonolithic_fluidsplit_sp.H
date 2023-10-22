@@ -152,7 +152,7 @@ namespace FSI
     #lag_mult_.
     */
     void Evaluate(
-        Teuchos::RCP<const Epetra_Vector> stepinc  ///< increment between time step n and n+1
+        Teuchos::RCP<const Epetra_Vector> step_increment  ///< increment between time step n and n+1
         ) override;
 
     void InitialGuess(Teuchos::RCP<Epetra_Vector> initial_guess) final;

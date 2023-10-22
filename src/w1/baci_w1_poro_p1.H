@@ -263,7 +263,7 @@ namespace DRT
           const CORE::LINALG::Matrix<Base::numdim_, Base::numnod_>& evelnp,
           const CORE::LINALG::Matrix<Base::numnod_, 1>& epreaf,
           const CORE::LINALG::Matrix<Base::numnod_, 1>* porosity_dof,
-          CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& estiff_p1,
+          CORE::LINALG::Matrix<Base::numnod_, Base::numnod_>& ecoupl_p1,
           CORE::LINALG::Matrix<Base::numdof_, (Base::numdim_ + 1) * Base::numnod_>& sub_stiff);
     };
   }  // namespace ELEMENTS

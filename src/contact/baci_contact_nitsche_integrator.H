@@ -148,7 +148,8 @@ namespace CONTACT
         const std::vector<CORE::GEN::pairedvector<int, double>>& dmxi, double jac,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap, double wgt, double gap,
         const CORE::GEN::pairedvector<int, double>& dgapgp, const double* gpn,
-        std::vector<CORE::GEN::pairedvector<int, double>>& dnmap_unit, double* sxi, double* mxi);
+        std::vector<CORE::GEN::pairedvector<int, double>>& deriv_contact_normal, double* sxi,
+        double* mxi);
 
    protected:
     template <int dim>

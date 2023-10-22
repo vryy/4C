@@ -40,7 +40,7 @@ namespace XFEM
        *
        *  \author hiermeier
        *  \date 09/16 */
-      CouplingDofSet(const int& numreservedofpernode, const int& g_node_index_range,
+      CouplingDofSet(const int& my_num_reserve_dof_per_node, const int& g_node_index_range,
           const int& g_num_std_dof_per_node, const std::map<int, int>& my_num_dofs_per_node);
 
       /** \brief Get the GIDs of all DoFs of a node.

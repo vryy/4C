@@ -538,7 +538,7 @@ namespace CORE::GEO
        *
        *  \author sudhakar
        *  \date 05/12 */
-      bool IsClockwiseOrderedPolygon(std::vector<Point*> polyPoints, std::string& projType);
+      bool IsClockwiseOrderedPolygon(std::vector<Point*> polyPoints, std::string& projPlane);
 
       /*! \brief Delete unnecessary in-line points.
        *
@@ -607,7 +607,7 @@ namespace CORE::GEO
        *  \date 11/14 */
       double getAreaTri(
           const std::vector<Point*>& poly, CORE::LINALG::Matrix<3, 1>* normalvec = nullptr);
-      double getAreaTri(const double* a, const double* b, const double* c,
+      double getAreaTri(const double* p0_ptr, const double* p1_ptr, const double* p2_ptr,
           CORE::LINALG::Matrix<3, 1>* normalvec = nullptr);
       template <class T>
       double getAreaTri(const T& xyze, CORE::LINALG::Matrix<3, 1>* normalvec = nullptr)

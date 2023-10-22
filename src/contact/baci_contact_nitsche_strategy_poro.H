@@ -62,10 +62,10 @@ namespace CONTACT
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum DRT::UTILS::VecBlockType& bp) const override;
 
     virtual Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+        const enum DRT::UTILS::MatBlockType& bp) const;
 
 
     // Flag for Poro No Penetration Condition

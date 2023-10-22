@@ -103,7 +103,7 @@ namespace MAT
           CORE::LINALG::Matrix<3, 1>&
               dPmodI,  ///< first derivative with respect to modified invariants
           CORE::LINALG::Matrix<6, 1>&
-              ddmodPII,  ///< second derivative with respect to modified invariants
+              ddPmodII,  ///< second derivative with respect to modified invariants
           const CORE::LINALG::Matrix<3, 1>&
               modinv,  ///< modified invariants of right Cauchy-Green tensor
           int gp,      ///< Gauss point

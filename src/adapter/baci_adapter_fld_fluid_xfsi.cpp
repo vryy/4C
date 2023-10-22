@@ -137,13 +137,14 @@ void ADAPTER::XFluidFSI::ApplyStructInterfaceVelocities(Teuchos::RCP<Epetra_Vect
 /*----------------------------------------------------------------------*/
 //  apply the interface displacements to the fluid
 /*----------------------------------------------------------------------*/
-void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
+void ADAPTER::XFluidFSI::ApplyStructMeshDisplacement(
+    Teuchos::RCP<const Epetra_Vector> interface_disp)
 {
   // update last increment, before we set new idispnp
   mesh_coupling_fsi_->UpdateDisplacementIterationVectors();
 
   // set new idispnp
-  structinterface_->InsertFSICondVector(idisp, mesh_coupling_fsi_->IDispnp());
+  structinterface_->InsertFSICondVector(interface_disp, mesh_coupling_fsi_->IDispnp());
 }
 
 /*----------------------------------------------------------------------*

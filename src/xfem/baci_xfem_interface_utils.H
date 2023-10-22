@@ -151,8 +151,8 @@ namespace XFEM
                                     ///< (viscous+convective part)
         const CORE::LINALG::Matrix<3, 1>& normal,    ///< interface-normal vector
         const double h_k,                            ///< characteristic element length
-        const double kappa1,                         ///< Weight parameter (parameter +/master side)
-        const double kappa2,                         ///< Weight parameter (parameter -/slave  side)
+        const double kappa_m,                        ///< Weight parameter (parameter +/master side)
+        const double kappa_s,                        ///< Weight parameter (parameter -/slave  side)
         const CORE::LINALG::Matrix<3, 1>& velint_m,  ///< Master side velocity at gauss-point
         const CORE::LINALG::Matrix<3, 1>& velint_s,  ///< Slave side velocity at gauss-point
         const double NIT_visc_stab_fac,  ///< Nitsche's viscous scaling part of penalty term

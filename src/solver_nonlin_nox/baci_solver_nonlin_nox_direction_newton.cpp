@@ -28,12 +28,12 @@ NOX::NLN::Direction::Newton::Newton(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 bool NOX::NLN::Direction::Newton::compute(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln, const NOX::Solver::Generic& solver)
+    NOX::Abstract::Vector& dir, NOX::Abstract::Group& group, const NOX::Solver::Generic& solver)
 {
   NOX::Abstract::Group::ReturnType status;
 
   // dynamic cast of the nox_abstract_group
-  NOX::NLN::Group* nlnSoln = dynamic_cast<NOX::NLN::Group*>(&soln);
+  NOX::NLN::Group* nlnSoln = dynamic_cast<NOX::NLN::Group*>(&group);
 
   if (nlnSoln == nullptr)
   {
@@ -54,7 +54,7 @@ bool NOX::NLN::Direction::Newton::compute(
   // direct return, because the isValid flags are already set to true!
   try
   {
-    return NOX::Direction::Newton::compute(dir, soln, solver);
+    return NOX::Direction::Newton::compute(dir, group, solver);
   }
   catch (const char* e)
   {

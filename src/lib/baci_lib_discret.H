@@ -2173,7 +2173,7 @@ namespace DRT
      *  \date 09/07    */
     virtual void AssignGlobalIDs(const Epetra_Comm& comm,
         const std::map<std::vector<int>, Teuchos::RCP<DRT::Element>>& elementmap,
-        std::map<int, Teuchos::RCP<DRT::Element>>& finalelements);
+        std::map<int, Teuchos::RCP<DRT::Element>>& finalgeometry);
 
 
     //! Name of this discretization

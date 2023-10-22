@@ -79,7 +79,7 @@ namespace ART
 
       \param vel new guess at velocity, cross-sectional area, and pressure
     */
-    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel);
+    void Evaluate(Teuchos::RCP<const Epetra_Vector> vel){};
 
     /*!
     \brief Update the solution after convergence of the linear
@@ -123,7 +123,7 @@ namespace ART
 
 
     void CalcScatraFromScatraFW(
-        Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatran_fb);
+        Teuchos::RCP<Epetra_Vector> scatra, Teuchos::RCP<Epetra_Vector> scatra_fb);
 
     /*!
     \brief read restart data

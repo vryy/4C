@@ -119,10 +119,10 @@ namespace MAT
     Teuchos::RCP<Material> Clone() const override { return Teuchos::rcp(new MixFrac(*this)); }
 
     /// compute dynamic viscosity
-    double ComputeViscosity(const double temp) const;
+    double ComputeViscosity(const double mixfrac) const;
 
     /// compute dynamic diffusivity
-    double ComputeDiffusivity(const double temp) const;
+    double ComputeDiffusivity(const double mixfrac) const;
 
     /// compute density
     double ComputeDensity(const double mixfrac) const;

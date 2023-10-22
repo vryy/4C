@@ -2018,7 +2018,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatra(RedAirway* ele, Teuchos::Pa
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::SolveScatraBifurcations(RedAirway* ele,
     Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& scatranp, CORE::LINALG::SerialDenseVector& volumeMix_np,
+    CORE::LINALG::SerialDenseVector& scatra_np, CORE::LINALG::SerialDenseVector& volumeMix_np,
     std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
   const int myrank = discretization.Comm().MyPID();

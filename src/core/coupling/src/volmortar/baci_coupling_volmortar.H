@@ -78,8 +78,8 @@ namespace CORE::VOLMORTAR
      */
     VolMortarCoupl(int dim, Teuchos::RCP<::DRT::Discretization> dis1,
         Teuchos::RCP<::DRT::Discretization> dis2, std::vector<int>* coupleddof12 = nullptr,
-        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofsets12 = nullptr,
-        std::pair<int, int>* dofsets21 = nullptr,
+        std::vector<int>* coupleddof21 = nullptr, std::pair<int, int>* dofset12 = nullptr,
+        std::pair<int, int>* dofset21 = nullptr,
         Teuchos::RCP<CORE::VOLMORTAR::UTILS::DefaultMaterialStrategy> materialstrategy =
             Teuchos::null);
 
@@ -303,13 +303,13 @@ namespace CORE::VOLMORTAR
      \brief perform 3D element-wise integration for P12
 
      */
-    virtual void Integrate3DEleBased_P12(::DRT::Element& sele, std::vector<int>& foundeles);
+    virtual void Integrate3DEleBased_P12(::DRT::Element& Aele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for BDis
 
      */
-    virtual void Integrate3DEleBased_P21(::DRT::Element& sele, std::vector<int>& foundeles);
+    virtual void Integrate3DEleBased_P21(::DRT::Element& Bele, std::vector<int>& foundeles);
 
     /*!
      \brief perform 3D element-wise integration for ADis for meshinit
@@ -323,7 +323,7 @@ namespace CORE::VOLMORTAR
 
      */
     virtual void Integrate3DEleBased_BDis_MeshInit(
-        ::DRT::Element& Bele, std::vector<int>& foundeles, int dofseta, int dofsetb);
+        ::DRT::Element& Bele, std::vector<int>& foundeles, int dofsetb, int dofseta);
     /*!
      \brief perform 3D integration of created cells
 

@@ -110,9 +110,9 @@ CROSSLINKING::CrosslinkerNode* CROSSLINKING::CrosslinkerNode::Clone() const
 /*----------------------------------------------------------------------------*
  |  << operator                                                eichinger 10/16|
  *----------------------------------------------------------------------------*/
-std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker)
+std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node)
 {
-  crosslinker.Print(os);
+  crosslinker_node.Print(os);
   return os;
 }
 

@@ -86,7 +86,7 @@ namespace MIXTURE
      * @param eleGID Global element id
      */
     void EvaluateElasticPart(const CORE::LINALG::Matrix<3, 3>& F,
-        const CORE::LINALG::Matrix<3, 3>& iF_in, Teuchos::ParameterList& params,
+        const CORE::LINALG::Matrix<3, 3>& iFextin, Teuchos::ParameterList& params,
         CORE::LINALG::Matrix<6, 1>& S_stress, CORE::LINALG::Matrix<6, 6>& cmat, int gp,
         int eleGID) override;
 

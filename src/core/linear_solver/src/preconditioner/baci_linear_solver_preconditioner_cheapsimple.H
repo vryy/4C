@@ -46,7 +46,7 @@ namespace CORE::LINEAR_SOLVER
         \brief Standard Constructor
     */
     explicit CheapSIMPLE_BlockPreconditioner(Teuchos::RCP<Epetra_Operator> A,
-        const Teuchos::ParameterList& velocitylist, const Teuchos::ParameterList& pressurelist,
+        const Teuchos::ParameterList& predict_list, const Teuchos::ParameterList& correct_list,
         FILE* outfile = nullptr);
 
     /*!

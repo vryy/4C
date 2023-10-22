@@ -806,7 +806,7 @@ void FSI::Monolithic::NonLinErrorCheck()
 
 /*----------------------------------------------------------------------------*/
 /*----------------------------------------------------------------------------*/
-void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::Monolithic::Evaluate");
 
@@ -819,9 +819,9 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   Teuchos::RCP<const Epetra_Vector> fx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  if (x != Teuchos::null)
+  if (step_increment != Teuchos::null)
   {
-    ExtractFieldVectors(x, sx, fx, ax);
+    ExtractFieldVectors(step_increment, sx, fx, ax);
 
     if (sdbg_ != Teuchos::null)
     {

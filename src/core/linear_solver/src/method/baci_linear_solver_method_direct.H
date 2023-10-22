@@ -35,8 +35,8 @@ namespace CORE::LINEAR_SOLVER
      * @param reset Boolean flag to enforce a full reset of the solver object
      * @param projector Krylov projector
      */
-    void Setup(Teuchos::RCP<MatrixType> A, Teuchos::RCP<VectorType> x, Teuchos::RCP<VectorType> b,
-        const bool refactor, const bool reset,
+    void Setup(Teuchos::RCP<MatrixType> matrix, Teuchos::RCP<VectorType> x,
+        Teuchos::RCP<VectorType> b, const bool refactor, const bool reset,
         Teuchos::RCP<CORE::LINALG::KrylovProjector> projector = Teuchos::null) override;
 
     //! Actual call to the underlying amesos solver

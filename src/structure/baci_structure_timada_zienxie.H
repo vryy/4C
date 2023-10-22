@@ -39,7 +39,7 @@ namespace STR
   {
    public:
     //! Constructor
-    TimAdaZienXie(const Teuchos::ParameterList& sdynparams,  //!< TIS input parameters
+    TimAdaZienXie(const Teuchos::ParameterList& timeparams,  //!< TIS input parameters
         const Teuchos::ParameterList& adaparams,             //!< adaptive input flags
         Teuchos::RCP<TimInt> tis                             //!< marching time integrator
     );

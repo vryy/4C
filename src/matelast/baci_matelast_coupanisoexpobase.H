@@ -123,7 +123,7 @@ namespace MAT
        * \param eleGID (in) : global element id
        */
       void EvaluateFirstDerivativesAniso(CORE::LINALG::Matrix<2, 1>& dPI_aniso,
-          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
       /*!
        * \brief Evaluate second derivative of the strain energy function with respect to the
@@ -135,8 +135,8 @@ namespace MAT
        * \param gp (in) : Gauss point
        * \param eleGID (in) : global element id
        */
-      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPI_aniso,
-          const CORE::LINALG::Matrix<3, 3>& C, int gp, int eleGID) override;
+      void EvaluateSecondDerivativesAniso(CORE::LINALG::Matrix<3, 1>& ddPII_aniso,
+          const CORE::LINALG::Matrix<3, 3>& rcg, int gp, int eleGID) override;
 
 
       /*!
@@ -220,10 +220,10 @@ namespace MAT
 
       /// Evaluates strain energy for automatic differentiation with FAD
       template <typename T>
-      void EvaluateFunc(T& psi,                      ///< strain energy functions
-          CORE::LINALG::Matrix<3, 3, T> const& rcg,  ///< Right Cauchy-Green tensor
-          int gp,                                    ///< Gauss point
-          int eleGID) const;                         ///< element GID
+      void EvaluateFunc(T& psi,                    ///< strain energy functions
+          CORE::LINALG::Matrix<3, 3, T> const& C,  ///< Right Cauchy-Green tensor
+          int gp,                                  ///< Gauss point
+          int eleGID) const;                       ///< element GID
 
       /// Set fiber directions
       void SetFiberVecs(double newgamma,             ///< new angle

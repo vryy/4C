@@ -624,7 +624,7 @@ namespace CORE::GEO
     {
      public:
       //! constructor
-      Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
+      Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
       ::DRT::Element::DiscretizationType Shape() override
@@ -642,7 +642,7 @@ namespace CORE::GEO
     {
      public:
       //! constructor
-      Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
+      Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
       ::DRT::Element::DiscretizationType Shape() override
@@ -678,7 +678,7 @@ namespace CORE::GEO
     {
      public:
       //! constructor
-      Wedge15ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
+      Wedge15ElementHandle(Mesh& mesh, int eid, const std::vector<int>& node_ids);
 
       //! get the shape of the element
       ::DRT::Element::DiscretizationType Shape() override

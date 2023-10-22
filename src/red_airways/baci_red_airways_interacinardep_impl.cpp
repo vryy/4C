@@ -415,30 +415,3 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(RedInterAcin
     }    // END of if node is available on this processor
   }      // End of node i has a condition
 }
-
-
-/*----------------------------------------------------------------------*
- |  CalcFlowRates                                                       |
- |                                                         ismail 01/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1,  // a_volumenp,
-    CORE::LINALG::SerialDenseVector& elevec2,  // a_volume_strain_np,
-    std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
-
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Get the coupled the values on the coupling interface    ismail 07/10|
- |  of the 3D/reduced-D problem                                         |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(RedInterAcinarDep* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    Teuchos::RCP<MAT::Material> material)
-{
-}

@@ -695,7 +695,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>& escaaf, const CORE::LINALG::Matrix<nen_, 1>& escaam,
           const CORE::LINALG::Matrix<nen_, 1>& escabofoaf, const double thermpressaf,
           const double thermpressam, const double thermpressdtaf, const double thermpressdtam,
-          const double vol, double& densam, double& densaf, double& densan, double& visc,
+          const double vol, double& densam, double& densaf, double& densn, double& visc,
           double& viscn, double& gamma);
 
       //! return constant mk for stabilization parameters
@@ -1055,7 +1055,7 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>& escaam,     ///< scalar at time n+alpha_m / n
           const double thermpressaf,  ///< thermodynamic pressure at time n+alpha_f / n+1
           const double thermpressam,  ///< thermodynamic pressure at time n+alpha_m / n
-          const double scsca          ///< subgrid scalar at integration point
+          const double sgsca          ///< subgrid scalar at integration point
       );
 
       //! compute additional Galerkin terms on right-hand side of continuity equation

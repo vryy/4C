@@ -1978,8 +1978,8 @@ void FSI::MortarMonolithicFluidSplit::CreateSystemMatrix()
 void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
     Teuchos::RCP<DRT::Discretization> structuredis, Teuchos::RCP<DRT::Discretization> fluiddis,
     std::map<int, DRT::Node*>* fluidnodesPtr, std::map<int, DRT::Node*>* structuregnodesPtr,
-    std::map<int, std::vector<int>>& fluidStructMap,
-    std::map<int, std::vector<int>>& structFluidMap)
+    std::map<int, std::vector<int>>& fluidToStructureMap,
+    std::map<int, std::vector<int>>& structureToFluidMap)
 {
   int numproc = comm_.NumProc();
   int myrank = comm_.MyPID();
@@ -2154,7 +2154,7 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
         nodes.push_back(transfer[a]);
       }
 
-      fluidStructMap[gid] = nodes;
+      fluidToStructureMap[gid] = nodes;
 
       if (myrank == p) mapIter++;
     }
@@ -2190,7 +2190,7 @@ void FSI::MortarMonolithicFluidSplit::CreateInterfaceMapping(
         nodes.push_back(transfer[a]);
       }
 
-      structFluidMap[gid] = nodes;
+      structureToFluidMap[gid] = nodes;
 
       if (myrank == p) mapIter++;
     }

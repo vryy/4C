@@ -306,7 +306,7 @@ namespace CORE::GEO
       void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
       CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
@@ -347,7 +347,7 @@ namespace CORE::GEO
       void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
       CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
@@ -387,7 +387,7 @@ namespace CORE::GEO
       void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
       CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
@@ -432,7 +432,7 @@ namespace CORE::GEO
       void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
       CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 
@@ -474,7 +474,7 @@ namespace CORE::GEO
       void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
       void Normal(
-          const CORE::LINALG::Matrix<2, 1>& pos, CORE::LINALG::Matrix<3, 1>& normal) const override;
+          const CORE::LINALG::Matrix<2, 1>& xsi, CORE::LINALG::Matrix<3, 1>& normal) const override;
 
       CORE::DRT::UTILS::GaussIntegration gaussRule(int cubaturedegree) override;
 

@@ -24,10 +24,10 @@ namespace DRT
     /*!
      * \brief Assemble nodal element count
      *
-     * \param global_data Add a 1 to all nodes belonging to this element
+     * \param global_count Add a 1 to all nodes belonging to this element
      * \param ele element
      */
-    void AssembleNodalElementCount(Epetra_IntVector& global_data, const DRT::Element& ele);
+    void AssembleNodalElementCount(Epetra_IntVector& global_count, const DRT::Element& ele);
 
     /*!
      * \brief Assemble Gauss point data into an array of global cell data

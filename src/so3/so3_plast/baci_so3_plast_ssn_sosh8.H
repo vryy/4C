@@ -195,7 +195,7 @@ namespace DRT
 
       //! Find parametric co-ordinate which directs in enforced thickness direction
       ThicknessDirection enfthickdir(CORE::LINALG::Matrix<nsd_, 1>&
-              glothickdir  ///< global direction of enforced thickness direction
+              thickdirglo  ///< global direction of enforced thickness direction
       );
 
       //! Re-initialize EAS data, needed for sosh8 morphing

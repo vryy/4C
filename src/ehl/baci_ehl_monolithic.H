@@ -161,9 +161,7 @@ namespace EHL
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
-    virtual void Evaluate(
-        Teuchos::RCP<Epetra_Vector> stepinc  //!< increment between time step n and n+1
-    );
+    virtual void Evaluate(Teuchos::RCP<Epetra_Vector> stepinc);
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...

@@ -46,7 +46,7 @@ namespace UTILS
     */
 
     Monitor(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization monitor lives on
-        const std::string& CondName,                  ///< Name of condition to creat monitor from
+        const std::string& conditionname,             ///< Name of condition to creat monitor from
         int& minID,                                   ///< minimum monitor ID so far
         int& maxID                                    ///< maximum monitor ID so far
     );

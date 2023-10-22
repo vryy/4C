@@ -149,7 +149,7 @@ namespace BEAMINTERACTION
       virtual void UpdateLinkerLength();
 
       /// check if bond needs to be dissolved
-      virtual void UnbindSphereBeamBonds(int& num_disolved);
+      virtual void UnbindSphereBeamBonds(int& num_dissolved);
 
       /// compute force dependent off rate for a catch-slip bond
       virtual void CalcForceDependentCatchSlipBondUnbindProbability(

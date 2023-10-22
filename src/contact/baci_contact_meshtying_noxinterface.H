@@ -37,8 +37,9 @@ namespace CONTACT
     /// @name Supported basic interface functions
     /// @{
     //! Returns the constraint right-hand-side norms [derived]
-    double GetConstraintRHSNorms(const Epetra_Vector& F, NOX::NLN::StatusTest::QuantityType chQ,
-        NOX::Abstract::Vector::NormType type, bool isScaled) const override;
+    double GetConstraintRHSNorms(const Epetra_Vector& F,
+        NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
+        bool isScaled) const override;
 
     /// Returns the root mean square (abbr.: RMS) of the Lagrange multiplier updates [derived]
     double GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew, const Epetra_Vector& xOld,

@@ -13,7 +13,7 @@
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& stream,
-    std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& coconstlawlist)
+    std::vector<Teuchos::RCP<CONTACT::CONSTITUTIVELAW::LawDefinition>>& contactconstitutivlawlist)
 {
   const std::string sectionname = "Contact Constitutive Law";
   const unsigned l = sectionname.length();
@@ -21,9 +21,9 @@ void DRT::INPUT::PrintEmptyContactConstitutiveLawDefinitions(std::ostream& strea
   for (int i = 0; i < std::max<int>(65 - l, 0); ++i) stream << '-';
   stream << sectionname << '\n';
 
-  for (unsigned i = 0; i < coconstlawlist.size(); ++i)
+  for (unsigned i = 0; i < contactconstitutivlawlist.size(); ++i)
   {
-    coconstlawlist[i]->Print(stream, nullptr);
+    contactconstitutivlawlist[i]->Print(stream, nullptr);
   }
 }
 

@@ -294,8 +294,8 @@ namespace DRT
       //! build the inverse of C^{-1} and the time derivative C'
       void CalculateCauchyGreens(
           CORE::LINALG::Matrix<6, 1>& Cratevct,          //!< right Cauchy-Green rate vector
-          CORE::LINALG::Matrix<6, 1>& invCvct,           //!< inverse of right Cauchy-Green vector
-          CORE::LINALG::Matrix<nsd_, nsd_>& invC,        //!< inverse right Cauchy-Green tensor
+          CORE::LINALG::Matrix<6, 1>& Cinvvct,           //!< inverse of right Cauchy-Green vector
+          CORE::LINALG::Matrix<nsd_, nsd_>& Cinv,        //!< inverse right Cauchy-Green tensor
           CORE::LINALG::Matrix<nsd_, nsd_>* defgrd,      //!< deformation gradient tensor
           CORE::LINALG::Matrix<nsd_, nsd_>* defgrdrate,  //!< velocity gradient tensor
           CORE::LINALG::Matrix<nsd_, nsd_>* invdefgrd    //!< inverse deformation gradient tensor
@@ -391,7 +391,7 @@ namespace DRT
 
       //! Compute the error compared to an analytical solution from input file
       virtual void ComputeError(DRT::Element* ele,  //!< current element whose terms are calculated
-          CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& evector,  //!< element vectorr
+          CORE::LINALG::Matrix<nen_ * numdofpernode_, 1>& elevec1,  //!< element vectorr
           Teuchos::ParameterList& params  //!< parameter list, containing analytical solution
       );
 

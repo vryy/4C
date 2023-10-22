@@ -24,7 +24,7 @@ Thomas Kloeppel
  |  ctor (public)                                               tk 07/08|
  *----------------------------------------------------------------------*/
 UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
-    const std::string& conditionname, int& offsetID, int& maxID)
+    const std::string& conditionname, int& minID, int& maxID)
     : actdisc_(discr)
 {
   actdisc_->GetCondition(conditionname, constrcond_);
@@ -39,9 +39,9 @@ UTILS::Constraint::Constraint(Teuchos::RCP<DRT::Discretization> discr,
       {
         maxID = condID;
       }
-      if (condID < offsetID)
+      if (condID < minID)
       {
-        offsetID = condID;
+        minID = condID;
       }
 
       const std::vector<double>* myinittime = constrcond_[i]->Get<std::vector<double>>("activTime");

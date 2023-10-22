@@ -181,7 +181,7 @@ namespace DRT
       //! calculate matrix. Here the whole thing is hidden.
       virtual void SysmatODMesh(DRT::Element* ele,  //!< the element we are dealing with
           CORE::LINALG::SerialDenseMatrix& emat,    //!< element matrix to calculate
-          const int numdofpernode_mesh              //!< number of DOF of mesh displacement field
+          const int ndofpernodemesh                 //!< number of DOF of mesh displacement field
       );
 
       //! calculate matrix . Here the whole thing is hidden.

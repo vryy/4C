@@ -133,7 +133,7 @@ namespace MAT
         const double press,                          ///< (i) pressure at gauss point
         const double J,                              ///< (i) determinant of jacobian at gauss point
         int EleID,                                   ///< (i) element GID
-        double& psi,                                 ///< (o) chemical potential
+        double& pot,                                 ///< (o) chemical potential
         const int gp);
 
     /// Update of GP data (e.g., history variables)

@@ -603,10 +603,10 @@ Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobal
  *
  */
 Teuchos::RCP<Epetra_Vector> BEAMINTERACTION::BeamToFluidMortarManager::GetGlobalLambdaCol(
-    Teuchos::RCP<const Epetra_Vector> disp) const
+    Teuchos::RCP<const Epetra_Vector> vel) const
 {
   Teuchos::RCP<Epetra_Vector> lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
-  CORE::LINALG::Export(*GetGlobalLambda(disp), *lambda_col);
+  CORE::LINALG::Export(*GetGlobalLambda(vel), *lambda_col);
   return lambda_col;
 }
 

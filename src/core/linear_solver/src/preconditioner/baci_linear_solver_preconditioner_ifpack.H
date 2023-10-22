@@ -25,7 +25,7 @@ namespace CORE::LINEAR_SOLVER
    public:
     //! Constructor (empty)
     IFPACKPreconditioner(
-        FILE* outfile, Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& azlist);
+        FILE* outfile, Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist);
 
     //! Setup
     void Setup(bool create, Epetra_Operator* matrix, Epetra_MultiVector* x,

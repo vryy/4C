@@ -582,9 +582,9 @@ namespace CORE::GEO
      private:
       /*! \brief Returns true if there is at least one cut point between the background
        *  element side and the cut side ("other") */
-      bool FindCutPoints(Mesh& mesh, Side& side, Side& other);
+      bool FindCutPoints(Mesh& mesh, Side& side, Side& cut_side);
 
-      bool FindCutLines(Mesh& mesh, Side& side, Side& other);
+      bool FindCutLines(Mesh& mesh, Side& side, Side& cut_side);
 
       /// element Id of the linear element (sub-element for quadratic elements)
       int eid_;

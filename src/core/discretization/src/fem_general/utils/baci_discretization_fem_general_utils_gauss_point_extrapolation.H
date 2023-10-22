@@ -44,7 +44,7 @@ namespace CORE::DRT::UTILS
    */
   template <::DRT::Element::DiscretizationType distype, class GaussIntegration>
   CORE::LINALG::SerialDenseMatrix EvaluateGaussPointsToNodesExtrapolationMatrix(
-      const GaussIntegration& integration);
+      const GaussIntegration& intpoints);
 
   /*!
    * @brief Extrapolates Gauss point data to the nodes and assembles it into a global data vector

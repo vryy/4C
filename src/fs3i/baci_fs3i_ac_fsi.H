@@ -119,7 +119,7 @@ namespace FS3I
     void DoFSIStepPeriodic();
 
     /// Get step number of on cycle ago
-    double GetStepOfOnePeriodAgoAndPrepareReading(const int step_, const double time);
+    double GetStepOfOnePeriodAgoAndPrepareReading(const int actstep, const double time);
 
     /// Get step number of the beginning of this cycle
     double GetStepOfBeginnOfThisPeriodAndPrepareReading(
@@ -220,9 +220,9 @@ namespace FS3I
     );
 
     /// Compare if A mod B is relatively equal to zero
-    bool ModuloIsRealtiveZero(const double A,  ///< value to mod
-        const double B,                        ///< mod value
-        const double Ref = 1.0                 ///< reference value
+    bool ModuloIsRealtiveZero(const double value,  ///< value to mod
+        const double modulo,                       ///< mod value
+        const double Ref = 1.0                     ///< reference value
     );
 
    private:

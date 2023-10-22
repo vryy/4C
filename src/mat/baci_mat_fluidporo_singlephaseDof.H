@@ -182,7 +182,7 @@ namespace MAT
 
       //! evaluate derivative of degree of freedom with respect to pressure
       double EvaluateDerivOfDofWrtPressure(
-          int phasenum, int doftoderive, const std::vector<double>& state) const override;
+          int phasenum, int doftoderive, const std::vector<double>& pressure) const override;
 
      protected:
       /// ID of pressure-saturation law

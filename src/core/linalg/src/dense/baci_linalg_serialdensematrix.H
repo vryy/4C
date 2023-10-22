@@ -58,7 +58,7 @@ namespace CORE::LINALG
     this allows for higher precision when used on a bigger matrix. Long double is also used for
     output, therefore it has to be expicitly casted to a double if used in a "double only" context.
     */
-  long double Det_long(const SerialDenseMatrix& mat);
+  long double Det_long(const SerialDenseMatrix& matrix);
 
   /*!
    * \brief Utility function to copy the data to SerialDenseMatrix

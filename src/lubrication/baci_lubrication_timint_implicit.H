@@ -102,7 +102,7 @@ namespace LUBRICATION
     //! set the nodal film height
     void SetHeightFieldPureLub(const int nds);
     //! set the nodal film height
-    void SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> height);
+    void SetHeightField(const int nds, Teuchos::RCP<const Epetra_Vector> gap);
 
     //! set the time derivative of the height (film thickness) by OST
     void SetHeightDotField(const int nds, Teuchos::RCP<const Epetra_Vector> heightdot);
@@ -299,7 +299,7 @@ namespace LUBRICATION
 
     //! check convergence (or divergence) of nonlinear iteration
     bool AbortNonlinIter(const int itnum,  //!< current value of iteration step counter
-        const int itmax,                   //!< maximum number of iteration steps
+        const int itemax,                  //!< maximum number of iteration steps
         const double ittol,                //!< relative tolerance for increments
         const double abstolres,            //!< absolute tolerance for the residual norm
         double& actresidual                //!< return value of the current residual

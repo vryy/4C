@@ -367,7 +367,7 @@ namespace DRT
           CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* stiffmatrix,
           CORE::LINALG::Matrix<NUMDOF_SOTET4av, NUMDOF_SOTET4av>* massmatrix,
           CORE::LINALG::Matrix<NUMDOF_SOTET4av, 1>* force,
-          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* stresses,
+          CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestress,
           CORE::LINALG::Matrix<NUMGPT_SOTET4av, MAT::NUM_STRESS_3D>* elestrain,
           Teuchos::ParameterList& params, const INPAR::STR::StressType iostress,
           const INPAR::STR::StrainType iostrain);

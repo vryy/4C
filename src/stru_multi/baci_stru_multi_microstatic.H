@@ -195,7 +195,7 @@ namespace STRUMULTI
     Marsden and Hughes, Mathematical Foundations of Elasticity,
     Dover, pg. 215
     */
-    void ConvertMat(const Epetra_MultiVector& cmatpf, const CORE::LINALG::Matrix<3, 3>& inv_defgrd,
+    void ConvertMat(const Epetra_MultiVector& cmatpf, const CORE::LINALG::Matrix<3, 3>& F_inv,
         const CORE::LINALG::Matrix<6, 1>& S, CORE::LINALG::Matrix<6, 6>& cmat);
 
 

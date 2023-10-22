@@ -72,7 +72,7 @@ namespace DRT
      *
      *  \author hiermeier \date 12/16 */
     void Evaluate(DRT::Discretization& discret, Teuchos::ParameterList& eparams,
-        std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrix,
+        std::vector<Teuchos::RCP<CORE::LINALG::SparseOperator>>& systemmatrices,
         std::vector<Teuchos::RCP<Epetra_Vector>>& systemvector,
         const Epetra_Map* col_ele_map = nullptr);
 

@@ -29,25 +29,25 @@ bool NOX::FSI::FixPoint::reset(
 
 
 bool NOX::FSI::FixPoint::compute(
-    NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln, const NOX::Solver::Generic& solver)
+    NOX::Abstract::Vector& dir, NOX::Abstract::Group& group, const NOX::Solver::Generic& solver)
 {
   NOX::Abstract::Group::ReturnType status;
 
   // Compute F at current solution
-  status = soln.computeF();
+  status = group.computeF();
   if (status != NOX::Abstract::Group::Ok) throwError("compute", "Unable to compute F");
 
   // The residual is the direction.
-  dir.update(1.0, soln.getF());
+  dir.update(1.0, group.getF());
 
   return true;
 }
 
 
-bool NOX::FSI::FixPoint::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& soln,
+bool NOX::FSI::FixPoint::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group& group,
     const NOX::Solver::LineSearchBased& solver)
 {
-  return NOX::Direction::Generic::compute(dir, soln, solver);
+  return NOX::Direction::Generic::compute(dir, group, solver);
 }
 
 

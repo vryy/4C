@@ -477,7 +477,7 @@ namespace DRT
 
       //! Compute linearization of momentum residual w.r.t fluid pressure
       void ComputeLinResMDp(const double& timefacfacpre, const double& dphi_dp,
-          CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Du);
+          CORE::LINALG::Matrix<nsd_, nen_>& lin_resM_Dp);
 
       //! calculate div(epsilon(u))
       void CalcDivEps(
@@ -548,7 +548,7 @@ namespace DRT
         dgradphi_dp    (o) derivate of spatial gradient of porosity w.r.t. fluid pressure
        */
       virtual void ComputeLinearization(const double& dphi_dp, const double& dphi_dpp,
-          const double& dphi_dJp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
+          const double& dphi_dJdp, const CORE::LINALG::Matrix<nsd_, 1>& gradJ,
           CORE::LINALG::Matrix<nsd_, nen_>& dgradphi_dp);
 
       /*!

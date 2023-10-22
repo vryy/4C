@@ -54,11 +54,11 @@ void CONTACT::NoxInterface::Setup()
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
-    NOX::NLN::StatusTest::QuantityType chQ, NOX::Abstract::Vector::NormType type,
+    NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
-      chQ != NOX::NLN::StatusTest::quantity_contact_friction)
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_contact_normal and
+      checkQuantity != NOX::NLN::StatusTest::quantity_contact_friction)
     return -1.0;
 
   Teuchos::RCP<const Epetra_Vector> constrRhs =
@@ -84,7 +84,7 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
 
   double constrNorm = -1.0;
   Teuchos::RCP<const NOX::Epetra::Vector> constrRhs_nox = Teuchos::null;
-  switch (chQ)
+  switch (checkQuantity)
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
@@ -122,17 +122,17 @@ double CONTACT::NoxInterface::GetConstraintRHSNorms(const Epetra_Vector& F,
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector& xNew,
-    const Epetra_Vector& xOld, double aTol, double rTol, NOX::NLN::StatusTest::QuantityType chQ,
-    bool disable_implicit_weighting) const
+    const Epetra_Vector& xOld, double aTol, double rTol,
+    NOX::NLN::StatusTest::QuantityType checkQuantity, bool disable_implicit_weighting) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
-      chQ != NOX::NLN::StatusTest::quantity_contact_friction)
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_contact_normal and
+      checkQuantity != NOX::NLN::StatusTest::quantity_contact_friction)
     return -1.0;
 
   double rms = -1.0;
   Teuchos::RCP<Epetra_Vector> z_ptr = Teuchos::null;
   Teuchos::RCP<Epetra_Vector> zincr_ptr = Teuchos::null;
-  switch (chQ)
+  switch (checkQuantity)
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
@@ -170,18 +170,18 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateRMS(const Epetra_Vector
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Vector& xNew,
-    const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType chQ,
+    const Epetra_Vector& xOld, NOX::NLN::StatusTest::QuantityType checkQuantity,
     NOX::Abstract::Vector::NormType type, bool isScaled) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
-      chQ != NOX::NLN::StatusTest::quantity_contact_friction)
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_contact_normal and
+      checkQuantity != NOX::NLN::StatusTest::quantity_contact_friction)
     return -1.0;
 
   if (Strategy().GetLagrMultNp(true) == Teuchos::null) return 0.;
 
   double updatenorm = -1.0;
   Teuchos::RCP<Epetra_Vector> zincr_ptr = Teuchos::null;
-  switch (chQ)
+  switch (checkQuantity)
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
@@ -218,11 +218,11 @@ double CONTACT::NoxInterface::GetLagrangeMultiplierUpdateNorms(const Epetra_Vect
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Vector& xOld,
-    NOX::NLN::StatusTest::QuantityType chQ, NOX::Abstract::Vector::NormType type,
+    NOX::NLN::StatusTest::QuantityType checkQuantity, NOX::Abstract::Vector::NormType type,
     bool isScaled) const
 {
-  if (chQ != NOX::NLN::StatusTest::quantity_contact_normal and
-      chQ != NOX::NLN::StatusTest::quantity_contact_friction)
+  if (checkQuantity != NOX::NLN::StatusTest::quantity_contact_normal and
+      checkQuantity != NOX::NLN::StatusTest::quantity_contact_friction)
     return -1.0;
 
   double zoldnorm = -1.0;
@@ -235,7 +235,7 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Ve
       Teuchos::rcp(new Epetra_Vector(*Strategy().GetLagrMultNp(true)));
   zold_ptr->Update(-1.0, *Strategy().GetLagrMultSolveIncr(), 1.0);
   Teuchos::RCP<NOX::Epetra::Vector> zold_nox_ptr = Teuchos::null;
-  switch (chQ)
+  switch (checkQuantity)
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
@@ -275,14 +275,14 @@ double CONTACT::NoxInterface::GetPreviousLagrangeMultiplierNorms(const Epetra_Ve
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 enum NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
-    NOX::NLN::StatusTest::QuantityType chQ, int& activesetsize) const
+    NOX::NLN::StatusTest::QuantityType checkQuantity, int& activesetsize) const
 {
   bool semismooth = DRT::INPUT::IntegralValue<int>(Strategy().Params(), "SEMI_SMOOTH_NEWTON");
   if (not semismooth) dserror("Currently we support only the semi-smooth Newton case!");
   // ---------------------------------------------------------------------------
   // get the number of active nodes for the given active set type
   // ---------------------------------------------------------------------------
-  switch (chQ)
+  switch (checkQuantity)
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
@@ -313,9 +313,9 @@ enum NOX::StatusTest::StatusType CONTACT::NoxInterface::GetActiveSetInfo(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetCurrentActiveSetMap(
-    enum NOX::NLN::StatusTest::QuantityType chQ) const
+    enum NOX::NLN::StatusTest::QuantityType checkQuantity) const
 {
-  switch (chQ)
+  switch (checkQuantity)
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {
@@ -340,9 +340,9 @@ Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetCurrentActiveSetMap(
 /*----------------------------------------------------------------------------*
  *----------------------------------------------------------------------------*/
 Teuchos::RCP<const Epetra_Map> CONTACT::NoxInterface::GetOldActiveSetMap(
-    enum NOX::NLN::StatusTest::QuantityType chQ) const
+    enum NOX::NLN::StatusTest::QuantityType checkQuantity) const
 {
-  switch (chQ)
+  switch (checkQuantity)
   {
     case NOX::NLN::StatusTest::quantity_contact_normal:
     {

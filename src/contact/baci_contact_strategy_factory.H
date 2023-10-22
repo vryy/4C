@@ -80,7 +80,7 @@ namespace CONTACT
           const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
           const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
           const Teuchos::RCP<const DRT::Discretization>& parent_dis,
-          Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
+          Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
           const int contactconstitutivelaw_id = -1);
 
       /*! \brief Create the solver strategy object and pass all necessary data to it

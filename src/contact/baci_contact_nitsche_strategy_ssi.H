@@ -74,7 +74,7 @@ namespace CONTACT
     void SetParentState(const enum MORTAR::StateType& statename, const Epetra_Vector& vec) override;
 
     Teuchos::RCP<const Epetra_Vector> GetRhsBlockPtr(
-        const enum DRT::UTILS::VecBlockType& bt) const override;
+        const enum DRT::UTILS::VecBlockType& bp) const override;
 
     /*!
      * @brief get the pointer to the matrix block
@@ -83,7 +83,7 @@ namespace CONTACT
      * @return pointer to matrix block
      */
     Teuchos::RCP<CORE::LINALG::SparseMatrix> GetMatrixBlockPtr(
-        const enum DRT::UTILS::MatBlockType& bt) const;
+        const enum DRT::UTILS::MatBlockType& bp) const;
 
     //! don't want = operator
     CoNitscheStrategySsi operator=(const CoNitscheStrategySsi& old) = delete;

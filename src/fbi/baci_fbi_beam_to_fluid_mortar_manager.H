@@ -180,7 +180,7 @@ namespace BEAMINTERACTION
     /**
      * \brief Get the global vector of Lagrange multipliers, with the maps being the colum maps of
      * the Lagrange GID. on the ranks where they are used.
-     * @param disp (in) Global displacement vector.
+     * @param vel (in) Global velocity vector.
      * @return Global vector of Lagrange multipliers.
      */
     Teuchos::RCP<Epetra_Vector> GetGlobalLambdaCol(Teuchos::RCP<const Epetra_Vector> vel) const;

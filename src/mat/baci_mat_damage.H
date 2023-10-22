@@ -214,7 +214,7 @@ namespace MAT
 
     //! calculate relative/over stress
     void RelStress(
-        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstrain,  //!< deviatoric stress tensor
+        const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& devstress,  //!< deviatoric stress tensor
         const CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& beta,       //!< back stress tensor
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>& eta               //!< relative stress
     );
@@ -230,7 +230,7 @@ namespace MAT
         int eleID,
         double Dgamma,         //!< plastic multiplier
         double G,              //!< shear modulus
-        double kappa,          //!< bulk modulus
+        double bulk_modulus,   //!< bulk modulus
         double p_tilde,        // undamaged pressure
         double q_tilde,        // undamaged trial von Mises equivalent stress
         double energyrelrate,  // damage energy release rate
@@ -253,16 +253,16 @@ namespace MAT
                      //!< + nu) / E * s^tilde_{n+1} : N^tilde_{n+1}
         double
             g,  //!< g = (2 * G * (Dgamma / omega_{n+1}) + a * Dgamma / (1 + b * Dgamma)) / q_tilde
-        double h_alg,       //!< h_alg = lengthy expression defined in Newton Raphson section
-        double G,           //!< shear modulus
-        double dkappa_dR,   //!< derivative of the hardening curve
-        double kappa,       //!< bulk modulus
-        double Hkin,        //!< kinematic hardening variable 1 (kinematic hardening modulus)
-        double Hkin_rec,    //!< kinematic hardening variable 2 (saturation effect)
-        double Nbetaold,    //!< Nbetaold = (N_tilde : beta_n)
-        int gp,             // current Gauss point
-        double qbar_tilde,  // effective relative eta^{~}
-        double y,           // (-Y / r)^s
+        double h_alg,         //!< h_alg = lengthy expression defined in Newton Raphson section
+        double G,             //!< shear modulus
+        double dkappa_dR,     //!< derivative of the hardening curve
+        double bulk_modulus,  //!< bulk modulus
+        double Hkin,          //!< kinematic hardening variable 1 (kinematic hardening modulus)
+        double Hkin_rec,      //!< kinematic hardening variable 2 (saturation effect)
+        double Nbetaold,      //!< Nbetaold = (N_tilde : beta_n)
+        int gp,               // current Gauss point
+        double qbar_tilde,    // effective relative eta^{~}
+        double y,             // (-Y / r)^s
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1> dy_dsigma_tilde,  // dy/dsigma_tilde
         CORE::LINALG::Matrix<NUM_STRESS_3D, 1>
             b_NbetaoldN  // beta_n - 2/3 . (N_tilde : beta_n) . N_tilde

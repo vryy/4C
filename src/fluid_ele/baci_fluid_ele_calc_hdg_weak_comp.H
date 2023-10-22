@@ -276,12 +276,12 @@ namespace DRT
 
         /// compute material matrix
         void ComputeMaterialMatrix(const Teuchos::RCP<MAT::Material>& mat,
-            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& D_L,
-            CORE::LINALG::SerialDenseMatrix& D_w);
+            const CORE::LINALG::Matrix<nsd_, 1>& xyz, CORE::LINALG::SerialDenseMatrix& DL,
+            CORE::LINALG::SerialDenseMatrix& Dw);
 
         /// compute interior residual
         void ComputeInteriorResidual(const Teuchos::RCP<MAT::Material>& mat,
-            const std::vector<double>& valnp, const std::vector<double>& valn,
+            const std::vector<double>& valnp, const std::vector<double>& accel,
             const std::vector<double>& alevel);
 
         /// compute face residual
@@ -440,7 +440,7 @@ namespace DRT
 
       /// evaluate density and momentum
       void EvaluateDensityMomentum(const int funcnum, const CORE::LINALG::Matrix<nsd_, 1>& xyz,
-          const double t, double& r, CORE::LINALG::Matrix<nsd_, 1>& u) const;
+          const double t, double& r, CORE::LINALG::Matrix<nsd_, 1>& w) const;
 
       /// local data object
       Teuchos::RCP<CORE::DRT::UTILS::ShapeValues<distype>> shapes_;

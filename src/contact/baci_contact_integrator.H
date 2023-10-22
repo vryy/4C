@@ -243,7 +243,7 @@ namespace CONTACT
 
      */
     bool AssembleG(const Epetra_Comm& comm, MORTAR::MortarElement& sele,
-        CORE::LINALG::SerialDenseVector& g_seg);
+        CORE::LINALG::SerialDenseVector& gseg);
 
     /*!
      \brief Assemble g~ contribution of current overlap into slave nodes
@@ -251,7 +251,7 @@ namespace CONTACT
 
      */
     bool AssembleG(const Epetra_Comm& comm, MORTAR::IntElement& sintele,
-        CORE::LINALG::SerialDenseVector& g_seg);
+        CORE::LINALG::SerialDenseVector& gseg);
 
     // GP calls
     /*!
@@ -639,7 +639,7 @@ namespace CONTACT
      */
     void inline GP_TE_Master(MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseVector& lm2val,
-        CORE::LINALG::SerialDenseVector& sval, double& jac, double& wgt, double* jumpval,
+        CORE::LINALG::SerialDenseVector& mval, double& jac, double& wgt, double* jumpval,
         const Epetra_Comm& comm);
 
     /*!
@@ -789,7 +789,7 @@ namespace CONTACT
     void inline GP_NCOUP_LIN(int& iter, MORTAR::MortarElement& sele, MORTAR::MortarElement& mele,
         CORE::LINALG::SerialDenseVector& sval, CORE::LINALG::SerialDenseVector& mval,
         CORE::LINALG::SerialDenseVector& lmval, CORE::LINALG::SerialDenseMatrix& sderiv,
-        CORE::LINALG::SerialDenseMatrix& lmderiv, double& gap, double* gpn, double& jac,
+        CORE::LINALG::SerialDenseMatrix& lmderiv, double& ncoup, double* gpn, double& jac,
         double& wgt, const std::map<int, double>& dncoupgp,
         const std::map<int, double>& dvelncoupgp, const std::map<int, double>& dpresncoupgp,
         const CORE::GEN::pairedvector<int, double>& jacintcellmap,

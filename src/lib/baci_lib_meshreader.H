@@ -109,10 +109,10 @@ namespace DRT::INPUT
     \brief Read pre-generated mesh from dat-file and generate related FillCompleted()
     discretizations
 
-    \param[in/out] node_id_offset Global offset to start node numbering (based on already existing
-    nodes)
+    \param[in/out] max_node_id Maximum node id in a given discretization. To be used as global
+                               offset to start node numbering (based on already existing nodes)
     */
-    void ReadMeshFromDatFile(int& node_id_offset);
+    void ReadMeshFromDatFile(int& max_node_id);
 
     /*!
     \brief Rebalance discretizations built in ReadMeshFromDatFile()
@@ -125,10 +125,10 @@ namespace DRT::INPUT
     Ask the DomainReader to process input data and create a box shaped mesh at runtime without
     having to read or process nodes and elements from the input file.
 
-    \param[in/out] node_id_offset Global offset to start node numbering (based on already existing
-    nodes)
+    \param[in/out] max_node_id Maximum node id in a given discretization. To be used as global
+                               offset to start node numbering (based on already existing nodes)
     */
-    void CreateInlineMesh(int& node_id_offset);
+    void CreateInlineMesh(int& max_node_id);
 
     /// my comm
     Teuchos::RCP<Epetra_Comm> comm_;

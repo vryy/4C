@@ -824,12 +824,12 @@ int DRT::ELEMENTS::Transport::Initialize()
  |  ctor (public)                                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::TransportBoundary::TransportBoundary(int id, int owner, int nnode,
-    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lbeleid)
+    const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::Transport* parent, const int lsurface)
     : DRT::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lbeleid);
+  SetParentMasterElement(parent, lsurface);
   return;
 }
 

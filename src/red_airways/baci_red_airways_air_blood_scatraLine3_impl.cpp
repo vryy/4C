@@ -98,105 +98,12 @@ void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Initial(RedAirBloodScat
 }  // RedAirBloodScatraLine3Impl::Initial
 
 /*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 01/10|
- |                                                                      |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::Sysmat(RedAirBloodScatraLine3* ele,
-    CORE::LINALG::SerialDenseVector& epnp, CORE::LINALG::SerialDenseVector& epn,
-    CORE::LINALG::SerialDenseVector& epnm, CORE::LINALG::SerialDenseMatrix& sysmat,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<const MAT::Material> material,
-    Teuchos::ParameterList& params, double time, double dt)
-{
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
- |  at terminal nodes.                                                  |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::EvaluateTerminalBC(
-    RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, CORE::LINALG::SerialDenseVector& rhs,
-    Teuchos::RCP<MAT::Material> material)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
- |  at terminal nodes.                                                  |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::CalcFlowRates(RedAirBloodScatraLine3* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1,  // a_volumenp,
-    CORE::LINALG::SerialDenseVector& elevec2,  // a_volume_strain_np,
-    std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
-
-{
-}
-
-/*----------------------------------------------------------------------*
  |  Get the coupled the values on the coupling interface    ismail 07/10|
  |  of the 3D/reduced-D problem                                         |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::GetCoupledValues(
     RedAirBloodScatraLine3* ele, Teuchos::ParameterList& params,
-    DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
-{
-}
-
-/*----------------------------------------------------------------------*
- |  solve the transport of O2 from air to blood             ismail 02/13|
- |                                                                      |
- | Example of use (1):                                                  |
- |--------------------                                                  |
- |        [RED_AIRWAY element]          [RED_ACINUS element]            |
- |             |                             |                          |
- |             |                             |                          |
- |  (node1)    V     (node2)        (node2)  V   (node1)                |
- |     o======>>>=======o              o============o                   |
- |     |       ^        |              |                                |
- |     |       |        |              |                                |
- |     |(flow direction)|              |                                |
- |     |                |              |                                |
- |     V                V              |                                |
- |     o=====           o===           |                                |
- |  (node1)  =====   (node3)==         |                                |
- |    or 3      ^ ==== or 1   ==       |                                |
- |              |     ======    ===    |                                |
- |              |           =====  ==  V                                |
- |              |                ======o                                |
- |              |                   (node2)                             |
- |              |                                                       |
- |              |                                                       |
- |    [RED_AIR_BLOOD_SCATRA_LINE3 element]                              |
- |                                                                      |
- | Example of use (2):                                                  |
- |--------------------                                                  |
- |        [RED_AIRWAY element]          [RED_ACINUS element]            |
- |             |                             |                          |
- |             |                             |                          |
- |  (node1)    V     (node2)        (node2)  V   (node1)                |
- |     o======>>>=======o              o============o                   |
- |     |       ^        |              |                                |
- |     |       |        |              |                                |
- |     |(flow direction)|              |                                |
- |     |                |              |                                |
- |     V                V              |                                |
- |     o================o==============o                                |
- |  (node1)     ^    (node2)        (node3)                             |
- |    or 3      |      or 1           or 1                              |
- |              |                                                       |
- |              |                                                       |
- |    [RED_AIR_BLOOD_SCATRA_LINE3 element]                              |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraLine3Impl<distype>::SolveBloodAirTransport(
-    RedAirBloodScatraLine3* ele, CORE::LINALG::SerialDenseVector& dscatra,
-    CORE::LINALG::SerialDenseVector& dvo2, Teuchos::ParameterList& params,
     DRT::Discretization& discretization, std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
 {
 }

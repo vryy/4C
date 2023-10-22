@@ -81,7 +81,7 @@ namespace EXODUS
 
   int FindEdgeNeighbor(const std::vector<int> nodes, const int actnode, const int wrong_dir_node);
 
-  std::vector<int> FindNodeNeighbors(const std::vector<int> nodes, const int centernode);
+  std::vector<int> FindNodeNeighbors(const std::vector<int> nodes, const int actnode);
 
   enum ExtrusionType
   {

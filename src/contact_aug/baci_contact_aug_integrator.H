@@ -39,7 +39,7 @@ namespace CONTACT
 
      public:
       /// constructor
-      IntegrationWrapper(Teuchos::ParameterList& params, DRT::Element::DiscretizationType slavetype,
+      IntegrationWrapper(Teuchos::ParameterList& params, DRT::Element::DiscretizationType eletype,
           const Epetra_Comm& comm);
 
       //! @name 2D augmented Lagrange integration methods

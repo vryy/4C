@@ -701,10 +701,10 @@ namespace CONTACT
 
         ~CompleteAssemblePolicy(){/* empty */};
 
-        inline void Add_Var_A_Lin_GG(const double scale, const double a_inv,
+        inline void Add_Var_A_Lin_GG(const double cn_awgap_ainv, const double awgap,
             const NodeDataContainer& augdata, CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
 
-        inline void Add_DD_A_GG(const double scale, const NodeDataContainer& augdata,
+        inline void Add_DD_A_GG(const double cn_awgap_awgap, const NodeDataContainer& augdata,
             CORE::LINALG::SparseMatrix& dGGLinMatrix) const;
 
         void AssembleInactiveDDMatrix(const double scale, const NodeDataContainer& augdata,

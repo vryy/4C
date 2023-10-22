@@ -36,7 +36,7 @@ namespace XFLUIDLEVELSET
         const Teuchos::ParameterList& prbdyn,        ///< problem-specific parameter list
         const Teuchos::ParameterList& solverparams,  ///< solver-specific parameter list
         const std::map<std::string, int>&
-            dofset_couling_map  ///< key=meaning of a dofset in a dis, nodal dofset number
+            dofset_coupling_map  ///< key=meaning of a dofset in a dis, nodal dofset number
     );
 
 
@@ -99,7 +99,7 @@ namespace XFLUIDLEVELSET
     void TestResults();
 
     /// Restart
-    void Restart(int restart);
+    void Restart(int step);
 
    protected:
     void DoAlgorithmSpecificInit() override;

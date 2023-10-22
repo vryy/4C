@@ -234,7 +234,7 @@ namespace DRT
       void Integrate_dsg_shear_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_r);
       void Integrate_dsg_shear_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_shear_s);
       void Integrate_dsg_membrane_r(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
-      void Integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_r);
+      void Integrate_dsg_membrane_s(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_s);
       void Integrate_dsg_membrane_rs(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_membrane_rs);
       void Integrate_dsg_transverse_t(const int gp, CORE::LINALG::Matrix<9, 9>& dsg_transverse_t);
 

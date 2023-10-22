@@ -732,7 +732,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     int groupid1 = (*group1v)[0];
 
     // In case of MultiScale contact this is the id of the interface's constitutive contact law
-    int contactconstitutivelawid = currentgroup[0]->GetInt("ConstitutiveLawID");
+    int contactconstitutivelaw_id = currentgroup[0]->GetInt("ConstitutiveLawID");
 
     // find out which sides are Master and Slave
     std::vector<bool> isslave(0);
@@ -836,7 +836,7 @@ void CONTACT::STRATEGY::Factory::BuildInterfaces(const Teuchos::ParameterList& p
     const auto& discret = Teuchos::rcp<const DRT::Discretization>(&Discret(), false);
 
     Teuchos::RCP<CONTACT::CoInterface> newinterface = CreateInterface(groupid1, Comm(), Dim(),
-        icparams, isself[0], discret, Teuchos::null, contactconstitutivelawid);
+        icparams, isself[0], discret, Teuchos::null, contactconstitutivelaw_id);
     interfaces.push_back(newinterface);
 
     // get it again
@@ -1263,12 +1263,12 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const Epetra_Comm& comm, const int dim, Teuchos::ParameterList& icparams,
     const bool selfcontact, const Teuchos::RCP<const DRT::Discretization>& parent_dis,
     Teuchos::RCP<CONTACT::InterfaceDataContainer> interfaceData_ptr,
-    const int contactconstitutivelawid)
+    const int contactconstitutivelaw_id)
 {
   auto stype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(icparams, "STRATEGY");
 
   return CreateInterface(stype, id, comm, dim, icparams, selfcontact, parent_dis, interfaceData_ptr,
-      contactconstitutivelawid);
+      contactconstitutivelaw_id);
 }
 
 /*----------------------------------------------------------------------------*
@@ -1277,7 +1277,8 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     const enum INPAR::CONTACT::SolvingStrategy stype, const int id, const Epetra_Comm& comm,
     const int dim, Teuchos::ParameterList& icparams, const bool selfcontact,
     const Teuchos::RCP<const DRT::Discretization>& parent_dis,
-    Teuchos::RCP<CONTACT::InterfaceDataContainer> idata_ptr, const int contactconstitutivelawid)
+    Teuchos::RCP<CONTACT::InterfaceDataContainer> interface_data_ptr,
+    const int contactconstitutivelaw_id)
 {
   Teuchos::RCP<CONTACT::CoInterface> newinterface = Teuchos::null;
 
@@ -1291,17 +1292,18 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     case INPAR::CONTACT::solution_augmented:
     case INPAR::CONTACT::solution_combo:
     {
-      if (idata_ptr.is_null())
+      if (interface_data_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
+        interface_data_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
         newinterface = Teuchos::rcp(
-            new CONTACT::AUG::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
+            new CONTACT::AUG::Interface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
         Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(
+                interface_data_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::Interface(iaugdata_ptr));
       }
 
@@ -1312,17 +1314,18 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     // ------------------------------------------------------------------------
     case INPAR::CONTACT::solution_steepest_ascent:
     {
-      if (idata_ptr.is_null())
+      if (interface_data_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
+        interface_data_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
         newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface(
-            idata_ptr, id, comm, dim, icparams, selfcontact));
+            interface_data_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
         Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(
+                interface_data_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::STEEPESTASCENT::Interface(iaugdata_ptr));
       }
 
@@ -1333,17 +1336,18 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     // ------------------------------------------------------------------------
     case INPAR::CONTACT::solution_steepest_ascent_sp:
     {
-      if (idata_ptr.is_null())
+      if (interface_data_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
+        interface_data_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
-        newinterface = Teuchos::rcp(
-            new CONTACT::AUG::LAGRANGE::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
+        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
+            interface_data_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
         Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(
+                interface_data_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(iaugdata_ptr));
       }
 
@@ -1354,48 +1358,49 @@ Teuchos::RCP<::CONTACT::CoInterface> CONTACT::STRATEGY::Factory::CreateInterface
     // ------------------------------------------------------------------------
     case INPAR::CONTACT::solution_std_lagrange:
     {
-      if (idata_ptr.is_null())
+      if (interface_data_ptr.is_null())
       {
-        idata_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
+        interface_data_ptr = Teuchos::rcp(new CONTACT::AUG::InterfaceDataContainer());
 
-        newinterface = Teuchos::rcp(
-            new CONTACT::AUG::LAGRANGE::Interface(idata_ptr, id, comm, dim, icparams, selfcontact));
+        newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(
+            interface_data_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
       {
         Teuchos::RCP<CONTACT::AUG::InterfaceDataContainer> iaugdata_ptr =
-            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(idata_ptr, true);
+            Teuchos::rcp_dynamic_cast<CONTACT::AUG::InterfaceDataContainer>(
+                interface_data_ptr, true);
         newinterface = Teuchos::rcp(new CONTACT::AUG::LAGRANGE::Interface(iaugdata_ptr));
       }
 
       break;
     }
     case INPAR::CONTACT::solution_multiscale:
-      idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
+      interface_data_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
       newinterface = Teuchos::rcp(new CONTACT::ConstitutivelawInterface(
-          idata_ptr, id, comm, dim, icparams, selfcontact, contactconstitutivelawid));
+          interface_data_ptr, id, comm, dim, icparams, selfcontact, contactconstitutivelaw_id));
       break;
     // ------------------------------------------------------------------------
     // Default case for the wear, TSI and standard Lagrangian case
     // ------------------------------------------------------------------------
     default:
     {
-      idata_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
+      interface_data_ptr = Teuchos::rcp(new CONTACT::InterfaceDataContainer());
 
       if (wlaw != INPAR::WEAR::wear_none)
       {
-        newinterface =
-            Teuchos::rcp(new WEAR::WearInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
+        newinterface = Teuchos::rcp(
+            new WEAR::WearInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
       }
       else if (icparams.get<int>("PROBTYPE") == INPAR::CONTACT::tsi &&
                stype == INPAR::CONTACT::solution_lagmult)
       {
         newinterface = Teuchos::rcp(
-            new CONTACT::CoTSIInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
+            new CONTACT::CoTSIInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
       }
       else
-        newinterface =
-            Teuchos::rcp(new CONTACT::CoInterface(idata_ptr, id, comm, dim, icparams, selfcontact));
+        newinterface = Teuchos::rcp(
+            new CONTACT::CoInterface(interface_data_ptr, id, comm, dim, icparams, selfcontact));
       break;
     }
   }

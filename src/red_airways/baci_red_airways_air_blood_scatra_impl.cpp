@@ -100,44 +100,7 @@ void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Initial(RedAirBloodScatra* e
 
 }  // RedAirBloodScatraImpl::Initial
 
-/*----------------------------------------------------------------------*
- |  calculate element matrix and right hand side (private)  ismail 01/10|
- |                                                                      |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::Sysmat(RedAirBloodScatra* ele,
-    CORE::LINALG::SerialDenseVector& epnp, CORE::LINALG::SerialDenseVector& epn,
-    CORE::LINALG::SerialDenseVector& epnm, CORE::LINALG::SerialDenseMatrix& sysmat,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<const MAT::Material> material,
-    Teuchos::ParameterList& params, double time, double dt)
-{
-}
 
-/*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
- |  at terminal nodes.                                                  |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::EvaluateTerminalBC(RedAirBloodScatra* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization, std::vector<int>& lm,
-    CORE::LINALG::SerialDenseVector& rhs, Teuchos::RCP<MAT::Material> material)
-{
-}
-
-
-/*----------------------------------------------------------------------*
- |  Evaluate the values of the degrees of freedom           ismail 01/10|
- |  at terminal nodes.                                                  |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::RedAirBloodScatraImpl<distype>::CalcFlowRates(RedAirBloodScatra* ele,
-    Teuchos::ParameterList& params, DRT::Discretization& discretization,
-    CORE::LINALG::SerialDenseVector& elevec1,  // a_volumenp,
-    CORE::LINALG::SerialDenseVector& elevec2,  // a_volume_strain_np,
-    std::vector<int>& lm, Teuchos::RCP<MAT::Material> material)
-
-{
-}
 
 /*----------------------------------------------------------------------*
  |  Get the coupled the values on the coupling interface    ismail 07/10|

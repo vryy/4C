@@ -26,16 +26,16 @@ namespace UTILS
     \brief Standard Constructor
     */
     MPConstraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const std::string& CondName,  ///< Name of condition to create constraint from
-        int& minID,                   ///< minimum constraint or monitor ID so far
-        int& maxID                    ///< maximum constraint or monitor ID so far
+        const std::string& conditionname,  ///< Name of condition to create constraint from
+        int& minID,                        ///< minimum constraint or monitor ID so far
+        int& maxID                         ///< maximum constraint or monitor ID so far
     );
 
     /*!
         \brief Alternative Constructor
     */
     MPConstraint(Teuchos::RCP<DRT::Discretization> discr,  ///< Discretization constraint lives on
-        const std::string& CondName  ///< Name of condition to create constraint from
+        const std::string& conditionname  ///< Name of condition to create constraint from
     );
 
     /*!

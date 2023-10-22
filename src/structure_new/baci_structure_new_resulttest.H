@@ -224,7 +224,7 @@ namespace STR
    *  \return Extracted integer at the very last position of the name.
    *
    *  \author hiermeier \date 11/17 */
-  int GetIntegerNumberAtLastPositionOfName(const std::string& name);
+  int GetIntegerNumberAtLastPositionOfName(const std::string& quantity);
 
 }  // namespace STR
 

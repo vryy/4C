@@ -80,7 +80,7 @@ namespace CONTACT
     \brief Update slabs of current tree node in bottom up way
 
     */
-    void UpdateSlabsBottomUp(double& eps) final;
+    void UpdateSlabsBottomUp(double& enlarge) final;
 
     /*!
     \brief Calculate the logical array of qualified sample vectors for leaf nodes

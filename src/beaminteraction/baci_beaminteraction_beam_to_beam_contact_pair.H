@@ -416,7 +416,7 @@ namespace BEAMINTERACTION
     \brief Lin. of contact point coordinate xi with fixed eta
     */
     void ComputeLinXiFixEta(
-        CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_eta,
+        CORE::LINALG::Matrix<2 * 3 * numnodes * numnodalvalues, 1, TYPE>& delta_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& delta_r,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xi,
         const CORE::LINALG::Matrix<3, 1, TYPE>& r1_xixi,

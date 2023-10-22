@@ -408,12 +408,12 @@ void DRT::ELEMENTS::PoroFluidMultiPhase::SetMaterial(int matnum)
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::PoroFluidMultiPhaseBoundary(int id, int owner,
     int nnode, const int* nodeids, DRT::Node** nodes, DRT::ELEMENTS::PoroFluidMultiPhase* parent,
-    const int lbeleid)
+    const int lsurface)
     : DRT::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lbeleid);
+  SetParentMasterElement(parent, lsurface);
   return;
 }
 

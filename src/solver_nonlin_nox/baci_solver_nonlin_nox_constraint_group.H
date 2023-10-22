@@ -76,7 +76,7 @@ namespace NOX
             const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type) const override;
 
         double GetLinearizedModelTerms(const NOX::Abstract::Vector& dir,
-            const enum NOX::NLN::MeritFunction::MeritFctName mf_type,
+            const enum NOX::NLN::MeritFunction::MeritFctName merit_func_type,
             const enum NOX::NLN::MeritFunction::LinOrder linorder,
             const enum NOX::NLN::MeritFunction::LinType lintype) const override;
 

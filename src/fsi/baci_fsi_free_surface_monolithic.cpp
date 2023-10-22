@@ -239,16 +239,16 @@ void FSI::MonolithicMainFS::Timeloop(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::MonolithicMainFS::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicMainFS::Evaluate");
 
   Teuchos::RCP<const Epetra_Vector> fx;
   Teuchos::RCP<const Epetra_Vector> ax;
 
-  if (x != Teuchos::null)
+  if (step_increment != Teuchos::null)
   {
-    ExtractFieldVectors(x, fx, ax);
+    ExtractFieldVectors(step_increment, fx, ax);
   }
 
   // Call all elements and assemble rhs and matrices

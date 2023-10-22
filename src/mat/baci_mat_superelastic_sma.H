@@ -257,8 +257,8 @@ namespace MAT
 
     //! Returns the pullback of the 4th order tensor in voigt notation
     virtual void Pullback4thTensorVoigt(const double jacobian,
-        const CORE::LINALG::Matrix<3, 3>& defgr, const CORE::LINALG::Matrix<6, 6>& cmat_eul,
-        CORE::LINALG::Matrix<6, 6>* cmat_lag);
+        const CORE::LINALG::Matrix<3, 3>& defgr, const CORE::LINALG::Matrix<6, 6>& cmatEul,
+        CORE::LINALG::Matrix<6, 6>* cmatLag);
 
     //! Returns the 4th order identity tensor in tensor notation
     virtual double Idev(int i, int j, int k, int l);

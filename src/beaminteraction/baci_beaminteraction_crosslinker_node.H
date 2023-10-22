@@ -292,6 +292,6 @@ namespace CROSSLINKING
 }  // namespace CROSSLINKING
 
 // << operator
-std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& cnode);
+std::ostream& operator<<(std::ostream& os, const CROSSLINKING::CrosslinkerNode& crosslinker_node);
 
 #endif  // BEAMINTERACTION_CROSSLINKER_NODE_H

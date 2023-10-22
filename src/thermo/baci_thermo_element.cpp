@@ -348,12 +348,12 @@ bool DRT::ELEMENTS::Thermo::VisData(const std::string& name, std::vector<double>
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(int id, int owner, int nnode, const int* nodeids,
-    DRT::Node** nodes, DRT::ELEMENTS::Thermo* parent, const int lbeleid)
+    DRT::Node** nodes, DRT::ELEMENTS::Thermo* parent, const int lsurface)
     : DRT::FaceElement(id, owner)
 {
   SetNodeIds(nnode, nodeids);
   BuildNodalPointers(nodes);
-  SetParentMasterElement(parent, lbeleid);
+  SetParentMasterElement(parent, lsurface);
   return;
 }  // ctor
 

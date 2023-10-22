@@ -255,16 +255,16 @@ void POROELAST::Monolithic::Solve()
   }
 }
 
-void POROELAST::Monolithic::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> x)
+void POROELAST::Monolithic::UpdateStateIncrementally(Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::UpdateStateIncrementally");
 
   // displacement and fluid velocity & pressure incremental vector
-  Teuchos::RCP<const Epetra_Vector> sx = Teuchos::null;
-  Teuchos::RCP<const Epetra_Vector> fx = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> s_iterinc = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> f_iterinc = Teuchos::null;
 
   // do nothing in the case no increment vector is given
-  if (x == Teuchos::null)
+  if (iterinc == Teuchos::null)
   {
     return;
   }
@@ -272,22 +272,22 @@ void POROELAST::Monolithic::UpdateStateIncrementally(Teuchos::RCP<const Epetra_V
   {
     // extract displacement sx and fluid fx incremental vector of global
     // unknown incremental vector x (different for splits)
-    ExtractFieldVectors(x, sx, fx);
+    ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
 
     // update poro iterinc
-    if (is_part_of_multifield_problem_) UpdatePoroIterinc(x);
+    if (is_part_of_multifield_problem_) UpdatePoroIterinc(iterinc);
   }
 
-  UpdateStateIncrementally(sx, fx);
+  UpdateStateIncrementally(s_iterinc, f_iterinc);
 }
 
 void POROELAST::Monolithic::UpdateStateIncrementally(
-    Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
+    Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc)
 {
   // Newton update of the fluid field
   // update velocities and pressures before passed to the structural field
   //  UpdateIterIncrementally(fx),
-  FluidField()->UpdateNewton(fx);
+  FluidField()->UpdateNewton(f_iterinc);
 
   // call all elements and assemble rhs and matrices
   // structural field
@@ -304,7 +304,7 @@ void POROELAST::Monolithic::UpdateStateIncrementally(
 
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   UpdaterIterIncrementally(sx),
-  StructureField()->UpdateStateIncrementally(sx);
+  StructureField()->UpdateStateIncrementally(s_iterinc);
   // fluid field
 
   // fluid Evaluate
@@ -314,12 +314,12 @@ void POROELAST::Monolithic::UpdateStateIncrementally(
   SetStructSolution();
 }
 
-void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool firstiter)
+void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> iterinc, bool firstiter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::Evaluate");
 
   // Evaluate Stiffness and RHS of Structural & Fluid field
-  EvaluateFields(x);
+  EvaluateFields(iterinc);
 
   // fill off diagonal blocks and fill global system matrix
   SetupSystemMatrix();
@@ -337,13 +337,13 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x, bool f
   EvalPoroMortar();
 }
 
-void POROELAST::Monolithic::Evaluate(
-    Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx, bool firstiter)
+void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> s_iterinc,
+    Teuchos::RCP<const Epetra_Vector> f_iterinc, bool firstiter)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::Evaluate");
 
   // Evaluate Stiffness and RHS of Structural & Fluid field
-  EvaluateFields(sx, fx);
+  EvaluateFields(s_iterinc, f_iterinc);
 
   // fill off diagonal blocks and fill global system matrix
   SetupSystemMatrix();
@@ -362,10 +362,10 @@ void POROELAST::Monolithic::Evaluate(
 }
 
 void POROELAST::Monolithic::EvaluateFields(
-    Teuchos::RCP<const Epetra_Vector> sx, Teuchos::RCP<const Epetra_Vector> fx)
+    Teuchos::RCP<const Epetra_Vector> s_iterinc, Teuchos::RCP<const Epetra_Vector> f_iterinc)
 {
   // Update State incrementally
-  UpdateStateIncrementally(sx, fx);
+  UpdateStateIncrementally(s_iterinc, f_iterinc);
 
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   EvaluateForceStiffResidual()
@@ -378,10 +378,10 @@ void POROELAST::Monolithic::EvaluateFields(
   FluidField()->Evaluate(Teuchos::null);
 }
 
-void POROELAST::Monolithic::EvaluateFields(Teuchos::RCP<const Epetra_Vector> x)
+void POROELAST::Monolithic::EvaluateFields(Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   // Update State incrementally
-  UpdateStateIncrementally(x);
+  UpdateStateIncrementally(iterinc);
 
   // Monolithic Poroelasticity accesses the linearised structure problem:
   //   EvaluateForceStiffResidual()
@@ -1718,7 +1718,7 @@ Teuchos::RCP<const Epetra_Map> POROELAST::Monolithic::DofRowMapFluid()
 }
 
 void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(
-    Teuchos::RCP<const Epetra_Vector> x)
+    Teuchos::RCP<const Epetra_Vector> iterinc)
 {
   // clean up as soon as old time integration is unused!
   if (oldstructimint_)
@@ -1734,13 +1734,15 @@ void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(
             StructureField()->MeshtyingContactBridge()->ContactManager()->GetStrategy());
 
         // displacement and fluid velocity & pressure incremental vector
-        Teuchos::RCP<const Epetra_Vector> sx;
-        Teuchos::RCP<const Epetra_Vector> fx;
-        ExtractFieldVectors(x, sx, fx);
+        Teuchos::RCP<const Epetra_Vector> s_iterinc;
+        Teuchos::RCP<const Epetra_Vector> f_iterinc;
+        ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
 
         // RecoverStructuralLM
-        Teuchos::RCP<Epetra_Vector> tmpsx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*sx));
-        Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*fx));
+        Teuchos::RCP<Epetra_Vector> tmpsx =
+            Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*s_iterinc));
+        Teuchos::RCP<Epetra_Vector> tmpfx =
+            Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*f_iterinc));
 
         costrategy.RecoverCoupled(tmpsx, tmpfx);
         if (no_penetration_) costrategy.RecoverPoroNoPen(tmpsx, tmpfx);
@@ -1752,11 +1754,12 @@ void POROELAST::Monolithic::RecoverLagrangeMultiplierAfterNewtonStep(
             StructureField()->MeshtyingContactBridge()->MtManager()->GetStrategy());
 
         // displacement and fluid velocity & pressure incremental vector
-        Teuchos::RCP<const Epetra_Vector> sx;
-        Teuchos::RCP<const Epetra_Vector> fx;
-        ExtractFieldVectors(x, sx, fx);
+        Teuchos::RCP<const Epetra_Vector> s_iterinc;
+        Teuchos::RCP<const Epetra_Vector> f_iterinc;
+        ExtractFieldVectors(iterinc, s_iterinc, f_iterinc);
 
-        Teuchos::RCP<Epetra_Vector> tmpfx = Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*fx));
+        Teuchos::RCP<Epetra_Vector> tmpfx =
+            Teuchos::rcp<Epetra_Vector>(new Epetra_Vector(*f_iterinc));
 
         // Recover part of LM stemming from offdiagonal coupling matrix
         costrategy.RecoverCouplingMatrixPartofLMP(tmpfx);

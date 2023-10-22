@@ -347,23 +347,23 @@ Teuchos::RCP<Epetra_Vector> FSI::LungMonolithic::StructToAleOutflow(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
+void FSI::LungMonolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> step_increment)
 {
   //-----------------------------------------------------------------------------
   // evaluation of all fields
   //-----------------------------------------------------------------------------
 
-  FSI::Monolithic::Evaluate(x);
+  FSI::Monolithic::Evaluate(step_increment);
 
   //-----------------------------------------------------------------------------
   // evaluation of lung volume constraints
   //-----------------------------------------------------------------------------
 
-  if (x != Teuchos::null)
+  if (step_increment != Teuchos::null)
   {
     // extract sum of all iterative increments of lagrange multipliers
     // in this time step (this is what we get from NOX)
-    IncLagrMultVec_ = Extractor().ExtractVector(x, 3);
+    IncLagrMultVec_ = Extractor().ExtractVector(step_increment, 3);
 
     // update current lagrange multipliers
     LagrMultVec_->Update(1.0, *LagrMultVecOld_, 1.0, *IncLagrMultVec_, 0.0);

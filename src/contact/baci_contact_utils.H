@@ -36,7 +36,7 @@ namespace CONTACT
   namespace UTILS
   {
     /// Get the solid to solid contact conditions
-    int GetContactConditions(std::vector<DRT::Condition*>& cond_group,
+    int GetContactConditions(std::vector<DRT::Condition*>& contact_conditions,
         const std::vector<DRT::Condition*>& beamandsolidcontactconditions,
         const bool& throw_error = true);
 
@@ -112,8 +112,8 @@ namespace CONTACT
           const DRT::Discretization& str_discret,
           const std::vector<const DRT::Condition*>& sl_conds);
 
-      static void DetectDbcSlaveElements(std::set<const DRT::Element*>& dbc_slave_nodes,
-          const std::map<const DRT::Node*, int>& dbc_slave_node_map,
+      static void DetectDbcSlaveElements(std::set<const DRT::Element*>& dbc_slave_eles,
+          const std::map<const DRT::Node*, int>& dbc_slave_nodes,
           const std::vector<const DRT::Condition*>& sl_conds);
     };  // class DbcHandler
 

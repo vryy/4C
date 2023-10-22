@@ -306,8 +306,9 @@ namespace CORE::GEO
      private:
       /// build sets of connected volumecells in a 1-ring around the node
       void BuildDOFCellSets(Point* p, const std::vector<plain_volumecell_set>& cell_sets,
-          const plain_volumecell_set& cells, const std::vector<plain_volumecell_set>& nodal_cells,
-          plain_volumecell_set& done, bool isnodalcellset = false);
+          const plain_volumecell_set& cells,
+          const std::vector<plain_volumecell_set>& nodal_cell_sets, plain_volumecell_set& done,
+          bool isnodalcellset = false);
 
       /// build sets of connected volumecells in a 1-ring around the node (old unused version)
       void BuildDOFCellSets(Point* p, const plain_volumecell_set& cells,

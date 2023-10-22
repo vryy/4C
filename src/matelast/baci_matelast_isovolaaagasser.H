@@ -117,7 +117,7 @@ namespace MAT
 
       //@}
 
-      void CalcCele(const int eleID);
+      void CalcCele(const int eleGID);
 
       /// Setup of patient-specific stuff
       void SetupAAA(Teuchos::ParameterList& params, const int eleGID) override;
@@ -138,7 +138,7 @@ namespace MAT
           CORE::LINALG::Matrix<3, 1>&
               dPmodI,  ///< first derivative with respect to modified invariants
           CORE::LINALG::Matrix<6, 1>&
-              ddmodPII,  ///< second derivative with respect to modified invariants
+              ddPmodII,  ///< second derivative with respect to modified invariants
           const CORE::LINALG::Matrix<3, 1>&
               modinv,       ///< modified invariants of right Cauchy-Green tensor
           int gp,           ///< Gauss point
@@ -165,7 +165,7 @@ namespace MAT
 
       /// Return visualization data
       bool VisData(
-          const std::string& name, std::vector<double>& data, int numgp, int eleId) override;
+          const std::string& name, std::vector<double>& data, int numgp, int eleGID) override;
 
       //@}
 

@@ -146,13 +146,13 @@ namespace MAT
 
     /// Setup and Initialize internal stress variables and align fibers based on a given vector
     void Setup(const int numgp,             ///< number of Gauss points
-        const std::vector<double> fibervec  ///< direction fibers should be oriented in
+        const std::vector<double> thickvec  ///< direction fibers should be oriented in
     );
 
     /// Update internal stress variables
     void Update() override;
 
-    void UpdateFiberDirs(const int numgp, CORE::LINALG::Matrix<3, 3>* defgrd);
+    void UpdateFiberDirs(const int numgp, CORE::LINALG::Matrix<3, 3>* defgrad);
 
     /// Evaluate material
     void Evaluate(const CORE::LINALG::Matrix<3, 3>* defgrd,      ///< deformation gradient

@@ -164,7 +164,7 @@ namespace MAT
 
 
 /// out stream operator
-std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& node);
+std::ostream& operator<<(std::ostream& os, const MAT::PAR::Material& cond);
 
 
 #endif  // MAT_PAR_MATERIAL_H

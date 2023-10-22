@@ -368,7 +368,7 @@ namespace POROFLUIDMULTIPHASE
 
     //! check convergence (or divergence) of nonlinear iteration
     bool AbortNonlinIter(const int itnum,  //!< current value of iteration step counter
-        const int itmax,                   //!< maximum number of iteration steps
+        const int itemax,                  //!< maximum number of iteration steps
         const double abstolres,            //!< absolute tolerance for the residual norm
         double& actresidual                //!< return value of the current residual
     );

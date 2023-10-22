@@ -29,11 +29,12 @@ namespace IO
    public:
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
         ShapeFunctionType type_of_spatial_approx, std::string inputfile,
-        const std::string& filename, int ndim, int restart, int filesteps, int create_controlfile);
+        const std::string& outputname, int ndim, int restart, int filesteps,
+        int create_controlfile);
 
     OutputControl(const Epetra_Comm& comm, std::string problemtype,
         ShapeFunctionType type_of_spatial_approx, std::string inputfile,
-        const std::string& restartfilename, std::string outputfilename, int ndim, int restart,
+        const std::string& restartname, std::string outputname, int ndim, int restart,
         int filesteps, int create_controlfile, bool adaptname = true);
 
     /// \brief copy constructor
@@ -152,7 +153,7 @@ namespace IO
    public:
     /// constructor
     ErrorFileControl(const Epetra_Comm& comm,  ///< communicator
-        std::string filename,                  ///< output file name prefix
+        std::string outputname,                ///< output file name prefix
         int restart,                           ///< restart step
         int create_errorfiles                  // do we need to create errorfiles
     );

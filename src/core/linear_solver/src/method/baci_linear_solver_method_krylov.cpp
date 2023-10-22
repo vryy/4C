@@ -173,7 +173,7 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CheckReuseStatus
 //----------------------------------------------------------------------------------
 template <class MatrixType, class VectorType>
 void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditioner(
-    Teuchos::ParameterList& azlist, const bool isCrsMatrix,
+    Teuchos::ParameterList& solverlist, const bool isCrsMatrix,
     Teuchos::RCP<CORE::LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("CORE::LINALG::Solver:  1.1)   CreatePreconditioner");
@@ -188,7 +188,7 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
     if (Params().isSublist("IFPACK Parameters"))
     {
       preconditioner_ = Teuchos::rcp(new CORE::LINEAR_SOLVER::IFPACKPreconditioner(
-          outfile_, Params().sublist("IFPACK Parameters"), azlist));
+          outfile_, Params().sublist("IFPACK Parameters"), solverlist));
     }
     else if (Params().isSublist("ML Parameters"))
     {
@@ -215,7 +215,7 @@ void CORE::LINEAR_SOLVER::KrylovSolver<MatrixType, VectorType>::CreatePreconditi
     }
 
     // decide whether we do what kind of scaling
-    std::string scaling = azlist.get("scaling", "none");
+    std::string scaling = solverlist.get("scaling", "none");
     if (scaling == "none")
     {
     }

@@ -150,7 +150,7 @@ namespace CONTACT
 
     */
     void Evaluate(CORE::LINALG::SparseMatrix& stiffmatrix, Epetra_Vector& fres,
-        const Epetra_Vector& disrow, Teuchos::ParameterList beamcontactparams, bool newsti = false,
+        const Epetra_Vector& disrow, Teuchos::ParameterList timeintparams, bool newsti = false,
         double time = 0.0);
 
     /*!
@@ -529,7 +529,7 @@ namespace CONTACT
     of the two end nodes is computed. Yet, this is assumed to be accurate enough.
 
     */
-    void GetMaxEleLength(double& max_ele_length);
+    void GetMaxEleLength(double& maxelelength);
 
     /*!
     \brief Compute rotation matrix R from given angle theta in 3D

@@ -431,11 +431,11 @@ namespace DRT
           const CORE::LINALG::Matrix<nen_, 1>* res_t = nullptr);
 
       void RecoverEAS(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d,
-          const CORE::LINALG::Matrix<nen_, 1>* temp = nullptr);
+          const CORE::LINALG::Matrix<nen_, 1>* res_T = nullptr);
 
       template <int spintype>
       void RecoverPlasticity(const CORE::LINALG::Matrix<numdofperelement_, 1>* res_d, const int gp,
-          const double* temp = nullptr);
+          const double* res_t = nullptr);
 
       void ReduceEasStep(const double new_step_length, const double old_step_length);
       void ReducePlasticityStep(
