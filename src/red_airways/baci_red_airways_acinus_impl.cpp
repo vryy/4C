@@ -41,12 +41,12 @@ DRT::ELEMENTS::RedAcinusImplInterface* DRT::ELEMENTS::RedAcinusImplInterface::Im
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      static AcinusImpl<DRT::Element::line2>* acinus;
+      static AcinusImpl<DRT::Element::DiscretizationType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new AcinusImpl<DRT::Element::line2>;
+        acinus = new AcinusImpl<DRT::Element::DiscretizationType::line2>;
       }
       return acinus;
     }

@@ -136,24 +136,23 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3::Shape() const
   switch (NumNode())
   {
     case 4:
-      return tet4;
+      return DiscretizationType::tet4;
     case 5:
-      return pyramid5;
+      return DiscretizationType::pyramid5;
     case 6:
-      return wedge6;
+      return DiscretizationType::wedge6;
     case 8:
-      return hex8;
+      return DiscretizationType::hex8;
     case 10:
-      return tet10;
+      return DiscretizationType::tet10;
     case 20:
-      return hex20;
+      return DiscretizationType::hex20;
     case 27:
-      return hex27;
+      return DiscretizationType::hex27;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------------*/

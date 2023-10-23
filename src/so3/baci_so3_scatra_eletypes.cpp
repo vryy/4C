@@ -20,7 +20,9 @@ DRT::ELEMENTS::So_hex8ScatraType& DRT::ELEMENTS::So_hex8ScatraType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8ScatraType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>(
+          -1, -1);
   object->Unpack(data);
   return object;
 }
@@ -30,8 +32,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8,
+            DRT::Element::DiscretizationType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -40,7 +43,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>(
+          id, owner));
   return ele;
 }
 
@@ -68,9 +72,9 @@ int DRT::ELEMENTS::So_hex8ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<
+        DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>*>(
+        dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_scatra* failed");
     actele->InitElement();
   }
@@ -91,8 +95,8 @@ DRT::ELEMENTS::So_hex8fbarScatraType& DRT::ELEMENTS::So_hex8fbarScatraType::Inst
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8fbarScatraType::Create(const std::vector<char>& data)
 {
-  auto* object =
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar,
+      DRT::Element::DiscretizationType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -102,8 +106,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar,
+            DRT::Element::DiscretizationType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -112,8 +117,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8fbarScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar,
+          DRT::Element::DiscretizationType::hex8>(id, owner));
   return ele;
 }
 
@@ -141,9 +147,8 @@ int DRT::ELEMENTS::So_hex8fbarScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar,
+        DRT::Element::DiscretizationType::hex8>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8fbar_scatra* failed");
     actele->InitElement();
   }
@@ -163,8 +168,8 @@ DRT::ELEMENTS::So_hex27ScatraType& DRT::ELEMENTS::So_hex27ScatraType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::So_hex27ScatraType::Create(const std::vector<char>& data)
 {
-  auto* object =
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27,
+      DRT::Element::DiscretizationType::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -174,8 +179,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27,
+            DRT::Element::DiscretizationType::hex27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -183,8 +189,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ScatraType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27ScatraType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27,
+          DRT::Element::DiscretizationType::hex27>(id, owner));
   return ele;
 }
 
@@ -212,9 +219,8 @@ int DRT::ELEMENTS::So_hex27ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27,
+        DRT::Element::DiscretizationType::hex27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_scatra* failed");
     actele->InitElement();
   }
@@ -233,7 +239,9 @@ DRT::ELEMENTS::So_tet4ScatraType& DRT::ELEMENTS::So_tet4ScatraType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4ScatraType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>(
+          -1, -1);
   object->Unpack(data);
   return object;
 }
@@ -243,8 +251,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,
+            DRT::Element::DiscretizationType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -253,7 +262,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>(
+          id, owner));
   return ele;
 }
 
@@ -281,9 +291,9 @@ int DRT::ELEMENTS::So_tet4ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<
+        DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>*>(
+        dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_scatra* failed");
     actele->InitElement();
   }
@@ -305,8 +315,8 @@ DRT::ELEMENTS::So_tet10ScatraType& DRT::ELEMENTS::So_tet10ScatraType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create(const std::vector<char>& data)
 {
-  auto* object =
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10,
+      DRT::Element::DiscretizationType::tet10>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -316,8 +326,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10,
+            DRT::Element::DiscretizationType::tet10>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -325,8 +336,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10,
+          DRT::Element::DiscretizationType::tet10>(id, owner));
   return ele;
 }
 
@@ -354,9 +366,8 @@ int DRT::ELEMENTS::So_tet10ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10,
+        DRT::Element::DiscretizationType::tet10>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet10_scatra* failed");
     actele->InitElement();
   }
@@ -375,8 +386,8 @@ DRT::ELEMENTS::So_weg6ScatraType& DRT::ELEMENTS::So_weg6ScatraType::Instance() {
 
 DRT::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create(const std::vector<char>& data)
 {
-  auto* object =
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6,
+      DRT::Element::DiscretizationType::wedge6>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -386,8 +397,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6,
+            DRT::Element::DiscretizationType::wedge6>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -395,8 +407,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6,
+          DRT::Element::DiscretizationType::wedge6>(id, owner));
   return ele;
 }
 
@@ -425,9 +438,8 @@ int DRT::ELEMENTS::So_weg6ScatraType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6,
+        DRT::Element::DiscretizationType::wedge6>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_weg6_scatra* failed");
     actele->InitElement();
   }
@@ -446,10 +458,9 @@ DRT::ELEMENTS::NStet5ScatraType DRT::ELEMENTS::NStet5ScatraType::instance_;
 
 DRT::ParObject* DRT::ELEMENTS::NStet5ScatraType::Create( const std::vector<char> & data )
 {
-  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4>* object =
-          new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4>(-1,-1);
-  object->Unpack(data);
-  return object;
+  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::DiscretizationType::tet4>* object =
+          new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5,
+DRT::Element::DiscretizationType::tet4>(-1,-1); object->Unpack(data); return object;
 }
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5ScatraType::Create( const std::string eletype,
@@ -460,7 +471,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5ScatraType::Create( const std::s
   if ( eletype=="NSTET5SCATRA" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new
-DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4> (id,owner)); return ele;
+DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::DiscretizationType::tet4>
+(id,owner)); return ele;
   }
   return Teuchos::null;
 }
@@ -468,7 +480,7 @@ DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4> (id,owner))
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5ScatraType::Create( const int id, const int owner )
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5,
-DRT::Element::tet4> (id,owner)); return ele;
+DRT::Element::DiscretizationType::tet4> (id,owner)); return ele;
 }
 
 void DRT::ELEMENTS::NStet5ScatraType::SetupElementDefinition(

@@ -55,8 +55,10 @@ namespace CORE::DRT::UTILS
       const ::DRT::Element::DiscretizationType pdistype,
       const ::DRT::Element::DiscretizationType distype, const int surfaceid)
   {
-    if ((distype == ::DRT::Element::quad4 && pdistype == ::DRT::Element::hex8) or
-        (distype == ::DRT::Element::quad9 && pdistype == ::DRT::Element::hex27))
+    if ((distype == ::DRT::Element::DiscretizationType::quad4 &&
+            pdistype == ::DRT::Element::DiscretizationType::hex8) or
+        (distype == ::DRT::Element::DiscretizationType::quad9 &&
+            pdistype == ::DRT::Element::DiscretizationType::hex27))
     {
       switch (surfaceid)
       {
@@ -227,7 +229,8 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if (distype == ::DRT::Element::nurbs9 && pdistype == ::DRT::Element::nurbs27)
+    else if (distype == ::DRT::Element::DiscretizationType::nurbs9 &&
+             pdistype == ::DRT::Element::DiscretizationType::nurbs27)
     {
       switch (surfaceid)
       {
@@ -392,8 +395,10 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::tri3 && pdistype == ::DRT::Element::tet4) or
-             (distype == ::DRT::Element::tri6 && pdistype == ::DRT::Element::tet10))
+    else if ((distype == ::DRT::Element::DiscretizationType::tri3 &&
+                 pdistype == ::DRT::Element::DiscretizationType::tet4) or
+             (distype == ::DRT::Element::DiscretizationType::tri6 &&
+                 pdistype == ::DRT::Element::DiscretizationType::tet10))
     {
       switch (surfaceid)
       {
@@ -797,9 +802,12 @@ namespace CORE::DRT::UTILS
     // resize output array
     pqxg.shape(intpoints.numRows(), 2);
 
-    if ((distype == ::DRT::Element::line2 && pdistype == ::DRT::Element::quad4) or
-        (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::quad8) or
-        (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::quad9))
+    if ((distype == ::DRT::Element::DiscretizationType::line2 &&
+            pdistype == ::DRT::Element::DiscretizationType::quad4) or
+        (distype == ::DRT::Element::DiscretizationType::line3 &&
+            pdistype == ::DRT::Element::DiscretizationType::quad8) or
+        (distype == ::DRT::Element::DiscretizationType::line3 &&
+            pdistype == ::DRT::Element::DiscretizationType::quad9))
     {
       switch (beleid)
       {
@@ -963,8 +971,10 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of lines, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::line2 && pdistype == ::DRT::Element::tri3) or
-             (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::tri6))
+    else if ((distype == ::DRT::Element::DiscretizationType::line2 &&
+                 pdistype == ::DRT::Element::DiscretizationType::tri3) or
+             (distype == ::DRT::Element::DiscretizationType::line3 &&
+                 pdistype == ::DRT::Element::DiscretizationType::tri6))
     {
       switch (beleid)
       {
@@ -999,7 +1009,8 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of lines, unable to determine intpoint in parent");
       }
     }
-    else if (distype == ::DRT::Element::nurbs3 && pdistype == ::DRT::Element::nurbs9)
+    else if (distype == ::DRT::Element::DiscretizationType::nurbs3 &&
+             pdistype == ::DRT::Element::DiscretizationType::nurbs9)
     {
       switch (beleid)
       {
@@ -1112,9 +1123,12 @@ namespace CORE::DRT::UTILS
     // resize output array
     pqxg.shape(intpoints.numRows(), 3);
 
-    if ((distype == ::DRT::Element::quad4 && pdistype == ::DRT::Element::hex8) or
-        (distype == ::DRT::Element::quad8 && pdistype == ::DRT::Element::hex20) or
-        (distype == ::DRT::Element::quad9 && pdistype == ::DRT::Element::hex27))
+    if ((distype == ::DRT::Element::DiscretizationType::quad4 &&
+            pdistype == ::DRT::Element::DiscretizationType::hex8) or
+        (distype == ::DRT::Element::DiscretizationType::quad8 &&
+            pdistype == ::DRT::Element::DiscretizationType::hex20) or
+        (distype == ::DRT::Element::DiscretizationType::quad9 &&
+            pdistype == ::DRT::Element::DiscretizationType::hex27))
     {
       switch (beleid)
       {
@@ -1266,8 +1280,10 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::tri3 && pdistype == ::DRT::Element::tet4) or
-             (distype == ::DRT::Element::tri6 && pdistype == ::DRT::Element::tet10))
+    else if ((distype == ::DRT::Element::DiscretizationType::tri3 &&
+                 pdistype == ::DRT::Element::DiscretizationType::tet4) or
+             (distype == ::DRT::Element::DiscretizationType::tri6 &&
+                 pdistype == ::DRT::Element::DiscretizationType::tet10))
     {
       switch (beleid)
       {
@@ -1315,8 +1331,10 @@ namespace CORE::DRT::UTILS
           dserror("invalid number of surfaces, unable to determine intpoint in parent");
       }
     }
-    else if ((distype == ::DRT::Element::quad4 && pdistype == ::DRT::Element::wedge6) or
-             (distype == ::DRT::Element::quad8 && pdistype == ::DRT::Element::wedge15))
+    else if ((distype == ::DRT::Element::DiscretizationType::quad4 &&
+                 pdistype == ::DRT::Element::DiscretizationType::wedge6) or
+             (distype == ::DRT::Element::DiscretizationType::quad8 &&
+                 pdistype == ::DRT::Element::DiscretizationType::wedge15))
     {
       switch (beleid)
       {
@@ -1398,8 +1416,10 @@ namespace CORE::DRT::UTILS
               "in parent");
       }
     }
-    else if ((distype == ::DRT::Element::tri3 && pdistype == ::DRT::Element::wedge6) or
-             (distype == ::DRT::Element::tri6 && pdistype == ::DRT::Element::wedge15))
+    else if ((distype == ::DRT::Element::DiscretizationType::tri3 &&
+                 pdistype == ::DRT::Element::DiscretizationType::wedge6) or
+             (distype == ::DRT::Element::DiscretizationType::tri6 &&
+                 pdistype == ::DRT::Element::DiscretizationType::wedge15))
     {
       switch (beleid)
       {
@@ -1431,7 +1451,8 @@ namespace CORE::DRT::UTILS
               "parent");
       }
     }
-    else if (distype == ::DRT::Element::nurbs9 && pdistype == ::DRT::Element::nurbs27)
+    else if (distype == ::DRT::Element::DiscretizationType::nurbs9 &&
+             pdistype == ::DRT::Element::DiscretizationType::nurbs27)
     {
       switch (beleid)
       {

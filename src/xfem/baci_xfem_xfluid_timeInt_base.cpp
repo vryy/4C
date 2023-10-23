@@ -393,21 +393,21 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersection(
 {
   switch (sh->Shape())
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return callSideEdgeIntersectionT<DRT::Element::tri3>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<DRT::Element::DiscretizationType::tri3>(sh, sid, x1, x2);
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return callSideEdgeIntersectionT<DRT::Element::quad4>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<DRT::Element::DiscretizationType::quad4>(sh, sid, x1, x2);
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return callSideEdgeIntersectionT<DRT::Element::quad8>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<DRT::Element::DiscretizationType::quad8>(sh, sid, x1, x2);
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return callSideEdgeIntersectionT<DRT::Element::quad9>(sh, sid, x1, x2);
+      return callSideEdgeIntersectionT<DRT::Element::DiscretizationType::quad9>(sh, sid, x1, x2);
     }
     default:
     {
@@ -450,7 +450,7 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
 
 
   Teuchos::RCP<CORE::GEO::CUT::IntersectionBase> intersect =
-      CORE::GEO::CUT::IntersectionBase::Create(DRT::Element::line2, sidetype);
+      CORE::GEO::CUT::IntersectionBase::Create(DRT::Element::DiscretizationType::line2, sidetype);
   Teuchos::RCP<CORE::GEO::CUT::Options> options =
       Teuchos::rcp(new CORE::GEO::CUT::Options());  // Create cut options for intersection
                                                     // (specify to use double prec.)
@@ -527,14 +527,14 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
 {
   switch (DISTYPE)
   {
-    case DRT::Element::hex8:
-      XToXiCoords<DRT::Element::hex8>(nodecoords, x, xi, pointInDomain);
+    case DRT::Element::DiscretizationType::hex8:
+      XToXiCoords<DRT::Element::DiscretizationType::hex8>(nodecoords, x, xi, pointInDomain);
       break;
-    case DRT::Element::hex20:
-      XToXiCoords<DRT::Element::hex20>(nodecoords, x, xi, pointInDomain);
+    case DRT::Element::DiscretizationType::hex20:
+      XToXiCoords<DRT::Element::DiscretizationType::hex20>(nodecoords, x, xi, pointInDomain);
       break;
-    case DRT::Element::tet4:
-      XToXiCoords<DRT::Element::tet4>(nodecoords, x, xi, pointInDomain);
+    case DRT::Element::DiscretizationType::tet4:
+      XToXiCoords<DRT::Element::DiscretizationType::tet4>(nodecoords, x, xi, pointInDomain);
       break;
     default:
       dserror("add your 3D distype and the according transformation!");
@@ -644,15 +644,18 @@ void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(DRT::Element* element,  /// po
 
 
 // explicit instantiations of this function...
-template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<8, DRT::Element::hex8>(DRT::Element*,
-    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<8, 1>&,
-    CORE::LINALG::Matrix<3, 8>&, bool) const;
-template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<20, DRT::Element::hex20>(DRT::Element*,
-    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<20, 1>&,
-    CORE::LINALG::Matrix<3, 20>&, bool) const;
-template void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<4, DRT::Element::tet4>(DRT::Element*,
-    CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&, CORE::LINALG::Matrix<4, 1>&,
-    CORE::LINALG::Matrix<3, 4>&, bool) const;
+template void
+XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<8, DRT::Element::DiscretizationType::hex8>(
+    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::LINALG::Matrix<8, 1>&, CORE::LINALG::Matrix<3, 8>&, bool) const;
+template void
+XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<20, DRT::Element::DiscretizationType::hex20>(
+    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::LINALG::Matrix<20, 1>&, CORE::LINALG::Matrix<3, 20>&, bool) const;
+template void
+XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv<4, DRT::Element::DiscretizationType::tet4>(
+    DRT::Element*, CORE::LINALG::Matrix<3, 1>&, CORE::LINALG::Matrix<3, 3>&,
+    CORE::LINALG::Matrix<4, 1>&, CORE::LINALG::Matrix<3, 4>&, bool) const;
 
 
 
@@ -1078,16 +1081,16 @@ void XFEM::XFLUID_STD::getGPValues(DRT::Element* ele,  ///< pointer to element
 {
   switch (ele->Shape())
   {
-    case DRT::Element::hex8:
-      getGPValuesT<DRT::Element::hex8>(
+    case DRT::Element::DiscretizationType::hex8:
+      getGPValuesT<DRT::Element::DiscretizationType::hex8>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
-    case DRT::Element::hex20:
-      getGPValuesT<DRT::Element::hex20>(
+    case DRT::Element::DiscretizationType::hex20:
+      getGPValuesT<DRT::Element::DiscretizationType::hex20>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
-    case DRT::Element::tet4:
-      getGPValuesT<DRT::Element::tet4>(
+    case DRT::Element::DiscretizationType::tet4:
+      getGPValuesT<DRT::Element::DiscretizationType::tet4>(
           ele, xi, nds, dofset, vel, vel_deriv, pres, pres_deriv, vel_vec, compute_deriv);
       break;
     default:
@@ -2041,30 +2044,32 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case DRT::Element::DiscretizationType::tri3:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri3, 3>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<DRT::Element::DiscretizationType::tri3, 3>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case DRT::Element::DiscretizationType::tri6:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri6, 3>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<DRT::Element::DiscretizationType::tri6, 3>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        getNormalSide_tn<DRT::Element::quad4, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<DRT::Element::DiscretizationType::quad4, 3>(
+            normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        getNormalSide_tn<DRT::Element::quad8, 3>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<DRT::Element::DiscretizationType::quad8, 3>(
+            normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-        //      case DRT::Element::quad9:
+        //      case DRT::Element::DiscretizationType::quad9:
         //      {
-        //        getNormalSide_tn<DRT::Element::quad9, 3>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<DRT::Element::DiscretizationType::quad9, 3>(normal, side_xyze,
+        //        lm, proj_x_n, xi_side); break;
         //      }
       default:
         dserror("unsupported side shape %d", side->Shape());
@@ -2075,30 +2080,32 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(DRT::Element* side,  ///< pointer to
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case DRT::Element::DiscretizationType::tri3:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri3, 4>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<DRT::Element::DiscretizationType::tri3, 4>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case DRT::Element::DiscretizationType::tri6:
         //      {
-        //        getNormalSide_tn<DRT::Element::tri6, 4>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<DRT::Element::DiscretizationType::tri6, 4>(normal, side_xyze, lm,
+        //        proj_x_n, xi_side); break;
         //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        getNormalSide_tn<DRT::Element::quad4, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<DRT::Element::DiscretizationType::quad4, 4>(
+            normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        getNormalSide_tn<DRT::Element::quad8, 4>(normal, side_xyze, lm, proj_x_n, xi_side);
+        getNormalSide_tn<DRT::Element::DiscretizationType::quad8, 4>(
+            normal, side_xyze, lm, proj_x_n, xi_side);
         break;
       }
-        //      case DRT::Element::quad9:
+        //      case DRT::Element::DiscretizationType::quad9:
         //      {
-        //        getNormalSide_tn<DRT::Element::quad9, 4>(normal, side_xyze, lm, proj_x_n,
-        //        xi_side); break;
+        //        getNormalSide_tn<DRT::Element::DiscretizationType::quad9, 4>(normal, side_xyze,
+        //        lm, proj_x_n, xi_side); break;
         //      }
       default:
         dserror("unsupported side shape %d", side->Shape());
@@ -2198,9 +2205,10 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case DRT::Element::DiscretizationType::line2:
       {
-        get_projxn_Line<DRT::Element::line2, 3>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
+        get_projxn_Line<DRT::Element::DiscretizationType::line2, 3>(
+            line_xyze, cutla[0].lm_, proj_x_n, xi_line);
         break;
       }
       default:
@@ -2212,9 +2220,10 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case DRT::Element::DiscretizationType::line2:
       {
-        get_projxn_Line<DRT::Element::line2, 4>(line_xyze, cutla[0].lm_, proj_x_n, xi_line);
+        get_projxn_Line<DRT::Element::DiscretizationType::line2, 4>(
+            line_xyze, cutla[0].lm_, proj_x_n, xi_line);
         break;
       }
       default:
@@ -2350,31 +2359,31 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case DRT::Element::DiscretizationType::tri3:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri3,3>(side_xyze,
+        //        on_side = ProjectOnSide<DRT::Element::DiscretizationType::tri3,3>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case DRT::Element::DiscretizationType::tri6:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri6,3>(side_xyze,
+        //        on_side = ProjectOnSide<DRT::Element::DiscretizationType::tri6,3>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side); break;
         //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        on_side = ProjectOnSide<DRT::Element::quad4, 3>(
+        on_side = ProjectOnSide<DRT::Element::DiscretizationType::quad4, 3>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        on_side = ProjectOnSide<DRT::Element::quad8, 3>(
+        on_side = ProjectOnSide<DRT::Element::DiscretizationType::quad8, 3>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        on_side = ProjectOnSide<DRT::Element::quad9, 3>(
+        on_side = ProjectOnSide<DRT::Element::DiscretizationType::quad9, 3>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
@@ -2387,31 +2396,32 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   {
     switch (side->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case DRT::Element::DiscretizationType::tri3:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri3,4>(side_xyze,
+        //        on_side = ProjectOnSide<DRT::Element::DiscretizationType::tri3,4>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case DRT::Element::DiscretizationType::tri6:
         //      {
-        //        on_side = ProjectOnSide<DRT::Element::tri6,4>(side_xyze,
+        //        on_side = ProjectOnSide<DRT::Element::DiscretizationType::tri6,4>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        on_side = ProjectOnSide<DRT::Element::quad4, 4>(
+        on_side = ProjectOnSide<DRT::Element::DiscretizationType::quad4, 4>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        on_side = ProjectOnSide<DRT::Element::quad8, 4>(
+        on_side = ProjectOnSide<DRT::Element::DiscretizationType::quad8, 4>(
             side_xyze, cutla[0].lm_, state, newNodeCoords, x_side, xi_side, curr_dist);
         break;
       }
-        //      case DRT::Element::quad9:
+        //      case DRT::Element::DiscretizationType::quad9:
         //      {
-        //        //      on_side = ProjectOnSide<DRT::Element::quad9,4>(side_xyze,
+        //        //      on_side =
+        //        ProjectOnSide<DRT::Element::DiscretizationType::quad9,4>(side_xyze,
         //        cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist); break;
         //      }
       default:
@@ -2515,9 +2525,9 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case DRT::Element::DiscretizationType::line2:
       {
-        on_line = ProjectOnLine<DRT::Element::line2, 3>(
+        on_line = ProjectOnLine<DRT::Element::DiscretizationType::line2, 3>(
             line_xyze, cutla[0].lm_, state, newNodeCoords, x_line, xi_line, curr_dist);
         break;
       }
@@ -2530,15 +2540,15 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   {
     switch (line->Shape())
     {
-      case DRT::Element::line2:
+      case DRT::Element::DiscretizationType::line2:
       {
-        on_line = ProjectOnLine<DRT::Element::line2, 4>(
+        on_line = ProjectOnLine<DRT::Element::DiscretizationType::line2, 4>(
             line_xyze, cutla[0].lm_, state, newNodeCoords, x_line, xi_line, curr_dist);
         break;
       }
-      case DRT::Element::line3:
+      case DRT::Element::DiscretizationType::line3:
       {
-        on_line = ProjectOnLine<DRT::Element::line3, 4>(
+        on_line = ProjectOnLine<DRT::Element::DiscretizationType::line3, 4>(
             line_xyze, cutla[0].lm_, state, newNodeCoords, x_line, xi_line, curr_dist);
         break;
       }
@@ -2756,13 +2766,15 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
 
   CORE::LINALG::Matrix<3, 1> sol(true);  // sol carries xi_1, xi_2, d (distance)
 
-  if (side_distype == DRT::Element::tri3 or side_distype == DRT::Element::tri6)
+  if (side_distype == DRT::Element::DiscretizationType::tri3 or
+      side_distype == DRT::Element::DiscretizationType::tri6)
   {
     sol(0) = 0.333333333333333;
     sol(1) = 0.333333333333333;
   }
-  else if (side_distype == DRT::Element::quad4 or side_distype == DRT::Element::quad8 or
-           side_distype == DRT::Element::quad9)
+  else if (side_distype == DRT::Element::DiscretizationType::quad4 or
+           side_distype == DRT::Element::DiscretizationType::quad8 or
+           side_distype == DRT::Element::DiscretizationType::quad9)
   {
     sol(0) = 0.0;
     sol(1) = 0.0;
@@ -3108,34 +3120,34 @@ bool XFEM::XFLUID_STD::WithinLimits(CORE::LINALG::Matrix<3, 1>& xsi_, const doub
 {
   switch (elementtype)
   {
-    case DRT::Element::line2:
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
       return (xsi_(0) >= -1 - TOL and xsi_(0) <= 1 + TOL);
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(0) <= 1 + TOL and xsi_(1) <= 1 + TOL and
               (xsi_(0) + xsi_(1)) <= 1 + TOL);
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
       return (xsi_(0) >= -1 - TOL and xsi_(1) >= -1 - TOL and xsi_(0) <= 1 + TOL and
               xsi_(1) <= 1 + TOL);
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::hex20:
+    case DRT::Element::DiscretizationType::hex27:
       return (xsi_(0) >= -1 - TOL and xsi_(1) >= -1 - TOL and xsi_(2) >= -1 - TOL and
               xsi_(0) <= 1 + TOL and xsi_(1) <= 1 + TOL and xsi_(2) <= 1 + TOL);
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet4:
+    case DRT::Element::DiscretizationType::tet10:
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(2) >= -TOL and
               xsi_(0) + xsi_(1) + xsi_(2) <= 1 + TOL);
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
       return (xsi_(0) >= -1 - TOL and xsi_(1) >= -1 - TOL and xsi_(2) >= -TOL and
               xsi_(0) <= 1 + TOL and xsi_(1) <= 1 + TOL and
               (fabs(xsi_(0)) > fabs(xsi_(1)) ? (xsi_(2) + fabs(xsi_(0)) <= 1 + TOL)
                                              : (xsi_(2) + fabs(xsi_(1)) <= 1 + TOL)));
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge6:
+    case DRT::Element::DiscretizationType::wedge15:
       return (xsi_(0) >= -TOL and xsi_(1) >= -TOL and xsi_(2) >= -1 - TOL and xsi_(2) <= 1 + TOL and
               xsi_(0) + xsi_(1) <= 1 + TOL);
     default:

@@ -104,39 +104,39 @@ char CORE::GEO::CUT::OUTPUT::GmshElementType(::DRT::Element::DiscretizationType 
 {
   switch (shape)
   {
-    case ::DRT::Element::point1:
+    case ::DRT::Element::DiscretizationType::point1:
     {
       return 'P';
     }
-    case ::DRT::Element::line2:
+    case ::DRT::Element::DiscretizationType::line2:
     {
       return 'L';
     }
-    case ::DRT::Element::tri3:
+    case ::DRT::Element::DiscretizationType::tri3:
     {
       return 'T';
     }
-    case ::DRT::Element::quad4:
+    case ::DRT::Element::DiscretizationType::quad4:
     {
       return 'Q';
     }
-    case ::DRT::Element::hex8:
+    case ::DRT::Element::DiscretizationType::hex8:
     {
       return 'H';
     }
-    case ::DRT::Element::tet4:
+    case ::DRT::Element::DiscretizationType::tet4:
     {
       return 'S';
     }
-    case ::DRT::Element::wedge6:
+    case ::DRT::Element::DiscretizationType::wedge6:
     {
       return 'I';
     }
-    case ::DRT::Element::pyramid5:
+    case ::DRT::Element::DiscretizationType::pyramid5:
     {
       return 'P';
     }
-    case ::DRT::Element::dis_none:
+    case ::DRT::Element::DiscretizationType::dis_none:
     {
       // arbitrary cells are not yet supported
       return ' ';
@@ -1238,7 +1238,8 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
         file << "    nids.push_back( " << n->Id() << " );"
              << "\n";
       }
-      file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, ::DRT::Element::tri3 );"
+      file << "    intersection.AddCutSide( ++sidecount, nids, tri3_xyze, "
+              "::DRT::Element::DiscretizationType::tri3 );"
            << "\n";
       file << "  }"
            << "\n";
@@ -1284,11 +1285,11 @@ void CORE::GEO::CUT::OUTPUT::GmshElementCutTest(
          << "\n";
     if (not haslevelsetside)
       file << "  intersection.AddElement( " << aele->Id()
-           << ", nids, hex8_xyze, ::DRT::Element::hex8);"
+           << ", nids, hex8_xyze, ::DRT::Element::DiscretizationType::hex8);"
            << "\n";
     else
       file << "  intersection.AddElement( " << aele->Id()
-           << ", nids, hex8_xyze, ::DRT::Element::hex8, &lsvs[0], false );"
+           << ", nids, hex8_xyze, ::DRT::Element::DiscretizationType::hex8, &lsvs[0], false );"
            << "\n";
     file << "  }"
          << "\n";

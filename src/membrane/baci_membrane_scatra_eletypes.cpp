@@ -25,8 +25,8 @@ DRT::ELEMENTS::MembraneScatra_tri3Type& DRT::ELEMENTS::MembraneScatra_tri3Type::
 
 DRT::ParObject* DRT::ELEMENTS::MembraneScatra_tri3Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::MembraneScatra<DRT::Element::tri3>* object =
-      new DRT::ELEMENTS::MembraneScatra<DRT::Element::tri3>(-1, -1);
+  DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri3>* object =
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri3>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -36,8 +36,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
 {
   if (eletype == "MEMBRANESCATRA3" && eledistype == "TRI3")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::tri3>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri3>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -46,8 +46,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri3Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::tri3>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri3>(id, owner));
   return ele;
 }
 
@@ -78,8 +78,8 @@ DRT::ELEMENTS::MembraneScatra_tri6Type& DRT::ELEMENTS::MembraneScatra_tri6Type::
 
 DRT::ParObject* DRT::ELEMENTS::MembraneScatra_tri6Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::MembraneScatra<DRT::Element::tri6>* object =
-      new DRT::ELEMENTS::MembraneScatra<DRT::Element::tri6>(-1, -1);
+  DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri6>* object =
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri6>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -89,8 +89,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
 {
   if (eletype == "MEMBRANESCATRA6" && eledistype == "TRI6")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::tri6>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri6>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -99,8 +99,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_tri6Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::tri6>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri6>(id, owner));
   return ele;
 }
 
@@ -131,8 +131,8 @@ DRT::ELEMENTS::MembraneScatra_quad4Type& DRT::ELEMENTS::MembraneScatra_quad4Type
 
 DRT::ParObject* DRT::ELEMENTS::MembraneScatra_quad4Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::MembraneScatra<DRT::Element::quad4>* object =
-      new DRT::ELEMENTS::MembraneScatra<DRT::Element::quad4>(-1, -1);
+  DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad4>* object =
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -142,8 +142,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
 {
   if (eletype == "MEMBRANESCATRA4" && eledistype == "QUAD4")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::quad4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -152,8 +152,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad4Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::quad4>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad4>(id, owner));
   return ele;
 }
 
@@ -184,8 +184,8 @@ DRT::ELEMENTS::MembraneScatra_quad9Type& DRT::ELEMENTS::MembraneScatra_quad9Type
 
 DRT::ParObject* DRT::ELEMENTS::MembraneScatra_quad9Type::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>* object =
-      new DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>(-1, -1);
+  DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad9>* object =
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad9>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -195,8 +195,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
 {
   if (eletype == "MEMBRANESCATRA9" && eledistype == "QUAD9")
   {
-    Teuchos::RCP<DRT::Element> ele =
-        Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>(id, owner));
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+        new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad9>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -205,8 +205,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::MembraneScatra_quad9Type::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele =
-      Teuchos::rcp(new DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>(id, owner));
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
+      new DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad9>(id, owner));
   return ele;
 }
 

@@ -20,25 +20,25 @@ DRT::ELEMENTS::Shell7pFactory::ProvideShell7pCalculationInterface(
 {
   switch (ele.Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return DefineCalculationInterfaceType<DRT::Element::quad4>(eletech);
+      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::quad4>(eletech);
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return DefineCalculationInterfaceType<DRT::Element::quad8>(eletech);
+      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::quad8>(eletech);
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return DefineCalculationInterfaceType<DRT::Element::quad9>(eletech);
+      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::quad9>(eletech);
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return DefineCalculationInterfaceType<DRT::Element::tri3>(eletech);
+      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::tri3>(eletech);
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return DefineCalculationInterfaceType<DRT::Element::tri6>(eletech);
+      return DefineCalculationInterfaceType<DRT::Element::DiscretizationType::tri6>(eletech);
     }
     default:
       dserror("unknown distype provided");
@@ -62,7 +62,8 @@ DRT::ELEMENTS::Shell7pFactory::DefineCalculationInterfaceType(
       {
         case INPAR::STR::EleTech::eas:
         {
-          if constexpr ((distype != DRT::Element::quad4) && (distype != DRT::Element::quad9))
+          if constexpr ((distype != DRT::Element::DiscretizationType::quad4) &&
+                        (distype != DRT::Element::DiscretizationType::quad9))
           {
             dserror("EAS is only implemented for quad4 and quad9 elements.");
           }

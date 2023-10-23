@@ -864,7 +864,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
     // fill up df_sp w.r.t. rst directions (NUMDIM) at each sp
     for (int i = 0; i < num_sp; ++i)
     {
-      CORE::DRT::UTILS::shape_function_3D_deriv1(df_sp[i], r[i], s[i], t[i], wedge6);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(
+          df_sp[i], r[i], s[i], t[i], DRT::Element::DiscretizationType::wedge6);
     }
 
     // return adresses of just evaluated matrices
@@ -1028,8 +1029,8 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   const CORE::DRT::UTILS::IntegrationPoints3D intpoints(
       CORE::DRT::UTILS::GaussRule3D::wedge_1point);
   CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> df0;
-  CORE::DRT::UTILS::shape_function_3D_deriv1(
-      df0, intpoints.qxg[0][0], intpoints.qxg[0][1], intpoints.qxg[0][2], DRT::Element::wedge6);
+  CORE::DRT::UTILS::shape_function_3D_deriv1(df0, intpoints.qxg[0][0], intpoints.qxg[0][1],
+      intpoints.qxg[0][2], DRT::Element::DiscretizationType::wedge6);
 
   // compute Jacobian, evaluated at element origin (r=s=t=0.0)
   CORE::LINALG::Matrix<NUMDIM_WEG6, NUMDIM_WEG6> jac0;

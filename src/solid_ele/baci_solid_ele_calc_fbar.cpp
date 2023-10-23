@@ -459,5 +459,5 @@ void DRT::ELEMENTS::SolidEleCalcFbar<distype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::hex8>;
-template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::SolidEleCalcFbar<DRT::Element::DiscretizationType::pyramid5>;

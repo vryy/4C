@@ -549,16 +549,16 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
     dserror("This discretization does not have any row elements.");
   switch (discret_->lRowElement(0)->Shape())
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       numnodesperele = 8;
       break;
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       numnodesperele = 20;
       std::cout << "Warning, the fast signed distance reinitialization has not been tested with "
                    "hex20 elements!"
                 << std::endl;
       break;
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       numnodesperele = 27;
       std::cout << "Warning, the fast signed distance reinitialization has not been tested with "
                    "hex27 elements!"
@@ -875,7 +875,8 @@ void SCATRA::LevelSetAlgorithm::ReinitGeo(
             const CORE::GEO::BoundaryIntCell patch = patches[ipatch];
 
             // only triangles and quadrangles are allowed as flame front patches (boundary cells)
-            if (!(patch.Shape() == DRT::Element::tri3 or patch.Shape() == DRT::Element::quad4))
+            if (!(patch.Shape() == DRT::Element::DiscretizationType::tri3 or
+                    patch.Shape() == DRT::Element::DiscretizationType::quad4))
             {
               dserror("invalid type of boundary integration cell for reinitialization");
             }
@@ -1018,16 +1019,16 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
   bool converged = false;
   switch (patch.Shape())
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      converged =
-          ProjectNodeOnPatch<DRT::Element::tri3>(node, patch, patchcoord, normal, eta, alpha);
+      converged = ProjectNodeOnPatch<DRT::Element::DiscretizationType::tri3>(
+          node, patch, patchcoord, normal, eta, alpha);
       break;
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      converged =
-          ProjectNodeOnPatch<DRT::Element::quad4>(node, patch, patchcoord, normal, eta, alpha);
+      converged = ProjectNodeOnPatch<DRT::Element::DiscretizationType::quad4>(
+          node, patch, patchcoord, normal, eta, alpha);
       break;
     }
     default:
@@ -1052,7 +1053,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
 
   switch (patch.Shape())
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       // criteria for tri3 patch
       if ((eta(0) > -TOL) and (eta(0) < 1.0 + TOL) and (eta(1) > -TOL) and (eta(1) < 1.0 + TOL) and
@@ -1065,7 +1066,7 @@ void SCATRA::LevelSetAlgorithm::FindFacingPatchProjCellSpace(const CORE::LINALG:
       }
       break;
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       // criteria for quad4 patch
       if ((eta(0) > -1.0 - TOL) and (eta(0) < 1.0 + TOL) and (eta(1) > -1.0 - TOL) and

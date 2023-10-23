@@ -515,34 +515,40 @@ void PostVtuWriter::WriteGeoNurbsEle(const DRT::Element* ele, std::vector<uint8_
 {
   switch (ele->Shape())
   {
-    case DRT::Element::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs2>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs2>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs3>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs3>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs4>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs4>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs9>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs9>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs8:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs8>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs8>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
-      WriteGeoNurbsEle<DRT::Element::nurbs27>(ele, celltypes, outNodeId, celloffset, coordinates);
+      WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs27>(
+          ele, celltypes, outNodeId, celloffset, coordinates);
       break;
     }
     default:
@@ -619,18 +625,18 @@ DRT::Element::DiscretizationType PostVtuWriter::MapNurbsDisTypeToLagrangeDisType
 {
   switch (nurbs_dis_type)
   {
-    case DRT::Element::nurbs2:
-      return DRT::Element::line2;
-    case DRT::Element::nurbs3:
-      return DRT::Element::line3;
-    case DRT::Element::nurbs4:
-      return DRT::Element::quad4;
-    case DRT::Element::nurbs9:
-      return DRT::Element::quad9;
-    case DRT::Element::nurbs8:
-      return DRT::Element::hex8;
-    case DRT::Element::nurbs27:
-      return DRT::Element::hex27;
+    case DRT::Element::DiscretizationType::nurbs2:
+      return DRT::Element::DiscretizationType::line2;
+    case DRT::Element::DiscretizationType::nurbs3:
+      return DRT::Element::DiscretizationType::line3;
+    case DRT::Element::DiscretizationType::nurbs4:
+      return DRT::Element::DiscretizationType::quad4;
+    case DRT::Element::DiscretizationType::nurbs9:
+      return DRT::Element::DiscretizationType::quad9;
+    case DRT::Element::DiscretizationType::nurbs8:
+      return DRT::Element::DiscretizationType::hex8;
+    case DRT::Element::DiscretizationType::nurbs27:
+      return DRT::Element::DiscretizationType::hex27;
     default:
       dserror("No known mapping from NURBS to Lagrange.");
       exit(EXIT_FAILURE);
@@ -670,39 +676,39 @@ void PostVtuWriter::WirteDofResultStepNurbsEle(const DRT::Element* ele, int ncom
 {
   switch (ele->Shape())
   {
-    case DRT::Element::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs2>(
+      WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs2>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs3>(
+      WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs3>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs4>(
+      WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs4>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs9>(
+      WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs9>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs8:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs8>(
+      WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs8>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
-      WirteDofResultStepNurbsEle<DRT::Element::nurbs27>(
+      WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs27>(
           ele, ncomponents, numdf, solution, ghostedData, from, fillzeros);
       break;
     }
@@ -854,39 +860,39 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
 {
   switch (ele->Shape())
   {
-    case DRT::Element::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs2>(
+      WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs2>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs3>(
+      WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs3>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs4>(
+      WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs4>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs9>(
+      WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs9>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs8:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs8>(
+      WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs8>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
-      WriteNodalResultStepNurbsEle<DRT::Element::nurbs27>(
+      WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs27>(
           ele, ncomponents, numdf, solution, ghostedData);
       break;
     }
@@ -968,61 +974,62 @@ void PostVtuWriter::WriteNodalResultStepNurbsEle(const DRT::Element* ele, int nc
 }
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs2>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs3>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs4>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs9>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs8>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
-template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::nurbs27>(const DRT::Element* ele,
-    std::vector<uint8_t>& celltypes, int& outNodeId, std::vector<int32_t>& celloffset,
-    std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs2>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs3>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs4>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs9>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs8>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
+template void PostVtuWriter::WriteGeoNurbsEle<DRT::Element::DiscretizationType::nurbs27>(
+    const DRT::Element* ele, std::vector<uint8_t>& celltypes, int& outNodeId,
+    std::vector<int32_t>& celloffset, std::vector<double>& coordinates) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs2>(
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs2>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs3>(
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs3>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs4>(
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs4>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs9>(
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs9>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs8>(
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs8>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
-template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::nurbs27>(
+template void PostVtuWriter::WirteDofResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs27>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_Vector> ghostedData, const int from, const bool fillzeros) const;
 
 /*----------------------------------------------------------------------------*/
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs2>(
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs2>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs3>(
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs3>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs4>(
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs4>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs9>(
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs9>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs8>(
+template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs8>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;
-template void PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::nurbs27>(
+template void
+PostVtuWriter::WriteNodalResultStepNurbsEle<DRT::Element::DiscretizationType::nurbs27>(
     const DRT::Element* ele, int ncomponents, const int numdf, std::vector<double>& solution,
     Teuchos::RCP<Epetra_MultiVector> ghostedData) const;

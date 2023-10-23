@@ -263,23 +263,24 @@ void DRT::ELEMENTS::ScaTraEleCalcRefConcReac<distype>::CalcRHSDiff(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::quad9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::nurbs9>;
-// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::tet10>;
+// template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::pyramid5>;
+template class DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::nurbs9>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcRefConcReac<DRT::Element::DiscretizationType::nurbs27>;

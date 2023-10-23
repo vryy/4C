@@ -55,79 +55,79 @@ namespace GEOMETRYPAIR
         GEOMETRYPAIR::DiscretizationTypeGeometry::none;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::line2>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::line2>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::line;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::tri3>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tri3>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::tri6>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tri6>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::triangle;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::quad4>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::quad4>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::quad8>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::quad8>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::quad9>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::quad9>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::nurbs9>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::nurbs9>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::quad;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::hex8>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::hex8>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::hex20>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::hex20>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::hex27>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::hex27>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::tet4>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tet4>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::tet10>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::tet10>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::tetraeder;
   };
   template <>
-  struct ElementDiscretizationToGeometryType<DRT::Element::nurbs27>
+  struct ElementDiscretizationToGeometryType<DRT::Element::DiscretizationType::nurbs27>
   {
     static const GEOMETRYPAIR::DiscretizationTypeGeometry geometry_type_ =
         GEOMETRYPAIR::DiscretizationTypeGeometry::hexahedron;

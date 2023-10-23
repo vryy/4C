@@ -104,7 +104,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
   // Now do the nurbs specific stuff
   std::vector<CORE::LINALG::SerialDenseVector> myknots(2);
 
-  if (Shape() == DRT::Element::nurbs4 or Shape() == DRT::Element::nurbs9)
+  if (Shape() == DRT::Element::DiscretizationType::nurbs4 or
+      Shape() == DRT::Element::DiscretizationType::nurbs9)
   {
     switch (act)
     {
@@ -506,7 +507,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         /*------------------------- get node weights for nurbs elements */
         const DiscretizationType distype = Shape();
         CORE::LINALG::SerialDenseVector weights(numnode);
-        if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+        if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+            distype == DRT::Element::DiscretizationType::nurbs9)
         {
           for (int inode = 0; inode < numnode; ++inode)
           {
@@ -525,7 +527,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
           const double wgt = intpoints.qwgt[ip];
 
           // get values of shape functions and derivatives in the gausspoint
-          if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+          if (distype != DRT::Element::DiscretizationType::nurbs4 &&
+              distype != DRT::Element::DiscretizationType::nurbs9)
           {
             // shape functions and their derivatives for polynomials
             CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -774,7 +777,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       /*------------------------- get node weights for nurbs elements */
       const DiscretizationType distype = Shape();
       CORE::LINALG::SerialDenseVector weights(numnode);
-      if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+      if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+          distype == DRT::Element::DiscretizationType::nurbs9)
       {
         for (int inode = 0; inode < numnode; ++inode)
         {
@@ -793,7 +797,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
         const double wgt = intpoints.qwgt[ip];
 
         // get values of shape functions and derivatives in the gausspoint
-        if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+        if (distype != DRT::Element::DiscretizationType::nurbs4 &&
+            distype != DRT::Element::DiscretizationType::nurbs9)
         {
           // shape functions and their derivatives for polynomials
           CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -897,7 +902,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList& params,
       }
 
       const double min_detj =
-          DRT::UTILS::GetMinimalJacDeterminantAtNodes<DRT::Element::quad4>(xcurr);
+          DRT::UTILS::GetMinimalJacDeterminantAtNodes<DRT::Element::DiscretizationType::quad4>(
+              xcurr);
 
       if (min_detj < 0.0)
         ErrorHandling(min_detj, params, __LINE__, STR::ELEMENTS::ele_error_determinant_analysis);
@@ -969,7 +975,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
   std::vector<CORE::LINALG::SerialDenseVector> myknots(numdim_);
   CORE::LINALG::SerialDenseVector weights(iel);
 
-  if (Shape() == DRT::Element::nurbs4 || Shape() == DRT::Element::nurbs9)
+  if (Shape() == DRT::Element::DiscretizationType::nurbs4 ||
+      Shape() == DRT::Element::DiscretizationType::nurbs9)
   {
     DRT::NURBS::NurbsDiscretization* nurbsdis =
         dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -1028,7 +1035,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList& params,
     const double wgt = intpoints.qwgt[ip];
 
     /*-------------------- shape functions at gp e1,e2 on mid surface */
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != DRT::Element::DiscretizationType::nurbs4 &&
+        distype != DRT::Element::DiscretizationType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(shapefcts, e1, e2, distype);
@@ -1284,7 +1292,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
 
   /*--------------------------------- get node weights for nurbs elements */
   CORE::LINALG::SerialDenseVector weights(numnode);
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+      distype == DRT::Element::DiscretizationType::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
@@ -1359,7 +1368,8 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(const std::vector<int>& lm,
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != DRT::Element::DiscretizationType::nurbs4 &&
+        distype != DRT::Element::DiscretizationType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);
@@ -1659,7 +1669,8 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
 
   /*--------------------------------- get node weights for nurbs elements */
   CORE::LINALG::SerialDenseVector weights(numnode);
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+      distype == DRT::Element::DiscretizationType::nurbs9)
   {
     for (int inode = 0; inode < numnode; ++inode)
     {
@@ -1678,7 +1689,8 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(const std::vector<int>& lm,
     const double wgt = intpoints.qwgt[ip];
 
     // get values of shape functions and derivatives in the gausspoint
-    if (distype != DRT::Element::nurbs4 && distype != DRT::Element::nurbs9)
+    if (distype != DRT::Element::DiscretizationType::nurbs4 &&
+        distype != DRT::Element::DiscretizationType::nurbs9)
     {
       // shape functions and their derivatives for polynomials
       CORE::DRT::UTILS::shape_function_2D(funct, e1, e2, distype);

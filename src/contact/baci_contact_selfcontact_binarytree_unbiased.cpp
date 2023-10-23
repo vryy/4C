@@ -351,28 +351,31 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
   const DRT::Element::DiscretizationType dtele1 = ele1->Shape();
   switch (dtele1)
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri3>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri3>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::tri3>(ele1, xicele1, ele1normal);
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::DiscretizationType::tri3>(
+          ele1, xicele1, ele1normal);
     }
     break;
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
       xicele1.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri6>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri6>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::tri6>(ele1, xicele1, ele1normal);
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::DiscretizationType::tri6>(
+          ele1, xicele1, ele1normal);
     }
     break;
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       xicele1.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::quad4>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::quad4>(
           ele1, xicele1, ele1coords);
-      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::quad4>(ele1, xicele1, ele1normal);
+      DRT::UTILS::ComputeUnitNormalAtXiRefConfig<DRT::Element::DiscretizationType::quad4>(
+          ele1, xicele1, ele1normal);
     }
     break;
     default:
@@ -384,24 +387,24 @@ bool CONTACT::UnbiasedSelfBinaryTree::RoughCheckRefConfig(int ele1gid, int ele2g
   const DRT::Element::DiscretizationType dtele2 = ele2->Shape();
   switch (dtele2)
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri3>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri3>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
       xicele2.PutScalar(1.0 / 3.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::tri6>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::tri6>(
           ele2, xicele2, ele2coords);
     }
     break;
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       xicele2.PutScalar(0.0);
-      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::quad4>(
+      DRT::UTILS::LocalToGlobalPositionAtXiRefConfig<3, DRT::Element::DiscretizationType::quad4>(
           ele2, xicele2, ele2coords);
     }
     break;

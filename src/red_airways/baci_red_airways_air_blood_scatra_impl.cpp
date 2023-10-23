@@ -37,12 +37,12 @@ DRT::ELEMENTS::RedAirBloodScatraImplInterface* DRT::ELEMENTS::RedAirBloodScatraI
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      static RedAirBloodScatraImpl<DRT::Element::line2>* acinus;
+      static RedAirBloodScatraImpl<DRT::Element::DiscretizationType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new RedAirBloodScatraImpl<DRT::Element::line2>;
+        acinus = new RedAirBloodScatraImpl<DRT::Element::DiscretizationType::line2>;
       }
       return acinus;
     }

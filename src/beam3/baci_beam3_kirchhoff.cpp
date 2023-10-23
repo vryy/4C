@@ -304,20 +304,18 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3k::Shape() const
   switch (numnodes)
   {
     case 2:
-      return line2;
+      return DiscretizationType::line2;
       break;
     case 3:
-      return line3;
+      return DiscretizationType::line3;
       break;
     case 4:
-      return line4;
+      return DiscretizationType::line4;
       break;
     default:
       dserror("Only Line2, Line3 and Line4 elements are implemented.");
       break;
   }
-
-  return dis_none;
 }
 
 
@@ -604,7 +602,8 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
 
       // Get values of shape functions
       N_i_xi.Clear();
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, DiscretizationType::line2);
 
       // Determine storage position for the node colpt
       ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -660,8 +659,9 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometryWK(
       N_i.Clear();
       CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
       CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, DiscretizationType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, DiscretizationType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -824,8 +824,10 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
       N_i_xi.Clear();
       N_i_xixi.Clear();
       CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, DiscretizationType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
+          N_i_xixi, xi, length_, DiscretizationType::line2);
 
       // Determine storage position for the node colpt
       ind = CORE::LARGEROTATIONS::NumberingTrafo(node + 1, BEAM3K_COLLOCATION_POINTS);
@@ -901,9 +903,11 @@ void DRT::ELEMENTS::Beam3k::SetUpReferenceGeometrySK(
 
       CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
       CORE::DRT::UTILS::shape_function_1D_deriv1(L_i_xi, xi, Shape());
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(N_i_xixi, xi, length_, line2);
-      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+          N_i_xi, xi, length_, DiscretizationType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
+          N_i_xixi, xi, length_, DiscretizationType::line2);
+      CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, DiscretizationType::line2);
 
       // current value of derivatives at GP (derivatives in xi!)
       r.Clear();
@@ -967,7 +971,8 @@ double DRT::ELEMENTS::Beam3k::GetJacobiFacAtXi(const double& xi) const
 
   // Matrices to store the the Hermite shape function derivative values
   CORE::LINALG::Matrix<1, 2 * nnode> N_i_xi;
-  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+      N_i_xi, xi, length_, DiscretizationType::line2);
 
   // jacobi = ds/dxi = ||r'_0||
   CORE::LINALG::Matrix<3, 1> r_xi;
@@ -1127,7 +1132,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
   CORE::LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, DiscretizationType::line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the variation of the centerline position
@@ -1207,7 +1212,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixVariationsAtXi(
 
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi_cp, length_, DiscretizationType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1354,7 +1360,8 @@ void DRT::ELEMENTS::Beam3k::GetStiffmatResultingFromGeneralizedInterpolationMatr
 
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi_cp, length_, DiscretizationType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1422,7 +1429,7 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
   CORE::LINALG::Matrix<1, vpernode * nnodecl, double> N_i(true);
 
 
-  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, line2);
+  CORE::DRT::UTILS::shape_function_hermite_1D(N_i, xi, length_, DiscretizationType::line2);
   AssembleShapefunctionsN(N_i, N);
 
   // this part is associated with the increment of the centerline position
@@ -1509,7 +1516,8 @@ void DRT::ELEMENTS::Beam3k::GetGeneralizedInterpolationMatrixIncrementsAtXi(
     AssembleShapefunctionsL(L_i, L);
 
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi_cp, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi_cp, length_, DiscretizationType::line2);
 
     N_s.Clear();
     AssembleShapefunctionsNs(N_i_xi, jacobi_cp_[ind], N_s);
@@ -1903,7 +1911,8 @@ void DRT::ELEMENTS::Beam3k::SetTriadsAndReferenceTriadsAtRemainingCollocationPoi
     // node=0->xi=-1  node=1->xi=0 node=2->xi=1
     xi = (double)node / (double)(BEAM3K_COLLOCATION_POINTS - 1) * 2.0 - 1.0;
     N_i_xi.Clear();
-    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(N_i_xi, xi, length_, line2);
+    CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
+        N_i_xi, xi, length_, DiscretizationType::line2);
     L_i.Clear();
     CORE::DRT::UTILS::shape_function_1D(L_i, xi, Shape());
 

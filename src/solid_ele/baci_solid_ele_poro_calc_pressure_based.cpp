@@ -237,10 +237,15 @@ void DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<distype>::CouplingStress(const
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::hex8>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::hex18>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::tet10>;
-template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
+    DRT::Element::DiscretizationType::hex18>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
+    DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
+    DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
+    DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::SolidPoroPressureBasedEleCalc<
+    DRT::Element::DiscretizationType::pyramid5>;

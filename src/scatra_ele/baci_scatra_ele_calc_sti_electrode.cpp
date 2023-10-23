@@ -656,23 +656,25 @@ DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<distype>::ScaTraEleCalcSTIElectrode(
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::quad4>;
+// template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::hex8>;
+// template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::tet10>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::pyramid5>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcSTIElectrode<DRT::Element::DiscretizationType::nurbs27>;

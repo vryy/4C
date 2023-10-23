@@ -24,49 +24,49 @@ DRT::ELEMENTS::FluidBoundaryInterface* DRT::ELEMENTS::FluidBoundaryFactory::Prov
 {
   switch (distype)
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return DefineProblemType<DRT::Element::quad4>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(problem);
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return DefineProblemType<DRT::Element::quad8>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(problem);
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return DefineProblemType<DRT::Element::quad9>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(problem);
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return DefineProblemType<DRT::Element::tri3>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(problem);
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return DefineProblemType<DRT::Element::tri6>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(problem);
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return DefineProblemType<DRT::Element::line2>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::line2>(problem);
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      return DefineProblemType<DRT::Element::line3>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::line3>(problem);
     }
-    case DRT::Element::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
     {
-      return DefineProblemType<DRT::Element::nurbs2>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs2>(problem);
     }
-    case DRT::Element::nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
-      return DefineProblemType<DRT::Element::nurbs3>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs3>(problem);
     }
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
-      return DefineProblemType<DRT::Element::nurbs4>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs4>(problem);
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::nurbs9>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs9>(problem);
     }
     default:
       dserror("Element shape %s not activated. Just do it.", DRT::DistypeToString(distype).c_str());

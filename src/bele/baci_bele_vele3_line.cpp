@@ -63,13 +63,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3Line::Shape() const
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return DiscretizationType::line2;
     case 3:
-      return line3;
+      return DiscretizationType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 

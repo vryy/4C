@@ -271,10 +271,17 @@ double DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<distype>::EvalShapeFunc
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::quad4>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::tri3>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::line2>;
-template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<DRT::Element::line3>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    DRT::Element::DiscretizationType::line2>;
+template class DRT::ELEMENTS::PoroFluidMultiPhaseEleBoundaryCalc<
+    DRT::Element::DiscretizationType::line3>;

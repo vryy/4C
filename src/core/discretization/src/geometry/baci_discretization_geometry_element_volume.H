@@ -153,7 +153,7 @@ namespace CORE::GEO
   template <class matrixtype>
   double ElementLength(const ::DRT::Element::DiscretizationType& distype, const matrixtype& xyze)
   {
-    if (distype != ::DRT::Element::line2 or xyze.numCols() != 2)
+    if (distype != ::DRT::Element::DiscretizationType::line2 or xyze.numCols() != 2)
       dserror("Currently only line2 elements are supported!");
 
     // calculate the distance between the two given nodes and return
@@ -174,21 +174,21 @@ namespace CORE::GEO
     switch (distype)
     {
       // --- 2-D boundary elements
-      case ::DRT::Element::line2:
+      case ::DRT::Element::DiscretizationType::line2:
         return ElementLength(distype, xyze);
-      case ::DRT::Element::line3:
-        return ElementLengthT<::DRT::Element::line3>(xyze);
+      case ::DRT::Element::DiscretizationType::line3:
+        return ElementLengthT<::DRT::Element::DiscretizationType::line3>(xyze);
       // --- 3-D boundary elements
-      case ::DRT::Element::tri3:
-        return ElementAreaT<::DRT::Element::tri3>(xyze);
-      case ::DRT::Element::tri6:
-        return ElementAreaT<::DRT::Element::tri6>(xyze);
-      case ::DRT::Element::quad4:
-        return ElementAreaT<::DRT::Element::quad4>(xyze);
-      case ::DRT::Element::quad8:
-        return ElementAreaT<::DRT::Element::quad8>(xyze);
-      case ::DRT::Element::quad9:
-        return ElementAreaT<::DRT::Element::quad9>(xyze);
+      case ::DRT::Element::DiscretizationType::tri3:
+        return ElementAreaT<::DRT::Element::DiscretizationType::tri3>(xyze);
+      case ::DRT::Element::DiscretizationType::tri6:
+        return ElementAreaT<::DRT::Element::DiscretizationType::tri6>(xyze);
+      case ::DRT::Element::DiscretizationType::quad4:
+        return ElementAreaT<::DRT::Element::DiscretizationType::quad4>(xyze);
+      case ::DRT::Element::DiscretizationType::quad8:
+        return ElementAreaT<::DRT::Element::DiscretizationType::quad8>(xyze);
+      case ::DRT::Element::DiscretizationType::quad9:
+        return ElementAreaT<::DRT::Element::DiscretizationType::quad9>(xyze);
       default:
         dserror("Unsupported surface element type!");
         exit(EXIT_FAILURE);
@@ -206,29 +206,29 @@ namespace CORE::GEO
     switch (distype)
     {
       // --- 1-D elements -----------------------------------------------------
-      case ::DRT::Element::line2:
+      case ::DRT::Element::DiscretizationType::line2:
         return ElementLength(distype, xyze);
       // --- 2-D elements -----------------------------------------------------
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::tri3:
+      case ::DRT::Element::DiscretizationType::quad4:
+      case ::DRT::Element::DiscretizationType::tri3:
         return ElementArea(distype, xyze);
       // --- 3-D elements -----------------------------------------------------
-      case ::DRT::Element::hex8:
-        return ElementVolumeT<::DRT::Element::hex8>(xyze);
-      case ::DRT::Element::hex20:
-        return ElementVolumeT<::DRT::Element::hex20>(xyze);
-      case ::DRT::Element::hex27:
-        return ElementVolumeT<::DRT::Element::hex27>(xyze);
-      case ::DRT::Element::tet4:
-        return ElementVolumeT<::DRT::Element::tet4>(xyze);
-      case ::DRT::Element::tet10:
-        return ElementVolumeT<::DRT::Element::tet10>(xyze);
-      case ::DRT::Element::wedge6:
-        return ElementVolumeT<::DRT::Element::wedge6>(xyze);
-      case ::DRT::Element::wedge15:
-        return ElementVolumeT<::DRT::Element::wedge15>(xyze);
-      case ::DRT::Element::pyramid5:
-        return ElementVolumeT<::DRT::Element::pyramid5>(xyze);
+      case ::DRT::Element::DiscretizationType::hex8:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::hex8>(xyze);
+      case ::DRT::Element::DiscretizationType::hex20:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::hex20>(xyze);
+      case ::DRT::Element::DiscretizationType::hex27:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::hex27>(xyze);
+      case ::DRT::Element::DiscretizationType::tet4:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::tet4>(xyze);
+      case ::DRT::Element::DiscretizationType::tet10:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::tet10>(xyze);
+      case ::DRT::Element::DiscretizationType::wedge6:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::wedge6>(xyze);
+      case ::DRT::Element::DiscretizationType::wedge15:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::wedge15>(xyze);
+      case ::DRT::Element::DiscretizationType::pyramid5:
+        return ElementVolumeT<::DRT::Element::DiscretizationType::pyramid5>(xyze);
       default:
         dserror("add you distype here");
     }

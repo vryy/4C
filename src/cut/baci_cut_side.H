@@ -692,13 +692,13 @@ namespace CORE::GEO
       {
         switch (sidetype)
         {
-          case ::DRT::Element::tri3:
+          case ::DRT::Element::DiscretizationType::tri3:
             return shards::getCellTopologyData<shards::Triangle<3>>();
             break;
-          case ::DRT::Element::quad4:
+          case ::DRT::Element::DiscretizationType::quad4:
             return shards::getCellTopologyData<shards::Quadrilateral<4>>();
             break;
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
             return shards::getCellTopologyData<shards::Line<2>>();
             break;
           default:
@@ -732,14 +732,14 @@ namespace CORE::GEO
       {
         switch (sidetype)
         {
-          case ::DRT::Element::tri3:
+          case ::DRT::Element::DiscretizationType::tri3:
           {
             if (fabs(rs(1)) < REFERENCETOL) edges.push_back(Edges()[0]);
             if (fabs(rs(0) + rs(1) - 1) < REFERENCETOL) edges.push_back(Edges()[1]);
             if (fabs(rs(0)) < REFERENCETOL) edges.push_back(Edges()[2]);
             break;
           }
-          case ::DRT::Element::quad4:
+          case ::DRT::Element::DiscretizationType::quad4:
           {
             if (fabs(rs(1) + 1) < REFERENCETOL) edges.push_back(Edges()[0]);
             if (fabs(rs(0) - 1) < REFERENCETOL) edges.push_back(Edges()[1]);
@@ -747,7 +747,7 @@ namespace CORE::GEO
             if (fabs(rs(0) + 1) < REFERENCETOL) edges.push_back(Edges()[3]);
             break;
           }
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
           {
             dserror("If we need this, the edges will degenerate to nodes!");
             break;
@@ -798,19 +798,19 @@ namespace CORE::GEO
       {
         switch (sidetype)
         {
-          case ::DRT::Element::tri3:
+          case ::DRT::Element::DiscretizationType::tri3:
           {
             const double rs[6] = {0.0, 0.0, 1.0, 0.0, 0.0, 1.0};
             std::copy(rs, rs + 6, rst_corners);
             break;
           }
-          case ::DRT::Element::quad4:
+          case ::DRT::Element::DiscretizationType::quad4:
           {
             const double rs[8] = {-1.0, -1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0};
             std::copy(rs, rs + 8, rst_corners);
             break;
           }
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
           {
             const double r[2] = {-1.0, 1.0};
             std::copy(r, r + 2, rst_corners);

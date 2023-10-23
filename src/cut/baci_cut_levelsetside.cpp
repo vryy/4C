@@ -62,10 +62,10 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
 
   switch (side.Shape())
   {
-    case ::DRT::Element::line2:
-    case ::DRT::Element::tri3:
+    case ::DRT::Element::DiscretizationType::line2:
+    case ::DRT::Element::DiscretizationType::tri3:
       return false;
-    case ::DRT::Element::quad4:
+    case ::DRT::Element::DiscretizationType::quad4:
     {
       switch (cut.size())
       {
@@ -148,7 +148,8 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           // find levelset value at side center
           CORE::LINALG::Matrix<4, 1> lsv;
           CORE::LINALG::Matrix<4, 1> funct;
-          CORE::DRT::UTILS::shape_function_2D(funct, 0., 0., ::DRT::Element::quad4);
+          CORE::DRT::UTILS::shape_function_2D(
+              funct, 0., 0., ::DRT::Element::DiscretizationType::quad4);
           const std::vector<Node*>& nodes = side.Nodes();
           std::vector<int> zero_positions;
           for (unsigned i = 0; i < 4; ++i)
@@ -289,7 +290,7 @@ bool CORE::GEO::CUT::LevelSetSide<probdim>::FindAmbiguousCutLines(
           return false;
       }
       break;
-    }  // case ::DRT::Element::quad4:
+    }  // case ::DRT::Element::DiscretizationType::quad4:
     default:
       dserror("Unsupported side shape! (shape = %d | %s )", side.Shape(),
           ::DRT::DistypeToString(side.Shape()).c_str());

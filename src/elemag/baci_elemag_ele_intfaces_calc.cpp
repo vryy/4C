@@ -22,33 +22,33 @@ DRT::ELEMENTS::ElemagIntFaceImplInterface* DRT::ELEMENTS::ElemagIntFaceImplInter
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return ElemagIntFaceImpl<DRT::Element::quad4>::Instance();
+      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return ElemagIntFaceImpl<DRT::Element::quad8>::Instance();
+      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return ElemagIntFaceImpl<DRT::Element::quad9>::Instance();
+      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return ElemagIntFaceImpl<DRT::Element::tri3>::Instance();
+      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::tri3>::Instance();
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return ElemagIntFaceImpl<DRT::Element::tri6>::Instance();
+      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::tri6>::Instance();
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return ElemagIntFaceImpl<DRT::Element::line2>::Instance();
+      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::line2>::Instance();
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      return ElemagIntFaceImpl<DRT::Element::line3>::Instance();
+      return ElemagIntFaceImpl<DRT::Element::DiscretizationType::line3>::Instance();
     }
     default:
       dserror(

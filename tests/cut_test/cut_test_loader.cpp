@@ -41,7 +41,7 @@ void MeshLoader::CreateSide(
 {
   switch (shape)
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       CORE::LINALG::SerialDenseMatrix xyz(3, 4);
       Fill(cut_nodes_, nid1, &xyz(0, 0));
@@ -55,7 +55,7 @@ void MeshLoader::CreateSide(
       nids.push_back(nid2);
       nids.push_back(nid3);
       nids.push_back(nid4);
-      mesh_.AddCutSide(sid, nids, xyz, DRT::Element::quad4);
+      mesh_.AddCutSide(sid, nids, xyz, DRT::Element::DiscretizationType::quad4);
 
       break;
     }
@@ -69,7 +69,7 @@ void MeshLoader::CreateElement(int eid, int nid1, int nid2, int nid3, int nid4, 
 {
   switch (shape)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       CORE::LINALG::SerialDenseMatrix xyz(3, 8);
       Fill(nodes_, nid1, &xyz(0, 0));
@@ -91,7 +91,7 @@ void MeshLoader::CreateElement(int eid, int nid1, int nid2, int nid3, int nid4, 
       nids.push_back(nid6);
       nids.push_back(nid7);
       nids.push_back(nid8);
-      mesh_.AddElement(eid, nids, xyz, DRT::Element::hex8);
+      mesh_.AddElement(eid, nids, xyz, DRT::Element::DiscretizationType::hex8);
 
       break;
     }

@@ -36,23 +36,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
   {
     switch (shape)
     {
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex8>());
-      case DRT::Element::hex20:
+      case DRT::Element::DiscretizationType::hex20:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex20>());
-      case DRT::Element::hex27:
+      case DRT::Element::DiscretizationType::hex27:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_hex27>());
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::tet4:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet4>());
-      case DRT::Element::tet10:
+      case DRT::Element::DiscretizationType::tet10:
         return Teuchos::rcp(
             new BEAMINTERACTION::BeamToFluidMeshtyingPairGaussPoint<GEOMETRYPAIR::t_hermite,
                 GEOMETRYPAIR::t_tet10>());
@@ -71,23 +71,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
       {
         switch (shape)
         {
-          case DRT::Element::hex8:
+          case DRT::Element::DiscretizationType::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::hex20:
+          case DRT::Element::DiscretizationType::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::hex27:
+          case DRT::Element::DiscretizationType::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::tet4:
+          case DRT::Element::DiscretizationType::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line2>());
-          case DRT::Element::tet10:
+          case DRT::Element::DiscretizationType::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line2>());
@@ -100,23 +100,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
       {
         switch (shape)
         {
-          case DRT::Element::hex8:
+          case DRT::Element::DiscretizationType::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::hex20:
+          case DRT::Element::DiscretizationType::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::hex27:
+          case DRT::Element::DiscretizationType::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::tet4:
+          case DRT::Element::DiscretizationType::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line3>());
-          case DRT::Element::tet10:
+          case DRT::Element::DiscretizationType::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line3>());
@@ -129,23 +129,23 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> FBI::PairFactory::CreatePair(
       {
         switch (shape)
         {
-          case DRT::Element::hex8:
+          case DRT::Element::DiscretizationType::hex8:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex8, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::hex20:
+          case DRT::Element::DiscretizationType::hex20:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex20, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::hex27:
+          case DRT::Element::DiscretizationType::hex27:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_hex27, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::tet4:
+          case DRT::Element::DiscretizationType::tet4:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet4, GEOMETRYPAIR::t_line4>());
-          case DRT::Element::tet10:
+          case DRT::Element::DiscretizationType::tet10:
             return Teuchos::rcp(
                 new BEAMINTERACTION::BeamToFluidMeshtyingPairMortar<GEOMETRYPAIR::t_hermite,
                     GEOMETRYPAIR::t_tet10, GEOMETRYPAIR::t_line4>());

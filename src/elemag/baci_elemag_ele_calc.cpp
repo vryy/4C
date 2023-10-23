@@ -2124,17 +2124,17 @@ void DRT::ELEMENTS::ElemagEleCalc<distype>::LocalSolver::ComputeMatrices(
 }
 
 // template classes
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::hex8>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::tet10>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::quad4>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::nurbs9>;
-template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::pyramid5>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::nurbs9>;
+template class DRT::ELEMENTS::ElemagEleCalc<DRT::Element::DiscretizationType::nurbs27>;

@@ -89,10 +89,13 @@ namespace CORE::GEO
 
       unsigned Dim() const override
       {
-        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::line2>::dim;
+        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::line2>::dim;
       };
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::line2; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::line2;
+      }
 
       int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
@@ -109,10 +112,13 @@ namespace CORE::GEO
 
       unsigned Dim() const override
       {
-        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::tri3>::dim;
+        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::tri3>::dim;
       };
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::tri3; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::tri3;
+      }
 
       int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
@@ -130,10 +136,13 @@ namespace CORE::GEO
 
       unsigned Dim() const override
       {
-        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::quad4>::dim;
+        return CORE::DRT::UTILS::DisTypeToDim<::DRT::Element::DiscretizationType::quad4>::dim;
       };
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::quad4; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::quad4;
+      }
 
       int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
@@ -152,7 +161,10 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::hex8; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::hex8;
+      }
 
       int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
@@ -174,7 +186,10 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::tet4; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::tet4;
+      }
 
       int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
@@ -195,7 +210,10 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::wedge6; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::wedge6;
+      }
 
       int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 
@@ -217,7 +235,10 @@ namespace CORE::GEO
 
       unsigned Dim() const override { return 3; };
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::pyramid5; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::pyramid5;
+      }
 
       int CubatureDegree(::DRT::Element::DiscretizationType elementshape) const override;
 

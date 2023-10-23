@@ -131,10 +131,10 @@ int DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return So_hex8PoroP1Type::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PoroP1Type::Instance().UniqueParObjectId();
       break;
     default:
@@ -149,9 +149,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro_P1<so3_ele, distype>::ElementType() co
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PoroP1Type::Instance();
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return So_hex8PoroP1Type::Instance();
     default:
       dserror("unknown element type!");

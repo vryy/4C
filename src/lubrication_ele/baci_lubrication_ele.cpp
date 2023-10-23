@@ -111,7 +111,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::LubricationBoundaryType::Create(
  |  ctor (public)                                           wirtz 10/15 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Lubrication::Lubrication(int id, int owner)
-    : DRT::Element(id, owner), distype_(dis_none)
+    : DRT::Element(id, owner), distype_(DRT::Element::DiscretizationType::dis_none)
 {
   return;
 }
@@ -400,7 +400,7 @@ void DRT::ELEMENTS::LubricationBoundary::Print(std::ostream& os) const
   os << "LubricationBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Shape() << std::endl;
+  std::cout << "DiscretizationType:  " << DRT::DistypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }

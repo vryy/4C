@@ -24,14 +24,14 @@ bool CORE::GEO::CUT::IntegrationCell::Contains(CORE::LINALG::Matrix<3, 1>& x)
 {
   switch (this->Shape())
   {
-    case ::DRT::Element::tet4:
+    case ::DRT::Element::DiscretizationType::tet4:
     {
       // find element local position of gauss point
-      return Contains<3, ::DRT::Element::tet4>(x);
+      return Contains<3, ::DRT::Element::DiscretizationType::tet4>(x);
     }
-    case ::DRT::Element::hex8:
+    case ::DRT::Element::DiscretizationType::hex8:
     {
-      return Contains<3, ::DRT::Element::hex8>(x);
+      return Contains<3, ::DRT::Element::DiscretizationType::hex8>(x);
     }
     default:
     {
@@ -106,21 +106,21 @@ int CORE::GEO::CUT::Hex8IntegrationCell::CubatureDegree(
 {
   switch (elementshape)
   {
-    case ::DRT::Element::hex8:
+    case ::DRT::Element::DiscretizationType::hex8:
       return 6;
-    case ::DRT::Element::hex20:
+    case ::DRT::Element::DiscretizationType::hex20:
       return 15;
-    case ::DRT::Element::hex27:
+    case ::DRT::Element::DiscretizationType::hex27:
       return 15;
-    case ::DRT::Element::tet4:
+    case ::DRT::Element::DiscretizationType::tet4:
       return 6;
-    case ::DRT::Element::tet10:
+    case ::DRT::Element::DiscretizationType::tet10:
       return 6;
-    case ::DRT::Element::wedge6:
+    case ::DRT::Element::DiscretizationType::wedge6:
       return 6;
-    case ::DRT::Element::wedge15:
+    case ::DRT::Element::DiscretizationType::wedge15:
       return 14;
-    case ::DRT::Element::pyramid5:
+    case ::DRT::Element::DiscretizationType::pyramid5:
       return 6;
     default:
       dserror("no rule defined for this element type");
@@ -135,21 +135,21 @@ int CORE::GEO::CUT::Tet4IntegrationCell::CubatureDegree(
 {
   switch (elementshape)
   {
-    case ::DRT::Element::hex8:
+    case ::DRT::Element::DiscretizationType::hex8:
       return 6;
-    case ::DRT::Element::hex20:
+    case ::DRT::Element::DiscretizationType::hex20:
       return 15;
-    case ::DRT::Element::hex27:
+    case ::DRT::Element::DiscretizationType::hex27:
       return 15;
-    case ::DRT::Element::tet4:
+    case ::DRT::Element::DiscretizationType::tet4:
       return 6;
-    case ::DRT::Element::tet10:
+    case ::DRT::Element::DiscretizationType::tet10:
       return 7;
-    case ::DRT::Element::wedge6:
+    case ::DRT::Element::DiscretizationType::wedge6:
       return 6;
-    case ::DRT::Element::wedge15:
+    case ::DRT::Element::DiscretizationType::wedge15:
       return 14;
-    case ::DRT::Element::pyramid5:
+    case ::DRT::Element::DiscretizationType::pyramid5:
       return 6;
     default:
       dserror("no rule defined for this element type");

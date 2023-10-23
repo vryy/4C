@@ -442,22 +442,24 @@ void DRT::ELEMENTS::SolidEleCalcMulf<distype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::hex8>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::hex18>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::hex20>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::hex27>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::tet4>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::tet10>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex18>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::pyramid5>;
+template class DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::wedge6>;
 
-static_assert(
-    DRT::ELEMENTS::IsPrestressUpdateable<DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::hex8>*>,
+static_assert(DRT::ELEMENTS::IsPrestressUpdateable<
+                  DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>*>,
     "MULF calculation interface needs to be prestress updatable. Please carefully check the "
     "signature of UpdatePrestress(...)");
-static_assert(DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::hex8>*>,
+static_assert(DRT::ELEMENTS::IsPackable<
+                  DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>*>,
     "MULF calculation interface needs to be packable. Please carefully check the "
     "signature of Pack(...)");
-static_assert(DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::hex8>*>,
+static_assert(DRT::ELEMENTS::IsUnpackable<
+                  DRT::ELEMENTS::SolidEleCalcMulf<DRT::Element::DiscretizationType::hex8>*>,
     "MULF calculation interface needs to be unpackable. Please carefully check the "
     "signature of Unpack(...)");

@@ -586,8 +586,8 @@ void DRT::ELEMENTS::Shell7pEleCalc<distype>::VisData(
 }  // VisData()
 
 // template classes
-template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::quad8>;
-template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::quad9>;
-template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::tri6>;
+template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Shell7pEleCalc<DRT::Element::DiscretizationType::tri6>;

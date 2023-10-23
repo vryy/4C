@@ -515,13 +515,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<distype, probdim>::EvaluateElectro
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::nurbs3,
+    2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElch<DRT::Element::DiscretizationType::nurbs9,
+    3>;

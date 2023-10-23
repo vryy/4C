@@ -37,54 +37,60 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
 
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      static TemperBoundaryImpl<DRT::Element::quad4>* cp4;
-      if (cp4 == nullptr) cp4 = new TemperBoundaryImpl<DRT::Element::quad4>(numdofpernode);
+      static TemperBoundaryImpl<DRT::Element::DiscretizationType::quad4>* cp4;
+      if (cp4 == nullptr)
+        cp4 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::quad4>(numdofpernode);
       return cp4;
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      static TemperBoundaryImpl<DRT::Element::quad8>* cp8;
-      if (cp8 == nullptr) cp8 = new TemperBoundaryImpl<DRT::Element::quad8>(numdofpernode);
+      static TemperBoundaryImpl<DRT::Element::DiscretizationType::quad8>* cp8;
+      if (cp8 == nullptr)
+        cp8 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::quad8>(numdofpernode);
       return cp8;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      static TemperBoundaryImpl<DRT::Element::quad9>* cp9;
-      if (cp9 == nullptr) cp9 = new TemperBoundaryImpl<DRT::Element::quad9>(numdofpernode);
+      static TemperBoundaryImpl<DRT::Element::DiscretizationType::quad9>* cp9;
+      if (cp9 == nullptr)
+        cp9 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::quad9>(numdofpernode);
       return cp9;
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      static TemperBoundaryImpl<DRT::Element::nurbs9>* cpn9;
-      if (cpn9 == nullptr) cpn9 = new TemperBoundaryImpl<DRT::Element::nurbs9>(numdofpernode);
+      static TemperBoundaryImpl<DRT::Element::DiscretizationType::nurbs9>* cpn9;
+      if (cpn9 == nullptr)
+        cpn9 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::nurbs9>(numdofpernode);
       return cpn9;
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      static TemperBoundaryImpl<DRT::Element::tri3>* cp3;
-      if (cp3 == nullptr) cp3 = new TemperBoundaryImpl<DRT::Element::tri3>(numdofpernode);
+      static TemperBoundaryImpl<DRT::Element::DiscretizationType::tri3>* cp3;
+      if (cp3 == nullptr)
+        cp3 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::tri3>(numdofpernode);
       return cp3;
     }
-    /*  case DRT::Element::tri6:
+    /*  case DRT::Element::DiscretizationType::tri6:
     {
-      static TemperBoundaryImpl<DRT::Element::tri6>* cp6;
+      static TemperBoundaryImpl<DRT::Element::DiscretizationType::tri6>* cp6;
       if (cp6 == nullptr)
-        cp6 = new TemperBoundaryImpl<DRT::Element::tri6>(numdofpernode);
+        cp6 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::tri6>(numdofpernode);
       return cp6;
     }*/
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      static TemperBoundaryImpl<DRT::Element::line2>* cl2;
-      if (cl2 == nullptr) cl2 = new TemperBoundaryImpl<DRT::Element::line2>(numdofpernode);
+      static TemperBoundaryImpl<DRT::Element::DiscretizationType::line2>* cl2;
+      if (cl2 == nullptr)
+        cl2 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::line2>(numdofpernode);
       return cl2;
     } /*
-     case DRT::Element::line3:
+     case DRT::Element::DiscretizationType::line3:
      {
-       static TemperBoundaryImpl<DRT::Element::line3>* cl3;
+       static TemperBoundaryImpl<DRT::Element::DiscretizationType::line3>* cl3;
        if (cl3 == nullptr)
-         cl3 = new TemperBoundaryImpl<DRT::Element::line3>(numdofpernode);
+         cl3 = new TemperBoundaryImpl<DRT::Element::DiscretizationType::line3>(numdofpernode);
        return cl3;
      }*/
     default:
@@ -1153,7 +1159,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::PrepareNurbsEval(
     DRT::Discretization& discretization  // current discretisation
 )
 {
-  if (ele->Shape() != DRT::Element::nurbs9)
+  if (ele->Shape() != DRT::Element::DiscretizationType::nurbs9)
   {
     myknots_.resize(0);
     return;

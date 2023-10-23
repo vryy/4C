@@ -22,7 +22,9 @@ DRT::ELEMENTS::So_hex8PoroType& DRT::ELEMENTS::So_hex8PoroType::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>(
+          -1, -1);
   object->Unpack(data);
   return object;
 }
@@ -33,7 +35,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create(
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -42,7 +45,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>(
+          id, owner));
   return ele;
 }
 
@@ -72,9 +76,9 @@ int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<
+        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>*>(
+        dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_poro* failed");
     actele->InitElement();
   }
@@ -91,7 +95,9 @@ DRT::ELEMENTS::So_tet4PoroType& DRT::ELEMENTS::So_tet4PoroType::Instance() { ret
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>(
+          -1, -1);
   object->Unpack(data);
   return object;
 }
@@ -102,7 +108,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create(
   if (eletype == GetElementTypeString())
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>(
+            id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -111,7 +118,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>(
+          id, owner));
   return ele;
 }
 
@@ -141,11 +149,11 @@ int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<
+        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>*>(
+        dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>::InitElement();
+    actele->So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>::InitElement();
   }
   return 0;
 }
@@ -159,7 +167,9 @@ DRT::ELEMENTS::So_hex27PoroType& DRT::ELEMENTS::So_hex27PoroType::Instance() { r
 
 DRT::ParObject* DRT::ELEMENTS::So_hex27PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::DiscretizationType::hex27>(
+          -1, -1);
   object->Unpack(data);
   return object;
 }
@@ -169,8 +179,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27,
+            DRT::Element::DiscretizationType::hex27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -179,7 +190,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(id, owner));
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::DiscretizationType::hex27>(
+          id, owner));
   return ele;
 }
 
@@ -206,11 +218,12 @@ int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<
+        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::DiscretizationType::hex27>*>(
+        dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>::InitElement();
+    actele
+        ->So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::DiscretizationType::hex27>::InitElement();
   }
   return 0;
 }
@@ -224,7 +237,9 @@ DRT::ELEMENTS::So_tet10PoroType& DRT::ELEMENTS::So_tet10PoroType::Instance() { r
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10PoroType::Create(const std::vector<char>& data)
 {
-  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1, -1);
+  auto* object =
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::DiscretizationType::tet10>(
+          -1, -1);
   object->Unpack(data);
   return object;
 }
@@ -234,8 +249,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10,
+            DRT::Element::DiscretizationType::tet10>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -244,7 +260,8 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroType::Create(const int id, const int owner)
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(id, owner));
+      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::DiscretizationType::tet10>(
+          id, owner));
   return ele;
 }
 
@@ -271,11 +288,12 @@ int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(
-            dis.lColElement(i));
+    auto* actele = dynamic_cast<
+        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::DiscretizationType::tet10>*>(
+        dis.lColElement(i));
     if (!actele) dserror("cast to So_tet10_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>::InitElement();
+    actele
+        ->So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::DiscretizationType::tet10>::InitElement();
   }
   return 0;
 }
@@ -292,8 +310,8 @@ DRT::ELEMENTS::So_nurbs27PoroType& DRT::ELEMENTS::So_nurbs27PoroType::Instance()
 
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27PoroType::Create(const std::vector<char>& data)
 {
-  auto* object =
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(-1, -1);
+  auto* object = new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27,
+      DRT::Element::DiscretizationType::nurbs27>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -303,9 +321,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
-            id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27,
+            DRT::Element::DiscretizationType::nurbs27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -313,9 +331,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroType::Create(
 
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroType::Create(const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
-          id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27,
+          DRT::Element::DiscretizationType::nurbs27>(id, owner));
   return ele;
 }
 
@@ -343,11 +361,11 @@ int DRT::ELEMENTS::So_nurbs27PoroType::Initialize(DRT::Discretization& dis)
   for (int i = 0; i < dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    auto* actele = dynamic_cast<
-        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>*>(
-        dis.lColElement(i));
+    auto* actele = dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27,
+        DRT::Element::DiscretizationType::nurbs27>*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_nurbs27_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>::InitElement();
+    actele->So3_Poro<DRT::ELEMENTS::NURBS::So_nurbs27,
+        DRT::Element::DiscretizationType::nurbs27>::InitElement();
   }
   return 0;
 }

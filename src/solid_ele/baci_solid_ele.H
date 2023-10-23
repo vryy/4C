@@ -159,7 +159,7 @@ namespace DRT::ELEMENTS
 
    private:
     //! discretization type
-    DRT::Element::DiscretizationType distype_ = DRT::Element::dis_none;
+    DRT::Element::DiscretizationType distype_ = DRT::Element::DiscretizationType::dis_none;
 
     //! kinematic type
     INPAR::STR::KinemType kintype_ = INPAR::STR::kinem_vague;

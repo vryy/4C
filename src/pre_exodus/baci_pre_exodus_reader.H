@@ -453,66 +453,66 @@ namespace EXODUS
     switch (shape)
     {
       case ElementBlock::point1:
-        return DRT::Element::point1;
+        return DRT::Element::DiscretizationType::point1;
         break;
       case ElementBlock::quad4:
-        return DRT::Element::quad4;
+        return DRT::Element::DiscretizationType::quad4;
         break;
       case ElementBlock::quad8:
-        return DRT::Element::quad8;
+        return DRT::Element::DiscretizationType::quad8;
         break;
       case ElementBlock::quad9:
-        return DRT::Element::quad9;
+        return DRT::Element::DiscretizationType::quad9;
         break;
       case ElementBlock::shell4:
-        return DRT::Element::quad4;
+        return DRT::Element::DiscretizationType::quad4;
         break;
       case ElementBlock::shell8:
-        return DRT::Element::quad8;
+        return DRT::Element::DiscretizationType::quad8;
         break;
       case ElementBlock::shell9:
-        return DRT::Element::quad9;
+        return DRT::Element::DiscretizationType::quad9;
         break;
       case ElementBlock::tri3:
-        return DRT::Element::tri3;
+        return DRT::Element::DiscretizationType::tri3;
         break;
       case ElementBlock::tri6:
-        return DRT::Element::tri6;
+        return DRT::Element::DiscretizationType::tri6;
         break;
       case ElementBlock::hex8:
-        return DRT::Element::hex8;
+        return DRT::Element::DiscretizationType::hex8;
         break;
       case ElementBlock::hex20:
-        return DRT::Element::hex20;
+        return DRT::Element::DiscretizationType::hex20;
         break;
       case ElementBlock::hex27:
-        return DRT::Element::hex27;
+        return DRT::Element::DiscretizationType::hex27;
         break;
       case ElementBlock::tet4:
-        return DRT::Element::tet4;
+        return DRT::Element::DiscretizationType::tet4;
         break;
       case ElementBlock::tet10:
-        return DRT::Element::tet10;
+        return DRT::Element::DiscretizationType::tet10;
         break;
       case ElementBlock::wedge6:
-        return DRT::Element::wedge6;
+        return DRT::Element::DiscretizationType::wedge6;
         break;
       case ElementBlock::wedge15:
-        return DRT::Element::wedge15;
+        return DRT::Element::DiscretizationType::wedge15;
         break;
       case ElementBlock::pyramid5:
-        return DRT::Element::pyramid5;
+        return DRT::Element::DiscretizationType::pyramid5;
         break;
       case ElementBlock::bar2:
-        return DRT::Element::line2;
+        return DRT::Element::DiscretizationType::line2;
         break;
       case ElementBlock::bar3:
-        return DRT::Element::line3;
+        return DRT::Element::DiscretizationType::line3;
         break;
       default:
         dserror("Unknown ElementBlock::Shape");
     }
-    return DRT::Element::max_distype;
+    return DRT::Element::DiscretizationType::max_distype;
   }
 
   void PrintMap(std::ostream& os, const std::map<int, std::vector<int>> mymap);

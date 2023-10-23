@@ -262,7 +262,8 @@ namespace DRT
        */
       //!
       template <DRT::Element::DiscretizationType distype, unsigned int slave_numdof>
-      class SlaveElementRepresentation<distype, DRT::Element::dis_none, slave_numdof>
+      class SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::dis_none,
+          slave_numdof>
       {
        public:
         /// number of nodes per master (xfem-fluid) element

@@ -156,7 +156,10 @@ DRT::Element* DRT::ELEMENTS::So_pyramid5::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_pyramid5::Shape() const { return pyramid5; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_pyramid5::Shape() const
+{
+  return DRT::Element::DiscretizationType::pyramid5;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |

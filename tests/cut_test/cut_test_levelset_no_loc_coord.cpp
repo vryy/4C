@@ -78,7 +78,7 @@ CORE::GEO::CUT::CombIntersection Cut_With_Tesselation(std::vector<int> nids,
   ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
-  ci.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0], false);
+  ci.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0], false);
 
   ci.Cut(true);
 
@@ -107,7 +107,7 @@ CORE::GEO::CUT::CombIntersection Cut_With_DirectDivergence(std::vector<int> nids
   ci.GetOptions().Init_for_Cuttests();
   ci.AddLevelSetSide(1);
 
-  ci.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0], false);
+  ci.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0], false);
 
   ci.Cut(true);
 
@@ -140,8 +140,8 @@ void Test_LevelSetCut_Tesselation_and_DD(std::vector<int> nids, std::vector<doub
   ci.AddLevelSetSide(1);
   cidd.AddLevelSetSide(1);
 
-  ci.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0], false);
-  cidd.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0], false);
+  ci.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0], false);
+  cidd.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0], false);
 
   ci.Cut(true);
   cidd.Cut(true);
@@ -1260,7 +1260,8 @@ void test_ls_mesh_hex8_simple()
     nids_mesh.push_back(761);
     nids_mesh.push_back(857);
     nids_mesh.push_back(859);
-    intersection.AddCutSide(++sidecount, nids_mesh, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(
+        ++sidecount, nids_mesh, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
 
   for (int i = 0; i < 8; ++i)
@@ -1269,7 +1270,7 @@ void test_ls_mesh_hex8_simple()
   }
 
   // CUT WITH MESH
-  intersection.AddElement(1, nids, GetLocalHex8Coords(), DRT::Element::hex8);
+  intersection.AddElement(1, nids, GetLocalHex8Coords(), DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_Tessellation);
@@ -1405,7 +1406,7 @@ void test_ls_hex8_experiment_magnus()
   // Test_LevelSetCut_Tesselation_and_DD(nids, lsvs, xyze, testname);
 
 
-  ci.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0], false);
+  ci.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0], false);
 
   ci.Cut(true);
   // ci.PrintCellStats();
@@ -1617,7 +1618,7 @@ void test_ls_hex8_magnus7()
 //  lsvs[6] =0.00249378105604458610855545;
 //  lsvs[7] =-0.0050252531694167101861126;
 //
-//  lsi.AddElement( 1, nids, xyze, DRT::Element::hex8, &lsvs[0]  );
+//  lsi.AddElement( 1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]  );
 //  lsi.Cutest_Cut(true,true);
 //
 //  lsi.PrintCellStats();

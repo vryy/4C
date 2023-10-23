@@ -19,21 +19,21 @@ void DRT::ELEMENTS::SHELL::EvaluateNeumannByElement(DRT::Element& ele,
 {
   switch (ele.Shape())
   {
-    case DRT::Element::quad4:
-      return EvaluateNeumann<DRT::Element::quad4>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::quad8:
-      return EvaluateNeumann<DRT::Element::quad8>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::quad9:
-      return EvaluateNeumann<DRT::Element::quad9>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::tri3:
-      return EvaluateNeumann<DRT::Element::tri3>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
-    case DRT::Element::tri6:
-      return EvaluateNeumann<DRT::Element::tri6>(ele, discretization, condition, dof_index_array,
-          element_force_vector, element_stiffness_matrix, total_time);
+    case DRT::Element::DiscretizationType::quad4:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::quad4>(ele, discretization,
+          condition, dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case DRT::Element::DiscretizationType::quad8:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::quad8>(ele, discretization,
+          condition, dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case DRT::Element::DiscretizationType::quad9:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::quad9>(ele, discretization,
+          condition, dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case DRT::Element::DiscretizationType::tri3:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::tri3>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
+    case DRT::Element::DiscretizationType::tri6:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::tri6>(ele, discretization, condition,
+          dof_index_array, element_force_vector, element_stiffness_matrix, total_time);
     default:
       dserror(
           "The discretization type you are trying to evaluate the Neumann condition for is not yet "

@@ -41,14 +41,14 @@ DRT::ELEMENTS::FluidEleBoundaryCalcStd<distype>::FluidEleBoundaryCalcStd()
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::line2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::line3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::nurbs2>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::line2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::line3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs2>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs3>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs4>;
+template class DRT::ELEMENTS::FluidEleBoundaryCalcStd<DRT::Element::DiscretizationType::nurbs9>;

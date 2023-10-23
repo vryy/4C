@@ -219,7 +219,7 @@ void BEAMINTERACTION::BeamToBeamPointCouplingPair<beam>::EvaluateAndAssembleRota
     std::vector<CORE::LINALG::Matrix<3, 3, double>> I_tilde;
     CORE::LINALG::Matrix<3, n_dof_rot_, double> I_tilde_full;
     CORE::DRT::UTILS::shape_function_1D(
-        L_i[i_beam], position_in_parameterspace_[i_beam], DRT::Element::line3);
+        L_i[i_beam], position_in_parameterspace_[i_beam], DRT::Element::DiscretizationType::line3);
     triad_interpolation_scheme.GetNodalGeneralizedRotationInterpolationMatricesAtXi(
         I_tilde, position_in_parameterspace_[i_beam]);
     for (unsigned int i_node = 0; i_node < 3; i_node++)

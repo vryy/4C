@@ -92,7 +92,7 @@ namespace MORTAR
 
     DRT::Node** Nodes() override
     {
-      if (parele_->Shape() != DRT::Element::nurbs9)
+      if (parele_->Shape() != DRT::Element::DiscretizationType::nurbs9)
         return DRT::Element::Nodes();
       else
         return nodes_ptr_.data();
@@ -265,7 +265,7 @@ namespace MORTAR
     */
     virtual std::vector<CORE::GEN::pairedvector<int, double>>& GetDerivVertex(int i)
     {
-      if (shape_ == DRT::Element::line2)
+      if (shape_ == DRT::Element::DiscretizationType::line2)
       {
         if (i < 0 || i > 1) dserror("IntLine has 2 vertex linearizations only!");
         return linvertex_[i];

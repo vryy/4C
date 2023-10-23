@@ -256,7 +256,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList& pa
     }
     else
     {
-      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(funct, deriv, e, myknots, weights, nurbs9);
+      CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
+          funct, deriv, e, myknots, weights, DRT::Element::DiscretizationType::nurbs9);
     }
 
     // Stuff to get spatial Neumann
@@ -1401,7 +1402,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
 
       // get integration rule
       const CORE::DRT::UTILS::IntPointsAndWeights<2> intpoints(
-          DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::quad4>::rule);
+          DRT::ELEMENTS::DisTypeToOptGaussRule<DRT::Element::DiscretizationType::quad4>::rule);
 
       const Teuchos::RCP<DRT::Discretization> backgrddis = globalproblem->GetDis(backgrddisname);
       const Teuchos::RCP<DRT::Discretization> immerseddis = globalproblem->GetDis(immerseddisname);
@@ -1472,7 +1473,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
       CORE::LINALG::SerialDenseMatrix derivtrafo(3, 3);
 
       CORE::DRT::UTILS::BoundaryGPToParentGP<3>(parent_xi, derivtrafo, intpoints,
-          DRT::Element::hex8, DRT::Element::quad4, this->FaceParentNumber());
+          DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::quad4,
+          this->FaceParentNumber());
 
       ////////////////////////////////////////////////////////////////////
       /////   gauss point loop
@@ -1486,8 +1488,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         std::vector<double> interpolationresult(7);
         auto action = (int)FLD::interpolate_velgrad_to_given_point;
 
-        IMMERSED::InterpolateToImmersedIntPoint<DRT::Element::hex8,  // source
-            DRT::Element::quad4>                                     // target
+        IMMERSED::InterpolateToImmersedIntPoint<DRT::Element::DiscretizationType::hex8,  // source
+            DRT::Element::DiscretizationType::quad4>                                     // target
             (backgrddis, immerseddis, *this, bdryxi, bdryeledisp, action,
                 interpolationresult  // result
             );
@@ -1874,7 +1876,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList& params,
         else
         {
           CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
-              funct, deriv, e, myknots, weights, nurbs9);
+              funct, deriv, e, myknots, weights, DRT::Element::DiscretizationType::nurbs9);
         }
 
         // check for correct input

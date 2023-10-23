@@ -1841,9 +1841,11 @@ bool CORE::GEO::CUT::ConcreteSide<probdim, sidetype, numNodesSide, dim>::RayCut(
   // allowed to be not within the side and line
   bool checklimits = false;
   // do not use cln here
-  CORE::GEO::CUT::KERNEL::ComputeIntersection<probdim, ::DRT::Element::line2, sidetype, false> ci(
-      xsi, checklimits);
-  // CORE::GEO::CUT::KERNEL::DebugComputeIntersection<probdim,::DRT::Element::line2, sidetype,false>
+  CORE::GEO::CUT::KERNEL::ComputeIntersection<probdim, ::DRT::Element::DiscretizationType::line2,
+      sidetype, false>
+      ci(xsi, checklimits);
+  // CORE::GEO::CUT::KERNEL::DebugComputeIntersection<probdim,::DRT::Element::DiscretizationType::line2,
+  // sidetype,false>
   //      ci( xsi, checklimits );
 
   // successful line-side intersection
@@ -1868,16 +1870,16 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::SideFactory::CreateSide(
   const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (sidetype)
   {
-    case ::DRT::Element::line2:
+    case ::DRT::Element::DiscretizationType::line2:
     {
-      s = CreateConcreteSide<::DRT::Element::line2>(sid, nodes, edges, probdim);
+      s = CreateConcreteSide<::DRT::Element::DiscretizationType::line2>(sid, nodes, edges, probdim);
       break;
     }
-    case ::DRT::Element::tri3:
-      s = CreateConcreteSide<::DRT::Element::tri3>(sid, nodes, edges, probdim);
+    case ::DRT::Element::DiscretizationType::tri3:
+      s = CreateConcreteSide<::DRT::Element::DiscretizationType::tri3>(sid, nodes, edges, probdim);
       break;
-    case ::DRT::Element::quad4:
-      s = CreateConcreteSide<::DRT::Element::quad4>(sid, nodes, edges, probdim);
+    case ::DRT::Element::DiscretizationType::quad4:
+      s = CreateConcreteSide<::DRT::Element::DiscretizationType::quad4>(sid, nodes, edges, probdim);
       break;
     default:
     {
@@ -1930,7 +1932,7 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Side::Create(const unsigned& shardskey, co
 }
 
 
-template class CORE::GEO::CUT::ConcreteSide<2, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::quad4>;
-template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::tri3>;
+template class CORE::GEO::CUT::ConcreteSide<2, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::DiscretizationType::quad4>;
+template class CORE::GEO::CUT::ConcreteSide<3, ::DRT::Element::DiscretizationType::tri3>;

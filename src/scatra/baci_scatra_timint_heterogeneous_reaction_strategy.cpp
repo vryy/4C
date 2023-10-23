@@ -232,7 +232,8 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
 
     DRT::Element* ele = scatratimint_->Discretization()->gElement(gid);
     DRT::Node** nodes = ele->Nodes();
-    if (ele->Shape() == DRT::Element::quad4 or ele->Shape() == DRT::Element::tri3)
+    if (ele->Shape() == DRT::Element::DiscretizationType::quad4 or
+        ele->Shape() == DRT::Element::DiscretizationType::tri3)
     {
       for (int node = 0; node < ele->NumNode(); node++)
       {
@@ -254,7 +255,8 @@ void SCATRA::HeterogeneousReactionStrategy::HeterogeneousReactionSanityCheck()
       if (valid_slave) break;
     }  // if surface transport element
 
-    else if (ele->Shape() == DRT::Element::hex8 or ele->Shape() == DRT::Element::tet4)
+    else if (ele->Shape() == DRT::Element::DiscretizationType::hex8 or
+             ele->Shape() == DRT::Element::DiscretizationType::tet4)
     {
       // no check so far
     }  // if volume transport element

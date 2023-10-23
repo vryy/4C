@@ -369,13 +369,23 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<distype, probdim>::GetVa
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<DRT::Element::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcElchDiffCond<
+    DRT::Element::DiscretizationType::nurbs9, 3>;

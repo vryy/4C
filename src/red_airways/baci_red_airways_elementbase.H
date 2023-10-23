@@ -80,7 +80,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -479,7 +479,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -885,7 +885,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1262,7 +1262,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line2>;
+      friend class AirwayImpl<DRT::Element::DiscretizationType::line2>;
 
       //@}
       //! @name Constructors and destructors and related methods
@@ -1644,7 +1644,7 @@ namespace DRT
      public:
       //! @name Friends
       friend class RedAirwayImplInterface;
-      friend class AirwayImpl<DRT::Element::line3>;
+      friend class AirwayImpl<DRT::Element::DiscretizationType::line3>;
 
       //@}
       //! @name Constructors and destructors and related methods

@@ -193,7 +193,9 @@ int DRT::ELEMENTS::PoroFluidMultiPhaseType::Initialize(DRT::Discretization& dis)
  |  create an empty element                                vuong 08/16 |
  *------------------------------------------------------ ----------------*/
 DRT::ELEMENTS::PoroFluidMultiPhase::PoroFluidMultiPhase(int id, int owner)
-    : DRT::Element(id, owner), distype_(dis_none), numdofpernode_(-1)
+    : DRT::Element(id, owner),
+      distype_(DRT::Element::DiscretizationType::dis_none),
+      numdofpernode_(-1)
 {
   return;
 }
@@ -535,7 +537,7 @@ void DRT::ELEMENTS::PoroFluidMultiPhaseBoundary::Print(std::ostream& os) const
   os << "PoroFluidMultiPhaseBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Shape() << std::endl;
+  std::cout << "DiscretizationType:  " << DRT::DistypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }

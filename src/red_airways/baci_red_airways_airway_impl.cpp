@@ -568,12 +568,12 @@ DRT::ELEMENTS::RedAirwayImplInterface* DRT::ELEMENTS::RedAirwayImplInterface::Im
 {
   switch (red_airway->Shape())
   {
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      static AirwayImpl<DRT::Element::line2>* airway;
+      static AirwayImpl<DRT::Element::DiscretizationType::line2>* airway;
       if (airway == nullptr)
       {
-        airway = new AirwayImpl<DRT::Element::line2>;
+        airway = new AirwayImpl<DRT::Element::DiscretizationType::line2>;
       }
       return airway;
     }

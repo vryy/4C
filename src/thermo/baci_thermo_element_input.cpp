@@ -25,7 +25,7 @@ bool DRT::ELEMENTS::Thermo::ReadElement(
 
   SetDisType(DRT::StringToDistype(distype));
 
-  if (Shape() == DRT::Element::nurbs27) SetNurbsElement() = true;
+  if (Shape() == DRT::Element::DiscretizationType::nurbs27) SetNurbsElement() = true;
 
   return true;
 }

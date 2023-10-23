@@ -628,7 +628,10 @@ namespace CORE::GEO
       Hex20ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::hex20; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::hex20;
+      }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(
@@ -643,7 +646,10 @@ namespace CORE::GEO
       Hex27ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::hex27; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::hex27;
+      }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(
@@ -658,7 +664,10 @@ namespace CORE::GEO
       Tet10ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::tet10; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::tet10;
+      }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(
@@ -673,7 +682,10 @@ namespace CORE::GEO
       Wedge15ElementHandle(Mesh& mesh, int eid, const std::vector<int>& nids);
 
       //! get the shape of the element
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::wedge15; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::wedge15;
+      }
 
       //! compute local coordinates of the element for given global coordinates
       void LocalCoordinates(

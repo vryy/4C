@@ -25,9 +25,9 @@ DRT::ELEMENTS::Ale3Surface_Impl_Interface* DRT::ELEMENTS::Ale3Surface_Impl_Inter
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return DRT::ELEMENTS::Ale3Surface_Impl<DRT::Element::quad4>::Instance(
+      return DRT::ELEMENTS::Ale3Surface_Impl<DRT::Element::DiscretizationType::quad4>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
     default:

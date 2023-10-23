@@ -115,12 +115,12 @@ int DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::UniqueParObjectId() con
   int parobjectid(-1);
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       parobjectid = So_hex8PoroP1ScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       parobjectid = So_tet4PoroP1ScatraType::Instance().UniqueParObjectId();
       break;
@@ -142,9 +142,9 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::ElementTy
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PoroP1ScatraType::Instance();
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return So_hex8PoroP1ScatraType::Instance();
     default:
       dserror("unknown element type!");
@@ -200,5 +200,7 @@ bool DRT::ELEMENTS::So3_Poro_P1_Scatra<so3_ele, distype>::ReadElement(
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
-template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
+template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_tet4,
+    DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::So3_Poro_P1_Scatra<DRT::ELEMENTS::So_hex8,
+    DRT::Element::DiscretizationType::hex8>;

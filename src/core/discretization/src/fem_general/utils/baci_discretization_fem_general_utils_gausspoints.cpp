@@ -160,68 +160,68 @@ CORE::DRT::UTILS::GaussIntegration::GaussIntegration(::DRT::Element::Discretizat
 {
   switch (distype)
   {
-    case ::DRT::Element::quad4:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::quad4, 3);
+    case ::DRT::Element::DiscretizationType::quad4:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::quad4, 3);
       break;
-    case ::DRT::Element::quad8:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::quad8, 4);
+    case ::DRT::Element::DiscretizationType::quad8:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::quad8, 4);
       break;
-    case ::DRT::Element::quad9:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::quad9, 4);
+    case ::DRT::Element::DiscretizationType::quad9:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::quad9, 4);
       break;
-    case ::DRT::Element::tri3:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::tri3, 3);
+    case ::DRT::Element::DiscretizationType::tri3:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::tri3, 3);
       break;
-    case ::DRT::Element::tri6:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::tri6, 4);
+    case ::DRT::Element::DiscretizationType::tri6:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::tri6, 4);
       break;
-    case ::DRT::Element::hex8:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::hex8, 3);
+    case ::DRT::Element::DiscretizationType::hex8:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::hex8, 3);
       break;
-    case ::DRT::Element::hex20:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::hex20, 4);
+    case ::DRT::Element::DiscretizationType::hex20:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::hex20, 4);
       break;
-    case ::DRT::Element::hex27:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::hex27, 4);
+    case ::DRT::Element::DiscretizationType::hex27:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::hex27, 4);
       break;
-    case ::DRT::Element::tet4:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::tet4, 3);
+    case ::DRT::Element::DiscretizationType::tet4:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::tet4, 3);
       break;
-    case ::DRT::Element::tet10:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::tet10, 4);
+    case ::DRT::Element::DiscretizationType::tet10:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::tet10, 4);
       break;
-    case ::DRT::Element::wedge6:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::wedge6, 3);
+    case ::DRT::Element::DiscretizationType::wedge6:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::wedge6, 3);
       break;
-    case ::DRT::Element::wedge15:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::wedge15, 4);
+    case ::DRT::Element::DiscretizationType::wedge15:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::wedge15, 4);
       break;
-    case ::DRT::Element::pyramid5:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::pyramid5, 3);
+    case ::DRT::Element::DiscretizationType::pyramid5:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::pyramid5, 3);
       break;
-    case ::DRT::Element::line2:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::line2, 3);
+    case ::DRT::Element::DiscretizationType::line2:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::line2, 3);
       break;
-    case ::DRT::Element::line3:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::line3, 4);
+    case ::DRT::Element::DiscretizationType::line3:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::line3, 4);
       break;
-    case ::DRT::Element::nurbs2:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::line2, 3);
+    case ::DRT::Element::DiscretizationType::nurbs2:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::line2, 3);
       break;
-    case ::DRT::Element::nurbs3:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::line3, 4);
+    case ::DRT::Element::DiscretizationType::nurbs3:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::line3, 4);
       break;
-    case ::DRT::Element::nurbs4:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::quad4, 3);
+    case ::DRT::Element::DiscretizationType::nurbs4:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::quad4, 3);
       break;
-    case ::DRT::Element::nurbs8:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::hex8, 3);
+    case ::DRT::Element::DiscretizationType::nurbs8:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::hex8, 3);
       break;
-    case ::DRT::Element::nurbs9:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::quad9, 4);
+    case ::DRT::Element::DiscretizationType::nurbs9:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::quad9, 4);
       break;
-    case ::DRT::Element::nurbs27:
-      gp_ = GaussPointCache::Instance().Create(::DRT::Element::hex27, 4);
+    case ::DRT::Element::DiscretizationType::nurbs27:
+      gp_ = GaussPointCache::Instance().Create(::DRT::Element::DiscretizationType::hex27, 4);
       break;
     default:
       throw std::runtime_error("unsupported element shape");
@@ -260,49 +260,49 @@ Teuchos::RCP<CORE::DRT::UTILS::GaussPoints> CORE::DRT::UTILS::GaussPointCache::C
 
   switch (distype)
   {
-    case ::DRT::Element::quad4:
+    case ::DRT::Element::DiscretizationType::quad4:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<4>>(degree));
       break;
-    case ::DRT::Element::quad8:
+    case ::DRT::Element::DiscretizationType::quad8:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<8>>(degree));
       break;
-    case ::DRT::Element::quad9:
+    case ::DRT::Element::DiscretizationType::quad9:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Quadrilateral<9>>(degree));
       break;
-    case ::DRT::Element::tri3:
+    case ::DRT::Element::DiscretizationType::tri3:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Triangle<3>>(degree));
       break;
-    case ::DRT::Element::tri6:
+    case ::DRT::Element::DiscretizationType::tri6:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Triangle<6>>(degree));
       break;
-    case ::DRT::Element::hex8:
+    case ::DRT::Element::DiscretizationType::hex8:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<8>>(degree));
       break;
-    case ::DRT::Element::hex20:
+    case ::DRT::Element::DiscretizationType::hex20:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<20>>(degree));
       break;
-    case ::DRT::Element::hex27:
+    case ::DRT::Element::DiscretizationType::hex27:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Hexahedron<27>>(degree));
       break;
-    case ::DRT::Element::tet4:
+    case ::DRT::Element::DiscretizationType::tet4:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Tetrahedron<4>>(degree));
       break;
-    case ::DRT::Element::tet10:
+    case ::DRT::Element::DiscretizationType::tet10:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Tetrahedron<10>>(degree));
       break;
-    case ::DRT::Element::wedge6:
+    case ::DRT::Element::DiscretizationType::wedge6:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Wedge<6>>(degree));
       break;
-    case ::DRT::Element::wedge15:
+    case ::DRT::Element::DiscretizationType::wedge15:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Wedge<15>>(degree));
       break;
-    case ::DRT::Element::pyramid5:
+    case ::DRT::Element::DiscretizationType::pyramid5:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Pyramid<5>>(degree));
       break;
-    case ::DRT::Element::line2:
+    case ::DRT::Element::DiscretizationType::line2:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Line<2>>(degree));
       break;
-    case ::DRT::Element::line3:
+    case ::DRT::Element::DiscretizationType::line3:
       gp = Teuchos::rcp(new IntrepidGaussPoints<shards::Line<3>>(degree));
       break;
     default:

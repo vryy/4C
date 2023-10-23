@@ -11,6 +11,7 @@
 #include "baci_thermo_element.H"
 
 #include "baci_lib_discret.H"
+#include "baci_lib_element.H"
 #include "baci_lib_globalproblem.H"
 #include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
@@ -170,7 +171,8 @@ DRT::ELEMENTS::ThermoBoundaryType& DRT::ELEMENTS::ThermoBoundaryType::Instance()
 /*----------------------------------------------------------------------*
  | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Thermo::Thermo(int id, int owner) : DRT::Element(id, owner), distype_(dis_none)
+DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
+    : DRT::Element(id, owner), distype_(DRT::Element::DiscretizationType::dis_none)
 {
   // default: geometrically linear, also including purely thermal probelm
   kintype_ = INPAR::STR::kinem_linear;
@@ -184,7 +186,7 @@ DRT::ELEMENTS::Thermo::Thermo(int id, int owner) : DRT::Element(id, owner), dist
 DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old)
     : DRT::Element(old), kintype_(old.kintype_), distype_(old.distype_), data_(old.data_)
 {
-  if (old.Shape() == DRT::Element::nurbs27) SetNurbsElement() = true;
+  if (old.Shape() == DRT::Element::DiscretizationType::nurbs27) SetNurbsElement() = true;
   return;
 }  // copy-ctor
 
@@ -251,7 +253,7 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   kintype_ = static_cast<INPAR::STR::KinemType>(ExtractInt(position, data));
   // distype
   distype_ = static_cast<DiscretizationType>(ExtractInt(position, data));
-  if (distype_ == DRT::Element::nurbs27) SetNurbsElement() = true;
+  if (distype_ == DRT::Element::DiscretizationType::nurbs27) SetNurbsElement() = true;
 
   std::vector<char> tmp(0);
   ExtractfromPack(position, data, tmp);
@@ -277,7 +279,7 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
   os << "Thermo element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << distype_ << std::endl;
+  std::cout << "DiscretizationType:  " << DRT::DistypeToString(distype_) << std::endl;
   std::cout << std::endl;
   std::cout << "Number DOF per Node: " << numdofpernode_ << std::endl;
   std::cout << std::endl;
@@ -446,28 +448,35 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return DRT::Element::DiscretizationType::line2;
     case 3:
-      if ((ParentElement()->Shape() == quad8) or (ParentElement()->Shape() == quad9))
-        return line3;
+      if ((ParentElement()->Shape() == DRT::Element::DiscretizationType::quad8) or
+          (ParentElement()->Shape() == DRT::Element::DiscretizationType::quad9))
+        return DRT::Element::DiscretizationType::line3;
       else
-        return tri3;
+        return DRT::Element::DiscretizationType::tri3;
     case 4:
-      return quad4;
+      return DRT::Element::DiscretizationType::quad4;
     case 6:
-      return tri6;
+      return DRT::Element::DiscretizationType::tri6;
     case 8:
-      return quad8;
+      return DRT::Element::DiscretizationType::quad8;
     case 9:
-      if (ParentElement()->Shape() == hex27)
-        return quad9;
-      else if (ParentElement()->Shape() == nurbs27)
-        return nurbs9;
+      if (ParentElement()->Shape() == DRT::Element::DiscretizationType::hex27)
+        return DRT::Element::DiscretizationType::quad9;
+      else if (ParentElement()->Shape() == DRT::Element::DiscretizationType::nurbs27)
+        return DRT::Element::DiscretizationType::nurbs9;
+      else
+      {
+        dserror(
+            "Your parent discretization type is %s. Ccurrently only hex27 and nurbs27 are "
+            "implemented.",
+            DRT::DistypeToString(ParentElement()->Shape()).c_str());
+      }
       break;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }  // Shape()
 
 

@@ -76,27 +76,27 @@ namespace DRT
         int parobjectid(-1);
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
           {
             parobjectid = DRT::ELEMENTS::WallTri3PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
           {
             parobjectid = DRT::ELEMENTS::WallQuad4PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
           {
             parobjectid = DRT::ELEMENTS::WallQuad9PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case DRT::Element::nurbs4:
+          case DRT::Element::DiscretizationType::nurbs4:
           {
             parobjectid = DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance().UniqueParObjectId();
             break;
           }
-          case DRT::Element::nurbs9:
+          case DRT::Element::DiscretizationType::nurbs9:
           {
             parobjectid = DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance().UniqueParObjectId();
             break;
@@ -138,19 +138,19 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
             return DRT::ELEMENTS::WallTri3PoroScatraType::Instance();
             break;
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
             return DRT::ELEMENTS::WallQuad4PoroScatraType::Instance();
             break;
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
             return DRT::ELEMENTS::WallQuad9PoroScatraType::Instance();
             break;
-          case DRT::Element::nurbs4:
+          case DRT::Element::DiscretizationType::nurbs4:
             return DRT::ELEMENTS::WallNurbs4PoroScatraType::Instance();
             break;
-          case DRT::Element::nurbs9:
+          case DRT::Element::DiscretizationType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroScatraType::Instance();
             break;
           default:

@@ -428,28 +428,28 @@ void CONTACT::UTILS::MapGPtoParent(MORTAR::MortarElement& moEle, double* boundar
   DRT::Element::DiscretizationType distype = moEle.ParentElement()->Shape();
   switch (distype)
   {
-    case DRT::Element::hex8:
-      CONTACT::UTILS::SoEleGP<DRT::Element::hex8, dim>(
+    case DRT::Element::DiscretizationType::hex8:
+      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::hex8, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::tet4:
-      CONTACT::UTILS::SoEleGP<DRT::Element::tet4, dim>(
+    case DRT::Element::DiscretizationType::tet4:
+      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::tet4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::quad4:
-      CONTACT::UTILS::SoEleGP<DRT::Element::quad4, dim>(
+    case DRT::Element::DiscretizationType::quad4:
+      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::quad4, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::quad9:
-      CONTACT::UTILS::SoEleGP<DRT::Element::quad9, dim>(
+    case DRT::Element::DiscretizationType::quad9:
+      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::quad9, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::tri3:
-      CONTACT::UTILS::SoEleGP<DRT::Element::tri3, dim>(
+    case DRT::Element::DiscretizationType::tri3:
+      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::tri3, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
-    case DRT::Element::nurbs27:
-      CONTACT::UTILS::SoEleGP<DRT::Element::nurbs27, dim>(
+    case DRT::Element::DiscretizationType::nurbs27:
+      CONTACT::UTILS::SoEleGP<DRT::Element::DiscretizationType::nurbs27, dim>(
           moEle, wgt, boundary_gpcoord, pxsi, derivtravo_slave);
       break;
     default:

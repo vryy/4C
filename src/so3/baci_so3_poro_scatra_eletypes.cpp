@@ -24,8 +24,9 @@ DRT::ELEMENTS::So_hex8PoroScatraType& DRT::ELEMENTS::So_hex8PoroScatraType::Inst
 
 DRT::ParObject* DRT::ELEMENTS::So_hex8PoroScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* object =
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(-1, -1);
+  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>*
+      object = new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8,
+          DRT::Element::DiscretizationType::hex8>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -35,8 +36,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8,
+            DRT::Element::DiscretizationType::hex8>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -45,8 +47,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8,
+          DRT::Element::DiscretizationType::hex8>(id, owner));
   return ele;
 }
 
@@ -78,8 +81,9 @@ DRT::ELEMENTS::So_tet4PoroScatraType& DRT::ELEMENTS::So_tet4PoroScatraType::Inst
 
 DRT::ParObject* DRT::ELEMENTS::So_tet4PoroScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* object =
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(-1, -1);
+  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::DiscretizationType::tet4>*
+      object = new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4,
+          DRT::Element::DiscretizationType::tet4>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -89,8 +93,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4,
+            DRT::Element::DiscretizationType::tet4>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -99,8 +104,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4,
+          DRT::Element::DiscretizationType::tet4>(id, owner));
   return ele;
 }
 
@@ -132,8 +138,9 @@ DRT::ELEMENTS::So_hex27PoroScatraType& DRT::ELEMENTS::So_hex27PoroScatraType::In
 
 DRT::ParObject* DRT::ELEMENTS::So_hex27PoroScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* object =
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(-1, -1);
+  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::DiscretizationType::hex27>*
+      object = new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27,
+          DRT::Element::DiscretizationType::hex27>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -143,9 +150,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(
-            id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27,
+            DRT::Element::DiscretizationType::hex27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -154,8 +161,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex27PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27,
+          DRT::Element::DiscretizationType::hex27>(id, owner));
   return ele;
 }
 
@@ -188,8 +196,9 @@ DRT::ELEMENTS::So_tet10PoroScatraType& DRT::ELEMENTS::So_tet10PoroScatraType::In
 
 DRT::ParObject* DRT::ELEMENTS::So_tet10PoroScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* object =
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1, -1);
+  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::DiscretizationType::tet10>*
+      object = new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10,
+          DRT::Element::DiscretizationType::tet10>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -199,9 +208,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(
-            id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10,
+            DRT::Element::DiscretizationType::tet10>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -210,8 +219,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10,
+          DRT::Element::DiscretizationType::tet10>(id, owner));
   return ele;
 }
 
@@ -243,9 +253,10 @@ DRT::ELEMENTS::So_nurbs27PoroScatraType& DRT::ELEMENTS::So_nurbs27PoroScatraType
 
 DRT::ParObject* DRT::ELEMENTS::So_nurbs27PoroScatraType::Create(const std::vector<char>& data)
 {
-  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>* object =
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
-          -1, -1);
+  DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
+      DRT::Element::DiscretizationType::nurbs27>* object =
+      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
+          DRT::Element::DiscretizationType::nurbs27>(-1, -1);
   object->Unpack(data);
   return object;
 }
@@ -255,9 +266,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroScatraType::Create(
 {
   if (eletype == GetElementTypeString())
   {
-    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-        new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
-            id, owner));
+    Teuchos::RCP<DRT::Element> ele =
+        Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
+            DRT::Element::DiscretizationType::nurbs27>(id, owner));
     return ele;
   }
   return Teuchos::null;
@@ -266,9 +277,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroScatraType::Create(
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_nurbs27PoroScatraType::Create(
     const int id, const int owner)
 {
-  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(
-      new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27, DRT::Element::nurbs27>(
-          id, owner));
+  Teuchos::RCP<DRT::Element> ele =
+      Teuchos::rcp(new DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
+          DRT::Element::DiscretizationType::nurbs27>(id, owner));
   return ele;
 }
 

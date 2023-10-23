@@ -22,68 +22,68 @@ DRT::ELEMENTS::ElemagEleInterface* DRT::ELEMENTS::ElemagFactory::ProvideImpl(
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
-      return DefineProblemType<DRT::Element::hex8>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::hex8>(problem);
     }
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
     {
-      return DefineProblemType<DRT::Element::hex20>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::hex20>(problem);
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
-      return DefineProblemType<DRT::Element::hex27>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::hex27>(problem);
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
-      return DefineProblemType<DRT::Element::tet4>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tet4>(problem);
     }
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
     {
-      return DefineProblemType<DRT::Element::tet10>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tet10>(problem);
     }
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
     {
-      return DefineProblemType<DRT::Element::wedge6>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::wedge6>(problem);
     }
     /* wedge15 cannot be used since no mesh generator exists
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge15:
     {
-      return DefineProblemType<DRT::Element::wedge15>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::wedge15>(problem);
     }
     */
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
     {
-      return DefineProblemType<DRT::Element::pyramid5>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::pyramid5>(problem);
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return DefineProblemType<DRT::Element::quad4>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(problem);
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return DefineProblemType<DRT::Element::quad8>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(problem);
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return DefineProblemType<DRT::Element::quad9>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(problem);
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return DefineProblemType<DRT::Element::tri3>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(problem);
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return DefineProblemType<DRT::Element::tri6>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(problem);
     }
     // Nurbs support
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::nurbs9>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs9>(problem);
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
-      return DefineProblemType<DRT::Element::nurbs27>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs27>(problem);
     }
     // no 1D elements
     default:

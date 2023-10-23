@@ -1104,75 +1104,117 @@ void CONTACT::AUG::DebugCompleteIntPolicy<probdim, slavetype,
 }
 
 /*----------------------------------------------------------------------------*/
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::line2, DRT::Element::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::line2, DRT::Element::nurbs2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::line2, DRT::Element::nurbs3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
+    DRT::Element::DiscretizationType::line2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
+    DRT::Element::DiscretizationType::nurbs2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
+    DRT::Element::DiscretizationType::nurbs3>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::nurbs2,
-    DRT::Element::nurbs2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::nurbs2, DRT::Element::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::nurbs2,
-    DRT::Element::nurbs3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
+    DRT::Element::DiscretizationType::nurbs2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
+    DRT::Element::DiscretizationType::line2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
+    DRT::Element::DiscretizationType::nurbs3>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::nurbs3,
-    DRT::Element::nurbs3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::nurbs3, DRT::Element::line2>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::nurbs3,
-    DRT::Element::nurbs2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
+    DRT::Element::DiscretizationType::nurbs3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
+    DRT::Element::DiscretizationType::line2>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
+    DRT::Element::DiscretizationType::nurbs2>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs4,
-    DRT::Element::nurbs4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs4, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs4, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs4,
-    DRT::Element::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::nurbs9>;
 
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs9,
-    DRT::Element::nurbs9>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::nurbs9,
-    DRT::Element::nurbs4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugIncompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::nurbs4>;
 
 /*----------------------------------------------------------------------------*/
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::line2, DRT::Element::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::line2, DRT::Element::nurbs2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::line2, DRT::Element::nurbs3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
+    DRT::Element::DiscretizationType::line2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
+    DRT::Element::DiscretizationType::nurbs2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::line2,
+    DRT::Element::DiscretizationType::nurbs3>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::nurbs2, DRT::Element::nurbs2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::nurbs2, DRT::Element::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::nurbs2, DRT::Element::nurbs3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
+    DRT::Element::DiscretizationType::nurbs2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
+    DRT::Element::DiscretizationType::line2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs2,
+    DRT::Element::DiscretizationType::nurbs3>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::nurbs3, DRT::Element::nurbs3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::nurbs3, DRT::Element::line2>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::nurbs3, DRT::Element::nurbs2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
+    DRT::Element::DiscretizationType::nurbs3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
+    DRT::Element::DiscretizationType::line2>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<2, DRT::Element::DiscretizationType::nurbs3,
+    DRT::Element::DiscretizationType::nurbs2>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::quad4, DRT::Element::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::tri3, DRT::Element::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs4, DRT::Element::nurbs4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs4, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs4, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs4, DRT::Element::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs4,
+    DRT::Element::DiscretizationType::nurbs9>;
 
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::nurbs9>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::quad4>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::tri3>;
-template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::nurbs9, DRT::Element::nurbs4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::nurbs9>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::quad4>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::tri3>;
+template class CONTACT::AUG::DebugCompleteIntPolicy<3, DRT::Element::DiscretizationType::nurbs9,
+    DRT::Element::DiscretizationType::nurbs4>;

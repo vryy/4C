@@ -1263,15 +1263,27 @@ void SCATRA::MeshtyingStrategyS2IElchSCL::Solve(const Teuchos::RCP<CORE::LINALG:
 
 
 // forward declarations
-template class SCATRA::MortarCellCalcElch<DRT::Element::tri3, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalcElch<DRT::Element::tri3, DRT::Element::quad4>;
-template class SCATRA::MortarCellCalcElch<DRT::Element::quad4, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalcElch<DRT::Element::quad4, DRT::Element::quad4>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::tri3, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::tri3, DRT::Element::quad4>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::quad4, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::quad4, DRT::Element::quad4>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::tri3, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::tri3, DRT::Element::quad4>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::quad4, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalcSTIElch<DRT::Element::quad4, DRT::Element::quad4>;
+template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::quad4>;
+template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalcElch<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::quad4>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::quad4>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalcElchSTIThermo<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::quad4>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::quad4>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalcSTIElch<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::quad4>;

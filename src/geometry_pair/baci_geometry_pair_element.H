@@ -464,26 +464,42 @@ namespace GEOMETRYPAIR
    */
 
   //! 1D elements
-  using t_hermite = ElementDiscretizationHermite<ElementDiscretizationBase<DRT::Element::line2, 2>>;
-  using t_line2 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line2, 1>>;
-  using t_line3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line3, 1>>;
-  using t_line4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::line4, 1>>;
+  using t_hermite = ElementDiscretizationHermite<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::line2, 2>>;
+  using t_line2 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::line2, 1>>;
+  using t_line3 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::line3, 1>>;
+  using t_line4 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::line4, 1>>;
 
   //! 2D elements
-  using t_tri3 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri3, 1>>;
-  using t_tri6 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tri6, 1>>;
-  using t_quad4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad4, 1>>;
-  using t_quad8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad8, 1>>;
-  using t_quad9 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::quad9, 1>>;
-  using t_nurbs9 = ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs9, 1>>;
+  using t_tri3 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::tri3, 1>>;
+  using t_tri6 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::tri6, 1>>;
+  using t_quad4 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::quad4, 1>>;
+  using t_quad8 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::quad8, 1>>;
+  using t_quad9 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::quad9, 1>>;
+  using t_nurbs9 = ElementDiscretizationNurbs<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::nurbs9, 1>>;
 
   //! 3D elements
-  using t_hex8 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex8, 1>>;
-  using t_hex20 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex20, 1>>;
-  using t_hex27 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::hex27, 1>>;
-  using t_tet4 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet4, 1>>;
-  using t_tet10 = ElementDiscretizationStandard<ElementDiscretizationBase<DRT::Element::tet10, 1>>;
-  using t_nurbs27 = ElementDiscretizationNurbs<ElementDiscretizationBase<DRT::Element::nurbs27, 1>>;
+  using t_hex8 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::hex8, 1>>;
+  using t_hex20 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::hex20, 1>>;
+  using t_hex27 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::hex27, 1>>;
+  using t_tet4 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::tet4, 1>>;
+  using t_tet10 = ElementDiscretizationStandard<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::tet10, 1>>;
+  using t_nurbs27 = ElementDiscretizationNurbs<
+      ElementDiscretizationBase<DRT::Element::DiscretizationType::nurbs27, 1>>;
 
 }  // namespace GEOMETRYPAIR
 

@@ -38,12 +38,12 @@ DRT::ELEMENTS::RedInterAcinarDepImplInterface* DRT::ELEMENTS::RedInterAcinarDepI
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      static InterAcinarDepImpl<DRT::Element::line2>* acinus;
+      static InterAcinarDepImpl<DRT::Element::DiscretizationType::line2>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new InterAcinarDepImpl<DRT::Element::line2>;
+        acinus = new InterAcinarDepImpl<DRT::Element::DiscretizationType::line2>;
       }
       return acinus;
     }

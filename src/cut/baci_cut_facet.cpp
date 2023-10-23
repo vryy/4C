@@ -977,16 +977,16 @@ bool CORE::GEO::CUT::Facet::Equals(::DRT::Element::DiscretizationType distype)
     FindCornerPoints();
     switch (distype)
     {
-      case ::DRT::Element::point1:
+      case ::DRT::Element::DiscretizationType::point1:
         return KERNEL::IsValidPoint1(corner_points_);
         break;
-      case ::DRT::Element::line2:
+      case ::DRT::Element::DiscretizationType::line2:
         return KERNEL::IsValidLine2(corner_points_);
         break;
-      case ::DRT::Element::quad4:
+      case ::DRT::Element::DiscretizationType::quad4:
         return KERNEL::IsValidQuad4(corner_points_);
         break;
-      case ::DRT::Element::tri3:
+      case ::DRT::Element::DiscretizationType::tri3:
         return KERNEL::IsValidTri3(corner_points_);
         break;
       default:

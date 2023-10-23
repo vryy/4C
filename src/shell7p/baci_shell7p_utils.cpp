@@ -669,7 +669,7 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(
   std::string type;
   switch (distype)
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad4(locking_types.membrane, type);
@@ -683,7 +683,7 @@ void STR::UTILS::SHELL::READELEMENT::ReadAndSetLockingTypes(
       SetShearStrainLockingSizeQuad4(locking_types.transverse_shear_strain_lin, type);
       break;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
       linedef->ExtractString("EAS", type);
       SetMembraneLockingSizeQuad9(locking_types.membrane, type);
@@ -717,11 +717,11 @@ int STR::UTILS::SHELL::READELEMENT::ReadAndSetNumANS(
 {
   switch (distype)
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       return 2;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
       return 6;
     }

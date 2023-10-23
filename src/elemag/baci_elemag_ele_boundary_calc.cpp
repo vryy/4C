@@ -23,49 +23,49 @@ DRT::ELEMENTS::ElemagBoundaryImplInterface* DRT::ELEMENTS::ElemagBoundaryImplInt
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return ElemagBoundaryImpl<DRT::Element::quad4>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return ElemagBoundaryImpl<DRT::Element::quad8>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return ElemagBoundaryImpl<DRT::Element::quad9>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return ElemagBoundaryImpl<DRT::Element::tri3>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::tri3>::Instance();
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return ElemagBoundaryImpl<DRT::Element::tri6>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::tri6>::Instance();
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return ElemagBoundaryImpl<DRT::Element::line2>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::line2>::Instance();
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      return ElemagBoundaryImpl<DRT::Element::line3>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::line3>::Instance();
     }
-    case DRT::Element::nurbs2:  // 1D nurbs boundary element
+    case DRT::Element::DiscretizationType::nurbs2:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs2>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::nurbs2>::Instance();
     }
-    case DRT::Element::nurbs3:  // 1D nurbs boundary element
+    case DRT::Element::DiscretizationType::nurbs3:  // 1D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs3>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::nurbs3>::Instance();
     }
-    case DRT::Element::nurbs4:  // 2D nurbs boundary element
+    case DRT::Element::DiscretizationType::nurbs4:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs4>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::nurbs4>::Instance();
     }
-    case DRT::Element::nurbs9:  // 2D nurbs boundary element
+    case DRT::Element::DiscretizationType::nurbs9:  // 2D nurbs boundary element
     {
-      return ElemagBoundaryImpl<DRT::Element::nurbs9>::Instance();
+      return ElemagBoundaryImpl<DRT::Element::DiscretizationType::nurbs9>::Instance();
     }
     default:
       dserror(

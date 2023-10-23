@@ -67,7 +67,8 @@ namespace DRT
       if (inputData.autopartition_)  // linear map
       {
         int scale = 1;
-        if (distype_enum == DRT::Element::wedge6 or distype_enum == DRT::Element::wedge15)
+        if (distype_enum == DRT::Element::DiscretizationType::wedge6 or
+            distype_enum == DRT::Element::DiscretizationType::wedge15)
         {
           scale = 2;
         }
@@ -76,8 +77,9 @@ namespace DRT
       else  // fancy final box map
       {
         // Error for invalid element types!!!
-        if (distype_enum != DRT::Element::hex8 and distype_enum != DRT::Element::hex20 and
-            distype_enum != DRT::Element::hex27)
+        if (distype_enum != DRT::Element::DiscretizationType::hex8 and
+            distype_enum != DRT::Element::DiscretizationType::hex20 and
+            distype_enum != DRT::Element::DiscretizationType::hex27)
         {
           dserror("This map-partition is only available for HEX-elements!");
         }
@@ -182,9 +184,9 @@ namespace DRT
         // Create specified elemnts
         switch (distype_enum)
         {
-          case DRT::Element::hex8:
-          case DRT::Element::hex20:
-          case DRT::Element::hex27:
+          case DRT::Element::DiscretizationType::hex8:
+          case DRT::Element::DiscretizationType::hex20:
+          case DRT::Element::DiscretizationType::hex27:
           {
             Teuchos::RCP<DRT::Element> ele =
                 CreateHexElement(eleid, inputData.node_gid_of_first_new_node_, myrank, linedef,
@@ -193,8 +195,8 @@ namespace DRT
             dis.AddElement(ele);
             break;
           }
-          case DRT::Element::wedge6:
-          case DRT::Element::wedge15:
+          case DRT::Element::DiscretizationType::wedge6:
+          case DRT::Element::DiscretizationType::wedge15:
           {
             Teuchos::RCP<DRT::Element> ele = DRT::GRIDGENERATOR::CreateWedgeElement(eleid,
                 inputData.node_gid_of_first_new_node_, myrank, linedef, inputData.interval_,

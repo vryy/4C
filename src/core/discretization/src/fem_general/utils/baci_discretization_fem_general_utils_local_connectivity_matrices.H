@@ -326,127 +326,127 @@ namespace CORE::DRT::UTILS
   {
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::point1>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::point1>
   {
     static const int numNodePerElement = 1;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::line2>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::line2>
   {
     static const int numNodePerElement = 2;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::line3>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::line3>
   {
     static const int numNodePerElement = 3;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::line4>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::line4>
   {
     static const int numNodePerElement = 4;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs2>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::nurbs2>
   {
     static const int numNodePerElement = 2;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs3>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::nurbs3>
   {
     static const int numNodePerElement = 3;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::quad4>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::quad4>
   {
     static const int numNodePerElement = 4;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::quad8>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::quad8>
   {
     static const int numNodePerElement = 8;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::quad9>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::quad9>
   {
     static const int numNodePerElement = 9;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs4>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::nurbs4>
   {
     static const int numNodePerElement = 4;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs9>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::nurbs9>
   {
     static const int numNodePerElement = 9;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tri3>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::tri3>
   {
     static const int numNodePerElement = 3;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tri6>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::tri6>
   {
     static const int numNodePerElement = 6;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex8>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::hex8>
   {
     static const int numNodePerElement = 8;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex16>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::hex16>
   {
     static const int numNodePerElement = 16;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex18>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::hex18>
   {
     static const int numNodePerElement = 18;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex20>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::hex20>
   {
     static const int numNodePerElement = 20;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::hex27>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::hex27>
   {
     static const int numNodePerElement = 27;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs8>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::nurbs8>
   {
     static const int numNodePerElement = 8;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::nurbs27>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::nurbs27>
   {
     static const int numNodePerElement = 27;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tet4>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::tet4>
   {
     static const int numNodePerElement = 4;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::tet10>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::tet10>
   {
     static const int numNodePerElement = 10;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::wedge6>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::wedge6>
   {
     static const int numNodePerElement = 6;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::wedge15>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::wedge15>
   {
     static const int numNodePerElement = 15;
   };
   template <>
-  struct DisTypeToNumNodePerEle<::DRT::Element::pyramid5>
+  struct DisTypeToNumNodePerEle<::DRT::Element::DiscretizationType::pyramid5>
   {
     static const int numNodePerElement = 5;
   };
@@ -612,132 +612,132 @@ namespace CORE::DRT::UTILS
   {
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::point1>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::point1>
   {
     static const int dim = 0;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::line2>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::line2>
   {
     static const int dim = 1;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::line3>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::line3>
   {
     static const int dim = 1;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::line4>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::line4>
   {
     static const int dim = 1;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::nurbs2>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::nurbs2>
   {
     static const int dim = 1;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::nurbs3>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::nurbs3>
   {
     static const int dim = 1;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::quad4>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::quad4>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::quad6>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::quad6>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::quad8>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::quad8>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::quad9>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::quad9>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::nurbs4>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::nurbs4>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::nurbs9>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::nurbs9>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::tri3>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::tri3>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::tri6>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::tri6>
   {
     static const int dim = 2;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::hex8>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::hex8>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::hex16>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::hex16>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::hex18>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::hex18>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::hex20>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::hex20>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::hex27>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::hex27>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::tet4>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::tet4>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::tet10>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::tet10>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::wedge6>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::wedge6>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::wedge15>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::wedge15>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::pyramid5>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::pyramid5>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::nurbs8>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::nurbs8>
   {
     static const int dim = 3;
   };
   template <>
-  struct DisTypeToDim<::DRT::Element::nurbs27>
+  struct DisTypeToDim<::DRT::Element::DiscretizationType::nurbs27>
   {
     static const int dim = 3;
   };
@@ -751,117 +751,117 @@ namespace CORE::DRT::UTILS
   {
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::point1>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::point1>
   {
     static const int degree = 0;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::line2>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::line2>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::line3>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::line3>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs2>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs2>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs3>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs3>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad4>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::quad4>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad6>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::quad6>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad8>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::quad8>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::quad9>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::quad9>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs4>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs4>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs9>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs9>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tri3>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::tri3>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tri6>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::tri6>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::hex8>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::hex8>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::hex20>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::hex20>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::hex27>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::hex27>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tet4>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::tet4>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::tet10>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::tet10>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::wedge6>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::wedge6>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::wedge15>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::wedge15>
   {
     static const int degree = 2;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::pyramid5>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::pyramid5>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs8>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs8>
   {
     static const int degree = 1;
   };
   template <>
-  struct DisTypeToDegree<::DRT::Element::nurbs27>
+  struct DisTypeToDegree<::DRT::Element::DiscretizationType::nurbs27>
   {
     static const int degree = 2;
   };
@@ -883,127 +883,127 @@ namespace CORE::DRT::UTILS
   {
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::point1>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::point1>
   {
     static const int numderiv2 = 0;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::line2>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::line2>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::line3>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::line3>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs2>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::nurbs2>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs3>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::nurbs3>
   {
     static const int numderiv2 = 1;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad4>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::quad4>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad6>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::quad6>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad8>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::quad8>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::quad9>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::quad9>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs4>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::nurbs4>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs9>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::nurbs9>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tri3>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::tri3>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tri6>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::tri6>
   {
     static const int numderiv2 = 3;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex8>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::hex8>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex16>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::hex16>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex18>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::hex18>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex20>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::hex20>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::hex27>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::hex27>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tet4>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::tet4>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::tet10>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::tet10>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::wedge6>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::wedge6>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::wedge15>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::wedge15>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::pyramid5>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::pyramid5>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs8>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::nurbs8>
   {
     static const int numderiv2 = 6;
   };
   template <>
-  struct DisTypeToNumDeriv2<::DRT::Element::nurbs27>
+  struct DisTypeToNumDeriv2<::DRT::Element::DiscretizationType::nurbs27>
   {
     static const int numderiv2 = 6;
   };
@@ -1016,128 +1016,154 @@ namespace CORE::DRT::UTILS
   template <::DRT::Element::DiscretizationType DISTYPE>
   struct DisTypeToFaceShapeType
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::max_distype;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::max_distype;
   };
-  // template<> struct DisTypeToFaceShapeType<::DRT::Element::point1>   {}; // invalid
+  // template<> struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::point1>   {}; //
+  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::line2>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::line2>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
-  };
-  template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::line3>
-  {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs2>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::line3>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs3>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs2>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::point1;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad4>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs3>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line2;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::point1;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad6>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::quad4>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::line2;
+  };
+  template <>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::quad6>
+  {
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::line3;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad8>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::quad8>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::quad9>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::quad9>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs4>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs4>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs2;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::nurbs2;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs9>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs9>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::nurbs3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tri3>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tri3>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line2;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::line2;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tri6>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tri6>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::line3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::line3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex8>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex8>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad4;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::quad4;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex16>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex16>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad8;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::quad8;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex18>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex18>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad9;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::quad9;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex20>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex20>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad8;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::quad8;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::hex27>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::hex27>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::quad9;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::quad9;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs8>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs8>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs4;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::nurbs4;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::nurbs27>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::nurbs27>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::nurbs9;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::nurbs9;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tet4>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tet4>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::tri3;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::tet10>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::tet10>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri6;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::tri6;
   };
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::wedge6>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::wedge6>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::tri3;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::wedge15>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::wedge15>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri6;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::tri6;
   };  // invalid
   template <>
-  struct DisTypeToFaceShapeType<::DRT::Element::pyramid5>
+  struct DisTypeToFaceShapeType<::DRT::Element::DiscretizationType::pyramid5>
   {
-    static const ::DRT::Element::DiscretizationType shape = ::DRT::Element::tri3;
+    static const ::DRT::Element::DiscretizationType shape =
+        ::DRT::Element::DiscretizationType::tri3;
   };  // invalid
 
 
@@ -1151,124 +1177,125 @@ namespace CORE::DRT::UTILS
   {
     static const int numFaces = 0;
   };
-  // template<> struct DisTypeToNumFaces<::DRT::Element::point1>   {}; // invalid
+  // template<> struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::point1>   {}; //
+  // invalid
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::line2>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::line2>
   {
     static const int numFaces = 2;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::line3>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::line3>
   {
     static const int numFaces = 2;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs2>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::nurbs2>
   {
     static const int numFaces = 2;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs3>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::nurbs3>
   {
     static const int numFaces = 2;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad4>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::quad4>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad6>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::quad6>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad8>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::quad8>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::quad9>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::quad9>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs4>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::nurbs4>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs9>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::nurbs9>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::tri3>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::tri3>
   {
     static const int numFaces = 3;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::tri6>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::tri6>
   {
     static const int numFaces = 3;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex8>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::hex8>
   {
     static const int numFaces = 6;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex16>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::hex16>
   {
     static const int numFaces = 6;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex18>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::hex18>
   {
     static const int numFaces = 6;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex20>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::hex20>
   {
     static const int numFaces = 6;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::hex27>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::hex27>
   {
     static const int numFaces = 6;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs8>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::nurbs8>
   {
     static const int numFaces = 6;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::nurbs27>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::nurbs27>
   {
     static const int numFaces = 6;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::tet4>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::tet4>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::tet10>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::tet10>
   {
     static const int numFaces = 4;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::wedge6>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::wedge6>
   {
     static const int numFaces = 5;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::wedge15>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::wedge15>
   {
     static const int numFaces = 5;
   };
   template <>
-  struct DisTypeToNumFaces<::DRT::Element::pyramid5>
+  struct DisTypeToNumFaces<::DRT::Element::DiscretizationType::pyramid5>
   {
     static const int numFaces = 5;
   };
@@ -1295,92 +1322,92 @@ namespace CORE::DRT::UTILS
   {
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::point1>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::point1>
   {
     static const int order = 0;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::line2>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::line2>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::line3>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::line3>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs2>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs2>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs3>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs3>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::quad4>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::quad4>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::quad8>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::quad8>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::quad9>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::quad9>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs4>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs4>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::nurbs9>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::nurbs9>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tri3>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tri3>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tri6>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tri6>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::hex8>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::hex8>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::hex20>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::hex20>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::hex27>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::hex27>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tet4>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tet4>
   {
     static const int order = 1;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::tet10>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::tet10>
   {
     static const int order = 2;
   };
   template <>
-  struct DisTypeToEdgeOrder<::DRT::Element::pyramid5>
+  struct DisTypeToEdgeOrder<::DRT::Element::DiscretizationType::pyramid5>
   {
     static const int order = 1;
   };
@@ -1419,53 +1446,53 @@ namespace CORE::DRT::UTILS
   {
     switch (distype)
     {
-      case ::DRT::Element::line2:
-      case ::DRT::Element::line3:
-      case ::DRT::Element::nurbs2:
-      case ::DRT::Element::nurbs3:
+      case ::DRT::Element::DiscretizationType::line2:
+      case ::DRT::Element::DiscretizationType::line3:
+      case ::DRT::Element::DiscretizationType::nurbs2:
+      case ::DRT::Element::DiscretizationType::nurbs3:
       {
         pos = 0.0;
         break;
       }
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::quad6:
-      case ::DRT::Element::quad8:
-      case ::DRT::Element::quad9:
-      case ::DRT::Element::nurbs4:
-      case ::DRT::Element::nurbs9:
+      case ::DRT::Element::DiscretizationType::quad4:
+      case ::DRT::Element::DiscretizationType::quad6:
+      case ::DRT::Element::DiscretizationType::quad8:
+      case ::DRT::Element::DiscretizationType::quad9:
+      case ::DRT::Element::DiscretizationType::nurbs4:
+      case ::DRT::Element::DiscretizationType::nurbs9:
       {
         pos = 0.0;
         break;
       }
-      case ::DRT::Element::tri3:
-      case ::DRT::Element::tri6:
+      case ::DRT::Element::DiscretizationType::tri3:
+      case ::DRT::Element::DiscretizationType::tri6:
       {
         pos = 1.0 / 3.0;
         break;
       }
-      case ::DRT::Element::hex8:
-      case ::DRT::Element::hex16:
-      case ::DRT::Element::hex18:
-      case ::DRT::Element::hex20:
-      case ::DRT::Element::hex27:
+      case ::DRT::Element::DiscretizationType::hex8:
+      case ::DRT::Element::DiscretizationType::hex16:
+      case ::DRT::Element::DiscretizationType::hex18:
+      case ::DRT::Element::DiscretizationType::hex20:
+      case ::DRT::Element::DiscretizationType::hex27:
       {
         pos = 0.0;
         break;
       }
-      case ::DRT::Element::tet4:
-      case ::DRT::Element::tet10:
+      case ::DRT::Element::DiscretizationType::tet4:
+      case ::DRT::Element::DiscretizationType::tet10:
       {
         pos = 1.0 / 4.0;
         break;
       }
-      case ::DRT::Element::wedge6:
-      case ::DRT::Element::wedge15:
+      case ::DRT::Element::DiscretizationType::wedge6:
+      case ::DRT::Element::DiscretizationType::wedge15:
       {
         pos = 1.0 / 3.0;
         pos(2, 0) = 0;
         break;
       }
-      case ::DRT::Element::pyramid5:
+      case ::DRT::Element::DiscretizationType::pyramid5:
       {
         pos = 0.0;
         pos(2, 0) = 0.25;
@@ -1534,32 +1561,32 @@ namespace CORE::DRT::UTILS
 
   /// supported/known NURBS types
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs2>
+  struct is_nurbs_dis_type<::DRT::Element::DiscretizationType::nurbs2>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs3>
+  struct is_nurbs_dis_type<::DRT::Element::DiscretizationType::nurbs3>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs4>
+  struct is_nurbs_dis_type<::DRT::Element::DiscretizationType::nurbs4>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs9>
+  struct is_nurbs_dis_type<::DRT::Element::DiscretizationType::nurbs9>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs8>
+  struct is_nurbs_dis_type<::DRT::Element::DiscretizationType::nurbs8>
   {
     static const bool value = true;
   };
   template <>
-  struct is_nurbs_dis_type<::DRT::Element::nurbs27>
+  struct is_nurbs_dis_type<::DRT::Element::DiscretizationType::nurbs27>
   {
     static const bool value = true;
   };

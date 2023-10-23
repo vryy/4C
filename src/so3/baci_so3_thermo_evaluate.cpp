@@ -240,9 +240,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-              dynamic_cast<
-                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+              DRT::Element::DiscretizationType::hex8>* eleFBAR =
+              dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+                  DRT::Element::DiscretizationType::hex8>*>(this);
 
           // default structural element
           if (!eleFBAR)
@@ -334,9 +335,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-              dynamic_cast<
-                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+              DRT::Element::DiscretizationType::hex8>* eleFBAR =
+              dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+                  DRT::Element::DiscretizationType::hex8>*>(this);
 
           // default structural element
           if (!eleFBAR)
@@ -428,9 +430,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
           // in case we have a finite strain thermoplastic material use hex8fbar element
           // to cirucumvent volumetric locking
-          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-              dynamic_cast<
-                  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+          DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+              DRT::Element::DiscretizationType::hex8>* eleFBAR =
+              dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+                  DRT::Element::DiscretizationType::hex8>*>(this);
 
           // default structural element
           if (!eleFBAR)
@@ -537,10 +540,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
           {
             // in case we have a finite strain thermoplastic material use hex8fbar element
             // to cirucumvent volumetric locking
-            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-                dynamic_cast<
-                    DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-                    this);
+            DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+                DRT::Element::DiscretizationType::hex8>* eleFBAR =
+                dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+                    DRT::Element::DiscretizationType::hex8>*>(this);
 
 #ifdef TSIASOUTPUT
             std::cout << "thermal stress" << couplstress << std::endl;
@@ -666,7 +669,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
         CORE::LINALG::Matrix<27, 1> weights;
 
         // get nurbs specific infos
-        if (so3_ele::Shape() == DRT::Element::nurbs27)
+        if (so3_ele::Shape() == DRT::Element::DiscretizationType::nurbs27)
         {
           // cast to nurbs discretization
           DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -683,14 +686,14 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
 
         for (int gp = 0; gp < numgpt_; ++gp)
         {
-          if (so3_ele::Shape() != DRT::Element::nurbs27)
+          if (so3_ele::Shape() != DRT::Element::DiscretizationType::nurbs27)
           {
             CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
           }
           // evaluate shape functions NURBS-style
           else
             CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct(
-                shapefunct, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+                shapefunct, xsi_[gp], myknots, weights, DRT::Element::DiscretizationType::nurbs27);
 
           // product of shapefunctions and element temperatures
           CORE::LINALG::Matrix<1, 1> NT(false);
@@ -746,9 +749,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::EvaluateCouplWithThr(
       {
         // in case we have a finite strain thermoplastic material use hex8fbar element
         // to cirucumvent volumetric locking
-        DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-            dynamic_cast<
-                DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(this);
+        DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+            DRT::Element::DiscretizationType::hex8>* eleFBAR =
+            dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+                DRT::Element::DiscretizationType::hex8>*>(this);
 
         // default structural element
         if (!eleFBAR)
@@ -1131,7 +1135,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (so3_ele::Shape() == DRT::Element::nurbs27)
+  if (so3_ele::Shape() == DRT::Element::DiscretizationType::nurbs27)
   {
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -1152,7 +1156,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    if (so3_ele::Shape() != DRT::Element::nurbs27)
+    if (so3_ele::Shape() != DRT::Element::DiscretizationType::nurbs27)
     {
       CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
@@ -1160,7 +1164,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi(
     // evaluate shape functions NURBS-style
     else
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+          shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::DiscretizationType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1396,7 +1400,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (so3_ele::Shape() == DRT::Element::nurbs27)
+  if (so3_ele::Shape() == DRT::Element::DiscretizationType::nurbs27)
   {
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -1417,7 +1421,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
   for (int gp = 0; gp < numgpt_; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    if (so3_ele::Shape() != DRT::Element::nurbs27)
+    if (so3_ele::Shape() != DRT::Element::DiscretizationType::nurbs27)
     {
       CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefunct);
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
@@ -1425,7 +1429,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi(DRT::Element::Loca
     // evaluate shape functions NURBS-style
     else
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+          shapefunct, deriv, xsi_[gp], myknots, weights, DRT::Element::DiscretizationType::nurbs27);
 
     /* get the inverse of the Jacobian matrix which looks like:
     **            [ x_,r  y_,r  z_,r ]^-1
@@ -1551,11 +1555,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
 {
   // in case we have a finite strain thermoplastic material use hex8fbar element
   // to cirucumvent volumetric locking
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-      dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-          this);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::DiscretizationType::hex8>*
+      eleFBAR = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+          DRT::Element::DiscretizationType::hex8>*>(this);
 
-  if ((distype == DRT::Element::hex8) and (eleFBAR))
+  if ((distype == DRT::Element::DiscretizationType::hex8) and (eleFBAR))
   {
     // update element geometry hex8, 3D: (8x3)
     CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
@@ -1593,7 +1597,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_stifffint_tsi_fbar(
     CORE::LINALG::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(
+        N_rst_0, 0.0, 0.0, 0.0, DRT::Element::DiscretizationType::hex8);
 
     // inverse jacobian matrix at centroid
     CORE::LINALG::Matrix<nsd_, nsd_> invJ_0(false);
@@ -1900,11 +1905,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
 {
   // in case we have a finite strain thermoplastic material use hex8fbar element
   // to cirucumvent volumetric locking
-  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>* eleFBAR =
-      dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>*>(
-          this);
+  DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar, DRT::Element::DiscretizationType::hex8>*
+      eleFBAR = dynamic_cast<DRT::ELEMENTS::So3_Thermo<DRT::ELEMENTS::So_hex8fbar,
+          DRT::Element::DiscretizationType::hex8>*>(this);
 
-  if ((distype == DRT::Element::hex8) && (eleFBAR))
+  if ((distype == DRT::Element::DiscretizationType::hex8) && (eleFBAR))
   {
     // update element geometry (8x3)
     CORE::LINALG::Matrix<nen_, nsd_> xrefe(false);  // X, material coord. of element
@@ -1939,7 +1944,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::nln_kdT_tsi_fbar(DRT::Element:
     CORE::LINALG::Matrix<nsd_, nen_> N_XYZ_0(false);
     // element coordinate derivatives at centroid
     CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-    CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(
+        N_rst_0, 0.0, 0.0, 0.0, DRT::Element::DiscretizationType::hex8);
 
     // inverse jacobian matrix at centroid
     CORE::LINALG::Matrix<nsd_, nsd_> invJ_0(false);
@@ -2456,7 +2462,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
   CORE::LINALG::Matrix<27, 1> weights;
 
   // get nurbs specific infos
-  if (so3_ele::Shape() == DRT::Element::nurbs27)
+  if (so3_ele::Shape() == DRT::Element::DiscretizationType::nurbs27)
   {
     // cast to nurbs discretization
     DRT::NURBS::NurbsDiscretization* nurbsdis =
@@ -2481,11 +2487,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::InitJacobianMapping(DRT::Discr
       xsi_[gp](idim) = gpcoord[idim];
     }
     // first derivatives of shape functions (deriv)
-    if (so3_ele::Shape() != DRT::Element::nurbs27)
+    if (so3_ele::Shape() != DRT::Element::DiscretizationType::nurbs27)
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi_[gp], deriv);
     else
       CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
-          funct, deriv, xsi_[gp], myknots, weights, DRT::Element::nurbs27);
+          funct, deriv, xsi_[gp], myknots, weights, DRT::Element::DiscretizationType::nurbs27);
 
     // compute Jacobian matrix and determinant
     // actually compute its transpose....
@@ -2522,7 +2528,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::MapMyGpToSoHex8(int myGp)
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       const std::array<int, NUMGPT_SOH8> hex8_map = {6, 7, 5, 4, 2, 3, 1, 0};
       return hex8_map[myGp];

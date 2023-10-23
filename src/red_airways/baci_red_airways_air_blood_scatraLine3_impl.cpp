@@ -34,12 +34,12 @@ DRT::ELEMENTS::RedAirBloodScatraLine3ImplInterface::Impl(
 {
   switch (red_acinus->Shape())
   {
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      static RedAirBloodScatraLine3Impl<DRT::Element::line3>* acinus;
+      static RedAirBloodScatraLine3Impl<DRT::Element::DiscretizationType::line3>* acinus;
       if (acinus == nullptr)
       {
-        acinus = new RedAirBloodScatraLine3Impl<DRT::Element::line3>;
+        acinus = new RedAirBloodScatraLine3Impl<DRT::Element::DiscretizationType::line3>;
       }
       return acinus;
     }

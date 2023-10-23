@@ -117,39 +117,39 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::ExtractDisplacement
 {
   switch (ele->ParentElement()->Shape())
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
-      ExtractDisplacementValues<DRT::Element::hex8>(ele, discretization, la);
+      ExtractDisplacementValues<DRT::Element::DiscretizationType::hex8>(ele, discretization, la);
       break;
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
-      ExtractDisplacementValues<DRT::Element::hex27>(ele, discretization, la);
+      ExtractDisplacementValues<DRT::Element::DiscretizationType::hex27>(ele, discretization, la);
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
-      ExtractDisplacementValues<DRT::Element::tet4>(ele, discretization, la);
+      ExtractDisplacementValues<DRT::Element::DiscretizationType::tet4>(ele, discretization, la);
       break;
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      ExtractDisplacementValues<DRT::Element::quad4>(ele, discretization, la);
+      ExtractDisplacementValues<DRT::Element::DiscretizationType::quad4>(ele, discretization, la);
       break;
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      ExtractDisplacementValues<DRT::Element::tri6>(ele, discretization, la);
+      ExtractDisplacementValues<DRT::Element::DiscretizationType::tri6>(ele, discretization, la);
       break;
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      ExtractDisplacementValues<DRT::Element::tri3>(ele, discretization, la);
+      ExtractDisplacementValues<DRT::Element::DiscretizationType::tri3>(ele, discretization, la);
       break;
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      ExtractDisplacementValues<DRT::Element::nurbs9>(ele, discretization, la);
+      ExtractDisplacementValues<DRT::Element::DiscretizationType::nurbs9>(ele, discretization, la);
       break;
     }
     default:
@@ -322,11 +322,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
       switch (distype)
       {
         // 2D:
-        case DRT::Element::line2:
+        case DRT::Element::DiscretizationType::line2:
         {
-          if (ele->ParentElement()->Shape() == DRT::Element::quad4)
+          if (ele->ParentElement()->Shape() == DRT::Element::DiscretizationType::quad4)
           {
-            WeakDirichlet<DRT::Element::line2, DRT::Element::quad4>(
+            WeakDirichlet<DRT::Element::DiscretizationType::line2,
+                DRT::Element::DiscretizationType::quad4>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
           }
           else
@@ -337,11 +338,12 @@ int DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateAction(DRT::
         }
 
         // 3D:
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
-          if (ele->ParentElement()->Shape() == DRT::Element::hex8)
+          if (ele->ParentElement()->Shape() == DRT::Element::DiscretizationType::hex8)
           {
-            WeakDirichlet<DRT::Element::quad4, DRT::Element::hex8>(
+            WeakDirichlet<DRT::Element::DiscretizationType::quad4,
+                DRT::Element::DiscretizationType::hex8>(
                 ele, params, discretization, mat, elemat1_epetra, elevec1_epetra);
           }
           else
@@ -1308,13 +1310,15 @@ double DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::CalculateDetFOfPa
   {
     switch (faceele->ParentElement()->Shape())
     {
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
       {
-        return CalculateDetFOfParentElement<DRT::Element::hex8>(faceele, faceele_xsi);
+        return CalculateDetFOfParentElement<DRT::Element::DiscretizationType::hex8>(
+            faceele, faceele_xsi);
       }
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::tet4:
       {
-        return CalculateDetFOfParentElement<DRT::Element::tet4>(faceele, faceele_xsi);
+        return CalculateDetFOfParentElement<DRT::Element::DiscretizationType::tet4>(
+            faceele, faceele_xsi);
       }
       default:
       {
@@ -3117,75 +3121,91 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalc<distype, probdim>::EvaluateNodalSize(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // explicit instantiation of template methods
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::tri3>::
+    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::DiscretizationType::tri3>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
+        const std::vector<
+            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                     DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+                1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+            1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+            1>&,
         const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
         const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::tri3>::
+    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::DiscretizationType::quad4>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
+        const std::vector<
+            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                     DRT::Element::DiscretizationType::quad4>::numNodePerElement,
+                1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
+            1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
+            1>&,
         const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
         const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::tri3>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::quad4>::
+    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::DiscretizationType::tri3>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
+        const std::vector<
+            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                     DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+                1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+            1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+            1>&,
         const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
         const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
-template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4>::
-    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::quad4>(
+template void DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::quad4>::
+    EvaluateS2ICouplingAtIntegrationPoint<DRT::Element::DiscretizationType::quad4>(
         const std::vector<CORE::LINALG::Matrix<nen_, 1>>&,
-        const std::vector<CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
+        const std::vector<
+            CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                     DRT::Element::DiscretizationType::quad4>::numNodePerElement,
+                1>>&,
         const double, const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
+            1>&,
         const CORE::LINALG::Matrix<nen_, 1>&,
-        const CORE::LINALG::Matrix<
-            CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>&,
+        const CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                       DRT::Element::DiscretizationType::quad4>::numNodePerElement,
+            1>&,
         const int, const DRT::ELEMENTS::ScaTraEleParameterBoundary* const, const double,
         const double, CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseMatrix&, CORE::LINALG::SerialDenseMatrix&,
         CORE::LINALG::SerialDenseVector&, CORE::LINALG::SerialDenseVector&);
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::nurbs3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalc<DRT::Element::DiscretizationType::nurbs9, 3>;

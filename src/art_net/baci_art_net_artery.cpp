@@ -102,11 +102,10 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Artery::Shape() const
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return DiscretizationType::line2;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*

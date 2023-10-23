@@ -806,7 +806,8 @@ namespace CORE::GEO
        *  side element parameter space bounds */
       bool Tri3WithinLimits(double tol = REFERENCETOL) const
       {
-        return CORE::GEO::CUT::KERNEL::WithinLimits<::DRT::Element::tri3>(xsi_side_, tol);
+        return CORE::GEO::CUT::KERNEL::WithinLimits<::DRT::Element::DiscretizationType::tri3>(
+            xsi_side_, tol);
       }
 
       /** \brief Will return TRUE, if local edge coordinate is within the line
@@ -976,8 +977,11 @@ namespace CORE::GEO
         else
           xsi.SetView(xsi_.A());
 
-        KERNEL::ComputeIntersection<3, edgetype, ::DRT::Element::tri3, floattype> ci(xsi);
-        // KERNEL::DebugComputeIntersection<probdim,edgetype,::DRT::Element::tri3,floattype> ci( xsi
+        KERNEL::ComputeIntersection<3, edgetype, ::DRT::Element::DiscretizationType::tri3,
+            floattype>
+            ci(xsi);
+        // KERNEL::DebugComputeIntersection<probdim,edgetype,::DRT::Element::DiscretizationType::tri3,floattype>
+        // ci( xsi
         // );
 
         CORE::LINALG::Matrix<3, 3> xyze_triElement;
@@ -1025,8 +1029,11 @@ namespace CORE::GEO
         else
           xsi.SetView(xsi_.A());
 
-        KERNEL::ComputeIntersection<3, edgetype, ::DRT::Element::tri3, floattype> ci(xsi);
-        // KERNEL::DebugComputeIntersection<probdim,edgetype,::DRT::Element::tri3,floattype> ci( xsi
+        KERNEL::ComputeIntersection<3, edgetype, ::DRT::Element::DiscretizationType::tri3,
+            floattype>
+            ci(xsi);
+        // KERNEL::DebugComputeIntersection<probdim,edgetype,::DRT::Element::DiscretizationType::tri3,floattype>
+        // ci( xsi
         // );
 
         CORE::LINALG::Matrix<3, 3> xyze_triElement;
@@ -1057,7 +1064,7 @@ namespace CORE::GEO
        *  tri3_id=1 ---> Quad4 nodes = {2 3 0} */
       void GetTriangle(CORE::LINALG::Matrix<3, 3>& xyze_triElement, const unsigned& tri3_id)
       {
-        if (sidetype == ::DRT::Element::quad4)
+        if (sidetype == ::DRT::Element::DiscretizationType::quad4)
         {
           /* here it is important that the triangle is created in the same rotation
            * as the QUAD4 is, to get normal in the same direction and therefore the
@@ -1208,7 +1215,7 @@ namespace CORE::GEO
           bool& zeroarea, KERNEL::PointOnSurfaceLoc& loc, std::vector<int>& touched_edges,
           bool signeddistance, int tri3_id, bool& extended_tri_tolerance_loc_triangle_split)
       {
-        if (sidetype != ::DRT::Element::quad4)
+        if (sidetype != ::DRT::Element::DiscretizationType::quad4)
           dserror(
               "This ComputeDistance routine is only meaningful for "
               "QUAD4 side elements! But you passed in a side element "
@@ -1221,8 +1228,9 @@ namespace CORE::GEO
         if (xsi_.M() != 3) dserror("xsi_ has the wrong dimension! (dimedge + 2 = %d + 2)", dimedge);
         CORE::LINALG::Matrix<3, 1> xsi(xsi_.A(), true);
 
-        // KERNEL::DebugComputeDistance<probdim,::DRT::Element::tri3, floattype> cd( xsi );
-        KERNEL::ComputeDistance<3, ::DRT::Element::tri3, floattype> cd(xsi);
+        // KERNEL::DebugComputeDistance<probdim,::DRT::Element::DiscretizationType::tri3, floattype>
+        // cd( xsi );
+        KERNEL::ComputeDistance<3, ::DRT::Element::DiscretizationType::tri3, floattype> cd(xsi);
 
         CORE::LINALG::Matrix<3, 3> xyze_triElement;
         GetTriangle(xyze_triElement, tri3_id);
@@ -1332,16 +1340,21 @@ namespace CORE::GEO
       {
         switch (side_type)
         {
-          case ::DRT::Element::quad4:
-            return CreateConcreteIntersection<edgeType, ::DRT::Element::quad4>(probdim);
-          case ::DRT::Element::quad8:
-            return CreateConcreteIntersection<edgeType, ::DRT::Element::quad8>(probdim);
-          case ::DRT::Element::quad9:
-            return CreateConcreteIntersection<edgeType, ::DRT::Element::quad9>(probdim);
-          case ::DRT::Element::tri3:
-            return CreateConcreteIntersection<edgeType, ::DRT::Element::tri3>(probdim);
-          case ::DRT::Element::line2:
-            return CreateConcreteIntersection<edgeType, ::DRT::Element::line2>(probdim);
+          case ::DRT::Element::DiscretizationType::quad4:
+            return CreateConcreteIntersection<edgeType, ::DRT::Element::DiscretizationType::quad4>(
+                probdim);
+          case ::DRT::Element::DiscretizationType::quad8:
+            return CreateConcreteIntersection<edgeType, ::DRT::Element::DiscretizationType::quad8>(
+                probdim);
+          case ::DRT::Element::DiscretizationType::quad9:
+            return CreateConcreteIntersection<edgeType, ::DRT::Element::DiscretizationType::quad9>(
+                probdim);
+          case ::DRT::Element::DiscretizationType::tri3:
+            return CreateConcreteIntersection<edgeType, ::DRT::Element::DiscretizationType::tri3>(
+                probdim);
+          case ::DRT::Element::DiscretizationType::line2:
+            return CreateConcreteIntersection<edgeType, ::DRT::Element::DiscretizationType::line2>(
+                probdim);
           default:
             dserror(
                 "Unsupported SideType! If meaningful, add your sideType here. \n"

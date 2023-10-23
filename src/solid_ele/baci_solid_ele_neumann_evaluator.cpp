@@ -21,36 +21,36 @@ void DRT::ELEMENTS::EvaluateNeumannByElement(DRT::Element& element,
 {
   switch (element.Shape())
   {
-    case DRT::Element::hex8:
-      return EvaluateNeumann<DRT::Element::hex8>(
+    case DRT::Element::DiscretizationType::hex8:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::hex8>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::hex27:
-      return EvaluateNeumann<DRT::Element::hex27>(
+    case DRT::Element::DiscretizationType::hex27:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::hex27>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::hex20:
-      return EvaluateNeumann<DRT::Element::hex20>(
+    case DRT::Element::DiscretizationType::hex20:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::hex20>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::hex18:
-      return EvaluateNeumann<DRT::Element::hex18>(
+    case DRT::Element::DiscretizationType::hex18:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::hex18>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::pyramid5:
-      return EvaluateNeumann<DRT::Element::pyramid5>(
+    case DRT::Element::DiscretizationType::pyramid5:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::pyramid5>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::wedge6:
-      return EvaluateNeumann<DRT::Element::wedge6>(
+    case DRT::Element::DiscretizationType::wedge6:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::wedge6>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::tet4:
-      return EvaluateNeumann<DRT::Element::tet4>(
+    case DRT::Element::DiscretizationType::tet4:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::tet4>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
-    case DRT::Element::tet10:
-      return EvaluateNeumann<DRT::Element::tet10>(
+    case DRT::Element::DiscretizationType::tet10:
+      return EvaluateNeumann<DRT::Element::DiscretizationType::tet10>(
           element, discretization, condition, dof_index_array, element_force_vector, total_time);
       break;
     default:

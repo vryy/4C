@@ -1023,7 +1023,8 @@ const std::vector<CORE::LINALG::Matrix<NUMNOD_WEG6, 1>> DRT::ELEMENTS::So_weg6::
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D(shapefcts[igp], r, s, t, wedge6);
+    CORE::DRT::UTILS::shape_function_3D(
+        shapefcts[igp], r, s, t, DRT::Element::DiscretizationType::wedge6);
   }
   return shapefcts;
 }
@@ -1045,7 +1046,8 @@ DRT::ELEMENTS::So_weg6::sow6_derivs()
     const double s = intpoints.qxg[igp][1];
     const double t = intpoints.qxg[igp][2];
 
-    CORE::DRT::UTILS::shape_function_3D_deriv1(derivs[igp], r, s, t, wedge6);
+    CORE::DRT::UTILS::shape_function_3D_deriv1(
+        derivs[igp], r, s, t, DRT::Element::DiscretizationType::wedge6);
   }
   return derivs;
 }
@@ -1103,8 +1105,9 @@ void DRT::ELEMENTS::So_weg6::sow6_shapederiv(
 
       CORE::LINALG::Matrix<NUMNOD_WEG6, 1> funct;
       CORE::LINALG::Matrix<NUMDIM_WEG6, NUMNOD_WEG6> deriv;
-      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, wedge6);
-      CORE::DRT::UTILS::shape_function_3D_deriv1(deriv, r, s, t, wedge6);
+      CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, DRT::Element::DiscretizationType::wedge6);
+      CORE::DRT::UTILS::shape_function_3D_deriv1(
+          deriv, r, s, t, DRT::Element::DiscretizationType::wedge6);
       for (int inode = 0; inode < NUMNOD_WEG6; ++inode)
       {
         f(inode, igp) = funct(inode);

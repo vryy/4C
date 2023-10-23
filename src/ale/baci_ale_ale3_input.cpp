@@ -33,28 +33,28 @@ bool DRT::ELEMENTS::Ale3::ReadElement(
 
   switch (shape)
   {
-    case hex8:
+    case DiscretizationType::hex8:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
     }
-    case hex20:
-    case hex27:
+    case DiscretizationType::hex20:
+    case DiscretizationType::hex27:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
     }
-    case pyramid5:
+    case DiscretizationType::pyramid5:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
       break;
     }
-    case tet4:
+    case DiscretizationType::tet4:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_1point;
       break;
     }
-    case tet10:
+    case DiscretizationType::tet10:
     {
       gaussrule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;

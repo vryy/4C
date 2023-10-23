@@ -139,7 +139,7 @@ CORE::GEO::CUT::Element::Element(
       active_(active),
       sides_(sides),
       nodes_(nodes),
-      quadshape_(::DRT::Element::dis_none),
+      quadshape_(::DRT::Element::DiscretizationType::dis_none),
       eleinttype_(INPAR::CUT::EleIntType_Undecided)
 {
   for (std::vector<Side*>::const_iterator i = sides.begin(); i != sides.end(); ++i)
@@ -723,7 +723,7 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
       dserror("the line has nearly zero length: %d", line_norm);
     }
 
-    if (s->Shape() != ::DRT::Element::tri3)
+    if (s->Shape() != ::DRT::Element::DiscretizationType::tri3)
     {
       std::cout << "HERE !tri3 cutsides are used!!!" << std::endl;
       //      throw std::runtime_error("expect only tri3 cutsides!");
@@ -732,13 +732,13 @@ bool CORE::GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoin
     // tri3/quad4 element center
     CORE::LINALG::Matrix<2, 1> rs(true);
 
-    if (s->Shape() == ::DRT::Element::tri3)
+    if (s->Shape() == ::DRT::Element::DiscretizationType::tri3)
     {
-      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::tri3);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::DiscretizationType::tri3);
     }
-    else if (s->Shape() == ::DRT::Element::quad4)
+    else if (s->Shape() == ::DRT::Element::DiscretizationType::quad4)
     {
-      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::quad4);
+      rs = CORE::DRT::UTILS::getLocalCenterPosition<2>(::DRT::Element::DiscretizationType::quad4);
     }
     else
       throw std::runtime_error("unsupported side-shape");
@@ -1331,33 +1331,33 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::ElementFactory::CreateElem
   const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (elementtype)
   {
-    case ::DRT::Element::line2:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::line2>(eid, sides, nodes, active, probdim));
+    case ::DRT::Element::DiscretizationType::line2:
+      e = Teuchos::rcp<Element>(CreateConcreteElement<::DRT::Element::DiscretizationType::line2>(
+          eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::tri3:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::tri3>(eid, sides, nodes, active, probdim));
+    case ::DRT::Element::DiscretizationType::tri3:
+      e = Teuchos::rcp<Element>(CreateConcreteElement<::DRT::Element::DiscretizationType::tri3>(
+          eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::quad4:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::quad4>(eid, sides, nodes, active, probdim));
+    case ::DRT::Element::DiscretizationType::quad4:
+      e = Teuchos::rcp<Element>(CreateConcreteElement<::DRT::Element::DiscretizationType::quad4>(
+          eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::tet4:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::tet4>(eid, sides, nodes, active, probdim));
+    case ::DRT::Element::DiscretizationType::tet4:
+      e = Teuchos::rcp<Element>(CreateConcreteElement<::DRT::Element::DiscretizationType::tet4>(
+          eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::hex8:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::hex8>(eid, sides, nodes, active, probdim));
+    case ::DRT::Element::DiscretizationType::hex8:
+      e = Teuchos::rcp<Element>(CreateConcreteElement<::DRT::Element::DiscretizationType::hex8>(
+          eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::pyramid5:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::pyramid5>(eid, sides, nodes, active, probdim));
+    case ::DRT::Element::DiscretizationType::pyramid5:
+      e = Teuchos::rcp<Element>(CreateConcreteElement<::DRT::Element::DiscretizationType::pyramid5>(
+          eid, sides, nodes, active, probdim));
       break;
-    case ::DRT::Element::wedge6:
-      e = Teuchos::rcp<Element>(
-          CreateConcreteElement<::DRT::Element::wedge6>(eid, sides, nodes, active, probdim));
+    case ::DRT::Element::DiscretizationType::wedge6:
+      e = Teuchos::rcp<Element>(CreateConcreteElement<::DRT::Element::DiscretizationType::wedge6>(
+          eid, sides, nodes, active, probdim));
       break;
     default:
     {
@@ -1388,12 +1388,12 @@ Teuchos::RCP<CORE::GEO::CUT::Element> CORE::GEO::CUT::Element::Create(const unsi
   return Create(::DRT::ShardsKeyToDisType(shardskey), eid, sides, nodes, active);
 }
 
-template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::tri3>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::tri3>;
-template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::quad4>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::quad4>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::hex8>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::pyramid5>;
-template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::wedge6>;
+template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::DiscretizationType::tri3>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::DiscretizationType::tri3>;
+template class CORE::GEO::CUT::ConcreteElement<2, ::DRT::Element::DiscretizationType::quad4>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::DiscretizationType::quad4>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::DiscretizationType::hex8>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::DiscretizationType::pyramid5>;
+template class CORE::GEO::CUT::ConcreteElement<3, ::DRT::Element::DiscretizationType::wedge6>;

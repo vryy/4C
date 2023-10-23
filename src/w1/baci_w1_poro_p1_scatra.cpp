@@ -159,17 +159,17 @@ int DRT::ELEMENTS::Wall1_PoroP1Scatra<distype>::UniqueParObjectId() const
   int parobjectid(-1);
   switch (distype)
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       parobjectid = DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       parobjectid = DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
       parobjectid = DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance().UniqueParObjectId();
       break;
@@ -191,13 +191,13 @@ DRT::ElementType& DRT::ELEMENTS::Wall1_PoroP1Scatra<distype>::ElementType() cons
 {
   switch (distype)
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
       return DRT::ELEMENTS::WallTri3PoroP1ScatraType::Instance();
       break;
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
       return DRT::ELEMENTS::WallQuad4PoroP1ScatraType::Instance();
       break;
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
       return DRT::ELEMENTS::WallQuad9PoroP1ScatraType::Instance();
       break;
     default:
@@ -210,6 +210,6 @@ DRT::ElementType& DRT::ELEMENTS::Wall1_PoroP1Scatra<distype>::ElementType() cons
 /*----------------------------------------------------------------------*
  *                                                        schmidt 09/17 |
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Wall1_PoroP1Scatra<DRT::Element::DiscretizationType::quad9>;

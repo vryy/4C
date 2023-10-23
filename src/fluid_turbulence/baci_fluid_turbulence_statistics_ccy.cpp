@@ -192,8 +192,8 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discreti
 
       switch (actele->Shape())
       {
-        case DRT::Element::nurbs8:
-        case DRT::Element::nurbs27:
+        case DRT::Element::DiscretizationType::nurbs8:
+        case DRT::Element::DiscretizationType::nurbs27:
         {
           // element local point position
           CORE::LINALG::SerialDenseVector uv(3);
@@ -736,7 +736,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
 
     switch (actele->Shape())
     {
-      case DRT::Element::nurbs27:
+      case DRT::Element::DiscretizationType::nurbs27:
       {
         CORE::LINALG::Matrix<3, 1> vel;
 

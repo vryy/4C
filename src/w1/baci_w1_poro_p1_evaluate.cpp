@@ -973,6 +973,6 @@ int DRT::ELEMENTS::Wall1_PoroP1<distype>::EvaluateNeumann(Teuchos::ParameterList
   return 0;
 }
 
-template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Wall1_PoroP1<DRT::Element::DiscretizationType::quad9>;

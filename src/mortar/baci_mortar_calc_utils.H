@@ -62,8 +62,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs2:
-                case DRT::Element::nurbs3:
+                case DRT::Element::DiscretizationType::nurbs2:
+                case DRT::Element::DiscretizationType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -85,9 +85,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs4:
-                case DRT::Element::nurbs8:
-                case DRT::Element::nurbs9:
+                case DRT::Element::DiscretizationType::nurbs4:
+                case DRT::Element::DiscretizationType::nurbs8:
+                case DRT::Element::DiscretizationType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -138,8 +138,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs2:
-                case DRT::Element::nurbs3:
+                case DRT::Element::DiscretizationType::nurbs2:
+                case DRT::Element::DiscretizationType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -162,9 +162,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs4:
-                case DRT::Element::nurbs8:
-                case DRT::Element::nurbs9:
+                case DRT::Element::DiscretizationType::nurbs4:
+                case DRT::Element::DiscretizationType::nurbs8:
+                case DRT::Element::DiscretizationType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -213,8 +213,8 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs2:
-                case DRT::Element::nurbs3:
+                case DRT::Element::DiscretizationType::nurbs2:
+                case DRT::Element::DiscretizationType::nurbs3:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 1);
@@ -237,9 +237,9 @@ namespace MORTAR
             {
               switch (distype)
               {
-                case DRT::Element::nurbs4:
-                case DRT::Element::nurbs8:
-                case DRT::Element::nurbs9:
+                case DRT::Element::DiscretizationType::nurbs4:
+                case DRT::Element::DiscretizationType::nurbs8:
+                case DRT::Element::DiscretizationType::nurbs9:
                 {
                   CORE::LINALG::SerialDenseVector auxval(n);
                   CORE::LINALG::SerialDenseMatrix auxderiv(n, 2);
@@ -413,18 +413,23 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == DRT::Element::quad4 or distype == DRT::Element::quad8 or
-            distype == DRT::Element::quad9 or distype == DRT::Element::hex8 or
-            distype == DRT::Element::hex20 or distype == DRT::Element::hex27)
+        if (distype == DRT::Element::DiscretizationType::quad4 or
+            distype == DRT::Element::DiscretizationType::quad8 or
+            distype == DRT::Element::DiscretizationType::quad9 or
+            distype == DRT::Element::DiscretizationType::hex8 or
+            distype == DRT::Element::DiscretizationType::hex20 or
+            distype == DRT::Element::DiscretizationType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == DRT::Element::tri3 or distype == DRT::Element::tri6 or
-                 distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+        else if (distype == DRT::Element::DiscretizationType::tri3 or
+                 distype == DRT::Element::DiscretizationType::tri6 or
+                 distype == DRT::Element::DiscretizationType::tet4 or
+                 distype == DRT::Element::DiscretizationType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == DRT::Element::pyramid5)
+        else if (distype == DRT::Element::DiscretizationType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;
@@ -545,18 +550,23 @@ namespace MORTAR
       // first estimation for parameter space coordinates
       for (int p = 0; p < ndim; ++p)
       {
-        if (distype == DRT::Element::quad4 or distype == DRT::Element::quad8 or
-            distype == DRT::Element::quad9 or distype == DRT::Element::hex8 or
-            distype == DRT::Element::hex20 or distype == DRT::Element::hex27)
+        if (distype == DRT::Element::DiscretizationType::quad4 or
+            distype == DRT::Element::DiscretizationType::quad8 or
+            distype == DRT::Element::DiscretizationType::quad9 or
+            distype == DRT::Element::DiscretizationType::hex8 or
+            distype == DRT::Element::DiscretizationType::hex20 or
+            distype == DRT::Element::DiscretizationType::hex27)
         {
           xi[p] = 0.0;
         }
-        else if (distype == DRT::Element::tri3 or distype == DRT::Element::tri6 or
-                 distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+        else if (distype == DRT::Element::DiscretizationType::tri3 or
+                 distype == DRT::Element::DiscretizationType::tri6 or
+                 distype == DRT::Element::DiscretizationType::tet4 or
+                 distype == DRT::Element::DiscretizationType::tet10)
         {
           xi[p] = 1.0 / 3.0;
         }
-        else if (distype == DRT::Element::pyramid5)
+        else if (distype == DRT::Element::DiscretizationType::pyramid5)
         {
           if (p < 2)
             xi[p] = 0.0;

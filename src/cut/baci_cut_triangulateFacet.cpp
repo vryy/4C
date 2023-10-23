@@ -484,8 +484,8 @@ unsigned int CORE::GEO::CUT::TriangulateFacet::FindSecondBestEar(
       if (reflInd == ind0 || reflInd == ind2) continue;
 
       CORE::LINALG::Matrix<3, 1> point_cord(ptlist_[reflInd]);
-      Teuchos::RCP<CORE::GEO::CUT::Position> pos =
-          CORE::GEO::CUT::Position::Create(tri_coord, point_cord, ::DRT::Element::tri3);
+      Teuchos::RCP<CORE::GEO::CUT::Position> pos = CORE::GEO::CUT::Position::Create(
+          tri_coord, point_cord, ::DRT::Element::DiscretizationType::tri3);
       // precice computation if it is inside
       bool is_inside = pos->Compute(0.0);
       if (is_inside)
@@ -1024,8 +1024,8 @@ void CORE::GEO::CUT::TriangulateFacet::EarClippingWithHoles(Side* parentside)
         int reflexmaincyclepointid = *i;
         CORE::LINALG::Matrix<3, 1> reflexmaincyclepoint =
             localmaincyclepoints[reflexmaincyclepointid];
-        Teuchos::RCP<Position> pos =
-            CORE::GEO::CUT::Position::Create(triangle, reflexmaincyclepoint, ::DRT::Element::tri3);
+        Teuchos::RCP<Position> pos = CORE::GEO::CUT::Position::Create(
+            triangle, reflexmaincyclepoint, ::DRT::Element::DiscretizationType::tri3);
         bool within = pos->IsGivenPointWithinElement();
         if (within)
         {

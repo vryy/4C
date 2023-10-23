@@ -266,18 +266,19 @@ namespace DRT
         bool hoel = true;
         switch (distype)
         {
-          case hex8:
-          case hex20:
-          case hex27:
-          case tet10:
-          case wedge15:
-          case nurbs8:
-          case nurbs27:
+          case DiscretizationType::hex8:
+          case DiscretizationType::hex20:
+          case DiscretizationType::hex27:
+          case DiscretizationType::tet10:
+          case DiscretizationType::wedge15:
+          case DiscretizationType::nurbs8:
+          case DiscretizationType::nurbs27:
             hoel = true;
             break;
-          case tet4:
-          case wedge6:
-          case pyramid5:  //!!!TODO:  wedge und pyramid have 2nd derivatives!!!!!!!!!!!!!!!!!!!!!!!!
+          case DiscretizationType::tet4:
+          case DiscretizationType::wedge6:
+          case DiscretizationType::pyramid5:  //!!!TODO:  wedge und pyramid have 2nd
+                                              //! derivatives!!!!!!!!!!!!!!!!!!!!!!!!
             hoel = false;
             break;
           default:
@@ -420,13 +421,13 @@ namespace DRT
         bool hoel = true;
         switch (distype)
         {
-          case quad4:
-          case quad8:
-          case quad9:
-          case tri6:
+          case DiscretizationType::quad4:
+          case DiscretizationType::quad8:
+          case DiscretizationType::quad9:
+          case DiscretizationType::tri6:
             hoel = true;
             break;
-          case tri3:
+          case DiscretizationType::tri3:
             hoel = false;
             break;
           default:

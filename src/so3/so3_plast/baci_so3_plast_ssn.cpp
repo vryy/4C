@@ -52,7 +52,7 @@ DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(int id, int owner)
       tsi_(false),
       is_nitsche_contact_(false)
 {
-  if (distype == DRT::Element::nurbs27)
+  if (distype == DRT::Element::DiscretizationType::nurbs27)
     SetNurbsElement() = true;
   else
     SetNurbsElement() = false;
@@ -67,7 +67,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Plast<distype>::So3_Plast(const DRT::ELEMENTS::So3_Plast<distype>& old)
     : So_base(old)
 {
-  if (distype == DRT::Element::nurbs27)
+  if (distype == DRT::Element::DiscretizationType::nurbs27)
     SetNurbsElement() = true;
   else
     SetNurbsElement() = false;
@@ -202,11 +202,11 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumVolume() const
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
-    case DRT::Element::hex8:
-    case DRT::Element::hex18:
-    case DRT::Element::hex27:
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::tet4:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::hex18:
+    case DRT::Element::DiscretizationType::hex27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return 0;
       break;
     default:
@@ -224,13 +224,13 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumSurface() const
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
-    case DRT::Element::hex18:
-    case DRT::Element::hex27:
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::hex18:
+    case DRT::Element::DiscretizationType::hex27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return 6;
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return 4;
       break;
     default:
@@ -248,13 +248,13 @@ int DRT::ELEMENTS::So3_Plast<distype>::NumLine() const
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
-    case DRT::Element::hex18:
-    case DRT::Element::hex27:
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::hex18:
+    case DRT::Element::DiscretizationType::hex27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return 12;
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return 6;
       break;
     default:
@@ -556,7 +556,7 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   // quadrature
   if (linedef->HaveNamed("NUMGP"))
   {
-    if (distype != DRT::Element::hex8)
+    if (distype != DRT::Element::DiscretizationType::hex8)
       dserror("You may only choose the Gauss point number for SOLIDH8PLAST");
     if (DRT::Problem::Instance()->GetProblemType() == ProblemType::tsi)
       dserror("You may not choose the Gauss point number in TSI problems");
@@ -661,7 +661,8 @@ bool DRT::ELEMENTS::So3_Plast<distype>::ReadElement(
   // EAS
   if (linedef->HaveNamed("EAS"))
   {
-    if (distype != DRT::Element::hex8) dserror("EAS in so3 plast currently only for HEX8 elements");
+    if (distype != DRT::Element::DiscretizationType::hex8)
+      dserror("EAS in so3 plast currently only for HEX8 elements");
 
     linedef->ExtractString("EAS", buffer);
 
@@ -707,18 +708,18 @@ int DRT::ELEMENTS::So3_Plast<distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       return So_hex8PlastType::Instance().UniqueParObjectId();
       break;
     }  // hex8
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return So_hex27PlastType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PlastType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return So_nurbs27PlastType::Instance().UniqueParObjectId();
       break;
     default:
@@ -739,18 +740,18 @@ DRT::ElementType& DRT::ELEMENTS::So3_Plast<distype>::ElementType() const
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       return So_hex8PlastType::Instance();
       break;
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return So_hex27PlastType::Instance();
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PlastType::Instance();
       break;
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return So_nurbs27PlastType::Instance();
       break;
     default:
@@ -849,7 +850,8 @@ template <unsigned int num_cols>
 void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, num_cols>& data, Epetra_MultiVector& expolData)
 {
-  if (distype != DRT::Element::hex8) dserror("soh8_expol called from non-hex8 element");
+  if (distype != DRT::Element::DiscretizationType::hex8)
+    dserror("soh8_expol called from non-hex8 element");
 
   // static variables, that are the same for every element
   static CORE::LINALG::Matrix<nen_, numgpt_post> expolOperator;
@@ -924,11 +926,11 @@ void DRT::ELEMENTS::So3_Plast<distype>::soh8_expol(
   return;
 }
 
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, 1>&, Epetra_MultiVector&);
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, numstr_>&, Epetra_MultiVector&);
-template void DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::soh8_expol(
+template void DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::soh8_expol(
     CORE::LINALG::Matrix<numgpt_post, 9>&, Epetra_MultiVector&);
 
 /*----------------------------------------------------------------------*

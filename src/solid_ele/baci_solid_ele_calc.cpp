@@ -381,11 +381,11 @@ void DRT::ELEMENTS::SolidEleCalc<distype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex8>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex18>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex20>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::hex27>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::tet4>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::tet10>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::pyramid5>;
-template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::wedge6>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex18>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::pyramid5>;
+template class DRT::ELEMENTS::SolidEleCalc<DRT::Element::DiscretizationType::wedge6>;

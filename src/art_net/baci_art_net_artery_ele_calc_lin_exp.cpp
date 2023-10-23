@@ -1953,4 +1953,4 @@ void DRT::ELEMENTS::ArteryEleCalcLinExp<distype>::SolveScatraAnalytically(Artery
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ArteryEleCalcLinExp<DRT::Element::line2>;
+template class DRT::ELEMENTS::ArteryEleCalcLinExp<DRT::Element::DiscretizationType::line2>;

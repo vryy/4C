@@ -157,9 +157,9 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
 
   switch (Shape())
   {
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
@@ -173,8 +173,8 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
         dserror("Unknown number of Gauss points for quad element");
       break;
     }
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       if ((ngp[0] == 2) && (ngp[1] == 2))
       {
@@ -200,8 +200,8 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
         dserror("Unknown number of Gauss points for nurbs element");
       break;
     }
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
     {
       if ((ngp[0] == 1) && (ngp[1] == 0))
       {

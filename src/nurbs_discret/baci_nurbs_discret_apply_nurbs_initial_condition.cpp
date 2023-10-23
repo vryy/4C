@@ -182,14 +182,14 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(DRT::Discretization& dis,
         const DRT::Element::DiscretizationType distype = actele->Shape();
         switch (distype)
         {
-          case DRT::Element::nurbs4:
-          case DRT::Element::nurbs9:
+          case DRT::Element::DiscretizationType::nurbs4:
+          case DRT::Element::DiscretizationType::nurbs9:
           {
             spacedim = 2;
             break;
           }
-          case DRT::Element::nurbs8:
-          case DRT::Element::nurbs27:
+          case DRT::Element::DiscretizationType::nurbs8:
+          case DRT::Element::DiscretizationType::nurbs27:
           {
             spacedim = 3;
             break;

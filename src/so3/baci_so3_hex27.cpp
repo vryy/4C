@@ -152,7 +152,10 @@ DRT::Element* DRT::ELEMENTS::So_hex27::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex27::Shape() const { return hex27; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex27::Shape() const
+{
+  return DRT::Element::DiscretizationType::hex27;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |

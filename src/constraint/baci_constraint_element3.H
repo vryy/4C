@@ -94,7 +94,7 @@ namespace DRT
       DiscretizationType Shape() const override
       {
         dserror("ConstraintElement3 has no shape!");
-        return DRT::Element::dis_none;
+        return DRT::Element::DiscretizationType::dis_none;
       };
 
       /*!

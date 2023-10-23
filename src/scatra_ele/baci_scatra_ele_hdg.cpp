@@ -297,7 +297,8 @@ int DRT::ELEMENTS::ScaTraHDG::Initialize()
       deg = 4 * degree_old_;
     else
       deg = 3 * degree_old_;
-    if (this->Shape() == DRT::Element::tet4 or this->Shape() == DRT::Element::tet10)
+    if (this->Shape() == DRT::Element::DiscretizationType::tet4 or
+        this->Shape() == DRT::Element::DiscretizationType::tet10)
     {
       switch (deg)
       {

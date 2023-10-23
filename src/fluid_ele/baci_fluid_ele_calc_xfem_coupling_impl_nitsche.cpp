@@ -343,7 +343,8 @@ namespace DRT
 
         // funct_s * timefac * fac
         funct_s_.Clear();
-        if (slave_distype != DRT::Element::dis_none) this->GetSlaveFunct(funct_s_);
+        if (slave_distype != DRT::Element::DiscretizationType::dis_none)
+          this->GetSlaveFunct(funct_s_);
 
         // funct_m * timefac * fac * funct_m  * kappa_m (dyadic product)
         funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
@@ -1156,7 +1157,8 @@ namespace DRT
 
         // funct_s * timefac * fac
         funct_s_.Clear();
-        if (slave_distype != DRT::Element::dis_none) this->GetSlaveFunct(funct_s_);
+        if (slave_distype != DRT::Element::DiscretizationType::dis_none)
+          this->GetSlaveFunct(funct_s_);
 
         // funct_m * funct_m (dyadic product)
         funct_m_m_dyad_.MultiplyNT(funct_m, funct_m);
@@ -3261,179 +3263,278 @@ namespace DRT
 
 
 // pairs with numdof=3
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri3,3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad4,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad8,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad9,
-    3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::quad9, 3>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::quad9, 3>;
 
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::dis_none,
-    3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::dis_none,
-    3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::dis_none, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::dis_none, 3>;
 
 // volume coupled with numdof = 3, FSI Slavesided, FPI
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::hex8, 3>;
 
 // pairs with numdof=4
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri3,4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad4,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad8,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::quad9,
-    4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::quad9, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::quad9, 4>;
 //
 
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,  DRT::Element::tet4,
-// 4>; template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,
-// DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,  DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet4,4>; template
-// class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6,
-// DRT::Element::wedge15,4>; template class
-// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::tet4,4>; template
-// class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex20,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::hex27,
-    4>;
-// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15,
-// DRT::Element::wedge15,4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tet4, 4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::wedge15,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::hex27, 4>;
+// template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::wedge15,4>;
 
 
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex8, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex20, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::hex27, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet4, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::tet10, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge6, DRT::Element::dis_none,
-    4>;
-template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::wedge15, DRT::Element::dis_none,
-    4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex8,
+    DRT::Element::DiscretizationType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex20,
+    DRT::Element::DiscretizationType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::hex27,
+    DRT::Element::DiscretizationType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet4,
+    DRT::Element::DiscretizationType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::tet10,
+    DRT::Element::DiscretizationType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge6,
+    DRT::Element::DiscretizationType::dis_none, 4>;
+template class DRT::ELEMENTS::XFLUID::NitscheCoupling<DRT::Element::DiscretizationType::wedge15,
+    DRT::Element::DiscretizationType::dis_none, 4>;

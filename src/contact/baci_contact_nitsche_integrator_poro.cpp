@@ -190,7 +190,8 @@ void CONTACT::CoIntegratorNitschePoro::SoEleCauchy(MORTAR::MortarElement& moEle,
   }
   else
   {
-    dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
+    dynamic_cast<
+        DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::DiscretizationType::hex8>*>(
         moEle.ParentElement())
         ->GetCauchyNDirAndDerivativesAtXi(pxsi, moEle.MoData().ParentDisp(),
             moEle.MoData().ParentPFPres(), normal, direction, sigma_nt, &dsntdd, &dsntdp, &dsntdn,

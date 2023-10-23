@@ -10,7 +10,9 @@
 
  *----------------------------------------------------------------------*/
 
-template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
+template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_hex8,
+    DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::So3_Poro_P1<DRT::ELEMENTS::So_tet4,
+    DRT::Element::DiscretizationType::tet4>;
 
 #endif

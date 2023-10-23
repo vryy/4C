@@ -28,7 +28,7 @@ namespace
     }
 
     if constexpr (distype == DRT::Element::DiscretizationType::hex8 ||
-                  distype == DRT::Element::pyramid5)
+                  distype == DRT::Element::DiscretizationType::pyramid5)
     {
       return DRT::ELEMENTS::SolidEleCalcFbar<distype>();
     }
@@ -55,34 +55,36 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
 {
   switch (ele.Shape())
   {
-    case DRT::Element::hex8:
-      return CreateSolidCalculationInterface<DRT::Element::hex8>(ele, eletech, kinem_type, eastype);
-      break;
-    case DRT::Element::hex27:
-      return CreateSolidCalculationInterface<DRT::Element::hex27>(
+    case DRT::Element::DiscretizationType::hex8:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex8>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::hex20:
-      return CreateSolidCalculationInterface<DRT::Element::hex20>(
+    case DRT::Element::DiscretizationType::hex27:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex27>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::hex18:
-      return CreateSolidCalculationInterface<DRT::Element::hex18>(
+    case DRT::Element::DiscretizationType::hex20:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex20>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::pyramid5:
-      return CreateSolidCalculationInterface<DRT::Element::pyramid5>(
+    case DRT::Element::DiscretizationType::hex18:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::hex18>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::wedge6:
-      return CreateSolidCalculationInterface<DRT::Element::wedge6>(
+    case DRT::Element::DiscretizationType::pyramid5:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::pyramid5>(
           ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::tet4:
-      return CreateSolidCalculationInterface<DRT::Element::tet4>(ele, eletech, kinem_type, eastype);
+    case DRT::Element::DiscretizationType::wedge6:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::wedge6>(
+          ele, eletech, kinem_type, eastype);
       break;
-    case DRT::Element::tet10:
-      return CreateSolidCalculationInterface<DRT::Element::tet10>(
+    case DRT::Element::DiscretizationType::tet4:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::tet4>(
+          ele, eletech, kinem_type, eastype);
+      break;
+    case DRT::Element::DiscretizationType::tet10:
+      return CreateSolidCalculationInterface<DRT::Element::DiscretizationType::tet10>(
           ele, eletech, kinem_type, eastype);
       break;
     default:
@@ -109,7 +111,7 @@ DRT::ELEMENTS::SolidCalcVariant DRT::ELEMENTS::CreateSolidCalculationInterface(
       switch (*eletech.begin())
       {
         case INPAR::STR::EleTech::eas:
-          if constexpr (distype != DRT::Element::hex8)
+          if constexpr (distype != DRT::Element::DiscretizationType::hex8)
           {
             dserror("EAS is only implemented for hex8 elements.");
           }

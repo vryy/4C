@@ -399,23 +399,21 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3r::Shape() const
   switch (numnodes)
   {
     case 2:
-      return line2;
+      return DiscretizationType::line2;
       break;
     case 3:
-      return line3;
+      return DiscretizationType::line3;
       break;
     case 4:
-      return line4;
+      return DiscretizationType::line4;
       break;
     case 5:
-      return line5;
+      return DiscretizationType::line5;
       break;
     default:
       dserror("Only Line2, Line3, Line4 and Line5 elements are implemented.");
       break;
   }
-
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*
@@ -582,28 +580,28 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case DiscretizationType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case line3:
+        case DiscretizationType::line3:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case line4:
+        case DiscretizationType::line4:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_lobatto3point;
         }
-        case line5:
+        case DiscretizationType::line5:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
@@ -626,28 +624,28 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case DiscretizationType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line3:
+        case DiscretizationType::line3:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case line4:
+        case DiscretizationType::line4:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_3point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
-        case line5:
+        case DiscretizationType::line5:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_4point;
@@ -668,19 +666,19 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case DiscretizationType::line2:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line3:
+        case DiscretizationType::line3:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case line4:
+        case DiscretizationType::line4:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }
-        case line5:
+        case DiscretizationType::line5:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_5point;
         }
@@ -706,22 +704,22 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Beam3r::MyGaussRule(
     {
       switch (distype)
       {
-        case line2:
+        case DiscretizationType::line2:
         {
           if (!centerline_hermite_)
             return CORE::DRT::UTILS::GaussRule1D::line_1point;
           else
             return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line3:
+        case DiscretizationType::line3:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_2point;
         }
-        case line4:
+        case DiscretizationType::line4:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_3point;
         }
-        case line5:
+        case DiscretizationType::line5:
         {
           return CORE::DRT::UTILS::GaussRule1D::line_4point;
         }

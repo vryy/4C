@@ -3250,8 +3250,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
         match = true;
       }
 
-      IMMERSED::InterpolateToBackgrdPoint<DRT::Element::hex8,  // source/structure
-          DRT::Element::hex8>                                  // target/fluid
+      IMMERSED::InterpolateToBackgrdPoint<
+          DRT::Element::DiscretizationType::hex8,  // source/structure
+          DRT::Element::DiscretizationType::hex8>  // target/fluid
           (curr_subset_of_structdis,
               immerseddis,  // source/structure
               backgrddis,   // target/fluid
@@ -3356,8 +3357,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::InterpolateVelocityToNode(
             match = true;
           }
 
-          IMMERSED::InterpolateToBackgrdPoint<DRT::Element::hex8,  // source/structure
-              DRT::Element::hex8>                                  // target/fluid
+          IMMERSED::InterpolateToBackgrdPoint<
+              DRT::Element::DiscretizationType::hex8,  // source/structure
+              DRT::Element::DiscretizationType::hex8>  // target/fluid
               (curr_subset_of_structdis,
                   immerseddis,  // source/structure
                   backgrddis,   // target/fluid
@@ -3553,18 +3555,19 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CorrectImmersedBoundVelocitie
         match = true;
       }
 
-      IMMERSED::FindClosestStructureSurfacePoint<DRT::Element::quad4,  // structure
-          DRT::Element::hex8>                                          // fluid
-          (curr_subset_of_structdis,                                   // relevant struct elements
-              struct_dis,                                              // structure discretization
-              fluid_dis,                                               // fluid discretization
-              *ele,                                                    // fluid element
-              backgrdfluidxi,                                          // space coordinate of node
-              targeteledisp,                                           // fluid displacements (zero)
-              action,            // action for structure evaluation
-              vel,               // velocity result
-              closest_point_xi,  // xi position of closest point
-              match,             // found a closest point
+      IMMERSED::FindClosestStructureSurfacePoint<
+          DRT::Element::DiscretizationType::quad4,  // structure
+          DRT::Element::DiscretizationType::hex8>   // fluid
+          (curr_subset_of_structdis,                // relevant struct elements
+              struct_dis,                           // structure discretization
+              fluid_dis,                            // fluid discretization
+              *ele,                                 // fluid element
+              backgrdfluidxi,                       // space coordinate of node
+              targeteledisp,                        // fluid displacements (zero)
+              action,                               // action for structure evaluation
+              vel,                                  // velocity result
+              closest_point_xi,                     // xi position of closest point
+              match,                                // found a closest point
               false  // do no communication. struct_dis is ghosted. every proc finds an immersed
                      // element to interpolate to its backgrd nodes
           );
@@ -3900,8 +3903,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     }
   }
 
-  if (distype == DRT::Element::hex8 || distype == DRT::Element::hex27 ||
-      distype == DRT::Element::hex20)
+  if (distype == DRT::Element::DiscretizationType::hex8 ||
+      distype == DRT::Element::DiscretizationType::hex27 ||
+      distype == DRT::Element::DiscretizationType::hex20)
   {
     // decide first, if this element is taken into account!
     double inflowmax = params.get<double>("INFLOW_CHA_SIDE");
@@ -4032,7 +4036,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
     }
 
     // get the quad9 gaussrule for the in plane integration
-    CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
+    CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::DiscretizationType::quad9);
 
     // a hex8 element has two levels, the hex20 and hex27 element have three layers to sample
     // (now we allow even more)
@@ -4214,7 +4218,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
       layershift += 2.0 / (static_cast<double>(numplanesinele - 1));
     }
   }
-  else if (distype == DRT::Element::nurbs8 || distype == DRT::Element::nurbs27)
+  else if (distype == DRT::Element::DiscretizationType::nurbs8 ||
+           distype == DRT::Element::DiscretizationType::nurbs27)
   {
     // get size of planecoords
     int size = planes->size();
@@ -4298,7 +4303,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcChannelStatistics(DRT::EL
       gp[1] = -1.0 + rr * 2.0 / ((double)numsublayers);
 
       // get the quad9 gaussrule for the in plane integration
-      CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::quad9);
+      CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::DiscretizationType::quad9);
 
       // reset temporary values
       double area = 0;
@@ -4602,8 +4607,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
     DRT::ELEMENTS::Fluid* ele, DRT::Discretization& discretization, const std::vector<int>& lm,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
-  if (distype != DRT::Element::hex8 && distype != DRT::Element::tet4 &&
-      distype != DRT::Element::quad4 && distype != DRT::Element::tri3)
+  if (distype != DRT::Element::DiscretizationType::hex8 &&
+      distype != DRT::Element::DiscretizationType::tet4 &&
+      distype != DRT::Element::DiscretizationType::quad4 &&
+      distype != DRT::Element::DiscretizationType::tri3)
     dserror("this is currently only implemented for linear elements");
   // get node coordinates
   CORE::GEO::fillInitialPositionArray<distype, nsd_, CORE::LINALG::Matrix<nsd_, nen_>>(ele, xyze_);
@@ -4653,20 +4660,37 @@ int DRT::ELEMENTS::FluidEleCalc<distype, enrtype>::CalcVelGradientEleCenter(
 
 
 // template classes
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex8, DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4, DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex20, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::hex27, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet4, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tet10, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge6, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::wedge15, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::pyramid5, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad4, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad8, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::quad9, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri3, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::tri6, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs9, DRT::ELEMENTS::Fluid::none>;
-template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::nurbs27, DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex8,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex8,
+    DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet4,
+    DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex20,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::hex27,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet4,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tet10,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::wedge6,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::wedge15,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::pyramid5,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad4,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad8,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::quad9,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tri3,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::tri6,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::nurbs9,
+    DRT::ELEMENTS::Fluid::none>;
+template class DRT::ELEMENTS::FluidEleCalc<DRT::Element::DiscretizationType::nurbs27,
+    DRT::ELEMENTS::Fluid::none>;

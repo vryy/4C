@@ -1088,37 +1088,43 @@ void CONTACT::CoIntegratorNitscheTsi::SoEleCauchyHeatflux(MORTAR::MortarElement&
 
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       auto* parent_ele =
-          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(moEle.ParentElement());
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>*>(
+              moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
-      SoEleGP<DRT::Element::hex8, dim>(moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
+      SoEleGP<DRT::Element::DiscretizationType::hex8, dim>(
+          moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
 
       parent_ele->HeatFlux(moEle.MoData().ParentTemp(), moEle.MoData().ParentDisp(), pxsi, normal,
           q, &dq_dT_ele, &dq_dd_ele, &dq_dn, &dq_dpxi, &d2q_dT_dd, &d2q_dT_dn, &d2q_dT_dpxi);
       break;
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
       auto* parent_ele =
-          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex27>*>(moEle.ParentElement());
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex27>*>(
+              moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
-      SoEleGP<DRT::Element::hex27, dim>(moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
+      SoEleGP<DRT::Element::DiscretizationType::hex27, dim>(
+          moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
 
       parent_ele->HeatFlux(moEle.MoData().ParentTemp(), moEle.MoData().ParentDisp(), pxsi, normal,
           q, &dq_dT_ele, &dq_dd_ele, &dq_dn, &dq_dpxi, &d2q_dT_dd, &d2q_dT_dn, &d2q_dT_dpxi);
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       auto* parent_ele =
-          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::tet4>*>(moEle.ParentElement());
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::tet4>*>(
+              moEle.ParentElement());
       if (!parent_ele) dserror("thermo-mechanical Nitsche contact only for So3_Plast for now.");
 
-      SoEleGP<DRT::Element::tet4, dim>(moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
+      SoEleGP<DRT::Element::DiscretizationType::tet4, dim>(
+          moEle, gp_wgt, boundary_gpcoord, pxsi, derivtravo_slave);
 
       parent_ele->HeatFlux(moEle.MoData().ParentTemp(), moEle.MoData().ParentDisp(), pxsi, normal,
           q, &dq_dT_ele, &dq_dd_ele, &dq_dn, &dq_dpxi, &d2q_dT_dd, &d2q_dT_dn, &d2q_dT_dpxi);

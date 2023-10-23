@@ -1071,7 +1071,8 @@ namespace DRT
       {
         // element coordinate derivatives at centroid
         static CORE::LINALG::Matrix<nsd_, nen_> N_rst_0(false);
-        CORE::DRT::UTILS::shape_function_3D_deriv1(N_rst_0, 0.0, 0.0, 0.0, DRT::Element::hex8);
+        CORE::DRT::UTILS::shape_function_3D_deriv1(
+            N_rst_0, 0.0, 0.0, 0.0, DRT::Element::DiscretizationType::hex8);
 
         // inverse jacobian matrix at centroid
         SetJac_0().Multiply(N_rst_0, Xrefe());
@@ -1123,7 +1124,7 @@ namespace DRT
 
       inline void EvaluateShape(const CORE::LINALG::Matrix<3, 1>& xi)
       {
-        if (distype == DRT::Element::nurbs27)
+        if (distype == DRT::Element::DiscretizationType::nurbs27)
           CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else
@@ -1132,7 +1133,7 @@ namespace DRT
 
       inline void EvaluateShapeDeriv(const CORE::LINALG::Matrix<3, 1>& xi)
       {
-        if (distype == DRT::Element::nurbs27)
+        if (distype == DRT::Element::DiscretizationType::nurbs27)
           CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               SetShapeFunction(), SetDerivShapeFunction(), xi, Knots(), Weights(), distype);
         else

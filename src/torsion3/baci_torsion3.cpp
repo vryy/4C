@@ -110,7 +110,10 @@ void DRT::ELEMENTS::Torsion3::Print(std::ostream& os) const { return; }
 /*----------------------------------------------------------------------*
  |(public)                                                   cyron 02/10|
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion3::Shape() const { return line3; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::Torsion3::Shape() const
+{
+  return DRT::Element::DiscretizationType::line3;
+}
 
 
 /*----------------------------------------------------------------------*

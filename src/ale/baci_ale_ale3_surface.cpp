@@ -50,20 +50,19 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale3Surface::Shape() const
   switch (NumNode())
   {
     case 3:
-      return tri3;
+      return DiscretizationType::tri3;
     case 4:
-      return quad4;
+      return DiscretizationType::quad4;
     case 6:
-      return tri6;
+      return DiscretizationType::tri6;
     case 8:
-      return quad8;
+      return DiscretizationType::quad8;
     case 9:
-      return quad9;
+      return DiscretizationType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------------*/

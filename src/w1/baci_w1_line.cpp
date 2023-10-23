@@ -55,43 +55,43 @@ DRT::Element* DRT::ELEMENTS::Wall1Line::Clone() const
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Wall1Line::Shape() const
 {
-  DRT::Element::DiscretizationType distype_line = dis_none;
+  DRT::Element::DiscretizationType distype_line = DRT::Element::DiscretizationType::dis_none;
 
   switch (ParentMasterElement()->Shape())
   {
-    case tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      distype_line = line2;
+      distype_line = DRT::Element::DiscretizationType::line2;
       break;
     }
-    case tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      distype_line = line3;
+      distype_line = DRT::Element::DiscretizationType::line3;
       break;
     }
-    case quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      distype_line = line2;
+      distype_line = DRT::Element::DiscretizationType::line2;
       break;
     }
-    case quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      distype_line = line3;
+      distype_line = DRT::Element::DiscretizationType::line3;
       break;
     }
-    case quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      distype_line = line3;
+      distype_line = DRT::Element::DiscretizationType::line3;
       break;
     }
-    case nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
-      distype_line = nurbs2;
+      distype_line = DRT::Element::DiscretizationType::nurbs2;
       break;
     }
-    case nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      distype_line = nurbs3;
+      distype_line = DRT::Element::DiscretizationType::nurbs3;
       break;
     }
     default:

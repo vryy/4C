@@ -29,33 +29,33 @@ DRT::ELEMENTS::FluidIntFaceImplInterface* DRT::ELEMENTS::FluidIntFaceImplInterfa
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return FluidIntFaceImpl<DRT::Element::quad4>::Instance();
+      return FluidIntFaceImpl<DRT::Element::DiscretizationType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return FluidIntFaceImpl<DRT::Element::quad8>::Instance();
+      return FluidIntFaceImpl<DRT::Element::DiscretizationType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return FluidIntFaceImpl<DRT::Element::quad9>::Instance();
+      return FluidIntFaceImpl<DRT::Element::DiscretizationType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return FluidIntFaceImpl<DRT::Element::tri3>::Instance();
+      return FluidIntFaceImpl<DRT::Element::DiscretizationType::tri3>::Instance();
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return FluidIntFaceImpl<DRT::Element::tri6>::Instance();
+      return FluidIntFaceImpl<DRT::Element::DiscretizationType::tri6>::Instance();
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return FluidIntFaceImpl<DRT::Element::line2>::Instance();
+      return FluidIntFaceImpl<DRT::Element::DiscretizationType::line2>::Instance();
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      return FluidIntFaceImpl<DRT::Element::line3>::Instance();
+      return FluidIntFaceImpl<DRT::Element::DiscretizationType::line3>::Instance();
     }
     default:
       dserror(

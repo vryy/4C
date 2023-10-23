@@ -43,7 +43,7 @@ void test_benedikt1()
     nids.push_back(1781);
     nids.push_back(1784);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -61,7 +61,7 @@ void test_benedikt1()
     nids.push_back(1784);
     nids.push_back(1785);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -79,7 +79,7 @@ void test_benedikt1()
     nids.push_back(1785);
     nids.push_back(1782);
     nids.push_back(1786);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
 
   sidecount = 595;
@@ -105,7 +105,7 @@ void test_benedikt1()
     nids.push_back(1788);
     nids.push_back(1785);
 
-    intersection.AddCutSide(595, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(595, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
 
@@ -183,7 +183,7 @@ void test_benedikt1()
 
   int eid = 192551;
 
-  intersection.AddElement(eid, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(eid, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);

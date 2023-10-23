@@ -72,13 +72,18 @@ std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi(
 }
 
 // explicit template instantiations
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex8>(
+template std::vector<double>
+DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::DiscretizationType::hex8>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::hex27>(
+template std::vector<double>
+DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::DiscretizationType::hex27>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet4>(
+template std::vector<double>
+DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::DiscretizationType::tet4>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::tet10>(
+template std::vector<double>
+DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::DiscretizationType::tet10>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);
-template std::vector<double> DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::wedge6>(
+template std::vector<double>
+DRT::ELEMENTS::ProjectNodalQuantityToXi<DRT::Element::DiscretizationType::wedge6>(
     const CORE::LINALG::Matrix<3, 1>&, const std::vector<double>&);

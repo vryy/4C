@@ -65,7 +65,7 @@ namespace CORE::VOLMORTAR
 
     */
     void InitializeGP(bool integrateele = false, int domain = 0,
-        ::DRT::Element::DiscretizationType shape = ::DRT::Element::tet4);
+        ::DRT::Element::DiscretizationType shape = ::DRT::Element::DiscretizationType::tet4);
 
     /*!
     \brief Integrate cell for 2D problems
@@ -210,8 +210,9 @@ namespace CORE::VOLMORTAR
   {
     // check GP projection (SLAVE)
     double tol = 1e-5;
-    if (distypeS == ::DRT::Element::hex8 || distypeS == ::DRT::Element::hex20 ||
-        distypeS == ::DRT::Element::hex27)
+    if (distypeS == ::DRT::Element::DiscretizationType::hex8 ||
+        distypeS == ::DRT::Element::DiscretizationType::hex20 ||
+        distypeS == ::DRT::Element::DiscretizationType::hex27)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[2] < -1.0 - tol || sxi[0] > 1.0 + tol ||
           sxi[1] > 1.0 + tol || sxi[2] > 1.0 + tol)
@@ -219,7 +220,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeS == ::DRT::Element::pyramid5)
+    else if (distypeS == ::DRT::Element::DiscretizationType::pyramid5)
     {
       if (sxi[2] < 0.0 - tol || -sxi[0] + sxi[2] > 1.0 + tol || sxi[0] + sxi[2] > 1.0 + tol ||
           -sxi[1] + sxi[2] > 1.0 + tol || sxi[1] + sxi[2] > 1.0 + tol)
@@ -227,7 +228,8 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeS == ::DRT::Element::tet4 || distypeS == ::DRT::Element::tet10)
+    else if (distypeS == ::DRT::Element::DiscretizationType::tet4 ||
+             distypeS == ::DRT::Element::DiscretizationType::tet10)
     {
       if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || sxi[2] < 0.0 - tol ||
           (sxi[0] + sxi[1] + sxi[2]) > 1.0 + tol)
@@ -235,15 +237,17 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeS == ::DRT::Element::tri3 || distypeS == ::DRT::Element::tri6)
+    else if (distypeS == ::DRT::Element::DiscretizationType::tri3 ||
+             distypeS == ::DRT::Element::DiscretizationType::tri6)
     {
       if (sxi[0] < 0.0 - tol || sxi[1] < 0.0 - tol || (sxi[0] + sxi[1]) > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distypeS == ::DRT::Element::quad4 || distypeS == ::DRT::Element::quad8 ||
-             distypeS == ::DRT::Element::quad9)
+    else if (distypeS == ::DRT::Element::DiscretizationType::quad4 ||
+             distypeS == ::DRT::Element::DiscretizationType::quad8 ||
+             distypeS == ::DRT::Element::DiscretizationType::quad9)
     {
       if (sxi[0] < -1.0 - tol || sxi[1] < -1.0 - tol || sxi[0] > 1.0 + tol || sxi[1] > 1.0 + tol)
       {
@@ -254,8 +258,9 @@ namespace CORE::VOLMORTAR
       dserror("Wrong element type!");
 
     // check GP projection (MASTER)
-    if (distypeM == ::DRT::Element::hex8 || distypeM == ::DRT::Element::hex20 ||
-        distypeM == ::DRT::Element::hex27)
+    if (distypeM == ::DRT::Element::DiscretizationType::hex8 ||
+        distypeM == ::DRT::Element::DiscretizationType::hex20 ||
+        distypeM == ::DRT::Element::DiscretizationType::hex27)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[2] < -1.0 - tol || mxi[0] > 1.0 + tol ||
           mxi[1] > 1.0 + tol || mxi[2] > 1.0 + tol)
@@ -263,7 +268,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeM == ::DRT::Element::pyramid5)
+    else if (distypeM == ::DRT::Element::DiscretizationType::pyramid5)
     {
       if (mxi[2] < 0.0 - tol || -mxi[0] + mxi[2] > 1.0 + tol || mxi[0] + mxi[2] > 1.0 + tol ||
           -mxi[1] + mxi[2] > 1.0 + tol || mxi[1] + mxi[2] > 1.0 + tol)
@@ -271,7 +276,8 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeM == ::DRT::Element::tet4 || distypeM == ::DRT::Element::tet10)
+    else if (distypeM == ::DRT::Element::DiscretizationType::tet4 ||
+             distypeM == ::DRT::Element::DiscretizationType::tet10)
     {
       if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || mxi[2] < 0.0 - tol ||
           (mxi[0] + mxi[1] + mxi[2]) > 1.0 + tol)
@@ -279,15 +285,17 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distypeM == ::DRT::Element::tri3 || distypeM == ::DRT::Element::tri6)
+    else if (distypeM == ::DRT::Element::DiscretizationType::tri3 ||
+             distypeM == ::DRT::Element::DiscretizationType::tri6)
     {
       if (mxi[0] < 0.0 - tol || mxi[1] < 0.0 - tol || (mxi[0] + mxi[1]) > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distypeM == ::DRT::Element::quad4 || distypeM == ::DRT::Element::quad8 ||
-             distypeM == ::DRT::Element::quad9)
+    else if (distypeM == ::DRT::Element::DiscretizationType::quad4 ||
+             distypeM == ::DRT::Element::DiscretizationType::quad8 ||
+             distypeM == ::DRT::Element::DiscretizationType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -308,8 +316,9 @@ namespace CORE::VOLMORTAR
   {
     // check node projection
     double tol = 1e-5;
-    if (distype == ::DRT::Element::hex8 || distype == ::DRT::Element::hex20 ||
-        distype == ::DRT::Element::hex27)
+    if (distype == ::DRT::Element::DiscretizationType::hex8 ||
+        distype == ::DRT::Element::DiscretizationType::hex20 ||
+        distype == ::DRT::Element::DiscretizationType::hex27)
     {
       if (xi[0] < -1.0 - tol || xi[1] < -1.0 - tol || xi[2] < -1.0 - tol || xi[0] > 1.0 + tol ||
           xi[1] > 1.0 + tol || xi[2] > 1.0 + tol)
@@ -317,7 +326,7 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distype == ::DRT::Element::pyramid5)
+    else if (distype == ::DRT::Element::DiscretizationType::pyramid5)
     {
       if (xi[2] < 0.0 - tol || -xi[0] + xi[2] > 1.0 + tol || xi[0] + xi[2] > 1.0 + tol ||
           -xi[1] + xi[2] > 1.0 + tol || xi[1] + xi[2] > 1.0 + tol)
@@ -325,7 +334,8 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distype == ::DRT::Element::tet4 || distype == ::DRT::Element::tet10)
+    else if (distype == ::DRT::Element::DiscretizationType::tet4 ||
+             distype == ::DRT::Element::DiscretizationType::tet10)
     {
       if (xi[0] < 0.0 - tol || xi[1] < 0.0 - tol || xi[2] < 0.0 - tol ||
           (xi[0] + xi[1] + xi[2]) > 1.0 + tol)
@@ -333,15 +343,17 @@ namespace CORE::VOLMORTAR
         return false;
       }
     }
-    else if (distype == ::DRT::Element::quad4 || distype == ::DRT::Element::quad8 ||
-             distype == ::DRT::Element::quad9)
+    else if (distype == ::DRT::Element::DiscretizationType::quad4 ||
+             distype == ::DRT::Element::DiscretizationType::quad8 ||
+             distype == ::DRT::Element::DiscretizationType::quad9)
     {
       if (xi[0] < -1.0 - tol || xi[1] < -1.0 - tol || xi[0] > 1.0 + tol || xi[1] > 1.0 + tol)
       {
         return false;
       }
     }
-    else if (distype == ::DRT::Element::tri3 || distype == ::DRT::Element::tri6)
+    else if (distype == ::DRT::Element::DiscretizationType::tri3 ||
+             distype == ::DRT::Element::DiscretizationType::tri6)
     {
       if (xi[0] < -tol || xi[1] < -tol || xi[0] > 1.0 + tol || xi[1] > 1.0 + tol ||
           xi[0] + xi[1] > 1.0 + 2 * tol)

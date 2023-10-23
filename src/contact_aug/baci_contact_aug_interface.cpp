@@ -122,8 +122,8 @@ void CONTACT::AUG::Interface::Setup()
 
     switch (ele->Shape())
     {
-      case DRT::Element::tri3:
-      case DRT::Element::tri6:
+      case DRT::Element::DiscretizationType::tri3:
+      case DRT::Element::DiscretizationType::tri6:
         myTriangleOnMaster = 1;
         break;
       default:
@@ -1960,7 +1960,7 @@ double CONTACT::AUG::Interface::MyCharacteristicElementLength(
     const DRT::Node* const* nodes = ele->Nodes();
     switch (ele->Shape())
     {
-      case DRT::Element::line2:
+      case DRT::Element::DiscretizationType::line2:
       {
         const CoNode& cnode0 = dynamic_cast<const CoNode&>(*nodes[0]);
         const CoNode& cnode1 = dynamic_cast<const CoNode&>(*nodes[1]);

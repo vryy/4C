@@ -100,7 +100,7 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      DiscretizationType Shape() const override { return hex18; };
+      DiscretizationType Shape() const override { return DiscretizationType::hex18; };
 
       /*!
       \brief Return number of volumes of this element

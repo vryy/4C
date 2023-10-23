@@ -208,7 +208,10 @@ DRT::Element* DRT::ELEMENTS::So_hex8::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex8::Shape() const { return hex8; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_hex8::Shape() const
+{
+  return DRT::Element::DiscretizationType::hex8;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |
@@ -454,7 +457,7 @@ bool DRT::ELEMENTS::So_hex8::VisData(const std::string& name, std::vector<double
 // Compute nodal fibers and call post setup routine of the materials
 void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  if (DRT::FIBER::UTILS::HaveNodalFibers<hex8>(Nodes()))
+  if (DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::hex8>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -468,7 +471,7 @@ void DRT::ELEMENTS::So_hex8::MaterialPostSetup(Teuchos::ParameterList& params)
     DRT::FIBER::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex8>(
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::hex8>(
         Nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);

@@ -207,25 +207,25 @@ double XFEM::UTILS::NIT_getTraceEstimateConstant(
     // modification for pseudo 2D simulations
     switch (ele_distype)
     {
-      case DRT::Element::hex8:
-        trace_inequality_distype = DRT::Element::quad4;
+      case DRT::Element::DiscretizationType::hex8:
+        trace_inequality_distype = DRT::Element::DiscretizationType::quad4;
         break;  // hex8 -> quad4 reduction
-      case DRT::Element::hex20:
-        trace_inequality_distype = DRT::Element::quad8;
+      case DRT::Element::DiscretizationType::hex20:
+        trace_inequality_distype = DRT::Element::DiscretizationType::quad8;
         break;  // hex20-> quad8 reduction
-      case DRT::Element::hex27:
-        trace_inequality_distype = DRT::Element::quad9;
+      case DRT::Element::DiscretizationType::hex27:
+        trace_inequality_distype = DRT::Element::DiscretizationType::quad9;
         break;  // hex27-> quad9 reduction
-      case DRT::Element::wedge15:
-        trace_inequality_distype = DRT::Element::tri6;
+      case DRT::Element::DiscretizationType::wedge15:
+        trace_inequality_distype = DRT::Element::DiscretizationType::tri6;
         break;  // wedge15 -> tri6 reduction (tri6 elements in 2D plane)
-      case DRT::Element::wedge6:
-        trace_inequality_distype = DRT::Element::tri3;
+      case DRT::Element::DiscretizationType::wedge6:
+        trace_inequality_distype = DRT::Element::DiscretizationType::tri3;
         break;  // wedge6 -> tri3 reduction (tri3 elements in 2D plane)
       default:
       {
         dserror("not a valid pseudo 2D element-type - what to do?");
-        trace_inequality_distype = DRT::Element::dis_none;
+        trace_inequality_distype = DRT::Element::DiscretizationType::dis_none;
         break;
       }
     };
@@ -245,75 +245,78 @@ double XFEM::UTILS::NIT_getTraceEstimateConstant(
     /*
     // CT = p(p+1)/2 * (2+1/p)^d
     // 3D hexahedral elements
-    case DRT::Element::hex8:      return 27.0;                 break;  /// d=3, p(v_h) = 1 ->
-    p(grad(v_h)) = 1   =>  CT=27.0 case DRT::Element::hex20:     return 46.875;               break;
-    /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=46.875 (375/8) case DRT::Element::hex27:
-    return 46.875;               break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=46.875
-    (375/8)
+    case DRT::Element::DiscretizationType::hex8:      return 27.0;                 break;  /// d=3,
+    p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=27.0 case DRT::Element::DiscretizationType::hex20:
+    return 46.875; break;
+    /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=46.875 (375/8) case
+    DRT::Element::DiscretizationType::hex27: return 46.875;               break;  /// d=3, p(v_h) =
+    2 -> p(grad(v_h)) = 2   =>  CT=46.875 (375/8)
     // 2D quadrilateral elements
-    case DRT::Element::quad4:     return 9.0;                  break;  /// d=2, p(v_h) = 1 ->
-    p(grad(v_h)) = 1   =>  CT=9.0 case DRT::Element::quad8:     return 9.0;                  break;
-    /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0 case DRT::Element::quad9:     return 18.75;
-    break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT=18.75  (75/4)
+    case DRT::Element::DiscretizationType::quad4:     return 9.0;                  break;  /// d=2,
+    p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0 case DRT::Element::DiscretizationType::quad8:
+    return 9.0; break;
+    /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT=9.0 case
+    DRT::Element::DiscretizationType::quad9:     return 18.75; break;  /// d=2, p(v_h) = 2 ->
+    p(grad(v_h)) = 2   =>  CT=18.75  (75/4)
     */
     // REMARK: the theroretical estimate of the constant CT for hexahedral and quadrilateral
     // elements seems to overestimate the actual constant
     // -> therefore we take the approximate values from solving a local eigenvalue problem
     // estimates from solving the eigenvalue problem on regular elements
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return 1.59307;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       return 4.10462;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return 4.27784;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
     // 2D quadrilateral elements
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
       return 1.43426;
       break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
       return 4.06462;
       break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT= from eigenvalue problem
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
       return 4.19708;
       break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT= from eigenvalue problem
     //----------------------------------------------------------------
     // CT = (p+1)*(p+d)/d (this estimate leads to the same results as solving a local eigenvalue
     // problem) 3D tetrahedral elements
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return 1.0;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return 2.6666666666666666;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 1   =>  CT=2.6666666666666666 (8/3)
     // 2D triangular elements
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
       return 1.0;
       break;  /// d=2, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
       return 3.0;
       break;  /// d=2, p(v_h) = 2 -> p(grad(v_h)) = 1   =>  CT=3.0
     // 1D line elements
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
       return 1.0;
       break;  /// d=1, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=1.0
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
       return 4.0;
       break;  /// d=1, p(v_h) = 1 -> p(grad(v_h)) = 0   =>  CT=4.0
     //----------------------------------------------------------------
     // 3D wedge/pyramid elements, the current estimates are taken from the maximum of hex and tet
     // elements, the correct value has to switch between the faces!
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
       std::cout << "WARNING: calibrate this value!" << std::endl;
       return 1.59307;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT taken from hex8
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
       std::cout << "WARNING: calibrate this value!" << std::endl;
       return 1.59307;
       break;  /// d=3, p(v_h) = 1 -> p(grad(v_h)) = 1   =>  CT taken from hex8
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge15:
       std::cout << "WARNING: calibrate this value!" << std::endl;
       return 4.10462;
       break;  /// d=3, p(v_h) = 2 -> p(grad(v_h)) = 2   =>  CT taken from hex20
@@ -397,14 +400,16 @@ void XFEM::UTILS::ComputeSurfaceTransformation(double &drs,  ///< surface transf
   // transformation factor
   switch (bc->Shape())
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      bc->Transform<DRT::Element::tri3>(eta, x_gp_lin, normal, drs, referencepos);
+      bc->Transform<DRT::Element::DiscretizationType::tri3>(
+          eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      bc->Transform<DRT::Element::quad4>(eta, x_gp_lin, normal, drs, referencepos);
+      bc->Transform<DRT::Element::DiscretizationType::quad4>(
+          eta, x_gp_lin, normal, drs, referencepos);
       break;
     }
     default:
@@ -468,7 +473,7 @@ double XFEM::UTILS::ComputeMeasCutSurf(
         CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
         // compute transformation factor, normal vector and global Gauss point coordiantes
-        if (bc->Shape() != DRT::Element::dis_none)  // Tessellation approach
+        if (bc->Shape() != DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
         {
           XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
         }
@@ -531,13 +536,13 @@ double XFEM::UTILS::ComputeMeasFace(DRT::Element *ele,  ///< fluid element
   CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (face_shape)
   {
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
       gaussrule = CORE::DRT::UTILS::GaussRule2D::quad_1point;
       break;
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
       gaussrule = CORE::DRT::UTILS::GaussRule2D::tri_1point;
       break;
     default:
@@ -600,21 +605,21 @@ double XFEM::UTILS::EvalElementVolume(
 
   switch (distype)
   {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::hex20:
+    case DRT::Element::DiscretizationType::hex27:
+    case DRT::Element::DiscretizationType::tet4:
+    case DRT::Element::DiscretizationType::tet10:
+    case DRT::Element::DiscretizationType::wedge6:
+    case DRT::Element::DiscretizationType::wedge15:
     {
       // shape functions and their first derivatives
       CORE::DRT::UTILS::shape_function<distype>(xsi, funct);
       CORE::DRT::UTILS::shape_function_deriv1<distype>(xsi, deriv);
       break;
     }
-    case DRT::Element::nurbs8:
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
       if (nurbs_weights == nullptr || nurbs_knots == nullptr)
         dserror("For Nurbs elements, weights and knots are required!");
@@ -1057,7 +1062,7 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
   DRT::UTILS::ExtractMyValues(*matrix_state, ivel, las[0].lm_);
 
   // 4 // evaluate slave velocity at guasspoint
-  if (sele->Shape() == DRT::Element::quad4)
+  if (sele->Shape() == DRT::Element::DiscretizationType::quad4)
   {
     CORE::LINALG::Matrix<3, 4> vels;
     for (int n = 0; n < sele->NumNode(); ++n)
@@ -1068,10 +1073,11 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
       }
     }
 
-    const int numnodes =
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement;
+    const int numnodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+        DRT::Element::DiscretizationType::quad4>::numNodePerElement;
     static CORE::LINALG::Matrix<numnodes, 1> funct(false);
-    CORE::DRT::UTILS::shape_function_2D(funct, selexsi(0), selexsi(1), DRT::Element::quad4);
+    CORE::DRT::UTILS::shape_function_2D(
+        funct, selexsi(0), selexsi(1), DRT::Element::DiscretizationType::quad4);
     vel_s.Multiply(vels, funct);
   }
   else
@@ -1079,100 +1085,116 @@ void XFEM::UTILS::EvaluteStateatGP(const DRT::Element *sele,
 }
 
 
-template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement, 1> *,
+template double XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::hex8>(
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                DRT::Element::DiscretizationType::hex8>::numNodePerElement>,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                             DRT::Element::DiscretizationType::hex8>::numNodePerElement,
+        1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex20>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement, 1> *,
+template double XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::hex20>(
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                DRT::Element::DiscretizationType::hex20>::numNodePerElement>,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                             DRT::Element::DiscretizationType::hex20>::numNodePerElement,
+        1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<DRT::Element::hex27>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement, 1> *,
+template double XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::hex27>(
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                DRT::Element::DiscretizationType::hex27>::numNodePerElement>,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                             DRT::Element::DiscretizationType::hex27>::numNodePerElement,
+        1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<DRT::Element::tet4>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement, 1> *,
+template double XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::tet4>(
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                DRT::Element::DiscretizationType::tet4>::numNodePerElement>,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                             DRT::Element::DiscretizationType::tet4>::numNodePerElement,
+        1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<DRT::Element::tet10>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement, 1> *,
+template double XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::tet10>(
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                DRT::Element::DiscretizationType::tet10>::numNodePerElement>,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                             DRT::Element::DiscretizationType::tet10>::numNodePerElement,
+        1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<DRT::Element::wedge6>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement, 1> *,
+template double XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::wedge6>(
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                DRT::Element::DiscretizationType::wedge6>::numNodePerElement>,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                             DRT::Element::DiscretizationType::wedge6>::numNodePerElement,
+        1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
-template double XFEM::UTILS::EvalElementVolume<DRT::Element::wedge15>(
-    CORE::LINALG::Matrix<3,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement>,
-    CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge15>::numNodePerElement, 1> *,
+template double XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::wedge15>(
+    CORE::LINALG::Matrix<3, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                DRT::Element::DiscretizationType::wedge15>::numNodePerElement>,
+    CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                             DRT::Element::DiscretizationType::wedge15>::numNodePerElement,
+        1> *,
     std::vector<CORE::LINALG::SerialDenseVector> *);
 
-template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex8>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::hex8>(
+    DRT::Element *, CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
     const INPAR::XFEM::ViscStab_hk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex8>>, DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex20>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
-    const INPAR::XFEM::ViscStab_hk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex20>>,
+    Teuchos::RCP<
+        DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::hex8>>,
     DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::hex27>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::hex20>(
+    DRT::Element *, CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
     const INPAR::XFEM::ViscStab_hk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex27>>,
+    Teuchos::RCP<
+        DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::hex20>>,
     DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::tet4>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::hex27>(
+    DRT::Element *, CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
     const INPAR::XFEM::ViscStab_hk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet4>>, DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::tet10>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
-    const CORE::GEO::CUT::plain_volumecell_set &,
-    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
-    const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
-    const INPAR::XFEM::ViscStab_hk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet10>>,
+    Teuchos::RCP<
+        DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::hex27>>,
     DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::wedge6>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::tet4>(
+    DRT::Element *, CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
     const INPAR::XFEM::ViscStab_hk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge6>>,
+    Teuchos::RCP<
+        DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::tet4>>,
     DRT::Element *);
-template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::wedge15>(DRT::Element *,
-    CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::tet10>(
+    DRT::Element *, CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
     const CORE::GEO::CUT::plain_volumecell_set &,
     const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
     const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
     const INPAR::XFEM::ViscStab_hk,
-    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge15>>,
+    Teuchos::RCP<
+        DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::tet10>>,
+    DRT::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::wedge6>(
+    DRT::Element *, CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    const CORE::GEO::CUT::plain_volumecell_set &,
+    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
+    const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
+    const INPAR::XFEM::ViscStab_hk,
+    Teuchos::RCP<
+        DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::wedge6>>,
+    DRT::Element *);
+template double XFEM::UTILS::ComputeCharEleLength<DRT::Element::DiscretizationType::wedge15>(
+    DRT::Element *, CORE::LINALG::SerialDenseMatrix &, const Teuchos::RCP<XFEM::ConditionManager> &,
+    const CORE::GEO::CUT::plain_volumecell_set &,
+    const std::map<int, std::vector<CORE::GEO::CUT::BoundaryCell *>> &,
+    const std::map<int, std::vector<CORE::DRT::UTILS::GaussIntegration>> &,
+    const INPAR::XFEM::ViscStab_hk,
+    Teuchos::RCP<
+        DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::wedge15>>,
     DRT::Element *);

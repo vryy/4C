@@ -83,7 +83,8 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
+        IO::GMSH::cellWithScalarToStream(
+            DRT::Element::DiscretizationType::point1, actnode->Id(), pos, s);
       }
     }
     else
@@ -108,7 +109,8 @@ void XFEM::UTILS::PrintDiscretizationToStream(Teuchos::RCP<DRT::Discretization> 
           pos(1) = x(1);
           pos(2) = x(2);
         }
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
+        IO::GMSH::cellWithScalarToStream(
+            DRT::Element::DiscretizationType::point1, actnode->Id(), pos, s);
       }
     }
     s << "};\n";

@@ -24,9 +24,9 @@ template <class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::So3_Scatra(int id, int owner)
     : so3_ele(id, owner),
       impltype_(INPAR::SCATRA::impltype_undefined),
-      intpoints_(distype == DRT::Element::tet4
+      intpoints_(distype == DRT::Element::DiscretizationType::tet4
                      ? CORE::DRT::UTILS::GaussRule3D::tet_1point
-                     : (distype == DRT::Element::tet10
+                     : (distype == DRT::Element::DiscretizationType::tet10
                                ? CORE::DRT::UTILS::GaussRule3D::tet_4point
                                : DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule)),
       numgpt_(intpoints_.nquad),
@@ -257,9 +257,15 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::SetMaterial(int matnum)
 }
 
 
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8,
+    DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar,
+    DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27,
+    DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,
+    DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10,
+    DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6,
+    DRT::Element::DiscretizationType::wedge6>;
