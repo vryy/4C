@@ -16,8 +16,8 @@
 /* headers */
 #include "baci_inpar_material.H"
 #include "baci_io_inputreader.H"
+#include "baci_io_linecomponent.H"
 #include "baci_lib_container.H"
-#include "baci_lib_linecomponent.H"
 #include "baci_mat_par_bundle.H"
 #include "baci_mat_par_material.H"
 

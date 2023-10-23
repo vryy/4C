@@ -5,7 +5,7 @@
 */
 /*----------------------------------------------------------------------*/
 
-#include "baci_lib_linecomponent.H"
+#include "baci_io_linecomponent.H"
 
 #include <iterator>
 #include <utility>

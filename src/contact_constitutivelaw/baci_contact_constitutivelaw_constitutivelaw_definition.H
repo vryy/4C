@@ -10,7 +10,7 @@
 #ifndef BACI_CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
 #define BACI_CONTACT_CONSTITUTIVELAW_CONSTITUTIVELAW_DEFINITION_H
 
-#include "baci_lib_linecomponent.H"
+#include "baci_io_linecomponent.H"
 
 #include <Teuchos_Array.hpp>
 #include <Teuchos_RCP.hpp>
