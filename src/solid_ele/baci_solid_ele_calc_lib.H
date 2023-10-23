@@ -617,63 +617,52 @@ namespace DRT::ELEMENTS
     return spatial_material_mapping;
   }
 
-  template <DRT::Element::DiscretizationType distype>
-  struct CauchyGreen
-  {
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> right_cauchy_green_;
-    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>
-        inverse_right_cauchy_green;
-  };
-
   /*!
    * @brief Evaluates Green-Lagrange strain from right Cauchy-Green tensor
    *
    * GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
    *
    * @tparam distype : Discretization type
-   * @param cauchygreen (in) : Object holding the right Cauchy-Green deformation tensor and its
-   * inverse
+   * @param cauchygreen (in) : Right Cauchy-Green deformation tensor
    * @return CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> : Green-Lagrange strain tensor in
    * strain-like Voigt notation
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
   CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> EvaluateGreenLagrangeStrain(
-      const CauchyGreen<distype>& cauchygreen)
+      const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& cauchygreen)
   {
     CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1> gl_strain;
 
-    gl_strain(0) = 0.5 * (cauchygreen.right_cauchy_green_(0, 0) - 1.0);
-    gl_strain(1) = 0.5 * (cauchygreen.right_cauchy_green_(1, 1) - 1.0);
-    gl_strain(2) = 0.5 * (cauchygreen.right_cauchy_green_(2, 2) - 1.0);
-    gl_strain(3) = cauchygreen.right_cauchy_green_(0, 1);
-    gl_strain(4) = cauchygreen.right_cauchy_green_(1, 2);
-    gl_strain(5) = cauchygreen.right_cauchy_green_(2, 0);
+    gl_strain(0) = 0.5 * (cauchygreen(0, 0) - 1.0);
+    gl_strain(1) = 0.5 * (cauchygreen(1, 1) - 1.0);
+    gl_strain(2) = 0.5 * (cauchygreen(2, 2) - 1.0);
+    gl_strain(3) = cauchygreen(0, 1);
+    gl_strain(4) = cauchygreen(1, 2);
+    gl_strain(5) = cauchygreen(2, 0);
 
     return gl_strain;
   }
 
   /*!
-   * @brief Evaluates right Cauchy-Green deformation tensor and its inverse
+   * @brief Evaluates right Cauchy-Green deformation tensor
    *
    * @tparam distype: Discretization type
    * @param spatial_material_mapping (in) : An object holding quantities of the spatial material
    * mapping (deformation_gradient, inverse_deformation_gradient,
    * determinant_deformation_gradient)
-   * @return CauchyGreen<distype> : An object holding the right Cauchy-Green deformation tensor and
-   * its inverse
+   * @return CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> : Right
+   * Cauchy-Green deformation tensor
    */
   template <DRT::Element::DiscretizationType distype,
       std::enable_if_t<DETAIL::num_dim<distype> == 3, int> = 0>
-  CauchyGreen<distype> EvaluateCauchyGreen(
+  CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> EvaluateCauchyGreen(
       const SpatialMaterialMapping<distype>& spatial_material_mapping)
   {
-    CauchyGreen<distype> cauchygreen;
+    CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>> cauchygreen(false);
 
-    cauchygreen.right_cauchy_green_.MultiplyTN(spatial_material_mapping.deformation_gradient_,
+    cauchygreen.MultiplyTN(spatial_material_mapping.deformation_gradient_,
         spatial_material_mapping.deformation_gradient_);
-
-    cauchygreen.inverse_right_cauchy_green.Invert(cauchygreen.right_cauchy_green_);
 
     return cauchygreen;
   }
@@ -828,13 +817,14 @@ namespace DRT::ELEMENTS
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strains,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strains_old,
       const CORE::LINALG::Matrix<DETAIL::num_str<distype>, 1>& gl_strains_m,
-      const CauchyGreen<distype>& rcg, const CauchyGreen<distype>& rcg_old,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& rcg,
+      const CORE::LINALG::Matrix<DETAIL::num_dim<distype>, DETAIL::num_dim<distype>>& rcg_old,
       const Teuchos::ParameterList& params, const int gp, const int eleGID)
   {
     Stress<distype> stress;
 
     material.EvaluateGEMM(&stress.pk2_, &stress.cmat_, &gl_strains_m, &gl_strains, &gl_strains_old,
-        &rcg.right_cauchy_green_, &rcg_old.right_cauchy_green_, gp, eleGID);
+        &rcg, &rcg_old, gp, eleGID);
 
     return stress;
   }
