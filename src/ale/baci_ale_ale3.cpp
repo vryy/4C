@@ -11,8 +11,8 @@
 /*----------------------------------------------------------------------------*/
 #include "baci_ale_ale3.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
 #include "baci_so3_nullspace.H"
 #include "baci_utils_exceptions.H"

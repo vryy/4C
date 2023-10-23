@@ -6,7 +6,7 @@
 
 */
 /*----------------------------------------------------------------------*/
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_mat_myocard.H"
 #include "baci_scatra_ele.H"
 

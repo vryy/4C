@@ -10,7 +10,7 @@
 
 #include "baci_torsion3.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_so3_nullspace.H"
 #include "baci_structure_new_elements_paramsinterface.H"
 #include "baci_utils_exceptions.H"

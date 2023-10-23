@@ -11,9 +11,9 @@
 
 #include "baci_structure_new_resulttest.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_structure_new_model_evaluator_data.H"
 #include "baci_structure_new_timint_base.H"

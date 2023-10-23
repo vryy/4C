@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_ssti_resulttest.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_ssti_algorithm.H"
 #include "baci_utils_exceptions.H"
 

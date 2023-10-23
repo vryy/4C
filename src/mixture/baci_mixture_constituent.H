@@ -12,7 +12,7 @@
 #ifndef BACI_MIXTURE_CONSTITUENT_H
 #define BACI_MIXTURE_CONSTITUENT_H
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_pack_buffer.H"
 #include "baci_linalg_fixedsizematrix.H"
 #include "baci_mat_par_parameter.H"

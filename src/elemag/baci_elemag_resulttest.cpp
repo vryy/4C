@@ -12,8 +12,8 @@
 #include "baci_elemag_resulttest.H"
 
 #include "baci_elemag_timeint.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
-#include "baci_lib_linedefinition.H"
 
 /*----------------------------------------------------------------------*
  |                                                     berardocco 10/18 |

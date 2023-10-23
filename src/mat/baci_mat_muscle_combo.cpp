@@ -11,8 +11,8 @@ activations
 
 #include "baci_mat_muscle_combo.H"
 
+#include "baci_io_linedefinition.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_linalg_fixedsizematrix_voigt_notation.H"
 #include "baci_mat_muscle_utils.H"
 #include "baci_mat_par_bundle.H"

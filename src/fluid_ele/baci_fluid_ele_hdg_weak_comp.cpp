@@ -13,7 +13,7 @@
 #include "baci_fluid_ele_factory.H"
 #include "baci_fluid_ele_interface.H"
 #include "baci_inpar_fluid.H"
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 
 
 // initialize static variable

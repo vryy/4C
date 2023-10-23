@@ -7,9 +7,9 @@
 #include "baci_so3_tet4av.H"
 
 #include "baci_discretization_fem_general_utils_fem_shapefunctions.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_globalproblem.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
 #include "baci_mat_so3_material.H"
 #include "baci_so3_line.H"

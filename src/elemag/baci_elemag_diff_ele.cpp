@@ -13,9 +13,9 @@
 #include "baci_elemag_diff_ele.H"
 
 #include "baci_elemag_ele_boundary_calc.H"
+#include "baci_io_linedefinition.H"
 #include "baci_lib_discret.H"
 #include "baci_lib_discret_faces.H"
-#include "baci_lib_linedefinition.H"
 #include "baci_lib_utils_factory.H"
 
 DRT::ELEMENTS::ElemagDiffType DRT::ELEMENTS::ElemagDiffType::instance_;

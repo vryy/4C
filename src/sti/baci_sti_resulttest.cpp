@@ -9,7 +9,7 @@
 /*----------------------------------------------------------------------*/
 #include "baci_sti_resulttest.H"
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_linear_solver_method_linalg.H"
 #include "baci_sti_monolithic.H"
 

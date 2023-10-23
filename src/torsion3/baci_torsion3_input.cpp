@@ -8,7 +8,7 @@
 */
 /*----------------------------------------------------------------------------*/
 
-#include "baci_lib_linedefinition.H"
+#include "baci_io_linedefinition.H"
 #include "baci_torsion3.H"
 
 
