@@ -9,7 +9,6 @@
 
 #include "baci_geometry_pair_line_to_surface_evaluation_data.H"
 
-#include "baci_beaminteraction_str_model_evaluator_datastate.H"
 #include "baci_geometry_pair_element_faces.H"
 #include "baci_geometry_pair_utility_classes.H"
 
