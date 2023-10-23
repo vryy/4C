@@ -46,11 +46,11 @@ SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(Teuchos::RCP<DRT::Discretiza
       size_matrix_graph_()
 {
   std::vector<int> inodegidvec_manifold;
-  DRT::UTILS::AddOwnedNodeGIDVector(
+  DRT::UTILS::AddOwnedNodeGIDFromList(
       *manifolddis, *condition_manifold->Nodes(), inodegidvec_manifold);
 
   std::vector<int> inodegidvec_scatra;
-  DRT::UTILS::AddOwnedNodeGIDVector(*scatradis, *condition_kinetics->Nodes(), inodegidvec_scatra);
+  DRT::UTILS::AddOwnedNodeGIDFromList(*scatradis, *condition_kinetics->Nodes(), inodegidvec_scatra);
 
   coupling_adapter_->SetupCoupling(*scatradis, *manifolddis, inodegidvec_scatra,
       inodegidvec_manifold, ndof_per_node, true, 1.0e-8);
