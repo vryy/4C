@@ -30,24 +30,24 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueCombin
 {
   switch (ParentElement()->Shape())
   {
-    case DRT::Element::hex8:
-      if (Shape() == DRT::Element::quad4)
-        return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::hex8, DRT::Element::quad4>(
-            parent_disp);
+    case DRT::Element::DiscretizationType::hex8:
+      if (Shape() == DRT::Element::DiscretizationType::quad4)
+        return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::hex8,
+            DRT::Element::DiscretizationType::quad4>(parent_disp);
       else
         dserror("how can an hex8 element have a surface that is not quad4 ???");
       break;
-    case DRT::Element::hex27:
-      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::hex27, DRT::Element::quad9>(
-          parent_disp);
+    case DRT::Element::DiscretizationType::hex27:
+      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::hex27,
+          DRT::Element::DiscretizationType::quad9>(parent_disp);
       break;
-    case DRT::Element::tet4:
-      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::tet4, DRT::Element::tri3>(
-          parent_disp);
+    case DRT::Element::DiscretizationType::tet4:
+      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::tet4,
+          DRT::Element::DiscretizationType::tri3>(parent_disp);
       break;
-    case DRT::Element::nurbs27:
-      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::nurbs27, DRT::Element::nurbs9>(
-          parent_disp);
+    case DRT::Element::DiscretizationType::nurbs27:
+      return EstimateNitscheTraceMaxEigenvalueCombined<DRT::Element::DiscretizationType::nurbs27,
+          DRT::Element::DiscretizationType::nurbs9>(parent_disp);
       break;
     default:
       dserror("parent shape not implemented");
@@ -209,7 +209,7 @@ void DRT::ELEMENTS::StructuralSurface::TraceEstimateSurfMatrix(
         ->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, ParentElement()->Id());
 
     double normalfac = 1.;
-    if (Shape() == DRT::Element::nurbs9)
+    if (Shape() == DRT::Element::DiscretizationType::nurbs9)
     {
       std::vector<CORE::LINALG::SerialDenseVector> parentknots(dim);
       std::vector<CORE::LINALG::SerialDenseVector> boundaryknots(dim - 1);
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::StructuralSurface::Strains(
   const int num_node = CORE::DRT::UTILS::DisTypeToNumNodePerEle<dt_vol>::numNodePerElement;
   CORE::LINALG::Matrix<dim, num_node> deriv;
 
-  if (dt_vol == DRT::Element::nurbs27)
+  if (dt_vol == DRT::Element::DiscretizationType::nurbs27)
   {
     std::vector<CORE::LINALG::SerialDenseVector> knots;
     dynamic_cast<DRT::NURBS::NurbsDiscretization*>(
@@ -433,22 +433,22 @@ double DRT::ELEMENTS::StructuralSurface::EstimateNitscheTraceMaxEigenvalueTSI(
 {
   switch (ParentElement()->Shape())
   {
-    case DRT::Element::hex8:
-      if (Shape() == DRT::Element::quad4)
-        return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::hex8, DRT::Element::quad4>(
-            parent_disp);
+    case DRT::Element::DiscretizationType::hex8:
+      if (Shape() == DRT::Element::DiscretizationType::quad4)
+        return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::hex8,
+            DRT::Element::DiscretizationType::quad4>(parent_disp);
       else
         dserror("how can an hex8 element have a surface that is not quad4 ???");
       break;
-    case DRT::Element::hex27:
-      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::hex27, DRT::Element::quad9>(
-          parent_disp);
-    case DRT::Element::tet4:
-      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::tet4, DRT::Element::tri3>(
-          parent_disp);
-    case DRT::Element::nurbs27:
-      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::nurbs27, DRT::Element::nurbs9>(
-          parent_disp);
+    case DRT::Element::DiscretizationType::hex27:
+      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::hex27,
+          DRT::Element::DiscretizationType::quad9>(parent_disp);
+    case DRT::Element::DiscretizationType::tet4:
+      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::tet4,
+          DRT::Element::DiscretizationType::tri3>(parent_disp);
+    case DRT::Element::DiscretizationType::nurbs27:
+      return EstimateNitscheTraceMaxEigenvalueTSI<DRT::Element::DiscretizationType::nurbs27,
+          DRT::Element::DiscretizationType::nurbs9>(parent_disp);
     default:
       dserror("parent shape not implemented");
   }

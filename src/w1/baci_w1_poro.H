@@ -95,15 +95,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
             return DRT::ELEMENTS::WallTri3PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
             return DRT::ELEMENTS::WallQuad4PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
             return DRT::ELEMENTS::WallQuad9PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::nurbs4:
+          case DRT::Element::DiscretizationType::nurbs4:
             return DRT::ELEMENTS::WallNurbs4PoroType::Instance().UniqueParObjectId();
-          case DRT::Element::nurbs9:
+          case DRT::Element::DiscretizationType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance().UniqueParObjectId();
           default:
             dserror("unknown element type");
@@ -145,15 +145,15 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
             return DRT::ELEMENTS::WallTri3PoroType::Instance();
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
             return DRT::ELEMENTS::WallQuad4PoroType::Instance();
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
             return DRT::ELEMENTS::WallQuad9PoroType::Instance();
-          case DRT::Element::nurbs4:
+          case DRT::Element::DiscretizationType::nurbs4:
             return DRT::ELEMENTS::WallNurbs4PoroType::Instance();
-          case DRT::Element::nurbs9:
+          case DRT::Element::DiscretizationType::nurbs9:
             return DRT::ELEMENTS::WallNurbs9PoroType::Instance();
           default:
             dserror("unknown element type");

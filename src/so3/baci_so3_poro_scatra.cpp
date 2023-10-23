@@ -157,27 +157,27 @@ int DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::UniqueParObjectId() const
   int parobjectid(-1);
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       parobjectid = So_tet4PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
     {
       parobjectid = So_tet10PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       parobjectid = So_hex8PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
       parobjectid = So_hex27PoroScatraType::Instance().UniqueParObjectId();
       break;
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
       parobjectid = So_nurbs27PoroScatraType::Instance().UniqueParObjectId();
       break;
@@ -199,15 +199,15 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ElementType(
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PoroScatraType::Instance();
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return So_tet10PoroScatraType::Instance();
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return So_hex8PoroScatraType::Instance();
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return So_hex27PoroScatraType::Instance();
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return So_nurbs27PoroScatraType::Instance();
     default:
       dserror("unknown element type!");
@@ -219,9 +219,13 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro_Scatra<so3_ele, distype>::ElementType(
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet4,
+    DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_tet10,
+    DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex8,
+    DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::So_hex27,
+    DRT::Element::DiscretizationType::hex27>;
 template class DRT::ELEMENTS::So3_Poro_Scatra<DRT::ELEMENTS::NURBS::So_nurbs27,
-    DRT::Element::nurbs27>;
+    DRT::Element::DiscretizationType::nurbs27>;

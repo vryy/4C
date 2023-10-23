@@ -1751,16 +1751,16 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
   switch (slaveelement.Shape())
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return MortarCellCalc<DRT::Element::tri3>(
+      return MortarCellCalc<DRT::Element::DiscretizationType::tri3>(
           impltype, masterelement, couplingtype, lmside, numdofpernode_slave, disname);
       break;
     }
 
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return MortarCellCalc<DRT::Element::quad4>(
+      return MortarCellCalc<DRT::Element::DiscretizationType::quad4>(
           impltype, masterelement, couplingtype, lmside, numdofpernode_slave, disname);
       break;
     }
@@ -1788,16 +1788,16 @@ SCATRA::MortarCellInterface* SCATRA::MortarCellFactory::MortarCellCalc(
 
   switch (masterelement.Shape())
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return MortarCellCalc<distypeS, DRT::Element::tri3>(
+      return MortarCellCalc<distypeS, DRT::Element::DiscretizationType::tri3>(
           impltype, couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
 
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return MortarCellCalc<distypeS, DRT::Element::quad4>(
+      return MortarCellCalc<distypeS, DRT::Element::DiscretizationType::quad4>(
           impltype, couplingtype, lmside, numdofpernode_slave, numdofpernode_master, disname);
       break;
     }
@@ -2316,7 +2316,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                       *master_mortar_ele, coordinates_master.data(), dummy);
 
               // check whether projected node lies inside master-side element
-              if (master_mortar_ele->Shape() == DRT::Element::quad4)
+              if (master_mortar_ele->Shape() == DRT::Element::DiscretizationType::quad4)
               {
                 if (coordinates_master[0] < -1. - ntsprojtol_ or
                     coordinates_master[1] < -1. - ntsprojtol_ or
@@ -2326,7 +2326,7 @@ void SCATRA::MeshtyingStrategyS2I::SetupMeshtying()
                   continue;
               }
 
-              else if (master_mortar_ele->Shape() == DRT::Element::tri3)
+              else if (master_mortar_ele->Shape() == DRT::Element::DiscretizationType::tri3)
               {
                 if (coordinates_master[0] < -ntsprojtol_ or coordinates_master[1] < -ntsprojtol_ or
                     coordinates_master[0] + coordinates_master[1] > 1. + 2 * ntsprojtol_)
@@ -4814,7 +4814,11 @@ void SCATRA::MortarCellAssemblyStrategy::InitCellVector(CORE::LINALG::SerialDens
 
 
 // forward declarations
-template class SCATRA::MortarCellCalc<DRT::Element::tri3, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalc<DRT::Element::tri3, DRT::Element::quad4>;
-template class SCATRA::MortarCellCalc<DRT::Element::quad4, DRT::Element::tri3>;
-template class SCATRA::MortarCellCalc<DRT::Element::quad4, DRT::Element::quad4>;
+template class SCATRA::MortarCellCalc<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalc<DRT::Element::DiscretizationType::tri3,
+    DRT::Element::DiscretizationType::quad4>;
+template class SCATRA::MortarCellCalc<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::tri3>;
+template class SCATRA::MortarCellCalc<DRT::Element::DiscretizationType::quad4,
+    DRT::Element::DiscretizationType::quad4>;

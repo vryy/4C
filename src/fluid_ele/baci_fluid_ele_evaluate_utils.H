@@ -116,8 +116,9 @@ namespace FLD
       xyze(2, inode) = x[2];
     }
 
-    if (distype == DRT::Element::hex8 || distype == DRT::Element::hex27 ||
-        distype == DRT::Element::hex20)
+    if (distype == DRT::Element::DiscretizationType::hex8 ||
+        distype == DRT::Element::DiscretizationType::hex27 ||
+        distype == DRT::Element::DiscretizationType::hex20)
     {
       double min = xyze(normdirect, 0);
       double max = xyze(normdirect, 0);
@@ -518,8 +519,9 @@ namespace FLD
       xyze(2, inode) = x[2];
     }
 
-    if (distype == DRT::Element::hex8 || distype == DRT::Element::hex27 ||
-        distype == DRT::Element::hex20)
+    if (distype == DRT::Element::DiscretizationType::hex8 ||
+        distype == DRT::Element::DiscretizationType::hex27 ||
+        distype == DRT::Element::DiscretizationType::hex20)
     {
       double min = xyze(normdirect, 0);
       double max = xyze(normdirect, 0);
@@ -920,15 +922,15 @@ namespace FLD
         CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::tet4:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
-      case DRT::Element::tet10:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
+      case DRT::Element::DiscretizationType::tet10:
+      case DRT::Element::DiscretizationType::hex20:
+      case DRT::Element::DiscretizationType::hex27:
         dserror("the box filtering operation is only permitted for linear elements\n");
         break;
       default:
@@ -1415,13 +1417,13 @@ namespace FLD
         CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
-      case DRT::Element::hex8:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
+      case DRT::Element::DiscretizationType::hex8:
+      case DRT::Element::DiscretizationType::hex20:
+      case DRT::Element::DiscretizationType::hex27:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
+      case DRT::Element::DiscretizationType::tet4:
+      case DRT::Element::DiscretizationType::tet10:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
       default:
@@ -1867,15 +1869,15 @@ namespace FLD
         CORE::DRT::UTILS::GaussRule3D::hex_1point;
     switch (distype)
     {
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::hex_1point;
         break;
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::tet4:
         integrationrule_filter = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         break;
-      case DRT::Element::tet10:
-      case DRT::Element::hex20:
-      case DRT::Element::hex27:
+      case DRT::Element::DiscretizationType::tet10:
+      case DRT::Element::DiscretizationType::hex20:
+      case DRT::Element::DiscretizationType::hex27:
         dserror("the box filtering operation is only permitted for linear elements\n");
         break;
       default:
@@ -3205,9 +3207,9 @@ namespace FLD
           gp(1)=intpoints.qxg[iquad][1];
           gp(2)=intpoints.qxg[iquad][2];
 
-          if(!(distype == DRT::Element::nurbs8
+          if(!(distype == DRT::Element::DiscretizationType::nurbs8
                ||
-               distype == DRT::Element::nurbs27))
+               distype == DRT::Element::DiscretizationType::nurbs27))
           {
             // get values of shape functions and derivatives in the gausspoint
             CORE::DRT::UTILS::shape_function_3D       (funct,gp(0),gp(1),gp(2),distype);

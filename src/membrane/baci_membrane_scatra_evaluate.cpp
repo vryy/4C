@@ -115,7 +115,7 @@ int DRT::ELEMENTS::MembraneScatra<distype>::Evaluate(Teuchos::ParameterList& par
   return 0;
 }
 
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::tri3>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::tri6>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::quad4>;
-template class DRT::ELEMENTS::MembraneScatra<DRT::Element::quad9>;
+template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::MembraneScatra<DRT::Element::DiscretizationType::quad9>;

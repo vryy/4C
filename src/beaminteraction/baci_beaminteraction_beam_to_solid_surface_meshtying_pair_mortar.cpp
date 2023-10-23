@@ -221,22 +221,22 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
     {
       switch (surface_shape)
       {
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line2>());
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line2>());
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line2>());
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line2>());
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line2>());
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line2>());
         default:
@@ -248,22 +248,22 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
     {
       switch (surface_shape)
       {
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line3>());
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line3>());
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line3>());
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line3>());
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line3>());
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line3>());
         default:
@@ -275,22 +275,22 @@ BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarFactory(
     {
       switch (surface_shape)
       {
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri3, t_line4>());
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_tri6, t_line4>());
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad4, t_line4>());
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad8, t_line4>());
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_quad9, t_line4>());
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
           return Teuchos::rcp(
               new BeamToSolidSurfaceMeshtyingPairMortar<t_hermite, t_nurbs9, t_line4>());
         default:

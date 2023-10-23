@@ -259,7 +259,10 @@ namespace DRT
       /*!
       \brief Get shape type of element
       */
-      inline DiscretizationType Shape() const override { return tet4; }
+      inline DiscretizationType Shape() const override
+      {
+        return DRT::Element::DiscretizationType::tet4;
+      }
 
       /*!
       \brief Return number of volumes of this element

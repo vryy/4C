@@ -102,13 +102,16 @@ void CONTACT::SelfBinaryTreeNode::CalculateQualifiedVectors()
   double loccenter[2];
 
   DRT::Element::DiscretizationType dt = celement->Shape();
-  if (dt == CoElement::tri3 || dt == CoElement::tri6)
+  if (dt == DRT::Element::DiscretizationType::tri3 || dt == DRT::Element::DiscretizationType::tri6)
   {
     loccenter[0] = 1.0 / 3.0;
     loccenter[1] = 1.0 / 3.0;
   }
-  else if (dt == CoElement::line2 || dt == CoElement::line3 || dt == CoElement::quad4 ||
-           dt == CoElement::quad8 || dt == CoElement::quad9)
+  else if (dt == DRT::Element::DiscretizationType::line2 ||
+           dt == DRT::Element::DiscretizationType::line3 ||
+           dt == DRT::Element::DiscretizationType::quad4 ||
+           dt == DRT::Element::DiscretizationType::quad8 ||
+           dt == DRT::Element::DiscretizationType::quad9)
   {
     loccenter[0] = 0.0;
     loccenter[1] = 0.0;
@@ -617,21 +620,21 @@ int CONTACT::SelfBinaryTree::GetEleSpecificNumNodes(DRT::Element* element)
 
   switch (mele->Shape())
   {
-    case DRT::Element::line2:
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
     {
       numnode = 2;
       break;
     }
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
     {
       numnode = 3;
       break;
     }
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
     {
       numnode = 4;
       break;

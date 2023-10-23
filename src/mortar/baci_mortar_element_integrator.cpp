@@ -28,10 +28,10 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
 
   switch (eletype)
   {
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-    case DRT::Element::nurbs2:
-    case DRT::Element::nurbs3:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
+    case DRT::Element::DiscretizationType::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
       const CORE::DRT::UTILS::IntegrationPoints1D intpoints(
           CORE::DRT::UTILS::GaussRule1D::line_5point);
@@ -46,22 +46,22 @@ MORTAR::ElementIntegrator::ElementIntegrator(DRT::Element::DiscretizationType el
       }
       break;
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::tri_7point));
       break;
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::tri_16point));
       break;
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::quad_9point));
       break;
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::nurbs4:
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
+    case DRT::Element::DiscretizationType::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs9:
       rule2d = Teuchos::rcp(
           new CORE::DRT::UTILS::IntegrationPoints2D(CORE::DRT::UTILS::GaussRule2D::quad_25point));
       break;

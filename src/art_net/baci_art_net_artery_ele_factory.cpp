@@ -22,9 +22,9 @@ DRT::ELEMENTS::ArteryEleInterface* DRT::ELEMENTS::ArtNetFactory::ProvideImpl(
 {
   switch (distype)
   {
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return DefineProblemType<DRT::Element::line2>(problem, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::line2>(problem, disname);
 
       break;
     }

@@ -42,52 +42,52 @@ namespace DRT
     {
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::tet4>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::tet4>
     {
       static const int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::tet10>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::tet10>
     {
       static const int numCornerNodes = 4;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::hex8>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::hex8>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::hex20>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::hex20>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::hex27>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::hex27>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::pyramid5>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::pyramid5>
     {
       static const int numCornerNodes = 5;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::wedge6>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::wedge6>
     {
       static const int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::wedge15>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::wedge15>
     {
       static const int numCornerNodes = 6;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::nurbs8>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::nurbs8>
     {
       static const int numCornerNodes = 8;
     };
     template <>
-    struct DisTypeToNumCornerNodes<DRT::Element::nurbs27>
+    struct DisTypeToNumCornerNodes<DRT::Element::DiscretizationType::nurbs27>
     {
       static const int numCornerNodes = 8;
     };

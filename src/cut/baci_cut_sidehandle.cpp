@@ -72,7 +72,7 @@ CORE::GEO::CUT::Quad4SideHandle::Quad4SideHandle(Mesh& mesh, int sid, const std:
   // create middle node
 
   CORE::LINALG::Matrix<4, 1> funct;
-  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad4);
+  CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::DiscretizationType::quad4);
 
   CORE::LINALG::Matrix<3, 1> xyz;
   xyz.Multiply(xyze, funct);
@@ -169,7 +169,7 @@ CORE::GEO::CUT::Quad8SideHandle::Quad8SideHandle(
     // create middle node
 
     CORE::LINALG::Matrix<8, 1> funct;
-    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::quad8);
+    CORE::DRT::UTILS::shape_function_2D(funct, 0.0, 0.0, ::DRT::Element::DiscretizationType::quad8);
 
     CORE::LINALG::Matrix<3, 1> xyz;
     xyz.Multiply(xyze, funct);
@@ -310,7 +310,8 @@ void CORE::GEO::CUT::Tri6SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::tri6>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::tri6>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -331,7 +332,8 @@ void CORE::GEO::CUT::Quad4SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad4>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::quad4>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -352,7 +354,8 @@ void CORE::GEO::CUT::Quad8SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad8>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::quad8>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {
@@ -373,7 +376,8 @@ void CORE::GEO::CUT::Quad9SideHandle::LocalCoordinates(
     n->Coordinates(&xyze(0, i));
   }
 
-  Teuchos::RCP<Position> pos = PositionFactory::BuildPosition<3, ::DRT::Element::quad9>(xyze, xyz);
+  Teuchos::RCP<Position> pos =
+      PositionFactory::BuildPosition<3, ::DRT::Element::DiscretizationType::quad9>(xyze, xyz);
   bool success = pos->Compute();
   if (not success)
   {

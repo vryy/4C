@@ -128,7 +128,7 @@ namespace CORE::GEO
       template <unsigned rdim>
       static Teuchos::RCP<Position> Create(const std::vector<Node*> nodes,
           const CORE::LINALG::Matrix<rdim, 1>& xyz,
-          ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
+          ::DRT::Element::DiscretizationType distype = ::DRT::Element::DiscretizationType::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double);
 
       /// @}
@@ -580,7 +580,7 @@ namespace CORE::GEO
        *  \param distype (in) : element discretization type. (optional)
        *  \param floattype (in) : Floattype to compute geometric operations. */
       Teuchos::RCP<Position> CreatePosition(const std::vector<Node*> nodes, const double* xyz,
-          ::DRT::Element::DiscretizationType distype = ::DRT::Element::dis_none,
+          ::DRT::Element::DiscretizationType distype = ::DRT::Element::DiscretizationType::dis_none,
           INPAR::CUT::CUT_Floattype floattype = INPAR::CUT::floattype_double) const;
 
       /// \brief specify general floattype for all geometric operations in CORE::GEO::CUT::POSITON

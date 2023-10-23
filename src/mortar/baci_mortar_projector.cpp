@@ -28,56 +28,56 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& ele)
 {
   switch (ele.Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return MortarProjectorCalc<DRT::Element::quad4>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return MortarProjectorCalc<DRT::Element::quad8>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return MortarProjectorCalc<DRT::Element::quad9>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return MortarProjectorCalc<DRT::Element::tri3>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::tri3>::Instance();
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return MortarProjectorCalc<DRT::Element::tri6>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::tri6>::Instance();
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return MortarProjectorCalc<DRT::Element::line2>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::line2>::Instance();
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      return MortarProjectorCalc<DRT::Element::line3>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::line3>::Instance();
     }
       //==================================================
       //                     NURBS
       //==================================================
-    case DRT::Element::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
     {
-      return MortarProjectorCalc<DRT::Element::nurbs2>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::nurbs2>::Instance();
     }
-    case DRT::Element::nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
-      return MortarProjectorCalc<DRT::Element::nurbs3>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::nurbs3>::Instance();
     }
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
-      return MortarProjectorCalc<DRT::Element::nurbs4>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::nurbs4>::Instance();
     }
-    case DRT::Element::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs8:
     {
-      return MortarProjectorCalc<DRT::Element::nurbs8>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::nurbs8>::Instance();
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      return MortarProjectorCalc<DRT::Element::nurbs9>::Instance();
+      return MortarProjectorCalc<DRT::Element::DiscretizationType::nurbs9>::Instance();
     }
     default:
       dserror("Element shape %d (%d nodes) not activated. Just do it.", ele.Shape(), ele.NumNode());
@@ -93,34 +93,39 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
 {
   switch (sele.Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::quad4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad4,
+              DRT::Element::DiscretizationType::quad4>::Instance();
         }
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::quad8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad4,
+              DRT::Element::DiscretizationType::quad8>::Instance();
         }
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::quad9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad4,
+              DRT::Element::DiscretizationType::quad9>::Instance();
         }
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::tri3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad4,
+              DRT::Element::DiscretizationType::tri3>::Instance();
         }
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad4, DRT::Element::tri6>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad4,
+              DRT::Element::DiscretizationType::tri6>::Instance();
         }
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad4,
-              DRT::Element::nurbs9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad4,
+              DRT::Element::DiscretizationType::nurbs9>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -128,29 +133,34 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::quad4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad8,
+              DRT::Element::DiscretizationType::quad4>::Instance();
         }
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::quad8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad8,
+              DRT::Element::DiscretizationType::quad8>::Instance();
         }
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::quad9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad8,
+              DRT::Element::DiscretizationType::quad9>::Instance();
         }
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::tri3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad8,
+              DRT::Element::DiscretizationType::tri3>::Instance();
         }
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad8, DRT::Element::tri6>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad8,
+              DRT::Element::DiscretizationType::tri6>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -158,29 +168,34 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::quad4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad9,
+              DRT::Element::DiscretizationType::quad4>::Instance();
         }
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::quad8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad9,
+              DRT::Element::DiscretizationType::quad8>::Instance();
         }
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::quad9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad9,
+              DRT::Element::DiscretizationType::quad9>::Instance();
         }
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::tri3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad9,
+              DRT::Element::DiscretizationType::tri3>::Instance();
         }
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::quad9, DRT::Element::tri6>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::quad9,
+              DRT::Element::DiscretizationType::tri6>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -188,29 +203,34 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::quad4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri3,
+              DRT::Element::DiscretizationType::quad4>::Instance();
         }
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::quad8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri3,
+              DRT::Element::DiscretizationType::quad8>::Instance();
         }
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::quad9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri3,
+              DRT::Element::DiscretizationType::quad9>::Instance();
         }
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::tri3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri3,
+              DRT::Element::DiscretizationType::tri3>::Instance();
         }
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri3, DRT::Element::tri6>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri3,
+              DRT::Element::DiscretizationType::tri6>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -218,29 +238,34 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::quad4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri6,
+              DRT::Element::DiscretizationType::quad4>::Instance();
         }
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::quad8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri6,
+              DRT::Element::DiscretizationType::quad8>::Instance();
         }
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::quad9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri6,
+              DRT::Element::DiscretizationType::quad9>::Instance();
         }
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::tri3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri6,
+              DRT::Element::DiscretizationType::tri3>::Instance();
         }
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::tri6, DRT::Element::tri6>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::tri6,
+              DRT::Element::DiscretizationType::tri6>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -248,17 +273,19 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::line2:
+        case DRT::Element::DiscretizationType::line2:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::line2, DRT::Element::line2>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::line2,
+              DRT::Element::DiscretizationType::line2>::Instance();
         }
-        case DRT::Element::line3:
+        case DRT::Element::DiscretizationType::line3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::line2, DRT::Element::line3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::line2,
+              DRT::Element::DiscretizationType::line3>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -266,17 +293,19 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::line2:
+        case DRT::Element::DiscretizationType::line2:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::line3, DRT::Element::line2>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::line3,
+              DRT::Element::DiscretizationType::line2>::Instance();
         }
-        case DRT::Element::line3:
+        case DRT::Element::DiscretizationType::line3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::line3, DRT::Element::line3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::line3,
+              DRT::Element::DiscretizationType::line3>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -287,19 +316,19 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       //==================================================
       //                     NURBS
       //==================================================
-    case DRT::Element::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::nurbs2:
+        case DRT::Element::DiscretizationType::nurbs2:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs2,
-              DRT::Element::nurbs2>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs2,
+              DRT::Element::DiscretizationType::nurbs2>::Instance();
         }
-        case DRT::Element::nurbs3:
+        case DRT::Element::DiscretizationType::nurbs3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs2,
-              DRT::Element::nurbs3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs2,
+              DRT::Element::DiscretizationType::nurbs3>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -307,19 +336,19 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::nurbs2:
+        case DRT::Element::DiscretizationType::nurbs2:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs3,
-              DRT::Element::nurbs2>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs3,
+              DRT::Element::DiscretizationType::nurbs2>::Instance();
         }
-        case DRT::Element::nurbs3:
+        case DRT::Element::DiscretizationType::nurbs3:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs3,
-              DRT::Element::nurbs3>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs3,
+              DRT::Element::DiscretizationType::nurbs3>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -327,24 +356,24 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::nurbs4:
+        case DRT::Element::DiscretizationType::nurbs4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs4,
-              DRT::Element::nurbs4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs4,
+              DRT::Element::DiscretizationType::nurbs4>::Instance();
         }
-        case DRT::Element::nurbs8:
+        case DRT::Element::DiscretizationType::nurbs8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs4,
-              DRT::Element::nurbs8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs4,
+              DRT::Element::DiscretizationType::nurbs8>::Instance();
         }
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs4,
-              DRT::Element::nurbs9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs4,
+              DRT::Element::DiscretizationType::nurbs9>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -352,24 +381,24 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs8:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::nurbs4:
+        case DRT::Element::DiscretizationType::nurbs4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs8,
-              DRT::Element::nurbs4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs8,
+              DRT::Element::DiscretizationType::nurbs4>::Instance();
         }
-        case DRT::Element::nurbs8:
+        case DRT::Element::DiscretizationType::nurbs8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs8,
-              DRT::Element::nurbs8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs8,
+              DRT::Element::DiscretizationType::nurbs8>::Instance();
         }
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs8,
-              DRT::Element::nurbs9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs8,
+              DRT::Element::DiscretizationType::nurbs9>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -377,29 +406,29 @@ MORTAR::MortarProjector* MORTAR::MortarProjector::Impl(MortarElement& sele, Mort
       }
       break;
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       switch (mele.Shape())
       {
-        case DRT::Element::nurbs4:
+        case DRT::Element::DiscretizationType::nurbs4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs9,
-              DRT::Element::nurbs4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs9,
+              DRT::Element::DiscretizationType::nurbs4>::Instance();
         }
-        case DRT::Element::nurbs8:
+        case DRT::Element::DiscretizationType::nurbs8:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs9,
-              DRT::Element::nurbs8>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs9,
+              DRT::Element::DiscretizationType::nurbs8>::Instance();
         }
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs9,
-              DRT::Element::nurbs9>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs9,
+              DRT::Element::DiscretizationType::nurbs9>::Instance();
         }
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
-          return MortarProjectorCalc_EleBased<DRT::Element::nurbs9,
-              DRT::Element::quad4>::Instance();
+          return MortarProjectorCalc_EleBased<DRT::Element::DiscretizationType::nurbs9,
+              DRT::Element::DiscretizationType::quad4>::Instance();
         }
         default:
           dserror("Element shape not supported!");
@@ -606,7 +635,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     if (!mynodes) dserror("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if (distypeS == DRT::Element::nurbs2 || distypeS == DRT::Element::nurbs3)
+    if (distypeS == DRT::Element::DiscretizationType::nurbs2 ||
+        distypeS == DRT::Element::DiscretizationType::nurbs3)
     {
       CORE::LINALG::SerialDenseVector auxval(ns_);
       CORE::LINALG::SerialDenseMatrix deriv(ns_, 1);
@@ -684,9 +714,10 @@ template <DRT::Element::DiscretizationType distypeS, DRT::Element::Discretizatio
 bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::CheckProjection4AUXPLANE(
     MORTAR::MortarElement& ele, double* ngp, double* globgp)
 {
-  if (ele.Shape() == DRT::Element::tri3) dserror("ELEMENT SHAPE TRI3 -- NO WARPING");
+  if (ele.Shape() == DRT::Element::DiscretizationType::tri3)
+    dserror("ELEMENT SHAPE TRI3 -- NO WARPING");
 
-  if (ele.Shape() != DRT::Element::quad4)
+  if (ele.Shape() != DRT::Element::DiscretizationType::quad4)
   {
     return true;
   }
@@ -853,8 +884,9 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     if (!mypoints) dserror("ProjectGaussPoint: Null pointer!");
 
     // get shape function values and derivatives at gpeta
-    if (distypeS == DRT::Element::nurbs4 || distypeS == DRT::Element::nurbs8 ||
-        distypeS == DRT::Element::nurbs9)
+    if (distypeS == DRT::Element::DiscretizationType::nurbs4 ||
+        distypeS == DRT::Element::DiscretizationType::nurbs8 ||
+        distypeS == DRT::Element::DiscretizationType::nurbs9)
     {
       CORE::LINALG::SerialDenseVector auxval(ns_);
       CORE::LINALG::SerialDenseMatrix deriv(ns_, 2);
@@ -901,7 +933,8 @@ bool MORTAR::MortarProjectorCalc_EleBased<distypeS, distypeM>::ProjectGaussPoint
     DRT::Element::DiscretizationType dt = ele.Shape();
     double eta[2] = {0.0, 0.0};
 
-    if (dt == DRT::Element::tri3 || dt == DRT::Element::tri6)
+    if (dt == DRT::Element::DiscretizationType::tri3 ||
+        dt == DRT::Element::DiscretizationType::tri6)
     {
       eta[0] = 1.0 / 3.0;
       eta[1] = 1.0 / 3.0;
@@ -993,8 +1026,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectGaussPointAuxn3D(
 
     switch (dt)
     {
-      case DRT::Element::tri3:
-      case DRT::Element::tri6:
+      case DRT::Element::DiscretizationType::tri3:
+      case DRT::Element::DiscretizationType::tri6:
       {
         eta[0] = 1.0 / 3.0;
         eta[1] = 1.0 / 3.0;
@@ -1082,8 +1115,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3D(MORTAR::Morta
   double eta[2] = {0.0, 0.0};
   switch (distype)
   {
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
     {
       eta[0] = 1.0 / 3.0;
       eta[1] = 1.0 / 3.0;
@@ -1250,7 +1283,8 @@ bool MORTAR::MortarProjectorCalc<distype>::ProjectSNodeByMNormal3DLin(MORTAR::Mo
 
   // start in the element center
   double eta[2] = {0.0, 0.0};
-  if (distype == DRT::Element::tri3 || distype == DRT::Element::tri6)
+  if (distype == DRT::Element::DiscretizationType::tri3 ||
+      distype == DRT::Element::DiscretizationType::tri6)
   {
     eta[0] = 1.0 / 3.0;
     eta[1] = 1.0 / 3.0;
@@ -2644,7 +2678,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateFElementNormal(
   CORE::LINALG::Matrix<ndim_, n_> coord;
 
   // get shape function values and derivatives at gpeta
-  if (distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3)
+  if (distype == DRT::Element::DiscretizationType::nurbs2 ||
+      distype == DRT::Element::DiscretizationType::nurbs3)
   {
     CORE::LINALG::SerialDenseVector auxval(n_);
     CORE::LINALG::SerialDenseMatrix deriv(n_, 1);
@@ -2718,7 +2753,8 @@ double MORTAR::MortarProjectorCalc<distype>::EvaluateGradFElementNormal(
   if (!mynodes) dserror("EvaluateGradFElementNormal: Null pointer!");
 
   // get shape function values and derivatives at gpeta
-  if (distype == DRT::Element::nurbs2 || distype == DRT::Element::nurbs3)
+  if (distype == DRT::Element::DiscretizationType::nurbs2 ||
+      distype == DRT::Element::DiscretizationType::nurbs3)
   {
     CORE::LINALG::SerialDenseVector auxval(n_);
     CORE::LINALG::SerialDenseMatrix auxderiv(n_, 1);

@@ -48,4 +48,4 @@ double DRT::ELEMENTS::ArteryEleCalc<distype>::CalculateEleLength(Artery* ele)
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::ArteryEleCalc<DRT::Element::line2>;
+template class DRT::ELEMENTS::ArteryEleCalc<DRT::Element::DiscretizationType::line2>;

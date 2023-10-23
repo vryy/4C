@@ -25,8 +25,8 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
   std::copy(nids.begin(), nids.end(), std::ostream_iterator<int>(std::cout, ", "));
   std::cout << distype << " );\n";
 #endif
-  if (distype == ::DRT::Element::tri3 ||
-      (distype == ::DRT::Element::quad4 && !options.SplitCutSides()))
+  if (distype == ::DRT::Element::DiscretizationType::tri3 ||
+      (distype == ::DRT::Element::DiscretizationType::quad4 && !options.SplitCutSides()))
   {
     std::map<int, LinearSideHandle>::iterator i = linearsides_.find(sid);
     if (i != linearsides_.end())
@@ -39,8 +39,10 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
     lsh = LinearSideHandle(s);
     return &lsh;
   }
-  else if (distype == ::DRT::Element::quad4 || distype == ::DRT::Element::quad8 ||
-           distype == ::DRT::Element::quad9 || distype == ::DRT::Element::tri6)
+  else if (distype == ::DRT::Element::DiscretizationType::quad4 ||
+           distype == ::DRT::Element::DiscretizationType::quad8 ||
+           distype == ::DRT::Element::DiscretizationType::quad9 ||
+           distype == ::DRT::Element::DiscretizationType::tri6)
   {
     // each non-tri3 side will be subdivided into tri3-subsides carrying the same side id as the
     // parent side
@@ -53,22 +55,22 @@ CORE::GEO::CUT::SideHandle* CORE::GEO::CUT::MeshHandle::CreateSide(int sid,
     QuadraticSideHandle* qsh = nullptr;
     switch (distype)
     {
-      case ::DRT::Element::quad4:
+      case ::DRT::Element::DiscretizationType::quad4:
       {
         qsh = new Quad4SideHandle(mesh_, sid, nids);
         break;
       }
-      case ::DRT::Element::quad8:
+      case ::DRT::Element::DiscretizationType::quad8:
       {
         qsh = new Quad8SideHandle(mesh_, sid, nids);
         break;
       }
-      case ::DRT::Element::quad9:
+      case ::DRT::Element::DiscretizationType::quad9:
       {
         qsh = new Quad9SideHandle(mesh_, sid, nids);
         break;
       }
-      case ::DRT::Element::tri6:
+      case ::DRT::Element::DiscretizationType::tri6:
       {
         qsh = new Tri6SideHandle(mesh_, sid, nids);
         break;
@@ -114,13 +116,13 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(Element& element)
     {
       if (elementsidenodeids.size() == 3)
       {
-        Side* s = mesh_.CreateSide(-1, sidenodeids, ::DRT::Element::tri3);
+        Side* s = mesh_.CreateSide(-1, sidenodeids, ::DRT::Element::DiscretizationType::tri3);
         LinearSideHandle& lsh = elementlinearsides_[elementsidenodeids];
         lsh = LinearSideHandle(s);
       }
       else if (elementsidenodeids.size() == 4)
       {
-        Side* s = mesh_.CreateSide(-1, sidenodeids, ::DRT::Element::quad4);
+        Side* s = mesh_.CreateSide(-1, sidenodeids, ::DRT::Element::DiscretizationType::quad4);
         LinearSideHandle& lsh = elementlinearsides_[elementsidenodeids];
         lsh = LinearSideHandle(s);
       }
@@ -137,7 +139,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
 {
   switch (distype)
   {
-    case ::DRT::Element::wedge15:
+    case ::DRT::Element::DiscretizationType::wedge15:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -264,7 +266,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
       }
       break;
     }
-    case ::DRT::Element::hex20:
+    case ::DRT::Element::DiscretizationType::hex20:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -424,7 +426,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
       }
       break;
     }
-    case ::DRT::Element::hex27:
+    case ::DRT::Element::DiscretizationType::hex27:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -596,7 +598,7 @@ void CORE::GEO::CUT::MeshHandle::CreateElementSides(
       }
       break;
     }
-    case ::DRT::Element::tet10:
+    case ::DRT::Element::DiscretizationType::tet10:
     {
       plain_int_set sidenodeids;
       sidenodeids.insert(nids[0]);
@@ -709,13 +711,13 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
 #endif
   switch (distype)
   {
-    case ::DRT::Element::line2:
-    case ::DRT::Element::tri3:
-    case ::DRT::Element::quad4:
-    case ::DRT::Element::hex8:
-    case ::DRT::Element::tet4:
-    case ::DRT::Element::pyramid5:
-    case ::DRT::Element::wedge6:
+    case ::DRT::Element::DiscretizationType::line2:
+    case ::DRT::Element::DiscretizationType::tri3:
+    case ::DRT::Element::DiscretizationType::quad4:
+    case ::DRT::Element::DiscretizationType::hex8:
+    case ::DRT::Element::DiscretizationType::tet4:
+    case ::DRT::Element::DiscretizationType::pyramid5:
+    case ::DRT::Element::DiscretizationType::wedge6:
     {
       std::map<int, LinearElementHandle>::iterator i = linearelements_.find(eid);
       if (i != linearelements_.end())
@@ -729,10 +731,10 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
       CreateElementSides(*e);
       return &leh;
     }
-    case ::DRT::Element::hex20:
-    case ::DRT::Element::hex27:
-    case ::DRT::Element::tet10:
-    case ::DRT::Element::wedge15:
+    case ::DRT::Element::DiscretizationType::hex20:
+    case ::DRT::Element::DiscretizationType::hex27:
+    case ::DRT::Element::DiscretizationType::tet10:
+    case ::DRT::Element::DiscretizationType::wedge15:
     {
       std::map<int, Teuchos::RCP<QuadraticElementHandle>>::iterator i =
           quadraticelements_.find(eid);
@@ -743,22 +745,22 @@ CORE::GEO::CUT::ElementHandle* CORE::GEO::CUT::MeshHandle::CreateElement(
       QuadraticElementHandle* qeh = nullptr;
       switch (distype)
       {
-        case ::DRT::Element::hex20:
+        case ::DRT::Element::DiscretizationType::hex20:
         {
           qeh = new Hex20ElementHandle(mesh_, eid, nids);
           break;
         }
-        case ::DRT::Element::hex27:
+        case ::DRT::Element::DiscretizationType::hex27:
         {
           qeh = new Hex27ElementHandle(mesh_, eid, nids);
           break;
         }
-        case ::DRT::Element::tet10:
+        case ::DRT::Element::DiscretizationType::tet10:
         {
           qeh = new Tet10ElementHandle(mesh_, eid, nids);
           break;
         }
-        case ::DRT::Element::wedge15:
+        case ::DRT::Element::DiscretizationType::wedge15:
         {
           qeh = new Wedge15ElementHandle(mesh_, eid, nids);
           break;

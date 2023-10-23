@@ -88,45 +88,47 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetAnisotropicPermeabilityDirecti
   if (eletypename == "So_tet4PoroType")
   {
     fluid->SetAnisotropicPermeabilityDirections(
-        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4,
+                DRT::Element::DiscretizationType::tet4>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
   else if (eletypename == "So_tet10PoroType")
   {
     fluid->SetAnisotropicPermeabilityDirections(
-        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(
-             oldele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10,
+                DRT::Element::DiscretizationType::tet10>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
   else if (eletypename == "So_hex8PoroType")
   {
     fluid->SetAnisotropicPermeabilityDirections(
-        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8,
+                DRT::Element::DiscretizationType::hex8>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
   else if (eletypename == "So_hex27PoroType")
   {
     fluid->SetAnisotropicPermeabilityDirections(
-        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(
-             oldele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27,
+                DRT::Element::DiscretizationType::hex27>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
   else if (eletypename == "WallQuad4PoroType")
   {
     fluid->SetAnisotropicPermeabilityDirections(
-        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
   else if (eletypename == "WallQuad9PoroType")
   {
     fluid->SetAnisotropicPermeabilityDirections(
-        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad9>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
   else if (eletypename == "WallTri3PoroType")
   {
     fluid->SetAnisotropicPermeabilityDirections(
-        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>*>(oldele))
             ->GetAnisotropicPermeabilityDirections());
   }
   else if (eletypename == "SolidPoroType")
@@ -150,25 +152,27 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetAnisotropicPermeabilityNodalCo
   if (eletypename == "So_tet4PoroType")
   {
     fluid->SetAnisotropicPermeabilityNodalCoeffs(
-        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4,
+                DRT::Element::DiscretizationType::tet4>*>(oldele))
             ->GetAnisotropicPermeabilityNodalCoeffs());
   }
   else if (eletypename == "So_hex8PoroType")
   {
     fluid->SetAnisotropicPermeabilityNodalCoeffs(
-        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8,
+                DRT::Element::DiscretizationType::hex8>*>(oldele))
             ->GetAnisotropicPermeabilityNodalCoeffs());
   }
   else if (eletypename == "WallQuad4PoroType")
   {
     fluid->SetAnisotropicPermeabilityNodalCoeffs(
-        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>*>(oldele))
             ->GetAnisotropicPermeabilityNodalCoeffs());
   }
   else if (eletypename == "WallTri3PoroType")
   {
     fluid->SetAnisotropicPermeabilityNodalCoeffs(
-        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>*>(oldele))
+        (dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>*>(oldele))
             ->GetAnisotropicPermeabilityNodalCoeffs());
   }
   else if (eletypename == "SolidPoroType")

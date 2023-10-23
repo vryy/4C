@@ -259,7 +259,7 @@ void create_quad4_cylinder_mesh(
       nids.push_back(numnode + ((i + 1) % (rows)) + (j + 1) * rownodes);
       nids.push_back(numnode + ((i) % (rows)) + (j + 1) * rownodes);
 
-      intersection.AddCutSide(numele++, nids, DRT::Element::quad4);
+      intersection.AddCutSide(numele++, nids, DRT::Element::DiscretizationType::quad4);
     }
   }
 
@@ -379,52 +379,52 @@ SimpleWrapper::~SimpleWrapper() { delete mesh_; }
 
 void SimpleWrapper::CreateHex8(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(DRT::Element::hex8, xyze);
+  CreateElement(DRT::Element::DiscretizationType::hex8, xyze);
 }
 
 void SimpleWrapper::CreateTet4(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(DRT::Element::tet4, xyze);
+  CreateElement(DRT::Element::DiscretizationType::tet4, xyze);
 }
 
 void SimpleWrapper::CreatePyramid5(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(DRT::Element::pyramid5, xyze);
+  CreateElement(DRT::Element::DiscretizationType::pyramid5, xyze);
 }
 
 void SimpleWrapper::CreateWedge6(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElement(DRT::Element::wedge6, xyze);
+  CreateElement(DRT::Element::DiscretizationType::wedge6, xyze);
 }
 
 void SimpleWrapper::CreateHex8Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(DRT::Element::hex8, xyze);
+  CreateElementSides(DRT::Element::DiscretizationType::hex8, xyze);
 }
 
 void SimpleWrapper::CreateTet4Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(DRT::Element::tet4, xyze);
+  CreateElementSides(DRT::Element::DiscretizationType::tet4, xyze);
 }
 
 void SimpleWrapper::CreatePyramid5Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(DRT::Element::pyramid5, xyze);
+  CreateElementSides(DRT::Element::DiscretizationType::pyramid5, xyze);
 }
 
 void SimpleWrapper::CreateWedge6Sides(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateElementSides(DRT::Element::wedge6, xyze);
+  CreateElementSides(DRT::Element::DiscretizationType::wedge6, xyze);
 }
 
 void SimpleWrapper::CreateTri3(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateSide(DRT::Element::tri3, xyze);
+  CreateSide(DRT::Element::DiscretizationType::tri3, xyze);
 }
 
 void SimpleWrapper::CreateQuad4(const CORE::LINALG::SerialDenseMatrix& xyze)
 {
-  CreateSide(DRT::Element::quad4, xyze);
+  CreateSide(DRT::Element::DiscretizationType::quad4, xyze);
 }
 
 void SimpleWrapper::CreateHex8(double dx, double dy, double dz)
@@ -551,7 +551,7 @@ void SimpleWrapper::CreateElementSides(
 
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       CORE::LINALG::SerialDenseMatrix side_xyze(3, 4);
       for (int i = 0; i < 6; ++i)
@@ -561,11 +561,11 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::DRT::UTILS::eleNodeNumbering_hex27_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
-        CreateSide(DRT::Element::quad4, side_xyze);
+        CreateSide(DRT::Element::DiscretizationType::quad4, side_xyze);
       }
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       CORE::LINALG::SerialDenseMatrix side_xyze(3, 3);
       for (int i = 0; i < 4; ++i)
@@ -575,11 +575,11 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::DRT::UTILS::eleNodeNumbering_tet10_surfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &side_xyze(0, j));
         }
-        CreateSide(DRT::Element::tri3, side_xyze);
+        CreateSide(DRT::Element::DiscretizationType::tri3, side_xyze);
       }
       break;
     }
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
     {
       CORE::LINALG::SerialDenseMatrix quad4_side_xyze(3, 4);
       CORE::LINALG::SerialDenseMatrix tri3_side_xyze(3, 3);
@@ -590,7 +590,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::DRT::UTILS::eleNodeNumbering_pyramid5_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
-        CreateSide(DRT::Element::tri3, tri3_side_xyze);
+        CreateSide(DRT::Element::DiscretizationType::tri3, tri3_side_xyze);
       }
       for (int i = 0; i < 1; ++i)
       {
@@ -599,11 +599,11 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::DRT::UTILS::eleNodeNumbering_pyramid5_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
-        CreateSide(DRT::Element::quad4, quad4_side_xyze);
+        CreateSide(DRT::Element::DiscretizationType::quad4, quad4_side_xyze);
       }
       break;
     }
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
     {
       CORE::LINALG::SerialDenseMatrix quad4_side_xyze(3, 4);
       CORE::LINALG::SerialDenseMatrix tri3_side_xyze(3, 3);
@@ -614,7 +614,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::DRT::UTILS::eleNodeNumbering_wedge18_trisurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &tri3_side_xyze(0, j));
         }
-        CreateSide(DRT::Element::tri3, tri3_side_xyze);
+        CreateSide(DRT::Element::DiscretizationType::tri3, tri3_side_xyze);
       }
       for (int i = 0; i < 3; ++i)
       {
@@ -623,7 +623,7 @@ void SimpleWrapper::CreateElementSides(
           int node = CORE::DRT::UTILS::eleNodeNumbering_wedge18_quadsurfaces[i][j];
           std::copy(&xyze(0, node), &xyze(0, node) + 3, &quad4_side_xyze(0, j));
         }
-        CreateSide(DRT::Element::quad4, quad4_side_xyze);
+        CreateSide(DRT::Element::DiscretizationType::quad4, quad4_side_xyze);
       }
       break;
     }

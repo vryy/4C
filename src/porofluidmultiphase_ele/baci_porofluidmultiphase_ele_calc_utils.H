@@ -66,102 +66,102 @@ namespace POROFLUIDMULTIPHASE
     {
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::hex8>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::hex8>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::tet4>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::tet4>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::wedge6>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::wedge6>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::pyramid5>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::pyramid5>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::nurbs8>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::nurbs8>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::quad4>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::quad4>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::nurbs4>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::nurbs4>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::tri3>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::tri3>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::line2>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::line2>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::nurbs2>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::nurbs2>
     {
       static const bool use = false;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::hex20>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::hex20>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::hex27>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::hex27>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::nurbs27>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::nurbs27>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::tet10>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::tet10>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::quad8>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::quad8>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::quad9>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::quad9>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::nurbs9>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::nurbs9>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::tri6>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::tri6>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::line3>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::line3>
     {
       static const bool use = true;
     };
     template <>
-    struct Use2ndDerivs<DRT::Element::nurbs3>
+    struct Use2ndDerivs<DRT::Element::DiscretizationType::nurbs3>
     {
       static const bool use = true;
     };
@@ -173,103 +173,103 @@ namespace POROFLUIDMULTIPHASE
     {
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::hex8>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::hex8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::hex20>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::hex20>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::hex27>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::hex27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tet4>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::tet4>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tet10>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::tet10>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::tet_5point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::wedge6>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::wedge6>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::pyramid5>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::pyramid5>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule =
           CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs8>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::nurbs8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs27>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::nurbs27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::quad4>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::quad4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::quad8>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::quad8>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::quad9>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::quad9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tri3>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::tri3>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::tri6>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::tri6>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs4>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::nurbs4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs9>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::nurbs9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::line2>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::line2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::line3>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::line3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs2>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::nurbs2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
-    struct DisTypeToOptGaussRule<DRT::Element::nurbs3>
+    struct DisTypeToOptGaussRule<DRT::Element::DiscretizationType::nurbs3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
     };
@@ -281,102 +281,102 @@ namespace POROFLUIDMULTIPHASE
     {
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::hex8>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::hex8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::hex20>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::hex20>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::hex27>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::hex27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tet4>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::tet4>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tet10>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::tet10>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::wedge6>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::wedge6>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::pyramid5>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::pyramid5>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs8>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::nurbs8>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs27>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::nurbs27>
     {
       static const CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::quad4>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::quad4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::quad8>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::quad8>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::quad9>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::quad9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tri3>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::tri3>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::tri6>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::tri6>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs4>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::nurbs4>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs9>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::nurbs9>
     {
       static const CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::line2>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::line2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
     };  // not tested
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::line3>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::line3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs2>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::nurbs2>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
     };
     template <>
-    struct DisTypeToGaussRuleForExactSol<DRT::Element::nurbs3>
+    struct DisTypeToGaussRuleForExactSol<DRT::Element::DiscretizationType::nurbs3>
     {
       static const CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
     };

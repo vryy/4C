@@ -454,7 +454,8 @@ void CONTACT::CoNitscheStrategy::ReconnectParentElements()
 
       faceele->SetParentMasterElement(vele, faceele->FaceParentNumber());
 
-      auto* vele_plast = dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>*>(vele);
+      auto* vele_plast =
+          dynamic_cast<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>*>(vele);
       if (vele_plast) vele_plast->SetIsNitscheContactEle(true);
     }
   }

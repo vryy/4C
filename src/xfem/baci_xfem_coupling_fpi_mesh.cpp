@@ -762,11 +762,11 @@ void XFEM::MeshCouplingFPI::SetConditionSpecificParameters()
     for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
     {
       DRT::Element* fluid_ele = bg_dis_->lRowElement(ele);
-      if (fluid_ele->Shape() == DRT::Element::hex8)
+      if (fluid_ele->Shape() == DRT::Element::DiscretizationType::hex8)
       {
         CORE::LINALG::Matrix<3, 8> xyze(true);
         CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
-        double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
+        double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
       else
@@ -950,7 +950,7 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
   DRT::Element* coupl_ele = fele->ParentElement();
 
-  if (fele->Shape() == DRT::Element::quad4)
+  if (fele->Shape() == DRT::Element::DiscretizationType::quad4)
   {
     pres = 0.0;
 
@@ -974,10 +974,10 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
     {
       pxsi(idim) = pqxg(0, idim);
     }
-    if (coupl_ele->Shape() == DRT::Element::hex8)
+    if (coupl_ele->Shape() == DRT::Element::DiscretizationType::hex8)
     {
-      const size_t PARENT_NEN =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
+      const size_t PARENT_NEN = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+          DRT::Element::DiscretizationType::hex8>::numNodePerElement;
       CORE::LINALG::Matrix<PARENT_NEN, 1> pfunc_loc(
           true);  // derivatives of parent element shape functions in parent element coordinate
                   // system
@@ -987,8 +987,9 @@ double XFEM::MeshCouplingFPI::ComputeJacobianandPressure(
 
       // evaluate derivatives of parent element shape functions at current integration point in
       // parent coordinate system
-      CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(pxsi, pfunc_loc);
-      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(pxsi, pderiv_loc);
+      CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::hex8>(pxsi, pfunc_loc);
+      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex8>(
+          pxsi, pderiv_loc);
       //
       // get Jacobian matrix and determinant w.r.t. spatial configuration
       //

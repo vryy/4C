@@ -355,7 +355,7 @@ bool DRT::ELEMENTS::Solid::ReadElement(
 
   if (linedef->HaveNamed("EAS"))
   {
-    if (Shape() == DRT::Element::hex8)
+    if (Shape() == DRT::Element::DiscretizationType::hex8)
     {
       STR::UTILS::READELEMENT::ReadAndSetEAS(linedef, eastype_, eletech_);
     }

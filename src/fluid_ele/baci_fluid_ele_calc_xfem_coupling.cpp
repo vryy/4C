@@ -31,20 +31,20 @@ void SlaveElementInterface<distype>::DefineStateNames(
 {
   switch (slave_distype)
   {
-      //  case DRT::Element::tri3:
-      //  case DRT::Element::tri6:
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
+      //  case DRT::Element::DiscretizationType::tri3:
+      //  case DRT::Element::DiscretizationType::tri6:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
     {
       disp_statename = std::string("idispnp");
       vel_statename = std::string("ivelnp");
       veln_statename = std::string("iveln");
       break;
     }
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::hex20:
+    case DRT::Element::DiscretizationType::hex27:
     {
       disp_statename = std::string("dispnp");
       vel_statename = std::string("velaf");
@@ -76,33 +76,36 @@ SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
   {
     switch (slave_ele->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case DRT::Element::DiscretizationType::tri3:
         //      {
-        //        typedef SlaveElementRepresentation<distype,DRT::Element::tri3,3> SlaveEleType;
-        //        sla = new SlaveEleType(slave_xyz);
-        //        break;
+        //        typedef
+        //        SlaveElementRepresentation<distype,DRT::Element::DiscretizationType::tri3,3>
+        //        SlaveEleType; sla = new SlaveEleType(slave_xyz); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case DRT::Element::DiscretizationType::tri6:
         //      {
-        //        typedef SlaveElementRepresentation<distype,DRT::Element::tri6,3> SlaveEleType;
-        //        sla = new SlaveEleType(slave_xyz);
-        //        break;
+        //        typedef
+        //        SlaveElementRepresentation<distype,DRT::Element::DiscretizationType::tri6,3>
+        //        SlaveEleType; sla = new SlaveEleType(slave_xyz); break;
         //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::quad4, 3> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::quad4, 3>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::quad8, 3> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::quad8, 3>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::quad9, 3> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::quad9, 3>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
@@ -116,51 +119,57 @@ SlaveElementInterface<distype>::CreateSlaveElementRepresentation(
   {
     switch (slave_ele->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case DRT::Element::DiscretizationType::tri3:
         //      {
-        //        typedef SlaveElementRepresentation<distype,DRT::Element::tri3,4> SlaveEleType;
-        //        sla = new SlaveEleType(slave_xyz);
-        //        break;
+        //        typedef
+        //        SlaveElementRepresentation<distype,DRT::Element::DiscretizationType::tri3,4>
+        //        SlaveEleType; sla = new SlaveEleType(slave_xyz); break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case DRT::Element::DiscretizationType::tri6:
         //      {
-        //        typedef SlaveElementRepresentation<distype,DRT::Element::tri6,4> SlaveEleType;
-        //        sla = new SlaveEleType(slave_xyz);
-        //        break;
+        //        typedef
+        //        SlaveElementRepresentation<distype,DRT::Element::DiscretizationType::tri6,4>
+        //        SlaveEleType; sla = new SlaveEleType(slave_xyz); break;
         //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::quad4, 4> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::quad4, 4>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::quad8, 4> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::quad8, 4>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::quad9, 4> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::quad9, 4>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::hex8, 4> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::hex8, 4>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
-      case DRT::Element::hex20:
+      case DRT::Element::DiscretizationType::hex20:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::hex20, 4> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::hex20, 4>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
-      case DRT::Element::hex27:
+      case DRT::Element::DiscretizationType::hex27:
       {
-        typedef SlaveElementRepresentation<distype, DRT::Element::hex27, 4> SlaveEleType;
+        typedef SlaveElementRepresentation<distype, DRT::Element::DiscretizationType::hex27, 4>
+            SlaveEleType;
         sla = new SlaveEleType(slave_xyz);
         break;
       }
@@ -181,7 +190,7 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
     const DRT::ELEMENTS::FluidEleParameterXFEM& fldparaxfem)
 {
   NitscheInterface* nit = nullptr;
-  typedef NitscheCoupling<distype, DRT::Element::dis_none, 3> NitscheCouplType;
+  typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::dis_none, 3> NitscheCouplType;
   nit = new NitscheCouplType(C_umum, rhC_um, fldparaxfem);
 
   return Teuchos::rcp(nit);
@@ -205,33 +214,34 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
   {
     switch (bele->Shape())
     {
-      //      case DRT::Element::tri3:
+      //      case DRT::Element::DiscretizationType::tri3:
       //      {
-      //        typedef NitscheCoupling<distype,DRT::Element::tri3,3> NitscheCouplType;
-      //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
-      //        break;
+      //        typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri3,3>
+      //        NitscheCouplType; nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,); break;
       //      }
-      //      case DRT::Element::tri6:
+      //      case DRT::Element::DiscretizationType::tri6:
       //      {
-      //        typedef NitscheCoupling<distype,DRT::Element::tri6,3> NitscheCouplType;
-      //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
-      //        break;
+      //        typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri6,3>
+      //        NitscheCouplType; nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,); break;
       //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad4, 3> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad4, 3>
+            NitscheCouplType;
         nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad8, 3> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad8, 3>
+            NitscheCouplType;
         nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad9, 3> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad9, 3>
+            NitscheCouplType;
         nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
         break;
       }
@@ -244,33 +254,34 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
   {
     switch (bele->Shape())
     {
-      //      case DRT::Element::tri3:
+      //      case DRT::Element::DiscretizationType::tri3:
       //      {
-      //        typedef NitscheCoupling<distype,DRT::Element::tri3,3> NitscheCouplType;
-      //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
-      //        break;
+      //        typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri3,3>
+      //        NitscheCouplType; nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,); break;
       //      }
-      //      case DRT::Element::tri6:
+      //      case DRT::Element::DiscretizationType::tri6:
       //      {
-      //        typedef NitscheCoupling<distype,DRT::Element::tri6,3> NitscheCouplType;
-      //        nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,);
-      //        break;
+      //        typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri6,3>
+      //        NitscheCouplType; nit = new NitscheCouplType(bele_xyz,C_umum,rhC_um,); break;
       //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad4, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad4, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad8, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad8, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad9, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad9, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(bele_xyz, C_umum, rhC_um, fldparaxfem);
         break;
       }
@@ -307,37 +318,40 @@ NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
   {
     switch (bele->Shape())
     {
-        //    case DRT::Element::tri3:
+        //    case DRT::Element::DiscretizationType::tri3:
         //    {
-        //      typedef NitscheCoupling<distype,DRT::Element::tri3,3> NitscheCouplType;
-        //      nit = new
+        //      typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri3,3>
+        //      NitscheCouplType; nit = new
         //      NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
         //      break;
         //    }
-        //    case DRT::Element::tri6:
+        //    case DRT::Element::DiscretizationType::tri6:
         //    {
-        //      typedef NitscheCoupling<distype,DRT::Element::tri6,3> NitscheCouplType;
-        //      nit = new
+        //      typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri6,3>
+        //      NitscheCouplType; nit = new
         //      NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
         //      break;
         //    }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad4, 3> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad4, 3>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad8, 3> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad8, 3>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad9, 3> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad9, 3>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
@@ -351,37 +365,40 @@ NitscheInterface<distype>::CreateNitscheCoupling_XFluidSided(DRT::Element* bele,
   {
     switch (bele->Shape())
     {
-      //    case DRT::Element::tri3:
+      //    case DRT::Element::DiscretizationType::tri3:
       //    {
-      //      typedef NitscheCoupling<distype,DRT::Element::tri3,4> NitscheCouplType;
-      //      nit = new
+      //      typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri3,4>
+      //      NitscheCouplType; nit = new
       //      NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       //      break;
       //    }
-      //    case DRT::Element::tri6:
+      //    case DRT::Element::DiscretizationType::tri6:
       //    {
-      //      typedef NitscheCoupling<distype,DRT::Element::tri6,4> NitscheCouplType;
-      //      nit = new
+      //      typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tri6,4>
+      //      NitscheCouplType; nit = new
       //      NitscheCouplType(bele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
       //      break;
       //    }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad4, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad4, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad8, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad8, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef NitscheCoupling<distype, DRT::Element::quad9, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::quad9, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             bele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
@@ -416,37 +433,40 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
   {
     switch (vele->Shape())
     {
-        //    case DRT::Element::tet4:
+        //    case DRT::Element::DiscretizationType::tet4:
         //    {
-        //      typedef NitscheCoupling<distype,DRT::Element::tet4,4> NitscheCouplType;
-        //      nit = new
+        //      typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tet4,4>
+        //      NitscheCouplType; nit = new
         //      NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
         //      break;
         //    }
-        //    case DRT::Element::tet10:
+        //    case DRT::Element::DiscretizationType::tet10:
         //    {
-        //      typedef NitscheCoupling<distype,DRT::Element::tet10,4> NitscheCouplType;
-        //      nit = new
+        //      typedef NitscheCoupling<distype,DRT::Element::DiscretizationType::tet10,4>
+        //      NitscheCouplType; nit = new
         //      NitscheCouplType(vele_xyz,C_umum,C_usum,C_umus,C_usus,rhC_um,rhC_us,is_viscAdjointSymmetric);
         //      break;
         //    }
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
       {
-        typedef NitscheCoupling<distype, DRT::Element::hex8, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::hex8, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
       }
-      case DRT::Element::hex20:
+      case DRT::Element::DiscretizationType::hex20:
       {
-        typedef NitscheCoupling<distype, DRT::Element::hex20, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::hex20, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
       }
-      case DRT::Element::hex27:
+      case DRT::Element::DiscretizationType::hex27:
       {
-        typedef NitscheCoupling<distype, DRT::Element::hex27, 4> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::hex27, 4>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
@@ -460,9 +480,10 @@ Teuchos::RCP<NitscheInterface<distype>> NitscheInterface<distype>::CreateNitsche
   {
     switch (vele->Shape())
     {
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
       {
-        typedef NitscheCoupling<distype, DRT::Element::hex8, 3> NitscheCouplType;
+        typedef NitscheCoupling<distype, DRT::Element::DiscretizationType::hex8, 3>
+            NitscheCouplType;
         nit = new NitscheCouplType(
             vele_xyz, C_umum, C_usum, C_umus, C_usus, rhC_um, rhC_us, fldparaxfem);
         break;
@@ -488,7 +509,8 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
 )
 {
   HybridLMInterface* hybridlm = nullptr;
-  typedef HybridLMCoupling<distype, DRT::Element::dis_none, 3> HybridLMCouplType;
+  typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::dis_none, 3>
+      HybridLMCouplType;
   hybridlm = new HybridLMCouplType(is_viscAdjointSymmetric);
 
   return Teuchos::rcp(hybridlm);
@@ -516,33 +538,34 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidWDBC(
 
   switch (bele->Shape())
   {
-      //    case DRT::Element::tri3:
+      //    case DRT::Element::DiscretizationType::tri3:
       //    {
-      //      typedef HybridLMCoupling<distype,DRT::Element::tri3,3> HybridLMCouplType;
-      //      return Teuchos::rcp(new HybridLMCouplType(bele_xyz));
-      //      break;
+      //      typedef HybridLMCoupling<distype,DRT::Element::DiscretizationType::tri3,3>
+      //      HybridLMCouplType; return Teuchos::rcp(new HybridLMCouplType(bele_xyz)); break;
       //    }
-      //    case DRT::Element::tri6:
+      //    case DRT::Element::DiscretizationType::tri6:
       //    {
-      //      typedef HybridLMCoupling<distype,DRT::Element::tri6,3> HybridLMCouplType;
-      //      return Teuchos::rcp(new HybridLMCouplType(bele_xyz));
-      //      break;
+      //      typedef HybridLMCoupling<distype,DRT::Element::DiscretizationType::tri6,3>
+      //      HybridLMCouplType; return Teuchos::rcp(new HybridLMCouplType(bele_xyz)); break;
       //    }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      typedef HybridLMCoupling<distype, DRT::Element::quad4, 3> HybridLMCouplType;
+      typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad4, 3>
+          HybridLMCouplType;
       return Teuchos::rcp(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
       break;
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      typedef HybridLMCoupling<distype, DRT::Element::quad8, 3> HybridLMCouplType;
+      typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad8, 3>
+          HybridLMCouplType;
       return Teuchos::rcp(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
       break;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      typedef HybridLMCoupling<distype, DRT::Element::quad9, 3> HybridLMCouplType;
+      typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad9, 3>
+          HybridLMCouplType;
       return Teuchos::rcp(new HybridLMCouplType(bele_xyz, is_viscAdjointSymmetric));
       break;
     }
@@ -581,37 +604,40 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
   {
     switch (bele->Shape())
     {
-        //    case DRT::Element::tri3:
+        //    case DRT::Element::DiscretizationType::tri3:
         //    {
-        //      typedef HybridLMCoupling<distype,DRT::Element::tri3,3> HybridLMCouplType;
-        //      hlm = new
+        //      typedef HybridLMCoupling<distype,DRT::Element::DiscretizationType::tri3,3>
+        //      HybridLMCouplType; hlm = new
         //      HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
         //      break;
         //    }
-        //    case DRT::Element::tri6:
+        //    case DRT::Element::DiscretizationType::tri6:
         //    {
-        //      typedef HybridLMCoupling<distype,DRT::Element::tri6,3> HybridLMCouplType;
-        //      hlm = new
+        //      typedef HybridLMCoupling<distype,DRT::Element::DiscretizationType::tri6,3>
+        //      HybridLMCouplType; hlm = new
         //      HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
         //      break;
         //    }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef HybridLMCoupling<distype, DRT::Element::quad4, 3> HybridLMCouplType;
+        typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad4, 3>
+            HybridLMCouplType;
         hlm = new HybridLMCouplType(
             bele_xyz, C_usum, C_umus, rhC_us, G_s_us, G_us_s, is_viscAdjointSymmetric);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef HybridLMCoupling<distype, DRT::Element::quad8, 3> HybridLMCouplType;
+        typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad8, 3>
+            HybridLMCouplType;
         hlm = new HybridLMCouplType(
             bele_xyz, C_usum, C_umus, rhC_us, G_s_us, G_us_s, is_viscAdjointSymmetric);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef HybridLMCoupling<distype, DRT::Element::quad9, 3> HybridLMCouplType;
+        typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad9, 3>
+            HybridLMCouplType;
         hlm = new HybridLMCouplType(
             bele_xyz, C_usum, C_umus, rhC_us, G_s_us, G_us_s, is_viscAdjointSymmetric);
         break;
@@ -625,37 +651,40 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
   {
     switch (bele->Shape())
     {
-        //      case DRT::Element::tri3:
+        //      case DRT::Element::DiscretizationType::tri3:
         //      {
-        //        typedef HybridLMCoupling<distype,DRT::Element::tri3,4> HybridLMCouplType;
-        //        hlm = new
+        //        typedef HybridLMCoupling<distype,DRT::Element::DiscretizationType::tri3,4>
+        //        HybridLMCouplType; hlm = new
         //        HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
         //        break;
         //      }
-        //      case DRT::Element::tri6:
+        //      case DRT::Element::DiscretizationType::tri6:
         //      {
-        //        typedef HybridLMCoupling<distype,DRT::Element::tri6,4> HybridLMCouplType;
-        //        hlm = new
+        //        typedef HybridLMCoupling<distype,DRT::Element::DiscretizationType::tri6,4>
+        //        HybridLMCouplType; hlm = new
         //        HybridLMCouplType(bele_xyz,C_usum,C_umus,rhC_us,G_s_us,G_us_s,is_viscAdjointSymmetric);
         //        break;
         //      }
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
-        typedef HybridLMCoupling<distype, DRT::Element::quad4, 4> HybridLMCouplType;
+        typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad4, 4>
+            HybridLMCouplType;
         hlm = new HybridLMCouplType(
             bele_xyz, C_usum, C_umus, rhC_us, G_s_us, G_us_s, is_viscAdjointSymmetric);
         break;
       }
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
       {
-        typedef HybridLMCoupling<distype, DRT::Element::quad8, 4> HybridLMCouplType;
+        typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad8, 4>
+            HybridLMCouplType;
         hlm = new HybridLMCouplType(
             bele_xyz, C_usum, C_umus, rhC_us, G_s_us, G_us_s, is_viscAdjointSymmetric);
         break;
       }
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
       {
-        typedef HybridLMCoupling<distype, DRT::Element::quad9, 4> HybridLMCouplType;
+        typedef HybridLMCoupling<distype, DRT::Element::DiscretizationType::quad9, 4>
+            HybridLMCouplType;
         hlm = new HybridLMCouplType(
             bele_xyz, C_usum, C_umus, rhC_us, G_s_us, G_us_s, is_viscAdjointSymmetric);
         break;
@@ -671,29 +700,37 @@ HybridLMInterface<distype>::CreateHybridLMCoupling_XFluidSided(
   return Teuchos::rcp(hlm);
 }
 
-template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::hex27>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::tet10>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::wedge15>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+    DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+    DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+    DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+    DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementInterface<
+    DRT::Element::DiscretizationType::wedge15>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementInterface<DRT::Element::DiscretizationType::pyramid5>;
 
-template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::hex27>;
-template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::tet4>;
-template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::tet10>;
-template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::wedge15>;
-// template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::wedge15>;
+// template class
+// DRT::ELEMENTS::XFLUID::NitscheInterface<DRT::Element::DiscretizationType::pyramid5>;
 
-template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex8>;
-template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex20>;
-template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::hex27>;
-template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::tet4>;
-template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::tet10>;
-template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::wedge15>;
-// template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::wedge15>;
+// template class
+// DRT::ELEMENTS::XFLUID::HybridLMInterface<DRT::Element::DiscretizationType::pyramid5>;

@@ -199,17 +199,19 @@ double CONTACT::CoIntegratorNitscheSsiElch::CalculateDetFOfParentElement(
   static CORE::LINALG::Matrix<dim, dim> defgrd;
   switch (electrode_ele->ParentElement()->Shape())
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::hex8, dim>(defgrd,
-          electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::hex8, dim>(
+          defgrd, electrode_ele->ParentElement()->Nodes(), xi_parent,
+          electrode_ele->MoData().ParentDisp());
 
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
-      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::tet4, dim>(defgrd,
-          electrode_ele->ParentElement()->Nodes(), xi_parent, electrode_ele->MoData().ParentDisp());
+      DRT::ELEMENTS::UTILS::ComputeDeformationGradient<DRT::Element::DiscretizationType::tet4, dim>(
+          defgrd, electrode_ele->ParentElement()->Nodes(), xi_parent,
+          electrode_ele->MoData().ParentDisp());
 
       break;
     }
@@ -233,15 +235,15 @@ void CONTACT::CoIntegratorNitscheSsiElch::CalculateSpatialDerivativeOfDetF(const
   auto* electrode_ele = electrode_quantities.element;
   switch (electrode_ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      CalculateSpatialDerivativeOfDetF<DRT::Element::quad4, dim>(
+      CalculateSpatialDerivativeOfDetF<DRT::Element::DiscretizationType::quad4, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      CalculateSpatialDerivativeOfDetF<DRT::Element::tri3, dim>(
+      CalculateSpatialDerivativeOfDetF<DRT::Element::DiscretizationType::tri3, dim>(
           detF, electrode_quantities, d_detF_dd);
       break;
     }

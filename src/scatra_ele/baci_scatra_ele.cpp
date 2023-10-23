@@ -271,7 +271,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportBoundaryType::Create(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Transport::Transport(int id, int owner)
     : DRT::Element(id, owner),
-      distype_(dis_none),
+      distype_(DRT::Element::DiscretizationType::dis_none),
       data_(),
       numdofpernode_(-1),
       impltype_(INPAR::SCATRA::impltype_undefined)
@@ -945,7 +945,7 @@ void DRT::ELEMENTS::TransportBoundary::Print(std::ostream& os) const
   os << "TransportBoundary element";
   Element::Print(os);
   std::cout << std::endl;
-  std::cout << "DiscretizationType:  " << Shape() << std::endl;
+  std::cout << "DiscretizationType:  " << DRT::DistypeToString(Shape()) << std::endl;
   std::cout << std::endl;
   return;
 }

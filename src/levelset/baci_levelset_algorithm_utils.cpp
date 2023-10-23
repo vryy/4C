@@ -357,9 +357,9 @@ void SCATRA::LevelSetAlgorithm::ApplyContactPointBoundaryCondition()
           for (int iele = 0; iele < actnode->NumElement(); iele++)
           {
             // get discretization type
-            if ((adjelements[iele])->Shape() != DRT::Element::hex8)
+            if ((adjelements[iele])->Shape() != DRT::Element::DiscretizationType::hex8)
               dserror("Currently only hex8 supported");
-            const DRT::Element::DiscretizationType distype = DRT::Element::hex8;
+            const DRT::Element::DiscretizationType distype = DRT::Element::DiscretizationType::hex8;
 
             // in case of further distypes, move the following block to a templated function
             {

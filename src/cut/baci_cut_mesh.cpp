@@ -50,19 +50,19 @@ CORE::GEO::CUT::Element* CORE::GEO::CUT::Mesh::CreateElement(
 {
   switch (distype)
   {
-    case ::DRT::Element::line2:
+    case ::DRT::Element::DiscretizationType::line2:
       return CreateLine2(eid, nids);
-    case ::DRT::Element::tri3:
+    case ::DRT::Element::DiscretizationType::tri3:
       return CreateTri3(eid, nids);
-    case ::DRT::Element::quad4:
+    case ::DRT::Element::DiscretizationType::quad4:
       return CreateQuad4(eid, nids);
-    case ::DRT::Element::hex8:
+    case ::DRT::Element::DiscretizationType::hex8:
       return CreateHex8(eid, nids);
-    case ::DRT::Element::tet4:
+    case ::DRT::Element::DiscretizationType::tet4:
       return CreateTet4(eid, nids);
-    case ::DRT::Element::pyramid5:
+    case ::DRT::Element::DiscretizationType::pyramid5:
       return CreatePyramid5(eid, nids);
-    case ::DRT::Element::wedge6:
+    case ::DRT::Element::DiscretizationType::wedge6:
       return CreateWedge6(eid, nids);
     default:
       dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
@@ -80,9 +80,9 @@ CORE::GEO::CUT::Side* CORE::GEO::CUT::Mesh::CreateSide(
 {
   switch (distype)
   {
-    case ::DRT::Element::quad4:
+    case ::DRT::Element::DiscretizationType::quad4:
       return CreateQuad4Side(sid, nids);
-    case ::DRT::Element::tri3:
+    case ::DRT::Element::DiscretizationType::tri3:
       return CreateTri3Side(sid, nids);
     default:
       dserror("unsupported distype ( distype = %s )", ::DRT::DistypeToString(distype).c_str());
@@ -425,8 +425,8 @@ CORE::GEO::CUT::VolumeCell* CORE::GEO::CUT::Mesh::NewVolumeCell(const plain_face
 CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::point1>::numNodePerElement;
+  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+      ::DRT::Element::DiscretizationType::point1>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyz(3, 1);
@@ -443,8 +443,8 @@ CORE::GEO::CUT::Point1BoundaryCell* CORE::GEO::CUT::Mesh::NewPoint1Cell(
 CORE::GEO::CUT::Line2BoundaryCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
     VolumeCell* volume, Facet* facet, const std::vector<Point*>& points)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
+  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+      ::DRT::Element::DiscretizationType::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -547,8 +547,8 @@ CORE::GEO::CUT::ArbitraryBoundaryCell* CORE::GEO::CUT::Mesh::NewArbitraryCell(Vo
 CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::line2>::numNodePerElement;
+  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+      ::DRT::Element::DiscretizationType::line2>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -567,8 +567,8 @@ CORE::GEO::CUT::Line2IntegrationCell* CORE::GEO::CUT::Mesh::NewLine2Cell(
 CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::tri3>::numNodePerElement;
+  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+      ::DRT::Element::DiscretizationType::tri3>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -587,8 +587,8 @@ CORE::GEO::CUT::Tri3IntegrationCell* CORE::GEO::CUT::Mesh::NewTri3Cell(
 CORE::GEO::CUT::Quad4IntegrationCell* CORE::GEO::CUT::Mesh::NewQuad4Cell(
     Point::PointPosition position, const std::vector<Point*>& points, VolumeCell* cell)
 {
-  const unsigned num_nodes =
-      CORE::DRT::UTILS::DisTypeToNumNodePerEle<::DRT::Element::quad4>::numNodePerElement;
+  const unsigned num_nodes = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+      ::DRT::Element::DiscretizationType::quad4>::numNodePerElement;
   if (points.size() != num_nodes) dserror("Mismatch of point and node number!");
 
   CORE::LINALG::SerialDenseMatrix xyze(3, num_nodes);
@@ -1746,10 +1746,11 @@ void CORE::GEO::CUT::Mesh::TestElementVolume(::DRT::Element::DiscretizationType 
       for (unsigned j = 0; j < vc->IntegrationCells().size(); j++)
       {
         IntegrationCell* icc = vc->IntegrationCells()[j];
-        if (icc->Shape() == ::DRT::Element::hex8) hex[i - cells.begin()]++;
-        if (icc->Shape() == ::DRT::Element::tet4) tet[i - cells.begin()]++;
-        if (icc->Shape() == ::DRT::Element::pyramid5) pyramid[i - cells.begin()]++;
-        if (icc->Shape() == ::DRT::Element::wedge6) wedge[i - cells.begin()]++;
+        if (icc->Shape() == ::DRT::Element::DiscretizationType::hex8) hex[i - cells.begin()]++;
+        if (icc->Shape() == ::DRT::Element::DiscretizationType::tet4) tet[i - cells.begin()]++;
+        if (icc->Shape() == ::DRT::Element::DiscretizationType::pyramid5)
+          pyramid[i - cells.begin()]++;
+        if (icc->Shape() == ::DRT::Element::DiscretizationType::wedge6) wedge[i - cells.begin()]++;
       }
 
       numgpeach[i - cells.begin()] = vc->NumGaussPoints(shape);

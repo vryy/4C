@@ -41,7 +41,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::StructuralSurfaceType::Create(
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode,
     const int* nodeids, DRT::Node** nodes, DRT::Element* parent, const int lsurface)
     : DRT::FaceElement(id, owner),
-      distype_(DRT::Element::dis_none),
+      distype_(DRT::Element::DiscretizationType::dis_none),
       numdofpernode_(-1),
       gaussrule_(CORE::DRT::UTILS::GaussRule2D::undefined)
 {
@@ -69,7 +69,7 @@ DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner, int nnode
  *-----------------------------------------------------------------------*/
 DRT::ELEMENTS::StructuralSurface::StructuralSurface(int id, int owner)
     : DRT::FaceElement(id, owner),
-      distype_(DRT::Element::dis_none),
+      distype_(DRT::Element::DiscretizationType::dis_none),
       numdofpernode_(-1),
       gaussrule_(CORE::DRT::UTILS::GaussRule2D::undefined)
 {
@@ -189,39 +189,39 @@ int DRT::ELEMENTS::StructuralSurface::NumLine() const
 void DRT::ELEMENTS::StructuralSurface::SetDistype()
 {
   // if NURBS elements:
-  if (ParentMasterElement()->Shape() == nurbs8)
-    distype_ = DRT::Element::nurbs4;
-  else if (ParentMasterElement()->Shape() == nurbs27)
-    distype_ = DRT::Element::nurbs9;
+  if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::nurbs8)
+    distype_ = DRT::Element::DiscretizationType::nurbs4;
+  else if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::nurbs27)
+    distype_ = DRT::Element::DiscretizationType::nurbs9;
   // Lagrange elements:
   else
   {
     switch (NumNode())
     {
       case 3:
-        distype_ = DRT::Element::tri3;
+        distype_ = DRT::Element::DiscretizationType::tri3;
         break;
       case 6:
       {
-        if (ParentMasterElement()->Shape() == tet10)
-          distype_ = DRT::Element::tri6;
-        else if (ParentMasterElement()->Shape() == hex18)
-          distype_ = DRT::Element::quad6;
+        if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::tet10)
+          distype_ = DRT::Element::DiscretizationType::tri6;
+        else if (ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::hex18)
+          distype_ = DRT::Element::DiscretizationType::quad6;
         else
         {
           dserror("what other surface element has 6 nodes???");
-          distype_ = DRT::Element::dis_none;
+          distype_ = DRT::Element::DiscretizationType::dis_none;
         }
         break;
       }
       case 4:
-        distype_ = DRT::Element::quad4;
+        distype_ = DRT::Element::DiscretizationType::quad4;
         break;
       case 8:
-        distype_ = DRT::Element::quad8;
+        distype_ = DRT::Element::DiscretizationType::quad8;
         break;
       case 9:
-        distype_ = DRT::Element::quad9;
+        distype_ = DRT::Element::DiscretizationType::quad9;
         break;
       default:
         dserror("Unknown shape of surface element (unknown number of nodes)");
@@ -238,25 +238,25 @@ void DRT::ELEMENTS::StructuralSurface::SetGaussrule()
   // type of gaussian integration
   switch (Shape())
   {
-    case tri3:
+    case DRT::Element::DiscretizationType::tri3:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case tri6:
+    case DRT::Element::DiscretizationType::tri6:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
-    case quad4:
+    case DRT::Element::DiscretizationType::quad4:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case quad8:
+    case DRT::Element::DiscretizationType::quad8:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case quad9:
+    case DRT::Element::DiscretizationType::quad9:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case quad6:
+    case DRT::Element::DiscretizationType::quad6:
       gaussrule_ = CORE::DRT::UTILS::GaussRule2D::quad_6point;
       break;
     default:

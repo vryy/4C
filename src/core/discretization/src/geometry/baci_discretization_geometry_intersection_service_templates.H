@@ -60,32 +60,32 @@ namespace CORE::GEO
   {
     switch (distype)
     {
-      case ::DRT::Element::hex8:
-        return computeFastXAABBT<3, ::DRT::Element::hex8>(xyze, eleGeoType);
-      case ::DRT::Element::quad4:
-        return computeFastXAABBT<3, ::DRT::Element::quad4>(xyze, eleGeoType);
-      case ::DRT::Element::hex20:
-        return computeFastXAABBT<3, ::DRT::Element::hex20>(xyze, eleGeoType);
-      case ::DRT::Element::hex27:
-        return computeFastXAABBT<3, ::DRT::Element::hex27>(xyze, eleGeoType);
-      case ::DRT::Element::tet4:
-        return computeFastXAABBT<3, ::DRT::Element::tet4>(xyze, eleGeoType);
-      case ::DRT::Element::tet10:
-        return computeFastXAABBT<3, ::DRT::Element::tet10>(xyze, eleGeoType);
-      case ::DRT::Element::line2:
-        return computeFastXAABBT<3, ::DRT::Element::line2>(xyze, eleGeoType);
-      case ::DRT::Element::line3:
-        return computeFastXAABBT<3, ::DRT::Element::line3>(xyze, eleGeoType);
-      case ::DRT::Element::tri3:
-        return computeFastXAABBT<3, ::DRT::Element::tri3>(xyze, eleGeoType);
-      case ::DRT::Element::tri6:
-        return computeFastXAABBT<3, ::DRT::Element::tri6>(xyze, eleGeoType);
-      case ::DRT::Element::quad8:
-        return computeFastXAABBT<3, ::DRT::Element::quad8>(xyze, eleGeoType);
-      case ::DRT::Element::quad9:
-        return computeFastXAABBT<3, ::DRT::Element::quad9>(xyze, eleGeoType);
-      case ::DRT::Element::pyramid5:
-        return computeFastXAABBT<3, ::DRT::Element::pyramid5>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::hex8:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::hex8>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::quad4:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::quad4>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::hex20:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::hex20>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::hex27:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::hex27>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::tet4:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tet4>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::tet10:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tet10>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::line2:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::line2>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::line3:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::line3>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::tri3:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tri3>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::tri6:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::tri6>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::quad8:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::quad8>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::quad9:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::quad9>(xyze, eleGeoType);
+      case ::DRT::Element::DiscretizationType::pyramid5:
+        return computeFastXAABBT<3, ::DRT::Element::DiscretizationType::pyramid5>(xyze, eleGeoType);
       default:
         std::cout << DistypeToString(distype) << std::endl;
         dserror("add your distype to this switch!");

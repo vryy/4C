@@ -42,28 +42,28 @@ DRT::ELEMENTS::Membrane<distype>::Membrane(int id, int owner)
 {
   switch (distype)
   {
-    case tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       // get gauss integration points
       intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
-    case tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       // get gauss integration points
       intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
-    case quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       // get gauss integration points
       intpoints_ = CORE::DRT::UTILS::IntegrationPoints2D(gaussrule);
       break;
     }
-    case quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
       CORE::DRT::UTILS::GaussRule2D gaussrule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       // get gauss integration points
@@ -266,7 +266,7 @@ std::vector<Teuchos::RCP<DRT::Element>> DRT::ELEMENTS::Membrane<distype>::Surfac
   return surfaces;
 }
 
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad9>;

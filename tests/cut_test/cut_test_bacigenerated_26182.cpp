@@ -48,7 +48,8 @@ void test_bacigenerated_26182()
   tri3_xyze(1, 2) = -0.211531138629892;
   tri3_xyze(2, 2) = 0.2847992842204971;
   nids.push_back(3681);
-  CORE::GEO::CUT::SideHandle* sh = intersection.AddCutSide(0, nids, tri3_xyze, DRT::Element::tri3);
+  CORE::GEO::CUT::SideHandle* sh =
+      intersection.AddCutSide(0, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
 
   std::vector<CORE::GEO::CUT::Point*> maincylcepoints;
   std::vector<std::vector<CORE::GEO::CUT::Point*>> mainholecyclepoints;

@@ -339,23 +339,39 @@ DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<distype>::ScaTraEleCalcElchDif
 
 // template classes
 // 1D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::line2>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::line3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::line2>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::line3>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tri3>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::quad4>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::quad9>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::quad4>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::nurbs9>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::hex8>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::hex27>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tet4>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::tet10>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::pyramid5>;
-// template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::hex8>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::tet10>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<
+    DRT::Element::DiscretizationType::pyramid5>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcElchDiffCondSTIThermo<DRT::Element::DiscretizationType::nurbs27>;

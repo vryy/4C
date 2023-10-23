@@ -1175,18 +1175,20 @@ void XFEM::XFLUID_SemiLagrange::callBackTracking(DRT::Element*& ele,  /// pointe
 {
   switch (ele->Shape())
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
-      const int numnode =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement;
-      backTracking<numnode, DRT::Element::hex8>(ele, data, xi, backTrackingType);
+      const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+          DRT::Element::DiscretizationType::hex8>::numNodePerElement;
+      backTracking<numnode, DRT::Element::DiscretizationType::hex8>(
+          ele, data, xi, backTrackingType);
     }
     break;
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
     {
-      const int numnode =
-          CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement;
-      backTracking<numnode, DRT::Element::hex20>(ele, data, xi, backTrackingType);
+      const int numnode = CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+          DRT::Element::DiscretizationType::hex20>::numNodePerElement;
+      backTracking<numnode, DRT::Element::DiscretizationType::hex20>(
+          ele, data, xi, backTrackingType);
     }
     break;
     default:

@@ -268,113 +268,156 @@ bool DRT::FIBER::UTILS::HaveNodalFibers(const DRT::Node* const* nodes)
   return std::all_of(nodes, &nodes[numberOfNodes], nodeHasFibers);
 }
 
-template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::tet4>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement>
+template void
+DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::DiscretizationType::tet4>(
+    const std::array<double, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tet4>::numNodePerElement>
         quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement, 1>>&
-        shapefcts,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tet4>::numNodePerElement,
+            1>>& shapefcts,
     std::vector<double>& quantityProjected);
-template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::tet10>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement>
+template void
+DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::DiscretizationType::tet10>(
+    const std::array<double, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tet10>::numNodePerElement>
         quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement, 1>>&
-        shapefcts,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tet10>::numNodePerElement,
+            1>>& shapefcts,
     std::vector<double>& quantityProjected);
-template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::hex8>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement>
+template void
+DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::DiscretizationType::hex8>(
+    const std::array<double, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::hex8>::numNodePerElement>
         quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement, 1>>&
-        shapefcts,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::hex8>::numNodePerElement,
+            1>>& shapefcts,
     std::vector<double>& quantityProjected);
-template void DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::tri3>(
-    const std::array<double,
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement>
+template void
+DRT::FIBER::UTILS::ProjectQuantityWithShapeFunctions<DRT::Element::DiscretizationType::tri3>(
+    const std::array<double, CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tri3>::numNodePerElement>
         quantity,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&
-        shapefcts,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+            1>>& shapefcts,
     std::vector<double>& quantityProjected);
 
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::tet4>(
+template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::tet4>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet4>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tet4>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::tet10>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::tet10>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tet10>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tet10>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex8>(
+template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::hex8>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex8>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::hex8>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex18>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::hex18>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex18>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::hex18>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex20>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::hex20>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex20>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::hex20>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::hex27>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::hex27>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::hex27>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::hex27>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::tri3>(
+template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::tri3>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::tri3>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::tri3>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::quad4>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::quad4>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad4>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::quad4>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::quad9>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::quad9>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::quad9>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::quad9>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::pyramid5>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::pyramid5>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::pyramid5>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::pyramid5>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::wedge6>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::wedge6>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::wedge6>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::wedge6>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
-template void DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::nurbs9>(
+template void
+DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::nurbs9>(
     const DRT::Node* const*,
-    const std::vector<CORE::LINALG::Matrix<
-        CORE::DRT::UTILS::DisTypeToNumNodePerEle<DRT::Element::nurbs9>::numNodePerElement, 1>>&,
+    const std::vector<
+        CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumNodePerEle<
+                                 DRT::Element::DiscretizationType::nurbs9>::numNodePerElement,
+            1>>&,
     FIBER::NodalFiberHolder&);
 
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::tet4>(const DRT::Node* const* nodes);
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::tet10>(
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::tet4>(
     const DRT::Node* const* nodes);
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::hex8>(const DRT::Node* const* nodes);
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::hex18>(
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::tet10>(
     const DRT::Node* const* nodes);
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::hex20>(
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::hex8>(
     const DRT::Node* const* nodes);
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::hex27>(
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::hex18>(
     const DRT::Node* const* nodes);
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::pyramid5>(
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::hex20>(
     const DRT::Node* const* nodes);
-template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::wedge6>(
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::hex27>(
+    const DRT::Node* const* nodes);
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::pyramid5>(
+    const DRT::Node* const* nodes);
+template bool DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::wedge6>(
     const DRT::Node* const* nodes);
 
 template void DRT::FIBER::UTILS::SetupCardiacFibers<3>(

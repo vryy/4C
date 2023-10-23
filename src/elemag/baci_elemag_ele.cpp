@@ -130,7 +130,7 @@ void DRT::ELEMENTS::ElemagType::SetupElementDefinition(
 DRT::ELEMENTS::Elemag::Elemag(int id, int owner)
     : DRT::Element(id, owner), degree_(1), completepol_(true)
 {
-  distype_ = dis_none;
+  distype_ = DRT::Element::DiscretizationType::dis_none;
 }
 
 

@@ -222,7 +222,8 @@ void CORE::GEO::CUT::IMPL::SimplePointGraph_2D::FillGraphAndCycleWithLineFacets(
   {
     Facet *f = *cit;
 
-    if (not f->Equals(::DRT::Element::line2)) dserror("This function works only for line facets!");
+    if (not f->Equals(::DRT::Element::DiscretizationType::line2))
+      dserror("This function works only for line facets!");
 
     const std::vector<Point *> &line_points = f->Points();
     GetGraph().AddEdge(line_points[0], line_points[1]);

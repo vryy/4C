@@ -165,27 +165,27 @@ namespace XFEM
       double dynvisc = (kappa_m * visc_m + (1.0 - kappa_m) * visc_s);
       double sliplength = 0.0;
 
-      if (ele->Shape() == DRT::Element::hex8)
+      if (ele->Shape() == DRT::Element::DiscretizationType::hex8)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::hex8;
+        const DRT::Element::DiscretizationType shape = DRT::Element::DiscretizationType::hex8;
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == DRT::Element::hex27)
+      else if (ele->Shape() == DRT::Element::DiscretizationType::hex27)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::hex27;
+        const DRT::Element::DiscretizationType shape = DRT::Element::DiscretizationType::hex27;
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;
         CORE::LINALG::Matrix<nen, 1> funct_(funct, true);
         CORE::LINALG::Matrix<nen, nsd> derxy_(derxy, true);
       }
-      else if (ele->Shape() == DRT::Element::hex20)
+      else if (ele->Shape() == DRT::Element::DiscretizationType::hex20)
       {
-        const DRT::Element::DiscretizationType shape = DRT::Element::hex20;
+        const DRT::Element::DiscretizationType shape = DRT::Element::DiscretizationType::hex20;
         //
         const size_t nsd = CORE::DRT::UTILS::DisTypeToDim<shape>::dim;
         const size_t nen = CORE::DRT::UTILS::DisTypeToNumNodePerEle<shape>::numNodePerElement;

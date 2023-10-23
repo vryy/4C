@@ -109,13 +109,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::RedAirBloodScatra::Shape() const
   switch (NumNode())
   {
     case 2:
-      return line2;
+      return DRT::Element::DiscretizationType::line2;
     case 3:
-      return line3;
+      return DRT::Element::DiscretizationType::line3;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*

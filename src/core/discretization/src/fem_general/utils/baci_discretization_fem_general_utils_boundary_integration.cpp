@@ -158,9 +158,12 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
   // derivtrafo.Shape(2,2);
 
 
-  if ((distype == ::DRT::Element::line2 && pdistype == ::DRT::Element::quad4) or
-      (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::quad8) or
-      (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::quad9))
+  if ((distype == ::DRT::Element::DiscretizationType::line2 &&
+          pdistype == ::DRT::Element::DiscretizationType::quad4) or
+      (distype == ::DRT::Element::DiscretizationType::line3 &&
+          pdistype == ::DRT::Element::DiscretizationType::quad8) or
+      (distype == ::DRT::Element::DiscretizationType::line3 &&
+          pdistype == ::DRT::Element::DiscretizationType::quad9))
   {
     switch (lineid)
     {
@@ -333,7 +336,8 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
         break;
     }
   }
-  else if (distype == ::DRT::Element::nurbs3 && pdistype == ::DRT::Element::nurbs9)
+  else if (distype == ::DRT::Element::DiscretizationType::nurbs3 &&
+           pdistype == ::DRT::Element::DiscretizationType::nurbs9)
   {
     switch (lineid)
     {
@@ -433,8 +437,10 @@ void CORE::DRT::UTILS::LineGPToParentGP(V& pqxg, W& derivtrafo, const Integratio
         break;
     }
   }
-  else if ((distype == ::DRT::Element::line2 && pdistype == ::DRT::Element::tri3) or
-           (distype == ::DRT::Element::line3 && pdistype == ::DRT::Element::tri6))
+  else if ((distype == ::DRT::Element::DiscretizationType::line2 &&
+               pdistype == ::DRT::Element::DiscretizationType::tri3) or
+           (distype == ::DRT::Element::DiscretizationType::line3 &&
+               pdistype == ::DRT::Element::DiscretizationType::tri6))
   {
     switch (lineid)
     {

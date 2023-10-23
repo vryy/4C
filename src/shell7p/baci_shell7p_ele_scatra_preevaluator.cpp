@@ -19,16 +19,21 @@ void DRT::ELEMENTS::SHELL::PreEvaluateScatraByElement(DRT::Element& ele,
 {
   switch (ele.Shape())
   {
-    case DRT::Element::quad4:
-      return PreEvaluateScatra<DRT::Element::quad4>(ele, params, discretization, dof_index_array);
-    case DRT::Element::quad8:
-      return PreEvaluateScatra<DRT::Element::quad8>(ele, params, discretization, dof_index_array);
-    case DRT::Element::quad9:
-      return PreEvaluateScatra<DRT::Element::quad9>(ele, params, discretization, dof_index_array);
-    case DRT::Element::tri3:
-      return PreEvaluateScatra<DRT::Element::tri3>(ele, params, discretization, dof_index_array);
-    case DRT::Element::tri6:
-      return PreEvaluateScatra<DRT::Element::tri6>(ele, params, discretization, dof_index_array);
+    case DRT::Element::DiscretizationType::quad4:
+      return PreEvaluateScatra<DRT::Element::DiscretizationType::quad4>(
+          ele, params, discretization, dof_index_array);
+    case DRT::Element::DiscretizationType::quad8:
+      return PreEvaluateScatra<DRT::Element::DiscretizationType::quad8>(
+          ele, params, discretization, dof_index_array);
+    case DRT::Element::DiscretizationType::quad9:
+      return PreEvaluateScatra<DRT::Element::DiscretizationType::quad9>(
+          ele, params, discretization, dof_index_array);
+    case DRT::Element::DiscretizationType::tri3:
+      return PreEvaluateScatra<DRT::Element::DiscretizationType::tri3>(
+          ele, params, discretization, dof_index_array);
+    case DRT::Element::DiscretizationType::tri6:
+      return PreEvaluateScatra<DRT::Element::DiscretizationType::tri6>(
+          ele, params, discretization, dof_index_array);
     default:
       dserror(
           "The discretization type you are trying to pre-evaluate for shell7p scatra is not yet "

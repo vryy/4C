@@ -38,21 +38,21 @@ namespace CORE::DRT::UTILS
     bool hoele = true;
     switch (DISTYPE)
     {
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::quad9:
-      case ::DRT::Element::hex8:
-      case ::DRT::Element::hex20:
-      case ::DRT::Element::hex27:
-      case ::DRT::Element::tet10:
-      case ::DRT::Element::wedge6:
-      case ::DRT::Element::wedge15:
-      case ::DRT::Element::pyramid5:
-      case ::DRT::Element::nurbs9:
-      case ::DRT::Element::nurbs27:
+      case ::DRT::Element::DiscretizationType::quad4:
+      case ::DRT::Element::DiscretizationType::quad9:
+      case ::DRT::Element::DiscretizationType::hex8:
+      case ::DRT::Element::DiscretizationType::hex20:
+      case ::DRT::Element::DiscretizationType::hex27:
+      case ::DRT::Element::DiscretizationType::tet10:
+      case ::DRT::Element::DiscretizationType::wedge6:
+      case ::DRT::Element::DiscretizationType::wedge15:
+      case ::DRT::Element::DiscretizationType::pyramid5:
+      case ::DRT::Element::DiscretizationType::nurbs9:
+      case ::DRT::Element::DiscretizationType::nurbs27:
         hoele = true;
         break;
-      case ::DRT::Element::tri3:
-      case ::DRT::Element::tet4:
+      case ::DRT::Element::DiscretizationType::tri3:
+      case ::DRT::Element::DiscretizationType::tet4:
         hoele = false;
         break;
       default:

@@ -207,19 +207,19 @@ void CONTACT::CoIntegratorNitscheSsi::SoEleCauchyStruct(MORTAR::MortarElement& m
   {
     switch (mortar_ele.ParentElement()->Shape())
     {
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
       {
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>*>(
-            mortar_ele.ParentElement())
+        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8,
+            DRT::Element::DiscretizationType::hex8>*>(mortar_ele.ParentElement())
             ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
                 d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);
         break;
       }
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::tet4:
       {
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>*>(
-            mortar_ele.ParentElement())
+        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,
+            DRT::Element::DiscretizationType::tet4>*>(mortar_ele.ParentElement())
             ->GetCauchyNDirAndDerivativesAtXi(parent_xi, mortar_ele.MoData().ParentDisp(),
                 mortar_ele.MoData().ParentScalar(), gp_normal, test_dir, sigma_nt, &d_sigma_nt_dd,
                 d_sigma_nt_ds, &d_sigma_nt_dn, &d_sigma_nt_dt, &d_sigma_nt_dxi);

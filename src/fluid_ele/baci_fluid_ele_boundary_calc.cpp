@@ -2535,14 +2535,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 // template classes
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::quad4>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::quad8>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::quad9>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::tri3>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::tri6>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::line2>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::line3>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::nurbs2>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::nurbs3>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::line2>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::line3>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs2>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs3>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs4>;
+template class DRT::ELEMENTS::FluidBoundaryImpl<DRT::Element::DiscretizationType::nurbs9>;

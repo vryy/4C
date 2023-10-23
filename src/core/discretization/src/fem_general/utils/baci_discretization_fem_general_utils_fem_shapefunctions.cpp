@@ -77,35 +77,43 @@ void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim(
   deriv_xyz.Multiply(dr_dx, deriv_full);
 }
 
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::line2,
-    2>(CORE::LINALG::Matrix<2, 2>& deriv_xyz, const CORE::LINALG::Matrix<1, 2>& deriv,
-    const CORE::LINALG::Matrix<2, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& normal);
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::line2,
-    3>(CORE::LINALG::Matrix<3, 2>& deriv_xyz, const CORE::LINALG::Matrix<1, 2>& deriv,
-    const CORE::LINALG::Matrix<2, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::line3,
-    2>(CORE::LINALG::Matrix<2, 3>& deriv_xyz, const CORE::LINALG::Matrix<1, 3>& deriv,
-    const CORE::LINALG::Matrix<3, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& normal);
-template void
-CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::nurbs3, 2>(
-    CORE::LINALG::Matrix<2, 3>& deriv_xyz, const CORE::LINALG::Matrix<1, 3>& deriv,
-    const CORE::LINALG::Matrix<3, 2>& xyze, const CORE::LINALG::Matrix<2, 1>& normal);
-template void
-CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::nurbs9, 3>(
-    CORE::LINALG::Matrix<3, 9>& deriv_xyz, const CORE::LINALG::Matrix<2, 9>& deriv,
-    const CORE::LINALG::Matrix<9, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::quad4,
-    3>(CORE::LINALG::Matrix<3, 4>& deriv_xyz, const CORE::LINALG::Matrix<2, 4>& deriv,
-    const CORE::LINALG::Matrix<4, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::quad8,
-    3>(CORE::LINALG::Matrix<3, 8>& deriv_xyz, const CORE::LINALG::Matrix<2, 8>& deriv,
-    const CORE::LINALG::Matrix<8, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::quad9,
-    3>(CORE::LINALG::Matrix<3, 9>& deriv_xyz, const CORE::LINALG::Matrix<2, 9>& deriv,
-    const CORE::LINALG::Matrix<9, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::tri3,
-    3>(CORE::LINALG::Matrix<3, 3>& deriv_xyz, const CORE::LINALG::Matrix<2, 3>& deriv,
-    const CORE::LINALG::Matrix<3, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
-template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<DRT::Element::tri6,
-    3>(CORE::LINALG::Matrix<3, 6>& deriv_xyz, const CORE::LINALG::Matrix<2, 6>& deriv,
-    const CORE::LINALG::Matrix<6, 3>& xyze, const CORE::LINALG::Matrix<3, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::line2, 2>(CORE::LINALG::Matrix<2, 2>& deriv_xyz,
+    const CORE::LINALG::Matrix<1, 2>& deriv, const CORE::LINALG::Matrix<2, 2>& xyze,
+    const CORE::LINALG::Matrix<2, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::line2, 3>(CORE::LINALG::Matrix<3, 2>& deriv_xyz,
+    const CORE::LINALG::Matrix<1, 2>& deriv, const CORE::LINALG::Matrix<2, 3>& xyze,
+    const CORE::LINALG::Matrix<3, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::line3, 2>(CORE::LINALG::Matrix<2, 3>& deriv_xyz,
+    const CORE::LINALG::Matrix<1, 3>& deriv, const CORE::LINALG::Matrix<3, 2>& xyze,
+    const CORE::LINALG::Matrix<2, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::nurbs3, 2>(CORE::LINALG::Matrix<2, 3>& deriv_xyz,
+    const CORE::LINALG::Matrix<1, 3>& deriv, const CORE::LINALG::Matrix<3, 2>& xyze,
+    const CORE::LINALG::Matrix<2, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::nurbs9, 3>(CORE::LINALG::Matrix<3, 9>& deriv_xyz,
+    const CORE::LINALG::Matrix<2, 9>& deriv, const CORE::LINALG::Matrix<9, 3>& xyze,
+    const CORE::LINALG::Matrix<3, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::quad4, 3>(CORE::LINALG::Matrix<3, 4>& deriv_xyz,
+    const CORE::LINALG::Matrix<2, 4>& deriv, const CORE::LINALG::Matrix<4, 3>& xyze,
+    const CORE::LINALG::Matrix<3, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::quad8, 3>(CORE::LINALG::Matrix<3, 8>& deriv_xyz,
+    const CORE::LINALG::Matrix<2, 8>& deriv, const CORE::LINALG::Matrix<8, 3>& xyze,
+    const CORE::LINALG::Matrix<3, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::quad9, 3>(CORE::LINALG::Matrix<3, 9>& deriv_xyz,
+    const CORE::LINALG::Matrix<2, 9>& deriv, const CORE::LINALG::Matrix<9, 3>& xyze,
+    const CORE::LINALG::Matrix<3, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::tri3, 3>(CORE::LINALG::Matrix<3, 3>& deriv_xyz,
+    const CORE::LINALG::Matrix<2, 3>& deriv, const CORE::LINALG::Matrix<3, 3>& xyze,
+    const CORE::LINALG::Matrix<3, 1>& normal);
+template void CORE::DRT::UTILS::EvaluateShapeFunctionSpatialDerivativeInProbDim<
+    DRT::Element::DiscretizationType::tri6, 3>(CORE::LINALG::Matrix<3, 6>& deriv_xyz,
+    const CORE::LINALG::Matrix<2, 6>& deriv, const CORE::LINALG::Matrix<6, 3>& xyze,
+    const CORE::LINALG::Matrix<3, 1>& normal);

@@ -155,12 +155,14 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
     const double e1 = intpoints.qxg[gpid][0];
 
     // get shape functions and derivatives in the line
-    if (distype == line2 || distype == line3)
+    if (distype == DRT::Element::DiscretizationType::line2 ||
+        distype == DRT::Element::DiscretizationType::line3)
     {
       CORE::DRT::UTILS::shape_function_1D(shapefcts, e1, distype);
       CORE::DRT::UTILS::shape_function_1D_deriv1(deriv, e1, distype);
     }
-    else if (distype == nurbs2 || distype == nurbs3)
+    else if (distype == DRT::Element::DiscretizationType::nurbs2 ||
+             distype == DRT::Element::DiscretizationType::nurbs3)
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis =
           dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
@@ -422,16 +424,16 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case DRT::Element::DiscretizationType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case DRT::Element::DiscretizationType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
-    case nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -519,7 +521,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     // just compute the enclosed volume (e.g. for initialization)
     case calc_struct_constrarea:
     {
-      if (distype != line2)
+      if (distype != DRT::Element::DiscretizationType::line2)
       {
         dserror("Area Constraint only works for line2 curves!");
       }
@@ -619,7 +621,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_areaconstrstiff:
     {
-      if (distype != line2)
+      if (distype != DRT::Element::DiscretizationType::line2)
       {
         dserror("Area Constraint only works for line2 curves!");
       }  // element geometry update

@@ -622,7 +622,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
         CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+            L_i, projected_gauss_point.GetEta(), DRT::Element::DiscretizationType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -862,7 +862,7 @@ void BEAMINTERACTION::BeamToSolidSurfaceMeshtyingPairMortarRotationFAD<scalar_ty
         // only implemented for 2nd order Lagrange interpolation (Beam3rHerm2Line3).
         const unsigned int n_nodes_rot = 3;
         CORE::DRT::UTILS::shape_function_1D(
-            L_i, projected_gauss_point.GetEta(), DRT::Element::line3);
+            L_i, projected_gauss_point.GetEta(), DRT::Element::DiscretizationType::line3);
         for (unsigned int i_node = 0; i_node < n_nodes_rot; i_node++)
           for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
             L_full(i_dim, 3 * i_node + i_dim) = L_i(i_node);
@@ -1011,22 +1011,22 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortar(
 
   switch (surface_shape)
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_tri3, mortar>(rotational_coupling);
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_tri6, mortar>(rotational_coupling);
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad4, mortar>(rotational_coupling);
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad8, mortar>(rotational_coupling);
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type, t_hermite, t_quad9, mortar>(rotational_coupling);
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite, t_nurbs9,
           mortar>(rotational_coupling);
@@ -1049,15 +1049,15 @@ BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarXVolume(
 
   switch (surface_shape)
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite, t_quad4,
           mortar>(rotational_coupling);
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite, t_quad8,
           mortar>(rotational_coupling);
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
       return BeamToSolidSurfaceMeshtyingPairMortarFADFactoryMortarRotation<
           line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite, t_quad9,
           mortar>(rotational_coupling);

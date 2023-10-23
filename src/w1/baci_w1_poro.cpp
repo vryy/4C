@@ -328,8 +328,8 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const std::string& name, std::v
   return SolidMaterial()->VisData(name, data, numgpt_, this->Id());
 }
 
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs4>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs9>;

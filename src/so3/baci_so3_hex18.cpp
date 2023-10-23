@@ -583,9 +583,10 @@ int DRT::ELEMENTS::So_hex18::EvaluateNeumann(Teuchos::ParameterList& params,
   {
     // shape function and derivatives
     CORE::LINALG::Matrix<NUMNOD_SOH18, 1> shapefunct;
-    CORE::DRT::UTILS::shape_function<DRT::Element::hex18>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::hex18>(xsi_[gp], shapefunct);
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex18>(
+        xsi_[gp], deriv);
 
     // compute the Jacobian matrix
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMDIM_SOH18> jac;
@@ -659,7 +660,8 @@ int DRT::ELEMENTS::So_hex18::InitJacobianMapping()
     detJ_[gp] = 0.;
 
     CORE::LINALG::Matrix<NUMDIM_SOH18, NUMNOD_SOH18> deriv;
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex18>(
+        xsi_[gp], deriv);
 
     invJ_[gp].Multiply(deriv, xrefe);
     detJ_[gp] = invJ_[gp].Invert();
@@ -717,8 +719,9 @@ void DRT::ELEMENTS::So_hex18::nlnstiffmass(std::vector<int>& lm,    ///< locatio
   for (int gp = 0; gp < NUMGPT_SOH18; ++gp)
   {
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::DRT::UTILS::shape_function<hex18>(xsi_[gp], shapefunct);
-    CORE::DRT::UTILS::shape_function_deriv1<hex18>(xsi_[gp], deriv);
+    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::hex18>(xsi_[gp], shapefunct);
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex18>(
+        xsi_[gp], deriv);
 
     // by N_XYZ = J^-1 * N_rst
     N_XYZ.Multiply(invJ_[gp], deriv);  // (6.21)

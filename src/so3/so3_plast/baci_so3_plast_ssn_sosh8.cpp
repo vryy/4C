@@ -36,11 +36,13 @@ Refer also to the Semesterarbeit of Alexander Popp, 2006
  | build an instance of plast type                         seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8PlastType DRT::ELEMENTS::So_sh8PlastType::instance_;
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_>>
+std::pair<bool,
+    CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::nsd_,
+        DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::nsd_>>
     DRT::ELEMENTS::So_sh8Plast::jac_refe_;
-std::pair<bool, CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_,
-                    DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::nsd_>>
+std::pair<bool,
+    CORE::LINALG::Matrix<DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::nsd_,
+        DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::nsd_>>
     DRT::ELEMENTS::So_sh8Plast::jac_curr_;
 std::pair<bool,
     CORE::LINALG::Matrix<DRT::ELEMENTS::So_sh8Plast::num_ans * DRT::ELEMENTS::So_sh8Plast::num_sp,
@@ -304,7 +306,8 @@ void DRT::ELEMENTS::So_sh8PlastType::SetupElementDefinition(
  | ctor (public)                                            seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
-    : So_base(id, owner), DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(id, owner)
+    : So_base(id, owner),
+      DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>(id, owner)
 {
   thickdir_ = globx;
   nodes_rearranged_ = false;
@@ -324,7 +327,7 @@ DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(int id, int owner)
  | copy-ctor (public)                                       seitz 05/14 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_sh8Plast::So_sh8Plast(const DRT::ELEMENTS::So_sh8Plast& old)
-    : So_base(old), DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>(old)
+    : So_base(old), DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>(old)
 {
   return;
 }
@@ -351,7 +354,7 @@ void DRT::ELEMENTS::So_sh8Plast::Pack(DRT::PackBuffer& data) const
   int type = UniqueParObjectId();
   AddtoPack(data, type);
   // add base class So3_Plast Element
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::Pack(data);
+  DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::Pack(data);
   // thickdir
   AddtoPack(data, thickdir_);
   AddtoPack(data, thickvec_);
@@ -374,7 +377,7 @@ void DRT::ELEMENTS::So_sh8Plast::Unpack(const std::vector<char>& data)
   // extract base class So_hex8 Element
   std::vector<char> basedata(0);
   ExtractfromPack(position, data, basedata);
-  DRT::ELEMENTS::So3_Plast<DRT::Element::hex8>::Unpack(basedata);
+  DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex8>::Unpack(basedata);
   // thickdir
   thickdir_ = static_cast<ThicknessDirection>(ExtractInt(position, data));
   ExtractfromPack(position, data, thickvec_);
@@ -417,7 +420,7 @@ bool DRT::ELEMENTS::So_sh8Plast::ReadElement(
   else
     dserror("Reading of SO3_PLAST element failed! KINEM unknown");
 
-  CORE::DRT::UTILS::GaussIntegration ip(DRT::Element::hex8, 3);
+  CORE::DRT::UTILS::GaussIntegration ip(DRT::Element::DiscretizationType::hex8, 3);
   numgpt_ = ip.NumPoints();
   xsi_.resize(numgpt_);
   wgt_.resize(numgpt_);
@@ -1006,8 +1009,10 @@ void DRT::ELEMENTS::So_sh8Plast::nln_stiffmass(std::vector<double>& disp,  // cu
   {
     InvalidGpData();
     // shape functions (shapefunct) and their first derivatives (deriv)
-    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xsi_[gp], SetShapeFunction());
-    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xsi_[gp], SetDerivShapeFunction());
+    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::hex8>(
+        xsi_[gp], SetShapeFunction());
+    CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex8>(
+        xsi_[gp], SetDerivShapeFunction());
 
     Kinematics(gp);
 

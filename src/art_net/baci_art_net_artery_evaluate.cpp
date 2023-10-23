@@ -111,10 +111,10 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::Artery::getOptimalGaussrule(
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case DiscretizationType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case DiscretizationType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -131,10 +131,10 @@ bool DRT::ELEMENTS::Artery::isHigherOrderElement(
   bool hoel = true;
   switch (distype)
   {
-    case line3:
+    case DiscretizationType::line3:
       hoel = true;
       break;
-    case line2:
+    case DiscretizationType::line2:
       hoel = false;
       break;
     default:

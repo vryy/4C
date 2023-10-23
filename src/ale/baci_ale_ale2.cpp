@@ -128,20 +128,19 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Ale2::Shape() const
   switch (NumNode())
   {
     case 3:
-      return tri3;
+      return DiscretizationType::tri3;
     case 4:
-      return quad4;
+      return DiscretizationType::quad4;
     case 6:
-      return tri6;
+      return DiscretizationType::tri6;
     case 8:
-      return quad8;
+      return DiscretizationType::quad8;
     case 9:
-      return quad9;
+      return DiscretizationType::quad9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------------*/
@@ -217,19 +216,19 @@ CORE::DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(
   CORE::DRT::UTILS::GaussRule2D rule = CORE::DRT::UTILS::GaussRule2D::undefined;
   switch (distype)
   {
-    case quad4:
-    case nurbs4:
+    case DiscretizationType::quad4:
+    case DiscretizationType::nurbs4:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_4point;
       break;
-    case quad8:
-    case quad9:
-    case nurbs9:
+    case DiscretizationType::quad8:
+    case DiscretizationType::quad9:
+    case DiscretizationType::nurbs9:
       rule = CORE::DRT::UTILS::GaussRule2D::quad_9point;
       break;
-    case tri3:
+    case DiscretizationType::tri3:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_3point;
       break;
-    case tri6:
+    case DiscretizationType::tri6:
       rule = CORE::DRT::UTILS::GaussRule2D::tri_6point;
       break;
     default:

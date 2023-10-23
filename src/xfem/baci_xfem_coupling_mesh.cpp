@@ -1841,11 +1841,11 @@ void XFEM::MeshCouplingFSI::SetConditionSpecificParameters()
     for (int ele = 0; ele < bg_dis_->NumMyRowElements(); ++ele)
     {
       DRT::Element* fluid_ele = bg_dis_->lRowElement(ele);
-      if (fluid_ele->Shape() == DRT::Element::hex8)
+      if (fluid_ele->Shape() == DRT::Element::DiscretizationType::hex8)
       {
         CORE::LINALG::Matrix<3, 8> xyze(true);
         CORE::GEO::fillInitialPositionArray(fluid_ele, xyze);
-        double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::hex8>(xyze);
+        double vol = XFEM::UTILS::EvalElementVolume<DRT::Element::DiscretizationType::hex8>(xyze);
         hmax = std::max(hmax, XFEM::UTILS::ComputeVolEqDiameter(vol));
       }
       else
@@ -2339,7 +2339,7 @@ void XFEM::MeshCouplingFSI::EvaluateStructuralCauchyStress(DRT::Element* coupl_e
 {
   if (GetAveragingStrategy() == INPAR::XFEM::Xfluid_Sided) return;
 
-  if (coupl_ele->Shape() == DRT::Element::hex8)
+  if (coupl_ele->Shape() == DRT::Element::DiscretizationType::hex8)
   {
     DRT::ELEMENTS::So_hex8* solid_ele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(coupl_ele);
     if (solid_ele == nullptr)

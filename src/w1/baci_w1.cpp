@@ -162,7 +162,7 @@ DRT::ELEMENTS::Wall1::Wall1(int id, int owner)
       iseas_(false),
       eastype_(eas_vague),
       structale_(false),
-      distype_(dis_none)
+      distype_(DRT::Element::DiscretizationType::dis_none)
 {
   if (DRT::Problem::Instance()->GetProblemType() == ProblemType::struct_ale) structale_ = true;
   return;

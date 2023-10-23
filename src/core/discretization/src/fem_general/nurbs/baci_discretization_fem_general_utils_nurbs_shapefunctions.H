@@ -101,13 +101,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs2:
+      case ::DRT::Element::DiscretizationType::nurbs2:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs3:
+      case ::DRT::Element::DiscretizationType::nurbs3:
       {
         degree = 2;
 
@@ -382,13 +382,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs2:
+      case ::DRT::Element::DiscretizationType::nurbs2:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs3:
+      case ::DRT::Element::DiscretizationType::nurbs3:
       {
         degree = 2;
 
@@ -628,13 +628,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs2:
+      case ::DRT::Element::DiscretizationType::nurbs2:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs3:
+      case ::DRT::Element::DiscretizationType::nurbs3:
       {
         degree = 2;
 
@@ -846,13 +846,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs4:
+      case ::DRT::Element::DiscretizationType::nurbs4:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs9:
+      case ::DRT::Element::DiscretizationType::nurbs9:
       {
         degree = 2;
 
@@ -1172,13 +1172,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs4:
+      case ::DRT::Element::DiscretizationType::nurbs4:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs9:
+      case ::DRT::Element::DiscretizationType::nurbs9:
       {
         degree = 2;
 
@@ -1587,13 +1587,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs4:
+      case ::DRT::Element::DiscretizationType::nurbs4:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs9:
+      case ::DRT::Element::DiscretizationType::nurbs9:
       {
         degree = 2;
 
@@ -2171,13 +2171,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs8:
+      case ::DRT::Element::DiscretizationType::nurbs8:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs27:
+      case ::DRT::Element::DiscretizationType::nurbs27:
       {
         degree = 2;
 
@@ -2577,13 +2577,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs8:
+      case ::DRT::Element::DiscretizationType::nurbs8:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs27:
+      case ::DRT::Element::DiscretizationType::nurbs27:
       {
         degree = 2;
 
@@ -3182,13 +3182,13 @@ namespace CORE::DRT::NURBS::UTILS
 
     switch (distype)
     {
-      case ::DRT::Element::nurbs8:
+      case ::DRT::Element::DiscretizationType::nurbs8:
       {
         degree = 1;
 
         break;
       }
-      case ::DRT::Element::nurbs27:
+      case ::DRT::Element::DiscretizationType::nurbs27:
       {
         degree = 2;
 

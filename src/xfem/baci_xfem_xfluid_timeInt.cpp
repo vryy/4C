@@ -1814,27 +1814,31 @@ bool XFEM::XFluidTimeInt::SpecialCheck_InterfaceTips_SpaceTime(
 
   switch (side_distype)
   {
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::tri3, DRT::Element::wedge6>(
+      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::tri3,
+          DRT::Element::DiscretizationType::wedge6>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad4, DRT::Element::hex8>(
+      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::quad4,
+          DRT::Element::DiscretizationType::hex8>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad8, DRT::Element::hex16>(
+      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::quad8,
+          DRT::Element::DiscretizationType::hex16>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      successful_check = WithinSpaceTimeSide<DRT::Element::quad9, DRT::Element::hex18>(
+      successful_check = WithinSpaceTimeSide<DRT::Element::DiscretizationType::quad9,
+          DRT::Element::DiscretizationType::hex18>(
           node_within_Space_Time_Side, side, coup_sid, n_coord);
       break;
     }
@@ -2283,7 +2287,7 @@ void XFEM::XFluidTimeInt::Output()
       for (size_t j = 0; j < nds_methods.size(); j++)
       {
         IO::GMSH::cellWithScalarToStream(
-            DRT::Element::point1, (int)nds_methods[j], pos, gmshfilecontent);
+            DRT::Element::DiscretizationType::point1, (int)nds_methods[j], pos, gmshfilecontent);
       }
     }
     gmshfilecontent << "};\n";

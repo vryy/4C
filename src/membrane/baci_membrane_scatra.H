@@ -63,19 +63,19 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
           {
             return MembraneScatra_tri3Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::tri6:
+          case DRT::Element::DiscretizationType::tri6:
           {
             return MembraneScatra_tri6Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
           {
             return MembraneScatra_quad4Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
           {
             return MembraneScatra_quad9Type::Instance().UniqueParObjectId();
           }
@@ -122,22 +122,22 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
           {
             return MembraneScatra_tri3Type::Instance();
           }
           break;
-          case DRT::Element::tri6:
+          case DRT::Element::DiscretizationType::tri6:
           {
             return MembraneScatra_tri6Type::Instance();
           }
           break;
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
           {
             return MembraneScatra_quad4Type::Instance();
           }
           break;
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
           {
             return MembraneScatra_quad9Type::Instance();
           }

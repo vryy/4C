@@ -67,7 +67,7 @@ namespace
       beam_element->SetNodeIds(2, dummy_node_ids);
       Teuchos::RCP<DRT::ELEMENTS::Fluid> fluid_element =
           Teuchos::rcp(new DRT::ELEMENTS::Fluid(1, 0));
-      fluid_element->SetDisType(DRT::Element::hex8);
+      fluid_element->SetDisType(DRT::Element::DiscretizationType::hex8);
 
       // Set up the beam element.
       std::vector<double> xrefe(6);

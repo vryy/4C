@@ -374,28 +374,28 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
 
       if (isboundary) switch (distype)
         {
-          case DRT::Element::nurbs2:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs2>(
+          case DRT::Element::DiscretizationType::nurbs2:
+            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs3:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs3>(
+          case DRT::Element::DiscretizationType::nurbs3:
+            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs4:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs4>(
+          case DRT::Element::DiscretizationType::nurbs4:
+            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs9:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs9>(
+          case DRT::Element::DiscretizationType::nurbs9:
+            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs8:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs8>(
+          case DRT::Element::DiscretizationType::nurbs8:
+            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs27:
-            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::nurbs27>(
+          case DRT::Element::DiscretizationType::nurbs27:
+            FillMatrixAndRHSForLSDirichletBoundary<DRT::Element::DiscretizationType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:
@@ -406,28 +406,28 @@ void DRT::UTILS::DbcNurbs::DoDirichletCondition(const DRT::Discretization& discr
       else
         switch (distype)
         {
-          case DRT::Element::nurbs2:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs2>(
+          case DRT::Element::DiscretizationType::nurbs2:
+            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs2>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs3:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs3>(
+          case DRT::Element::DiscretizationType::nurbs3:
+            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs3>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs4:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs4>(
+          case DRT::Element::DiscretizationType::nurbs4:
+            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs4>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs9:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs9>(
+          case DRT::Element::DiscretizationType::nurbs9:
+            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs9>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs8:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs8>(
+          case DRT::Element::DiscretizationType::nurbs8:
+            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs8>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
-          case DRT::Element::nurbs27:
-            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::nurbs27>(
+          case DRT::Element::DiscretizationType::nurbs27:
+            FillMatrixAndRHSForLSDirichletDomain<DRT::Element::DiscretizationType::nurbs27>(
                 actele, &eleknots, lm, funct, val, deg, time, elemass, elerhs);
             break;
           default:

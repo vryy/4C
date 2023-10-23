@@ -166,7 +166,7 @@ void MORTAR::MortarElementNitscheData<parent_distype>::AssembleMatrix(MORTAR::Mo
 }
 
 
-template class MORTAR::MortarElementNitscheData<DRT::Element::hex8>;
-template class MORTAR::MortarElementNitscheData<DRT::Element::tet4>;
-template class MORTAR::MortarElementNitscheData<DRT::Element::hex27>;
-template class MORTAR::MortarElementNitscheData<DRT::Element::nurbs27>;
+template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::hex8>;
+template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::tet4>;
+template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::hex27>;
+template class MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::nurbs27>;

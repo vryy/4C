@@ -137,7 +137,7 @@ void DRT::ELEMENTS::ElemagDiffType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ElemagDiff::ElemagDiff(int id, int owner) : Elemag(id, owner)
 {
-  distype_ = dis_none;
+  distype_ = DRT::Element::DiscretizationType::dis_none;
 }
 
 /*----------------------------------------------------------------------*

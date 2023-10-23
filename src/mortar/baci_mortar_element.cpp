@@ -27,8 +27,8 @@ MORTAR::MortarElementType& MORTAR::MortarElementType::Instance() { return instan
 
 DRT::ParObject* MORTAR::MortarElementType::Create(const std::vector<char>& data)
 {
-  MORTAR::MortarElement* ele =
-      new MORTAR::MortarElement(0, 0, DRT::Element::dis_none, 0, nullptr, false);
+  MORTAR::MortarElement* ele = new MORTAR::MortarElement(
+      0, 0, DRT::Element::DiscretizationType::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }
@@ -120,7 +120,7 @@ MORTAR::MortarElement::MortarElement(int id, int owner,
  *----------------------------------------------------------------------*/
 MORTAR::MortarElement::MortarElement(int id, int owner)
     : DRT::FaceElement(id, owner),
-      shape_(DRT::Element::dis_none),
+      shape_(DRT::Element::DiscretizationType::dis_none),
       isslave_(false),
       attached_(false),
       nurbs_(false),
@@ -329,8 +329,8 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
   // 2D quadratic case (3noded line element)
   switch (Shape())
   {
-    case line2:
-    case line3:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
     {
       switch (lid)
       {
@@ -355,8 +355,8 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
 
     // 3D linear case (2noded triangular element)
     // 3D quadratic case (3noded triangular element)
-    case tri3:
-    case tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
     {
       switch (lid)
       {
@@ -406,9 +406,9 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
     // 3D bilinear case (4noded quadrilateral element)
     // 3D serendipity case (8noded quadrilateral element)
     // 3D biquadratic case (9noded quadrilateral element)
-    case quad4:
-    case quad8:
-    case quad9:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
     {
       switch (lid)
       {
@@ -475,7 +475,7 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
 
     //==================================================
     //                     NURBS
-    case nurbs2:
+    case DRT::Element::DiscretizationType::nurbs2:
     {
       if (lid == 0)
         xi[0] = -1.0;
@@ -490,7 +490,7 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
 
       break;
     }
-    case nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
       if (lid == 0)
         xi[0] = -1.0;
@@ -507,7 +507,7 @@ bool MORTAR::MortarElement::LocalCoordinatesOfNode(int lid, double* xi) const
 
       break;
     }
-    case nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       switch (lid)
       {
@@ -753,7 +753,7 @@ void MORTAR::MortarElement::DerivUnitNormalAtXi(
 
   int nderiv = nnodes * 3;
   // to be safe if it is a IntEle for a nurbs9
-  if (Shape() == DRT::Element::quad4) nderiv = 9 * 3;
+  if (Shape() == DRT::Element::DiscretizationType::quad4) nderiv = 9 * 3;
 
   // resize derivn
   derivn.resize(3, nderiv);
@@ -909,22 +909,22 @@ void MORTAR::MortarElement::Metrics(const double* xi, double* gxi, double* geta)
   DRT::Element::DiscretizationType dt = Shape();
   switch (dt)
   {
-    case line2:
-    case line3:
-    case nurbs2:
-    case nurbs3:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
+    case DRT::Element::DiscretizationType::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
       dim = 2;
       break;
     }
-    case tri3:
-    case quad4:
-    case tri6:
-    case quad8:
-    case quad9:
-    case nurbs4:
-    case nurbs8:
-    case nurbs9:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::tri6:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
+    case DRT::Element::DiscretizationType::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       dim = 3;
       break;
@@ -980,10 +980,10 @@ double MORTAR::MortarElement::Jacobian(const double* xi)
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt == line2) jac = MoData().Area() * 0.5;
+  if (dt == DRT::Element::DiscretizationType::line2) jac = MoData().Area() * 0.5;
 
   // 3D linear case (3noded triangular element)
-  else if (dt == tri3)
+  else if (dt == DRT::Element::DiscretizationType::tri3)
     jac = MoData().Area() * 2.0;
 
   // 2D quadratic case (3noded line element)
@@ -991,8 +991,16 @@ double MORTAR::MortarElement::Jacobian(const double* xi)
   // 3D quadratic case (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == line3 || dt == quad4 || dt == tri6 || dt == quad8 || dt == quad9 || dt == nurbs2 ||
-           dt == nurbs3 || dt == nurbs4 || dt == nurbs8 || dt == nurbs9)
+  else if (dt == DRT::Element::DiscretizationType::line3 ||
+           dt == DRT::Element::DiscretizationType::quad4 ||
+           dt == DRT::Element::DiscretizationType::tri6 ||
+           dt == DRT::Element::DiscretizationType::quad8 ||
+           dt == DRT::Element::DiscretizationType::quad9 ||
+           dt == DRT::Element::DiscretizationType::nurbs2 ||
+           dt == DRT::Element::DiscretizationType::nurbs3 ||
+           dt == DRT::Element::DiscretizationType::nurbs4 ||
+           dt == DRT::Element::DiscretizationType::nurbs8 ||
+           dt == DRT::Element::DiscretizationType::nurbs9)
   {
     // metrics routine gives local basis vectors
     Metrics(xi, gxi, geta);
@@ -1051,13 +1059,13 @@ void MORTAR::MortarElement::DerivJacobian(
   switch (dt)
   {
     // 3D linear case (3noded triangular element)
-    case tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       jacinv = 1.0 / (MoData().Area() * 2.0);
       break;
     }
     // default 2-D case
-    case line2:
+    case DRT::Element::DiscretizationType::line2:
     {
       jacinv = 2.0 / MoData().Area();
       break;
@@ -1068,16 +1076,16 @@ void MORTAR::MortarElement::DerivJacobian(
     // 3D serendipity case (8noded quadrilateral element)
     // 3D biquadratic case (9noded quadrilateral element)
     /* no break (upper case) */
-    case line3:
-    case quad4:
-    case tri6:
-    case quad8:
-    case quad9:
-    case nurbs2:
-    case nurbs3:
-    case nurbs4:
-    case nurbs8:
-    case nurbs9:
+    case DRT::Element::DiscretizationType::line3:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::tri6:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
+    case DRT::Element::DiscretizationType::nurbs2:
+    case DRT::Element::DiscretizationType::nurbs3:
+    case DRT::Element::DiscretizationType::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs8:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       jacinv = 1.0 / sqrt(cross[0] * cross[0] + cross[1] * cross[1] + cross[2] * cross[2]);
       break;
@@ -1131,7 +1139,7 @@ double MORTAR::MortarElement::ComputeArea()
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt == line2)
+  if (dt == DRT::Element::DiscretizationType::line2)
   {
     // no integration necessary (constant Jacobian)
     CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
@@ -1147,7 +1155,7 @@ double MORTAR::MortarElement::ComputeArea()
   }
 
   // 3D linear case (3noded triangular element)
-  else if (dt == tri3)
+  else if (dt == DRT::Element::DiscretizationType::tri3)
   {
     // no integration necessary (constant Jacobian)
     CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
@@ -1175,8 +1183,16 @@ double MORTAR::MortarElement::ComputeArea()
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == line3 || dt == quad4 || dt == tri6 || dt == quad8 || dt == quad9 || dt == nurbs2 ||
-           dt == nurbs3 || dt == nurbs4 || dt == nurbs8 || dt == nurbs9)
+  else if (dt == DRT::Element::DiscretizationType::line3 ||
+           dt == DRT::Element::DiscretizationType::quad4 ||
+           dt == DRT::Element::DiscretizationType::tri6 ||
+           dt == DRT::Element::DiscretizationType::quad8 ||
+           dt == DRT::Element::DiscretizationType::quad9 ||
+           dt == DRT::Element::DiscretizationType::nurbs2 ||
+           dt == DRT::Element::DiscretizationType::nurbs3 ||
+           dt == DRT::Element::DiscretizationType::nurbs4 ||
+           dt == DRT::Element::DiscretizationType::nurbs8 ||
+           dt == DRT::Element::DiscretizationType::nurbs9)
   {
     // Gauss quadrature with correct NumGP and Dim
     MORTAR::ElementIntegrator integrator(dt);
@@ -1208,7 +1224,7 @@ double MORTAR::MortarElement::ComputeAreaDeriv(CORE::GEN::pairedvector<int, doub
   DRT::Element::DiscretizationType dt = Shape();
 
   // 2D linear case (2noded line element)
-  if (dt == line2)
+  if (dt == DRT::Element::DiscretizationType::line2)
   {
     // no integration necessary (constant Jacobian)
     CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
@@ -1224,7 +1240,7 @@ double MORTAR::MortarElement::ComputeAreaDeriv(CORE::GEN::pairedvector<int, doub
   }
 
   // 3D linear case (3noded triangular element)
-  else if (dt == tri3)
+  else if (dt == DRT::Element::DiscretizationType::tri3)
   {
     // no integration necessary (constant Jacobian)
     CORE::LINALG::SerialDenseMatrix coord(3, NumPoint());
@@ -1252,8 +1268,16 @@ double MORTAR::MortarElement::ComputeAreaDeriv(CORE::GEN::pairedvector<int, doub
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == line3 || dt == quad4 || dt == tri6 || dt == quad8 || dt == quad9 || dt == nurbs2 ||
-           dt == nurbs3 || dt == nurbs4 || dt == nurbs8 || dt == nurbs9)
+  else if (dt == DRT::Element::DiscretizationType::line3 ||
+           dt == DRT::Element::DiscretizationType::quad4 ||
+           dt == DRT::Element::DiscretizationType::tri6 ||
+           dt == DRT::Element::DiscretizationType::quad8 ||
+           dt == DRT::Element::DiscretizationType::quad9 ||
+           dt == DRT::Element::DiscretizationType::nurbs2 ||
+           dt == DRT::Element::DiscretizationType::nurbs3 ||
+           dt == DRT::Element::DiscretizationType::nurbs4 ||
+           dt == DRT::Element::DiscretizationType::nurbs8 ||
+           dt == DRT::Element::DiscretizationType::nurbs9)
   {
     // Gauss quadrature with correct NumGP and Dim
     MORTAR::ElementIntegrator integrator(dt);
@@ -1351,8 +1375,8 @@ double MORTAR::MortarElement::MinEdgeSize()
 
   switch (discretizationType)
   {
-    case line2:
-    case line3:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
     {
       // there is only one edge
       // (we approximate the quadratic case as linear)
@@ -1362,8 +1386,8 @@ double MORTAR::MortarElement::MinEdgeSize()
 
       break;
     }
-    case tri3:
-    case tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
     {
       // there are three edges
       // (we approximate the quadratic case as linear)
@@ -1383,9 +1407,9 @@ double MORTAR::MortarElement::MinEdgeSize()
 
       break;
     }
-    case quad4:
-    case quad8:
-    case quad9:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
     {
       // there are four edges
       // (we approximate the quadratic case as linear)
@@ -1405,7 +1429,7 @@ double MORTAR::MortarElement::MinEdgeSize()
 
       break;
     }
-    case nurbs3:
+    case DRT::Element::DiscretizationType::nurbs3:
     {
       double sxi0[2] = {-1.0, 0.0};
       double sxi1[2] = {1.0, 0.0};
@@ -1434,7 +1458,7 @@ double MORTAR::MortarElement::MinEdgeSize()
 
       break;
     }
-    case nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       const int nrow = NumNode();
 
@@ -1520,8 +1544,8 @@ double MORTAR::MortarElement::MaxEdgeSize()
 
   switch (discretizationType)
   {
-    case line2:
-    case line3:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
     {
       // there is only one edge
       std::array<double, 3> diff = {0.0, 0.0, 0.0};
@@ -1530,8 +1554,8 @@ double MORTAR::MortarElement::MaxEdgeSize()
 
       break;
     }
-    case tri3:
-    case tri6:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
     {
       // there are three edges
       for (int edge = 0; edge < 3; ++edge)
@@ -1550,9 +1574,9 @@ double MORTAR::MortarElement::MaxEdgeSize()
 
       break;
     }
-    case quad4:
-    case quad8:
-    case quad9:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
     {
       // there are four edges
       for (int edge = 0; edge < 4; ++edge)
@@ -1686,21 +1710,21 @@ MORTAR::MortarElementNitscheContainer& MORTAR::MortarElement::GetNitscheContaine
   if (!ParentElement()) dserror("parent element pointer not set");
   if (nitsche_container_ == Teuchos::null) switch (ParentElement()->Shape())
     {
-      case DRT::Element::hex8:
-        nitsche_container_ =
-            Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::hex8>());
+      case DRT::Element::DiscretizationType::hex8:
+        nitsche_container_ = Teuchos::rcp(
+            new MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::hex8>());
         break;
-      case DRT::Element::tet4:
-        nitsche_container_ =
-            Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::tet4>());
+      case DRT::Element::DiscretizationType::tet4:
+        nitsche_container_ = Teuchos::rcp(
+            new MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::tet4>());
         break;
-      case DRT::Element::hex27:
-        nitsche_container_ =
-            Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::hex27>());
+      case DRT::Element::DiscretizationType::hex27:
+        nitsche_container_ = Teuchos::rcp(
+            new MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::hex27>());
         break;
-      case DRT::Element::nurbs27:
-        nitsche_container_ =
-            Teuchos::rcp(new MORTAR::MortarElementNitscheData<DRT::Element::nurbs27>());
+      case DRT::Element::DiscretizationType::nurbs27:
+        nitsche_container_ = Teuchos::rcp(
+            new MORTAR::MortarElementNitscheData<DRT::Element::DiscretizationType::nurbs27>());
         break;
       default:
         dserror("Nitsche data container not ready. Just add it here...");

@@ -953,17 +953,16 @@ void DRT::ELEMENTS::SolidEleCalcEas<distype, eastype>::ResetToLastConverged(
 }
 
 // template classes
-template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8,
+template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
     STR::ELEMENTS::EasType::eastype_h8_9>;
-template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8,
+template class DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
     STR::ELEMENTS::EasType::eastype_h8_21>;
 
 static_assert(
-    DRT::ELEMENTS::IsPackable<
-        DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, STR::ELEMENTS::EasType::eastype_h8_9>*>,
+    DRT::ELEMENTS::IsPackable<DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::DiscretizationType::hex8,
+        STR::ELEMENTS::EasType::eastype_h8_9>*>,
     "EAS needs to implement the method Pack(DRT::PackBuffer&) to be able to store history data!");
-static_assert(
-    DRT::ELEMENTS::IsUnpackable<
-        DRT::ELEMENTS::SolidEleCalcEas<DRT::Element::hex8, STR::ELEMENTS::EasType::eastype_h8_9>*>,
+static_assert(DRT::ELEMENTS::IsUnpackable<DRT::ELEMENTS::SolidEleCalcEas<
+                  DRT::Element::DiscretizationType::hex8, STR::ELEMENTS::EasType::eastype_h8_9>*>,
     "EAS needs to implement the method Unpack(std::size_t, std::vector<char>&) to be able to store "
     "history data!");

@@ -48,7 +48,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11320);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -66,7 +66,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217394772;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11196);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -84,7 +84,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217394772;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11196);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -102,7 +102,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11198);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -120,7 +120,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11198);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -138,7 +138,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11318);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -156,7 +156,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11318);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -174,7 +174,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11318);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -192,7 +192,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11318);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -210,7 +210,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11320);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -228,7 +228,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.020000000000000000416;
     nids.push_back(-11320);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -246,7 +246,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11892);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -264,7 +264,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11892);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -282,7 +282,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11892);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -300,7 +300,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11892);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -318,7 +318,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.013333333333333332454;
     nids.push_back(-11893);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -336,7 +336,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.013333333333333332454;
     nids.push_back(-11893);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -354,7 +354,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.013333333333333332454;
     nids.push_back(-11893);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -372,7 +372,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.013333333333333332454;
     nids.push_back(-11893);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -390,7 +390,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.010666666666666668045;
     nids.push_back(-11894);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -408,7 +408,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.010666666666666668045;
     nids.push_back(-11894);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -426,7 +426,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.010666666666666668045;
     nids.push_back(-11894);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -444,7 +444,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.010666666666666668045;
     nids.push_back(-11894);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -462,7 +462,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11895);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -480,7 +480,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11895);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -498,7 +498,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11895);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -516,7 +516,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11895);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -534,7 +534,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.0053333333333333322879;
     nids.push_back(-11896);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -552,7 +552,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.0053333333333333322879;
     nids.push_back(-11896);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -570,7 +570,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.1477391304347825951;
     tri3_xyze(2, 2) = 0.0053333333333333322879;
     nids.push_back(-11896);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -588,7 +588,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.018666666666666668212;
     nids.push_back(-11906);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -606,7 +606,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.018666666666666668212;
     nids.push_back(-11906);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -624,7 +624,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.018666666666666668212;
     nids.push_back(-11906);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -642,7 +642,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.018666666666666668212;
     nids.push_back(-11906);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -660,7 +660,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11907);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -678,7 +678,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11907);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -696,7 +696,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11907);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -714,7 +714,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11907);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -732,7 +732,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.013333333333333334189;
     nids.push_back(-11908);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -750,7 +750,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.013333333333333334189;
     nids.push_back(-11908);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -768,7 +768,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.013333333333333334189;
     nids.push_back(-11908);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -786,7 +786,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.013333333333333334189;
     nids.push_back(-11908);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -804,7 +804,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11909);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -822,7 +822,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11909);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -840,7 +840,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11909);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -858,7 +858,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11909);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -876,7 +876,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11910);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -894,7 +894,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11910);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -912,7 +912,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11910);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -930,7 +930,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11910);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -948,7 +948,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11911);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -966,7 +966,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11911);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -984,7 +984,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11911);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1002,7 +1002,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217389221;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11911);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1020,7 +1020,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0026666666666666670113;
     nids.push_back(-11912);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1038,7 +1038,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0026666666666666670113;
     nids.push_back(-11912);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1056,7 +1056,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0026666666666666670113;
     nids.push_back(-11912);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1074,7 +1074,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 0.0026666666666666670113;
     nids.push_back(-11912);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1092,7 +1092,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 4.336808689942017736e-19;
     nids.push_back(-11913);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1110,7 +1110,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 4.336808689942017736e-19;
     nids.push_back(-11913);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1128,7 +1128,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 4.336808689942017736e-19;
     nids.push_back(-11913);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1146,7 +1146,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = 4.336808689942017736e-19;
     nids.push_back(-11913);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1164,7 +1164,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.002666666666666667445;
     nids.push_back(-11914);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1182,7 +1182,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.002666666666666667445;
     nids.push_back(-11914);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1200,7 +1200,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.002666666666666667445;
     nids.push_back(-11914);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1218,7 +1218,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.002666666666666667445;
     nids.push_back(-11914);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1236,7 +1236,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.0053333333333333322879;
     nids.push_back(-11915);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1254,7 +1254,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.0053333333333333322879;
     nids.push_back(-11915);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1272,7 +1272,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.0053333333333333322879;
     nids.push_back(-11915);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1290,7 +1290,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.15860869565217391997;
     tri3_xyze(2, 2) = -0.0053333333333333322879;
     nids.push_back(-11915);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1308,7 +1308,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.018666666666666671681;
     nids.push_back(-11921);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1326,7 +1326,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.018666666666666671681;
     nids.push_back(-11921);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1344,7 +1344,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.018666666666666671681;
     nids.push_back(-11921);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1362,7 +1362,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.016000000000000003803;
     nids.push_back(-11922);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1380,7 +1380,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.016000000000000003803;
     nids.push_back(-11922);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1398,7 +1398,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.016000000000000003803;
     nids.push_back(-11922);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1416,7 +1416,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.016000000000000003803;
     nids.push_back(-11922);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1434,7 +1434,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.013333333333333335924;
     nids.push_back(-11923);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1452,7 +1452,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.013333333333333335924;
     nids.push_back(-11923);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1470,7 +1470,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.013333333333333335924;
     nids.push_back(-11923);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1488,7 +1488,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.013333333333333335924;
     nids.push_back(-11923);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1506,7 +1506,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11924);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1524,7 +1524,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11924);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1542,7 +1542,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11924);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1560,7 +1560,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.01066666666666666978;
     nids.push_back(-11924);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1578,7 +1578,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0080000000000000019013;
     nids.push_back(-11925);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1596,7 +1596,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0080000000000000019013;
     nids.push_back(-11925);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1614,7 +1614,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0080000000000000019013;
     nids.push_back(-11925);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1632,7 +1632,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0080000000000000019013;
     nids.push_back(-11925);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1650,7 +1650,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11926);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1668,7 +1668,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11926);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1686,7 +1686,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11926);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1704,7 +1704,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0053333333333333340226;
     nids.push_back(-11926);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1722,7 +1722,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0026666666666666670113;
     nids.push_back(-11927);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1740,7 +1740,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0026666666666666670113;
     nids.push_back(-11927);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1758,7 +1758,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956521707;
     tri3_xyze(2, 2) = 0.0026666666666666670113;
     nids.push_back(-11927);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1776,7 +1776,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956518932;
     tri3_xyze(2, 2) = 4.336808689942017736e-19;
     nids.push_back(-11928);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1794,7 +1794,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956518932;
     tri3_xyze(2, 2) = 4.336808689942017736e-19;
     nids.push_back(-11928);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1812,7 +1812,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956518932;
     tri3_xyze(2, 2) = 4.336808689942017736e-19;
     nids.push_back(-11928);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1830,7 +1830,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = -0.0026666666666666657103;
     nids.push_back(-11929);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1848,7 +1848,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = -0.0026666666666666657103;
     nids.push_back(-11929);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1866,7 +1866,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = -0.0026666666666666657103;
     nids.push_back(-11929);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1884,7 +1884,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = -0.0053333333333333322879;
     nids.push_back(-11930);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1902,7 +1902,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = -0.0053333333333333322879;
     nids.push_back(-11930);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1920,7 +1920,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.16947826086956524483;
     tri3_xyze(2, 2) = -0.0053333333333333322879;
     nids.push_back(-11930);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1938,7 +1938,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11937);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1956,7 +1956,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11937);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1974,7 +1974,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.016000000000000000333;
     nids.push_back(-11937);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -1992,7 +1992,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.013333333333333332454;
     nids.push_back(-11938);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2010,7 +2010,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.013333333333333332454;
     nids.push_back(-11938);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2028,7 +2028,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.013333333333333332454;
     nids.push_back(-11938);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2046,7 +2046,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.010666666666666668045;
     nids.push_back(-11939);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2064,7 +2064,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.010666666666666668045;
     nids.push_back(-11939);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2082,7 +2082,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.010666666666666668045;
     nids.push_back(-11939);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2100,7 +2100,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11940);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2118,7 +2118,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11940);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2136,7 +2136,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.0080000000000000001665;
     nids.push_back(-11940);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2154,7 +2154,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.0053333333333333331552;
     nids.push_back(-11941);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix tri3_xyze(3, 3);
@@ -2172,7 +2172,7 @@ void test_bacigenerated_627558()
     tri3_xyze(1, 2) = 0.18034782608695654194;
     tri3_xyze(2, 2) = 0.0053333333333333331552;
     nids.push_back(-11941);
-    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::tri3);
+    intersection.AddCutSide(++sidecount, nids, tri3_xyze, DRT::Element::DiscretizationType::tri3);
   }
   {
     CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -2211,7 +2211,7 @@ void test_bacigenerated_627558()
     hex8_xyze(2, 7) = 0.027775153442394000247;
     nids.push_back(1659178);
 
-    intersection.AddElement(627533, nids, hex8_xyze, DRT::Element::hex8);
+    intersection.AddElement(627533, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
   }
 
   {
@@ -2251,7 +2251,7 @@ void test_bacigenerated_627558()
     hex8_xyze(2, 7) = 0.016665064871666700891;
     nids.push_back(1659170);
 
-    intersection.AddElement(627549, nids, hex8_xyze, DRT::Element::hex8);
+    intersection.AddElement(627549, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
   }
 
   {
@@ -2291,7 +2291,7 @@ void test_bacigenerated_627558()
     hex8_xyze(2, 7) = 0.016665059489050899899;
     nids.push_back(1659176);
 
-    intersection.AddElement(627555, nids, hex8_xyze, DRT::Element::hex8);
+    intersection.AddElement(627555, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
   }
 
   {
@@ -2331,7 +2331,7 @@ void test_bacigenerated_627558()
     hex8_xyze(2, 7) = 0.016665058991174600683;
     nids.push_back(1659179);
 
-    intersection.AddElement(627558, nids, hex8_xyze, DRT::Element::hex8);
+    intersection.AddElement(627558, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
   }
 
   {
@@ -2371,7 +2371,7 @@ void test_bacigenerated_627558()
     hex8_xyze(2, 7) = 0.0055550205723179897979;
     nids.push_back(1659204);
 
-    intersection.AddElement(627559, nids, hex8_xyze, DRT::Element::hex8);
+    intersection.AddElement(627559, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
   }
 
   {
@@ -2411,7 +2411,7 @@ void test_bacigenerated_627558()
     hex8_xyze(2, 7) = 0.016665058339944201216;
     nids.push_back(1659587);
 
-    intersection.AddElement(627957, nids, hex8_xyze, DRT::Element::hex8);
+    intersection.AddElement(627957, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
   }
 
   {
@@ -2451,7 +2451,7 @@ void test_bacigenerated_627558()
     hex8_xyze(2, 7) = 0.016665100819606998989;
     nids.push_back(1671719);
 
-    intersection.AddElement(639690, nids, hex8_xyze, DRT::Element::hex8);
+    intersection.AddElement(639690, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
   }
 
   intersection.Status();

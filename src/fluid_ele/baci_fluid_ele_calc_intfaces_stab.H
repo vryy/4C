@@ -380,26 +380,26 @@ namespace DRT
 
         switch (parent_distype)
         {
-          case DRT::Element::hex8:
-          case DRT::Element::tet4:
-          case DRT::Element::pyramid5:
-          case DRT::Element::wedge6:
-          case DRT::Element::quad4:
-          case DRT::Element::tri3:
-          case DRT::Element::line2:
+          case DRT::Element::DiscretizationType::hex8:
+          case DRT::Element::DiscretizationType::tet4:
+          case DRT::Element::DiscretizationType::pyramid5:
+          case DRT::Element::DiscretizationType::wedge6:
+          case DRT::Element::DiscretizationType::quad4:
+          case DRT::Element::DiscretizationType::tri3:
+          case DRT::Element::DiscretizationType::line2:
           {
             r_visc = 1.0;  ///< 1.0^4
             r_conv = 1.0;  ///< 1.0^(7/2)
             break;
           }
-          case DRT::Element::hex20:
-          case DRT::Element::hex27:
-          case DRT::Element::tet10:
-          case DRT::Element::wedge15:
-          case DRT::Element::quad8:
-          case DRT::Element::quad9:
-          case DRT::Element::tri6:
-          case DRT::Element::line3:
+          case DRT::Element::DiscretizationType::hex20:
+          case DRT::Element::DiscretizationType::hex27:
+          case DRT::Element::DiscretizationType::tet10:
+          case DRT::Element::DiscretizationType::wedge15:
+          case DRT::Element::DiscretizationType::quad8:
+          case DRT::Element::DiscretizationType::quad9:
+          case DRT::Element::DiscretizationType::tri6:
+          case DRT::Element::DiscretizationType::line3:
           {
             r_visc = 16.0;                   ///< 2.0^4
             r_conv = 11.313708498984761164;  ///< 2.0^(7/2)
@@ -766,8 +766,9 @@ namespace DRT
       int FindOppositeSurface(
           DRT::Element::DiscretizationType ele_distype, const int surfacelocalid)
       {
-        if (ele_distype == DRT::Element::hex8 or ele_distype == DRT::Element::hex20 or
-            ele_distype == DRT::Element::hex27)
+        if (ele_distype == DRT::Element::DiscretizationType::hex8 or
+            ele_distype == DRT::Element::DiscretizationType::hex20 or
+            ele_distype == DRT::Element::DiscretizationType::hex27)
         {
           switch (surfacelocalid)
           {
@@ -794,8 +795,9 @@ namespace DRT
               break;
           }
         }
-        else if (ele_distype == DRT::Element::quad4 or ele_distype == DRT::Element::quad8 or
-                 ele_distype == DRT::Element::quad9)
+        else if (ele_distype == DRT::Element::DiscretizationType::quad4 or
+                 ele_distype == DRT::Element::DiscretizationType::quad8 or
+                 ele_distype == DRT::Element::DiscretizationType::quad9)
         {
           switch (surfacelocalid)
           {
@@ -816,9 +818,11 @@ namespace DRT
               break;
           }
         }
-        if (ele_distype == DRT::Element::tet4 or ele_distype == DRT::Element::tet10 or
-            ele_distype == DRT::Element::tri3 or ele_distype == DRT::Element::tri6 or
-            ele_distype == DRT::Element::pyramid5)
+        if (ele_distype == DRT::Element::DiscretizationType::tet4 or
+            ele_distype == DRT::Element::DiscretizationType::tet10 or
+            ele_distype == DRT::Element::DiscretizationType::tri3 or
+            ele_distype == DRT::Element::DiscretizationType::tri6 or
+            ele_distype == DRT::Element::DiscretizationType::pyramid5)
         {
           // no unique opposite side
           return -1;

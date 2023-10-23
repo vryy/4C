@@ -34,57 +34,57 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(DRT
 {
   switch (ele->Shape())
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
-      return TemperImpl<DRT::Element::hex8>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::hex8>::Instance();
     }
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
     {
-      return TemperImpl<DRT::Element::hex20>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::hex20>::Instance();
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
-      return TemperImpl<DRT::Element::hex27>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::hex27>::Instance();
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
-      return TemperImpl<DRT::Element::tet4>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::tet4>::Instance();
     }
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
     {
-      return TemperImpl<DRT::Element::tet10>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::tet10>::Instance();
     }
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
     {
-      return TemperImpl<DRT::Element::wedge6>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::wedge6>::Instance();
     }
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
     {
-      return TemperImpl<DRT::Element::pyramid5>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::pyramid5>::Instance();
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return TemperImpl<DRT::Element::quad4>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::quad4>::Instance();
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return TemperImpl<DRT::Element::quad8>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::quad8>::Instance();
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return TemperImpl<DRT::Element::quad9>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::quad9>::Instance();
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return TemperImpl<DRT::Element::tri3>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::tri3>::Instance();
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return TemperImpl<DRT::Element::line2>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::line2>::Instance();
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
-      return TemperImpl<DRT::Element::nurbs27>::Instance();
+      return TemperImpl<DRT::Element::DiscretizationType::nurbs27>::Instance();
     }
     default:
       dserror("Element shape %s (%d nodes) not activated. Just do it.",
@@ -2869,7 +2869,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::PrepareNurbsEval(
     DRT::Discretization& discretization  // current discretisation
 )
 {
-  if (ele->Shape() != DRT::Element::nurbs27)
+  if (ele->Shape() != DRT::Element::DiscretizationType::nurbs27)
   {
     myknots_.resize(0);
     return;
@@ -2930,9 +2930,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
 {
   // this quick'n'dirty hack functions only for elements which has the same
   // number of gauss points AND same number of nodes
-  if (not((distype == DRT::Element::hex8) or (distype == DRT::Element::hex27) or
-          (distype == DRT::Element::tet4) or (distype == DRT::Element::quad4) or
-          (distype == DRT::Element::line2)))
+  if (not((distype == DRT::Element::DiscretizationType::hex8) or
+          (distype == DRT::Element::DiscretizationType::hex27) or
+          (distype == DRT::Element::DiscretizationType::tet4) or
+          (distype == DRT::Element::DiscretizationType::quad4) or
+          (distype == DRT::Element::DiscretizationType::line2)))
     dserror("Sorry, not implemented for element shape");
 
   // another check

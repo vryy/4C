@@ -431,13 +431,15 @@ namespace DRT
         TEUCHOS_FUNC_TIME_MONITOR("FLD::XFluid::XFluidState::ProjectOnSide");
 
 
-        if (slave_distype == DRT::Element::tri3 or slave_distype == DRT::Element::tri6)
+        if (slave_distype == DRT::Element::DiscretizationType::tri3 or
+            slave_distype == DRT::Element::DiscretizationType::tri6)
         {
           proj_sol_(0) = 0.333333333333333;
           proj_sol_(1) = 0.333333333333333;
         }
-        else if (slave_distype == DRT::Element::quad4 or slave_distype == DRT::Element::quad8 or
-                 slave_distype == DRT::Element::quad9)
+        else if (slave_distype == DRT::Element::DiscretizationType::quad4 or
+                 slave_distype == DRT::Element::DiscretizationType::quad8 or
+                 slave_distype == DRT::Element::DiscretizationType::quad9)
         {
           proj_sol_(0) = 0.0;
           proj_sol_(1) = 0.0;
@@ -625,211 +627,253 @@ namespace DRT
 
 
 // pairs with numdof=3
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad9, 3>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-// DRT::Element::tri3,3>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,  DRT::Element::tri6,3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::quad9, 3>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri3,3>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri6,3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::quad9, 3>;
 
 // volume coupled with numdof = 3, FSI Slavesided, FPI
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex8, 3>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::hex8, 3>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::hex8, 3>;
 
 // pairs with numdof=4
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,  DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::quad9, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-// DRT::Element::tri3,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15, DRT::Element::tri6,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad4, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::quad9, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri3,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tri6,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::quad4, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::quad8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::quad9, 4>;
 
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-// DRT::Element::tet4, 4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,  DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex8,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex20,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::hex27,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,  DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet4,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::tet10,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge6,
-    DRT::Element::hex27, 4>;
-// template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-// DRT::Element::tet4,4>; template class
-// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15, DRT::Element::tet10,4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex8, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex20, 4>;
-template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::wedge15,
-    DRT::Element::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tet4, 4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex8,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex8, DRT::Element::DiscretizationType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex20,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex20, DRT::Element::DiscretizationType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::hex27,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::hex27, DRT::Element::DiscretizationType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet4,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet4, DRT::Element::DiscretizationType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::tet10,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::tet10, DRT::Element::DiscretizationType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge6,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge6, DRT::Element::DiscretizationType::hex27, 4>;
+// template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tet4,4>; template class
+// DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<DRT::Element::DiscretizationType::wedge15,
+// DRT::Element::DiscretizationType::tet10,4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::hex8, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::hex20, 4>;
+template class DRT::ELEMENTS::XFLUID::SlaveElementRepresentation<
+    DRT::Element::DiscretizationType::wedge15, DRT::Element::DiscretizationType::hex27, 4>;

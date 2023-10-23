@@ -750,7 +750,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GaussPointLoopPressureBased(
     CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix, CORE::LINALG::Matrix<numdof_, 1>* force)
 {
   /*--------------------------------- get node weights for nurbs elements */
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+      distype == DRT::Element::DiscretizationType::nurbs9)
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
@@ -1224,7 +1225,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::InitElement()
     xrefe(i, 2) = Nodes()[i]->X()[2];
   }
 
-  if (distype == DRT::Element::nurbs27) isNurbs_ = true;
+  if (distype == DRT::Element::DiscretizationType::nurbs27) isNurbs_ = true;
 
   invJ_.resize(numgpt_);
   detJ_.resize(numgpt_);
@@ -2785,7 +2786,8 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
   if (fluid_mat_->Type() != MAT::PAR::darcy)
     dserror("GetCauchyAtXi just implemented for pure Darcy flow!");
 
-  if (distype != DRT::Element::hex8) dserror("GetCauchyAtXi for Poro just implemented for hex8!");
+  if (distype != DRT::Element::DiscretizationType::hex8)
+    dserror("GetCauchyAtXi for Poro just implemented for hex8!");
 
   so3_ele::GetCauchyNDirAndDerivativesAtXi(xi, disp, n, dir, cauchy_n_dir, d_cauchyndir_dd, nullptr,
       nullptr, nullptr, nullptr, d_cauchyndir_dn, d_cauchyndir_ddir, d_cauchyndir_dxi, nullptr,
@@ -2796,7 +2798,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
   if (fabs(dot) > 1e-30)
   {
     CORE::LINALG::Matrix<NUMNOD_SOH8, 1> shapefcts;
-    CORE::DRT::UTILS::shape_function<DRT::Element::hex8>(xi, shapefcts);
+    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::hex8>(xi, shapefcts);
 
     for (unsigned nlid = 0; nlid < NUMNOD_SOH8; ++nlid)
       cauchy_n_dir -= pres[nlid] * shapefcts(nlid, 0) * dot;
@@ -2804,7 +2806,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele, distype>::GetCauchyNDirAndDerivativesAtXi(
     if (d_cauchyndir_dp || d_cauchyndir_dn || d_cauchyndir_ddir || d_cauchyndir_dxi)
     {
       CORE::LINALG::Matrix<NUMDIM_SOH8, NUMNOD_SOH8> deriv;
-      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::hex8>(xi, deriv);
+      CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::hex8>(xi, deriv);
 
       d_cauchyndir_dp->reshape(NUMNOD_SOH8, 1);
       CORE::LINALG::Matrix<NUMNOD_SOH8, 1> dsntdp_m(d_cauchyndir_dp->values(), true);

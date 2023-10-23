@@ -171,7 +171,8 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(Teuchos::ParameterList& param
 
   // --------------------------------------------------
   // Now do the nurbs specific stuff
-  if (Shape() == DRT::Element::nurbs4 || Shape() == DRT::Element::nurbs9)
+  if (Shape() == DRT::Element::DiscretizationType::nurbs4 ||
+      Shape() == DRT::Element::DiscretizationType::nurbs9)
   {
     myknots_.resize(2);
 
@@ -608,7 +609,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoop(Teuchos::ParameterList& 
     CORE::LINALG::Matrix<numdof_, numdof_>* reamatrix, CORE::LINALG::Matrix<numdof_, 1>* force)
 {
   /*--------------------------------- get node weights for nurbs elements */
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+      distype == DRT::Element::DiscretizationType::nurbs9)
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
@@ -737,7 +739,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopPressureBased(Teuchos::Pa
     CORE::LINALG::Matrix<numdof_, numdof_>* stiffmatrix, CORE::LINALG::Matrix<numdof_, 1>* force)
 {
   /*--------------------------------- get node weights for nurbs elements */
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+      distype == DRT::Element::DiscretizationType::nurbs9)
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
@@ -1289,7 +1292,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopOD(Teuchos::ParameterList
     CORE::LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>& ecoupl)
 {
   /*--------------------------------- get node weights for nurbs elements */
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+      distype == DRT::Element::DiscretizationType::nurbs9)
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
@@ -1391,7 +1395,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::GaussPointLoopODPressureBased(
     CORE::LINALG::SerialDenseMatrix& couplmat)
 {
   /*--------------------------------- get node weights for nurbs elements */
-  if (distype == DRT::Element::nurbs4 || distype == DRT::Element::nurbs9)
+  if (distype == DRT::Element::DiscretizationType::nurbs4 ||
+      distype == DRT::Element::DiscretizationType::nurbs9)
   {
     for (int inode = 0; inode < numnod_; ++inode)
     {
@@ -1821,7 +1826,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitElement()
     }
   }
 
-  if (distype != DRT::Element::nurbs4 and distype != DRT::Element::nurbs9)
+  if (distype != DRT::Element::DiscretizationType::nurbs4 and
+      distype != DRT::Element::DiscretizationType::nurbs9)
   {
     for (int gp = 0; gp < numgpt_; ++gp)
     {
@@ -1998,7 +2004,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::ComputeShapeFunctionsAndDerivatives(con
     CORE::LINALG::Matrix<numdim_, numnod_>& N_XYZ)
 {
   // get values of shape functions and derivatives in the gausspoint
-  if (distype != DRT::Element::nurbs4 and distype != DRT::Element::nurbs9)
+  if (distype != DRT::Element::DiscretizationType::nurbs4 and
+      distype != DRT::Element::DiscretizationType::nurbs9)
   {
     // shape functions and their derivatives for polynomials
     CORE::DRT::UTILS::shape_function<distype>(xsi_[gp], shapefct);
@@ -2455,8 +2462,8 @@ std::vector<double> DRT::ELEMENTS::Wall1_Poro<distype>::ComputeAnisotropicPermea
   return anisotropic_permeability_coeffs;
 }
 
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs4>;
+template class DRT::ELEMENTS::Wall1_Poro<DRT::Element::DiscretizationType::nurbs9>;

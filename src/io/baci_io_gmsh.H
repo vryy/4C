@@ -33,49 +33,49 @@ namespace IO
     {
       switch (distype)
       {
-        case DRT::Element::hex8:
+        case DRT::Element::DiscretizationType::hex8:
           return "H";
           break;
-        case DRT::Element::hex20:
+        case DRT::Element::DiscretizationType::hex20:
           return "H";
           break;
-        case DRT::Element::hex27:
+        case DRT::Element::DiscretizationType::hex27:
           return "H";
           break;
-        case DRT::Element::tet4:
+        case DRT::Element::DiscretizationType::tet4:
           return "S";
           break;
-        case DRT::Element::tet10:
+        case DRT::Element::DiscretizationType::tet10:
           return "S";
           break;
-        case DRT::Element::point1:
+        case DRT::Element::DiscretizationType::point1:
           return "P";
           break;
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
           return "Q";
           break;
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
           return "Q";
           break;
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
           return "Q";
           break;
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
           return "T";
           break;
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
           return "T";
           break;
-        case DRT::Element::line2:
+        case DRT::Element::DiscretizationType::line2:
           return "L";
           break;
-        case DRT::Element::line3:
+        case DRT::Element::DiscretizationType::line3:
           return "L2";
           break;
-        case DRT::Element::wedge6:
+        case DRT::Element::DiscretizationType::wedge6:
           return "I";
           break;
-        case DRT::Element::wedge15:
+        case DRT::Element::DiscretizationType::wedge15:
           return "I";
           break;
         default:
@@ -92,49 +92,49 @@ namespace IO
     {
       switch (distype)
       {
-        case DRT::Element::hex8:
+        case DRT::Element::DiscretizationType::hex8:
           return 8;
           break;
-        case DRT::Element::hex20:
+        case DRT::Element::DiscretizationType::hex20:
           return 8;
           break;
-        case DRT::Element::hex27:
+        case DRT::Element::DiscretizationType::hex27:
           return 8;
           break;
-        case DRT::Element::tet4:
+        case DRT::Element::DiscretizationType::tet4:
           return 4;
           break;
-        case DRT::Element::tet10:
+        case DRT::Element::DiscretizationType::tet10:
           return 4;
           break;
-        case DRT::Element::point1:
+        case DRT::Element::DiscretizationType::point1:
           return 1;
           break;
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
           return 4;
           break;
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
           return 4;
           break;
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
           return 4;
           break;
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
           return 3;
           break;
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
           return 3;
           break;
-        case DRT::Element::line2:
+        case DRT::Element::DiscretizationType::line2:
           return 2;
           break;
-        case DRT::Element::line3:
+        case DRT::Element::DiscretizationType::line3:
           return 3;
           break;
-        case DRT::Element::wedge6:
+        case DRT::Element::DiscretizationType::wedge6:
           return 6;
           break;
-        case DRT::Element::wedge15:
+        case DRT::Element::DiscretizationType::wedge15:
           return 6;
           break;
         default:

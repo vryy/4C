@@ -152,7 +152,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       // cast the most specialised element
       // otherwise cast fails, because hex8fbar == hex8
@@ -163,19 +163,19 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::UniqueParObjectId() const
         return So_hex8ThermoType::Instance().UniqueParObjectId();
       break;
     }  // hex8
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4ThermoType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return So_tet10ThermoType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return So_hex27ThermoType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       return So_hex20ThermoType::Instance().UniqueParObjectId();
       break;
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return So_nurbs27ThermoType::Instance().UniqueParObjectId();
       break;
     default:
@@ -196,7 +196,7 @@ DRT::ElementType& DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::ElementType() con
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       // cast the most specialised element
       // caution: otherwise does not work, because hex8fbar == hex8
@@ -207,19 +207,19 @@ DRT::ElementType& DRT::ELEMENTS::So3_Thermo<so3_ele, distype>::ElementType() con
         return So_hex8ThermoType::Instance();
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4ThermoType::Instance();
       break;
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return So_tet10ThermoType::Instance();
       break;
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return So_hex27ThermoType::Instance();
       break;
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       return So_hex20ThermoType::Instance();
       break;
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return So_nurbs27ThermoType::Instance();
       break;
     default:

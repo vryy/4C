@@ -32,17 +32,17 @@ namespace CONTACT
 
     /// supported standard types
     template <>
-    struct is_lagrange_ele_type<DRT::Element::line2>
+    struct is_lagrange_ele_type<DRT::Element::DiscretizationType::line2>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_lagrange_ele_type<DRT::Element::tri3>
+    struct is_lagrange_ele_type<DRT::Element::DiscretizationType::tri3>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_lagrange_ele_type<DRT::Element::quad4>
+    struct is_lagrange_ele_type<DRT::Element::DiscretizationType::quad4>
     {
       static const bool value_ = true;
     };
@@ -135,22 +135,22 @@ namespace CONTACT
 
     /// supported nurbs types
     template <>
-    struct is_nurbs_ele_type<DRT::Element::nurbs2>
+    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs2>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<DRT::Element::nurbs3>
+    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs3>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<DRT::Element::nurbs4>
+    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs4>
     {
       static const bool value_ = true;
     };
     template <>
-    struct is_nurbs_ele_type<DRT::Element::nurbs9>
+    struct is_nurbs_ele_type<DRT::Element::DiscretizationType::nurbs9>
     {
       static const bool value_ = true;
     };

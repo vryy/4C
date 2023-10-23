@@ -30,8 +30,10 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
 
     if (discretization.HasState(1, "scalarfield"))  // if concentrations were set
     {
-      if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
-              distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+      if (not(distype == DRT::Element::DiscretizationType::hex8 or
+              distype == DRT::Element::DiscretizationType::hex27 or
+              distype == DRT::Element::DiscretizationType::tet4 or
+              distype == DRT::Element::DiscretizationType::tet10))
       {
         dserror(
             "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
@@ -110,8 +112,10 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::PreEvaluate(Teuchos::Parameter
     {
       if (discretization.HasState(2, "tempfield"))
       {
-        if (not(distype == DRT::Element::hex8 or distype == DRT::Element::hex27 or
-                distype == DRT::Element::tet4 or distype == DRT::Element::tet10))
+        if (not(distype == DRT::Element::DiscretizationType::hex8 or
+                distype == DRT::Element::DiscretizationType::hex27 or
+                distype == DRT::Element::DiscretizationType::tet4 or
+                distype == DRT::Element::DiscretizationType::tet10))
         {
           dserror(
               "The Solidscatra elements are only tested for the Hex8, Hex27, Tet4, and Tet10 case. "
@@ -513,9 +517,15 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele, distype>::InitElement()
 }
 
 
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar, DRT::Element::hex8>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>;
-template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8,
+    DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex27,
+    DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8fbar,
+    DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,
+    DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10,
+    DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6,
+    DRT::Element::DiscretizationType::wedge6>;

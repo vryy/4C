@@ -154,7 +154,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::Prepare
     const int k,                                       //!< id of current scalar
     Teuchos::RCP<std::vector<CORE::LINALG::SerialDenseMatrix>> difftensor)
 {
-  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+  if (distype == DRT::Element::DiscretizationType::tet4 or
+      distype == DRT::Element::DiscretizationType::tet10)
     PrepareMaterialsTet(ele, material, k, difftensor);
   else
     PrepareMaterialsAll(ele, material, k, difftensor);
@@ -287,7 +288,8 @@ void DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::MatMyoc
 
   int nqpoints;
 
-  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+  if (distype == DRT::Element::DiscretizationType::tet4 or
+      distype == DRT::Element::DiscretizationType::tet10)
   {
     int deg = 0;
     if (this->shapes_->degree_ == 1)
@@ -543,7 +545,8 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
     const DRT::Element* ele  //!< the element we are dealing with
 )
 {
-  if (distype == DRT::Element::tet4 or distype == DRT::Element::tet10)
+  if (distype == DRT::Element::DiscretizationType::tet4 or
+      distype == DRT::Element::DiscretizationType::tet10)
     return ProjectMaterialFieldTet(ele);
   else
     return ProjectMaterialFieldAll(ele);
@@ -780,26 +783,45 @@ int DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<distype, probdim>::ProjectM
 
 // template classes
 // 1D elements
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line2,1>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line2,2>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line2,3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::line3,1>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line2,1>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line2,2>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line2,3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::line3,1>;
 
 // 2D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tri3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tri6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad4, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad8>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::nurbs9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::tri3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::quad4, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::quad4, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::quad8>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::quad9, 2>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::nurbs9, 2>;
 
 // 3D elements
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::hex8, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::hex20>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::hex27, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tet4, 3>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::tet10, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::pyramid5, 3>;
-// template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::nurbs27>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::hex8, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::hex27, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::tet4, 3>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::tet10, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<
+    DRT::Element::DiscretizationType::pyramid5, 3>;
+// template class
+// DRT::ELEMENTS::ScaTraEleCalcHDGCardiacMonodomain<DRT::Element::DiscretizationType::nurbs27>;

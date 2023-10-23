@@ -72,28 +72,28 @@ CORE::LINALG::SerialDenseVector CORE::GEO::CUT::VolumeIntegration::compute_rhs_m
   double volGlobal = 0.0;
   switch (elem1_->Shape())
   {
-    case ::DRT::Element::hex8:
+    case ::DRT::Element::DiscretizationType::hex8:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex8>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::hex8>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case ::DRT::Element::tet4:
+    case ::DRT::Element::DiscretizationType::tet4:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet4>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::tet4>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case ::DRT::Element::wedge6:
+    case ::DRT::Element::DiscretizationType::wedge6:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::wedge6>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::wedge6>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
-    case ::DRT::Element::pyramid5:
+    case ::DRT::Element::DiscretizationType::pyramid5:
     {
-      volGlobal =
-          elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::pyramid5>(rhs_mom(0), "LocalToGlobal");
+      volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::pyramid5>(
+          rhs_mom(0), "LocalToGlobal");
       break;
     }
     default:

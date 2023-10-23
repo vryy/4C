@@ -205,127 +205,127 @@ namespace CORE::VOLMORTAR
     {
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::hex8>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::hex8>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::hex_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::hex20>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::hex20>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::hex_64point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::hex27>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::hex27>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::hex_64point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::tet4>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::tet4>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::tet_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::tet10>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::tet10>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::tet_45point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::wedge6>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::wedge6>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::wedge_6point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::wedge15>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::wedge15>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::wedge_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::pyramid5>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::pyramid5>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::nurbs8>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::nurbs8>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::hex_8point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::nurbs27>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::nurbs27>
     {
       static const ::CORE::DRT::UTILS::GaussRule3D rule =
           ::CORE::DRT::UTILS::GaussRule3D::hex_27point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::quad4>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::quad4>
     {
       static const ::CORE::DRT::UTILS::GaussRule2D rule =
           ::CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::quad8>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::quad8>
     {
       static const ::CORE::DRT::UTILS::GaussRule2D rule =
           ::CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::quad9>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::quad9>
     {
       static const ::CORE::DRT::UTILS::GaussRule2D rule =
           ::CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::tri3>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::tri3>
     {
       static const ::CORE::DRT::UTILS::GaussRule2D rule =
           ::CORE::DRT::UTILS::GaussRule2D::tri_3point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::tri6>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::tri6>
     {
       static const ::CORE::DRT::UTILS::GaussRule2D rule =
           ::CORE::DRT::UTILS::GaussRule2D::tri_6point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::nurbs4>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::nurbs4>
     {
       static const ::CORE::DRT::UTILS::GaussRule2D rule =
           ::CORE::DRT::UTILS::GaussRule2D::quad_4point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::nurbs9>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::nurbs9>
     {
       static const ::CORE::DRT::UTILS::GaussRule2D rule =
           ::CORE::DRT::UTILS::GaussRule2D::quad_9point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::line2>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::line2>
     {
       static const ::CORE::DRT::UTILS::GaussRule1D rule =
           ::CORE::DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::line3>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::line3>
     {
       static const ::CORE::DRT::UTILS::GaussRule1D rule =
           ::CORE::DRT::UTILS::GaussRule1D::line_3point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::nurbs2>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::nurbs2>
     {
       static const ::CORE::DRT::UTILS::GaussRule1D rule =
           ::CORE::DRT::UTILS::GaussRule1D::line_2point;
     };
     template <>
-    struct DisTypeToOptGaussRule<::DRT::Element::nurbs3>
+    struct DisTypeToOptGaussRule<::DRT::Element::DiscretizationType::nurbs3>
     {
       static const ::CORE::DRT::UTILS::GaussRule1D rule =
           ::CORE::DRT::UTILS::GaussRule1D::line_3point;
@@ -340,30 +340,30 @@ namespace CORE::VOLMORTAR
       bool isnurbs = true;
       switch (distype)
       {
-        case ::DRT::Element::nurbs2:
-        case ::DRT::Element::nurbs3:
-        case ::DRT::Element::nurbs4:
-        case ::DRT::Element::nurbs8:
-        case ::DRT::Element::nurbs9:
-        case ::DRT::Element::nurbs27:
+        case ::DRT::Element::DiscretizationType::nurbs2:
+        case ::DRT::Element::DiscretizationType::nurbs3:
+        case ::DRT::Element::DiscretizationType::nurbs4:
+        case ::DRT::Element::DiscretizationType::nurbs8:
+        case ::DRT::Element::DiscretizationType::nurbs9:
+        case ::DRT::Element::DiscretizationType::nurbs27:
           isnurbs = true;
           break;
-        case ::DRT::Element::line2:
-        case ::DRT::Element::line3:
-        case ::DRT::Element::line4:
-        case ::DRT::Element::line5:
-        case ::DRT::Element::line6:
-        case ::DRT::Element::quad4:
-        case ::DRT::Element::quad8:
-        case ::DRT::Element::quad9:
-        case ::DRT::Element::hex8:
-        case ::DRT::Element::hex20:
-        case ::DRT::Element::hex27:
-        case ::DRT::Element::tet4:
-        case ::DRT::Element::tet10:
-        case ::DRT::Element::wedge6:
-        case ::DRT::Element::wedge15:
-        case ::DRT::Element::pyramid5:
+        case ::DRT::Element::DiscretizationType::line2:
+        case ::DRT::Element::DiscretizationType::line3:
+        case ::DRT::Element::DiscretizationType::line4:
+        case ::DRT::Element::DiscretizationType::line5:
+        case ::DRT::Element::DiscretizationType::line6:
+        case ::DRT::Element::DiscretizationType::quad4:
+        case ::DRT::Element::DiscretizationType::quad8:
+        case ::DRT::Element::DiscretizationType::quad9:
+        case ::DRT::Element::DiscretizationType::hex8:
+        case ::DRT::Element::DiscretizationType::hex20:
+        case ::DRT::Element::DiscretizationType::hex27:
+        case ::DRT::Element::DiscretizationType::tet4:
+        case ::DRT::Element::DiscretizationType::tet10:
+        case ::DRT::Element::DiscretizationType::wedge6:
+        case ::DRT::Element::DiscretizationType::wedge15:
+        case ::DRT::Element::DiscretizationType::pyramid5:
           isnurbs = false;
           break;
         default:
@@ -390,8 +390,8 @@ namespace CORE::VOLMORTAR
 
       switch (distype)
       {
-        case ::DRT::Element::line2:
-        case ::DRT::Element::line3:
+        case ::DRT::Element::DiscretizationType::line2:
+        case ::DRT::Element::DiscretizationType::line3:
         {
           // metrics routine gives local basis vectors
           CORE::LINALG::Matrix<ndim, nn> deriv;
@@ -422,9 +422,9 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::quad4:
-        case ::DRT::Element::quad8:
-        case ::DRT::Element::quad9:
+        case ::DRT::Element::DiscretizationType::quad4:
+        case ::DRT::Element::DiscretizationType::quad8:
+        case ::DRT::Element::DiscretizationType::quad9:
         {
           // metrics routine gives local basis vectors
           CORE::LINALG::Matrix<ndim, nn> deriv;
@@ -455,7 +455,7 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::tet4:
+        case ::DRT::Element::DiscretizationType::tet4:
         {
           CORE::LINALG::Matrix<4, 4> jacob;
           for (int i = 0; i < 4; i++) jacob(0, i) = 1;
@@ -466,11 +466,11 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::hex8:
-        case ::DRT::Element::hex20:
-        case ::DRT::Element::hex27:
-        case ::DRT::Element::tet10:
-        case ::DRT::Element::pyramid5:
+        case ::DRT::Element::DiscretizationType::hex8:
+        case ::DRT::Element::DiscretizationType::hex20:
+        case ::DRT::Element::DiscretizationType::hex27:
+        case ::DRT::Element::DiscretizationType::tet10:
+        case ::DRT::Element::DiscretizationType::pyramid5:
         {
           CORE::LINALG::Matrix<ndim, nn> derivs;
           const double r = xi[0];
@@ -530,8 +530,8 @@ namespace CORE::VOLMORTAR
 
       switch (distype)
       {
-        case ::DRT::Element::nurbs2:
-        case ::DRT::Element::nurbs3:
+        case ::DRT::Element::DiscretizationType::nurbs2:
+        case ::DRT::Element::DiscretizationType::nurbs3:
         {
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
@@ -556,8 +556,8 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::nurbs9:
-        case ::DRT::Element::nurbs4:
+        case ::DRT::Element::DiscretizationType::nurbs9:
+        case ::DRT::Element::DiscretizationType::nurbs4:
         {
           // build basis vectors gxi and geta
           for (int i = 0; i < nn; ++i)
@@ -582,8 +582,8 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::nurbs8:
-        case ::DRT::Element::nurbs27:
+        case ::DRT::Element::DiscretizationType::nurbs8:
+        case ::DRT::Element::DiscretizationType::nurbs27:
         {
           CORE::LINALG::Matrix<nn, ndim> xrefe;
           for (int i = 0; i < nn; ++i)
@@ -628,7 +628,7 @@ namespace CORE::VOLMORTAR
         // 1D standard linear shape functions (line2)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case ::DRT::Element::line2:
+        case ::DRT::Element::DiscretizationType::line2:
         {
           funct(0) = 0.5 * (1.0 - xi0);
           funct(1) = 0.5 * (1.0 + xi0);
@@ -638,7 +638,7 @@ namespace CORE::VOLMORTAR
         // 1D standard quadratic shape functions (line3)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case ::DRT::Element::line3:
+        case ::DRT::Element::DiscretizationType::line3:
         {
           funct(0) = 0.5 * xi0 * (xi0 - 1.0);
           funct(1) = 0.5 * xi0 * (xi0 + 1.0);
@@ -664,8 +664,8 @@ namespace CORE::VOLMORTAR
     {
       switch (distype)
       {
-        case ::DRT::Element::nurbs2:
-        case ::DRT::Element::nurbs3:
+        case ::DRT::Element::DiscretizationType::nurbs2:
+        case ::DRT::Element::DiscretizationType::nurbs3:
         {
           CORE::DRT::NURBS::UTILS::nurbs_get_1D_funct_deriv(
               funct, deriv, xi, knots, weights, distype);
@@ -694,7 +694,7 @@ namespace CORE::VOLMORTAR
         // 2D standard linear shape functions (tri3)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case ::DRT::Element::tri3:
+        case ::DRT::Element::DiscretizationType::tri3:
         {
           funct(0) = 1.0 - xi0 - xi1;
           funct(1) = xi0;
@@ -705,7 +705,7 @@ namespace CORE::VOLMORTAR
         // 2D standard bilinear shape functions (quad4)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case ::DRT::Element::quad4:
+        case ::DRT::Element::DiscretizationType::quad4:
         {
           funct(0) = 0.25 * (1.0 - xi0) * (1.0 - xi1);
           funct(1) = 0.25 * (1.0 + xi0) * (1.0 - xi1);
@@ -717,7 +717,7 @@ namespace CORE::VOLMORTAR
         // 2D standard quadratic shape functions (quad9)
         // (used for interpolation of displacement field)
         // *********************************************************************
-        case ::DRT::Element::quad9:
+        case ::DRT::Element::DiscretizationType::quad9:
         {
           const double r = xi0;
           const double s = xi1;
@@ -763,8 +763,8 @@ namespace CORE::VOLMORTAR
     {
       switch (distype)
       {
-        case ::DRT::Element::nurbs4:
-        case ::DRT::Element::nurbs9:
+        case ::DRT::Element::DiscretizationType::nurbs4:
+        case ::DRT::Element::DiscretizationType::nurbs9:
         {
           CORE::DRT::NURBS::UTILS::nurbs_get_2D_funct_deriv(
               funct, deriv, xi, knots, weights, distype);
@@ -790,7 +790,7 @@ namespace CORE::VOLMORTAR
     {
       switch (shape)
       {
-        case ::DRT::Element::hex8:
+        case ::DRT::Element::DiscretizationType::hex8:
         {
           const double rp = 1.0 + r;
           const double rm = 1.0 - r;
@@ -811,7 +811,7 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::hex20:
+        case ::DRT::Element::DiscretizationType::hex20:
         {
           const double Q18 = 1.0 / 8.0;
           const double rp = 1.0 + r;
@@ -854,7 +854,7 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::hex27:
+        case ::DRT::Element::DiscretizationType::hex27:
         {
           const double rm1 = 0.5 * r * (r - 1.0);
           const double r00 = (1.0 - r * r);
@@ -895,7 +895,7 @@ namespace CORE::VOLMORTAR
           funct(26) = r00 * s00 * t00;
           break;
         }
-        case ::DRT::Element::tet4:
+        case ::DRT::Element::DiscretizationType::tet4:
         {
           const double t1 = 1.0 - r - s - t;
           const double t2 = r;
@@ -908,7 +908,7 @@ namespace CORE::VOLMORTAR
           funct(3) = t4;
           break;
         }
-        case ::DRT::Element::tet10:
+        case ::DRT::Element::DiscretizationType::tet10:
         {
           const double u = 1.0 - r - s - t;
 
@@ -924,7 +924,7 @@ namespace CORE::VOLMORTAR
           funct(9) = 4 * s * t;
           break;
         }
-        case ::DRT::Element::pyramid5:
+        case ::DRT::Element::DiscretizationType::pyramid5:
         {
           ::CORE::DRT::UTILS::shape_function_3D(funct, r, s, t, shape);
 
@@ -950,8 +950,8 @@ namespace CORE::VOLMORTAR
     {
       switch (distype)
       {
-        case ::DRT::Element::nurbs8:
-        case ::DRT::Element::nurbs27:
+        case ::DRT::Element::DiscretizationType::nurbs8:
+        case ::DRT::Element::DiscretizationType::nurbs27:
         {
           CORE::DRT::NURBS::UTILS::nurbs_get_3D_funct_deriv(
               funct, deriv, xi, knots, weights, distype);
@@ -978,7 +978,7 @@ namespace CORE::VOLMORTAR
     {
       switch (shape)
       {
-        case ::DRT::Element::hex20:
+        case ::DRT::Element::DiscretizationType::hex20:
         {
           const double Q18 = 1.0 / 8.0;
           const double rp = 1.0 + r;
@@ -1052,7 +1052,7 @@ namespace CORE::VOLMORTAR
 
           break;
         }
-        case ::DRT::Element::tet10:
+        case ::DRT::Element::DiscretizationType::tet10:
         {
           const double u = 1.0 - r - s - t;
           CORE::LINALG::Matrix<10, 1> valtmp;
@@ -1112,7 +1112,7 @@ namespace CORE::VOLMORTAR
         // 1D dual linear shape functions (line2)
         // (used for interpolation of Lagrange multiplier field)
         // *********************************************************************
-        case ::DRT::Element::line2:
+        case ::DRT::Element::DiscretizationType::line2:
         {
           funct(0) = 0.5 * (1 - 3.0 * xi[0]);
           funct(1) = 0.5 * (1 + 3.0 * xi[0]);
@@ -1121,7 +1121,7 @@ namespace CORE::VOLMORTAR
         }
         // *********************************************************************
         // *********************************************************************
-        case ::DRT::Element::line3:
+        case ::DRT::Element::DiscretizationType::line3:
         {
           // establish fundamental data
           //! number of space dimensions
@@ -1167,7 +1167,7 @@ namespace CORE::VOLMORTAR
 
           // evaluate dual shape functions at loc. coord. xi
           // need standard shape functions at xi first
-          volmortar_shape_function_1D(stdval, xi[0], ::DRT::Element::line3);
+          volmortar_shape_function_1D(stdval, xi[0], ::DRT::Element::DiscretizationType::line3);
 
           // evaluate dual shape functions
           for (int i = 0; i < nnodes; ++i)
@@ -1199,8 +1199,8 @@ namespace CORE::VOLMORTAR
       {
         // *********************************************************************
         // *********************************************************************
-        case ::DRT::Element::nurbs2:
-        case ::DRT::Element::nurbs3:
+        case ::DRT::Element::DiscretizationType::nurbs2:
+        case ::DRT::Element::DiscretizationType::nurbs3:
         {
           //! number of space dimensions
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1284,7 +1284,7 @@ namespace CORE::VOLMORTAR
         // 2D dual linear shape functions (tri3)
         // (used for interpolation of Lagrange mutliplier field)
         // *********************************************************************
-        case ::DRT::Element::tri3:
+        case ::DRT::Element::DiscretizationType::tri3:
         {
           funct(0) = 3.0 - 4.0 * xi[0] - 4.0 * xi[1];
           funct(1) = 4.0 * xi[0] - 1.0;
@@ -1294,11 +1294,11 @@ namespace CORE::VOLMORTAR
         }
         // *********************************************************************
         // *********************************************************************
-        case ::DRT::Element::tri6:
-        case ::DRT::Element::quad4:
-        case ::DRT::Element::quad8:
-        case ::DRT::Element::quad9:
-        case ::DRT::Element::nurbs9:
+        case ::DRT::Element::DiscretizationType::tri6:
+        case ::DRT::Element::DiscretizationType::quad4:
+        case ::DRT::Element::DiscretizationType::quad8:
+        case ::DRT::Element::DiscretizationType::quad9:
+        case ::DRT::Element::DiscretizationType::nurbs9:
         {
           //! number of space dimensions
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1373,8 +1373,8 @@ namespace CORE::VOLMORTAR
       {
         // *********************************************************************
         // *********************************************************************
-        case ::DRT::Element::nurbs4:
-        case ::DRT::Element::nurbs9:
+        case ::DRT::Element::DiscretizationType::nurbs4:
+        case ::DRT::Element::DiscretizationType::nurbs9:
         {
           //! number of space dimensions
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1458,11 +1458,11 @@ namespace CORE::VOLMORTAR
       {
         // *********************************************************************
         // *********************************************************************
-        case ::DRT::Element::hex8:
-        case ::DRT::Element::hex20:
-        case ::DRT::Element::hex27:
-        case ::DRT::Element::tet10:
-        case ::DRT::Element::pyramid5:
+        case ::DRT::Element::DiscretizationType::hex8:
+        case ::DRT::Element::DiscretizationType::hex20:
+        case ::DRT::Element::DiscretizationType::hex27:
+        case ::DRT::Element::DiscretizationType::tet10:
+        case ::DRT::Element::DiscretizationType::pyramid5:
         {
           //! number of space dimensions
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1519,7 +1519,7 @@ namespace CORE::VOLMORTAR
         // *********************************************************************
         // 3D dual linear shape functions (tet4)
         // *********************************************************************
-        case ::DRT::Element::tet4:
+        case ::DRT::Element::DiscretizationType::tet4:
         {
           funct(0) = 4.0 - 5.0 * xi[0] - 5.0 * xi[1] - 5.0 * xi[2];
           funct(1) = -1.0 + 5.0 * xi[0];
@@ -1552,8 +1552,8 @@ namespace CORE::VOLMORTAR
       {
         // *********************************************************************
         // *********************************************************************
-        case ::DRT::Element::nurbs8:
-        case ::DRT::Element::nurbs27:
+        case ::DRT::Element::DiscretizationType::nurbs8:
+        case ::DRT::Element::DiscretizationType::nurbs27:
         {
           //! number of space dimensions
           static const int ndim = ::CORE::DRT::UTILS::DisTypeToDim<distype>::dim;
@@ -1639,7 +1639,7 @@ namespace CORE::VOLMORTAR
     {
       switch (shape)
       {
-        case ::DRT::Element::hex20:
+        case ::DRT::Element::DiscretizationType::hex20:
         {
           // form basic values
           const double rp = 1.0 + r;

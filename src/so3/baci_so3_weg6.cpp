@@ -155,7 +155,10 @@ DRT::Element* DRT::ELEMENTS::So_weg6::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_weg6::Shape() const { return wedge6; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_weg6::Shape() const
+{
+  return DRT::Element::DiscretizationType::wedge6;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |

@@ -75,7 +75,7 @@ void CORE::GEO::CUT::SimpleFacetGraph_1D::SortFacets(
        ++cit)
   {
     Facet* f = *cit;
-    if (not f->Equals(::DRT::Element::point1))
+    if (not f->Equals(::DRT::Element::DiscretizationType::point1))
       dserror("The given facets are supposed to be points!");
 
     Point* p = f->Points()[0];

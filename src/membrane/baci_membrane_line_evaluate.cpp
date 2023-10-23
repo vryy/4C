@@ -156,7 +156,7 @@ int DRT::ELEMENTS::MembraneLine<distype>::EvaluateNeumann(Teuchos::ParameterList
   return 0;
 }
 
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri3>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri6>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad4>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad9>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::quad9>;

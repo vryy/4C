@@ -806,10 +806,10 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
 
       switch (shape)
       {
-        case DRT::Element::tri3:
+        case DRT::Element::DiscretizationType::tri3:
           apernode = a / element->NumNode();
           break;
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri6:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 0.;
@@ -827,10 +827,10 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
           apernode = a / element->NumNode();
           break;
-        case DRT::Element::quad8:
+        case DRT::Element::DiscretizationType::quad8:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = -1. / 3.;
@@ -848,7 +848,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad9:
         {
           // integration of shape functions over parameter element surface
           double int_N_cornernode = 1. / 9.;
@@ -871,7 +871,7 @@ void UTILS::SpringDashpot::GetArea(const std::map<int, Teuchos::RCP<DRT::Element
             apernode = int_N_edgemidnode * a_inv_weight;
         }
         break;
-        case DRT::Element::nurbs9:
+        case DRT::Element::DiscretizationType::nurbs9:
           dserror(
               "Not yet implemented for Nurbs! To do: Apply the correct weighting of the area per "
               "node!");

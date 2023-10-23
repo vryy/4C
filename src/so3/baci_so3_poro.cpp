@@ -283,15 +283,15 @@ int DRT::ELEMENTS::So3_Poro<so3_ele, distype>::UniqueParObjectId() const
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return So_tet10PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return So_hex8PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return So_hex27PoroType::Instance().UniqueParObjectId();
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return So_nurbs27PoroType::Instance().UniqueParObjectId();
     default:
       dserror("unknown element type!");
@@ -305,15 +305,15 @@ DRT::ElementType& DRT::ELEMENTS::So3_Poro<so3_ele, distype>::ElementType() const
 {
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return So_tet4PoroType::Instance();
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return So_tet10PoroType::Instance();
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return So_hex8PoroType::Instance();
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return So_hex27PoroType::Instance();
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return So_nurbs27PoroType::Instance();
     default:
       dserror("unknown element type!");

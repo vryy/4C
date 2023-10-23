@@ -81,13 +81,11 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Ale2Nurbs::Shape() const
   switch (NumNode())
   {
     case 4:
-      return nurbs4;
+      return DiscretizationType::nurbs4;
     case 9:
-      return nurbs9;
+      return DiscretizationType::nurbs9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
       break;
   }
-
-  return dis_none;
 }

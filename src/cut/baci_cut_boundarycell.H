@@ -180,7 +180,7 @@ namespace CORE::GEO
 
         CORE::DRT::UTILS::shape_function_2D(funct, eta(0), eta(1), celldistype);
 
-        if (celldistype != ::DRT::Element::tri3)
+        if (celldistype != ::DRT::Element::DiscretizationType::tri3)
         {
           CORE::DRT::UTILS::shape_function_2D_deriv1(deriv, eta(0), eta(1), celldistype);
           CORE::DRT::UTILS::ComputeMetricTensorForBoundaryEle<celldistype>(
@@ -292,7 +292,10 @@ namespace CORE::GEO
         /* intentionally left blank */
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::point1; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::point1;
+      }
 
       int CubatureDegree() const override { return 0; }
 
@@ -330,7 +333,10 @@ namespace CORE::GEO
         /* intentionally left blank */
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::line2; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::line2;
+      }
 
       int CubatureDegree() const override { return 4; }
 
@@ -367,7 +373,10 @@ namespace CORE::GEO
       {
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::tri3; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::tri3;
+      }
 
       int CubatureDegree() const override { return 20; }
 
@@ -408,14 +417,17 @@ namespace CORE::GEO
       {
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::quad4; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::quad4;
+      }
 
       int CubatureDegree() const override { return 20; }
 
       void DumpGmshNormal(std::ofstream& file) override;
 
       // Maybe shoelace theorem can be used here?
-      double Area() override { return MyArea<::DRT::Element::quad4>(); }
+      double Area() override { return MyArea<::DRT::Element::DiscretizationType::quad4>(); }
 
       void ElementCenter(CORE::LINALG::Matrix<3, 1>& midpoint) override;
 
@@ -448,7 +460,10 @@ namespace CORE::GEO
       {
       }
 
-      ::DRT::Element::DiscretizationType Shape() const override { return ::DRT::Element::dis_none; }
+      ::DRT::Element::DiscretizationType Shape() const override
+      {
+        return ::DRT::Element::DiscretizationType::dis_none;
+      }
 
       int CubatureDegree() const override { return 0; }
 

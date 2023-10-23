@@ -132,7 +132,7 @@ namespace DRT
       */
       Shell7p(int id, int owner)
           : DRT::Element(id, owner),
-            distype_(DRT::Element::dis_none),
+            distype_(DRT::Element::DiscretizationType::dis_none),
             interface_ptr_(Teuchos::null),
             thickness_(0.0),
             material_post_setup_(false)

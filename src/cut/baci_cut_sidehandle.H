@@ -314,7 +314,10 @@ namespace CORE::GEO
      public:
       Tri6SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
 
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::tri6; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::tri6;
+      }
 
       void LocalCoordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
@@ -329,7 +332,10 @@ namespace CORE::GEO
      public:
       Quad4SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids);
 
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::quad4; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::quad4;
+      }
 
       void LocalCoordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
@@ -341,7 +347,10 @@ namespace CORE::GEO
      public:
       Quad8SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
 
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::quad8; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::quad8;
+      }
 
       void LocalCoordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;
@@ -353,7 +362,10 @@ namespace CORE::GEO
      public:
       Quad9SideHandle(Mesh& mesh, int sid, const std::vector<int>& nids, bool iscutside = true);
 
-      ::DRT::Element::DiscretizationType Shape() override { return ::DRT::Element::quad9; }
+      ::DRT::Element::DiscretizationType Shape() override
+      {
+        return ::DRT::Element::DiscretizationType::quad9;
+      }
 
       void LocalCoordinates(
           const CORE::LINALG::Matrix<3, 1>& xyz, CORE::LINALG::Matrix<2, 1>& rst) override;

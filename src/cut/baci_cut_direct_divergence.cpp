@@ -536,28 +536,29 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->Shape())
     {
-      case ::DRT::Element::hex8:
+      case ::DRT::Element::DiscretizationType::hex8:
       {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex8>(TotalInteg, "LocalToGlobal");
-        break;
-      }
-      case ::DRT::Element::tet4:
-      {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet4>(TotalInteg, "LocalToGlobal");
-        break;
-      }
-      case ::DRT::Element::wedge6:
-      {
-        volGlobal =
-            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::wedge6>(TotalInteg, "LocalToGlobal");
-        break;
-      }
-      case ::DRT::Element::pyramid5:
-      {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::pyramid5>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::hex8>(
             TotalInteg, "LocalToGlobal");
+        break;
+      }
+      case ::DRT::Element::DiscretizationType::tet4:
+      {
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::tet4>(
+            TotalInteg, "LocalToGlobal");
+        break;
+      }
+      case ::DRT::Element::DiscretizationType::wedge6:
+      {
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::wedge6>(
+            TotalInteg, "LocalToGlobal");
+        break;
+      }
+      case ::DRT::Element::DiscretizationType::pyramid5:
+      {
+        volGlobal =
+            elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::pyramid5>(
+                TotalInteg, "LocalToGlobal");
         break;
       }
       default:
@@ -569,21 +570,21 @@ void CORE::GEO::CUT::DirectDivergence::DebugVolume(
   {
     switch (elem1_->getQuadShape())
     {
-      case ::DRT::Element::hex20:
+      case ::DRT::Element::DiscretizationType::hex20:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex20>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::hex20>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case ::DRT::Element::hex27:
+      case ::DRT::Element::DiscretizationType::hex27:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::hex27>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::hex27>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }
-      case ::DRT::Element::tet10:
+      case ::DRT::Element::DiscretizationType::tet10:
       {
-        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::tet10>(
+        volGlobal = elem1_->ScalarFromLocalToGlobal<3, ::DRT::Element::DiscretizationType::tet10>(
             TotalInteg, "LocalToGlobal", true);
         break;
       }

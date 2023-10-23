@@ -142,7 +142,7 @@ CORE::LINALG::SerialDenseMatrix DRT::ELEMENTS::SolidPoroType::ComputeNullSpace(
 
 DRT::ELEMENTS::SolidPoro::SolidPoro(int id, int owner)
     : DRT::Element(id, owner),
-      distype_(DRT::Element::dis_none),
+      distype_(DRT::Element::DiscretizationType::dis_none),
       kintype_(INPAR::STR::kinem_vague),
       eastype_(STR::ELEMENTS::EasType::eastype_undefined),
       porotype_(INPAR::PORO::PoroType::undefined),
@@ -275,7 +275,7 @@ bool DRT::ELEMENTS::SolidPoro::ReadElement(
 
   if (linedef->HaveNamed("EAS"))
   {
-    if (Shape() == DRT::Element::hex8)
+    if (Shape() == DRT::Element::DiscretizationType::hex8)
     {
       STR::UTILS::READELEMENT::ReadAndSetEAS(linedef, eastype_, eletech_);
     }

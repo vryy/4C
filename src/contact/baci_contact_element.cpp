@@ -18,7 +18,8 @@ CONTACT::CoElementType& CONTACT::CoElementType::Instance() { return instance_; }
 
 DRT::ParObject* CONTACT::CoElementType::Create(const std::vector<char>& data)
 {
-  CONTACT::CoElement* ele = new CONTACT::CoElement(0, 0, DRT::Element::dis_none, 0, nullptr, false);
+  CONTACT::CoElement* ele =
+      new CONTACT::CoElement(0, 0, DRT::Element::DiscretizationType::dis_none, 0, nullptr, false);
   ele->Unpack(data);
   return ele;
 }
@@ -297,13 +298,14 @@ void CONTACT::CoElement::DJacDXi(
 
   // 2D linear case (2noded line element)
   // 3D linear case (3noded triangular element)
-  if (dt == line2 || dt == tri3)
+  if (dt == DiscretizationType::line2 || dt == DiscretizationType::tri3)
   {
     // do nothing
   }
 
   // 2D quadratic case (3noded line element)
-  else if (dt == line3 || dt == nurbs2 || dt == nurbs3)
+  else if (dt == DiscretizationType::line3 || dt == DiscretizationType::nurbs2 ||
+           dt == DiscretizationType::nurbs3)
   {
     // get nodal coords for 2nd deriv. evaluation
     CORE::LINALG::SerialDenseMatrix coord(3, NumNode());
@@ -329,8 +331,10 @@ void CONTACT::CoElement::DJacDXi(
   // 3D quadratic case   (6noded triangular element)
   // 3D serendipity case (8noded quadrilateral element)
   // 3D biquadratic case (9noded quadrilateral element)
-  else if (dt == quad4 || dt == tri6 || dt == quad8 || dt == quad9 || dt == nurbs4 ||
-           dt == nurbs8 || dt == nurbs9)
+  else if (dt == DiscretizationType::quad4 || dt == DiscretizationType::tri6 ||
+           dt == DiscretizationType::quad8 || dt == DiscretizationType::quad9 ||
+           dt == DiscretizationType::nurbs4 || dt == DiscretizationType::nurbs8 ||
+           dt == DiscretizationType::nurbs9)
   {
     // get nodal coords for 2nd deriv. evaluation
     CORE::LINALG::SerialDenseMatrix coord(3, NumNode());

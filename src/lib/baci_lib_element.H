@@ -88,7 +88,7 @@ namespace DRT
     /*!
      \brief Element shape type
     */
-    enum DiscretizationType
+    enum class DiscretizationType
     {
       dis_none,    ///< unknown dis type
       quad4,       ///< 4 noded quadrilateral
@@ -1628,90 +1628,89 @@ namespace DRT
     std::string s = "";
     switch (distype)
     {
-      case DRT::Element::dis_none:
+      case DRT::Element::DiscretizationType::dis_none:
         s = "DIS_NONE";
         break;
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
         s = "QUAD4";
         break;
-      case DRT::Element::quad8:
+      case DRT::Element::DiscretizationType::quad8:
         s = "QUAD8";
         break;
-      case DRT::Element::quad9:
+      case DRT::Element::DiscretizationType::quad9:
         s = "QUAD9";
         break;
-      case DRT::Element::tri3:
+      case DRT::Element::DiscretizationType::tri3:
         s = "TRI3";
         break;
-      case DRT::Element::tri6:
+      case DRT::Element::DiscretizationType::tri6:
         s = "TRI6";
         break;
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
         s = "HEX8";
         break;
-      case DRT::Element::hex16:
+      case DRT::Element::DiscretizationType::hex16:
         s = "HEX16";
         break;
-      case DRT::Element::hex18:
+      case DRT::Element::DiscretizationType::hex18:
         s = "HEX18";
         break;
-      case DRT::Element::hex20:
+      case DRT::Element::DiscretizationType::hex20:
         s = "HEX20";
         break;
-      case DRT::Element::hex27:
+      case DRT::Element::DiscretizationType::hex27:
         s = "HEX27";
         break;
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::tet4:
         s = "TET4";
         break;
-      case DRT::Element::tet10:
+      case DRT::Element::DiscretizationType::tet10:
         s = "TET10";
         break;
-      case DRT::Element::wedge6:
+      case DRT::Element::DiscretizationType::wedge6:
         s = "WEDGE6";
         break;
-      case DRT::Element::wedge15:
+      case DRT::Element::DiscretizationType::wedge15:
         s = "WEDGE15";
         break;
-      case DRT::Element::pyramid5:
+      case DRT::Element::DiscretizationType::pyramid5:
         s = "PYRAMID5";
         break;
-      case DRT::Element::line2:
+      case DRT::Element::DiscretizationType::line2:
         s = "LINE2";
         break;
-      case DRT::Element::line3:
+      case DRT::Element::DiscretizationType::line3:
         s = "LINE3";
         break;
-      case DRT::Element::line4:
+      case DRT::Element::DiscretizationType::line4:
         s = "LINE4";
         break;
-      case DRT::Element::point1:
+      case DRT::Element::DiscretizationType::point1:
         s = "POINT1";
         break;
-      case DRT::Element::nurbs2:
+      case DRT::Element::DiscretizationType::nurbs2:
         s = "NURBS2";
         break;
-      case DRT::Element::nurbs3:
+      case DRT::Element::DiscretizationType::nurbs3:
         s = "NURBS3";
         break;
-      case DRT::Element::nurbs4:
+      case DRT::Element::DiscretizationType::nurbs4:
         s = "NURBS4";
         break;
-      case DRT::Element::nurbs9:
+      case DRT::Element::DiscretizationType::nurbs9:
         s = "NURBS9";
         break;
-      case DRT::Element::nurbs8:
+      case DRT::Element::DiscretizationType::nurbs8:
         s = "NURBS8";
         break;
-      case DRT::Element::nurbs27:
+      case DRT::Element::DiscretizationType::nurbs27:
         s = "NURBS27";
         break;
-      case DRT::Element::max_distype:
+      case DRT::Element::DiscretizationType::max_distype:
         s = "MAX_DISTYPE";
         break;
       default:
-        std::cout << distype << std::endl;
-        dserror("no string for this distype defined!");
+        dserror("no string for distype %d defined!", distype);
         break;
     };
     return s;

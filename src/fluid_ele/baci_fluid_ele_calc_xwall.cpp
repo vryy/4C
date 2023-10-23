@@ -494,7 +494,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
   // shape functions and their first derivatives
   CORE::DRT::UTILS::shape_function<distype>(my::xsi_, funct_);
   CORE::DRT::UTILS::shape_function_deriv1<distype>(my::xsi_, deriv_);
-  if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
+  if (my::is_higher_order_ele_ && distype == DRT::Element::DiscretizationType::hex8)
   {
     // get the second derivatives of standard element at current GP
     CORE::DRT::UTILS::shape_function_deriv2<distype>(my::xsi_, deriv2_);
@@ -535,7 +535,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::EvalStdShapeFuncAndDeri
   //--------------------------------------------------------------
   //             compute global second derivatives
   //--------------------------------------------------------------
-  if (my::is_higher_order_ele_ && distype == DRT::Element::hex8)
+  if (my::is_higher_order_ele_ && distype == DRT::Element::DiscretizationType::hex8)
   {
     CORE::DRT::UTILS::gder2<distype, enren_>(my::xjm_, derxy_, deriv2_, xyze_, derxy2_);
   }
@@ -926,15 +926,16 @@ double DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::CalcMK()
   if (my::is_higher_order_ele_ == false)
     dserror("It is essential that the second derivatives exist!");
 
-  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::hex8, 1);
-  if (distype == DRT::Element::hex8)
+  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::DiscretizationType::hex8, 1);
+  if (distype == DRT::Element::DiscretizationType::hex8)
   {
     CORE::DRT::UTILS::GaussIntegration intpointstmp(cgp_);
     intpoints = intpointstmp;
   }
-  else if (distype == DRT::Element::tet4)
+  else if (distype == DRT::Element::DiscretizationType::tet4)
   {
-    CORE::DRT::UTILS::GaussIntegration intpointsplane(DRT::Element::tet4, 2 * numgpnorm_ - 1);
+    CORE::DRT::UTILS::GaussIntegration intpointsplane(
+        DRT::Element::DiscretizationType::tet4, 2 * numgpnorm_ - 1);
     intpoints = intpointsplane;
   }
 
@@ -1095,7 +1096,7 @@ int DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::XWallProjection(DRT::ELE
   CORE::LINALG::Matrix<nsd_, nen_> edispnp(true);
   if (ele->IsAle()) GetGridDispALE(discretization, lm, edispnp);
 
-  //  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::line6);
+  //  CORE::DRT::UTILS::GaussIntegration intpoints(DRT::Element::DiscretizationType::line6);
 
   //------------------------------------------------------------------
   //                       INTEGRATION LOOP
@@ -1332,5 +1333,7 @@ void DRT::ELEMENTS::FluidEleCalcXWall<distype, enrtype>::LinMeshMotion_3D(
   return;
 }
 
-template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4, DRT::ELEMENTS::Fluid::xwall>;
-template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8, DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::DiscretizationType::tet4,
+    DRT::ELEMENTS::Fluid::xwall>;
+template class DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::DiscretizationType::hex8,
+    DRT::ELEMENTS::Fluid::xwall>;

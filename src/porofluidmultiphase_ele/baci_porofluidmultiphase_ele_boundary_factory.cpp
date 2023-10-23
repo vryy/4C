@@ -25,33 +25,33 @@ DRT::ELEMENTS::PoroFluidMultiPhaseBoundaryFactory::ProvideImpl(
 {
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return DefineProblemType<DRT::Element::quad4>(numdofpernode, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(numdofpernode, disname);
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return DefineProblemType<DRT::Element::quad8>(numdofpernode, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(numdofpernode, disname);
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return DefineProblemType<DRT::Element::quad9>(numdofpernode, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(numdofpernode, disname);
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return DefineProblemType<DRT::Element::tri3>(numdofpernode, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(numdofpernode, disname);
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return DefineProblemType<DRT::Element::tri6>(numdofpernode, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(numdofpernode, disname);
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return DefineProblemType<DRT::Element::line2>(numdofpernode, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::line2>(numdofpernode, disname);
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      return DefineProblemType<DRT::Element::line3>(numdofpernode, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::line3>(numdofpernode, disname);
     }
     default:
     {

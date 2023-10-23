@@ -1001,7 +1001,7 @@ namespace DRT::ELEMENTS::SHELL
     double r = xi_gp[0];
     double s = xi_gp[1];
 
-    if (distype == DRT::Element::quad4)
+    if (distype == DRT::Element::DiscretizationType::quad4)
     {
       shapefunctions.resize(4);
       shapefunctions[0] = 0.5 * (1.0 - s);
@@ -1009,7 +1009,7 @@ namespace DRT::ELEMENTS::SHELL
       shapefunctions[2] = 0.5 * (1.0 - r);
       shapefunctions[3] = 0.5 * (1.0 + r);
     }
-    else if (distype == DRT::Element::quad9)
+    else if (distype == DRT::Element::DiscretizationType::quad9)
     {
       shapefunctions.resize(12);
       const double rthreei = 1.0 / (sqrt(3.0));
@@ -1242,7 +1242,7 @@ namespace DRT::ELEMENTS::SHELL
   template <DRT::Element::DiscretizationType distype>
   void GetCoordinatesOfAnsCollocationPoints(std::vector<std::array<double, 2>>& collocation_points)
   {
-    if (distype == DRT::Element::quad4)
+    if (distype == DRT::Element::DiscretizationType::quad4)
     {
       collocation_points.resize(4);
       // for a_13
@@ -1252,7 +1252,7 @@ namespace DRT::ELEMENTS::SHELL
       collocation_points[2] = {-1.0, 0.0};
       collocation_points[3] = {1.0, 0.0};
     }
-    else if (distype == DRT::Element::quad9)
+    else if (distype == DRT::Element::DiscretizationType::quad9)
     {
       const double sqrt3inv = 1.0 / (sqrt(3.0));
       collocation_points.resize(DETAIL::num_internal_variables);

@@ -110,34 +110,34 @@ void EXODUS::ValidateElementJacobian(
   CORE::DRT::UTILS::GaussRule3D integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
-    case DRT::Element::hex8:
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::hex20:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::hex_1point;
       break;
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       integrationrule_1point =
           CORE::DRT::UTILS::GaussRule3D::hex_27point;  // one point is not enough for hex27!!
       break;
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet4:
+    case DRT::Element::DiscretizationType::tet10:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::tet_1point;
       break;
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge6:
+    case DRT::Element::DiscretizationType::wedge15:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::wedge_1point;
       break;
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
       integrationrule_1point = CORE::DRT::UTILS::GaussRule3D::pyramid_1point;
       break;
     // do nothing for 2D, 1D and 0D elements
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-    case DRT::Element::point1:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
+    case DRT::Element::DiscretizationType::point1:
       return;
     default:
       dserror("Unknown element type, validation failed!");
@@ -194,37 +194,37 @@ int EXODUS::ValidateElementJacobian_fullgp(
   CORE::DRT::UTILS::GaussRule3D integrationrule = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
       break;
-    case DRT::Element::wedge6:
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge6:
+    case DRT::Element::DiscretizationType::wedge15:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
       break;
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
       integrationrule = CORE::DRT::UTILS::GaussRule3D::pyramid_8point;
       break;
     // do nothing for 2D, 1D and 0D elements
-    case DRT::Element::quad4:
-    case DRT::Element::quad8:
-    case DRT::Element::quad9:
-    case DRT::Element::tri3:
-    case DRT::Element::tri6:
-    case DRT::Element::line2:
-    case DRT::Element::line3:
-    case DRT::Element::point1:
+    case DRT::Element::DiscretizationType::quad4:
+    case DRT::Element::DiscretizationType::quad8:
+    case DRT::Element::DiscretizationType::quad9:
+    case DRT::Element::DiscretizationType::tri3:
+    case DRT::Element::DiscretizationType::tri6:
+    case DRT::Element::DiscretizationType::line2:
+    case DRT::Element::DiscretizationType::line3:
+    case DRT::Element::DiscretizationType::point1:
       return 0;
     default:
       dserror("Unknown element type, validation failed!");
@@ -331,7 +331,7 @@ int EXODUS::EleSaneSign(
       local_nodecoords(7, 0) = -1.;
       local_nodecoords(7, 1) = 1.;
       local_nodecoords(7, 2) = 1.;
-      distype = DRT::Element::hex8;
+      distype = DRT::Element::DiscretizationType::hex8;
       break;
     case 6:  // wedge6
       local_nodecoords(0, 0) = 0.;
@@ -352,7 +352,7 @@ int EXODUS::EleSaneSign(
       local_nodecoords(5, 0) = 0.;
       local_nodecoords(5, 1) = 1.;
       local_nodecoords(5, 2) = 1.;
-      distype = DRT::Element::wedge6;
+      distype = DRT::Element::DiscretizationType::wedge6;
       break;
     default:
       dserror("No Element Sanity Check for this distype");
@@ -412,7 +412,7 @@ std::vector<int> EXODUS::RewindEle(
   // rewinding of nodes to arrive at mathematically positive element
   switch (distype)
   {
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       new_nodeids[0] = old_nodeids[0];
       new_nodeids[1] = old_nodeids[2];
@@ -420,7 +420,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[3] = old_nodeids[3];
       break;
     }
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
     {
       new_nodeids[0] = old_nodeids[0];
       new_nodeids[1] = old_nodeids[2];
@@ -434,7 +434,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[9] = old_nodeids[9];
       break;
     }
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       new_nodeids[0] = old_nodeids[4];
       new_nodeids[1] = old_nodeids[5];
@@ -446,7 +446,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[7] = old_nodeids[3];
       break;
     }
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
     {
       new_nodeids[0] = old_nodeids[3];
       new_nodeids[1] = old_nodeids[4];
@@ -456,7 +456,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[5] = old_nodeids[2];
       break;
     }
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
     {
       new_nodeids[1] = old_nodeids[3];
       new_nodeids[3] = old_nodeids[1];
@@ -466,7 +466,7 @@ std::vector<int> EXODUS::RewindEle(
       new_nodeids[4] = old_nodeids[4];
       break;
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
       // nodes 1 - 20 can stay the same (no rewinding for hex20)
       for (int i = 0; i < 20; i++)

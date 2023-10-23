@@ -1458,7 +1458,8 @@ namespace IMMERSED
                     stored_dist = dist;
 
                     // evaluate shape functions of structure dis at gp
-                    CORE::DRT::UTILS::shape_function<DRT::Element::quad4>(struct_xi, shapefcts);
+                    CORE::DRT::UTILS::shape_function<DRT::Element::DiscretizationType::quad4>(
+                        struct_xi, shapefcts);
                     CORE::LINALG::Matrix<4, 3> myvelocitynp(true);
                     for (int node = 0; node < 4; ++node)
                       for (int dim = 0; dim < 3; ++dim)

@@ -227,10 +227,10 @@ CORE::DRT::UTILS::GaussRule1D DRT::ELEMENTS::RedAirway::getOptimalGaussrule(
   CORE::DRT::UTILS::GaussRule1D rule = CORE::DRT::UTILS::GaussRule1D::undefined;
   switch (distype)
   {
-    case line2:
+    case DRT::Element::DiscretizationType::line2:
       rule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       break;
-    case line3:
+    case DRT::Element::DiscretizationType::line3:
       rule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       break;
     default:
@@ -251,10 +251,10 @@ bool DRT::ELEMENTS::RedAirway::isHigherOrderElement(
   bool hoel = true;
   switch (distype)
   {
-    case line3:
+    case DRT::Element::DiscretizationType::line3:
       hoel = true;
       break;
-    case line2:
+    case DRT::Element::DiscretizationType::line2:
       hoel = false;
       break;
     default:

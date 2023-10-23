@@ -1451,7 +1451,8 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(std::vector<int>& lm,  // location mat
       params.set("gprefecoord", point);
     }
 
-    UTILS::GetTemperatureForStructuralMaterial<tet4>(shapefcts[gp], params);
+    UTILS::GetTemperatureForStructuralMaterial<DRT::Element::DiscretizationType::tet4>(
+        shapefcts[gp], params);
 
     SolidMaterial()->Evaluate(&defgrd, &glstrain, params, &stress, &cmat, gp, Id());
 
@@ -2258,7 +2259,7 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   static CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> deriv(true);
   deriv.Clear();
-  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::tet4>(xi, deriv);
+  CORE::DRT::UTILS::shape_function_deriv1<DRT::Element::DiscretizationType::tet4>(xi, deriv);
 
   static CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMNOD_SOTET4> N_XYZ(true);
   static CORE::LINALG::Matrix<NUMDIM_SOTET4, NUMDIM_SOTET4> invJ(true);
@@ -2331,7 +2332,8 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
   }
 
   // prepare evaluation of d_cauchyndir_dxi or d2_cauchyndir_dd_dxi
-  static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
+  static CORE::LINALG::Matrix<
+      CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::DiscretizationType::tet4>::numderiv2,
       NUMNOD_SOTET4>
       deriv2(true);
   static CORE::LINALG::Matrix<9, NUMDIM_SOTET4> d_F_dxi(true);
@@ -2340,11 +2342,11 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
 
   if (d_cauchyndir_dxi or d2_cauchyndir_dd_dxi)
   {
-    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::tet4>(xi, deriv2);
+    CORE::DRT::UTILS::shape_function_deriv2<DRT::Element::DiscretizationType::tet4>(xi, deriv2);
 
     static CORE::LINALG::Matrix<NUMNOD_SOTET4, NUMDIM_SOTET4> xXF(true);
     static CORE::LINALG::Matrix<NUMDIM_SOTET4,
-        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::DiscretizationType::tet4>::numderiv2>
         xXFsec(true);
     xXF.Update(1.0, xcurr, 0.0);
     xXF.MultiplyNT(-1.0, xrefe, defgrd, 1.0);
@@ -2375,11 +2377,12 @@ void DRT::ELEMENTS::So_tet4::GetCauchyNDirAndDerivativesAtXi(const CORE::LINALG:
     CORE::LINALG::Matrix<NUMDOF_SOTET4, NUMDIM_SOTET4> d2_cauchyndir_dd_dxi_mat(
         d2_cauchyndir_dd_dxi->values(), true);
 
-    static CORE::LINALG::Matrix<CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2,
+    static CORE::LINALG::Matrix<
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::DiscretizationType::tet4>::numderiv2,
         NUMDIM_SOTET4>
         Xsec(true);
     static CORE::LINALG::Matrix<NUMNOD_SOTET4,
-        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::tet4>::numderiv2>
+        CORE::DRT::UTILS::DisTypeToNumDeriv2<DRT::Element::DiscretizationType::tet4>::numderiv2>
         N_XYZ_Xsec(true);
     Xsec.Multiply(1.0, deriv2, xrefe, 0.0);
     N_XYZ_Xsec.MultiplyTT(1.0, N_XYZ, Xsec, 0.0);

@@ -147,7 +147,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
 
     switch (actele->Shape())
     {
-      case DRT::Element::nurbs4:
+      case DRT::Element::DiscretizationType::nurbs4:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(2);
@@ -243,7 +243,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
 
         break;
       }
-      case DRT::Element::nurbs9:
+      case DRT::Element::DiscretizationType::nurbs9:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(2);
@@ -504,7 +504,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions(std::ofstream& geofil
         }
         break;
       }
-      case DRT::Element::nurbs27:
+      case DRT::Element::DiscretizationType::nurbs27:
       {
         // element local point position
         CORE::LINALG::SerialDenseVector uv(3);
@@ -1447,7 +1447,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
 
   switch (distype)
   {
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
       // get dimension
       const int dim = 2;
@@ -1490,7 +1490,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
       }
     }
     break;
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       // get dimension
       const int dim = 2;
@@ -1607,7 +1607,7 @@ void EnsightWriter::WriteNurbsCell(const DRT::Element::DiscretizationType distyp
       }
     }
     break;
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
       //               v
       //              /
@@ -2175,7 +2175,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
 
   switch (actele->Shape())
   {
-    case DRT::Element::nurbs4:
+    case DRT::Element::DiscretizationType::nurbs4:
     {
       // number of visualisation points in u direction
       int nvpu = (nurbsdis->Return_nele_x_mele_x_lele(npatch))[0] + 1;
@@ -2260,7 +2260,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       }
       break;
     }
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
       int idu;
       int idv;
@@ -2496,7 +2496,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(Teuchos::RCP<Epetra_MultiV
       }
       break;
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
       // element local point position
       CORE::LINALG::SerialDenseVector uv(3);

@@ -181,12 +181,12 @@ void NTS::CoInterpolator::Interpolate2D(
       //**************************************************************
       std::array<double, 2> sxi = {0.0, 0.0};
 
-      if (sele->Shape() == DRT::Element::line2)
+      if (sele->Shape() == DRT::Element::DiscretizationType::line2)
       {
         if (lid == 0) sxi[0] = -1;
         if (lid == 1) sxi[0] = 1;
       }
-      else if (sele->Shape() == DRT::Element::line3)
+      else if (sele->Shape() == DRT::Element::DiscretizationType::line3)
       {
         if (lid == 0) sxi[0] = -1;
         if (lid == 1) sxi[0] = 1;
@@ -272,8 +272,9 @@ bool NTS::CoInterpolator::Interpolate3D(
 
   double sxi[2] = {0.0, 0.0};
 
-  if (sele->Shape() == DRT::Element::quad4 or sele->Shape() == DRT::Element::quad8 or
-      sele->Shape() == DRT::Element::quad9)
+  if (sele->Shape() == DRT::Element::DiscretizationType::quad4 or
+      sele->Shape() == DRT::Element::DiscretizationType::quad8 or
+      sele->Shape() == DRT::Element::DiscretizationType::quad9)
   {
     if (lid == 0)
     {
@@ -323,7 +324,8 @@ bool NTS::CoInterpolator::Interpolate3D(
     else
       dserror("ERORR: wrong node LID");
   }
-  else if (sele->Shape() == DRT::Element::tri3 or sele->Shape() == DRT::Element::tri6)
+  else if (sele->Shape() == DRT::Element::DiscretizationType::tri3 or
+           sele->Shape() == DRT::Element::DiscretizationType::tri6)
   {
     if (lid == 0)
     {
@@ -379,7 +381,9 @@ bool NTS::CoInterpolator::Interpolate3D(
     // check GP projection
     DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
     const double tol = 1e-8;
-    if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+    if (dt == DRT::Element::DiscretizationType::quad4 ||
+        dt == DRT::Element::DiscretizationType::quad8 ||
+        dt == DRT::Element::DiscretizationType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -479,8 +483,9 @@ void NTS::CoInterpolator::InterpolateMasterTemp3D(
 
     double sxi[2] = {0.0, 0.0};
 
-    if (sele.Shape() == DRT::Element::quad4 or sele.Shape() == DRT::Element::quad8 or
-        sele.Shape() == DRT::Element::quad9)
+    if (sele.Shape() == DRT::Element::DiscretizationType::quad4 or
+        sele.Shape() == DRT::Element::DiscretizationType::quad8 or
+        sele.Shape() == DRT::Element::DiscretizationType::quad9)
     {
       if (snodes == 0)
       {
@@ -530,7 +535,8 @@ void NTS::CoInterpolator::InterpolateMasterTemp3D(
       else
         dserror("ERORR: wrong node LID");
     }
-    else if (sele.Shape() == DRT::Element::tri3 or sele.Shape() == DRT::Element::tri6)
+    else if (sele.Shape() == DRT::Element::DiscretizationType::tri3 or
+             sele.Shape() == DRT::Element::DiscretizationType::tri6)
     {
       if (snodes == 0)
       {
@@ -586,7 +592,9 @@ void NTS::CoInterpolator::InterpolateMasterTemp3D(
       // check GP projection
       DRT::Element::DiscretizationType dt = meles[nummaster]->Shape();
       const double tol = 0.00;
-      if (dt == DRT::Element::quad4 || dt == DRT::Element::quad8 || dt == DRT::Element::quad9)
+      if (dt == DRT::Element::DiscretizationType::quad4 ||
+          dt == DRT::Element::DiscretizationType::quad8 ||
+          dt == DRT::Element::DiscretizationType::quad9)
       {
         if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
         {
@@ -1735,38 +1743,40 @@ NTS::MTInterpolator* NTS::MTInterpolator::Impl(std::vector<MORTAR::MortarElement
   switch (meles[0]->Shape())
   {
     // 2D surface elements
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return MTInterpolatorCalc<DRT::Element::quad4>::Instance(
+      return MTInterpolatorCalc<DRT::Element::DiscretizationType::quad4>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return MTInterpolatorCalc<DRT::Element::quad8>::Instance(
+      return MTInterpolatorCalc<DRT::Element::DiscretizationType::quad8>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return MTInterpolatorCalc<DRT::Element::quad9>::Instance(
+      return MTInterpolatorCalc<DRT::Element::DiscretizationType::quad9>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return MTInterpolatorCalc<DRT::Element::tri3>::Instance(CORE::UTILS::SingletonAction::create);
+      return MTInterpolatorCalc<DRT::Element::DiscretizationType::tri3>::Instance(
+          CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return MTInterpolatorCalc<DRT::Element::tri6>::Instance(CORE::UTILS::SingletonAction::create);
+      return MTInterpolatorCalc<DRT::Element::DiscretizationType::tri6>::Instance(
+          CORE::UTILS::SingletonAction::create);
     }
       // 1D surface elements
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      return MTInterpolatorCalc<DRT::Element::line2>::Instance(
+      return MTInterpolatorCalc<DRT::Element::DiscretizationType::line2>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      return MTInterpolatorCalc<DRT::Element::line3>::Instance(
+      return MTInterpolatorCalc<DRT::Element::DiscretizationType::line3>::Instance(
           CORE::UTILS::SingletonAction::create);
     }
     default:
@@ -1915,8 +1925,9 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
     }
   }
 
-  if (sele->Shape() == DRT::Element::quad4 or sele->Shape() == DRT::Element::quad8 or
-      sele->Shape() == DRT::Element::quad9)
+  if (sele->Shape() == DRT::Element::DiscretizationType::quad4 or
+      sele->Shape() == DRT::Element::DiscretizationType::quad8 or
+      sele->Shape() == DRT::Element::DiscretizationType::quad9)
   {
     if (lid == 0)
     {
@@ -1966,7 +1977,8 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
     else
       dserror("ERORR: wrong node LID");
   }
-  else if (sele->Shape() == DRT::Element::tri3 or sele->Shape() == DRT::Element::tri6)
+  else if (sele->Shape() == DRT::Element::DiscretizationType::tri3 or
+           sele->Shape() == DRT::Element::DiscretizationType::tri6)
   {
     if (lid == 0)
     {
@@ -2021,8 +2033,9 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
 
     // check GP projection
     const double tol = 0.00;
-    if (distypeM == DRT::Element::quad4 || distypeM == DRT::Element::quad8 ||
-        distypeM == DRT::Element::quad9)
+    if (distypeM == DRT::Element::DiscretizationType::quad4 ||
+        distypeM == DRT::Element::DiscretizationType::quad8 ||
+        distypeM == DRT::Element::DiscretizationType::quad9)
     {
       if (mxi[0] < -1.0 - tol || mxi[1] < -1.0 - tol || mxi[0] > 1.0 + tol || mxi[1] > 1.0 + tol)
       {
@@ -2071,10 +2084,10 @@ void NTS::MTInterpolatorCalc<distypeM>::Interpolate3D(
 }
 
 
-template class NTS::MTInterpolatorCalc<DRT::Element::line2>;
-template class NTS::MTInterpolatorCalc<DRT::Element::line3>;
-template class NTS::MTInterpolatorCalc<DRT::Element::quad4>;
-template class NTS::MTInterpolatorCalc<DRT::Element::quad8>;
-template class NTS::MTInterpolatorCalc<DRT::Element::quad9>;
-template class NTS::MTInterpolatorCalc<DRT::Element::tri3>;
-template class NTS::MTInterpolatorCalc<DRT::Element::tri6>;
+template class NTS::MTInterpolatorCalc<DRT::Element::DiscretizationType::line2>;
+template class NTS::MTInterpolatorCalc<DRT::Element::DiscretizationType::line3>;
+template class NTS::MTInterpolatorCalc<DRT::Element::DiscretizationType::quad4>;
+template class NTS::MTInterpolatorCalc<DRT::Element::DiscretizationType::quad8>;
+template class NTS::MTInterpolatorCalc<DRT::Element::DiscretizationType::quad9>;
+template class NTS::MTInterpolatorCalc<DRT::Element::DiscretizationType::tri3>;
+template class NTS::MTInterpolatorCalc<DRT::Element::DiscretizationType::tri6>;

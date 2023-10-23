@@ -47,14 +47,14 @@ XFEM::MeshProjector::MeshProjector(Teuchos::RCP<const DRT::Discretization> sourc
   // (not the best choice)
   switch (sourcedis_->lRowElement(0)->Shape())
   {
-    case DRT::Element::hex8:
-      FindSearchRadius<DRT::Element::hex8>();
+    case DRT::Element::DiscretizationType::hex8:
+      FindSearchRadius<DRT::Element::DiscretizationType::hex8>();
       break;
-    case DRT::Element::hex20:
-      FindSearchRadius<DRT::Element::hex20>();
+    case DRT::Element::DiscretizationType::hex20:
+      FindSearchRadius<DRT::Element::DiscretizationType::hex20>();
       break;
-    case DRT::Element::hex27:
-      FindSearchRadius<DRT::Element::hex27>();
+    case DRT::Element::DiscretizationType::hex27:
+      FindSearchRadius<DRT::Element::DiscretizationType::hex27>();
       break;
     default:
       searchradius_ = searchradius_fac_;  // avoid a
@@ -425,17 +425,17 @@ void XFEM::MeshProjector::FindCoveringElementsAndInterpolateValues(
         // determine values for target fluid node
         switch (pele->Shape())
         {
-          case DRT::Element::hex8:
-            insideelement =
-                CheckPositionAndProject<DRT::Element::hex8>(pele, node_xyz, interpolatedvec);
+          case DRT::Element::DiscretizationType::hex8:
+            insideelement = CheckPositionAndProject<DRT::Element::DiscretizationType::hex8>(
+                pele, node_xyz, interpolatedvec);
             break;
-          case DRT::Element::hex20:
-            insideelement =
-                CheckPositionAndProject<DRT::Element::hex20>(pele, node_xyz, interpolatedvec);
+          case DRT::Element::DiscretizationType::hex20:
+            insideelement = CheckPositionAndProject<DRT::Element::DiscretizationType::hex20>(
+                pele, node_xyz, interpolatedvec);
             break;
-          case DRT::Element::hex27:
-            insideelement =
-                CheckPositionAndProject<DRT::Element::hex27>(pele, node_xyz, interpolatedvec);
+          case DRT::Element::DiscretizationType::hex27:
+            insideelement = CheckPositionAndProject<DRT::Element::DiscretizationType::hex27>(
+                pele, node_xyz, interpolatedvec);
             break;
           default:
             dserror("Unsupported element shape %s!", DRT::DistypeToString(pele->Shape()).c_str());

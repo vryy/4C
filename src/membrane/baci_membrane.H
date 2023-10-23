@@ -146,19 +146,19 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
           {
             return Membrane_tri3Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::tri6:
+          case DRT::Element::DiscretizationType::tri6:
           {
             return Membrane_tri6Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
           {
             return Membrane_quad4Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
           {
             return Membrane_quad9Type::Instance().UniqueParObjectId();
           }
@@ -235,22 +235,22 @@ namespace DRT
       {
         switch (distype)
         {
-          case DRT::Element::tri3:
+          case DRT::Element::DiscretizationType::tri3:
           {
             return Membrane_tri3Type::Instance();
           }
           break;
-          case DRT::Element::tri6:
+          case DRT::Element::DiscretizationType::tri6:
           {
             return Membrane_tri6Type::Instance();
           }
           break;
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
           {
             return Membrane_quad4Type::Instance();
           }
           break;
-          case DRT::Element::quad9:
+          case DRT::Element::DiscretizationType::quad9:
           {
             return Membrane_quad9Type::Instance();
           }
@@ -633,11 +633,11 @@ namespace DRT
       {
         switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
-          case DRT::Element::line2:
+          case DRT::Element::DiscretizationType::line2:
           {
             return Membrane_line2Type::Instance().UniqueParObjectId();
           }
-          case DRT::Element::line3:
+          case DRT::Element::DiscretizationType::line3:
           {
             return Membrane_line3Type::Instance().UniqueParObjectId();
           }
@@ -721,11 +721,11 @@ namespace DRT
       {
         switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype2>::shape)
         {
-          case DRT::Element::line2:
+          case DRT::Element::DiscretizationType::line2:
           {
             return Membrane_line2Type::Instance();
           }
-          case DRT::Element::line3:
+          case DRT::Element::DiscretizationType::line3:
           {
             return Membrane_line3Type::Instance();
           }

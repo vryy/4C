@@ -43,7 +43,7 @@ namespace DRT::UTILS::BEAM
 
         // evaluate Hermite shape functions at xi: vpernode=2 means 3rd order, i.e. line2
         CORE::DRT::UTILS::shape_function_hermite_1D(
-            I_i, xi, hermite_length_param, DRT::Element::line2);
+            I_i, xi, hermite_length_param, DRT::Element::DiscretizationType::line2);
         break;
       }
       default:
@@ -77,7 +77,7 @@ namespace DRT::UTILS::BEAM
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
         CORE::DRT::UTILS::shape_function_hermite_1D_deriv1(
-            I_i_xi, xi, hermite_length_param, DRT::Element::line2);
+            I_i_xi, xi, hermite_length_param, DRT::Element::DiscretizationType::line2);
         break;
       }
       default:
@@ -111,7 +111,7 @@ namespace DRT::UTILS::BEAM
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
         CORE::DRT::UTILS::shape_function_hermite_1D_deriv2(
-            I_i_xixi, xi, hermite_length_param, DRT::Element::line2);
+            I_i_xixi, xi, hermite_length_param, DRT::Element::DiscretizationType::line2);
         break;
       }
       default:
@@ -146,7 +146,7 @@ namespace DRT::UTILS::BEAM
 
         // evaluate Hermite shape function derivs at xi: vpernode=2 means 3rd order, i.e. line2
         CORE::DRT::UTILS::shape_function_hermite_1D_deriv3(
-            I_i_xixixi, xi, hermite_length_param, DRT::Element::line2);
+            I_i_xixixi, xi, hermite_length_param, DRT::Element::DiscretizationType::line2);
         break;
       }
       default:

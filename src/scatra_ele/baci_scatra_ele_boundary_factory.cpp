@@ -38,64 +38,74 @@ DRT::ELEMENTS::ScaTraBoundaryInterface* DRT::ELEMENTS::ScaTraBoundaryFactory::Pr
 
   switch (ele->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::quad4, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::quad4, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::quad8, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::quad8, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::quad9, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::quad9, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::tri3, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::tri3, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
       if (ndim == 3)
-        return DefineProblemType<DRT::Element::tri6, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::tri6, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::line2, 2>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::line2, 2>(
+            impltype, numdofpernode, numscal, disname);
       else if (ndim == 3)
-        return DefineProblemType<DRT::Element::line2, 3>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::line2, 3>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
       if (ndim == 2)
-        return DefineProblemType<DRT::Element::line3, 2>(impltype, numdofpernode, numscal, disname);
+        return DefineProblemType<DRT::Element::DiscretizationType::line3, 2>(
+            impltype, numdofpernode, numscal, disname);
       else
         dserror("invalid problem dimension!");
     }
-    case DRT::Element::nurbs3:  // 1D nurbs boundary element
+    case DRT::Element::DiscretizationType::nurbs3:  // 1D nurbs boundary element
     {
-      return DefineProblemType<DRT::Element::nurbs3, 2>(impltype, numdofpernode, numscal, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs3, 2>(
+          impltype, numdofpernode, numscal, disname);
     }
-    case DRT::Element::nurbs9:  // 2D nurbs boundary element
+    case DRT::Element::DiscretizationType::nurbs9:  // 2D nurbs boundary element
     {
-      return DefineProblemType<DRT::Element::nurbs9, 3>(impltype, numdofpernode, numscal, disname);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs9, 3>(
+          impltype, numdofpernode, numscal, disname);
     }
     default:
     {

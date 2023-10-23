@@ -49,7 +49,8 @@ namespace DRT
       std::string GetElementTypeString() const { return "SOLIDSH18PLAST"; }
     };  // class So_sh18PlastType
 
-    class So_sh18Plast : public virtual So3_Plast<DRT::Element::hex18>, public virtual So_sh18
+    class So_sh18Plast : public virtual So3_Plast<DRT::Element::DiscretizationType::hex18>,
+                         public virtual So_sh18
     {
      public:
       //! @name Friends
@@ -69,7 +70,7 @@ namespace DRT
 
       //! resolve "no unique final overrider"
       int NumVolume() const override { return So_sh18::NumVolume(); }
-      DiscretizationType Shape() const override { return hex18; };
+      DiscretizationType Shape() const override { return DiscretizationType::hex18; };
       int NumSurface() const override { return So_sh18::NumSurface(); }
       int NumLine() const override { return So_sh18::NumLine(); }
       std::vector<Teuchos::RCP<DRT::Element>> Lines() override { return So_sh18::Lines(); }
@@ -151,8 +152,9 @@ namespace DRT
           CORE::LINALG::SerialDenseVector& elevec3_epetra   //!< vector to be filled by element
           ) override
       {
-        return DRT::ELEMENTS::So3_Plast<DRT::Element::hex18>::Evaluate(params, discretization, la,
-            elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra, elevec3_epetra);
+        return DRT::ELEMENTS::So3_Plast<DRT::Element::DiscretizationType::hex18>::Evaluate(params,
+            discretization, la, elemat1_epetra, elemat2_epetra, elevec1_epetra, elevec2_epetra,
+            elevec3_epetra);
       }
 
 

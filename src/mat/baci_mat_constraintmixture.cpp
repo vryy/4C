@@ -3148,19 +3148,19 @@ void MAT::ConstraintMixtureOutputToGmsh(
     CORE::DRT::UTILS::GaussRule3D gaussrule_ = CORE::DRT::UTILS::GaussRule3D::undefined;
     switch (distype)
     {
-      case DRT::Element::hex8:
+      case DRT::Element::DiscretizationType::hex8:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::hex_8point;
         if (ngp != 8) dserror("hex8 has not 8 gauss points: %d", ngp);
         break;
       }
-      case DRT::Element::wedge6:
+      case DRT::Element::DiscretizationType::wedge6:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::wedge_6point;
         if (ngp != 6) dserror("wedge6 has not 6 gauss points: %d", ngp);
         break;
       }
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::tet4:
       {
         gaussrule_ = CORE::DRT::UTILS::GaussRule3D::tet_1point;
         if (ngp != 1) dserror("tet4 has not 1 gauss point: %d", ngp);

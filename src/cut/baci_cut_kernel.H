@@ -133,7 +133,7 @@ namespace CORE::GEO
       {
         switch (sideType)
         {
-          case ::DRT::Element::tri3:
+          case ::DRT::Element::DiscretizationType::tri3:
           {
             if (std::abs(xsi(1)) <= std::abs(tol(1))) edges_id.push_back(0);
             if (std::abs(xsi(0) + xsi(1) - 1.0) <=
@@ -142,7 +142,7 @@ namespace CORE::GEO
             if (std::abs(xsi(0)) <= std::abs(tol(0))) edges_id.push_back(2);
             break;
           }
-          case ::DRT::Element::quad4:
+          case ::DRT::Element::DiscretizationType::quad4:
           {
             if (std::abs(xsi(1) + 1.0) <= std::abs(tol(1))) edges_id.push_back(0);
             if (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))) edges_id.push_back(1);
@@ -150,7 +150,7 @@ namespace CORE::GEO
             if (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))) edges_id.push_back(3);
             break;
           }
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
           {
             if (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))) edges_id.push_back(0);
             if (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))) edges_id.push_back(1);
@@ -170,7 +170,7 @@ namespace CORE::GEO
       {
         switch (sideType)
         {
-          case ::DRT::Element::tri3:
+          case ::DRT::Element::DiscretizationType::tri3:
           {
             if ((std::abs(xsi(1)) <= std::abs(tol(1))) and (std::abs(xsi(0)) <= std::abs(tol(0))))
               nodes_id.push_back(0);
@@ -180,7 +180,7 @@ namespace CORE::GEO
             if (std::abs(1.0 - xsi(1)) <= std::abs(tol(1))) nodes_id.push_back(2);
             break;
           }
-          case ::DRT::Element::quad4:
+          case ::DRT::Element::DiscretizationType::quad4:
           {
             if ((std::abs(xsi(1) + 1.0) <= std::abs(tol(1))) and
                 (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))))
@@ -196,7 +196,7 @@ namespace CORE::GEO
               nodes_id.push_back(3);
             break;
           }
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
           {
             if (std::abs(xsi(0) + 1.0) <= std::abs(tol(0))) nodes_id.push_back(0);
             if (std::abs(xsi(0) - 1.0) <= std::abs(tol(0))) nodes_id.push_back(1);
@@ -229,21 +229,21 @@ namespace CORE::GEO
 
         switch (elementType)
         {
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
           {
             return (std::abs(xsi(0) + 1) < tol or std::abs(xsi(0) - 1) < tol);
             break;
           }
-          case ::DRT::Element::quad4:
-          case ::DRT::Element::quad8:
-          case ::DRT::Element::quad9:
+          case ::DRT::Element::DiscretizationType::quad4:
+          case ::DRT::Element::DiscretizationType::quad8:
+          case ::DRT::Element::DiscretizationType::quad9:
           {
             return (std::abs(xsi(0) + 1) < tol or std::abs(xsi(1) + 1) < tol or
                     std::abs(xsi(0) - 1) < tol or std::abs(xsi(1) - 1) < tol);
             break;
           }
-          case ::DRT::Element::tri3:
-          case ::DRT::Element::tri6:
+          case ::DRT::Element::DiscretizationType::tri3:
+          case ::DRT::Element::DiscretizationType::tri6:
           {
             return (std::abs(xsi(0) + 0) < tol or std::abs(xsi(1) + 0) < tol or
                     std::abs(xsi(1) + xsi(0) - 1) < tol);
@@ -268,7 +268,7 @@ namespace CORE::GEO
       bool WithinLimitsSplittedQuad(
           const T& xsi, const CORE::LINALG::Matrix<dim, 1, floatType>& tol)
       {
-        if (elementType == ::DRT::Element::tri3)
+        if (elementType == ::DRT::Element::DiscretizationType::tri3)
         {
           return xsi(0) >= 0.0 - std::abs(tol(0)) and xsi(1) >= 0.0 - std::abs(tol(1)) and
                  xsi(0) <= 1.0 + std::abs(tol(0)) and xsi(1) <= 1.0 + std::abs(tol(1)) and
@@ -294,7 +294,7 @@ namespace CORE::GEO
           // ---------------------------------------------------------------
           // 1-D elements
           // ---------------------------------------------------------------
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
           {
             return (xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(0) <= 1.0 + std::abs(tol(0)));
             break;
@@ -302,16 +302,16 @@ namespace CORE::GEO
           // ---------------------------------------------------------------
           // 2-D elements
           // ---------------------------------------------------------------
-          case ::DRT::Element::quad4:
-          case ::DRT::Element::quad8:
-          case ::DRT::Element::quad9:
+          case ::DRT::Element::DiscretizationType::quad4:
+          case ::DRT::Element::DiscretizationType::quad8:
+          case ::DRT::Element::DiscretizationType::quad9:
           {
             return xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(1) >= -1.0 - std::abs(tol(1)) and
                    xsi(0) <= 1.0 + std::abs(tol(0)) and xsi(1) <= 1.0 + std::abs(tol(1));
             break;
           }
-          case ::DRT::Element::tri3:
-          case ::DRT::Element::tri6:
+          case ::DRT::Element::DiscretizationType::tri3:
+          case ::DRT::Element::DiscretizationType::tri6:
           {
             return xsi(0) >= 0.0 - std::abs(tol(0)) and xsi(1) >= 0.0 - std::abs(tol(1)) and
                    xsi(0) <= 1.0 + std::abs(tol(0)) and xsi(1) <= 1.0 + std::abs(tol(1)) and
@@ -324,25 +324,25 @@ namespace CORE::GEO
           // ---------------------------------------------------------------
           // 3-D elements
           // ---------------------------------------------------------------
-          case ::DRT::Element::hex8:
-          case ::DRT::Element::hex16:
-          case ::DRT::Element::hex20:
-          case ::DRT::Element::hex27:
+          case ::DRT::Element::DiscretizationType::hex8:
+          case ::DRT::Element::DiscretizationType::hex16:
+          case ::DRT::Element::DiscretizationType::hex20:
+          case ::DRT::Element::DiscretizationType::hex27:
           {
             return (xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(1) >= -1.0 - std::abs(tol(1)) and
                     xsi(2) >= -1.0 - std::abs(tol(2)) and xsi(0) <= 1.0 + std::abs(tol(0)) and
                     xsi(1) <= 1.0 + std::abs(tol(1)) and xsi(2) <= 1.0 + std::abs(tol(2)));
             break;
           }
-          case ::DRT::Element::tet4:
-          case ::DRT::Element::tet10:
+          case ::DRT::Element::DiscretizationType::tet4:
+          case ::DRT::Element::DiscretizationType::tet10:
           {
             return (xsi(0) >= -std::abs(tol(0)) and xsi(1) >= -std::abs(tol(1)) and
                     xsi(2) >= -std::abs(tol(2)) and
                     xsi(0) + xsi(1) + xsi(2) <= 1.0 + std::abs(tol(0)));
             break;
           }
-          case ::DRT::Element::pyramid5:
+          case ::DRT::Element::DiscretizationType::pyramid5:
           {
             return (xsi(0) >= -1.0 - std::abs(tol(0)) and xsi(1) >= -1.0 - std::abs(tol(1)) and
                     xsi(2) >= -std::abs(tol(2)) and xsi(0) <= 1.0 + std::abs(tol(0)) and
@@ -352,8 +352,8 @@ namespace CORE::GEO
                             : (xsi(2) + std::abs(xsi(1)) <= 1.0 + std::abs(tol(0)))));
             break;
           }
-          case ::DRT::Element::wedge6:
-          case ::DRT::Element::wedge15:
+          case ::DRT::Element::DiscretizationType::wedge6:
+          case ::DRT::Element::DiscretizationType::wedge15:
           {
             return (xsi(0) >= -std::abs(tol(0)) and xsi(1) >= -std::abs(tol(1)) and
                     xsi(2) >= -1.0 - std::abs(tol(0)) and xsi(2) <= 1.0 + std::abs(tol(0)) and
@@ -391,7 +391,7 @@ namespace CORE::GEO
           // ---------------------------------------------------------------
           // 1-D elements
           // ---------------------------------------------------------------
-          case ::DRT::Element::line2:
+          case ::DRT::Element::DiscretizationType::line2:
           {
             return (xsi(0) >= -1.0 - tol and xsi(0) <= 1.0 + tol);
             break;
@@ -399,16 +399,16 @@ namespace CORE::GEO
           // ---------------------------------------------------------------
           // 2-D elements
           // ---------------------------------------------------------------
-          case ::DRT::Element::quad4:
-          case ::DRT::Element::quad8:
-          case ::DRT::Element::quad9:
+          case ::DRT::Element::DiscretizationType::quad4:
+          case ::DRT::Element::DiscretizationType::quad8:
+          case ::DRT::Element::DiscretizationType::quad9:
           {
             return xsi(0) >= -1.0 - tol and xsi(1) >= -1.0 - tol and xsi(0) <= 1.0 + tol and
                    xsi(1) <= 1.0 + tol;
             break;
           }
-          case ::DRT::Element::tri3:
-          case ::DRT::Element::tri6:
+          case ::DRT::Element::DiscretizationType::tri3:
+          case ::DRT::Element::DiscretizationType::tri6:
           {
             return xsi(0) >= 0.0 - tol and xsi(1) >= 0.0 - tol and xsi(0) <= 1.0 + tol and
                    xsi(1) <= 1.0 + tol and xsi(1) <= (1.0 - xsi(0)) + tol;
@@ -417,23 +417,23 @@ namespace CORE::GEO
           // ---------------------------------------------------------------
           // 3-D elements
           // ---------------------------------------------------------------
-          case ::DRT::Element::hex8:
-          case ::DRT::Element::hex16:
-          case ::DRT::Element::hex20:
-          case ::DRT::Element::hex27:
+          case ::DRT::Element::DiscretizationType::hex8:
+          case ::DRT::Element::DiscretizationType::hex16:
+          case ::DRT::Element::DiscretizationType::hex20:
+          case ::DRT::Element::DiscretizationType::hex27:
           {
             return (xsi(0) >= -1.0 - tol and xsi(1) >= -1.0 - tol and xsi(2) >= -1.0 - tol and
                     xsi(0) <= 1.0 + tol and xsi(1) <= 1.0 + tol and xsi(2) <= 1.0 + tol);
             break;
           }
-          case ::DRT::Element::tet4:
-          case ::DRT::Element::tet10:
+          case ::DRT::Element::DiscretizationType::tet4:
+          case ::DRT::Element::DiscretizationType::tet10:
           {
             return (xsi(0) >= -tol and xsi(1) >= -tol and xsi(2) >= -tol and
                     xsi(0) + xsi(1) + xsi(2) <= 1.0 + tol);
             break;
           }
-          case ::DRT::Element::pyramid5:
+          case ::DRT::Element::DiscretizationType::pyramid5:
           {
             return (
                 xsi(0) >= -1.0 - tol and xsi(1) >= -1.0 - tol and xsi(2) >= -tol and
@@ -442,8 +442,8 @@ namespace CORE::GEO
                                                      : (xsi(2) + std::abs(xsi(1)) <= 1.0 + tol)));
             break;
           }
-          case ::DRT::Element::wedge6:
-          case ::DRT::Element::wedge15:
+          case ::DRT::Element::DiscretizationType::wedge6:
+          case ::DRT::Element::DiscretizationType::wedge15:
           {
             return (xsi(0) >= -tol and xsi(1) >= -tol and xsi(2) >= -1.0 - tol and
                     xsi(2) <= 1.0 + tol and xsi(0) + xsi(1) <= 1.0 + tol);
@@ -1341,12 +1341,14 @@ namespace CORE::GEO
         bool operator()(const CORE::LINALG::Matrix<probDim, numNodesElement>& xyze,
             const CORE::LINALG::Matrix<probDim, 1>& px)
         {
-          if (!((elementType == ::DRT::Element::hex8) || (elementType == ::DRT::Element::tet4) ||
-                  (elementType == ::DRT::Element::pyramid5) ||
-                  (elementType == ::DRT::Element::quad4) ||
-                  (elementType == ::DRT::Element::hex20) || (elementType == ::DRT::Element::tri3) ||
-                  (elementType == ::DRT::Element::line2) ||
-                  (elementType == ::DRT::Element::wedge6)))
+          if (!((elementType == ::DRT::Element::DiscretizationType::hex8) ||
+                  (elementType == ::DRT::Element::DiscretizationType::tet4) ||
+                  (elementType == ::DRT::Element::DiscretizationType::pyramid5) ||
+                  (elementType == ::DRT::Element::DiscretizationType::quad4) ||
+                  (elementType == ::DRT::Element::DiscretizationType::hex20) ||
+                  (elementType == ::DRT::Element::DiscretizationType::tri3) ||
+                  (elementType == ::DRT::Element::DiscretizationType::line2) ||
+                  (elementType == ::DRT::Element::DiscretizationType::wedge6)))
           {
             dserror(
                 "This type of element %s  is not yet implemented for the CLN calculation. You are "
@@ -2449,11 +2451,14 @@ namespace CORE::GEO
             const CORE::LINALG::Matrix<probDim, 1>& px, double& distance,
             bool signeddistance = false)
         {
-          if (!((sideType == ::DRT::Element::hex8) || (sideType == ::DRT::Element::quad4) ||
-                  (sideType == ::DRT::Element::hex8) || (sideType == ::DRT::Element::tri3) ||
-                  (sideType == ::DRT::Element::line2)) ||
-              (sideType == ::DRT::Element::hex20) || (sideType == ::DRT::Element::tet4) ||
-              (sideType == ::DRT::Element::pyramid5))
+          if (!((sideType == ::DRT::Element::DiscretizationType::hex8) ||
+                  (sideType == ::DRT::Element::DiscretizationType::quad4) ||
+                  (sideType == ::DRT::Element::DiscretizationType::hex8) ||
+                  (sideType == ::DRT::Element::DiscretizationType::tri3) ||
+                  (sideType == ::DRT::Element::DiscretizationType::line2)) ||
+              (sideType == ::DRT::Element::DiscretizationType::hex20) ||
+              (sideType == ::DRT::Element::DiscretizationType::tet4) ||
+              (sideType == ::DRT::Element::DiscretizationType::pyramid5))
           {
             dserror(
                 "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
@@ -3055,7 +3060,7 @@ namespace CORE::GEO
         // numerical errors
         PointOnSurfaceLoc GetSideLocationTriangleSplit()
         {
-          if (sideType != ::DRT::Element::tri3)
+          if (sideType != ::DRT::Element::DiscretizationType::tri3)
             dserror("This method only works for tri3 side. Current side is %s",
                 ::DRT::DistypeToString(sideType).c_str());
 
@@ -3905,15 +3910,22 @@ namespace CORE::GEO
         bool operator()(const CORE::LINALG::Matrix<probDim, numNodesSide>& xyze_side,
             const CORE::LINALG::Matrix<probDim, numNodesEdge>& xyze_edge)
         {
-          if (!(((edgeType == ::DRT::Element::tet4) || (edgeType == ::DRT::Element::pyramid5) ||
-                    (edgeType == ::DRT::Element::hex8) || (edgeType == ::DRT::Element::quad4) ||
-                    (edgeType == ::DRT::Element::hex20) || (edgeType == ::DRT::Element::tri3) ||
-                    (edgeType == ::DRT::Element::hex8) || (edgeType == ::DRT::Element::line2)) &&
-                  ((sideType == ::DRT::Element::hex8) || (sideType == ::DRT::Element::quad4) ||
-                      (sideType == ::DRT::Element::tri3) || (sideType == ::DRT::Element::line2) ||
-                      (sideType == ::DRT::Element::hex20) || (sideType == ::DRT::Element::tet4) ||
-                      (sideType == ::DRT::Element::pyramid5) ||
-                      (sideType == ::DRT::Element::hex8))))
+          if (!(((edgeType == ::DRT::Element::DiscretizationType::tet4) ||
+                    (edgeType == ::DRT::Element::DiscretizationType::pyramid5) ||
+                    (edgeType == ::DRT::Element::DiscretizationType::hex8) ||
+                    (edgeType == ::DRT::Element::DiscretizationType::quad4) ||
+                    (edgeType == ::DRT::Element::DiscretizationType::hex20) ||
+                    (edgeType == ::DRT::Element::DiscretizationType::tri3) ||
+                    (edgeType == ::DRT::Element::DiscretizationType::hex8) ||
+                    (edgeType == ::DRT::Element::DiscretizationType::line2)) &&
+                  ((sideType == ::DRT::Element::DiscretizationType::hex8) ||
+                      (sideType == ::DRT::Element::DiscretizationType::quad4) ||
+                      (sideType == ::DRT::Element::DiscretizationType::tri3) ||
+                      (sideType == ::DRT::Element::DiscretizationType::line2) ||
+                      (sideType == ::DRT::Element::DiscretizationType::hex20) ||
+                      (sideType == ::DRT::Element::DiscretizationType::tet4) ||
+                      (sideType == ::DRT::Element::DiscretizationType::pyramid5) ||
+                      (sideType == ::DRT::Element::DiscretizationType::hex8))))
           {
             dserror(
                 "This type of element (%s)  is not tested for the CLN calculation. You are welcome "
@@ -4465,7 +4477,7 @@ namespace CORE::GEO
         // numerical errors
         PointOnSurfaceLoc GetSideLocationTriangleSplit()
         {
-          if (sideType != ::DRT::Element::tri3)
+          if (sideType != ::DRT::Element::DiscretizationType::tri3)
             dserror("This method only works for tri3 side. Current side is %s",
                 ::DRT::DistypeToString(sideType).c_str());
 

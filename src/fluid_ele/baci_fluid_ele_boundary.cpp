@@ -34,7 +34,9 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::FluidBoundaryType::Create(const int id
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const int* nodeids,
     DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent, const int lsurface)
-    : DRT::FaceElement(id, owner), distype_(DRT::Element::dis_none), numdofpernode_(-1)
+    : DRT::FaceElement(id, owner),
+      distype_(DRT::Element::DiscretizationType::dis_none),
+      numdofpernode_(-1)
 {
   SetParentMasterElement(parent, lsurface);
   SetNodeIds(nnode, nodeids);
@@ -56,7 +58,9 @@ DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner, int nnode, const 
  |  ctor (private) - used by FluidBoundaryType                  ager 12/16|
  *-----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundary::FluidBoundary(int id, int owner)
-    : DRT::FaceElement(id, owner), distype_(DRT::Element::dis_none), numdofpernode_(-1)
+    : DRT::FaceElement(id, owner),
+      distype_(DRT::Element::DiscretizationType::dis_none),
+      numdofpernode_(-1)
 {
   return;
 }

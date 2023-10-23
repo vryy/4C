@@ -157,7 +157,10 @@ DRT::Element* DRT::ELEMENTS::So_tet4::Clone() const
  |                                                             (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet4::Shape() const { return tet4; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::So_tet4::Shape() const
+{
+  return DRT::Element::DiscretizationType::tet4;
+}
 
 /*----------------------------------------------------------------------***
  |  Pack data                                                  (public) |
@@ -379,7 +382,7 @@ bool DRT::ELEMENTS::So_tet4::VisData(const std::string& name, std::vector<double
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
 {
-  if (DRT::FIBER::UTILS::HaveNodalFibers<tet4>(Nodes()))
+  if (DRT::FIBER::UTILS::HaveNodalFibers<DRT::Element::DiscretizationType::tet4>(Nodes()))
   {
     // This element has fiber nodes.
     // Interpolate fibers to the Gauss points and pass them to the material
@@ -394,7 +397,7 @@ void DRT::ELEMENTS::So_tet4::MaterialPostSetup(Teuchos::ParameterList& params)
     DRT::FIBER::NodalFiberHolder fiberHolder;
 
     // Do the interpolation
-    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::tet4>(
+    DRT::FIBER::UTILS::ProjectFibersToGaussPoints<DRT::Element::DiscretizationType::tet4>(
         Nodes(), shapefcts, fiberHolder);
 
     params.set("fiberholder", fiberHolder);

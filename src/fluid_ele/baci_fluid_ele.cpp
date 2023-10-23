@@ -184,7 +184,7 @@ void DRT::ELEMENTS::FluidType::SetupElementDefinition(
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Fluid::Fluid(int id, int owner) : DRT::Element(id, owner), is_ale_(false)
 {
-  distype_ = dis_none;
+  distype_ = DRT::Element::DiscretizationType::dis_none;
   tds_ = Teuchos::null;
   return;
 }

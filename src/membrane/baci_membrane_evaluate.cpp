@@ -1564,7 +1564,7 @@ void DRT::ELEMENTS::Membrane<distype>::Update_element(
   return;
 }
 
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::tri6>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Membrane<DRT::Element::quad9>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Membrane<DRT::Element::DiscretizationType::quad9>;

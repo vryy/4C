@@ -70,7 +70,7 @@ namespace DRT
       std::vector<int> totaldof;
       dofsets_[nds]->Dof(totaldof, node, nodaldofset);
 
-      if (element == nullptr && element->Shape() == DRT::Element::hex8)
+      if (element == nullptr && element->Shape() == DRT::Element::DiscretizationType::hex8)
         dserror("element required for location vector of hex8 element");
 
       int size;

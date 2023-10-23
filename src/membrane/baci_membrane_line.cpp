@@ -45,14 +45,14 @@ DRT::ELEMENTS::MembraneLine<distype>::MembraneLine(int id, int owner, int nnode,
   SetParentMasterElement(parent, lline);
   switch (CORE::DRT::UTILS::DisTypeToFaceShapeType<distype>::shape)
   {
-    case line2:
+    case DRT::Element::DiscretizationType::line2:
     {
       CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::line_2point;
       // get gauss integration points
       intpointsline_ = CORE::DRT::UTILS::IntegrationPoints1D(gaussrule);
       break;
     }
-    case line3:
+    case DRT::Element::DiscretizationType::line3:
     {
       CORE::DRT::UTILS::GaussRule1D gaussrule = CORE::DRT::UTILS::GaussRule1D::line_3point;
       // get gauss integration points
@@ -136,7 +136,7 @@ void DRT::ELEMENTS::MembraneLine<distype>::Print(std::ostream& os) const
   return;
 }
 
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri3>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::tri6>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad4>;
-template class DRT::ELEMENTS::MembraneLine<DRT::Element::quad9>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::tri6>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::MembraneLine<DRT::Element::DiscretizationType::quad9>;

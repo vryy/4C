@@ -522,20 +522,20 @@ namespace MORTAR
       bool isquad = false;
       switch (Shape())
       {
-        case DRT::Element::line2:
-        case DRT::Element::nurbs2:
-        case DRT::Element::tri3:
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::line2:
+        case DRT::Element::DiscretizationType::nurbs2:
+        case DRT::Element::DiscretizationType::tri3:
+        case DRT::Element::DiscretizationType::quad4:
         {
           // do nothing
           break;
         }
-        case DRT::Element::line3:
-        case DRT::Element::nurbs3:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
-        case DRT::Element::nurbs9:
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::line3:
+        case DRT::Element::DiscretizationType::nurbs3:
+        case DRT::Element::DiscretizationType::quad8:
+        case DRT::Element::DiscretizationType::quad9:
+        case DRT::Element::DiscretizationType::nurbs9:
+        case DRT::Element::DiscretizationType::tri6:
         {
           isquad = true;
           break;
@@ -554,21 +554,21 @@ namespace MORTAR
     {
       switch (Shape())
       {
-        case DRT::Element::line2:
-        case DRT::Element::nurbs2:
-        case DRT::Element::line3:
-        case DRT::Element::nurbs3:
+        case DRT::Element::DiscretizationType::line2:
+        case DRT::Element::DiscretizationType::nurbs2:
+        case DRT::Element::DiscretizationType::line3:
+        case DRT::Element::DiscretizationType::nurbs3:
         {
           // this is a 2-D problem
           return 2;
           break;
         }
-        case DRT::Element::tri3:
-        case DRT::Element::quad4:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
-        case DRT::Element::nurbs9:
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri3:
+        case DRT::Element::DiscretizationType::quad4:
+        case DRT::Element::DiscretizationType::quad8:
+        case DRT::Element::DiscretizationType::quad9:
+        case DRT::Element::DiscretizationType::nurbs9:
+        case DRT::Element::DiscretizationType::tri6:
         {
           // this is a 3-D problem
           return 3;

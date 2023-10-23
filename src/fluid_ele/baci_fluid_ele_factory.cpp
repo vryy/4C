@@ -32,66 +32,66 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImpl(
 {
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
-      return DefineProblemType<DRT::Element::hex8>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::hex8>(problem);
     }
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
     {
-      return DefineProblemType<DRT::Element::hex20>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::hex20>(problem);
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
-      return DefineProblemType<DRT::Element::hex27>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::hex27>(problem);
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
-      return DefineProblemType<DRT::Element::tet4>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tet4>(problem);
     }
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
     {
-      return DefineProblemType<DRT::Element::tet10>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tet10>(problem);
     }
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
     {
-      return DefineProblemType<DRT::Element::wedge6>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::wedge6>(problem);
     }
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge15:
     {
-      return DefineProblemType<DRT::Element::wedge15>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::wedge15>(problem);
     }
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
     {
-      return DefineProblemType<DRT::Element::pyramid5>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::pyramid5>(problem);
     }
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      return DefineProblemType<DRT::Element::quad4>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad4>(problem);
     }
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      return DefineProblemType<DRT::Element::quad8>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad8>(problem);
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      return DefineProblemType<DRT::Element::quad9>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::quad9>(problem);
     }
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      return DefineProblemType<DRT::Element::tri3>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri3>(problem);
     }
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      return DefineProblemType<DRT::Element::tri6>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::tri6>(problem);
     }
     // Nurbs support
-    case DRT::Element::nurbs9:
+    case DRT::Element::DiscretizationType::nurbs9:
     {
-      return DefineProblemType<DRT::Element::nurbs9>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs9>(problem);
     }
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
     {
-      return DefineProblemType<DRT::Element::nurbs27>(problem);
+      return DefineProblemType<DRT::Element::DiscretizationType::nurbs27>(problem);
     }
     // no 1D elements
     default:
@@ -126,11 +126,11 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
   {
     // for now we only build the hex8 and tet4 elements for xwall
     // later we might consider other kinds of elements
-    if (distype == DRT::Element::hex8)
-      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::hex8,
+    if (distype == DRT::Element::DiscretizationType::hex8)
+      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::DiscretizationType::hex8,
           DRT::ELEMENTS::Fluid::xwall>::Instance();
-    else if (distype == DRT::Element::tet4)
-      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::tet4,
+    else if (distype == DRT::Element::DiscretizationType::tet4)
+      return DRT::ELEMENTS::FluidEleCalcXWall<DRT::Element::DiscretizationType::tet4,
           DRT::ELEMENTS::Fluid::xwall>::Instance();
     else
       dserror("only hex8 and tet4 elements compiled for xwall");
@@ -153,37 +153,37 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(
   switch (distype)
   {
     // only 3D elements
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
-      return DefineProblemTypeXFEM<DRT::Element::hex8>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::hex8>(problem);
     }
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
     {
-      return DefineProblemTypeXFEM<DRT::Element::hex20>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::hex20>(problem);
     }
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
     {
-      return DefineProblemTypeXFEM<DRT::Element::hex27>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::hex27>(problem);
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
-      return DefineProblemTypeXFEM<DRT::Element::tet4>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::tet4>(problem);
     }
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
     {
-      return DefineProblemTypeXFEM<DRT::Element::tet10>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::tet10>(problem);
     }
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
     {
-      return DefineProblemTypeXFEM<DRT::Element::wedge6>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::wedge6>(problem);
     }
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge15:
     {
-      return DefineProblemTypeXFEM<DRT::Element::wedge15>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::wedge15>(problem);
     }
-      //    case DRT::Element::pyramid5:
+      //    case DRT::Element::DiscretizationType::pyramid5:
       //    {
-      //      return DefineProblemTypeXFEM<DRT::Element::pyramid5>(problem);
+      //      return DefineProblemTypeXFEM<DRT::Element::DiscretizationType::pyramid5>(problem);
       //    }
     default:
       dserror("Element shape %s not activated for XFEM problems. Just do it.",

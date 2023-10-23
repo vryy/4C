@@ -132,7 +132,10 @@ DRT::Element* DRT::ELEMENTS::NURBS::So_nurbs27::Clone() const
 /*----------------------------------------------------------------------*
  |                                                             (public) |
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const { return nurbs27; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::So_nurbs27::Shape() const
+{
+  return DRT::Element::DiscretizationType::nurbs27;
+}
 
 /*----------------------------------------------------------------------*
  |  Pack data                                                  (public) |

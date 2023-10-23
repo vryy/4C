@@ -1454,21 +1454,21 @@ void DRT::ELEMENTS::LubricationEleCalc<distype, probdim>::CalculatePressures(
 // template classes
 
 // 1D elements
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line2, 1>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line3, 1>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line3, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::line3, 3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::line2, 1>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::line2, 2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::line2, 3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::line3, 1>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::line3, 2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::line3, 3>;
 
 // 2D elements
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri3, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri6, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::tri6, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad4, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad8, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad9, 2>;
-template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::quad9, 3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::tri3, 2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::tri3, 3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::tri6, 2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::tri6, 3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::quad4, 2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::quad8, 2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::quad9, 2>;
+template class DRT::ELEMENTS::LubricationEleCalc<DRT::Element::DiscretizationType::quad9, 3>;

@@ -59,50 +59,50 @@ namespace CORE::GEO
   {
     switch (distype)
     {
-      case ::DRT::Element::line2:
-        elementToCurrentCoordinatesT<::DRT::Element::line2>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::line2:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::line2>(xyze, xsi, x);
         break;
-      case ::DRT::Element::line3:
-        elementToCurrentCoordinatesT<::DRT::Element::line3>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::line3:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::line3>(xyze, xsi, x);
         break;
-      case ::DRT::Element::tri3:
-        elementToCurrentCoordinatesT<::DRT::Element::tri3>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::tri3:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tri3>(xyze, xsi, x);
         break;
-      case ::DRT::Element::tri6:
-        elementToCurrentCoordinatesT<::DRT::Element::tri6>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::tri6:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tri6>(xyze, xsi, x);
         break;
-      case ::DRT::Element::quad4:
-        elementToCurrentCoordinatesT<::DRT::Element::quad4>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::quad4:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::quad4>(xyze, xsi, x);
         break;
-      case ::DRT::Element::quad8:
-        elementToCurrentCoordinatesT<::DRT::Element::quad8>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::quad8:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::quad8>(xyze, xsi, x);
         break;
-      case ::DRT::Element::quad9:
-        elementToCurrentCoordinatesT<::DRT::Element::quad9>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::quad9:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::quad9>(xyze, xsi, x);
         break;
-      case ::DRT::Element::hex8:
-        elementToCurrentCoordinatesT<::DRT::Element::hex8>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::hex8:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::hex8>(xyze, xsi, x);
         break;
-      case ::DRT::Element::hex20:
-        elementToCurrentCoordinatesT<::DRT::Element::hex20>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::hex20:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::hex20>(xyze, xsi, x);
         break;
-      case ::DRT::Element::hex27:
-        elementToCurrentCoordinatesT<::DRT::Element::hex27>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::hex27:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::hex27>(xyze, xsi, x);
         break;
-      case ::DRT::Element::tet4:
-        elementToCurrentCoordinatesT<::DRT::Element::tet4>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::tet4:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tet4>(xyze, xsi, x);
         break;
-      case ::DRT::Element::tet10:
-        elementToCurrentCoordinatesT<::DRT::Element::tet10>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::tet10:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::tet10>(xyze, xsi, x);
         break;
-      case ::DRT::Element::wedge6:
-        elementToCurrentCoordinatesT<::DRT::Element::wedge6>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::wedge6:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::wedge6>(xyze, xsi, x);
         break;
-      case ::DRT::Element::wedge15:
-        elementToCurrentCoordinatesT<::DRT::Element::wedge15>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::wedge15:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::wedge15>(xyze, xsi, x);
         break;
-      case ::DRT::Element::pyramid5:
-        elementToCurrentCoordinatesT<::DRT::Element::pyramid5>(xyze, xsi, x);
+      case ::DRT::Element::DiscretizationType::pyramid5:
+        elementToCurrentCoordinatesT<::DRT::Element::DiscretizationType::pyramid5>(xyze, xsi, x);
         break;
       default:
         std::cout << DistypeToString(distype) << std::endl;
@@ -123,41 +123,41 @@ namespace CORE::GEO
   {
     switch (distype)
     {
-      case ::DRT::Element::hex8:
-      case ::DRT::Element::hex20:
-      case ::DRT::Element::hex27:
+      case ::DRT::Element::DiscretizationType::hex8:
+      case ::DRT::Element::DiscretizationType::hex20:
+      case ::DRT::Element::DiscretizationType::hex27:
       {
         xsi.Clear();
         break;
       }
-      case ::DRT::Element::tet4:
-      case ::DRT::Element::tet10:
+      case ::DRT::Element::DiscretizationType::tet4:
+      case ::DRT::Element::DiscretizationType::tet10:
       {
         xsi.PutScalar(0.3);
         break;
       }
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::quad8:
-      case ::DRT::Element::quad9:
+      case ::DRT::Element::DiscretizationType::quad4:
+      case ::DRT::Element::DiscretizationType::quad8:
+      case ::DRT::Element::DiscretizationType::quad9:
       {
         xsi.Clear();
         break;
       }
-      case ::DRT::Element::tri3:
-      case ::DRT::Element::tri6:
+      case ::DRT::Element::DiscretizationType::tri3:
+      case ::DRT::Element::DiscretizationType::tri6:
       {
         xsi.PutScalar(0.3);
         break;
       }
-      case ::DRT::Element::line2:
-      case ::DRT::Element::line3:
+      case ::DRT::Element::DiscretizationType::line2:
+      case ::DRT::Element::DiscretizationType::line3:
       {
         xsi.Clear();
         break;
       }
-      case ::DRT::Element::wedge6:
-      case ::DRT::Element::wedge15:
-      case ::DRT::Element::pyramid5:
+      case ::DRT::Element::DiscretizationType::wedge6:
+      case ::DRT::Element::DiscretizationType::wedge15:
+      case ::DRT::Element::DiscretizationType::pyramid5:
       {
         xsi.Clear();
         break;
@@ -185,9 +185,9 @@ namespace CORE::GEO
   {
     switch (distype)
     {
-      case ::DRT::Element::hex8:
-      case ::DRT::Element::hex20:
-      case ::DRT::Element::hex27:
+      case ::DRT::Element::DiscretizationType::hex8:
+      case ::DRT::Element::DiscretizationType::hex20:
+      case ::DRT::Element::DiscretizationType::hex27:
       {
         // split hex element into 5 tetrahedra in order to obtain a good initial guess
         static CORE::LINALG::Matrix<4, 4> A_tet;
@@ -449,34 +449,34 @@ namespace CORE::GEO
         return false;
         break;
       }
-      case ::DRT::Element::tet4:
-      case ::DRT::Element::tet10:
+      case ::DRT::Element::DiscretizationType::tet4:
+      case ::DRT::Element::DiscretizationType::tet10:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::quad8:
-      case ::DRT::Element::quad9:
+      case ::DRT::Element::DiscretizationType::quad4:
+      case ::DRT::Element::DiscretizationType::quad8:
+      case ::DRT::Element::DiscretizationType::quad9:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::tri3:
-      case ::DRT::Element::tri6:
+      case ::DRT::Element::DiscretizationType::tri3:
+      case ::DRT::Element::DiscretizationType::tri6:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::line2:
-      case ::DRT::Element::line3:
+      case ::DRT::Element::DiscretizationType::line2:
+      case ::DRT::Element::DiscretizationType::line3:
       {
         dserror("no fast initial guess implemented");
         break;
       }
-      case ::DRT::Element::wedge6:
-      case ::DRT::Element::wedge15:
-      case ::DRT::Element::pyramid5:
+      case ::DRT::Element::DiscretizationType::wedge6:
+      case ::DRT::Element::DiscretizationType::wedge15:
+      case ::DRT::Element::DiscretizationType::pyramid5:
       {
         dserror("no fast initial guess implemented");
         break;
@@ -501,14 +501,14 @@ namespace CORE::GEO
   {
     switch (distype)
     {
-      case ::DRT::Element::hex8:
-      case ::DRT::Element::hex20:
-      case ::DRT::Element::hex27:
-      case ::DRT::Element::quad4:
-      case ::DRT::Element::quad8:
-      case ::DRT::Element::quad9:
-      case ::DRT::Element::line2:
-      case ::DRT::Element::line3:
+      case ::DRT::Element::DiscretizationType::hex8:
+      case ::DRT::Element::DiscretizationType::hex20:
+      case ::DRT::Element::DiscretizationType::hex27:
+      case ::DRT::Element::DiscretizationType::quad4:
+      case ::DRT::Element::DiscretizationType::quad8:
+      case ::DRT::Element::DiscretizationType::quad9:
+      case ::DRT::Element::DiscretizationType::line2:
+      case ::DRT::Element::DiscretizationType::line3:
       {
         for (int i = 0; i < CORE::DRT::UTILS::getDimension(distype); i++)
           if (eleCoord(i) > (1.0 + CORE::GEO::TOL7) || eleCoord(i) < (-1) * (1.0 + CORE::GEO::TOL7))
@@ -516,8 +516,8 @@ namespace CORE::GEO
 
         break;
       }
-      case ::DRT::Element::tri3:
-      case ::DRT::Element::tri6:
+      case ::DRT::Element::DiscretizationType::tri3:
+      case ::DRT::Element::DiscretizationType::tri6:
       {
         if (eleCoord(0) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // r = 0 ... 1
@@ -527,8 +527,8 @@ namespace CORE::GEO
           return false;
         break;
       }
-      case ::DRT::Element::tet4:
-      case ::DRT::Element::tet10:
+      case ::DRT::Element::DiscretizationType::tet4:
+      case ::DRT::Element::DiscretizationType::tet10:
       {
         if (eleCoord(0) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // r = 0 ... 1
@@ -541,8 +541,8 @@ namespace CORE::GEO
           return false;                            // TODO check tolerance
         break;
       }
-      case ::DRT::Element::wedge6:
-      case ::DRT::Element::wedge15:
+      case ::DRT::Element::DiscretizationType::wedge6:
+      case ::DRT::Element::DiscretizationType::wedge15:
         if (eleCoord(0) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // r = 0 ... 1
           return false;
@@ -552,7 +552,7 @@ namespace CORE::GEO
         if (eleCoord(2) > (1.0 + CORE::GEO::TOL7) || eleCoord(2) < (-1) * (1.0 + CORE::GEO::TOL7))
           return false;
         break;
-      case ::DRT::Element::pyramid5:
+      case ::DRT::Element::DiscretizationType::pyramid5:
         if (eleCoord(2) > (1.0 + CORE::GEO::TOL7) ||
             eleCoord(0) < (-1) * CORE::GEO::TOL7)  // t = 0 ... 1
           return false;
@@ -764,37 +764,45 @@ namespace CORE::GEO
 
     switch (distype)
     {
-      case ::DRT::Element::hex8:
+      case ::DRT::Element::DiscretizationType::hex8:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::hex8>(xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::hex8>(
+                xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::hex20:
+      case ::DRT::Element::DiscretizationType::hex20:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::hex20>(xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::hex20>(
+                xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::hex27:
+      case ::DRT::Element::DiscretizationType::hex27:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::hex27>(xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::hex27>(
+                xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::tet4:
+      case ::DRT::Element::DiscretizationType::tet4:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::tet4>(xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::tet4>(
+                xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::tet10:
+      case ::DRT::Element::DiscretizationType::tet10:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::tet10>(xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::tet10>(
+                xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::wedge6:
+      case ::DRT::Element::DiscretizationType::wedge6:
         nodeWithinElement =
-            currentToVolumeElementCoordinatesT<::DRT::Element::wedge6>(xyze, x, xsi, fastinitguess);
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::wedge6>(
+                xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::wedge15:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<::DRT::Element::wedge15>(
-            xyze, x, xsi, fastinitguess);
+      case ::DRT::Element::DiscretizationType::wedge15:
+        nodeWithinElement =
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::wedge15>(
+                xyze, x, xsi, fastinitguess);
         break;
-      case ::DRT::Element::pyramid5:
-        nodeWithinElement = currentToVolumeElementCoordinatesT<::DRT::Element::pyramid5>(
-            xyze, x, xsi, fastinitguess);
+      case ::DRT::Element::DiscretizationType::pyramid5:
+        nodeWithinElement =
+            currentToVolumeElementCoordinatesT<::DRT::Element::DiscretizationType::pyramid5>(
+                xyze, x, xsi, fastinitguess);
         break;
       default:
         std::cout << DistypeToString(distype) << std::endl;
@@ -963,24 +971,24 @@ namespace CORE::GEO
   {
     switch (distype)
     {
-      case ::DRT::Element::quad4:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::quad4>(
+      case ::DRT::Element::DiscretizationType::quad4:
+        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::quad4>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::quad8:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::quad8>(
+      case ::DRT::Element::DiscretizationType::quad8:
+        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::quad8>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::quad9:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::quad9>(
+      case ::DRT::Element::DiscretizationType::quad9:
+        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::quad9>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::tri3:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::tri3>(
+      case ::DRT::Element::DiscretizationType::tri3:
+        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::tri3>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::tri6:
-        currentToSurfaceElementCoordinatesT<::DRT::Element::tri6>(
+      case ::DRT::Element::DiscretizationType::tri6:
+        currentToSurfaceElementCoordinatesT<::DRT::Element::DiscretizationType::tri6>(
             xyze_surfaceElement, physCoord, eleCoord);
         break;
       default:
@@ -1080,12 +1088,12 @@ namespace CORE::GEO
   {
     switch (distype)
     {
-      case ::DRT::Element::line2:
-        currentToLineElementCoordinatesT<::DRT::Element::line2>(
+      case ::DRT::Element::DiscretizationType::line2:
+        currentToLineElementCoordinatesT<::DRT::Element::DiscretizationType::line2>(
             xyze_lineElement, physCoord, eleCoord);
         break;
-      case ::DRT::Element::line3:
-        currentToLineElementCoordinatesT<::DRT::Element::line3>(
+      case ::DRT::Element::DiscretizationType::line3:
+        currentToLineElementCoordinatesT<::DRT::Element::DiscretizationType::line3>(
             xyze_lineElement, physCoord, eleCoord);
         break;
       default:

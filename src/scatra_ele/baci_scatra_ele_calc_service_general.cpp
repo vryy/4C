@@ -210,7 +210,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // calculate LkMk and MkMk
         switch (distype)
         {
-          case DRT::Element::hex8:
+          case DRT::Element::DiscretizationType::hex8:
           {
             scatra_calc_smag_const_LkMk_and_MkMk(col_filtered_vel, col_filtered_dens_vel,
                 col_filtered_dens_vel_temp, col_filtered_dens_rateofstrain_temp, col_filtered_temp,
@@ -271,7 +271,7 @@ int DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::EvaluateAction(DRT::Element*
         // calculate LkMk and MkMk
         switch (distype)
         {
-          case DRT::Element::hex8:
+          case DRT::Element::DiscretizationType::hex8:
           {
             scatra_calc_vreman_dt(col_filtered_phi, col_filtered_phi2, col_filtered_phiexpression,
                 col_filtered_alphaijsc, dt_numerator, dt_denominator, ele);
@@ -863,8 +863,10 @@ template <DRT::Element::DiscretizationType distype, int probdim>
 void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcGradientEleCenter(const DRT::Element* ele,
     CORE::LINALG::SerialDenseVector& elevec1, CORE::LINALG::SerialDenseVector& elevec2)
 {
-  if (distype != DRT::Element::hex8 && distype != DRT::Element::tet4 &&
-      distype != DRT::Element::quad4 && distype != DRT::Element::tri3)
+  if (distype != DRT::Element::DiscretizationType::hex8 &&
+      distype != DRT::Element::DiscretizationType::tet4 &&
+      distype != DRT::Element::DiscretizationType::quad4 &&
+      distype != DRT::Element::DiscretizationType::tri3)
     dserror("this is currently only implemented for linear elements");
   // get node coordinates
 
@@ -1243,7 +1245,7 @@ void DRT::ELEMENTS::ScaTraEleCalc<distype, probdim>::CalcBoxFilter(DRT::Element*
   // the results are assembled onto the *_hat arrays
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       scatra_apply_box_filter(dens_hat, temp_hat, dens_temp_hat, phi2_hat, phiexpression_hat,
           vel_hat, densvel_hat, densveltemp_hat, densstraintemp_hat, phi_hat, alphaijsc_hat,

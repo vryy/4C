@@ -33,125 +33,125 @@ DRT::Element::DiscretizationType DRT::StringToDistype(const std::string& name)
   static std::map<std::string, DRT::Element::DiscretizationType> gid2distype;
   if (gid2distype.empty())
   {
-    gid2distype["HEX8"] = DRT::Element::hex8;
-    gid2distype["HEX18"] = DRT::Element::hex18;
-    gid2distype["HEX20"] = DRT::Element::hex20;
-    gid2distype["HEX27"] = DRT::Element::hex27;
-    gid2distype["TET4"] = DRT::Element::tet4;
-    gid2distype["TET10"] = DRT::Element::tet10;
-    gid2distype["WEDGE6"] = DRT::Element::wedge6;
-    gid2distype["WEDGE15"] = DRT::Element::wedge15;
-    gid2distype["PYRAMID5"] = DRT::Element::pyramid5;
-    gid2distype["QUAD4"] = DRT::Element::quad4;
-    gid2distype["QUAD8"] = DRT::Element::quad8;
-    gid2distype["QUAD9"] = DRT::Element::quad9;
-    gid2distype["TRI3"] = DRT::Element::tri3;
-    gid2distype["TRI6"] = DRT::Element::tri6;
-    gid2distype["NURBS2"] = DRT::Element::nurbs2;
-    gid2distype["NURBS3"] = DRT::Element::nurbs3;
-    gid2distype["NURBS4"] = DRT::Element::nurbs4;
-    gid2distype["NURBS8"] = DRT::Element::nurbs8;
-    gid2distype["NURBS9"] = DRT::Element::nurbs9;
-    gid2distype["NURBS27"] = DRT::Element::nurbs27;
-    gid2distype["LINE2"] = DRT::Element::line2;
-    gid2distype["LINE3"] = DRT::Element::line3;
-    gid2distype["POINT1"] = DRT::Element::point1;
-    gid2distype["DIS_NONE"] = DRT::Element::dis_none;
-    gid2distype["MAX_DISTYPE"] = DRT::Element::max_distype;
+    gid2distype["HEX8"] = DRT::Element::DiscretizationType::hex8;
+    gid2distype["HEX18"] = DRT::Element::DiscretizationType::hex18;
+    gid2distype["HEX20"] = DRT::Element::DiscretizationType::hex20;
+    gid2distype["HEX27"] = DRT::Element::DiscretizationType::hex27;
+    gid2distype["TET4"] = DRT::Element::DiscretizationType::tet4;
+    gid2distype["TET10"] = DRT::Element::DiscretizationType::tet10;
+    gid2distype["WEDGE6"] = DRT::Element::DiscretizationType::wedge6;
+    gid2distype["WEDGE15"] = DRT::Element::DiscretizationType::wedge15;
+    gid2distype["PYRAMID5"] = DRT::Element::DiscretizationType::pyramid5;
+    gid2distype["QUAD4"] = DRT::Element::DiscretizationType::quad4;
+    gid2distype["QUAD8"] = DRT::Element::DiscretizationType::quad8;
+    gid2distype["QUAD9"] = DRT::Element::DiscretizationType::quad9;
+    gid2distype["TRI3"] = DRT::Element::DiscretizationType::tri3;
+    gid2distype["TRI6"] = DRT::Element::DiscretizationType::tri6;
+    gid2distype["NURBS2"] = DRT::Element::DiscretizationType::nurbs2;
+    gid2distype["NURBS3"] = DRT::Element::DiscretizationType::nurbs3;
+    gid2distype["NURBS4"] = DRT::Element::DiscretizationType::nurbs4;
+    gid2distype["NURBS8"] = DRT::Element::DiscretizationType::nurbs8;
+    gid2distype["NURBS9"] = DRT::Element::DiscretizationType::nurbs9;
+    gid2distype["NURBS27"] = DRT::Element::DiscretizationType::nurbs27;
+    gid2distype["LINE2"] = DRT::Element::DiscretizationType::line2;
+    gid2distype["LINE3"] = DRT::Element::DiscretizationType::line3;
+    gid2distype["POINT1"] = DRT::Element::DiscretizationType::point1;
+    gid2distype["DIS_NONE"] = DRT::Element::DiscretizationType::dis_none;
+    gid2distype["MAX_DISTYPE"] = DRT::Element::DiscretizationType::max_distype;
   }
 
   std::map<std::string, DRT::Element::DiscretizationType>::iterator i;
   i = gid2distype.find(name);
   if (i != gid2distype.end()) return i->second;
   dserror("unsupported distype '%s'", name.c_str());
-  return DRT::Element::dis_none;
+  return DRT::Element::DiscretizationType::dis_none;
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ShardsKeyToDisType(const unsigned& key)
 {
-  DRT::Element::DiscretizationType distype = DRT::Element::dis_none;
+  DRT::Element::DiscretizationType distype = DRT::Element::DiscretizationType::dis_none;
   switch (key)
   {
     case shards::Particle::key:
     {
-      distype = DRT::Element::point1;
+      distype = DRT::Element::DiscretizationType::point1;
       break;
     }
     case shards::Line<2>::key:
     {
-      distype = DRT::Element::line2;
+      distype = DRT::Element::DiscretizationType::line2;
       break;
     }
     case shards::Line<3>::key:
     {
-      distype = DRT::Element::line3;
+      distype = DRT::Element::DiscretizationType::line3;
       break;
     }
     case shards::Quadrilateral<4>::key:
     {
-      distype = DRT::Element::quad4;
+      distype = DRT::Element::DiscretizationType::quad4;
       break;
     }
     case shards::Quadrilateral<8>::key:
     {
-      distype = DRT::Element::quad8;
+      distype = DRT::Element::DiscretizationType::quad8;
       break;
     }
     case shards::Quadrilateral<9>::key:
     {
-      distype = DRT::Element::quad9;
+      distype = DRT::Element::DiscretizationType::quad9;
       break;
     }
     case shards::Triangle<3>::key:
     {
-      distype = DRT::Element::tri3;
+      distype = DRT::Element::DiscretizationType::tri3;
       break;
     }
     case shards::Triangle<6>::key:
     {
-      distype = DRT::Element::tri6;
+      distype = DRT::Element::DiscretizationType::tri6;
       break;
     }
     case shards::Hexahedron<8>::key:
     {
-      distype = DRT::Element::hex8;
+      distype = DRT::Element::DiscretizationType::hex8;
       break;
     }
     case shards::Hexahedron<20>::key:
     {
-      distype = DRT::Element::hex20;
+      distype = DRT::Element::DiscretizationType::hex20;
       break;
     }
     case shards::Hexahedron<27>::key:
     {
-      distype = DRT::Element::hex27;
+      distype = DRT::Element::DiscretizationType::hex27;
       break;
     }
     case shards::Tetrahedron<4>::key:
     {
-      distype = DRT::Element::tet4;
+      distype = DRT::Element::DiscretizationType::tet4;
       break;
     }
     case shards::Tetrahedron<10>::key:
     {
-      distype = DRT::Element::tet10;
+      distype = DRT::Element::DiscretizationType::tet10;
       break;
     }
     case shards::Wedge<6>::key:
     {
-      distype = DRT::Element::wedge6;
+      distype = DRT::Element::DiscretizationType::wedge6;
       break;
     }
     case shards::Wedge<15>::key:
     {
-      distype = DRT::Element::wedge15;
+      distype = DRT::Element::DiscretizationType::wedge15;
       break;
     }
     case shards::Pyramid<5>::key:
     {
-      distype = DRT::Element::pyramid5;
+      distype = DRT::Element::DiscretizationType::pyramid5;
       break;
     }
     default:

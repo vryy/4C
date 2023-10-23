@@ -909,9 +909,10 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
   const int probdim = ::DRT::Problem::Instance()->NDim();
   switch (edgetype)
   {
-    case ::DRT::Element::line2:
+    case ::DRT::Element::DiscretizationType::line2:
     {
-      cedge_ptr = Teuchos::rcp(CreateConcreteEdge<::DRT::Element::line2>(nodes, probdim));
+      cedge_ptr = Teuchos::rcp(
+          CreateConcreteEdge<::DRT::Element::DiscretizationType::line2>(nodes, probdim));
       break;
     }
     default:
@@ -924,5 +925,5 @@ Teuchos::RCP<CORE::GEO::CUT::Edge> CORE::GEO::CUT::EdgeFactory::CreateEdge(
   return cedge_ptr;
 }
 
-template class CORE::GEO::CUT::ConcreteEdge<2, ::DRT::Element::line2>;
-template class CORE::GEO::CUT::ConcreteEdge<3, ::DRT::Element::line2>;
+template class CORE::GEO::CUT::ConcreteEdge<2, ::DRT::Element::DiscretizationType::line2>;
+template class CORE::GEO::CUT::ConcreteEdge<3, ::DRT::Element::DiscretizationType::line2>;

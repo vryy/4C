@@ -444,16 +444,16 @@ namespace CORE::GEO
     {
       switch (distype)
       {
-        case ::DRT::Element::line2:
-          EvalNormalVectors<probdim, ::DRT::Element::line2>(
+        case ::DRT::Element::DiscretizationType::line2:
+          EvalNormalVectors<probdim, ::DRT::Element::DiscretizationType::line2>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case ::DRT::Element::tri3:
-          EvalNormalVectors<probdim, ::DRT::Element::tri3>(
+        case ::DRT::Element::DiscretizationType::tri3:
+          EvalNormalVectors<probdim, ::DRT::Element::DiscretizationType::tri3>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
-        case ::DRT::Element::quad4:
-          EvalNormalVectors<probdim, ::DRT::Element::quad4>(
+        case ::DRT::Element::DiscretizationType::quad4:
+          EvalNormalVectors<probdim, ::DRT::Element::DiscretizationType::quad4>(
               xyze, rst, normalvec1, normalvec2, unit_normal);
           break;
         default:

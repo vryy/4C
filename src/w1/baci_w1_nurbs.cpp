@@ -145,14 +145,12 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
   switch (NumNode())
   {
     case 4:
-      return nurbs4;
+      return DRT::Element::DiscretizationType::nurbs4;
     case 9:
-      return nurbs9;
+      return DRT::Element::DiscretizationType::nurbs9;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-
-  return dis_none;
 }
 
 /*----------------------------------------------------------------------*

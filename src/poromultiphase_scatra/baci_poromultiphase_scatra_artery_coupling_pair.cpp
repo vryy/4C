@@ -451,7 +451,8 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       dserror(
           "Setting a varying diameter is not yet possible in combination with lateral "
           "surface coupling");
-    if (not(distypeCont == DRT::Element::hex8 or distypeCont == DRT::Element::tet4))
+    if (not(distypeCont == DRT::Element::DiscretizationType::hex8 or
+            distypeCont == DRT::Element::DiscretizationType::tet4))
       dserror("Only TET4 and HEX8 elements possible for lateral surface coupling");
   }
 
@@ -2805,7 +2806,7 @@ std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair
 
   switch (element2_->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       for (unsigned int j = 0; j < numdim_; j++)
       {
@@ -2821,7 +2822,7 @@ std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair
       }
       break;
     }
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       for (unsigned int j = 0; j < numdim_; j++)
       {
@@ -2837,7 +2838,7 @@ std::vector<double> POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair
       }
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       for (unsigned int j = 0; j < 3; j++)
       {
@@ -2897,7 +2898,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   eta = 0.0;
   switch (element2_->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       if (fixedPar == 0)  // xi1 fixed
       {
@@ -2913,7 +2914,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         dserror("wrong input for fixedPar");
       break;
     }
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       if (fixedPar == 0)  // xi1 fixed
       {
@@ -2937,7 +2938,7 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         dserror("wrong input for fixedPar");
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       if (fixedPar == 0)  // xi1 fixed
       {
@@ -2980,14 +2981,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     switch (element2_->Shape())
     {
         // 2D case
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
         std::cout << ", xi1: " << xi[0] << ", xi2: " << xi[1] << std::endl;
         break;
       }
         // 3D case
-      case DRT::Element::hex8:
-      case DRT::Element::tet4:
+      case DRT::Element::DiscretizationType::hex8:
+      case DRT::Element::DiscretizationType::tet4:
       {
         std::cout << ", xi1: " << xi[0] << ", xi2: " << xi[1] << ", xi3: " << xi[2] << std::endl;
         break;
@@ -3056,14 +3057,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       switch (element2_->Shape())
       {
           // 2D case
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
           for (unsigned int jdim = 0; jdim < numdim_; jdim++) J(jdim, 0) = x2_xi(jdim, 0);
           break;
         }
           // 3D case
-        case DRT::Element::hex8:
-        case DRT::Element::tet4:
+        case DRT::Element::DiscretizationType::hex8:
+        case DRT::Element::DiscretizationType::tet4:
         {
           for (unsigned int jdim = 0; jdim < numdim_; jdim++)
           {
@@ -3152,14 +3153,14 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       switch (element2_->Shape())
       {
           // 2D case
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
           for (unsigned int jdim = 0; jdim < numdim_; jdim++) xi[0] += -J(0, jdim) * f(jdim);
           break;
         }
           // 3D case
-        case DRT::Element::hex8:
-        case DRT::Element::tet4:
+        case DRT::Element::DiscretizationType::hex8:
+        case DRT::Element::DiscretizationType::tet4:
         {
           for (unsigned int jdim = 0; jdim < numdim_; jdim++)
           {
@@ -3206,18 +3207,18 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   switch (element2_->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       if (fabs(xi[0]) > limit || fabs(xi[1]) > limit || fabs(eta) > limit) projection_valid = false;
       break;
     }
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       if (fabs(xi[0]) > limit || fabs(xi[1]) > limit || fabs(xi[2]) > limit || fabs(eta) > limit)
         projection_valid = false;
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       if (xi[0] < -XIETATOL || xi[1] < -XIETATOL || xi[2] < -XIETATOL ||
           xi[0] + xi[1] + xi[2] > limit || fabs(eta) > limit)
@@ -3256,27 +3257,27 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
   switch (element2_->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       xi[0] = 0.0;
       xi[1] = 0.0;
       break;
     }
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       xi[0] = 0.0;
       xi[1] = 0.0;
       xi[2] = 0.0;
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       xi[0] = 0.25;
       xi[1] = 0.25;
       xi[2] = 0.25;
       break;
     }
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
     {
       xi[0] = 0.25;
       xi[1] = 0.25;
@@ -3294,15 +3295,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
     switch (element2_->Shape())
     {
         // 2D case
-      case DRT::Element::quad4:
+      case DRT::Element::DiscretizationType::quad4:
       {
         std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << std::endl;
         break;
       }
         // 3D case
-      case DRT::Element::hex8:
-      case DRT::Element::tet4:
-      case DRT::Element::tet10:
+      case DRT::Element::DiscretizationType::hex8:
+      case DRT::Element::DiscretizationType::tet4:
+      case DRT::Element::DiscretizationType::tet10:
       {
         std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << ", xi3: " << xi[2] << std::endl;
         break;
@@ -3379,15 +3380,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
         switch (element2_->Shape())
         {
             // 2D case
-          case DRT::Element::quad4:
+          case DRT::Element::DiscretizationType::quad4:
           {
             std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << std::endl;
             break;
           }
             // 3D case
-          case DRT::Element::hex8:
-          case DRT::Element::tet4:
-          case DRT::Element::tet10:
+          case DRT::Element::DiscretizationType::hex8:
+          case DRT::Element::DiscretizationType::tet4:
+          case DRT::Element::DiscretizationType::tet10:
           {
             std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << ", xi3: " << xi[2] << std::endl;
             break;
@@ -3407,15 +3408,15 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
       switch (element2_->Shape())
       {
           // 2D case
-        case DRT::Element::quad4:
+        case DRT::Element::DiscretizationType::quad4:
         {
           std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << std::endl;
           break;
         }
           // 3D case
-        case DRT::Element::hex8:
-        case DRT::Element::tet4:
-        case DRT::Element::tet10:
+        case DRT::Element::DiscretizationType::hex8:
+        case DRT::Element::DiscretizationType::tet4:
+        case DRT::Element::DiscretizationType::tet10:
         {
           std::cout << "xi1: " << xi[0] << ", xi2: " << xi[1] << ", xi3: " << xi[2] << std::endl;
           break;
@@ -3460,25 +3461,25 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   // check if xi lies inside element
   switch (element2_->Shape())
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       if (fabs(xi[0]) > limit || fabs(xi[1]) > limit) projection_valid = false;
       break;
     }
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
     {
       if (fabs(xi[0]) > limit || fabs(xi[1]) > limit || fabs(xi[2]) > limit)
         projection_valid = false;
       break;
     }
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
     {
       if (xi[0] < -XIETATOL || xi[1] < -XIETATOL || xi[2] < -XIETATOL ||
           xi[0] + xi[1] + xi[2] > limit)
         projection_valid = false;
       break;
     }
-    case DRT::Element::tet10:  // TODO: Is this correct?
+    case DRT::Element::DiscretizationType::tet10:  // TODO: Is this correct?
     {
       if (xi[0] < -XIETATOL || xi[1] < -XIETATOL || xi[2] < -XIETATOL ||
           xi[0] + xi[1] + xi[2] > limit)
@@ -3539,16 +3540,16 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
   switch (element2_->Shape())
   {
       // 2D case
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
       CORE::DRT::UTILS::shape_function_2D(N2, xi[0], xi[1], distypeCont);
       CORE::DRT::UTILS::shape_function_2D_deriv1(N2_xi, xi[0], xi[1], distypeCont);
       break;
     }
       // 3D case
-    case DRT::Element::hex8:
-    case DRT::Element::tet4:
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::hex8:
+    case DRT::Element::DiscretizationType::tet4:
+    case DRT::Element::DiscretizationType::tet10:
     {
       CORE::DRT::UTILS::shape_function_3D(N2, xi[0], xi[1], xi[2], distypeCont);
       CORE::DRT::UTILS::shape_function_3D_deriv1(N2_xi, xi[0], xi[1], xi[2], distypeCont);
@@ -3752,29 +3753,29 @@ void POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<distypeArt, di
 
 
 // explicit template instantiations
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::quad4, 1>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::hex8, 1>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::tet4, 1>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::tet10, 1>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::quad4, 1>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::hex8, 1>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::tet4, 1>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::tet10, 1>;
 
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::quad4, 2>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::hex8, 2>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::tet4, 2>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::tet10, 2>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::quad4, 2>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::hex8, 2>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::tet4, 2>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::tet10, 2>;
 
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::quad4, 3>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::hex8, 3>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::tet4, 3>;
-template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<DRT::Element::line2,
-    DRT::Element::tet10, 3>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::quad4, 3>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::hex8, 3>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::tet4, 3>;
+template class POROMULTIPHASESCATRA::PoroMultiPhaseScatraArteryCouplingPair<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::tet10, 3>;

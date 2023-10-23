@@ -285,10 +285,10 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
       double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
       double lpos[3] = {0.0, 0.0, 0.0};
-      if (aleele->Shape() == DRT::Element::quad4)
-        MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gpos, lpos);
-      else if (aleele->Shape() == DRT::Element::hex8)
-        MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gpos, lpos);
+      if (aleele->Shape() == DRT::Element::DiscretizationType::quad4)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::DiscretizationType::quad4>(*aleele, gpos, lpos);
+      else if (aleele->Shape() == DRT::Element::DiscretizationType::hex8)
+        MORTAR::UTILS::GlobalToLocal<DRT::Element::DiscretizationType::hex8>(*aleele, gpos, lpos);
       else
         dserror("ERROR: element type not implemented!");
 
@@ -305,10 +305,12 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
         double gposFSI[3] = {fluidnodeFSI->X()[0], fluidnodeFSI->X()[1], fluidnodeFSI->X()[2]};
         double lposFSI[3] = {0.0, 0.0, 0.0};
-        if (aleele->Shape() == DRT::Element::quad4)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gposFSI, lposFSI);
-        else if (aleele->Shape() == DRT::Element::hex8)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gposFSI, lposFSI);
+        if (aleele->Shape() == DRT::Element::DiscretizationType::quad4)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::DiscretizationType::quad4>(
+              *aleele, gposFSI, lposFSI);
+        else if (aleele->Shape() == DRT::Element::DiscretizationType::hex8)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::DiscretizationType::hex8>(
+              *aleele, gposFSI, lposFSI);
         else
           dserror("ERROR: element type not implemented!");
 
@@ -335,7 +337,8 @@ void FSI::VolCorrector::CorrectVolDisplacementsParaSpace(Teuchos::RCP<ADAPTER::F
 
       double fac = 0.0;
 
-      if (aleele->Shape() == DRT::Element::quad4 or aleele->Shape() == DRT::Element::hex8)
+      if (aleele->Shape() == DRT::Element::DiscretizationType::quad4 or
+          aleele->Shape() == DRT::Element::DiscretizationType::hex8)
         fac = 1.0 - 0.5 * dist;
       else
         dserror("ERROR: element type not implemented!");
@@ -511,10 +514,11 @@ void FSI::VolCorrector::Setup(const int dim, Teuchos::RCP<ADAPTER::FluidAle> flu
 
         double gpos[3] = {fluidnode->X()[0], fluidnode->X()[1], fluidnode->X()[2]};
         double lpos[3] = {0.0, 0.0, 0.0};
-        if (aleele->Shape() == DRT::Element::quad4)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::quad4>(*aleele, gpos, lpos);
-        else if (aleele->Shape() == DRT::Element::hex8)
-          MORTAR::UTILS::GlobalToLocal<DRT::Element::hex8>(*aleele, gpos, lpos);
+        if (aleele->Shape() == DRT::Element::DiscretizationType::quad4)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::DiscretizationType::quad4>(
+              *aleele, gpos, lpos);
+        else if (aleele->Shape() == DRT::Element::DiscretizationType::hex8)
+          MORTAR::UTILS::GlobalToLocal<DRT::Element::DiscretizationType::hex8>(*aleele, gpos, lpos);
         else
           dserror("ERROR: element type not implemented!");
 

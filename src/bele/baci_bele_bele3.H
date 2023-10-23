@@ -180,13 +180,13 @@ namespace DRT
         bool hoel = true;
         switch (distype)
         {
-          case quad4:
-          case quad8:
-          case quad9:
-          case tri6:
+          case DiscretizationType::quad4:
+          case DiscretizationType::quad8:
+          case DiscretizationType::quad9:
+          case DiscretizationType::tri6:
             hoel = true;
             break;
-          case tri3:
+          case DiscretizationType::tri3:
             hoel = false;
             break;
           default:

@@ -900,7 +900,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
       }
 
 #ifdef ANS_BEAM3EB
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, line3);
+      CORE::DRT::UTILS::shape_function_1D(L_i, xi, DiscretizationType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.Clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -1497,7 +1497,7 @@ void DRT::ELEMENTS::Beam3eb::CalcInternalAndInertiaForcesAndStiff(Teuchos::Param
 
       // calculate quantities necessary for ANS approach
 #ifdef ANS_BEAM3EB
-      CORE::DRT::UTILS::shape_function_1D(L_i, xi, line3);
+      CORE::DRT::UTILS::shape_function_1D(L_i, xi, DiscretizationType::line3);
       epsilon_ANS = 0.0;
       lin_epsilon_ANS.Clear();
       for (int i = 0; i < ANSVALUES; i++)
@@ -2253,7 +2253,7 @@ double DRT::ELEMENTS::Beam3eb::GetAxialStrain(
   }
 
   CORE::LINALG::Matrix<1, 3> L_i(true);
-  CORE::DRT::UTILS::shape_function_1D(L_i, xi, line3);
+  CORE::DRT::UTILS::shape_function_1D(L_i, xi, DiscretizationType::line3);
   double epsilon = 0.0;
   for (int i = 0; i < ANSVALUES; i++) epsilon += L_i(i) * epsilon_cp(i);
 

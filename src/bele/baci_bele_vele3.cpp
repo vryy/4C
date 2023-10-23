@@ -107,25 +107,24 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::Vele3::Shape() const
   switch (NumNode())
   {
     case 4:
-      return tet4;
+      return DiscretizationType::tet4;
     case 5:
-      return pyramid5;
+      return DiscretizationType::pyramid5;
     case 6:
-      return wedge6;
+      return DiscretizationType::wedge6;
     case 8:
-      return hex8;
+      return DiscretizationType::hex8;
     case 10:
-      return tet10;
+      return DiscretizationType::tet10;
     case 15:
-      return wedge15;
+      return DiscretizationType::wedge15;
     case 20:
-      return hex20;
+      return DiscretizationType::hex20;
     case 27:
-      return hex27;
+      return DiscretizationType::hex27;
     default:
       dserror("unexpected number of nodes %d", NumNode());
   }
-  return dis_none;
 }
 
 
@@ -229,17 +228,17 @@ CORE::DRT::UTILS::GaussRule3D DRT::ELEMENTS::Vele3::getOptimalGaussrule(
   CORE::DRT::UTILS::GaussRule3D rule = CORE::DRT::UTILS::GaussRule3D::undefined;
   switch (distype)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       rule = CORE::DRT::UTILS::GaussRule3D::hex_8point;
       break;
-    case DRT::Element::hex20:
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex20:
+    case DRT::Element::DiscretizationType::hex27:
       rule = CORE::DRT::UTILS::GaussRule3D::hex_27point;
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       rule = CORE::DRT::UTILS::GaussRule3D::tet_4point;
       break;
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       rule = CORE::DRT::UTILS::GaussRule3D::tet_10point;
       break;
     default:

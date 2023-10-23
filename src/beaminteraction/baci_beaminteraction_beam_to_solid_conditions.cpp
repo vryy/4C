@@ -161,22 +161,22 @@ Teuchos::RCP<BEAMINTERACTION::BeamContactPair> BEAMINTERACTION::CreateBeamToSoli
 {
   switch (shape)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8,
           bts_template_arguments...>());
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20,
           bts_template_arguments...>());
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27,
           bts_template_arguments...>());
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4,
           bts_template_arguments...>());
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10,
           bts_template_arguments...>());
-    case DRT::Element::nurbs27:
+    case DRT::Element::DiscretizationType::nurbs27:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_nurbs27,
           bts_template_arguments...>());
     default:
@@ -195,19 +195,19 @@ BEAMINTERACTION::CreateBeamToSolidVolumePairShapeNoNurbs(
 {
   switch (shape)
   {
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex8,
           bts_template_arguments...>());
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex20,
           bts_template_arguments...>());
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_hex27,
           bts_template_arguments...>());
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet4,
           bts_template_arguments...>());
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       return Teuchos::rcp(new bts_class<GEOMETRYPAIR::t_hermite, GEOMETRYPAIR::t_tet10,
           bts_template_arguments...>());
     default:
@@ -559,22 +559,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
           {
             switch (shape)
             {
-              case DRT::Element::tri3:
+              case DRT::Element::DiscretizationType::tri3:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri3>());
-              case DRT::Element::tri6:
+              case DRT::Element::DiscretizationType::tri6:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_tri6>());
-              case DRT::Element::quad4:
+              case DRT::Element::DiscretizationType::quad4:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad4>());
-              case DRT::Element::quad8:
+              case DRT::Element::DiscretizationType::quad8:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad8>());
-              case DRT::Element::quad9:
+              case DRT::Element::DiscretizationType::quad9:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_quad9>());
-              case DRT::Element::nurbs9:
+              case DRT::Element::DiscretizationType::nurbs9:
                 return Teuchos::rcp(
                     new BeamToSolidSurfaceMeshtyingPairGaussPoint<t_hermite, t_nurbs9>());
               default:
@@ -592,22 +592,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
             {
               switch (shape)
               {
-                case DRT::Element::tri3:
+                case DRT::Element::DiscretizationType::tri3:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_tri3>());
-                case DRT::Element::tri6:
+                case DRT::Element::DiscretizationType::tri6:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_tri6>());
-                case DRT::Element::quad4:
+                case DRT::Element::DiscretizationType::quad4:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_quad4>());
-                case DRT::Element::quad8:
+                case DRT::Element::DiscretizationType::quad8:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_quad8>());
-                case DRT::Element::quad9:
+                case DRT::Element::DiscretizationType::quad9:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type, t_hermite, t_quad9>());
-                case DRT::Element::nurbs9:
+                case DRT::Element::DiscretizationType::nurbs9:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>, t_hermite,
                       t_nurbs9>());
@@ -621,15 +621,15 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
             {
               switch (shape)
               {
-                case DRT::Element::quad4:
+                case DRT::Element::DiscretizationType::quad4:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex8>, t_hermite,
                       t_quad4>());
-                case DRT::Element::quad8:
+                case DRT::Element::DiscretizationType::quad8:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex20>, t_hermite,
                       t_quad8>());
-                case DRT::Element::quad9:
+                case DRT::Element::DiscretizationType::quad9:
                   return Teuchos::rcp(new BeamToSolidSurfaceMeshtyingPairGaussPointFAD<
                       line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_hex27>, t_hermite,
                       t_quad9>());
@@ -695,22 +695,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
               case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact::gap_variation:
                 switch (shape)
                 {
-                  case DRT::Element::tri3:
+                  case DRT::Element::DiscretizationType::tri3:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri3>());
-                  case DRT::Element::tri6:
+                  case DRT::Element::DiscretizationType::tri6:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_hermite, t_tri6>());
-                  case DRT::Element::quad4:
+                  case DRT::Element::DiscretizationType::quad4:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad4>());
-                  case DRT::Element::quad8:
+                  case DRT::Element::DiscretizationType::quad8:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad8>());
-                  case DRT::Element::quad9:
+                  case DRT::Element::DiscretizationType::quad9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_hermite, t_quad9>());
-                  case DRT::Element::nurbs9:
+                  case DRT::Element::DiscretizationType::nurbs9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_fixed_size_1st_order<t_hermite, t_nurbs9>,
                         t_hermite, t_nurbs9>());
@@ -721,22 +721,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
               case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact::potential:
                 switch (shape)
                 {
-                  case DRT::Element::tri3:
+                  case DRT::Element::DiscretizationType::tri3:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_hermite, t_tri3>());
-                  case DRT::Element::tri6:
+                  case DRT::Element::DiscretizationType::tri6:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_hermite, t_tri6>());
-                  case DRT::Element::quad4:
+                  case DRT::Element::DiscretizationType::quad4:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_hermite, t_quad4>());
-                  case DRT::Element::quad8:
+                  case DRT::Element::DiscretizationType::quad8:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_hermite, t_quad8>());
-                  case DRT::Element::quad9:
+                  case DRT::Element::DiscretizationType::quad9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_hermite, t_quad9>());
-                  case DRT::Element::nurbs9:
+                  case DRT::Element::DiscretizationType::nurbs9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type_fixed_size<t_hermite, t_nurbs9>,
                         t_hermite, t_nurbs9>());
@@ -766,22 +766,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
               case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact::gap_variation:
                 switch (shape)
                 {
-                  case DRT::Element::tri3:
+                  case DRT::Element::DiscretizationType::tri3:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri3>());
-                  case DRT::Element::tri6:
+                  case DRT::Element::DiscretizationType::tri6:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_line2, t_tri6>());
-                  case DRT::Element::quad4:
+                  case DRT::Element::DiscretizationType::quad4:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad4>());
-                  case DRT::Element::quad8:
+                  case DRT::Element::DiscretizationType::quad8:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad8>());
-                  case DRT::Element::quad9:
+                  case DRT::Element::DiscretizationType::quad9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_1st_order, t_line2, t_quad9>());
-                  case DRT::Element::nurbs9:
+                  case DRT::Element::DiscretizationType::nurbs9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairGapVariation<
                         line_to_surface_patch_scalar_type_fixed_size_1st_order<t_line2, t_nurbs9>,
                         t_line2, t_nurbs9>());
@@ -792,22 +792,22 @@ BEAMINTERACTION::BeamToSolidConditionSurface::CreateContactPairInternal(
               case INPAR::BEAMTOSOLID::BeamToSolidSurfaceContact::potential:
                 switch (shape)
                 {
-                  case DRT::Element::tri3:
+                  case DRT::Element::DiscretizationType::tri3:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_line2, t_tri3>());
-                  case DRT::Element::tri6:
+                  case DRT::Element::DiscretizationType::tri6:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_line2, t_tri6>());
-                  case DRT::Element::quad4:
+                  case DRT::Element::DiscretizationType::quad4:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_line2, t_quad4>());
-                  case DRT::Element::quad8:
+                  case DRT::Element::DiscretizationType::quad8:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_line2, t_quad8>());
-                  case DRT::Element::quad9:
+                  case DRT::Element::DiscretizationType::quad9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type, t_line2, t_quad9>());
-                  case DRT::Element::nurbs9:
+                  case DRT::Element::DiscretizationType::nurbs9:
                     return Teuchos::rcp(new BeamToSolidSurfaceContactPairPotential<
                         line_to_surface_patch_scalar_type_fixed_size<t_line2, t_nurbs9>, t_line2,
                         t_nurbs9>());

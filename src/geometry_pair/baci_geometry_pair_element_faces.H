@@ -47,17 +47,17 @@ namespace GEOMETRYPAIR
     using volume_type_ = void;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad4>
+  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::DiscretizationType::quad4>
   {
     using volume_type_ = t_hex8;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad8>
+  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::DiscretizationType::quad8>
   {
     using volume_type_ = t_hex20;
   };
   template <>
-  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::quad9>
+  struct FaceDiscretizationTypeToVolumeElement<DRT::Element::DiscretizationType::quad9>
   {
     using volume_type_ = t_hex27;
   };

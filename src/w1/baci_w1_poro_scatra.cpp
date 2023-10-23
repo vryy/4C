@@ -154,8 +154,8 @@ bool DRT::ELEMENTS::Wall1_Poro_Scatra<distype>::ReadElement(
 /*----------------------------------------------------------------------*
  |                                                         schmidt 09/17|
  *----------------------------------------------------------------------*/
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::tri3>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::quad4>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::quad9>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::nurbs4>;
-template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::nurbs9>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::tri3>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::quad4>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::quad9>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::nurbs4>;
+template class DRT::ELEMENTS::Wall1_Poro_Scatra<DRT::Element::DiscretizationType::nurbs9>;

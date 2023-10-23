@@ -53,19 +53,22 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
   switch (surfele->Shape())
   {
     // 3D:
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::tet4 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::tet4)
+      if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::tet4 &&
+          surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::tet4)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri3, DRT::Element::tet4,
-            DRT::Element::tet4>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::tri3,
+            DRT::Element::DiscretizationType::tet4,
+            DRT::Element::DiscretizationType::tet4>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge6 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge6)
+      else if (surfele->ParentMasterElement()->Shape() ==
+                   DRT::Element::DiscretizationType::wedge6 &&
+               surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::wedge6)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri3, DRT::Element::wedge6,
-            DRT::Element::wedge6>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::tri3,
+            DRT::Element::DiscretizationType::wedge6,
+            DRT::Element::DiscretizationType::wedge6>::Instance();
       }
       else
       {
@@ -76,19 +79,22 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 3D:
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::tet10 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::tet10)
+      if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::tet10 &&
+          surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::tet10)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri6, DRT::Element::tet10,
-            DRT::Element::tet10>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::tri6,
+            DRT::Element::DiscretizationType::tet10,
+            DRT::Element::DiscretizationType::tet10>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge15 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge15)
+      else if (surfele->ParentMasterElement()->Shape() ==
+                   DRT::Element::DiscretizationType::wedge15 &&
+               surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::wedge15)
       {
-        return FluidInternalSurfaceStab<DRT::Element::tri6, DRT::Element::wedge15,
-            DRT::Element::wedge15>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::tri6,
+            DRT::Element::DiscretizationType::wedge15,
+            DRT::Element::DiscretizationType::wedge15>::Instance();
       }
       else
       {
@@ -99,19 +105,22 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 3D:
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::hex8 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::hex8)
+      if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::hex8 &&
+          surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::hex8)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad4, DRT::Element::hex8,
-            DRT::Element::hex8>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::quad4,
+            DRT::Element::DiscretizationType::hex8,
+            DRT::Element::DiscretizationType::hex8>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge6 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge6)
+      else if (surfele->ParentMasterElement()->Shape() ==
+                   DRT::Element::DiscretizationType::wedge6 &&
+               surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::wedge6)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad4, DRT::Element::wedge6,
-            DRT::Element::wedge6>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::quad4,
+            DRT::Element::DiscretizationType::wedge6,
+            DRT::Element::DiscretizationType::wedge6>::Instance();
       }
       else
       {
@@ -122,19 +131,22 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 3D:
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::hex20 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::hex20)
+      if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::hex20 &&
+          surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::hex20)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad8, DRT::Element::hex20,
-            DRT::Element::hex20>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::quad8,
+            DRT::Element::DiscretizationType::hex20,
+            DRT::Element::DiscretizationType::hex20>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::wedge15 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::wedge15)
+      else if (surfele->ParentMasterElement()->Shape() ==
+                   DRT::Element::DiscretizationType::wedge15 &&
+               surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::wedge15)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad8, DRT::Element::wedge15,
-            DRT::Element::wedge15>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::quad8,
+            DRT::Element::DiscretizationType::wedge15,
+            DRT::Element::DiscretizationType::wedge15>::Instance();
       }
       else
       {
@@ -144,13 +156,14 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       break;
     }
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::hex27 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::hex27)
+      if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::hex27 &&
+          surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::hex27)
       {
-        return FluidInternalSurfaceStab<DRT::Element::quad9, DRT::Element::hex27,
-            DRT::Element::hex27>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::quad9,
+            DRT::Element::DiscretizationType::hex27,
+            DRT::Element::DiscretizationType::hex27>::Instance();
       }
       else
       {
@@ -159,19 +172,21 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       break;
     }
     // 2D:
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::quad4 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::quad4)
+      if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::quad4 &&
+          surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::quad4)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line2, DRT::Element::quad4,
-            DRT::Element::quad4>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::line2,
+            DRT::Element::DiscretizationType::quad4,
+            DRT::Element::DiscretizationType::quad4>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::tri3 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::tri3)
+      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::tri3 &&
+               surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::tri3)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line2, DRT::Element::tri3,
-            DRT::Element::tri3>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::line2,
+            DRT::Element::DiscretizationType::tri3,
+            DRT::Element::DiscretizationType::tri3>::Instance();
       }
       else
       {
@@ -181,25 +196,28 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
       }
       break;
     }
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
     {
-      if (surfele->ParentMasterElement()->Shape() == DRT::Element::quad8 &&
-          surfele->ParentSlaveElement()->Shape() == DRT::Element::quad8)
+      if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::quad8 &&
+          surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::quad8)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line3, DRT::Element::quad8,
-            DRT::Element::quad8>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::line3,
+            DRT::Element::DiscretizationType::quad8,
+            DRT::Element::DiscretizationType::quad8>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::quad9 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::quad9)
+      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::quad9 &&
+               surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::quad9)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line3, DRT::Element::quad9,
-            DRT::Element::quad9>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::line3,
+            DRT::Element::DiscretizationType::quad9,
+            DRT::Element::DiscretizationType::quad9>::Instance();
       }
-      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::tri6 &&
-               surfele->ParentSlaveElement()->Shape() == DRT::Element::tri6)
+      else if (surfele->ParentMasterElement()->Shape() == DRT::Element::DiscretizationType::tri6 &&
+               surfele->ParentSlaveElement()->Shape() == DRT::Element::DiscretizationType::tri6)
       {
-        return FluidInternalSurfaceStab<DRT::Element::line3, DRT::Element::tri6,
-            DRT::Element::tri6>::Instance();
+        return FluidInternalSurfaceStab<DRT::Element::DiscretizationType::line3,
+            DRT::Element::DiscretizationType::tri6,
+            DRT::Element::DiscretizationType::tri6>::Instance();
       }
       else
       {
@@ -356,7 +374,8 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
     s_connectivity_ = CORE::DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
 
     // just for 3D
-    if (pdistype != DRT::Element::wedge6 and pdistype != DRT::Element::wedge15)
+    if (pdistype != DRT::Element::DiscretizationType::wedge6 and
+        pdistype != DRT::Element::DiscretizationType::wedge15)
       connectivity_line_surf_ = CORE::DRT::UTILS::getEleNodeNumbering_lines_surfaces(pdistype);
   }
   else if (nsd_ == 2)
@@ -373,9 +392,10 @@ DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::FluidInter
 
 
   // is the face a higher order face with higher order neighboring elements?
-  ishigherorder_ =
-      ((nsd_ == 3 and (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4)) or
-          (nsd_ == 2 and (pdistype != DRT::Element::tri3 or ndistype != DRT::Element::tri3)));
+  ishigherorder_ = ((nsd_ == 3 and (pdistype != DRT::Element::DiscretizationType::tet4 or
+                                       ndistype != DRT::Element::DiscretizationType::tet4)) or
+                    (nsd_ == 2 and (pdistype != DRT::Element::DiscretizationType::tri3 or
+                                       ndistype != DRT::Element::DiscretizationType::tri3)));
 
   return;
 }
@@ -416,49 +436,49 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype, ndistype>::Degree
   // switch over parent element
   switch (parent_ele_distype)
   {
-    case DRT::Element::quad4:
+    case DRT::Element::DiscretizationType::quad4:
       degree = 2;
       break;
-    case DRT::Element::quad8:
+    case DRT::Element::DiscretizationType::quad8:
       degree = 4;
       break;
-    case DRT::Element::quad9:
+    case DRT::Element::DiscretizationType::quad9:
       degree = 4;
       break;
-    case DRT::Element::tri3:
+    case DRT::Element::DiscretizationType::tri3:
       degree = 0;
       break;
-    case DRT::Element::tri6:
+    case DRT::Element::DiscretizationType::tri6:
       degree = 4;
       break;
-    case DRT::Element::hex8:
+    case DRT::Element::DiscretizationType::hex8:
       degree = 2;
       break;
-    case DRT::Element::hex20:
+    case DRT::Element::DiscretizationType::hex20:
       degree = 4;
       break;
-    case DRT::Element::hex27:
+    case DRT::Element::DiscretizationType::hex27:
       degree = 4;
       break;
-    case DRT::Element::tet4:
+    case DRT::Element::DiscretizationType::tet4:
       degree = 0;
       break;
-    case DRT::Element::tet10:
+    case DRT::Element::DiscretizationType::tet10:
       degree = 2;
       break;
-    case DRT::Element::wedge6:
+    case DRT::Element::DiscretizationType::wedge6:
       degree = 2;
       break;
-    case DRT::Element::wedge15:
+    case DRT::Element::DiscretizationType::wedge15:
       degree = 4;
       break;
-    case DRT::Element::pyramid5:
+    case DRT::Element::DiscretizationType::pyramid5:
       degree = 2;
       break;
-    case DRT::Element::line2:
+    case DRT::Element::DiscretizationType::line2:
       degree = 0;
       break;
-    case DRT::Element::line3:
+    case DRT::Element::DiscretizationType::line3:
       degree = 2;
       break;
     default:
@@ -926,23 +946,23 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     {
       switch (distype)
       {
-        case DRT::Element::line2:
-        case DRT::Element::line3:
+        case DRT::Element::DiscretizationType::line2:
+        case DRT::Element::DiscretizationType::line3:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
               CORE::DRT::UTILS::eleNodeNumbering_line3_nodes_reference[i][isd];
           break;
         }
-        case DRT::Element::tri3:
-        case DRT::Element::tri6:
+        case DRT::Element::DiscretizationType::tri3:
+        case DRT::Element::DiscretizationType::tri6:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
               CORE::DRT::UTILS::eleNodeNumbering_tri6_nodes_reference[i][isd];
           break;
         }
-        case DRT::Element::quad4:
-        case DRT::Element::quad8:
-        case DRT::Element::quad9:
+        case DRT::Element::DiscretizationType::quad4:
+        case DRT::Element::DiscretizationType::quad8:
+        case DRT::Element::DiscretizationType::quad9:
         {
           local_slave_coordiantes_trafo(isd, localtrafomap_idx) =
               CORE::DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][isd];
@@ -1021,9 +1041,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
         "do you really want to neglect the gradient based ghost penalty term but stabilize the 2nd "
         "order derivatives?");
   }
-  else if (ishigherorder_ and
-           ((pdistype == DRT::Element::hex8 and ndistype == DRT::Element::hex8) or
-               (pdistype == DRT::Element::quad4 and ndistype == DRT::Element::quad4)))
+  else if (ishigherorder_ and ((pdistype == DRT::Element::DiscretizationType::hex8 and
+                                   ndistype == DRT::Element::DiscretizationType::hex8) or
+                                  (pdistype == DRT::Element::DiscretizationType::quad4 and
+                                      ndistype == DRT::Element::DiscretizationType::quad4)))
   {
     // allow only gradient-based ghost-penalties for hex8 or quad4 elements
   }
@@ -1616,7 +1637,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 {
   TEUCHOS_FUNC_TIME_MONITOR("XFEM::Edgestab EOS: EvalShapeFuncAndDerivsAtIntPoint");
 
-  if (!(distype == DRT::Element::nurbs9))
+  if (!(distype == DRT::Element::DiscretizationType::nurbs9))
   {
     // ------------------------------------------------
     // shape function derivs of boundary element at gausspoint
@@ -1641,7 +1662,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(pdistype == DRT::Element::nurbs27))
+  if (!(pdistype == DRT::Element::DiscretizationType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<pdistype>(p_xi_gp, pfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<pdistype>(p_xi_gp, pderiv_);
@@ -1651,7 +1672,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(ndistype == DRT::Element::nurbs27))
+  if (!(ndistype == DRT::Element::DiscretizationType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<ndistype>(n_xi_gp, nfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<ndistype>(n_xi_gp, nderiv_);
@@ -2024,7 +2045,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
     xsi_(idim) = gpcoord[idim];
   }
 
-  if (!(distype == DRT::Element::nurbs9))
+  if (!(distype == DRT::Element::DiscretizationType::nurbs9))
   {
     // ------------------------------------------------
     // shape function derivs of boundary element at gausspoint
@@ -2070,7 +2091,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(pdistype == DRT::Element::nurbs27))
+  if (!(pdistype == DRT::Element::DiscretizationType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<pdistype>(pqxg, pfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<pdistype>(pqxg, pderiv_);
@@ -2080,7 +2101,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
 
   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
-  if (!(ndistype == DRT::Element::nurbs27))
+  if (!(ndistype == DRT::Element::DiscretizationType::nurbs27))
   {
     CORE::DRT::UTILS::shape_function<ndistype>(nqxg, nfunct_);
     CORE::DRT::UTILS::shape_function_deriv1<ndistype>(nqxg, nderiv_);
@@ -3755,8 +3776,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       if (nsd_ == 3)
       {
         // 3D pure tetrahedral element combinations
-        if ((pdistype == DRT::Element::tet4 and ndistype == DRT::Element::tet4) or
-            (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+        if ((pdistype == DRT::Element::DiscretizationType::tet4 and
+                ndistype == DRT::Element::DiscretizationType::tet4) or
+            (pdistype == DRT::Element::DiscretizationType::tet10 and
+                ndistype == DRT::Element::DiscretizationType::tet10))
         {
           gamma_p = 0.01;
         }
@@ -3767,8 +3790,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       else if (nsd_ == 2)
       {
         // 2D triangular elements combinations
-        if ((pdistype == DRT::Element::tri3 and ndistype == DRT::Element::tri3) or
-            (pdistype == DRT::Element::tri6 and ndistype == DRT::Element::tri6))
+        if ((pdistype == DRT::Element::DiscretizationType::tri3 and
+                ndistype == DRT::Element::DiscretizationType::tri3) or
+            (pdistype == DRT::Element::DiscretizationType::tri6 and
+                ndistype == DRT::Element::DiscretizationType::tri6))
         {
           gamma_p = 0.1;
         }
@@ -3823,8 +3848,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       if (nsd_ == 3)
       {
         // 3D pure tetrahedral element combinations
-        if ((pdistype == DRT::Element::tet4 and ndistype == DRT::Element::tet4) or
-            (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+        if ((pdistype == DRT::Element::DiscretizationType::tet4 and
+                ndistype == DRT::Element::DiscretizationType::tet4) or
+            (pdistype == DRT::Element::DiscretizationType::tet10 and
+                ndistype == DRT::Element::DiscretizationType::tet10))
         {
           gamma_p = 0.01;
         }
@@ -3835,8 +3862,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       else if (nsd_ == 2)
       {
         // 2D triangular elements combinations
-        if ((pdistype == DRT::Element::tri3 and ndistype == DRT::Element::tri3) or
-            (pdistype == DRT::Element::tri6 and ndistype == DRT::Element::tri6))
+        if ((pdistype == DRT::Element::DiscretizationType::tri3 and
+                ndistype == DRT::Element::DiscretizationType::tri3) or
+            (pdistype == DRT::Element::DiscretizationType::tri6 and
+                ndistype == DRT::Element::DiscretizationType::tri6))
         {
           gamma_p = 0.1;
         }
@@ -3892,8 +3921,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       if (nsd_ == 3)
       {
         // 3D pure tetrahedral element combinations
-        if ((pdistype == DRT::Element::tet4 and ndistype == DRT::Element::tet4) or
-            (pdistype == DRT::Element::tet10 and ndistype == DRT::Element::tet10))
+        if ((pdistype == DRT::Element::DiscretizationType::tet4 and
+                ndistype == DRT::Element::DiscretizationType::tet4) or
+            (pdistype == DRT::Element::DiscretizationType::tet10 and
+                ndistype == DRT::Element::DiscretizationType::tet10))
         {
           gamma_p = 0.01;
         }
@@ -3904,8 +3935,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype, pdistype,
       else if (nsd_ == 2)
       {
         // 2D triangular elements combinations
-        if ((pdistype == DRT::Element::tri3 and ndistype == DRT::Element::tri3) or
-            (pdistype == DRT::Element::tri6 and ndistype == DRT::Element::tri6))
+        if ((pdistype == DRT::Element::DiscretizationType::tri3 and
+                ndistype == DRT::Element::DiscretizationType::tri3) or
+            (pdistype == DRT::Element::DiscretizationType::tri6 and
+                ndistype == DRT::Element::DiscretizationType::tri6))
         {
           gamma_p = 0.1;
         }

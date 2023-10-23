@@ -332,7 +332,10 @@ void DRT::ELEMENTS::Beam3eb::Print(std::ostream& os) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const { return line2; }
+DRT::Element::DiscretizationType DRT::ELEMENTS::Beam3eb::Shape() const
+{
+  return DiscretizationType::line2;
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

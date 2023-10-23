@@ -363,13 +363,15 @@ void DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<distype, probdim>::NormDiffFluxAnd
 
 
 // template classes
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad4, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad8, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::quad9, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::tri3, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::tri6, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line2, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line2, 3>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::line3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::nurbs3, 2>;
-template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::nurbs9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::quad4, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::quad8, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::quad9, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::tri3, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::tri6, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::line2, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::line2, 3>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::line3, 2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::nurbs3,
+    2>;
+template class DRT::ELEMENTS::ScaTraEleBoundaryCalcLoma<DRT::Element::DiscretizationType::nurbs9,
+    3>;

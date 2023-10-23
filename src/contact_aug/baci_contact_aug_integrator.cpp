@@ -177,7 +177,7 @@ void CONTACT::AUG::IntegrationWrapper::IntegrateDerivSegment2D(MORTAR::MortarEle
     dserror("IntegrateDerivSegment2D called without specific shape function defined!");
 
   // Petrov-Galerkin approach for LM not yet implemented for quadratic FE
-  if (sele.Shape() == MORTAR::MortarElement::line3 ||
+  if (sele.Shape() == DRT::Element::DiscretizationType::line3 ||
       ShapeFcn() == INPAR::MORTAR::shape_petrovgalerkin)
     dserror("Petrov-Galerkin / quadratic FE interpolation not yet implemented.");
 
@@ -305,12 +305,12 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
 {
   switch (slavetype)
   {
-    case DRT::Element::line2:
-      return Create2D<DRT::Element::line2>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs2:
-      return Create2D<DRT::Element::nurbs2>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs3:
-      return Create2D<DRT::Element::nurbs3>(mastertype, cparams, wrapper);
+    case DRT::Element::DiscretizationType::line2:
+      return Create2D<DRT::Element::DiscretizationType::line2>(mastertype, cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs2:
+      return Create2D<DRT::Element::DiscretizationType::nurbs2>(mastertype, cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs3:
+      return Create2D<DRT::Element::DiscretizationType::nurbs3>(mastertype, cparams, wrapper);
     default:
       dserror("Unsupported slave element type %d|\"%s\"", slavetype,
           DRT::DistypeToString(slavetype).c_str());
@@ -327,12 +327,12 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D(
 {
   switch (mastertype)
   {
-    case DRT::Element::line2:
-      return Create2D<slavetype, DRT::Element::line2>(cparams, wrapper);
-    case DRT::Element::nurbs2:
-      return Create2D<slavetype, DRT::Element::nurbs2>(cparams, wrapper);
-    case DRT::Element::nurbs3:
-      return Create2D<slavetype, DRT::Element::nurbs3>(cparams, wrapper);
+    case DRT::Element::DiscretizationType::line2:
+      return Create2D<slavetype, DRT::Element::DiscretizationType::line2>(cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs2:
+      return Create2D<slavetype, DRT::Element::DiscretizationType::nurbs2>(cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs3:
+      return Create2D<slavetype, DRT::Element::DiscretizationType::nurbs3>(cparams, wrapper);
     default:
       dserror("Unsupported master element type %d|\"%s\"", mastertype,
           DRT::DistypeToString(mastertype).c_str());
@@ -377,14 +377,14 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
 {
   switch (slavetype)
   {
-    case DRT::Element::quad4:
-      return Create3D<DRT::Element::quad4>(mastertype, cparams, wrapper);
-    case DRT::Element::tri3:
-      return Create3D<DRT::Element::tri3>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs4:
-      return Create3D<DRT::Element::nurbs4>(mastertype, cparams, wrapper);
-    case DRT::Element::nurbs9:
-      return Create3D<DRT::Element::nurbs9>(mastertype, cparams, wrapper);
+    case DRT::Element::DiscretizationType::quad4:
+      return Create3D<DRT::Element::DiscretizationType::quad4>(mastertype, cparams, wrapper);
+    case DRT::Element::DiscretizationType::tri3:
+      return Create3D<DRT::Element::DiscretizationType::tri3>(mastertype, cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs4:
+      return Create3D<DRT::Element::DiscretizationType::nurbs4>(mastertype, cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs9:
+      return Create3D<DRT::Element::DiscretizationType::nurbs9>(mastertype, cparams, wrapper);
     default:
       dserror("Unsupported slave element type %d|\"%s\"", DRT::DistypeToString(mastertype).c_str());
       exit(EXIT_FAILURE);
@@ -400,14 +400,14 @@ CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D(
 {
   switch (mastertype)
   {
-    case DRT::Element::quad4:
-      return Create3D<slavetype, DRT::Element::quad4>(cparams, wrapper);
-    case DRT::Element::tri3:
-      return Create3D<slavetype, DRT::Element::tri3>(cparams, wrapper);
-    case DRT::Element::nurbs4:
-      return Create3D<slavetype, DRT::Element::nurbs4>(cparams, wrapper);
-    case DRT::Element::nurbs9:
-      return Create3D<slavetype, DRT::Element::nurbs9>(cparams, wrapper);
+    case DRT::Element::DiscretizationType::quad4:
+      return Create3D<slavetype, DRT::Element::DiscretizationType::quad4>(cparams, wrapper);
+    case DRT::Element::DiscretizationType::tri3:
+      return Create3D<slavetype, DRT::Element::DiscretizationType::tri3>(cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs4:
+      return Create3D<slavetype, DRT::Element::DiscretizationType::nurbs4>(cparams, wrapper);
+    case DRT::Element::DiscretizationType::nurbs9:
+      return Create3D<slavetype, DRT::Element::DiscretizationType::nurbs9>(cparams, wrapper);
     default:
       dserror(
           "Unsupported master element type %d|\"%s\"", DRT::DistypeToString(mastertype).c_str());
@@ -1045,101 +1045,101 @@ void CONTACT::AUG::Integrator<probdim, slavetype, mastertype, IntPolicy>::WeakRe
 
 /*----------------------------------------------------------------------------*/
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::line2>(
+CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::DiscretizationType::line2>(
     DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::line2, DRT::Element::line2>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D<
+    DRT::Element::DiscretizationType::line2, DRT::Element::DiscretizationType::line2>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs2>(
+CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::DiscretizationType::nurbs2>(
     DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs2, DRT::Element::nurbs2>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D<
+    DRT::Element::DiscretizationType::nurbs2, DRT::Element::DiscretizationType::nurbs2>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs2, DRT::Element::nurbs3>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D<
+    DRT::Element::DiscretizationType::nurbs2, DRT::Element::DiscretizationType::nurbs3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs3>(
+CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::DiscretizationType::nurbs3>(
     DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs3, DRT::Element::nurbs3>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D<
+    DRT::Element::DiscretizationType::nurbs3, DRT::Element::DiscretizationType::nurbs3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create2D<DRT::Element::nurbs3, DRT::Element::nurbs2>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create2D<
+    DRT::Element::DiscretizationType::nurbs3, DRT::Element::DiscretizationType::nurbs2>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4>(
+CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::DiscretizationType::quad4>(
     DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::quad4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::quad4, DRT::Element::DiscretizationType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::tri3>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::quad4, DRT::Element::DiscretizationType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::nurbs4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::quad4, DRT::Element::DiscretizationType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::quad4, DRT::Element::nurbs9>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::quad4, DRT::Element::DiscretizationType::nurbs9>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3>(
+CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::DiscretizationType::tri3>(
     DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::quad4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::tri3, DRT::Element::DiscretizationType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::tri3>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::tri3, DRT::Element::DiscretizationType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::nurbs4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::tri3, DRT::Element::DiscretizationType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::tri3, DRT::Element::nurbs9>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::tri3, DRT::Element::DiscretizationType::nurbs9>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4>(
+CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::DiscretizationType::nurbs4>(
     DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::nurbs4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs4, DRT::Element::DiscretizationType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::quad4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs4, DRT::Element::DiscretizationType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::tri3>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs4, DRT::Element::DiscretizationType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs4, DRT::Element::nurbs9>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs4, DRT::Element::DiscretizationType::nurbs9>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9>(
+CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::DiscretizationType::nurbs9>(
     DRT::Element::DiscretizationType mastertype, CONTACT::ParamsInterface& cparams,
     CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::nurbs9>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs9, DRT::Element::DiscretizationType::nurbs9>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::quad4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs9, DRT::Element::DiscretizationType::quad4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::tri3>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs9, DRT::Element::DiscretizationType::tri3>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
-template CONTACT::AUG::IntegratorGeneric*
-CONTACT::AUG::IntegratorGeneric::Create3D<DRT::Element::nurbs9, DRT::Element::nurbs4>(
+template CONTACT::AUG::IntegratorGeneric* CONTACT::AUG::IntegratorGeneric::Create3D<
+    DRT::Element::DiscretizationType::nurbs9, DRT::Element::DiscretizationType::nurbs4>(
     CONTACT::ParamsInterface& cparams, CONTACT::CoIntegrator* wrapper);
 
 #include "baci_contact_aug_integrator.inst.H"

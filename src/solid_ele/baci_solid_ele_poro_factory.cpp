@@ -18,26 +18,27 @@ DRT::ELEMENTS::SolidPoroCalcVariant DRT::ELEMENTS::CreateSolidPoroCalculationInt
 {
   switch (ele.Shape())
   {
-    case DRT::Element::hex8:
-      return CreateSolidPoroCalculationInterface<DRT::Element::hex8>(porotype);
+    case DRT::Element::DiscretizationType::hex8:
+      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex8>(porotype);
       break;
-    case DRT::Element::hex27:
-      return CreateSolidPoroCalculationInterface<DRT::Element::hex27>(porotype);
+    case DRT::Element::DiscretizationType::hex27:
+      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex27>(porotype);
       break;
-    case DRT::Element::hex20:
-      return CreateSolidPoroCalculationInterface<DRT::Element::hex20>(porotype);
+    case DRT::Element::DiscretizationType::hex20:
+      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex20>(porotype);
       break;
-    case DRT::Element::hex18:
-      return CreateSolidPoroCalculationInterface<DRT::Element::hex18>(porotype);
+    case DRT::Element::DiscretizationType::hex18:
+      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::hex18>(porotype);
       break;
-    case DRT::Element::pyramid5:
-      return CreateSolidPoroCalculationInterface<DRT::Element::pyramid5>(porotype);
+    case DRT::Element::DiscretizationType::pyramid5:
+      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::pyramid5>(
+          porotype);
       break;
-    case DRT::Element::tet4:
-      return CreateSolidPoroCalculationInterface<DRT::Element::tet4>(porotype);
+    case DRT::Element::DiscretizationType::tet4:
+      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::tet4>(porotype);
       break;
-    case DRT::Element::tet10:
-      return CreateSolidPoroCalculationInterface<DRT::Element::tet10>(porotype);
+    case DRT::Element::DiscretizationType::tet10:
+      return CreateSolidPoroCalculationInterface<DRT::Element::DiscretizationType::tet10>(porotype);
       break;
     default:
       dserror("unknown distype provided");

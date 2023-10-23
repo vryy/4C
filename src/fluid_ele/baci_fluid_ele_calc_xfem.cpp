@@ -1056,7 +1056,7 @@ namespace DRT
             CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != DRT::Element::dis_none)  // Tessellation approach
+            if (bc->Shape() != DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
@@ -1835,7 +1835,7 @@ namespace DRT
             CORE::LINALG::Matrix<3, 1> x_gp_lin(true);  // gp in xyz-system on linearized interface
 
             // compute transformation factor, normal vector and global Gauss point coordiantes
-            if (bc->Shape() != DRT::Element::dis_none)  // Tessellation approach
+            if (bc->Shape() != DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin, normal, bc, eta);
             }
@@ -3623,7 +3623,7 @@ namespace DRT
 
 
             // compute transformation factor, normal vector and global Gauss point coordinates
-            if (bc->Shape() != DRT::Element::dis_none)  // Tessellation approach
+            if (bc->Shape() != DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
             {
               XFEM::UTILS::ComputeSurfaceTransformation(drs, x_gp_lin_, normal_, bc, eta);
             }
@@ -3647,7 +3647,8 @@ namespace DRT
                 CORE::LINALG::Matrix<3, 1> x_ref = x_gp_lin_;
                 double tmp_drs;
                 CORE::LINALG::Matrix<3, 1> tmp_normal;
-                if (bc->Shape() != DRT::Element::dis_none)  // Tessellation approach
+                if (bc->Shape() !=
+                    DRT::Element::DiscretizationType::dis_none)  // Tessellation approach
                 {
                   XFEM::UTILS::ComputeSurfaceTransformation(
                       tmp_drs, x_ref, tmp_normal, bc, eta, true);
@@ -4604,11 +4605,11 @@ namespace DRT
 }  // end namespace DRT
 
 // Ursula is responsible for this comment!
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::hex8>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::hex20>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::hex27>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::tet4>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::tet10>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::wedge6>;
-template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::wedge15>;
-// template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::pyramid5>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::hex8>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::hex20>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::hex27>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::tet4>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::tet10>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::wedge6>;
+template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::wedge15>;
+// template class DRT::ELEMENTS::FluidEleCalcXFEM<DRT::Element::DiscretizationType::pyramid5>;

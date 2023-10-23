@@ -71,7 +71,7 @@ void test_ls_hex8_florian1()
   xyze(1, 7) = 124.031;
   xyze(2, 7) = 0.75;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -131,7 +131,7 @@ void test_ls_hex8_florian2()
   xyze(1, 7) = 124.031;
   xyze(2, 7) = 0.75;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -191,7 +191,7 @@ void test_ls_hex8_florian3()
   xyze(1, 7) = 102.326;
   xyze(2, 7) = 0.75;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -251,7 +251,7 @@ void test_ls_hex8_florian4()
   xyze(1, 7) = 115.152;
   xyze(2, 7) = 2.94118;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -311,7 +311,7 @@ void test_ls_hex8_florian5()
   xyze(1, 7) = 85.2713;
   xyze(2, 7) = 0.769231;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -371,7 +371,7 @@ void test_ls_hex8_florian6()
   xyze(1, 7) = 85.2713;
   xyze(2, 7) = 0.769231;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -431,7 +431,7 @@ void test_ls_hex8_florian7()
   xyze(1, 7) = 132.308;
   xyze(2, 7) = 1.51515;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -491,7 +491,7 @@ void test_ls_hex8_florian8()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -551,7 +551,7 @@ void test_ls_hex8_florian9()
   xyze(1, 7) = 98.4615;
   xyze(2, 7) = 1.51515;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -611,7 +611,7 @@ void test_ls_hex8_florian10()
   xyze(1, 7) = 79.0698;
   xyze(2, 7) = 0.769231;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -671,7 +671,7 @@ void test_ls_hex8_florian11()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -731,7 +731,7 @@ void test_ls_hex8_florian12()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -791,7 +791,7 @@ void test_ls_hex8_florian13()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -851,7 +851,7 @@ void test_ls_hex8_ursula1()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -911,7 +911,7 @@ void test_ls_hex8_ursula2()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -971,7 +971,7 @@ void test_ls_hex8_ursula3()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1031,7 +1031,7 @@ void test_ls_hex8_ursula4()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1091,7 +1091,7 @@ void test_ls_hex8_ursula5()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1151,7 +1151,7 @@ void test_ls_hex8_ursula6()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1205,7 +1205,7 @@ void test_ls_hex8_simple()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1259,7 +1259,7 @@ void test_ls_hex8_simple2()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1313,7 +1313,7 @@ void test_ls_hex8_simple3()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1367,7 +1367,7 @@ void test_ls_hex8_simple4()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1422,7 +1422,7 @@ void test_ls_hex8_simple5()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1480,7 +1480,7 @@ void test_ls_hex8_simple6()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1544,7 +1544,7 @@ void test_ls_hex8_simple7()
     xyze(1, 7) = 1;
     xyze(2, 7) = 1;
 
-    lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+    lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
     lsi.Cut();
   }
 }
@@ -1603,7 +1603,7 @@ void test_ls_hex8_touch()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }
 
@@ -1642,7 +1642,7 @@ void test_ls_hex8_between()
     // std::copy( lsvs.begin(), lsvs.end(), std::ostream_iterator<double>( std::cout, " " ) );
     // std::cout << "\n";
 
-    lsi.AddElement(e, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+    lsi.AddElement(e, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
     lsi.Cut(true, false, INPAR::CUT::VCellGaussPts_DirectDivergence);
   }
 }
@@ -1707,6 +1707,6 @@ void test_ls_hex8_experiment()
   xyze(1, 7) = 1;
   xyze(2, 7) = 1;
 
-  lsi.AddElement(1, nids, xyze, DRT::Element::hex8, &lsvs[0]);
+  lsi.AddElement(1, nids, xyze, DRT::Element::DiscretizationType::hex8, &lsvs[0]);
   lsi.Cut();
 }

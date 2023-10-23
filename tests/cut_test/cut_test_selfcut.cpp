@@ -52,7 +52,7 @@ void test_hex8quad4selfcut20()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -79,7 +79,7 @@ void test_hex8quad4selfcut20()
     nids.push_back(13);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -113,7 +113,7 @@ void test_hex8quad4selfcut20()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -151,7 +151,7 @@ void test_hex8quad4selfcut21()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -178,7 +178,7 @@ void test_hex8quad4selfcut21()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -212,7 +212,7 @@ void test_hex8quad4selfcut21()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -250,7 +250,7 @@ void test_hex8quad4selfcut22()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -277,7 +277,7 @@ void test_hex8quad4selfcut22()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -311,7 +311,7 @@ void test_hex8quad4selfcut22()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -349,7 +349,7 @@ void test_hex8quad4selfcut23()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -376,7 +376,7 @@ void test_hex8quad4selfcut23()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -410,7 +410,7 @@ void test_hex8quad4selfcut23()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -448,7 +448,7 @@ void test_hex8quad4selfcut24()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -475,7 +475,7 @@ void test_hex8quad4selfcut24()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -509,7 +509,7 @@ void test_hex8quad4selfcut24()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -547,7 +547,7 @@ void test_hex8quad4selfcut30()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -574,7 +574,7 @@ void test_hex8quad4selfcut30()
     nids.push_back(13);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -601,7 +601,7 @@ void test_hex8quad4selfcut30()
     nids.push_back(12);
     nids.push_back(33);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -635,7 +635,7 @@ void test_hex8quad4selfcut30()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -673,7 +673,7 @@ void test_hex8quad4selfcut31()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -700,7 +700,7 @@ void test_hex8quad4selfcut31()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -727,7 +727,7 @@ void test_hex8quad4selfcut31()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -761,7 +761,7 @@ void test_hex8quad4selfcut31()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -799,7 +799,7 @@ void test_hex8quad4selfcut32()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -826,7 +826,7 @@ void test_hex8quad4selfcut32()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -853,7 +853,7 @@ void test_hex8quad4selfcut32()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -887,7 +887,7 @@ void test_hex8quad4selfcut32()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -925,7 +925,7 @@ void test_hex8quad4selfcut33()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -952,7 +952,7 @@ void test_hex8quad4selfcut33()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -979,7 +979,7 @@ void test_hex8quad4selfcut33()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1013,7 +1013,7 @@ void test_hex8quad4selfcut33()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1051,7 +1051,7 @@ void test_hex8quad4selfcut34()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1078,7 +1078,7 @@ void test_hex8quad4selfcut34()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1105,7 +1105,7 @@ void test_hex8quad4selfcut34()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1139,7 +1139,7 @@ void test_hex8quad4selfcut34()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1177,7 +1177,7 @@ void test_hex8quad4selfcut35()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1204,7 +1204,7 @@ void test_hex8quad4selfcut35()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1231,7 +1231,7 @@ void test_hex8quad4selfcut35()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1265,7 +1265,7 @@ void test_hex8quad4selfcut35()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1303,7 +1303,7 @@ void test_hex8quad4selfcut36()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1330,7 +1330,7 @@ void test_hex8quad4selfcut36()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1357,7 +1357,7 @@ void test_hex8quad4selfcut36()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1391,7 +1391,7 @@ void test_hex8quad4selfcut36()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1429,7 +1429,7 @@ void test_hex8quad4selfcut37()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1456,7 +1456,7 @@ void test_hex8quad4selfcut37()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1483,7 +1483,7 @@ void test_hex8quad4selfcut37()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1517,7 +1517,7 @@ void test_hex8quad4selfcut37()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1555,7 +1555,7 @@ void test_hex8quad4selfcut38()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1582,7 +1582,7 @@ void test_hex8quad4selfcut38()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1609,7 +1609,7 @@ void test_hex8quad4selfcut38()
     nids.push_back(26);
     nids.push_back(27);
     nids.push_back(28);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1643,7 +1643,7 @@ void test_hex8quad4selfcut38()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1681,7 +1681,7 @@ void test_hex8quad4selfcut39()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1708,7 +1708,7 @@ void test_hex8quad4selfcut39()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1735,7 +1735,7 @@ void test_hex8quad4selfcut39()
     nids.push_back(26);
     nids.push_back(27);
     nids.push_back(28);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1769,7 +1769,7 @@ void test_hex8quad4selfcut39()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1807,7 +1807,7 @@ void test_hex8quad4selfcut41()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1834,7 +1834,7 @@ void test_hex8quad4selfcut41()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1861,7 +1861,7 @@ void test_hex8quad4selfcut41()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1888,7 +1888,7 @@ void test_hex8quad4selfcut41()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -1922,7 +1922,7 @@ void test_hex8quad4selfcut41()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -1960,7 +1960,7 @@ void test_hex8quad4selfcut42()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -1987,7 +1987,7 @@ void test_hex8quad4selfcut42()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2014,7 +2014,7 @@ void test_hex8quad4selfcut42()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2041,7 +2041,7 @@ void test_hex8quad4selfcut42()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -2075,7 +2075,7 @@ void test_hex8quad4selfcut42()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -2127,7 +2127,7 @@ void test_hex8quad4selfcut43()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2154,7 +2154,7 @@ void test_hex8quad4selfcut43()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2181,7 +2181,7 @@ void test_hex8quad4selfcut43()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2208,7 +2208,7 @@ void test_hex8quad4selfcut43()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -2242,7 +2242,7 @@ void test_hex8quad4selfcut43()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -2280,7 +2280,7 @@ void test_hex8quad4selfcut51()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2307,7 +2307,7 @@ void test_hex8quad4selfcut51()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2334,7 +2334,7 @@ void test_hex8quad4selfcut51()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2361,7 +2361,7 @@ void test_hex8quad4selfcut51()
     nids.push_back(27);
     nids.push_back(28);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2388,7 +2388,7 @@ void test_hex8quad4selfcut51()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(28);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -2422,7 +2422,7 @@ void test_hex8quad4selfcut51()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -2460,7 +2460,7 @@ void test_hex8quad4selfcut52()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2487,7 +2487,7 @@ void test_hex8quad4selfcut52()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2514,7 +2514,7 @@ void test_hex8quad4selfcut52()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2541,7 +2541,7 @@ void test_hex8quad4selfcut52()
     nids.push_back(27);
     nids.push_back(28);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2568,7 +2568,7 @@ void test_hex8quad4selfcut52()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(28);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -2602,7 +2602,7 @@ void test_hex8quad4selfcut52()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -2640,7 +2640,7 @@ void test_hex8quad4selfcut53()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2667,7 +2667,7 @@ void test_hex8quad4selfcut53()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2694,7 +2694,7 @@ void test_hex8quad4selfcut53()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2721,7 +2721,7 @@ void test_hex8quad4selfcut53()
     nids.push_back(27);
     nids.push_back(28);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2748,7 +2748,7 @@ void test_hex8quad4selfcut53()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(28);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -2782,7 +2782,7 @@ void test_hex8quad4selfcut53()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -2820,7 +2820,7 @@ void test_hex8quad4selfcut61()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2847,7 +2847,7 @@ void test_hex8quad4selfcut61()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2874,7 +2874,7 @@ void test_hex8quad4selfcut61()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2901,7 +2901,7 @@ void test_hex8quad4selfcut61()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2928,7 +2928,7 @@ void test_hex8quad4selfcut61()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -2955,7 +2955,7 @@ void test_hex8quad4selfcut61()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -2989,7 +2989,7 @@ void test_hex8quad4selfcut61()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -3027,7 +3027,7 @@ void test_hex8quad4selfcut62()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3054,7 +3054,7 @@ void test_hex8quad4selfcut62()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3081,7 +3081,7 @@ void test_hex8quad4selfcut62()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3108,7 +3108,7 @@ void test_hex8quad4selfcut62()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3135,7 +3135,7 @@ void test_hex8quad4selfcut62()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(44);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3162,7 +3162,7 @@ void test_hex8quad4selfcut62()
     nids.push_back(45);
     nids.push_back(46);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -3196,7 +3196,7 @@ void test_hex8quad4selfcut62()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -3234,7 +3234,7 @@ void test_hex8quad4selfcut63()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3261,7 +3261,7 @@ void test_hex8quad4selfcut63()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3288,7 +3288,7 @@ void test_hex8quad4selfcut63()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3315,7 +3315,7 @@ void test_hex8quad4selfcut63()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3342,7 +3342,7 @@ void test_hex8quad4selfcut63()
     nids.push_back(41);
     nids.push_back(44);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3369,7 +3369,7 @@ void test_hex8quad4selfcut63()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(46);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -3403,7 +3403,7 @@ void test_hex8quad4selfcut63()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -3441,7 +3441,7 @@ void test_hex8quad4selfcut64()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3468,7 +3468,7 @@ void test_hex8quad4selfcut64()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3495,7 +3495,7 @@ void test_hex8quad4selfcut64()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3522,7 +3522,7 @@ void test_hex8quad4selfcut64()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3549,7 +3549,7 @@ void test_hex8quad4selfcut64()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3576,7 +3576,7 @@ void test_hex8quad4selfcut64()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -3610,7 +3610,7 @@ void test_hex8quad4selfcut64()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -3648,7 +3648,7 @@ void test_hex8quad4selfcut65()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3675,7 +3675,7 @@ void test_hex8quad4selfcut65()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3702,7 +3702,7 @@ void test_hex8quad4selfcut65()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3729,7 +3729,7 @@ void test_hex8quad4selfcut65()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3756,7 +3756,7 @@ void test_hex8quad4selfcut65()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(44);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3783,7 +3783,7 @@ void test_hex8quad4selfcut65()
     nids.push_back(45);
     nids.push_back(46);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -3817,7 +3817,7 @@ void test_hex8quad4selfcut65()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -3855,7 +3855,7 @@ void test_hex8quad4selfcut66()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3882,7 +3882,7 @@ void test_hex8quad4selfcut66()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3909,7 +3909,7 @@ void test_hex8quad4selfcut66()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3936,7 +3936,7 @@ void test_hex8quad4selfcut66()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3963,7 +3963,7 @@ void test_hex8quad4selfcut66()
     nids.push_back(41);
     nids.push_back(44);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -3990,7 +3990,7 @@ void test_hex8quad4selfcut66()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(46);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -4024,7 +4024,7 @@ void test_hex8quad4selfcut66()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -4062,7 +4062,7 @@ void test_hex8quad4selfcut71()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4089,7 +4089,7 @@ void test_hex8quad4selfcut71()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4116,7 +4116,7 @@ void test_hex8quad4selfcut71()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4143,7 +4143,7 @@ void test_hex8quad4selfcut71()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4170,7 +4170,7 @@ void test_hex8quad4selfcut71()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4197,7 +4197,7 @@ void test_hex8quad4selfcut71()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4224,7 +4224,7 @@ void test_hex8quad4selfcut71()
     nids.push_back(31);
     nids.push_back(34);
     nids.push_back(36);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -4258,7 +4258,7 @@ void test_hex8quad4selfcut71()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -4335,7 +4335,7 @@ void test_hex8quad4selfcut72()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4362,7 +4362,7 @@ void test_hex8quad4selfcut72()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4389,7 +4389,7 @@ void test_hex8quad4selfcut72()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4416,7 +4416,7 @@ void test_hex8quad4selfcut72()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4443,7 +4443,7 @@ void test_hex8quad4selfcut72()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4470,7 +4470,7 @@ void test_hex8quad4selfcut72()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4497,7 +4497,7 @@ void test_hex8quad4selfcut72()
     nids.push_back(31);
     nids.push_back(34);
     nids.push_back(36);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -4531,7 +4531,7 @@ void test_hex8quad4selfcut72()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -4569,7 +4569,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4596,7 +4596,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4623,7 +4623,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4650,7 +4650,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4677,7 +4677,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4704,7 +4704,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(31);
     nids.push_back(34);
     nids.push_back(36);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4731,7 +4731,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(38);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4758,7 +4758,7 @@ void test_hex8quad4selfcut81()
     nids.push_back(37);
     nids.push_back(38);
     nids.push_back(30);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -4792,7 +4792,7 @@ void test_hex8quad4selfcut81()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -4830,7 +4830,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4857,7 +4857,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4884,7 +4884,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4911,7 +4911,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4938,7 +4938,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4965,7 +4965,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(31);
     nids.push_back(34);
     nids.push_back(36);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -4992,7 +4992,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(38);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5019,7 +5019,7 @@ void test_hex8quad4selfcut82()
     nids.push_back(37);
     nids.push_back(38);
     nids.push_back(30);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -5053,7 +5053,7 @@ void test_hex8quad4selfcut82()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -5091,7 +5091,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5118,7 +5118,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5145,7 +5145,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5172,7 +5172,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5199,7 +5199,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5226,7 +5226,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
 
@@ -5254,7 +5254,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(44);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5281,7 +5281,7 @@ void test_hex8quad4selfcut83()
     nids.push_back(45);
     nids.push_back(46);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -5315,7 +5315,7 @@ void test_hex8quad4selfcut83()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -5353,7 +5353,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5380,7 +5380,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5407,7 +5407,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5434,7 +5434,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5461,7 +5461,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5488,7 +5488,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
 
@@ -5516,7 +5516,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(44);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5543,7 +5543,7 @@ void test_hex8quad4selfcut84()
     nids.push_back(45);
     nids.push_back(46);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -5577,7 +5577,7 @@ void test_hex8quad4selfcut84()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -5615,7 +5615,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5642,7 +5642,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5669,7 +5669,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5696,7 +5696,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5723,7 +5723,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5750,7 +5750,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
 
@@ -5778,7 +5778,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(41);
     nids.push_back(44);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5805,7 +5805,7 @@ void test_hex8quad4selfcut85()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(46);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -5839,7 +5839,7 @@ void test_hex8quad4selfcut85()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -5877,7 +5877,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5904,7 +5904,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5931,7 +5931,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5958,7 +5958,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -5985,7 +5985,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6012,7 +6012,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(33);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
 
@@ -6040,7 +6040,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(41);
     nids.push_back(44);
     nids.push_back(43);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6067,7 +6067,7 @@ void test_hex8quad4selfcut86()
     nids.push_back(42);
     nids.push_back(43);
     nids.push_back(46);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -6101,7 +6101,7 @@ void test_hex8quad4selfcut86()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -6139,7 +6139,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6166,7 +6166,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6193,7 +6193,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6220,7 +6220,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6247,7 +6247,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6274,7 +6274,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(31);
     nids.push_back(34);
     nids.push_back(36);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6301,7 +6301,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(38);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6328,7 +6328,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(37);
     nids.push_back(38);
     nids.push_back(30);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6355,7 +6355,7 @@ void test_hex8quad4selfcut91()
     nids.push_back(39);
     nids.push_back(30);
     nids.push_back(41);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -6389,7 +6389,7 @@ void test_hex8quad4selfcut91()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -6427,7 +6427,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6454,7 +6454,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(22);
     nids.push_back(23);
     nids.push_back(24);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6481,7 +6481,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(25);
     nids.push_back(26);
     nids.push_back(23);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6508,7 +6508,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(21);
     nids.push_back(24);
     nids.push_back(26);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6535,7 +6535,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(32);
     nids.push_back(33);
     nids.push_back(34);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6562,7 +6562,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(31);
     nids.push_back(34);
     nids.push_back(36);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6589,7 +6589,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(35);
     nids.push_back(36);
     nids.push_back(38);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6616,7 +6616,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(37);
     nids.push_back(38);
     nids.push_back(30);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6643,7 +6643,7 @@ void test_hex8quad4selfcut92()
     nids.push_back(39);
     nids.push_back(30);
     nids.push_back(41);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -6677,7 +6677,7 @@ void test_hex8quad4selfcut92()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
   intersection.CutTest_Cut(true, INPAR::CUT::VCellGaussPts_DirectDivergence);
@@ -6719,7 +6719,7 @@ void test_hex8quad4alignedEdges()
     nids.push_back(12);
     nids.push_back(13);
     nids.push_back(14);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   {
@@ -6746,7 +6746,7 @@ void test_hex8quad4alignedEdges()
     nids.push_back(16);
     nids.push_back(17);
     nids.push_back(18);
-    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::quad4);
+    intersection.AddCutSide(++sidecount, nids, quad4_xyze, DRT::Element::DiscretizationType::quad4);
   }
 
   CORE::LINALG::SerialDenseMatrix hex8_xyze(3, 8);
@@ -6779,7 +6779,7 @@ void test_hex8quad4alignedEdges()
   nids.clear();
   for (int i = 0; i < 8; ++i) nids.push_back(i);
 
-  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::hex8);
+  intersection.AddElement(1, nids, hex8_xyze, DRT::Element::DiscretizationType::hex8);
 
   intersection.Status();
 
